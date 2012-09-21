@@ -1,0 +1,64 @@
+grids:
+-swissgrid
+    resolutions: [4000,3750,3500,3250,3000,2750,2500,2250,2000,1750,1500,1250,1000,750,650,500,250,100,50,20,10,5,2.5,2,1.5,1,0.5,0.25,0.1,0.05]
+    bbox: [420000, 30000, 900000, 350000]
+    tile_size: 256
+    srid: 21781
+
+caches:
+-local
+    folder: tiles
+-s3
+    host: s3-eu-west-1.amazonaws.com
+    bucket: tiles
+    folder: tiles
+
+layer_default:
+    grid: swissgrid
+    type: wms
+    url: http://dev.regiogis-beo.ch/main/wsgi/mapserv_proxy # ${mapserv_url}
+    extension: png
+    mime_type: image/png256
+    wmts_dimension_key: VERSION
+    wmts_dimension_value: 1
+    wmts_dimension_default: 1
+    wmts_dimension_values: [1]
+    meta_buffer: 128
+    meta_size: 8
+    emptymetatile_size: 4144
+    emptymetatile_hash: -7657621180573147007
+    emptytile_size: 1096
+    emptytile_hash: -2225832598072171888
+
+
+layers:
+-plan
+-plan-color
+-ortho
+    extension: jpeg
+    mime_type: image/jpeg
+    emptymetatile_size: 4144
+    emptymetatile_hash: -7657621180573147007
+    emptytile_size: 1096
+    emptytile_hash: -2225832598072171888
+-mapnik
+    type: mapnik
+    generator_options:
+        output_format: png
+-grid
+    type: mapnik
+    generator_options:
+        output_format: grid
+        layers:
+            -foo: [id, name]
+            -bar: [id, name, description]
+
+aws-host:
+    type: small
+
+generation:
+    cache: local
+    layers: [mapnik, grid]
+    number_process: 8
+    maxconsecutiveerrors: 10
+    geodata_folder: /var/sig/package
