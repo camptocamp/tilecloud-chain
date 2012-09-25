@@ -33,12 +33,8 @@ layer_default:
     meta: on
     meta_size: 8
     meta_buffer: 128
-    empty_tile_detection:
-        size: 1096
-        hash: -2225832598072171888
-    empty_metatile_detection:
-        size: 4144
-        hash: -7657621180573147007
+    connection: user=www-data password=www-data dbname=sbbgeoportal_c2c host=pgcluster0t.bgdi.admin.ch
+    sql: ST_Union(ST_Buffer(geom, 100, 2)) FROM webapp.verbund_map
 
 
 layers:

@@ -7,6 +7,7 @@ from hashlib import sha1
 
 import psycopg2
 from shapely.wkb import loads as loads_wkb
+from shapely.wkt import loads as loads_wkt
 from shapely.geometry import Polygon
 import boto.sqs
 from boto.sqs.jsonmessage import JSONMessage
@@ -68,9 +69,9 @@ class TileGeneration:
             if 'connection' in self.layer and 'sql' in self.layer:
                 conn = psycopg2.connect(self.layer['connection'])
                 cursor = conn.cursor()
-                cursor.execute("SELECT ST_AsBinary(ST_Collect((SELECT " +
-                        self.layer['sql'].strip('" ') + "))")
-                geom = loads_wkb(cursor.fetchone()[0])
+                cursor.execute("SELECT ST_AsText((SELECT " +
+                    self.layer['sql'].strip('" ') + "))")
+                geom = loads_wkt(cursor.fetchone()[0])
             elif bbox:
                 extent = (float(i) for i in bbox.split(','))
                 geom = Polygon((
@@ -168,8 +169,8 @@ class IntersectGeometryFilter(object):
         self.geom = geom or self.bbox_polygon(self.grid.max_extent)
 
     def __call__(self, tile):
-        intersects = self.bounds_polygon(
-                self.grid.bounds(tile.tilecoord)). \
+        intersects = self.bbox_polygon(
+                self.grid['obj'].extent(tile.tilecoord)). \
                 intersects(self.geom)
         return tile if intersects else None
 
@@ -181,6 +182,6 @@ class IntersectGeometryFilter(object):
                 (bbox[2], bbox[1])))
 
     def bounds_polygon(self, bounds):
-        return self.bounds_polygon((
+        return self.bbox_polygon((
                 bounds[0].start, bounds[1].start,
                 bounds[0].stop, bounds[1].stop))

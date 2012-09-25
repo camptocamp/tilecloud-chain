@@ -35,13 +35,12 @@
             <Parameter name="srid">21781</Parameter>
             <Parameter name="type">postgis</Parameter>
             <Parameter name="dbname">sbbgeoportal_c2c</Parameter>
-            <!--Parameter name="host">pgcluster0t.bgdi.admin.ch</Parameter-->
-            <Parameter name="host">localhost</Parameter>
+            <Parameter name="host">pgcluster0t.bgdi.admin.ch</Parameter>
             <Parameter name="port">5432</Parameter>
             <Parameter name="user">www-data</Parameter>
             <Parameter name="password">www-data</Parameter>
-            <Parameter name="estimate_extent">true</Parameter>
-            <!--Parameter name="extent">420000, 30000, 900000, 350000</Parameter-->
+            <Parameter name="estimate_extent">false</Parameter>
+            <Parameter name="extent">420000, 30000, 900000, 350000</Parameter>
         </Datasource>
     </Layer>
 </Map>
