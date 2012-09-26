@@ -60,11 +60,11 @@ def main():
         format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
         level=logging.INFO if options.test < 0 else logging.DEBUG)
 
-    if options.status:
-        status(options)
-        sys.exit(0)
-
     gene = TileGeneration(options.config, options.layer)
+
+    if options.status:
+        status(options, gene)
+        sys.exit(0)
 
     if options.cache is None:
         options.cache = gene.config['generation']['default_cache']
@@ -186,9 +186,7 @@ def run_remote(cmd, host, project_dir):
         shell=True)
 
 
-def status(options):
-    gene = TileGeneration(options.config, options.layer)
-
+def status(options, gene):
     # get SQS status
     attributes = gene.get_sqs_queue().get_attributes()
 
