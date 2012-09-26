@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from getpass import getuser
 from optparse import OptionParser
 
 from tilecloud import BoundingPyramid, Tile, consume
@@ -184,6 +185,11 @@ def main():
         level=logging.INFO if options.test < 0 else logging.DEBUG)
 
     gene = TileGeneration(options.config)
+
+    if \
+            'authorised_user' in gene.config['generation'] and \
+            gene.config['generation']['authorised_user'] != getuser():
+        exit('not authorised, authorised user is: %s.' % gene.config['generation']['authorised_user'])
 
     if options.cache is None:
         options.cache = gene.config['generation']['default_cache']

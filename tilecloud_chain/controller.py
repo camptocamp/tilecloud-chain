@@ -68,18 +68,18 @@ def main():
 
     if options.cache is None:
         options.cache = gene.config['generation']['default_cache']
-    if options.deploy_config is None:
+    if options.deploy_config is None and 'deploy_config' in gene.config['generation']:
         options.deploy_config = gene.config['generation']['deploy_config']
-    if options.sync and gene.config['generation']['disable_sync']:
-        options.sync = False
-    if options.deploy_code and gene.config['generation']['disable_code']:
-        options.deploy_code = False
-    if options.deploy_database and gene.config['generation']['disable_database']:
-        options.deploy_database = False
-    if options.fill_queue and gene.config['generation']['disable_fillqueue']:
-        options.fill_queue = False
-    if options.tiles_gen and gene.config['generation']['disable_tilesgen']:
-        options.tiles_gen = False
+    if options.sync and 'disable_sync' in gene.config['generation']:
+        options.sync = not gene.config['generation']['disable_sync']
+    if options.sync and 'disable_database' in gene.config['generation']:
+        options.sync = not gene.config['generation']['disable_database']
+    if options.sync and 'disable_fillqueue' in gene.config['generation']:
+        options.sync = not gene.config['generation']['disable_fillqueue']
+    if options.sync and 'disable_fillqueue' in gene.config['generation']:
+        options.sync = not gene.config['generation']['disable_fillqueue']
+    if options.sync and 'disable_tilesgen' in gene.config['generation']:
+        options.sync = not gene.config['generation']['disable_tilesgen']
 
     if options.capabilities:
         _generate_wmts_capabilities(gene, options)

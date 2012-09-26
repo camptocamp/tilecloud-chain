@@ -8,7 +8,7 @@ grids:
 caches:
     local:
         type: filesystem
-        http_url: http://localhost/tiles
+        http_url: http://taurus/tiles
         folder: /var/www/tiles
     s3:
         type: s3
@@ -36,14 +36,11 @@ layer_default:
     connection: user=www-data password=www-data dbname=sbbgeoportal_c2c host=pgcluster0t.bgdi.admin.ch
     sql: ST_Union(ST_Buffer(geom, 100, 2)) FROM webapp.verbund_map
 
-
 layers:
     mapnik:
         type: mapnik
         mapfile: sbb_verbund.mapnik
-        generator_options:
-            output_format: png
-        meta: off
+        output_format: png
     grid:
         type: mapnik
         mapfile: sbb_verbund.mapnik
@@ -61,19 +58,8 @@ layers:
             - verbund3
             - verbund4
 
-aws-host:
-    type: small
-
 generation:
     default_cache: local
     default_layers: [mapnik, grid]
-    deploy_config: tilegeneration/deploy.cfg
-    number_process: 8
+    authorised_user: www-data
     maxconsecutive_errors: 10
-    geodata_folder: /var/sig/package
-
-    disable_sync: no
-    disable_code: no
-    disable_database: no
-    disable_fillqueue: no
-    disable_tilesgen: no

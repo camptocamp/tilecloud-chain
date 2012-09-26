@@ -1,64 +1,89 @@
 grids:
--swissgrid
-    resolutions: [4000,3750,3500,3250,3000,2750,2500,2250,2000,1750,1500,1250,1000,750,650,500,250,100,50,20,10,5,2.5,2,1.5,1,0.5,0.25,0.1,0.05]
-    bbox: [420000, 30000, 900000, 350000]
-    tile_size: 256
-    srid: 21781
+    swissgrid:
+        resolutions: [1000, 500, 250, 100, 50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1]
+        bbox: [420000, 30000, 900000, 350000]
+        tile_size: 256
+        srs: epsg:21781
 
 caches:
--local
-    folder: tiles
--s3
-    host: s3-eu-west-1.amazonaws.com
-    bucket: tiles
-    folder: tiles
+    local:
+        type: filesystem
+        http_url: http://taurus/tiles
+        folder: /var/www/tiles
+    s3:
+        type: s3
+        http_url: https://%(host)s/%(bucket)s/%(folder)s
+        host: s3-eu-west-1.amazonaws.com
+        bucket: tiles
+        folder: tiles
 
 layer_default:
     grid: swissgrid
     type: wms
     url: http://dev.regiogis-beo.ch/main/wsgi/mapserv_proxy # ${mapserv_url}
     extension: png
-    mime_type: image/png256
-    wmts_dimension_key: VERSION
-    wmts_dimension_value: 1
-    wmts_dimension_default: 1
-    wmts_dimension_values: [1]
-    meta_buffer: 128
+    mime_type: image/png
+    wmts:
+        style: default
+    dimensions:
+        -   name: VERSION
+            default: 1
+            value: 1
+            values: [1]
+    meta: on
     meta_size: 8
-    emptymetatile_size: 4144
-    emptymetatile_hash: -7657621180573147007
-    emptytile_size: 1096
-    emptytile_hash: -2225832598072171888
-
+    meta_buffer: 128
+    connection: user=www-data password=www-data dbname=<db> host=localhost
+    sql: ST_Union(ST_Buffer(geom, 10, 2)) FROM <table>
+    empty_tile_detection:
+        size: 1096
+        hash: -2225832598072171888
+    empty_metatile_detection:
+        size: 4144
+        hash: -7657621180573147007
 
 layers:
--plan
--plan-color
--ortho
-    extension: jpeg
-    mime_type: image/jpeg
-    emptymetatile_size: 4144
-    emptymetatile_hash: -7657621180573147007
-    emptytile_size: 1096
-    emptytile_hash: -2225832598072171888
--mapnik
-    type: mapnik
-    generator_options:
-        output_format: png
--grid
-    type: mapnik
-    generator_options:
+    plan: {}
+    plan_color: {}
+    ortho:
+        extension: jpeg
+        mime_type: image/jpeg
+        empty_tile_detection:
+            size: 1096
+            hash: -2225832598072171888
+        empty_metatile_detection:
+            size: 4144
+            hash: -7657621180573147007
+    mapnik:
+        type: mapnik
+        mapfile: style.mapnik
+        generator_options:
+            output_format: png
+    grid:
+        type: mapnik
+        mapfile: style.mapnik
         output_format: grid
-        layers:
-            -foo: [id, name]
-            -bar: [id, name, description]
-
-aws-host:
-    type: small
+        extension: json
+        mime_type: application/utfgrid
+        resolution: 4
+        meta: off
+        output_format: grid
+        data_buffer: 128
+        layers_fields:
+            -foo: [name]
+            -bar: [name, description]
 
 generation:
-    cache: local
-    layers: [mapnik, grid]
+    default_cache: local
+    default_layers: [plan, plan_color, ortho]
+    authorised_user: www-data
+
     number_process: 8
     maxconsecutiveerrors: 10
     geodata_folder: /var/sig/package
+
+    disable_sync: no
+    disable_code: no
+    disable_database: no
+    disable_fillqueue: no
+    disable_tilesgen: no
