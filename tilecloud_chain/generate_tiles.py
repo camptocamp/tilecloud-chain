@@ -84,6 +84,7 @@ def _gene(options, gene, layer):
                     if gene.layer.get('meta', False) else 0),
                 data_buffer=gene.layer.get('data_buffer', 128),
                 output_format=gene.layer.get('output_format', 'png'),
+                resolution=gene.layer.get('resolution', 4),
                 layers_fields=gene.layer.get('layers_fields', {})
             ))
 

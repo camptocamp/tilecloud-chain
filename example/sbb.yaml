@@ -8,8 +8,8 @@ grids:
 caches:
     local:
         type: filesystem
-        http_url: https://localhost
-        folder: /tmp/tiles
+        http_url: http://localhost/tiles
+        folder: /var/www/tiles
     s3:
         type: s3
         http_url: https://%(host)s/%(bucket)s/%(folder)s
@@ -43,12 +43,14 @@ layers:
         mapfile: sbb_verbund.mapnik
         generator_options:
             output_format: png
+        meta: off
     grid:
         type: mapnik
         mapfile: sbb_verbund.mapnik
         output_format: grid
         extension: json
         mime_type: application/utfgrid
+        resolution: 4
         meta: off
         data_buffer: 128
         layers_fields:

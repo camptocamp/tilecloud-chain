@@ -211,8 +211,7 @@ def _generate_wmts_capabilities(gene, options):
             grids=gene.grids,
             getcapabilities=base_url + '/capabilities.xml',
             gettile=base_url,
-            enumerate=enumerate,
-            ceil=math.ceil)
+            enumerate=enumerate, ceil=math.ceil, int=int)
 
     if cache['type'] == 's3':
         s3bucket = S3Connection().bucket(cache['bucket'])

@@ -64,29 +64,29 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
     </Layer>
     {% endfor %}
 
-    {% for grid in grids.values() %}
+    {% for gridname, grid in grids.items() %}
     <TileMatrixSet>
-      <ows:Identifier>{{grid['name']}}</ows:Identifier>
+      <ows:Identifier>{{gridname}}</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:{{
             grid['srs'].replace(':', '::')
-      }}</ows:SupportedCRS>
-      {% for i, resolution in enumerate(grid['resolutions']) %}
+      }}</ows:SupportedCRS>{%
+        for i, resolution in enumerate(grid['resolutions']) %}{%
+        set width = int(ceil(
+                (grid['bbox'][2]-grid['bbox'][0]) /
+                resolution / grid['tile_size'])) %}{%
+        set height = int(ceil(
+                (grid['bbox'][3]-grid['bbox'][1]) /
+                resolution / grid['tile_size'])) %}{%
+        set left = grid['bbox'][0] %}{%
+        set top = grid['bbox'][1] + height * grid['tile_size'] * resolution %}
       <TileMatrix>
         <ows:Identifier>{{i}}</ows:Identifier>
         <ScaleDenominator>{{resolution / 0.00028}}</ScaleDenominator>
-        <TopLeftCorner>{{grid['bbox'][0]}} {{grid['bbox'][3]}}</TopLeftCorner>
+        <TopLeftCorner>{{left}} {{top}}</TopLeftCorner>
         <TileWidth>{{grid['tile_size']}}</TileWidth>
         <TileHeight>{{grid['tile_size']}}</TileHeight>
-        <MatrixWidth>{{
-            ceil(
-                (grid['bbox'][2]-grid['bbox'][0]) /
-                resolution / grid['tile_size'])
-        }}</MatrixWidth>
-        <MatrixHeight>{{
-            ceil(
-                (grid['bbox'][3]-grid['bbox'][1]) /
-                resolution / grid['tile_size'])
-        }}</MatrixHeight>
+        <MatrixWidth>{{width}}</MatrixWidth>
+        <MatrixHeight>{{height}}</MatrixHeight>
       </TileMatrix>
       {% endfor %}
     </TileMatrixSet>
