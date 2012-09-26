@@ -29,7 +29,7 @@
         <StyleName>verbund-txt</StyleName>
         <Datasource>
             <Parameter name="table">
-                (SELECT geom, name, kantone, verbund1, verbund2, verbund3, verbund4, url1, url2, url3, url4 from webapp.verbund_map) AS verbund
+                (SELECT geom, name, kantone, verbund1, verbund2, verbund3, verbund4 from webapp.verbund_map) AS verbund
             </Parameter>
             <Parameter name="geometry_field">geom</Parameter>
             <Parameter name="srid">21781</Parameter>

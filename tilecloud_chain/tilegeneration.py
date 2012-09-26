@@ -6,7 +6,6 @@ from itertools import imap, ifilter
 from hashlib import sha1
 
 import psycopg2
-from shapely.wkb import loads as loads_wkb
 from shapely.wkt import loads as loads_wkt
 from shapely.geometry import Polygon
 import boto.sqs

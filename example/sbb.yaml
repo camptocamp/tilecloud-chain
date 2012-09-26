@@ -48,7 +48,7 @@ layers:
         mapfile: sbb_verbund.mapnik
         output_format: grid
         extension: json
-        mime_type: application/json
+        mime_type: application/utfgrid
         meta: off
         data_buffer: 128
         layers_fields:
@@ -58,10 +58,6 @@ layers:
             - verbund2
             - verbund3
             - verbund4
-            - url1
-            - url2
-            - url3
-            - url4
 
 aws-host:
     type: small

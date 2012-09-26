@@ -2,6 +2,7 @@
 
 import sys
 import math
+import logging
 import ConfigParser
 from subprocess import call
 from optparse import OptionParser
