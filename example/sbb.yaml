@@ -23,13 +23,12 @@ layer_default:
     url: http://dev.regiogis-beo.ch/main/wsgi/mapserv_proxy # ${mapserv_url}
     extension: png
     mime_type: image/png
-    wmts:
-        style: default
+    wmts_style: default
     dimensions:
-        -   name: VERSION
-            default: 1
-            value: 1
-            values: [1]
+    -   name: VERSION
+        default: 1
+        value: 1
+        values: [1]
     meta: on
     meta_size: 8
     meta_buffer: 128
@@ -41,6 +40,8 @@ layers:
         type: mapnik
         mapfile: sbb_verbund.mapnik
         output_format: png
+        meta_buffer: 0
+        data_buffer: 128
     grid:
         type: mapnik
         mapfile: sbb_verbund.mapnik

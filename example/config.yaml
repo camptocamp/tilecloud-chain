@@ -1,3 +1,4 @@
+
 grids:
     swissgrid:
         resolutions: [1000, 500, 250, 100, 50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1]
@@ -8,33 +9,46 @@ grids:
 caches:
     local:
         type: filesystem
+        # can includs %(folder)s for the folder
         http_url: http://taurus/tiles
         folder: /var/www/tiles
     s3:
         type: s3
+        # %(host)s, %(bucket)s and %(folder)s coms from this cache
         http_url: https://%(host)s/%(bucket)s/%(folder)s
         host: s3-eu-west-1.amazonaws.com
         bucket: tiles
         folder: tiles
 
+# this defines some defaults values for all the layers
 layer_default:
+    # name of the grild to use (defined in grilds)
     grid: swissgrid
     type: wms
-    url: http://dev.regiogis-beo.ch/main/wsgi/mapserv_proxy # ${mapserv_url}
+    # the url of the WMS server to used
+    url: http://${vars:host}/${vars:instanceid}/mapserv
+    # file name extension
     extension: png
+    # mime type used for the WMS request and the WMTS capabilities generation
     mime_type: image/png
-    wmts:
-        style: default
+    wmts_style: default
+    # the WMTS demensions definition
     dimensions:
         -   name: VERSION
+            # the default value for the WMTS capabilities
             default: 1
+            # the generated value
             value: 1
+            # all the available values in the WMTS capabilities
             values: [1]
+    # the meta tiles definition
     meta: on
     meta_size: 8
     meta_buffer: 128
+    # connexion an sql to get the geometry where we want to generate tiles
     connection: user=www-data password=www-data dbname=<db> host=localhost
     sql: ST_Union(ST_Buffer(geom, 10, 2)) FROM <table>
+    # size ans hash used to detect empty tiles and metatiles
     empty_tile_detection:
         size: 1096
         hash: -2225832598072171888
@@ -56,34 +70,50 @@ layers:
             hash: -7657621180573147007
     mapnik:
         type: mapnik
+                # buffer to gets the data
+        # with mapnik it's better to use databuffer than meta_buffer
+        meta_buffer: 0
+        data_buffer: 128
         mapfile: style.mapnik
-        generator_options:
-            output_format: png
+        # the output_format used for the mapnik renderer, can be png, png256, jpeg, grid (grid_renderer)
+        output_format: png
     grid:
         type: mapnik
         mapfile: style.mapnik
         output_format: grid
         extension: json
+        # mime type used for the WMTS capabilities generation
         mime_type: application/utfgrid
+        # UTFGrid resolution [px]
         resolution: 4
+        # no metatiles (not supported for UTFGrid)
         meta: off
-        output_format: grid
         data_buffer: 128
+        # fields names to extort to the UTFGrid
         layers_fields:
-            -foo: [name]
-            -bar: [name, description]
+            foo: [name]
+            bar: [name, description]
 
 generation:
     default_cache: local
     default_layers: [plan, plan_color, ortho]
+    # used to allod only a specific user to generate tiles (for rights issue)
     authorised_user: www-data
 
+    # not already implemented
     number_process: 8
-    maxconsecutiveerrors: 10
+
+    maxconsecutive_errors: 10
+    # geodata folder to sync with the tile worker, not already implemented
     geodata_folder: /var/sig/package
 
+    # disable geodata sync, not already implemented
     disable_sync: no
+    # disable code deploy, not already implemented
     disable_code: no
+    # disable database deploy, not already implemented
     disable_database: no
+    # disable sqs tile queue filling , not already implemented
     disable_fillqueue: no
+    # disable tile generation, not already implemented
     disable_tilesgen: no

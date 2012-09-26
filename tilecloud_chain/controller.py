@@ -88,7 +88,7 @@ def main():
     # start aws
     if not options.host:
         # not imlpemented yet
-        host = aws_start(gene.metadata['aws_host_type'])
+        host = aws_start(gene.metadata['aws']['host_type'])
     else:
         host = options.host
 
@@ -221,6 +221,6 @@ def _generate_wmts_capabilities(gene, options):
         s3key.put()
     else:
         folder = cache['folder'] or ''
-        f = open(folder + '/capabilities.xml', 'w')
+        f = open(folder + '/1.0.0/WMTSCapabilities.xml', 'w')
         f.write(capabilities)
         f.close()

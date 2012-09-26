@@ -40,7 +40,7 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
       <ows:Title>{{layername}}</ows:Title>
       <ows:Identifier>{{layername}}</ows:Identifier>
       <Style isDefault="true">
-        <ows:Identifier>{{layer['wmts']['style']}}</ows:Identifier>
+        <ows:Identifier>{{layer['wmts_style']}}</ows:Identifier>
       </Style>
       <Format>{{layer['mime_type']}}</Format> {%
       for dimension in layer['dimensions'] %}
