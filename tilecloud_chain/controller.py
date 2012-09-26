@@ -6,7 +6,6 @@ import logging
 import ConfigParser
 from subprocess import call
 from optparse import OptionParser
-from tempfile import NamedTemporaryFile
 from bottle import jinja2_template
 from tilecloud.lib.s3 import S3Connection
 
@@ -46,8 +45,8 @@ def main():
     parser.add_option('-T', '--disable-tilesgen', default=True,
             action="store_false", dest="tiles_gen",
             help='disable tile generation')
-#    parser.add_option('-H', '--host', default=None,
-#            help='The host used to generate tiles')
+    parser.add_option('-H', '--host', default=None,
+            help='The host used to generate tiles')
     parser.add_option('--cache', '--destination-cache',
             default=None, dest='cache',
             help='The cache name to use, default to main')
@@ -101,70 +100,49 @@ def main():
     # deploy
     _deploy(options, host)
 
-    if (options.deploy_code or options.deploy_database \
-            or options.sync) and not options.host:
+    if options.deploy_code or options.deploy_database \
+            or options.sync:
         # not imlpemented yet
         create_snapshot(host, gene.metadata['aws'])
 
     if options.fill_queue or options.tiles_gen:
         arguments = _get_arguments(options)
         project_dir = _get_project_dir(options.deploy_config)
-
-    if options.fill_queue:
-        # launch generate_tiles_queue
-        run_remote('./buildout/bin/generate_tiles_queue' +
-                arguments, host, project_dir)
-
-    if options.tiles_gen:
-        # launch generate_tiles_from_queue
-        for i in gene.metatata['number_process']:
-            run_remote('./buildout/bin/generate_tiles_from_queue' +
-                    arguments, host, project_dir)
+        run_remote('./buildout/bin/generate_tiles ' +
+            ' '.join(arguments), host, project_dir)
 
 
 def _get_project_dir(deploy_config):
     config = ConfigParser.ConfigParser()
     config.readfp(open(deploy_config))
-    return config.get('code', 'dir')
+    return config.get('code', 'dest_dir')
 
 
 def _deploy(options, host):
     components = ""
     if options.deploy_code and not options.deploy_database:
-        components = " --components=code"
+        components = "--components=[code]"
     if options.deploy_database and not options.deploy_code:
-        components = " --components=database"
+        components = "--components=[database]"
 
     if options.deploy_code or options.deploy_database:
-        deploy_config = _generate_deploy(options.deploy_config, host)
-        run_local('deploy --remote %s %s tiles_worker' %
-                (components, deploy_config))
+        run_local('deploy --remote %s %s %s' %
+            (components, options.deploy_config, host))
 
 
 def _get_arguments(options):
-    arguments = " --config " + options.config
-    arguments += " --layer " + options.layer
-    arguments += " --destination-cache " + options.cache
+    arguments = [
+        "--config", options.config,
+        "--layer", options.layer,
+        "--destination-cache", options.cache,
+        "--role", 'master' if options.fill_queue else 'slave'
+        "--daemonize"
+    ]
     if options.bbox:
-        arguments += " --bbox " + options.bbox
+        arguments.extend(["--bbox", options.bbox])
     if options.test:
-        arguments += " --test " + options.test
+        arguments.extend(["--test", options.test])
     return arguments
-
-
-def _generate_deploy(deploy_config, host):
-    # generate deploy config
-    source_deploy_file = open(deploy_config, 'r')
-    deploy_config = source_deploy_file.read()
-    source_deploy_file.close()
-    deploy_config = deploy_config % {
-        'here': '%(here)s',
-        'host': host
-    }
-    dst_deploy_file = NamedTemporaryFile(prefix='deploy')
-    dst_deploy_file.write(deploy_config)
-    dst_deploy_file.close()
-    return dst_deploy_file.name
 
 
 def create_snapshot(host, config):
@@ -181,8 +159,8 @@ def run_local(cmd):
 
 def run_remote(cmd, host, project_dir):
     call(
-        "ssh -f deploy@%(host)s 'cd project_dir; %(cmd)s'" % {
-            'host': host, 'cmd': cmd},
+        "ssh -f deploy@%(host)s 'cd %(project_dir)s; %(cmd)s'" % {
+            'host': host, 'cmd': cmd, 'project_dir': project_dir},
         shell=True)
 
 

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import os
+import sys
 import logging
 from getpass import getuser
 from optparse import OptionParser
@@ -162,11 +164,25 @@ def _gene(options, gene, layer):
     consume(gene.tilestream, options.test)
 
 
+def daemonize():
+    try:
+        pid = os.fork()
+        if pid > 0:
+            # exit first parent
+            sys.exit(0)
+    except OSError, e:
+        exit("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
+
+    return os.getpid()
+
+
 def main():
 
     parser = OptionParser('Used to generate the tiles')
     parser.add_option('-c', '--config', default='tilegeneration/config.yaml',
             help='path to configuration file')
+    parser.add_option('-d', '--daemonize', default=False, action="store_true",
+            help='run as a deamon')
     parser.add_option('-b', '--bbox',
             help='restrict to specified bounding box')
     parser.add_option('-l', '--layer',
@@ -184,10 +200,12 @@ def main():
         format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
         level=logging.INFO if options.test < 0 else logging.DEBUG)
 
+    if options.daemonize:
+        print "Daemonize with pid %i." % daemonize()
+
     gene = TileGeneration(options.config)
 
-    if \
-            'authorised_user' in gene.config['generation'] and \
+    if 'authorised_user' in gene.config['generation'] and \
             gene.config['generation']['authorised_user'] != getuser():
         exit('not authorised, authorised user is: %s.' % gene.config['generation']['authorised_user'])
 
