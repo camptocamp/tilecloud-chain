@@ -14,7 +14,7 @@ from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.logger import Logger
 
-from tilecloud_chain.tilegeneration import TileGeneration, HashDropper
+from tilecloud_chain import TileGeneration, HashDropper
 
 logger = logging.getLogger(__name__)
 

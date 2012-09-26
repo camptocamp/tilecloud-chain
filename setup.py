@@ -35,8 +35,8 @@ setup(
         install_requires=install_requires,
         entry_points={
             'console_scripts': [
-                'generate_tiles = tilecloud_chain.generate_tiles:main',
-                'generate_tiles_controller = tilecloud_chain.generate_tiles_controller:main',
+                'generate_tiles = tilecloud_chain.generate:main',
+                'generate_controller = tilecloud_chain.controller:main',
             ],
         }
 )

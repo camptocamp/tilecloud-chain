@@ -10,9 +10,8 @@ from tempfile import NamedTemporaryFile
 from bottle import jinja2_template
 from tilecloud.lib.s3 import S3Connection
 
-from tilecloud_chain.tilegeneration import TileGeneration
-from tilecloud_chain.wmts_get_capabilities_template import \
-    wmts_get_capabilities_template
+from tilecloud_chain import TileGeneration
+from tilecloud_chain.wmts_get_capabilities_template import wmts_get_capabilities_template
 
 
 def main():
