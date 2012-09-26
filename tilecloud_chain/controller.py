@@ -101,10 +101,10 @@ def main():
     # deploy
     _deploy(options, host)
 
-    if options.deploy_code or options.deploy_database \
-            or options.sync:
+    if (options.deploy_code or options.deploy_database \
+            or options.sync) and not options.host:
         # not imlpemented yet
-        create_snapshot()
+        create_snapshot(host, gene.metadata['aws'])
 
     if options.fill_queue or options.tiles_gen:
         arguments = _get_arguments(options)
@@ -167,7 +167,7 @@ def _generate_deploy(deploy_config, host):
     return dst_deploy_file.name
 
 
-def create_snapshot():
+def create_snapshot(host, config):
     pass
 
 
