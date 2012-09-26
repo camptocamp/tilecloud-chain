@@ -24,8 +24,10 @@ class TileGeneration:
 
         self.grids = self.config['grids']
         for gname, grid in self.config['grids'].items():
+            scale = int(grid.get('resolution_scale', 1))
             grid['obj'] = FreeTileGrid(
-                resolutions=grid['resolutions'],
+                resolutions=[int(round(r * scale)) for r in grid['resolutions']],
+                scale=scale,
                 max_extent=grid['bbox'],
                 tile_size=grid['tile_size'])
 

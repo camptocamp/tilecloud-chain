@@ -2,6 +2,8 @@
 grids:
     swissgrid:
         resolutions: [1000, 500, 250, 100, 50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1]
+        # scale used to work with work internaly with integer resolutions
+        resolution_scale: 10
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
         srs: epsg:21781
