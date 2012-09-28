@@ -139,7 +139,7 @@ def _gene(options, gene, layer):
         layout = WMTSTileLayout(
             layer=layer,
             url=cache['folder'],
-            style=gene.layer['wmts']['style'],
+            style=gene.layer['wmts_style'],
             format='.' + gene.layer['extension'],
             dimensions=[(str(dimension['name']), str(dimension['default']))
                     for dimension in gene.layer['dimensions']],

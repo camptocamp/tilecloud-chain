@@ -53,7 +53,7 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
       </Dimension> {%
       endfor %}
       <ResourceURL format="{{layer['mime_type']}}" resourceType="tile"
-                   template="{{gettile}}/1.0.0/{{layername}}/{{layer['wmts']['style']}}/{%
+                   template="{{gettile}}/1.0.0/{{layername}}/{{layer['wmts_style']}}/{%
                         for dimension in layer['dimensions']
                             %}{{('{' + dimension['name'] + '}')}}{%
                         endfor
@@ -78,7 +78,7 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
                 (grid['bbox'][3]-grid['bbox'][1]) /
                 resolution / grid['tile_size'])) %}{%
         set left = grid['bbox'][0] %}{%
-        set top = grid['bbox'][1] + height * grid['tile_size'] * resolution %}
+        set top = grid['bbox'][3] %}
       <TileMatrix>
         <ows:Identifier>{{i}}</ows:Identifier>
         <ScaleDenominator>{{resolution / 0.00028}}</ScaleDenominator>
