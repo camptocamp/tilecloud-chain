@@ -19,10 +19,9 @@ caches:
 
 layer_default:
     grid: swissgrid
-    type: wms
+    type: mapnik
+    mapfile: example/sbb_verbund.mapnik
     url: http://dev.regiogis-beo.ch/main/wsgi/mapserv_proxy # ${mapserv_url}
-    extension: png
-    mime_type: image/png
     wmts_style: default
     dimensions:
     -   name: VERSION
@@ -31,17 +30,16 @@ layer_default:
         values: [1]
     meta: on
     meta_size: 8
-    meta_buffer: 128
+    meta_buffer: 0
+    data_buffer: 128
     connection: user=www-data password=www-data dbname=sbbgeoportal_c2c host=pgcluster0t.bgdi.admin.ch
     sql: ST_Union(ST_Buffer(geom, 100, 2)) FROM webapp.verbund_map
 
 layers:
     mapnik:
-        type: mapnik
-        mapfile: sbb_verbund.mapnik
         output_format: png
-        meta_buffer: 0
-        data_buffer: 128
+        extension: png
+        mime_type: image/png
     grid:
         type: mapnik
         mapfile: sbb_verbund.mapnik
@@ -50,7 +48,6 @@ layers:
         mime_type: application/utfgrid
         resolution: 4
         meta: off
-        data_buffer: 128
         layers_fields:
             verbund:
             - name
