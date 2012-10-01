@@ -29,7 +29,7 @@ class TileGeneration:
                 resolutions=[int(round(r * scale)) for r in grid['resolutions']],
                 scale=scale,
                 max_extent=grid['bbox'],
-                tile_size=grid['tile_size'])
+                tile_size=grid.get('tile_size', 256))
 
         default = self.config['layer_default']
         self.layers = {}

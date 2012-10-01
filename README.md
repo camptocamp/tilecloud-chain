@@ -37,3 +37,7 @@ TODO
     - run SQS tile queue filling
     - run tiles generation from SQS tile queue
 - Integrate AWS host creator (buildcloud)
+- Add Rendering the world mode
+- Add Mapscript store
+- Add a scaffold to create a base project
+
