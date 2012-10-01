@@ -66,6 +66,8 @@ layers:
     ortho:
         extension: jpeg
         mime_type: image/jpeg
+        # no buffer needed on rater sources
+        meta_buffer: 0
         empty_tile_detection:
             size: 1096
             hash: -2225832598072171888
