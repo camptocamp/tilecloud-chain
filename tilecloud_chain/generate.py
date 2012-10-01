@@ -38,12 +38,14 @@ def _gene(options, gene, layer):
         # Create SQS queue
         sqs_tilestore = SQSTileStore(gene.get_sqs_queue())
 
+    meta = gene.layer.get('meta', False)
     if options.role in ('local', 'master'):
         # Generate a stream of metatiles
-        gene.set_metatilecoords(
-            bounding_pyramid.metatilecoords(
-                gene.layer['meta_size']
-                if gene.layer.get('meta', False) else 1))
+        if meta:
+            gene.set_tilecoords(
+                bounding_pyramid.metatilecoords(gene.layer['meta_size']))
+        else:
+            gene.set_tilecoords(bounding_pyramid.tilecoords())
         gene.add_geom_filter()
 
     elif options.role == 'slave':
@@ -67,24 +69,18 @@ def _gene(options, gene, layer):
                     layers=gene.layer['layers'],
                     srid=gene.layer['grid_ref']['srs'],
                     image_format=gene.layer['extension'],
-                    buffer=(
-                        gene.layer['meta_buffer']
-                        if gene.layer.get('meta', False) else 0),
+                    buffer=(gene.layer['meta_buffer'] if meta else 0),
                     grid=gene.get_grid()['obj']
                 ),)
             ))
         elif gene.layer['type'] == 'mapnik':
-            if (
-                    gene.layer.get('output_format', 'png') == 'grid' and
-                    gene.layer.get('meta', False)):
+            if (meta and gene.layer.get('output_format', 'png') == 'grid'):
                 exit("Mapnik/Grid layers don't support metatiles.")
 
             gene.get(MapnikTileStore(
                 tilegrid=gene.get_grid()['obj'],
                 mapfile=gene.layer['mapfile'],
-                image_buffer=(
-                    gene.layer['meta_buffer']
-                    if gene.layer.get('meta', False) else 0),
+                image_buffer=(gene.layer['meta_buffer'] if meta else 0),
                 data_buffer=gene.layer.get('data_buffer', 128),
                 output_format=gene.layer.get('output_format', 'png'),
                 resolution=gene.layer.get('resolution', 4),
@@ -101,21 +97,21 @@ def _gene(options, gene, layer):
         gene.add_error_filters(logger)
 
         # Discard tiles with certain content
-        if 'empty_metatile_detection' in gene.layer \
+        if meta and 'empty_metatile_detection' in gene.layer \
                 and 'size' in gene.layer['empty_metatile_detection'] \
                 and 'hash' in gene.layer['empty_metatile_detection']:
             empty_tile = gene.layer['empty_metatile_detection']
             gene.imap(HashDropper(empty_tile['size'], empty_tile['hash']))
 
         # Split the metatile image into individual tiles
-        if gene.layer.get('meta', False):
+        if meta:
             gene.get(MetaTileSplitterTileStore(
                     gene.layer['mime_type'],
                     gene.layer['grid_ref']['tile_size'],
                     gene.layer['meta_buffer']))
 
-        # Only keep tiles that intersect geometry
-        gene.add_geom_filter()
+            # Only keep tiles that intersect geometry
+            gene.add_geom_filter()
 
         # Discard tiles with certain content
         if 'empty_tile_detection' in gene.layer \

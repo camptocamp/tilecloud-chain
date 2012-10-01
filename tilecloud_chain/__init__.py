@@ -101,9 +101,9 @@ class TileGeneration:
                     self.config['generation']['maxconsecutive_errors']))
         self.ifilter(DropErrors())
 
-    def set_metatilecoords(self, metatilecoords):
+    def set_tilecoords(self, tilecoords):
         self.tilestream = (
-            Tile(metatilecoord) for metatilecoord in metatilecoords)
+            Tile(tilecoord) for tilecoord in tilecoords)
 
     def set_store(self, store):
         self.tilestream = store.list()
