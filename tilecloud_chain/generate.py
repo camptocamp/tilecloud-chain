@@ -25,11 +25,8 @@ logger = logging.getLogger(__name__)
 def _gene(options, gene, layer):
     gene.layer = gene.layers[layer]
 
-    geometry = gene.get_geom()
-    if geometry:
-        extent = geometry.bounds
-    else:
-        extent = gene.layer['grid_ref']['bbox']
+    geometry = gene.get_geom(gene.layer['grid_ref']['bbox'])
+    extent = geometry.bounds
 
     bounding_pyramid = BoundingPyramid(tilegrid=gene.layer['grid_ref']['obj'])
     bounding_pyramid.fill(None, extent)
@@ -107,7 +104,7 @@ def _gene(options, gene, layer):
         if meta:
             gene.get(MetaTileSplitterTileStore(
                     gene.layer['mime_type'],
-                    gene.layer['grid_ref']['tile_size'],
+                    gene.layer['grid_ref'].get('tile_size', 256),
                     gene.layer['meta_buffer']))
 
             # Only keep tiles that intersect geometry

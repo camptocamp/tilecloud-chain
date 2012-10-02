@@ -4,7 +4,7 @@ grids:
         # scale used to work with work internaly with integer resolutions [optional, default to 1]
         resolution_scale: 10
         # resolutions, bbox, srs [required]
-        resolutions: [1000, 500, 250, 100, 50, 20, 10, 5, 2, 1, 0.5, 0.2, 0.1]
+        resolutions: [1000, 500, 250, 100, 50, 20, 10, 5, 2, 1, 0.5]
         bbox: [420000, 30000, 900000, 350000]
         srs: epsg:21781
         # [optional, default to 256]
@@ -50,8 +50,8 @@ layer_default:
     meta_size: 8
     meta_buffer: 128
     # connexion an sql to get the geometry where we want to generate tiles
-    connection: user=www-data password=www-data dbname=<db> host=localhost
-    sql: ST_Union(ST_Buffer(geom, 10, 2)) FROM <table>
+#    connection: user=www-data password=www-data dbname=<db> host=localhost
+#    sql: ST_Union(ST_Buffer(geom, 10, 2)) FROM <table>
     # size ans hash used to detect empty tiles and metatiles [optional, default to None]
     empty_tile_detection:
         size: 1096
@@ -123,3 +123,50 @@ generation:
     disable_fillqueue: no
     # disable tile generation, not already implemented [optional, default to no]
     disable_tilesgen: no
+
+cost:
+    # [ms]
+    tileonly_generation_time: 60
+    # [ms]
+    tile_generation_time: 30
+    # [ms]
+    metatile_generation_time: 30
+    # [ko]
+    tile_size: 20
+    # [nb/month]
+    request: 10000000
+    # GeoData size [Go]
+    esb_size: 100
+    # http://aws.amazon.com/s3/pricing/pricing-storage.json
+    # http://aws.amazon.com/s3/pricing/
+    s3:
+        # [$/Go/month]
+        # [$/put/1000]
+        storage: 0.125
+        put: 0.01
+        # [$/get/10000]
+        get: 0.01
+        # [$/Go]
+        download: 0.12
+    # http://aws.amazon.com/cloudfront/pricing/
+    cloudfront:
+        # [$/get/10000]
+        get: 0.009
+        # [$/Go]
+        download: 0.12
+    # http://aws.amazon.com/ec2/pricing/ri-medium-linux.json
+    # http://aws.amazon.com/ec2/pricing/
+    ec2:
+        # medium
+        # [$/hour]
+        usage: 0.17
+    # http://aws.amazon.com/ebs/
+    esb:
+        # [$/1Go/month]
+        storage: 0.11
+        # [$/ 1000 E/S/s /month]
+        io: 260
+    # http://aws.amazon.com/sqs/pricing/
+    sqs:
+        # [$/10000]
+        request: 0.01

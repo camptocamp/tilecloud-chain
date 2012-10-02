@@ -4,9 +4,17 @@ import sys
 import math
 import logging
 import ConfigParser
+import urllib2
+import simplejson
+from datetime import timedelta
+from cStringIO import StringIO
 from subprocess import call
 from optparse import OptionParser
+from PIL import Image
+from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
 from bottle import jinja2_template
+from tilecloud import BoundingPyramid, Tile, TileStore, consume
+from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.lib.s3 import S3Connection
 
 from tilecloud_chain import TileGeneration
@@ -53,6 +61,9 @@ def main():
     parser.add_option('--capabilities', '--generate_wmts_capabilities',
             default=False, action="store_true",
             help='Generate the WMTS Capabilities and exit')
+    parser.add_option('--cost', '--calculate-cost',
+            default=False, action="store_true",
+            help='Calculate the cost to generate and upload the tiles')
 
     (options, args) = parser.parse_args()
     logging.basicConfig(
@@ -82,6 +93,10 @@ def main():
 
     if options.capabilities:
         _generate_wmts_capabilities(gene, options)
+        sys.exit(0)
+
+    if options.cost:
+        _calculate_cost(gene, options)
         sys.exit(0)
 
     # start aws
@@ -177,6 +192,113 @@ def status(options, gene):
     )
 
 
+def _calculate_cost(gene, options):
+    nb_metatiles = {}
+    nb_tiles = {}
+
+    geometry = gene.get_geom(gene.layer['grid_ref']['bbox'])
+    if geometry:
+        extent = geometry.bounds
+    else:
+        extent = gene.layer['grid_ref']['bbox']
+
+    bounding_pyramid = BoundingPyramid(tilegrid=gene.layer['grid_ref']['obj'])
+    bounding_pyramid.fill(None, extent)
+
+    meta = gene.layer.get('meta', False)
+    if meta:
+        gene.set_tilecoords(bounding_pyramid.metatilecoords(gene.layer['meta_size']))
+    else:
+        gene.set_tilecoords(bounding_pyramid.tilecoords())
+    gene.add_geom_filter()
+
+    if meta:
+        def count_metatile(tile):
+            if tile:
+                if tile.tilecoord.z in nb_metatiles:
+                    nb_metatiles[tile.tilecoord.z] += 1
+                else:
+                    nb_metatiles[tile.tilecoord.z] = 1
+            return tile
+        gene.imap(count_metatile)
+
+        class MetaTileSplitter(TileStore):
+            def get(self, tiles):
+                for metatile in tiles:
+                    for tilecoord in metatile.tilecoord:
+                        yield Tile(tilecoord)
+        gene.get(MetaTileSplitter())
+
+        # Only keep tiles that intersect geometry
+        gene.add_geom_filter()
+
+    def count_tile(tile):
+        if tile:
+            if tile.tilecoord.z in nb_tiles:
+                nb_tiles[tile.tilecoord.z] += 1
+            else:
+                print "Calculate zoom %i." % tile.tilecoord.z
+                nb_tiles[tile.tilecoord.z] = 1
+        return tile
+    gene.imap(count_tile)
+
+    consume(gene.tilestream, None)
+
+    times = {}
+    print
+    for z in nb_metatiles:
+        print "%i meta tiles in zoom %i." % (nb_metatiles[z], z)
+        times[z] = gene.config['cost']['metatile_generation_time'] * nb_metatiles[z]
+
+    price = 0
+    all_size = 0
+    all_time = 0
+    for z in nb_tiles:
+        print
+        print "%i tiles in zoom %i." % (nb_tiles[z], z)
+        if meta:
+            time = times[z] + gene.config['cost']['tile_generation_time'] * nb_tiles[z]
+        else:
+            time = gene.config['cost']['tileonly_generation_time'] * nb_tiles[z]
+        size = gene.config['cost']['tile_size'] * nb_tiles[z]
+        all_size += size
+
+        all_time += time
+        td = timedelta(milliseconds=time)
+        print "Time to generate: %d %d:%02d [d h:m]" % (td.days, td.seconds / 3600, td.seconds % 3600 / 60)
+        c = gene.config['cost']['s3']['put'] * nb_tiles[z] / 1000.0
+        price += c
+        print 'S3 PUT: %0.2f [$]' % c
+        c = time * gene.config['cost']['ec2']['usage'] / (1000.0 * 3600)
+        price += c
+        print 'EC2 usage: %0.2f [$]' % c
+        c = gene.config['cost']['esb']['io'] * time / (1000.0 * 2600 * 24 * 30)
+        price += c
+        print 'ESB usage: %0.2f [$]' % c
+        if meta:
+            nb_sqs = nb_metatiles[z] * 3
+        else:
+            nb_sqs = nb_tiles[z] * 3
+        c = nb_sqs * gene.config['cost']['sqs']['request'] / 1000000.0
+        price += c
+        print 'SQS usage: %0.2f [$]' % c
+
+    print
+    td = timedelta(milliseconds=all_time)
+    print 'Total generation time : %d %d:%02d [d h:m]' % (td.days, td.seconds / 3600, td.seconds % 3600 / 60)
+    print 'Total generation cost : %0.2f [$]' % price
+    print
+    print 'S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))
+    print 'S3 get: %0.2f [$/month]' % (
+        gene.config['cost']['s3']['get'] * gene.config['cost']['request'] / 10000.0 +
+        gene.config['cost']['s3']['download'] * gene.config['cost']['request'] * gene.config['cost']['tile_size'] / (1024.0 * 1024))
+    if 'cloudfront' in gene.config['cost']:
+        print 'CloudFront: %0.2f [$/month]' % (
+            gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request'] / 10000.0 +
+            gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request'] * gene.config['cost']['tile_size'] / (1024.0 * 1024))
+    print 'ESB storage: %0.2f [$/month]' % (gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
+
+
 def _generate_wmts_capabilities(gene, options):
     cache = gene.caches[options.cache]
 
@@ -184,13 +306,13 @@ def _generate_wmts_capabilities(gene, options):
     capabilities = jinja2_template(wmts_get_capabilities_template,
             layers=gene.layers,
             grids=gene.grids,
-            getcapabilities=base_url + '/capabilities.xml',
+            getcapabilities=base_url + '/1.0.0/WMTSCapabilities.xml',
             gettile=base_url,
             enumerate=enumerate, ceil=math.ceil, int=int)
 
     if cache['type'] == 's3':
         s3bucket = S3Connection().bucket(cache['bucket'])
-        s3key = s3bucket.key('%(folder)s/capabilities.xml' % cache)
+        s3key = s3bucket.key('%(folder)s/1.0.0/WMTSCapabilities.xml' % cache)
         s3key.body = capabilities
         s3key['Content-Encoding'] = 'utf-8'
         s3key['Content-Type'] = 'text/xml'

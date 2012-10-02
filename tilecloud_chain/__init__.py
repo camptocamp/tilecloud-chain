@@ -64,7 +64,7 @@ class TileGeneration:
         queue.set_message_class(JSONMessage)
         return queue
 
-    def get_geom(self, bbox=None):
+    def get_geom(self, extent=None):
         if not self.geom:
             geom = None
             if 'connection' in self.layer and 'sql' in self.layer:
@@ -73,8 +73,7 @@ class TileGeneration:
                 cursor.execute("SELECT ST_AsText((SELECT " +
                     self.layer['sql'].strip('" ') + "))")
                 geom = loads_wkt(cursor.fetchone()[0])
-            elif bbox:
-                extent = (float(i) for i in bbox.split(','))
+            elif extent:
                 geom = Polygon((
                         (extent[0], extent[1]),
                         (extent[0], extent[3]),
