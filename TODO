@@ -1,0 +1,14 @@
+- Use tilecloud from an egg
+- Create hash code generator
+- Generate openlayers test page
+- Add cost calculator
+- Implement:
+    - geodata sync
+    - code deploy
+    - database deploy
+    - run SQS tile queue filling
+    - run tiles generation from SQS tile queue
+- Integrate AWS host creator (buildcloud)
+- Add Rendering the world mode
+- Add Mapscript store
+- Add a scaffold to create a base project

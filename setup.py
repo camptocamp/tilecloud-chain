@@ -5,24 +5,30 @@ import os
 from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
+README = open(os.path.join(here, 'README.rst')).read()
 
 install_requires = [
     'tilecloud',
     'psycopg2',
     'Shapely',
     'boto',
-    'PasteScript',
     'PyYAML',
     'jinja2',
+    'pyramid',
 ]
 
 setup(
         name='tilecloud-chain',
         version='0.1',
         description='tilecloud chain',
-        long_description='tilecloud chain',
+        long_description=README,
         classifiers=[
-            "Programming Language :: Python",
+            'Development Status :: 4 - Beta',
+            'Environment :: Console',
+            'Intended Audience :: Developers',
+            'License :: OSI Approved :: BSD License',
+            'Programming Language :: Python',
+            'Topic :: Scientific/Engineering :: GIS',
         ],
         author='Stéphane Brunner',
         author_email='stephane.brunner@camptocamp.com',
@@ -37,6 +43,9 @@ setup(
             'console_scripts': [
                 'generate_tiles = tilecloud_chain.generate:main',
                 'generate_controller = tilecloud_chain.controller:main',
+            ],
+            'pyramid.scaffold': [
+                'tilecloud_chain = tilecloud_chain.scaffolds:Create',
             ],
         }
 )
