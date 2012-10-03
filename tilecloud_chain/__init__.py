@@ -4,7 +4,9 @@ import logging
 import yaml
 from itertools import imap, ifilter
 from hashlib import sha1
+from cStringIO import StringIO
 
+from PIL import Image
 import psycopg2
 from shapely.wkt import loads as loads_wkt
 from shapely.geometry import Polygon
@@ -153,12 +155,24 @@ class HashLogger(object):  # pragma: no cover
     Log the tile size and hash.
     """
 
-    def __init__(self, logger):
+    def __init__(self, block, logger):
+        self.block = block
         self.logger = logger
 
     def __call__(self, tile):
-        self.logger.info("size: %i, hash: %i" % (len(tile.data),
-                 sha1(tile.data).hexdigest()))
+        ref = None
+        image = Image.open(StringIO(tile.data))
+        for px in image.getdata():
+            if ref is None:
+                ref = px
+            elif px != ref:
+                self.logger.info("Warning: image is not uniform.")
+                break
+        
+        self.logger.info("""Tile: %s
+    %s:
+        size: %i
+        hash: %s""" % (str(tile.tilecoord), self.block, len(tile.data), sha1(tile.data).hexdigest()))
         return tile
 
 

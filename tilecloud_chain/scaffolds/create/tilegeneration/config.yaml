@@ -26,10 +26,10 @@ caches:
 
 # this defines some defaults values for all the layers
 layer_default:
-    # name of the grild to use (defined in grilds)
+    # name of the grid to use (defined in grids)
     grid: swissgrid
     type: wms
-    # the url of the WMS server to used
+    # the URL of the WMS server to used
     url: http://${vars:host}/${vars:instanceid}/mapserv
     # file name extension
     extension: png
@@ -52,7 +52,9 @@ layer_default:
     # connexion an sql to get the geometry where we want to generate tiles
 #    connection: user=www-data password=www-data dbname=<db> host=localhost
 #    sql: ST_Union(ST_Buffer(geom, 10, 2)) FROM <table>
-    # size ans hash used to detect empty tiles and metatiles [optional, default to None]
+    # size and hash used to detect empty tiles and metatiles [optional, default to None]
+    # can be generate by (with en emty tile):
+    # ./buildout/bin/generate_tiles --get-hash <z/x/y> -l <layer_name>
     empty_tile_detection:
         size: 1096
         hash: -2225832598072171888
@@ -61,8 +63,10 @@ layer_default:
         hash: -7657621180573147007
 
 layers:
-    plan: {}
-    plan_color: {}
+    plan:
+        layers: plan
+    plan_color:
+        layers: plan_color
     ortho:
         extension: jpeg
         mime_type: image/jpeg
@@ -76,8 +80,8 @@ layers:
             hash: -7657621180573147007
     mapnik:
         type: mapnik
-                # buffer to gets the data
-        # with mapnik it's better to use databuffer than meta_buffer
+        # buffer to gets the data
+        # with mapnik it's better to use data_buffer than meta_buffer
         meta_buffer: 0
         data_buffer: 128
         mapfile: style.mapnik

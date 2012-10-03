@@ -1,5 +1,4 @@
 - Use tilecloud from an egg
-- Create hash code generator
 - Implement:
     - geodata sync
     - code deploy

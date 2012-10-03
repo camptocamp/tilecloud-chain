@@ -6,7 +6,7 @@ import logging
 from getpass import getuser
 from optparse import OptionParser
 
-from tilecloud import BoundingPyramid, Tile, consume
+from tilecloud import BoundingPyramid, Tile, TileCoord, consume
 from tilecloud.store.url import URLTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.filesystem import FilesystemTileStore
@@ -17,13 +17,17 @@ from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.logger import Logger
 
-from tilecloud_chain import TileGeneration, HashDropper
+from tilecloud_chain import TileGeneration, HashDropper, HashLogger
 
 logger = logging.getLogger(__name__)
 
 
 def _gene(options, gene, layer):
     gene.layer = gene.layers[layer]
+
+    if options.get_hash:
+        options.role = 'hash'
+        options.test = 1
 
     geometry = gene.get_geom(gene.layer['grid_ref']['bbox'])
     extent = geometry.bounds
@@ -49,6 +53,13 @@ def _gene(options, gene, layer):
         # Get the metatiles from the SQS queue
         gene.set_store(sqs_tilestore)
 
+    elif options.role == 'hash':
+        z, x, y = (int(v) for v in options.get_hash.split('/'))
+        if meta:
+            gene.set_tilecoords([TileCoord(z, x, y, gene.layer['meta_size'])])
+        else:
+            gene.set_tilecoords([TileCoord(z, x, y)])
+
     # At this stage, the tilestream contains metatiles that intersect geometry
     if options.test > 0:
         gene.imap(Logger(logger, logging.DEBUG, '%(tilecoord)s'))
@@ -57,17 +68,17 @@ def _gene(options, gene, layer):
         # Put the metatiles into the SQS queue
         gene.put(sqs_tilestore)
 
-    elif options.role in ('local', 'slave'):
+    elif options.role in ('local', 'slave', 'hash'):
         if gene.layer['type'] == 'wms':
             # Get the metatile image from the WMS server
             gene.get(URLTileStore(
                 tilelayouts=(WMSTileLayout(
                     url=gene.layer['url'],
                     layers=gene.layer['layers'],
-                    srid=gene.layer['grid_ref']['srs'],
-                    image_format=gene.layer['extension'],
-                    buffer=(gene.layer['meta_buffer'] if meta else 0),
-                    grid=gene.get_grid()['obj']
+                    srs=gene.layer['grid_ref']['srs'],
+                    format=gene.layer['extension'],
+                    border=(gene.layer.get('meta_buffer', 0) if meta else 0),
+                    tilegrid=gene.get_grid()['obj']
                 ),)
             ))
         elif gene.layer['type'] == 'mapnik':
@@ -77,7 +88,7 @@ def _gene(options, gene, layer):
             gene.get(MapnikTileStore(
                 tilegrid=gene.get_grid()['obj'],
                 mapfile=gene.layer['mapfile'],
-                image_buffer=(gene.layer['meta_buffer'] if meta else 0),
+                image_buffer=(gene.layer.get('meta_buffer', 0) if meta else 0),
                 data_buffer=gene.layer.get('data_buffer', 128),
                 output_format=gene.layer.get('output_format', 'png'),
                 resolution=gene.layer.get('resolution', 4),
@@ -90,32 +101,38 @@ def _gene(options, gene, layer):
             # done when all its tiles are done
             gene.delete(sqs_tilestore)
 
-        # Handle errors
-        gene.add_error_filters(logger)
-
-        # Discard tiles with certain content
-        if meta and 'empty_metatile_detection' in gene.layer \
-                and 'size' in gene.layer['empty_metatile_detection'] \
-                and 'hash' in gene.layer['empty_metatile_detection']:
-            empty_tile = gene.layer['empty_metatile_detection']
-            gene.imap(HashDropper(empty_tile['size'], empty_tile['hash']))
-
-        # Split the metatile image into individual tiles
         if meta:
+            if options.role == 'hash':
+                gene.imap(HashLogger('empty_metatile_detection', logger))
+            else:
+                # Handle errors
+                gene.add_error_filters(logger)
+
+                # Discard tiles with certain content
+                if meta and 'empty_metatile_detection' in gene.layer \
+                        and 'size' in gene.layer['empty_metatile_detection'] \
+                        and 'hash' in gene.layer['empty_metatile_detection']:
+                    empty_tile = gene.layer['empty_metatile_detection']
+                    gene.imap(HashDropper(empty_tile['size'], empty_tile['hash']))
+
+            # Split the metatile image into individual tiles
             gene.get(MetaTileSplitterTileStore(
                     gene.layer['mime_type'],
                     gene.layer['grid_ref'].get('tile_size', 256),
-                    gene.layer['meta_buffer']))
+                    gene.layer.get('meta_buffer', 0)))
 
             # Only keep tiles that intersect geometry
             gene.add_geom_filter()
 
-        # Discard tiles with certain content
-        if 'empty_tile_detection' in gene.layer \
-                and 'size' in gene.layer['empty_tile_detection'] \
-                and 'hash' in gene.layer['empty_tile_detection']:
-            empty_tile = gene.layer['empty_tile_detection']
-            gene.imap(HashDropper(empty_tile['size'], empty_tile['hash']))
+        if options.role == 'hash':
+            gene.imap(HashLogger('empty_tile_detection', logger))
+        else:
+            # Discard tiles with certain content
+            if 'empty_tile_detection' in gene.layer \
+                    and 'size' in gene.layer['empty_tile_detection'] \
+                    and 'hash' in gene.layer['empty_tile_detection']:
+                empty_tile = gene.layer['empty_tile_detection']
+                gene.imap(HashDropper(empty_tile['size'], empty_tile['hash']))
 
         if options.role == 'slave':
             # read metatile on error
@@ -125,6 +142,7 @@ def _gene(options, gene, layer):
                             gene.layer['metatile_size'])))
             gene.imap(tile_error)
 
+    if options.role in ('local', 'slave'):
         gene.add_error_filters(logger)
 
         cache = gene.caches[options.cache]
@@ -188,6 +206,8 @@ def main():
     parser.add_option('--cache', '--destination-cache',
             default=None, dest='cache',
             help='The cache name to use')
+    parser.add_option('-H', '--get-hash',
+            help='get the empty tiles hash, use the specified tile z/x/y')
     (options, args) = parser.parse_args()
     logging.basicConfig(
         format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
@@ -198,7 +218,8 @@ def main():
 
     gene = TileGeneration(options.config)
 
-    if 'authorised_user' in gene.config['generation'] and \
+    if not options.get_hash and \
+            'authorised_user' in gene.config['generation'] and \
             gene.config['generation']['authorised_user'] != getuser():
         exit('not authorised, authorised user is: %s.' % gene.config['generation']['authorised_user'])
 
