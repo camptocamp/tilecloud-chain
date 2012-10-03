@@ -1,6 +1,5 @@
 - Use tilecloud from an egg
 - Create hash code generator
-- Generate openlayers test page
 - Implement:
     - geodata sync
     - code deploy

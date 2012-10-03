@@ -18,7 +18,6 @@ from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.lib.s3 import S3Connection
 
 from tilecloud_chain import TileGeneration
-from tilecloud_chain.wmts_get_capabilities_template import wmts_get_capabilities_template
 
 
 def main():
@@ -64,6 +63,9 @@ def main():
     parser.add_option('--cost', '--calculate-cost',
             default=False, action="store_true",
             help='Calculate the cost to generate and upload the tiles')
+    parser.add_option('--ol', '--openlayers-test',
+            default=False, action="store_true",
+            help='Generate openlayers test page')
 
     (options, args) = parser.parse_args()
     logging.basicConfig(
@@ -93,6 +95,10 @@ def main():
 
     if options.capabilities:
         _generate_wmts_capabilities(gene, options)
+        sys.exit(0)
+
+    if options.ol:
+        _generate_openlayers(gene, options)
         sys.exit(0)
 
     if options.cost:
@@ -299,7 +305,23 @@ def _calculate_cost(gene, options):
     print 'ESB storage: %0.2f [$/month]' % (gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
 
 
+def _send(data, path, cache):
+    if cache['type'] == 's3':
+        s3bucket = S3Connection().bucket(cache['bucket'])
+        s3key = s3bucket.key(('%(folder)s' % cache) + path)
+        s3key.body = data
+        s3key['Content-Encoding'] = 'utf-8'
+        s3key['Content-Type'] = 'text/xml'
+        s3key.put()
+    else:
+        folder = cache['folder'] or ''
+        f = open(folder + path, 'w')
+        f.write(data)
+        f.close()
+
 def _generate_wmts_capabilities(gene, options):
+    from tilecloud_chain.wmts_get_capabilities_template import wmts_get_capabilities_template
+
     cache = gene.caches[options.cache]
 
     base_url = cache['http_url'] % cache
@@ -310,15 +332,28 @@ def _generate_wmts_capabilities(gene, options):
             gettile=base_url,
             enumerate=enumerate, ceil=math.ceil, int=int)
 
-    if cache['type'] == 's3':
-        s3bucket = S3Connection().bucket(cache['bucket'])
-        s3key = s3bucket.key('%(folder)s/1.0.0/WMTSCapabilities.xml' % cache)
-        s3key.body = capabilities
-        s3key['Content-Encoding'] = 'utf-8'
-        s3key['Content-Type'] = 'text/xml'
-        s3key.put()
-    else:
-        folder = cache['folder'] or ''
-        f = open(folder + '/1.0.0/WMTSCapabilities.xml', 'w')
-        f.write(capabilities)
-        f.close()
+    _send(capabilities, '/1.0.0/WMTSCapabilities.xml', cache)
+
+
+def _generate_openlayers(gene, options):
+    from tilecloud_chain.openlayers_html import openlayers_html
+    from tilecloud_chain.openlayers_js import openlayers_js
+    from tilecloud_chain.openlayers import openlayers
+
+    cache = gene.caches[options.cache]
+
+    base_url = cache['http_url'] % cache
+    js = jinja2_template(openlayers_js,
+            srs=gene.config['openlayers']['srs'],
+            center_x=gene.config['openlayers']['center_x'],
+            center_y=gene.config['openlayers']['center_y'],
+            http_url=cache['http_url'],
+            layers=[{
+                'name': name,
+                'grid': layer.get('output_format', None) == 'grid',
+                'resolution': layer.get('resolution', None),
+            } for name, layer in gene.layers.items() if layer['grid_ref']['srs'] == gene.config['openlayers']['srs']])
+
+    _send(openlayers_html, '/index.html', cache)
+    _send(js, '/wmts.js', cache)
+    _send(openlayers, '/OpenLayers.js', cache)
