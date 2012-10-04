@@ -168,7 +168,7 @@ def _gene(options, gene, layer):
         # store
         if cache['type'] == 's3':
             # on s3
-            gene.put(S3TileStore(gene.metadata['s3_bucket'], layout))
+            gene.put(S3TileStore(cache['bucket'], layout))
         elif cache['type'] == 'filesystem':
             # on filesystem
             gene.put(FilesystemTileStore(layout))
