@@ -45,8 +45,10 @@ def _gene(options, gene, layer):
         if meta:
             gene.set_tilecoords(
                 bounding_pyramid.metatilecoords(gene.layer['meta_size']))
+        if options.zoom:
+            gene.set_tilecoords(bounding_pyramid.ziter(options.zoom))
         else:
-            gene.set_tilecoords(bounding_pyramid.tilecoords())
+            gene.set_tilecoords(bounding_pyramid.ziter())
         gene.add_geom_filter()
 
     elif options.role == 'slave':
@@ -196,6 +198,8 @@ def main():
             help='run as a deamon')
     parser.add_option('-b', '--bbox',
             help='restrict to specified bounding box')
+    parser.add_option('-z', '--zoom-level', type='int',
+            help='restrict to specified zoom level')
     parser.add_option('-l', '--layer',
             help='the layer to generate')
     parser.add_option('-t', '--test', type='int', default=None,
