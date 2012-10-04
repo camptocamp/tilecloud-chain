@@ -29,7 +29,12 @@ def _gene(options, gene, layer):
         options.role = 'hash'
         options.test = 1
 
-    geometry = gene.get_geom(gene.layer['grid_ref']['bbox'])
+    if options.bbox:
+        geometry = gene.get_geom(options.bbox)
+    elif 'bbox' in gene.layer:
+        geometry = gene.get_geom(gene.layer['bbox'])
+    else:
+        geometry = gene.get_geom(gene.layer['grid_ref']['bbox'])
     extent = geometry.bounds
 
     bounding_pyramid = BoundingPyramid(tilegrid=gene.layer['grid_ref']['obj'])

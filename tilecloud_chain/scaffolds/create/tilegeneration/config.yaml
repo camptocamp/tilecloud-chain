@@ -33,6 +33,8 @@ layer_default:
     url: http://${vars:host}/${vars:instanceid}/mapserv
     # file name extension
     extension: png
+    # the bbox there we want to generate tiles
+    #bbox: [493000, 114000, 586000, 204000]
     # mime type used for the WMS request and the WMTS capabilities generation
     mime_type: image/png
     wmts_style: default

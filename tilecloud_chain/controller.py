@@ -204,11 +204,13 @@ def _calculate_cost(gene, options):
     nb_metatiles = {}
     nb_tiles = {}
 
-    geometry = gene.get_geom(gene.layer['grid_ref']['bbox'])
-    if geometry:
-        extent = geometry.bounds
+    if options.bbox:
+        geometry = gene.get_geom(options.bbox)
+    elif 'bbox' in gene.layer:
+        geometry = gene.get_geom(gene.layer['bbox'])
     else:
-        extent = gene.layer['grid_ref']['bbox']
+        geometry = gene.get_geom(gene.layer['grid_ref']['bbox'])
+    extent = geometry.bounds
 
     bounding_pyramid = BoundingPyramid(tilegrid=gene.layer['grid_ref']['obj'])
     bounding_pyramid.fill(None, extent)
