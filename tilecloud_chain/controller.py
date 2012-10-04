@@ -10,7 +10,12 @@ from datetime import timedelta
 from cStringIO import StringIO
 from subprocess import call
 from optparse import OptionParser
-from PIL import Image
+
+try:
+    from PIL import Image
+except:
+    import Image
+
 from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
 from bottle import jinja2_template
 from tilecloud import BoundingPyramid, Tile, TileStore, consume

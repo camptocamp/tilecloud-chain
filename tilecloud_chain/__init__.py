@@ -6,7 +6,11 @@ from itertools import imap, ifilter
 from hashlib import sha1
 from cStringIO import StringIO
 
-from PIL import Image
+try:
+    from PIL import Image
+except:
+    import Image
+
 import psycopg2
 from shapely.wkt import loads as loads_wkt
 from shapely.geometry import Polygon
@@ -168,7 +172,7 @@ class HashLogger(object):  # pragma: no cover
             elif px != ref:
                 self.logger.info("Warning: image is not uniform.")
                 break
-        
+
         self.logger.info("""Tile: %s
     %s:
         size: %i

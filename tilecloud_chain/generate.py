@@ -11,7 +11,6 @@ from tilecloud.store.url import URLTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.filesystem import FilesystemTileStore
 from tilecloud.store.sqs import SQSTileStore
-from tilecloud.store.mapnik_utils import MapnikTileStore
 from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.layout.wmts import WMTSTileLayout
@@ -89,6 +88,8 @@ def _gene(options, gene, layer):
                 ),)
             ))
         elif gene.layer['type'] == 'mapnik':
+            from tilecloud.store.mapnik_utils import MapnikTileStore
+
             if (meta and gene.layer.get('output_format', 'png') == 'grid'):
                 exit("Mapnik/Grid layers don't support metatiles.")
 
