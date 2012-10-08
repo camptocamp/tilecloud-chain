@@ -16,7 +16,7 @@ from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.logger import Logger
 
-from tilecloud_chain import TileGeneration, HashDropper, HashLogger
+from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty
 
 logger = logging.getLogger(__name__)
 
@@ -49,10 +49,10 @@ def _gene(options, gene, layer):
         if meta:
             gene.set_tilecoords(
                 bounding_pyramid.metatilecoords(gene.layer['meta_size']))
-        if options.zoom:
+        if hasattr(options, 'zoom'):
             gene.set_tilecoords(bounding_pyramid.ziter(options.zoom))
         else:
-            gene.set_tilecoords(bounding_pyramid.ziter())
+            gene.set_tilecoords(bounding_pyramid)
         gene.add_geom_filter()
 
     elif options.role == 'slave':
@@ -152,6 +152,7 @@ def _gene(options, gene, layer):
 
     if options.role in ('local', 'slave'):
         gene.add_error_filters(logger)
+        gene.ifilter(DropEmpty())
 
         cache = gene.caches[options.cache]
         # build layout

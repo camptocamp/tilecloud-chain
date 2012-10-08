@@ -223,7 +223,7 @@ def _calculate_cost(gene, options):
     meta = gene.layer.get('meta', False)
     if meta:
         gene.set_tilecoords(bounding_pyramid.metatilecoords(gene.layer['meta_size']))
-    if options.zoom:
+    if hasattr(options, 'zoom'):
         gene.set_tilecoords(bounding_pyramid.ziter(options.zoom))
     else:
         gene.set_tilecoords(bounding_pyramid)

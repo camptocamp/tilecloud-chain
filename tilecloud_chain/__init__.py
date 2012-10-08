@@ -203,3 +203,14 @@ class IntersectGeometryFilter(object):
         return self.bbox_polygon((
                 bounds[0].start, bounds[1].start,
                 bounds[0].stop, bounds[1].stop))
+
+class DropEmpty(object):
+    """
+    Create a filter for dropping all tiles with errors.
+    """
+
+    def __call__(self, tile):
+        if not tile or not tile.data:
+            return None
+        else:
+            return tile
