@@ -4,22 +4,11 @@ import sys
 import math
 import logging
 import ConfigParser
-import urllib2
-import simplejson
 from datetime import timedelta
-from cStringIO import StringIO
 from subprocess import check_output
 from optparse import OptionParser
-
-try:
-    from PIL import Image
-except:
-    import Image
-
-from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
 from bottle import jinja2_template
-from tilecloud import BoundingPyramid, Tile, TileStore, consume
-from tilecloud.store.metatile import MetaTileSplitterTileStore
+from tilecloud import Tile, TileStore, consume
 from tilecloud.lib.s3 import S3Connection
 
 from tilecloud_chain import TileGeneration
@@ -79,7 +68,7 @@ def main():
         format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
         level=logging.INFO if options.test < 0 else logging.DEBUG)
 
-    gene = TileGeneration(options.config, options.layer)
+    gene = TileGeneration(options.config, options, layer_name=options.layer)
 
     if options.status:
         status(options, gene)
@@ -139,13 +128,13 @@ def main():
         arguments = _get_arguments(options)
         project_dir = _get_project_dir(options.deploy_config)
         pids = []
-        for i on range(gene.config['generation'].get('number_process', 1):
+        for i in range(gene.config['generation'].get('number_process', 1)):
             pids.append(run_remote('./buildout/bin/generate_tiles ' +
                 ' '.join(arguments), host, project_dir))
 
         exit_cmds = ['while [ -e /proc/%i ]; do sleep 1; done' % pid for pid in pids]
         exit_cmds.append('sudo shutdown 0')
-        run_remote(';'.join(exit_cmds)); # TODO demonize, send email
+        run_remote(';'.join(exit_cmds))  # TODO demonize, send email
 
 
 def _get_project_dir(deploy_config):
@@ -217,29 +206,14 @@ def status(options, gene):
 
 
 def _calculate_cost(gene, options):
+    # TODO fast calculation based on surface
     nb_metatiles = {}
     nb_tiles = {}
 
-    if options.bbox:
-        geometry = gene.get_geom(options.bbox)
-    elif 'bbox' in gene.layer:
-        geometry = gene.get_geom(gene.layer['bbox'])
-    else:
-        geometry = gene.get_geom(gene.layer['grid_ref']['bbox'])
-    extent = geometry.bounds
-
-    bounding_pyramid = BoundingPyramid(tilegrid=gene.layer['grid_ref']['obj'])
-    bounding_pyramid.fill(None, extent)
-
-    meta = gene.layer.get('meta', False)
-    if meta:
-        gene.set_tilecoords(bounding_pyramid.metatilecoords(gene.layer['meta_size']))
-    if options.zoom:
-        gene.set_tilecoords(bounding_pyramid.ziter(options.zoom))
-    else:
-        gene.set_tilecoords(bounding_pyramid)
+    gene.init_tilecoords(options)
     gene.add_geom_filter()
 
+    meta = gene.layer.get('meta', False)
     if meta:
         def count_metatile(tile):
             if tile:
@@ -319,11 +293,13 @@ def _calculate_cost(gene, options):
     print 'S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))
     print 'S3 get: %0.2f [$/month]' % (
         gene.config['cost']['s3']['get'] * gene.config['cost']['request'] / 10000.0 +
-        gene.config['cost']['s3']['download'] * gene.config['cost']['request'] * gene.config['cost']['tile_size'] / (1024.0 * 1024))
+        gene.config['cost']['s3']['download'] * gene.config['cost']['request'] *
+        gene.config['cost']['tile_size'] / (1024.0 * 1024))
     if 'cloudfront' in gene.config['cost']:
         print 'CloudFront: %0.2f [$/month]' % (
             gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request'] / 10000.0 +
-            gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request'] * gene.config['cost']['tile_size'] / (1024.0 * 1024))
+            gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request'] *
+            gene.config['cost']['tile_size'] / (1024.0 * 1024))
     print 'ESB storage: %0.2f [$/month]' % (gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
 
 
@@ -340,6 +316,7 @@ def _send(data, path, cache):
         f = open(folder + path, 'w')
         f.write(data)
         f.close()
+
 
 def _generate_wmts_capabilities(gene, options):
     from tilecloud_chain.wmts_get_capabilities_template import wmts_get_capabilities_template
@@ -364,12 +341,11 @@ def _generate_openlayers(gene, options):
 
     cache = gene.caches[options.cache]
 
-    base_url = cache['http_url'] % cache
     js = jinja2_template(openlayers_js,
             srs=gene.config['openlayers']['srs'],
             center_x=gene.config['openlayers']['center_x'],
             center_y=gene.config['openlayers']['center_y'],
-            http_url=cache['http_url'],
+            http_url=cache['http_url'] % cache,
             layers=[{
                 'name': name,
                 'grid': layer.get('output_format', None) == 'grid',

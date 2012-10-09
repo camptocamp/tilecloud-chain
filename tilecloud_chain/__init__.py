@@ -19,7 +19,7 @@ from shapely.geometry import Polygon
 import boto.sqs
 from boto.sqs.jsonmessage import JSONMessage
 
-from tilecloud import Tile
+from tilecloud import Tile, BoundingPyramid
 from tilecloud.grid.free import FreeTileGrid
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors, DropErrors
 
@@ -27,7 +27,7 @@ from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors, DropErro
 class TileGeneration:
     geom = None
 
-    def __init__(self, config_file, layer_name=None):
+    def __init__(self, config_file, options, layer_name=None):
         self.config = yaml.load(file(config_file))
 
         self.grids = self.config['grids']
@@ -55,13 +55,23 @@ class TileGeneration:
 
         self.layer = None
         if layer_name:
-            self.layer = self.layers[layer_name]
+            self.set_layer(layer_name, options)
 
         self.caches = self.config['caches']
 
 #        self.pool = None
 #        if 'number_process' in self.config['generation']:
 #            self.pool = Pool(self.config['generation']['number_process'])
+
+    def set_layer(self, layer, options):
+        self.layer = self.layers[layer]
+
+        if options.bbox:
+            self.init_geom(options.bbox)
+        elif 'bbox' in self.layer:
+            self.init_geom(self.layer['bbox'])
+        else:
+            self.init_geom(self.layer['grid_ref']['bbox'])
 
     def get_grid(self, name=None):
         if not name:
@@ -76,33 +86,27 @@ class TileGeneration:
         queue.set_message_class(JSONMessage)
         return queue
 
-    def get_geom(self, extent=None):
-        if not self.geom:
-            geom = None
-            if 'connection' in self.layer and 'sql' in self.layer:
-                conn = psycopg2.connect(self.layer['connection'])
-                cursor = conn.cursor()
-                cursor.execute("SELECT ST_AsText((SELECT " +
-                    self.layer['sql'].strip('" ') + "))")
-                geom = loads_wkt(cursor.fetchone()[0])
-            elif extent:
-                geom = Polygon((
-                        (extent[0], extent[1]),
-                        (extent[0], extent[3]),
-                        (extent[2], extent[3]),
-                        (extent[2], extent[1]),
-                    ))
-            self.geom = geom
-        return self.geom
+    def init_geom(self, extent=None):
+        self.geom = None
+        if 'connection' in self.layer and 'sql' in self.layer:
+            conn = psycopg2.connect(self.layer['connection'])
+            cursor = conn.cursor()
+            cursor.execute("SELECT ST_AsText((SELECT " +
+                self.layer['sql'].strip('" ') + "))")
+            self.geom = loads_wkt(cursor.fetchone()[0])
+        elif extent:
+            self.geom = Polygon((
+                    (extent[0], extent[1]),
+                    (extent[0], extent[3]),
+                    (extent[2], extent[3]),
+                    (extent[2], extent[1]),
+                ))
 
     def add_geom_filter(self):
-        # gets the geom on with one we should generate tiles
-        geom = self.get_geom()
-
-        if geom:
+        if self.geom:
             self.ifilter(IntersectGeometryFilter(
                     grid=self.get_grid(),
-                    geom=geom))
+                    geom=self.geom))
 
     def add_error_filters(self, logger):
         self.imap(LogErrors(logger, logging.ERROR,
@@ -111,6 +115,18 @@ class TileGeneration:
             self.imap(MaximumConsecutiveErrors(
                     self.config['generation']['maxconsecutive_errors']))
         self.ifilter(DropErrors())
+
+    def init_tilecoords(self, options):
+        bounding_pyramid = BoundingPyramid(tilegrid=self.layer['grid_ref']['obj'])
+        bounding_pyramid.fill(None, self.geom.bounds)
+
+        meta = self.layer.get('meta', False)
+        if meta:
+            self.set_tilecoords(bounding_pyramid.metatilecoords(self.layer['meta_size']))
+        if options.zoom:
+            self.set_tilecoords(bounding_pyramid.ziter(options.zoom))
+        else:
+            self.set_tilecoords(bounding_pyramid)
 
     def set_tilecoords(self, tilecoords):
         self.tilestream = (
@@ -234,6 +250,7 @@ class IntersectGeometryFilter(object):
         return self.bbox_polygon((
                 bounds[0].start, bounds[1].start,
                 bounds[0].stop, bounds[1].stop))
+
 
 class DropEmpty(object):
     """

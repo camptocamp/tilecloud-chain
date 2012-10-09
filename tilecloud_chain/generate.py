@@ -6,7 +6,7 @@ import logging
 from getpass import getuser
 from optparse import OptionParser
 
-from tilecloud import BoundingPyramid, Tile, TileCoord, consume
+from tilecloud import Tile, TileCoord, consume
 from tilecloud.store.url import URLTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.filesystem import FilesystemTileStore
@@ -22,22 +22,11 @@ logger = logging.getLogger(__name__)
 
 
 def _gene(options, gene, layer):
-    gene.layer = gene.layers[layer]
+    gene.set_layer(layer, options)
 
     if options.get_hash:
         options.role = 'hash'
         options.test = 1
-
-    if options.bbox:
-        geometry = gene.get_geom(options.bbox)
-    elif 'bbox' in gene.layer:
-        geometry = gene.get_geom(gene.layer['bbox'])
-    else:
-        geometry = gene.get_geom(gene.layer['grid_ref']['bbox'])
-    extent = geometry.bounds
-
-    bounding_pyramid = BoundingPyramid(tilegrid=gene.layer['grid_ref']['obj'])
-    bounding_pyramid.fill(None, extent)
 
     if options.role in ('master', 'slave'):
         # Create SQS queue
@@ -46,14 +35,7 @@ def _gene(options, gene, layer):
     meta = gene.layer.get('meta', False)
     if options.role in ('local', 'master'):
         # Generate a stream of metatiles
-        if meta:
-            gene.set_tilecoords(
-                bounding_pyramid.metatilecoords(gene.layer['meta_size']))
-        if options.zoom:
-            print options.zoom
-            gene.set_tilecoords(bounding_pyramid.ziter(options.zoom))
-        else:
-            gene.set_tilecoords(bounding_pyramid)
+        gene.init_tilecoords(options)
         gene.add_geom_filter()
 
     elif options.role == 'slave':
@@ -231,7 +213,7 @@ def main():
     if options.daemonize:
         print "Daemonize with pid %i." % daemonize()
 
-    gene = TileGeneration(options.config)
+    gene = TileGeneration(options.config, options)
 
     if not options.get_hash and \
             'authorised_user' in gene.config['generation'] and \
