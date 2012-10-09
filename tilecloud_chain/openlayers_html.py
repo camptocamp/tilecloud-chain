@@ -14,6 +14,7 @@ openlayers_html = """<!DOCTYPE html>
         }
         #attrs {
             position: absolute;
+            zindex: 1000;
             bottom: 1em;
             left: 1em;
         }
@@ -21,7 +22,7 @@ openlayers_html = """<!DOCTYPE html>
 </head>
 <body>
     <div id="map">
-        <div id="attrs">hi</div>
+        <div id="attrs"></div>
     </div>
     <script src="OpenLayers.js"></script>
     <script src="wmts.js"></script>
