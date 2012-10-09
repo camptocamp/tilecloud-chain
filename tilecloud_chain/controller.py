@@ -114,12 +114,13 @@ def main():
 
     # start aws
     if not options.host:
-        # not imlpemented yet
+        # TODO not imlpemented yet
         host = aws_start(gene.metadata['aws']['host_type'])
     else:
         host = options.host
 
     if options.sync:
+        # TODO test
         # sync geodata
         run_local("rsync %(folder)s rsync://%(host):%(folder)s" % {
             'folder': gene.config['forge']['geodata_folder'],
@@ -130,10 +131,11 @@ def main():
 
     if options.deploy_code or options.deploy_database \
             or options.sync:
-        # not imlpemented yet
+        # TODO not imlpemented yet
         create_snapshot(host, gene.metadata['aws'])
 
     if options.fill_queue or options.tiles_gen:
+        # TODO test
         arguments = _get_arguments(options)
         project_dir = _get_project_dir(options.deploy_config)
         pids = []
@@ -153,6 +155,7 @@ def _get_project_dir(deploy_config):
 
 
 def _deploy(options, host):
+    # TODO test
     components = ""
     if options.deploy_code and not options.deploy_database:
         components = "--components=[code]"
@@ -174,17 +177,19 @@ def _get_arguments(options):
     ]
     if options.bbox:
         arguments.extend(["--bbox", options.bbox])
+    if options.zoom:
+        arguments.extend(["--zoom-level", options.zoom])
     if options.test:
         arguments.extend(["--test", options.test])
     return arguments
 
 
 def create_snapshot(host, config):
-    pass
+    pass  # TODO
 
 
 def aws_start(host_type):
-    pass
+    pass  # TODO
 
 
 def run_local(cmd):

@@ -9,3 +9,4 @@
 - Add Rendering the world mode
 - Add Mapscript store
 - For MapNik add generate all layers attributes
+- Add metrics as decorators
