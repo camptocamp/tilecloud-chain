@@ -5,7 +5,7 @@ import yaml
 from itertools import imap, ifilter
 from hashlib import sha1
 from cStringIO import StringIO
-from multiprocessing import Pool
+#from multiprocessing import Pool
 from multiprocessing.pool import ApplyResult
 
 try:
@@ -59,9 +59,9 @@ class TileGeneration:
 
         self.caches = self.config['caches']
 
-        self.pool = None
-        if 'number_process' in self.config['generation']:
-            self.pool = Pool(self.config['generation']['number_process'])
+#        self.pool = None
+#        if 'number_process' in self.config['generation']:
+#            self.pool = Pool(self.config['generation']['number_process'])
 
     def get_grid(self, name=None):
         if not name:
@@ -126,13 +126,13 @@ class TileGeneration:
         return tile.get()
 
     def get(self, store, multiprocess=False):
-        if multiprocess and self.pool:
-            results = (self.pool.apply_async(Get(store), [t]) for t in self.tilestream)
+#        if multiprocess and self.pool:
+#            results = (self.pool.apply_async(Get(store), [t]) for t in self.tilestream)
 #            async_results = (self.pool.apply_async(store.get_one, (t,)) for t in self.tilestream)
 #            self.tilestream = imap(ApplyResult.wait, results)
-            self.tilestream = imap(ApplyResult.get, results)
+#            self.tilestream = imap(ApplyResult.get, results)
 #            self.tilestream = imap(self._wait, results)
-        else:
+#        else:
             self.tilestream = store.get(self.tilestream)
 
     def put(self, store, multiprocess=False):
