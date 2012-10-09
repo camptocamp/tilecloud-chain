@@ -24,12 +24,35 @@
             <TextSymbolizer size="12" fill="#000000" fontset-name="book-fonts" halo-radius="1" wrap-width="20" placement="interior">[name]</TextSymbolizer>
         </Rule>
     </Style>
+    <Style name="netzkarte_point">
+        <Rule>
+            <PointSymbolizer file="circle.svg" width="12" height="12" type="svg" />
+        </Rule>
+    </Style>
     <Layer name="verbund">
         <StyleName>verbund</StyleName>
         <StyleName>verbund-txt</StyleName>
         <Datasource>
             <Parameter name="table">
-                (SELECT geom, name, kantone, verbund1, verbund2, verbund3, verbund4 from webapp.verbund_map) AS verbund
+                (SELECT geom, name, kantone, verbund1, verbund2, verbund3, verbund4 FROM webapp.verbund_map) AS verbund
+            </Parameter>
+            <Parameter name="geometry_field">geom</Parameter>
+            <Parameter name="srid">21781</Parameter>
+            <Parameter name="type">postgis</Parameter>
+            <Parameter name="dbname">sbbgeoportal_c2c</Parameter>
+            <Parameter name="host">pgcluster0t.bgdi.admin.ch</Parameter>
+            <Parameter name="port">5432</Parameter>
+            <Parameter name="user">www-data</Parameter>
+            <Parameter name="password">www-data</Parameter>
+            <Parameter name="estimate_extent">false</Parameter>
+            <Parameter name="extent">420000, 30000, 900000, 350000</Parameter>
+        </Datasource>
+    </Layer>
+    <Layer name="netzkarte_point">
+        <StyleName>netzkarte_point</StyleName>
+        <Datasource>
+            <Parameter name="table">
+                (SELECT geom, name, url_a4, url_poster, url_shopping FROM webapp.netzkarte_point) AS netzkarte_point
             </Parameter>
             <Parameter name="geometry_field">geom</Parameter>
             <Parameter name="srid">21781</Parameter>
