@@ -30,7 +30,7 @@ layer_default:
     grid: swissgrid
     type: wms
     # the URL of the WMS server to used
-    url: http://${vars:host}/${vars:instanceid}/mapserv
+    url: http://wms.geo.admin.ch/
     # file name extension
     extension: png
     # the bbox there we want to generate tiles
@@ -66,7 +66,7 @@ layer_default:
 
 layers:
     plan:
-        layers: plan
+        layers: ch.swisstopo.geologie-geotechnik-gk500-lithologie_hauptgruppen
     plan_color:
         layers: plan_color
     ortho:

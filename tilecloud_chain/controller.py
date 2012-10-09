@@ -8,7 +8,7 @@ import urllib2
 import simplejson
 from datetime import timedelta
 from cStringIO import StringIO
-from subprocess import call
+from subprocess import check_output
 from optparse import OptionParser
 
 try:
@@ -136,8 +136,14 @@ def main():
     if options.fill_queue or options.tiles_gen:
         arguments = _get_arguments(options)
         project_dir = _get_project_dir(options.deploy_config)
-        run_remote('./buildout/bin/generate_tiles ' +
-            ' '.join(arguments), host, project_dir)
+        pids = []
+        for i on range(gene.config['generation'].get('number_process', 1):
+            pids.append(run_remote('./buildout/bin/generate_tiles ' +
+                ' '.join(arguments), host, project_dir))
+
+        exit_cmds = ['while [ -e /proc/%i ]; do sleep 1; done' % pid for pid in pids]
+        exit_cmds.append('sudo shutdown 0')
+        run_remote(';'.join(exit_cmds)); # TODO demonize, send email
 
 
 def _get_project_dir(deploy_config):
@@ -182,11 +188,11 @@ def aws_start(host_type):
 
 
 def run_local(cmd):
-    call("sudo -u deploy " + cmd, shell=True)
+    return check_output("sudo -u deploy " + cmd, shell=True)
 
 
 def run_remote(cmd, host, project_dir):
-    call(
+    return check_output(
         "ssh -f deploy@%(host)s 'cd %(project_dir)s; %(cmd)s'" % {
             'host': host, 'cmd': cmd, 'project_dir': project_dir},
         shell=True)

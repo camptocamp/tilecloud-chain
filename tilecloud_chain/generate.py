@@ -87,7 +87,7 @@ def _gene(options, gene, layer):
                     border=(gene.layer.get('meta_buffer', 0) if meta else 0),
                     tilegrid=gene.get_grid()['obj']
                 ),)
-            ))
+            ), True)
         elif gene.layer['type'] == 'mapnik':
             from tilecloud.store.mapnik_utils import MapnikTileStore
 
@@ -102,7 +102,7 @@ def _gene(options, gene, layer):
                 output_format=gene.layer.get('output_format', 'png'),
                 resolution=gene.layer.get('resolution', 4),
                 layers_fields=gene.layer.get('layers_fields', {})
-            ))
+            ), False)
 
         if options.role == 'slave':
             # Mark the metatile as done
@@ -128,7 +128,7 @@ def _gene(options, gene, layer):
             gene.get(MetaTileSplitterTileStore(
                     gene.layer['mime_type'],
                     gene.layer['grid_ref'].get('tile_size', 256),
-                    gene.layer.get('meta_buffer', 0)))
+                    gene.layer.get('meta_buffer', 0)), True)
 
             # Only keep tiles that intersect geometry
             gene.add_geom_filter()
@@ -152,6 +152,9 @@ def _gene(options, gene, layer):
             gene.imap(tile_error)
 
     if options.role in ('local', 'slave'):
+        if options.test > 0:
+            gene.imap(Logger(logger, logging.DEBUG, '%(tilecoord)s'))
+
         gene.add_error_filters(logger)
         gene.ifilter(DropEmpty())
 
@@ -170,7 +173,7 @@ def _gene(options, gene, layer):
         # store
         if cache['type'] == 's3':
             # on s3
-            gene.put(S3TileStore(cache['bucket'], layout))
+            gene.put(S3TileStore(cache['bucket'], layout), True)
         elif cache['type'] == 'filesystem':
             # on filesystem
             gene.put(FilesystemTileStore(layout))
