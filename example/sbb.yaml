@@ -57,9 +57,10 @@ layers:
 
 generation:
     default_cache: local
-    default_layers: [grid]
+    default_layers: [mapnik, grid]
  #   authorised_user: www-data
     maxconsecutive_errors: 10
+    number_process: 8
 
 openlayers:
     srs: EPSG:21781
