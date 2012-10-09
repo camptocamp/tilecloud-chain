@@ -49,7 +49,8 @@ def _gene(options, gene, layer):
         if meta:
             gene.set_tilecoords(
                 bounding_pyramid.metatilecoords(gene.layer['meta_size']))
-        if hasattr(options, 'zoom'):
+        if options.zoom:
+            print options.zoom
             gene.set_tilecoords(bounding_pyramid.ziter(options.zoom))
         else:
             gene.set_tilecoords(bounding_pyramid)
@@ -205,7 +206,7 @@ def main():
             help='run as a deamon')
     parser.add_option('-b', '--bbox',
             help='restrict to specified bounding box')
-    parser.add_option('-z', '--zoom-level', type='int',
+    parser.add_option('-z', '--zoom-level', type='int', dest='zoom',
             help='restrict to specified zoom level')
     parser.add_option('-l', '--layer',
             help='the layer to generate')

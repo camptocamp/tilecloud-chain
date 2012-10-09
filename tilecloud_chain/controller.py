@@ -35,7 +35,7 @@ def main():
             help='path to the deploy configuration file')
     parser.add_option('-b', '--bbox',
             help='restrict to specified bounding box')
-    parser.add_option('-z', '--zoom-level', type='int',
+    parser.add_option('-z', '--zoom-level', type='int', dest='zoom',
             help='restrict to specified zoom level')
     parser.add_option('-l', '--layer',
             help='the layer to generate')
@@ -223,7 +223,7 @@ def _calculate_cost(gene, options):
     meta = gene.layer.get('meta', False)
     if meta:
         gene.set_tilecoords(bounding_pyramid.metatilecoords(gene.layer['meta_size']))
-    if hasattr(options, 'zoom'):
+    if options.zoom:
         gene.set_tilecoords(bounding_pyramid.ziter(options.zoom))
     else:
         gene.set_tilecoords(bounding_pyramid)
