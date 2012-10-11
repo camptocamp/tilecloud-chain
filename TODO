@@ -16,7 +16,7 @@
   http://code.activestate.com/recipes/576519-thread-pool-with-same-api-as-multiprocessingpool/
   http://stackoverflow.com/questions/4814970/subprocess-check-output-doesnt-seem-to-exist-python-2-6-5
 - Implements --cost without --layer (move to generate tiles ?)
-- Add pissibility to measue generation time
+- Add possibility to measue generation time
 - Catch all errors
 - Add safe metatile by adding a counter
 - Use metavar in help

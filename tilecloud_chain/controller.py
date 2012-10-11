@@ -267,7 +267,7 @@ def _calculate_cost(gene, options):
 
         all_time += time
         td = timedelta(milliseconds=time)
-        print "Time to generate: %d %d:%02d [d h:m]" % (td.days, td.seconds / 3600, td.seconds % 3600 / 60)
+        print "Time to generate: %d %d:%02d:%02d [d h:mn:ss]" % (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
         c = gene.config['cost']['s3']['put'] * nb_tiles[z] / 1000.0
         price += c
         print 'S3 PUT: %0.2f [$]' % c
@@ -287,7 +287,7 @@ def _calculate_cost(gene, options):
 
     print
     td = timedelta(milliseconds=all_time)
-    print 'Total generation time : %d %d:%02d [d h:m]' % (td.days, td.seconds / 3600, td.seconds % 3600 / 60)
+    print 'Total generation time : %d %d:%02d:%02d [d h:mm:ss]' % (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
     print 'Total generation cost : %0.2f [$]' % price
     print
     print 'S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))
