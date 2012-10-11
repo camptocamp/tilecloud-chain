@@ -18,9 +18,9 @@
 - Implements --cost without --layer (move to generate tiles ?)
 - Add pissibility to measue generation time
 - Catch all errors
-- Add segonds to time
 - Add safe metatile by adding a counter
 - Use metavar in help
+- Adds tests
 
 TileCloud
 - Fix wmts layout without url
