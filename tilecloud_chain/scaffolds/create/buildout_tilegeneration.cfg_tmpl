@@ -1,0 +1,8 @@
+[buildout]
+extends = CONST_buildout.cfg
+
+[vars]
+# instance id
+instanceid = {{project}}
+# Name of the server hosting the application
+host = localhost

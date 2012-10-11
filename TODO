@@ -10,7 +10,6 @@
 - Add Mapscript store
 - For MapNik add generate all layers attributes
 - Add metrics as decorators
-- Bootstrap on deploy
 - Multithread
   try: http://stackoverflow.com/questions/6039150/python-multiple-simultaneous-threadpools
   http://stackoverflow.com/questions/3033952/python-thread-pool-similar-to-the-multiprocessing-pool
