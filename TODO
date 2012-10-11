@@ -19,7 +19,6 @@
 - Add possibility to measue generation time
 - Catch all errors
 - Add safe metatile by adding a counter
-- Use metavar in help
 - Adds tests
 
 TileCloud

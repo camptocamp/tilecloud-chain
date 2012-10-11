@@ -119,6 +119,8 @@ generation:
     # geodata folder to sync with the tile worker, not already implemented
     geodata_folder: /var/sig/package
 
+    deploy_config: tilegeneration/deploy.cfg
+
     # disable geodata sync, not already implemented [optional, default to no]
     disable_sync: no
     # disable code deploy, not already implemented [optional, default to no]

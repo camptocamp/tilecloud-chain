@@ -16,51 +16,40 @@ from tilecloud_chain import TileGeneration
 
 def main():
     parser = OptionParser(
-        'Used to generete the tiles present in the SQS queue')
+        'Used to generate the tiles from a WMS or Mapnik, to WMST on filsystem or S3, optionaly use an SQS queue')
     parser.add_option('-c', '--config', default='tilegeneration/config.yaml',
-            help='path to the configuration file')
-    parser.add_option('-d', '--deploy-config',
-            default=None, dest="deploy_config",
+            help='path to the configuration file', metavar="FILE")
+    parser.add_option('--deploy-config', default=None, dest="deploy_config", metavar="FILE",
             help='path to the deploy configuration file')
     parser.add_option('-b', '--bbox',
             help='restrict to specified bounding box')
     parser.add_option('-z', '--zoom-level', type='int', dest='zoom',
-            help='restrict to specified zoom level')
-    parser.add_option('-l', '--layer',
+            help='restrict to specified zoom level', metavar="ZOOM")
+    parser.add_option('-l', '--layer', metavar="NAME",
             help='the layer to generate')
-    parser.add_option('-t', '--test', type='int', default=None,
-            help='test with generating TEST tiles, and add log messages')
-    parser.add_option('-s', '--status', default=False,
-            action="store_true",
+    parser.add_option('-t', '--test', type='int', default=None, metavar="N",
+            help='test with generating N tiles, and add log messages')
+    parser.add_option('-s', '--status', default=False, action="store_true",
             help='display status and exit')
-    parser.add_option('-S', '--disable-sync', default=True,
-            action="store_false", dest="sync",
+    parser.add_option('--disable-sync', default=True, action="store_false", dest="sync",
             help='disable geodata synchronisation')
-    parser.add_option('-C', '--disable-code', default=True,
-            action="store_false", dest="deploy_code",
+    parser.add_option('--disable-code', default=True, action="store_false", dest="deploy_code",
             help='disable deploy application code')
-    parser.add_option('-D', '--disable-database', default=True,
-            action="store_false", dest="deploy_database",
+    parser.add_option('--disable-database', default=True, action="store_false", dest="deploy_database",
             help='disable deploy database')
-    parser.add_option('-Q', '--disable-fillqueue', default=True,
-            action="store_false", dest="fill_queue",
+    parser.add_option('--disable-fillqueue', default=True, action="store_false", dest="fill_queue",
             help='disable queue filling')
-    parser.add_option('-T', '--disable-tilesgen', default=True,
-            action="store_false", dest="tiles_gen",
+    parser.add_option('--disable-tilesgen', default=True, action="store_false", dest="tiles_gen",
             help='disable tile generation')
     parser.add_option('-H', '--host', default=None,
             help='The host used to generate tiles')
-    parser.add_option('--cache', '--destination-cache',
-            default=None, dest='cache',
+    parser.add_option('--destination-cache', dest='cache', metavar="NAME",
             help='The cache name to use, default to main')
-    parser.add_option('--capabilities', '--generate_wmts_capabilities',
-            default=False, action="store_true",
+    parser.add_option('--capabilities', '--generate_wmts_capabilities', default=False, action="store_true",
             help='Generate the WMTS Capabilities and exit')
-    parser.add_option('--cost', '--calculate-cost',
-            default=False, action="store_true",
+    parser.add_option('--cost', '--calculate-cost', default=False, action="store_true",
             help='Calculate the cost to generate and upload the tiles')
-    parser.add_option('--ol', '--openlayers-test',
-            default=False, action="store_true",
+    parser.add_option('--ol', '--openlayers-test', default=False, action="store_true",
             help='Generate openlayers test page')
 
     (options, args) = parser.parse_args()
@@ -76,18 +65,18 @@ def main():
 
     if options.cache is None:
         options.cache = gene.config['generation']['default_cache']
-    if options.deploy_config is None and 'deploy_config' in gene.config['generation']:
-        options.deploy_config = gene.config['generation']['deploy_config']
-    if options.sync and 'disable_sync' in gene.config['generation']:
-        options.sync = not gene.config['generation']['disable_sync']
-    if options.sync and 'disable_database' in gene.config['generation']:
-        options.sync = not gene.config['generation']['disable_database']
-    if options.sync and 'disable_fillqueue' in gene.config['generation']:
-        options.sync = not gene.config['generation']['disable_fillqueue']
-    if options.sync and 'disable_fillqueue' in gene.config['generation']:
-        options.sync = not gene.config['generation']['disable_fillqueue']
-    if options.sync and 'disable_tilesgen' in gene.config['generation']:
-        options.sync = not gene.config['generation']['disable_tilesgen']
+    if options.deploy_config is None:
+        options.deploy_config = gene.config['generation'].get('deploy_config', 'tilegeneration/deploy.cfg')
+    if options.sync:
+        options.sync = not gene.config['generation'].get('disable_sync', False)
+    if options.deploy_code:
+        options.deploy_code = not gene.config['generation'].get('disable_deploycode', False)
+    if options.deploy_database:
+        options.deploy_database = not gene.config['generation'].get('disable_database', False)
+    if options.fill_queue:
+        options.fill_queue = not gene.config['generation'].get('disable_fillqueue', False)
+    if options.tiles_gen:
+        options.tiles_gen = not gene.config['generation'].get('disable_tilesgen', False)
 
     if options.capabilities:
         _generate_wmts_capabilities(gene, options)
