@@ -166,7 +166,7 @@ def _get_arguments(options):
     ]
     if options.bbox:
         arguments.extend(["--bbox", options.bbox])
-    if options.zoom:
+    if options.zoom or option.zoom == 0:
         arguments.extend(["--zoom-level", options.zoom])
     if options.test:
         arguments.extend(["--test", options.test])

@@ -124,8 +124,21 @@ class TileGeneration:
 
         meta = self.layer.get('meta', False)
         if meta:
-            self.set_tilecoords(bounding_pyramid.metatilecoords(self.layer['meta_size']))
-        if options.zoom:
+            if option.zoom or option.zoom == 0:
+                def metatilecoords(n, z):
+                    xbounds, ybounds = bounding_pyramid.bounds[z]
+                    metatilecoord = TileCoord(z, xbounds.start, ybounds.start).metatilecoord(n)
+                    x = metatilecoord.x
+                    while x < xbounds.stop:
+                        y = metatilecoord.y
+                        while y < ybounds.stop:
+                            yield TileCoord(z, x, y, n)
+                            y += n
+                        x += n
+                self.set_tilecoords(metatilecoords(self.layer['meta_size'], option.zoom))
+            else:
+                self.set_tilecoords(bounding_pyramid.metatilecoords(self.layer['meta_size']))
+        elif options.zoom or option.zoom == 0:
             self.set_tilecoords(bounding_pyramid.ziter(options.zoom))
         else:
             self.set_tilecoords(bounding_pyramid)
