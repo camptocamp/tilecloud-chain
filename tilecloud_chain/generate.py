@@ -112,8 +112,9 @@ def _gene(options, gene, layer):
                     gene.layer['grid_ref'].get('tile_size', 256),
                     gene.layer.get('meta_buffer', 0)), True)
 
-            # Only keep tiles that intersect geometry
-            gene.add_geom_filter()
+            if options.role != 'hash':
+                # Only keep tiles that intersect geometry
+                gene.add_geom_filter()
 
         if options.role == 'hash':
             gene.imap(HashLogger('empty_tile_detection', logger))
