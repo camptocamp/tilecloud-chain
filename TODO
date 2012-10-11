@@ -10,3 +10,18 @@
 - Add Mapscript store
 - For MapNik add generate all layers attributes
 - Add metrics as decorators
+- Bootstrap on deploy
+- Multithread
+  try: http://stackoverflow.com/questions/6039150/python-multiple-simultaneous-threadpools
+  http://stackoverflow.com/questions/3033952/python-thread-pool-similar-to-the-multiprocessing-pool
+  http://code.activestate.com/recipes/576519-thread-pool-with-same-api-as-multiprocessingpool/
+  http://stackoverflow.com/questions/4814970/subprocess-check-output-doesnt-seem-to-exist-python-2-6-5
+- Implements --cost without --layer (move to generate tiles ?)
+- Add pissibility to measue generation time
+- Catch all errors
+- Add segonds to time
+- Add safe metatile by adding a counter
+- Use metavar in help
+
+TileCloud
+- Fix wmts layout without url
