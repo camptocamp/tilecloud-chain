@@ -19,7 +19,7 @@
 - Add possibility to measue generation time
 - Catch all errors
 - Add safe metatile by adding a counter
-- Adds tests
+- Add tests
 
 TileCloud
 - Fix wmts layout without url

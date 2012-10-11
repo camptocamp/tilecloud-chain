@@ -5,7 +5,7 @@ import math
 import logging
 import ConfigParser
 from datetime import timedelta
-from subprocess import check_output
+from subprocess import Popen, PIPE
 from optparse import OptionParser
 from bottle import jinja2_template
 from tilecloud import Tile, TileStore, consume
@@ -171,14 +171,14 @@ def aws_start(host_type):
 
 
 def run_local(cmd):
-    return check_output("sudo -u deploy " + cmd, shell=True)
+    # TODO test
+    return Popen(['sudo', '-u', 'deploy'].extend(cmd.split(' ')), stdout=PIPE).communicate()[0]
 
 
 def run_remote(cmd, host, project_dir):
-    return check_output(
-        "ssh -f deploy@%(host)s 'cd %(project_dir)s; %(cmd)s'" % {
-            'host': host, 'cmd': cmd, 'project_dir': project_dir},
-        shell=True)
+    # TODO test
+    return Popen(['ssh', '-f', 'deploy@%s' % host, 'cd %(project_dir)s; %(cmd)s' % {
+            'cmd': cmd, 'project_dir': project_dir}], stdout=PIPE).communicate()[0]
 
 
 def status(options, gene):
