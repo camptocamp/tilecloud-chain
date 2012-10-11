@@ -71,7 +71,7 @@ def _gene(options, gene, layer):
                 ),)
             ), True)
         elif gene.layer['type'] == 'mapnik':
-            from tilecloud.store.mapnik_utils import MapnikTileStore
+            from tilecloud.store.mapnik_ import MapnikTileStore
 
             if (meta and gene.layer.get('output_format', 'png') == 'grid'):
                 exit("Mapnik/Grid layers don't support metatiles.")
