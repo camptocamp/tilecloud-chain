@@ -20,7 +20,7 @@ caches:
 layer_default:
     grid: swissgrid
     type: mapnik
-    mapfile: example/sbb_verbund.mapnik
+    mapfile: tilegeneration/sbb.mapnik
     url: http://dev.regiogis-beo.ch/main/wsgi/mapserv_proxy # ${mapserv_url}
     wmts_style: default
     dimensions:
