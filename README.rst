@@ -1,6 +1,30 @@
 TileCloud Chain
 ===============
 
+The goal of TileCloud Chain is to have tools around tile generation on a chain like:
+
+Source: WMS, Mapnik, and probably in future MapScript.
+
+Optionaly use an SQS queue.
+
+Destination in WMTS layout, on localhost or on S3.
+
+Feature:
+
+- Generate tiles.
+- Drop empty tiles.
+- Drop tiles outside a geometry or a bbox.
+- Use MetaTiles
+- Generate GetCapabilities.
+- Generate OpenLayers example page.
+- Obtain the hash of an empty tile
+- In future, measure tile generation speed
+- Calculate cost and generation time.
+- In future, manage the AWG hosts that generate tiles.
+
+Main issue:
+- It don't delete existing empty tile.
+
 Use it
 ------
 

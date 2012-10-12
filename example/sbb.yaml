@@ -32,7 +32,7 @@ layer_default:
     meta_size: 8
     meta_buffer: 0
     data_buffer: 128
-    connection: user=www-data password=www-data dbname=sbbgeoportal_c2c host=pgcluster0t.bgdi.admin.ch
+    connection: user=www-data password=www-data dbname=sbbgeoportal_c2c host=host
     sql: ST_Union(ST_Buffer(geom, 100, 2)) FROM webapp.verbund_map
 
 layers:

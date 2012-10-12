@@ -40,7 +40,7 @@
             <Parameter name="srid">21781</Parameter>
             <Parameter name="type">postgis</Parameter>
             <Parameter name="dbname">sbbgeoportal_c2c</Parameter>
-            <Parameter name="host">pgcluster0t.bgdi.admin.ch</Parameter>
+            <Parameter name="host">host</Parameter>
             <Parameter name="port">5432</Parameter>
             <Parameter name="user">www-data</Parameter>
             <Parameter name="password">www-data</Parameter>
@@ -58,7 +58,7 @@
             <Parameter name="srid">21781</Parameter>
             <Parameter name="type">postgis</Parameter>
             <Parameter name="dbname">sbbgeoportal_c2c</Parameter>
-            <Parameter name="host">pgcluster0t.bgdi.admin.ch</Parameter>
+            <Parameter name="host">host</Parameter>
             <Parameter name="port">5432</Parameter>
             <Parameter name="user">www-data</Parameter>
             <Parameter name="password">www-data</Parameter>
