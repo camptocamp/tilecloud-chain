@@ -90,7 +90,37 @@ def main():
         sys.exit(0)
 
     if options.cost:
-        _calculate_cost(gene, options)
+        all_size = 0
+        if (options.layer):
+            (all_size, all_time, all_price) = _calculate_cost(gene, options)
+        else:
+            all_time = timedelta()
+            all_price = 0
+            for layer in gene.config['generation']['default_layers']:
+                print
+                print "===== %s =====" % layer
+                gene.set_layer(layer, options)
+                (size, time, price) = _calculate_cost(gene, options)
+                all_time += time
+                all_price += price
+                all_size += size
+
+            print
+            print "===== GLOBAL ====="
+            print 'Total generation time : %d %d:%02d:%02d [d h:mm:ss]' % (all_time.days, all_time.seconds / 3600, all_time.seconds % 3600 / 60, all_time.seconds % 60)
+            print 'Total generation cost : %0.2f [$]' % price
+        print
+        print 'S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))
+        print 'S3 get: %0.2f [$/month]' % (
+            gene.config['cost']['s3']['get'] * gene.config['cost']['request'] / 10000.0 +
+            gene.config['cost']['s3']['download'] * gene.config['cost']['request'] *
+            gene.config['cost']['tile_size'] / (1024.0 * 1024))
+        if 'cloudfront' in gene.config['cost']:
+            print 'CloudFront: %0.2f [$/month]' % (
+                gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request'] / 10000.0 +
+                gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request'] *
+                gene.config['cost']['tile_size'] / (1024.0 * 1024))
+        print 'ESB storage: %0.2f [$/month]' % (gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
         sys.exit(0)
 
     # start aws
@@ -290,20 +320,10 @@ def _calculate_cost(gene, options):
 
     print
     td = timedelta(milliseconds=all_time)
-    print 'Total generation time : %d %d:%02d:%02d [d h:mm:ss]' % (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
-    print 'Total generation cost : %0.2f [$]' % price
-    print
-    print 'S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))
-    print 'S3 get: %0.2f [$/month]' % (
-        gene.config['cost']['s3']['get'] * gene.config['cost']['request'] / 10000.0 +
-        gene.config['cost']['s3']['download'] * gene.config['cost']['request'] *
-        gene.config['cost']['tile_size'] / (1024.0 * 1024))
-    if 'cloudfront' in gene.config['cost']:
-        print 'CloudFront: %0.2f [$/month]' % (
-            gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request'] / 10000.0 +
-            gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request'] *
-            gene.config['cost']['tile_size'] / (1024.0 * 1024))
-    print 'ESB storage: %0.2f [$/month]' % (gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
+    print 'Generation time : %d %d:%02d:%02d [d h:mm:ss]' % (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
+    print 'Generation cost : %0.2f [$]' % price
+
+    return (all_size, td, price)
 
 
 def _send(data, path, cache):
