@@ -231,7 +231,56 @@ def status(options, gene):
 
 
 def _calculate_cost(gene, options):
-    # TODO fast calculation based on surface
+    error = False
+    name = "layer[%s]" % gene.layer['name']
+    error = gene.validate(gene.layer, name, 'cost', attribute_type=dict, default={}) or error
+    error = gene.validate(gene.layer['cost'], name + '.cost', 'tileonly_generation_time',
+            attribute_type=float, default=40.0) or error
+    error = gene.validate(gene.layer['cost'], name + '.cost', 'tile_generation_time',
+            attribute_type=float, default=30.0) or error
+    error = gene.validate(gene.layer['cost'], name + '.cost', 'metatile_generation_time',
+            attribute_type=float, default=30.0) or error
+    error = gene.validate(gene.layer['cost'], name + '.cost', 'tile_size',
+            attribute_type=float, default=20.0) or error
+
+    error = gene.validate(gene.config, 'config', 'cost', attribute_type=dict, default={}) or error
+    error = gene.validate(gene.config['cost'], 'cost', 'request_per_layers', attribute_type=int, default=10000000) or error
+    error = gene.validate(gene.config['cost'], 'cost', 'esb_size', attribute_type=int, default=100) or error
+    # http://aws.amazon.com/s3/pricing/
+    error = gene.validate(gene.config['cost'], 'cost', 's3', attribute_type=dict, default={}) or error
+    # [$/Go/month]
+    error = gene.validate(gene.config['cost']['s3'], 'cost.s3', 'storage', attribute_type=float, default=0.125) or error
+    # [$/put/1000]
+    error = gene.validate(gene.config['cost']['s3'], 'cost.s3', 'put', attribute_type=float, default=0.01) or error
+    # [$/get/10000]
+    error = gene.validate(gene.config['cost']['s3'], 'cost.s3', 'get', attribute_type=float, default=0.01) or error
+    # [$/Go]
+    error = gene.validate(gene.config['cost']['s3'], 'cost.s3', 'download', attribute_type=float, default=0.12) or error
+    # http://aws.amazon.com/cloudfront/pricing/
+    error = gene.validate(gene.config['cost'], 'cost', 'cloudfront', attribute_type=dict, default={}) or error
+    # [$/get/10000]
+    error = gene.validate(gene.config['cost']['cloudfront'], 'cost.cloudfront', 'get', attribute_type=float, default=0.009) or error
+    # [$/Go]
+    error = gene.validate(gene.config['cost']['cloudfront'], 'cost.cloudfront', 'download', attribute_type=float, default=0.12) or error
+    # http://aws.amazon.com/ec2/pricing/
+    error = gene.validate(gene.config['cost'], 'cost', 'ec2', attribute_type=dict, default={}) or error
+    # medium
+    # [$/hour]
+    error = gene.validate(gene.config['cost']['ec2'], 'cost.ec2', 'usage', attribute_type=float, default=0.17) or error
+    # http://aws.amazon.com/ebs/
+    error = gene.validate(gene.config['cost'], 'cost', 'esb', attribute_type=dict, default={}) or error
+    # [$/1Go/month]
+    error = gene.validate(gene.config['cost']['esb'], 'cost.esb', 'storage', attribute_type=float, default=0.11) or error
+    # [$/ 1000 E/S/s /month]
+    error = gene.validate(gene.config['cost']['esb'], 'cost.esb', 'io', attribute_type=float, default=260) or error
+    # http://aws.amazon.com/sqs/pricing/
+    error = gene.validate(gene.config['cost'], 'cost', 'sqs', attribute_type=dict, default={}) or error
+    # [$/10000]
+    error = gene.validate(gene.config['cost']['sqs'], 'cost.sqs', 'request', attribute_type=float, default=0.01) or error
+
+    if error:
+        exit(1)
+
     nb_metatiles = {}
     nb_tiles = {}
 
@@ -349,6 +398,15 @@ def _generate_wmts_capabilities(gene, options):
 
     cache = gene.caches[options.cache]
 
+    gene.validate_exists(gene.config, 'openlayers', 'config')
+    error = False
+    error = gene.validate(self.config['openlayers'], 'srs', 'openlayers', attribute_type=str) or error
+    error = gene.validate(self.config['openlayers'], 'center_x', 'openlayers', attribute_type=int) or error
+    error = gene.validate(self.config['openlayers'], 'center_y', 'openlayers', attribute_type=int) or error
+    error = gene.validate(cache, 'http_url', 'cache[%s]' % cache['name'], attribute_type=str, required=True) or error
+    if error:
+        exit(1)
+
     base_url = cache['http_url'] % cache
     capabilities = jinja2_template(wmts_get_capabilities_template,
             layers=gene.layers,
@@ -364,6 +422,14 @@ def _generate_openlayers(gene, options):
     from tilecloud_chain.openlayers_html import openlayers_html
     from tilecloud_chain.openlayers_js import openlayers_js
     from tilecloud_chain.openlayers import openlayers
+
+    gene.validate_exists(gene.config, 'openlayers', 'config')
+    error = False
+    error = gene.validate(self.config['openlayers'], 'srs', 'openlayers', attribute_type=str) or error
+    error = gene.validate(self.config['openlayers'], 'center_x', 'openlayers', attribute_type=int) or error
+    error = gene.validate(self.config['openlayers'], 'center_y', 'openlayers', attribute_type=int) or error
+    if error:
+        exit(1)
 
     cache = gene.caches[options.cache]
 

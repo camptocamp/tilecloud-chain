@@ -76,42 +76,8 @@ openlayers:
     center_x: 600000
     center_y: 200000
 
-
 cost:
     # [nb/month]
     request_per_layers: 10000000
     # GeoData size [Go]
     esb_size: 100
-    # http://aws.amazon.com/s3/pricing/pricing-storage.json
-    # http://aws.amazon.com/s3/pricing/
-    s3:
-        # [$/Go/month]
-        # [$/put/1000]
-        storage: 0.125
-        put: 0.01
-        # [$/get/10000]
-        get: 0.01
-        # [$/Go]
-        download: 0.12
-    # http://aws.amazon.com/cloudfront/pricing/
-    cloudfront:
-        # [$/get/10000]
-        get: 0.009
-        # [$/Go]
-        download: 0.12
-    # http://aws.amazon.com/ec2/pricing/ri-medium-linux.json
-    # http://aws.amazon.com/ec2/pricing/
-    ec2:
-        # medium
-        # [$/hour]
-        usage: 0.17
-    # http://aws.amazon.com/ebs/
-    esb:
-        # [$/1Go/month]
-        storage: 0.11
-        # [$/ 1000 E/S/s /month]
-        io: 260
-    # http://aws.amazon.com/sqs/pricing/
-    sqs:
-        # [$/10000]
-        request: 0.01

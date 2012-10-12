@@ -26,30 +26,83 @@ from tilecloud.grid.free import FreeTileGrid
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors, DropErrors
 
 
+logger = logging.getLogger(__name__)
+
+
 class TileGeneration:
     geom = None
 
     def __init__(self, config_file, options, layer_name=None):
         self.config = yaml.load(file(config_file))
 
+        self.validate_exists(self.config, 'config', 'grids')
         self.grids = self.config['grids']
+        error = False
         for gname, grid in self.config['grids'].items():
-            scale = int(grid.get('resolution_scale', 1))
+            name = "grid[%s]" % gname
+            error = self.validate(grid, name, 'name', attribute_type=str, default=gname) or error
+            error = self.validate(grid, name, 'resolution_scale', attribute_type=int, default=1) or error
+            error = self.validate(grid, name, 'resolutions', attribute_type=float, is_array=True, required=True) or error
+            error = self.validate(grid, name, 'bbox', attribute_type=float, is_array=True, required=True) or error
+            error = self.validate(grid, name, 'srs', attribute_type=str, required=True) or error
+            error = self.validate(grid, name, 'tile_size', attribute_type=int, default=256) or error
+            scale = grid['resolution_scale']
+            for r in grid['resolutions']:
+                if r * scale % 1 != 0.0:
+                    lor.error("The reolution %f * 'resolution_scale' is not an integer" % r)
+                    error = True
+            
             grid['obj'] = FreeTileGrid(
-                resolutions=[int(round(r * scale)) for r in grid['resolutions']],
+                resolutions=[int(r * scale) for r in grid['resolutions']],
                 scale=scale,
                 max_extent=grid['bbox'],
-                tile_size=grid.get('tile_size', 256))
+                tile_size=grid['tile_size'])
 
         default = self.config['layer_default']
         self.layers = {}
+        self.validate_exists(self.config, 'config', 'layers')
         for lname, layer in self.config['layers'].items():
+            name = "layer[%s]" % lname
             layer_object = {}
             for k, v in default.items():
                 layer_object[k] = v
 
             for k, v in layer.items():
                 layer_object[k] = v
+
+            error = self.validate(layer_object, name, 'name', attribute_type=str, default=lname) or error
+            error = self.validate(layer_object, name, 'grid', attribute_type=str, required=True) or error
+            error = self.validate(layer_object, name, 'type', attribute_type=str, required=True) or error
+            if layer_object['type'] == 'wms':
+                error = self.validate(layer_object, name, 'url', attribute_type=str, required=True) or error
+                error = self.validate(layer_object, name, 'layers', attribute_type=str, required=True) or error
+            if layer_object['type'] == 'mapnik':
+                error = self.validate(layer_object, name, 'mapfile', attribute_type=str, required=True) or error
+            error = self.validate(layer_object, name, 'extension', attribute_type=str, required=True) or error
+            error = self.validate(layer_object, name, 'mime_type', attribute_type=str, required=True) or error
+            error = self.validate(layer_object, name, 'wmts_style', attribute_type=str, required=True) or error
+            error = self.validate(layer_object, name, 'dimensions', is_array=True, default=[])
+            for d in layer_object['dimensions']:
+                dname = name + ".dimensions[%s]" % d.get('name', '')
+                error = self.validate(d, dname, 'name', required=True) or error
+                error = self.validate(d, dname, 'value', required=True) or error
+                error = self.validate(d, dname, 'values', is_array=True, default=[d['value']]) or error
+                error = self.validate(d, dname, 'default', default=d['value']) or error
+
+            error = self.validate(layer_object, name, 'meta', attribute_type=bool, default=False) or error
+            error = self.validate(layer_object, name, 'meta_size', attribute_type=int, default=8) or error
+            error = self.validate(layer_object, name, 'meta_buffer', attribute_type=int, default=128) or error
+
+            if 'empty_tile_detection' in layer:
+                error = self.validate(layer_object['empty_tile_detection'], name + '.empty_tile_detection',
+                        'size', attribute_type=int, required=True) or error
+                error = self.validate(layer_object['empty_tile_detection'], name + '.empty_tile_detection',
+                        'hash', attribute_type=int, required=True) or error
+            if 'empty_metatile_detection' in layer:
+                error = self.validate(layer_object['empty_metatile_detection'], name + '.empty_metatile_detection',
+                        'size', attribute_type=int, required=True) or error
+                error = self.validate(layer_object['empty_metatile_detection'], name + '.empty_metatile_detection',
+                        'hash', attribute_type=int, required=True) or error
 
             layer_object['grid_ref'] = self.grids[layer_object['grid']]
 
@@ -59,11 +112,80 @@ class TileGeneration:
         if layer_name:
             self.set_layer(layer_name, options)
 
+        self.validate_exists(self.config, 'config', 'caches')
         self.caches = self.config['caches']
+        for cname, cache in self.caches.items():
+            name = "caches[%s]" % cname
+            error = self.validate(cache, name, 'name', attribute_type=str, default=gname) or error
+            error = self.validate(cache, name, 'type', attribute_type=str, required=True) or error
+            if cache == 'filesystem':
+                error = self.validate(cache, name, 'folder', attribute_type=str, required=True) or error
+            if cache == 's3':
+                error = self.validate(cache, name, 'bucket', attribute_type=str, required=True) or error
 
         self.pool = None
+        error = self.validate(self.config, 'generation', 'config', attribute_type=dict, default={}) or error
+        error = self.validate(self.config['generation'], 'generation', 'default_cache', attribute_type=str) or error
+        error = self.validate(self.config['generation'], 'generation', 'default_layers', is_array=True, attribute_type=str) or error
+        error = self.validate(self.config['generation'], 'generation', 'authorised_user', attribute_type=str) or error
+        error = self.validate(self.config['generation'], 'generation', 'number_process', attribute_type=int) or error
+        error = self.validate(self.config['generation'], 'generation', 'maxconsecutive_errors', attribute_type=int, default=10) or error
+        error = self.validate(self.config['generation'], 'generation', 'geodata_folder', attribute_type=str) or error
+        error = self.validate(self.config['generation'], 'generation', 'deploy_config', attribute_type=str, default="tilegeneration/deploy.cfg") or error
+        error = self.validate(self.config['generation'], 'generation', 'disable_sync', attribute_type=bool, default=False) or error
+        error = self.validate(self.config['generation'], 'generation', 'disable_code', attribute_type=bool, default=False) or error
+        error = self.validate(self.config['generation'], 'generation', 'disable_database', attribute_type=bool, default=False) or error
+        error = self.validate(self.config['generation'], 'generation', 'disable_fillqueue', attribute_type=bool, default=False) or error
+        error = self.validate(self.config['generation'], 'generation', 'disable_tilesgen', attribute_type=bool, default=False) or error
+
         if 'number_process' in self.config['generation']:
             self.pool = Pool(self.config['generation']['number_process'])
+
+        if error:
+            exit(1)
+
+    def validate_exists(self, obj, obj_name, attribute):
+        if attribute not in obj:
+            logger.error("The attribute '%s' is required in the object %s." % (attribute, obj_name))
+            exit(1)
+
+    def validate(self, obj, obj_name, attribute, attribute_type=None, is_array=False, default=None, required=False):
+        if attribute in obj:
+            if is_array:
+                if type(obj[attribute]) == list:
+                    for n, v in enumerate(obj[attribute]):
+                        if attribute_type == float:
+                            if type(v) == int:
+                                obj[attribute][n] = float(v)
+                            elif type(v) != attribute_type:
+                                logger.error("The attribute '%s' of the object %s has an element who is not a %s." %
+                                    (attribute, obj_name, str(attribute_type)))
+                                return True
+                        elif attribute_type == str:
+                            if type(v) != str:
+                                obj[attribute][n] = str(v)
+                        elif attribute_type != None:
+                            if type(v) != attribute_type:
+                                logger.error("The attribute '%s' of the object %s has an element who is not a %s." %
+                                    (attribute, obj_name, str(attribute_type)))
+                                return True
+                else:
+                    logger.error("The attribute '%s' of the object %s is not an array." % (attribute, obj_name))
+                    return True
+            elif attribute_type == float and type(obj[attribute]) == int:
+                obj[attribute] = float(obj[attribute])
+            elif attribute_type == str:
+                if type(obj[attribute]) != str:
+                    obj[attribute] = str(obj[attribute])
+            elif attribute_type != None and type(obj[attribute]) != attribute_type:
+                logger.error("The attribute '%s' of the object %s is not a %s." % (attribute, obj_name, str(attribute_type)))
+                return True
+        elif required:
+            logger.error("The attribute '%s' is required in the object %s." % (attribute, obj_name))
+            return True
+        elif default != None:
+            obj[attribute] = default
+        return False
 
     def set_layer(self, layer, options):
         self.layer = self.layers[layer]
