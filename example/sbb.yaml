@@ -34,6 +34,15 @@ layer_default:
     data_buffer: 128
     connection: user=www-data password=www-data dbname=sbbgeoportal_c2c host=host
     sql: ST_Union(ST_Buffer(geom, 100, 2)) FROM webapp.verbund_map
+    cost:
+        # [ms]
+        tileonly_generation_time: 60
+        # [ms]
+        tile_generation_time: 30
+        # [ms]
+        metatile_generation_time: 30
+        # [ko]
+        tile_size: 20
 
 layers:
     mapnik:
@@ -69,16 +78,8 @@ openlayers:
 
 
 cost:
-    # [ms]
-    tileonly_generation_time: 60
-    # [ms]
-    tile_generation_time: 30
-    # [ms]
-    metatile_generation_time: 30
-    # [ko]
-    tile_size: 20
     # [nb/month]
-    request: 10000000
+    request_per_layers: 10000000
     # GeoData size [Go]
     esb_size: 100
     # http://aws.amazon.com/s3/pricing/pricing-storage.json

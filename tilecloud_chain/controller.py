@@ -91,15 +91,20 @@ def main():
 
     if options.cost:
         all_size = 0
+        tile_size = 0
+        nb_layers = 1
         if (options.layer):
+            tile_size = gene.layer['cost']['tile_size'] / (1024.0 * 1024)
             (all_size, all_time, all_price) = _calculate_cost(gene, options)
         else:
             all_time = timedelta()
             all_price = 0
+            nb_layers = len(gene.config['generation']['default_layers'])
             for layer in gene.config['generation']['default_layers']:
                 print
                 print "===== %s =====" % layer
                 gene.set_layer(layer, options)
+                tile_size += gene.layer['cost']['tile_size'] / (1024.0 * 1024)
                 (size, time, price) = _calculate_cost(gene, options)
                 all_time += time
                 all_price += price
@@ -112,14 +117,12 @@ def main():
         print
         print 'S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))
         print 'S3 get: %0.2f [$/month]' % (
-            gene.config['cost']['s3']['get'] * gene.config['cost']['request'] / 10000.0 +
-            gene.config['cost']['s3']['download'] * gene.config['cost']['request'] *
-            gene.config['cost']['tile_size'] / (1024.0 * 1024))
+            gene.config['cost']['s3']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
+            gene.config['cost']['s3']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
         if 'cloudfront' in gene.config['cost']:
             print 'CloudFront: %0.2f [$/month]' % (
-                gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request'] / 10000.0 +
-                gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request'] *
-                gene.config['cost']['tile_size'] / (1024.0 * 1024))
+                gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
+                gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
         print 'ESB storage: %0.2f [$/month]' % (gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
         sys.exit(0)
 
@@ -283,7 +286,7 @@ def _calculate_cost(gene, options):
     print
     for z in nb_metatiles:
         print "%i meta tiles in zoom %i." % (nb_metatiles[z], z)
-        times[z] = gene.config['cost']['metatile_generation_time'] * nb_metatiles[z]
+        times[z] = gene.layer['cost']['metatile_generation_time'] * nb_metatiles[z]
 
     price = 0
     all_size = 0
@@ -292,10 +295,10 @@ def _calculate_cost(gene, options):
         print
         print "%i tiles in zoom %i." % (nb_tiles[z], z)
         if meta:
-            time = times[z] + gene.config['cost']['tile_generation_time'] * nb_tiles[z]
+            time = times[z] + gene.layer['cost']['tile_generation_time'] * nb_tiles[z]
         else:
-            time = gene.config['cost']['tileonly_generation_time'] * nb_tiles[z]
-        size = gene.config['cost']['tile_size'] * nb_tiles[z]
+            time = gene.layer['cost']['tileonly_generation_time'] * nb_tiles[z]
+        size = gene.layer['cost']['tile_size'] * nb_tiles[z]
         all_size += size
 
         all_time += time

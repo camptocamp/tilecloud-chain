@@ -63,6 +63,15 @@ layer_default:
     empty_metatile_detection:
         size: 4144
         hash: -7657621180573147007
+    cost:
+        # [ms]
+        tileonly_generation_time: 60
+        # [ms]
+        tile_generation_time: 30
+        # [ms]
+        metatile_generation_time: 30
+        # [ko]
+        tile_size: 20
 
 layers:
     plan:
@@ -138,16 +147,8 @@ openlayers:
     center_y: 200000
 
 cost:
-    # [ms]
-    tileonly_generation_time: 60
-    # [ms]
-    tile_generation_time: 30
-    # [ms]
-    metatile_generation_time: 30
-    # [ko]
-    tile_size: 20
     # [nb/month]
-    request: 10000000
+    request_per_layers: 10000000
     # GeoData size [Go]
     esb_size: 100
     # http://aws.amazon.com/s3/pricing/pricing-storage.json
