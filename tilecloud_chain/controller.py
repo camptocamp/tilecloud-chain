@@ -49,6 +49,9 @@ def main():
             help='Generate the WMTS Capabilities and exit')
     parser.add_option('--cost', '--calculate-cost', default=False, action="store_true",
             help='Calculate the cost to generate and upload the tiles')
+    parser.add_option('--cost-algo', '--calculate-cost-algorithm', default='area', dest='cost_algo',
+            metavar="ALGORITHM", help="The ALGORITHM use to calculate the cost default base on the 'area' "
+            "of the genaration geometry, can also be 'count', to be base on number of tiles to generate.")
     parser.add_option('--ol', '--openlayers-test', default=False, action="store_true",
             help='Generate openlayers test page')
 
@@ -199,41 +202,52 @@ def _calculate_cost(gene, options):
     nb_metatiles = {}
     nb_tiles = {}
 
-    gene.init_tilecoords(options)
-    gene.add_geom_filter()
-
     meta = gene.layer.get('meta', False)
-    if meta:
-        def count_metatile(tile):
-            if tile:
-                if tile.tilecoord.z in nb_metatiles:
-                    nb_metatiles[tile.tilecoord.z] += 1
-                else:
-                    nb_metatiles[tile.tilecoord.z] = 1
-            return tile
-        gene.imap(count_metatile)
+    if options.cost_algo == 'area':
+        meta_size = gene.layer['meta_size'] if meta else None
+        tile_size = gene.layer['grid_ref'].get('tile_size', 256)
+        for i, resolution in enumerate(gene.layer['grid_ref']['resolutions']):
+            if meta:
+                size = meta_size * tile_size * resolution
+                nb_metatiles[i] = int(round(gene.geom.buffer(size * 0.6).area / size ** 2))
+            size = tile_size * resolution
+            nb_tiles[i] = int(round(gene.geom.buffer(size * 0.6).area / size ** 2))
 
-        class MetaTileSplitter(TileStore):
-            def get(self, tiles):
-                for metatile in tiles:
-                    for tilecoord in metatile.tilecoord:
-                        yield Tile(tilecoord)
-        gene.get(MetaTileSplitter())
-
-        # Only keep tiles that intersect geometry
+    elif options.cost_algo == 'count':
+        gene.init_tilecoords(options)
         gene.add_geom_filter()
 
-    def count_tile(tile):
-        if tile:
-            if tile.tilecoord.z in nb_tiles:
-                nb_tiles[tile.tilecoord.z] += 1
-            else:
-                print "Calculate zoom %i." % tile.tilecoord.z
-                nb_tiles[tile.tilecoord.z] = 1
-        return tile
-    gene.imap(count_tile)
+        if meta:
+            def count_metatile(tile):
+                if tile:
+                    if tile.tilecoord.z in nb_metatiles:
+                        nb_metatiles[tile.tilecoord.z] += 1
+                    else:
+                        nb_metatiles[tile.tilecoord.z] = 1
+                return tile
+            gene.imap(count_metatile)
 
-    consume(gene.tilestream, None)
+            class MetaTileSplitter(TileStore):
+                def get(self, tiles):
+                    for metatile in tiles:
+                        for tilecoord in metatile.tilecoord:
+                            yield Tile(tilecoord)
+            gene.get(MetaTileSplitter())
+
+            # Only keep tiles that intersect geometry
+            gene.add_geom_filter()
+
+        def count_tile(tile):
+            if tile:
+                if tile.tilecoord.z in nb_tiles:
+                    nb_tiles[tile.tilecoord.z] += 1
+                else:
+                    print "Calculate zoom %i." % tile.tilecoord.z
+                    nb_tiles[tile.tilecoord.z] = 1
+            return tile
+        gene.imap(count_tile)
+
+        consume(gene.tilestream, None)
 
     times = {}
     print
