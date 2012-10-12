@@ -124,7 +124,7 @@ class TileGeneration:
 
         meta = self.layer.get('meta', False)
         if meta:
-            if option.zoom or option.zoom == 0:
+            if options.zoom or options.zoom == 0:
                 def metatilecoords(n, z):
                     xbounds, ybounds = bounding_pyramid.bounds[z]
                     metatilecoord = TileCoord(z, xbounds.start, ybounds.start).metatilecoord(n)
@@ -135,10 +135,10 @@ class TileGeneration:
                             yield TileCoord(z, x, y, n)
                             y += n
                         x += n
-                self.set_tilecoords(metatilecoords(self.layer['meta_size'], option.zoom))
+                self.set_tilecoords(metatilecoords(self.layer['meta_size'], options.zoom))
             else:
                 self.set_tilecoords(bounding_pyramid.metatilecoords(self.layer['meta_size']))
-        elif options.zoom or option.zoom == 0:
+        elif options.zoom or options.zoom == 0:
             self.set_tilecoords(bounding_pyramid.ziter(options.zoom))
         else:
             self.set_tilecoords(bounding_pyramid)
