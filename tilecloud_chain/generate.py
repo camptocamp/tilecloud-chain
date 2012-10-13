@@ -92,12 +92,6 @@ def _gene(options, gene, layer):
                     output_format=gene.layer['output_format'],
                 ), False)
 
-        if options.role == 'slave':
-            # Mark the metatile as done
-            # FIXME this is erronenous, the metatile is only really
-            # done when all its tiles are done
-            gene.delete(sqs_tilestore)
-
         if meta:
             if options.role == 'hash':
                 gene.imap(HashLogger('empty_metatile_detection', logger))
@@ -111,6 +105,11 @@ def _gene(options, gene, layer):
                         and 'hash' in gene.layer['empty_metatile_detection']:
                     empty_tile = gene.layer['empty_metatile_detection']
                     gene.imap(HashDropper(empty_tile['size'], empty_tile['hash']))
+
+            def add_elapsed_togenerate(metatile):
+                metatile.elapsed_togenerate = metatile.tilecoord.n ** 2
+                return True
+            gene.ifilter(add_elapsed_togenerate)
 
             # Split the metatile image into individual tiles
             gene.get(MetaTileSplitterTileStore(
@@ -131,14 +130,6 @@ def _gene(options, gene, layer):
                     and 'hash' in gene.layer['empty_tile_detection']:
                 empty_tile = gene.layer['empty_tile_detection']
                 gene.imap(HashDropper(empty_tile['size'], empty_tile['hash']))
-
-        if options.role == 'slave':
-            # read metatile on error
-            def tile_error(tile):
-                if tile and tile.error:
-                    sqs_tilestore.put_one(Tile(tile.tilecoord.metatilecoord(
-                            gene.layer['metatile_size'])))
-            gene.imap(tile_error)
 
     if options.role in ('local', 'slave'):
         if options.test > 0:
@@ -174,6 +165,17 @@ def _gene(options, gene, layer):
 
     gene.add_error_filters(logger)
 
+    if options.role == 'slave':
+        if meta:
+            def decr_tile_in_metatile(tile):
+                tile.metatile.elapsed_togenerate -= 1
+                if tile.metatile.elapsed_togenerate == 0:
+                    sqs_tilestore.delete_one(tile.metatile)
+                return True
+            gene.ifilter(decr_tile_in_metatile)
+        else:
+            gene.delete(sqs_tilestore)
+
     consume(gene.tilestream, options.test)
 
 
@@ -208,7 +210,7 @@ def main():
             help='local/master/slave, master to file the queue and '
             'slave to generate the tiles')
     parser.add_option('--cache', '--destination-cache',
-            default=None, dest='cache', metavar="NAME", 
+            default=None, dest='cache', metavar="NAME",
             help='The cache name to use')
     parser.add_option('-H', '--get-hash', metavar="TILE",
             help='get the empty tiles hash, use the specified TILE z/x/y')

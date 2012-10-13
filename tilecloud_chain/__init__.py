@@ -383,14 +383,21 @@ class HashLogger(object):  # pragma: no cover
 
 class IntersectGeometryFilter(object):
 
-    def __init__(self, grid, geom=None):
+    def __init__(self, grid, geom=None, queue_store=None):
         self.grid = grid
         self.geom = geom or self.bbox_polygon(self.grid.max_extent)
+        self.queue_store = queue_store
 
     def __call__(self, tile):
         intersects = self.bbox_polygon(
                 self.grid['obj'].extent(tile.tilecoord)). \
                 intersects(self.geom)
+
+        if not intersect and tile.metatile
+            tile.metatile.elapsed_togenerate -= 1
+            if tile.metatile.elapsed_togenerate == 0:
+                self.queue_store.delete_one(tile.metatile)
+
         return tile if intersects else None
 
     def bbox_polygon(self, bbox):

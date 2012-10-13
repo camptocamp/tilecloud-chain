@@ -1,6 +1,4 @@
 - Catch all errors
-- Add safe metatile by adding a counter
-- Remove filtred from SQS
 - Add possibility to measue generation speed
 - Add metrics as decorators
 
