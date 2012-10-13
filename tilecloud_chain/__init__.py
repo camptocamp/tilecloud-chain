@@ -313,7 +313,10 @@ class HashDropper(object):
             return tile
         else:
             if self.store:
-                self.store.delete_one(tile)
+                if tile.tilecoord.n != 1:
+                    self.store.delete((Tile(tilecoord) for tilecoord in tile.tilecoord))
+                else:
+                    self.store.delete_one(tile)
             return None
 
 

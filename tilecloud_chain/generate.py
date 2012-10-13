@@ -32,6 +32,30 @@ def _gene(options, gene, layer):
         # Create SQS queue
         sqs_tilestore = SQSTileStore(gene.get_sqs_queue())
 
+    if options.role in ('local', 'slave'):
+        cache = gene.caches[options.cache]
+        # build layout
+        layout = WMTSTileLayout(
+            layer=layer,
+            url=cache['folder'],
+            style=gene.layer['wmts_style'],
+            format='.' + gene.layer['extension'],
+            dimensions=[(str(dimension['name']), str(dimension['default']))
+                    for dimension in gene.layer['dimensions']],
+            tile_matrix_set=gene.layer['grid'],
+            request_encoding='REST',
+        )
+        # store
+        if cache['type'] == 's3':
+            # on s3
+            cache_tilestore = S3TileStore(cache['bucket'], layout)
+        elif cache['type'] == 'filesystem':
+            # on filesystem
+            cache_tilestore = FilesystemTileStore(layout)
+        else:
+            exit('unknown cache type: ' + cache['type'])
+
+
     meta = gene.layer['meta']
     if options.role in ('local', 'master'):
         # Generate a stream of metatiles
@@ -111,7 +135,7 @@ def _gene(options, gene, layer):
                         and 'size' in gene.layer['empty_metatile_detection'] \
                         and 'hash' in gene.layer['empty_metatile_detection']:
                     empty_tile = gene.layer['empty_metatile_detection']
-                    gene.imap(HashDropper(empty_tile['size'], empty_tile['hash']))
+                    gene.imap(HashDropper(empty_tile['size'], empty_tile['hash'], store=cache_tilestore))
 
             def add_elapsed_togenerate(metatile):
                 metatile.elapsed_togenerate = metatile.tilecoord.n ** 2
@@ -136,7 +160,7 @@ def _gene(options, gene, layer):
                     and 'size' in gene.layer['empty_tile_detection'] \
                     and 'hash' in gene.layer['empty_tile_detection']:
                 empty_tile = gene.layer['empty_tile_detection']
-                gene.imap(HashDropper(empty_tile['size'], empty_tile['hash']))
+                gene.imap(HashDropper(empty_tile['size'], empty_tile['hash'], store=cache_tilestore))
 
     if options.role in ('local', 'slave'):
         if options.test > 0:
@@ -145,27 +169,7 @@ def _gene(options, gene, layer):
         gene.add_error_filters(logger)
         gene.ifilter(DropEmpty())
 
-        cache = gene.caches[options.cache]
-        # build layout
-        layout = WMTSTileLayout(
-            layer=layer,
-            url=cache['folder'],
-            style=gene.layer['wmts_style'],
-            format='.' + gene.layer['extension'],
-            dimensions=[(str(dimension['name']), str(dimension['default']))
-                    for dimension in gene.layer['dimensions']],
-            tile_matrix_set=gene.layer['grid'],
-            request_encoding='REST',
-        )
-        # store
-        if cache['type'] == 's3':
-            # on s3
-            gene.put(S3TileStore(cache['bucket'], layout), True)
-        elif cache['type'] == 'filesystem':
-            # on filesystem
-            gene.put(FilesystemTileStore(layout))
-        else:
-            exit('unknown cache type: ' + cache['type'])
+        gene.put(cache_tilestore)
 
     if options.role == 'slave':
         gene.imap(tile_error)

@@ -21,9 +21,7 @@ Feature:
 - In future, measure tile generation speed
 - Calculate cost and generation time.
 - In future, manage the AWG hosts that generate tiles.
-
-Main issue:
-- It don't delete existing empty tile.
+- Delete empty tiles.
 
 Use it
 ------
