@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import logging
 import yaml
 from itertools import imap, ifilter
@@ -8,6 +9,7 @@ from cStringIO import StringIO
 
 try:
     from PIL import Image
+    Image  # suppress pyflakes warning
 except:
     import Image
 
@@ -17,7 +19,7 @@ from shapely.geometry import Polygon
 import boto.sqs
 from boto.sqs.jsonmessage import JSONMessage
 
-from tilecloud import Tile, BoundingPyramid
+from tilecloud import Tile, BoundingPyramid, TileCoord
 from tilecloud.grid.free import FreeTileGrid
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors, DropErrors
 
@@ -37,17 +39,19 @@ class TileGeneration:
         for gname, grid in self.config['grids'].items():
             name = "grid[%s]" % gname
             error = self.validate(grid, name, 'name', attribute_type=str, default=gname) or error
-            error = self.validate(grid, name, 'resolution_scale', attribute_type=int, default=1) or error
-            error = self.validate(grid, name, 'resolutions', attribute_type=float, is_array=True, required=True) or error
+            error = self.validate(grid, name, 'resolution_scale',
+                attribute_type=int, default=1) or error
+            error = self.validate(grid, name, 'resolutions',
+                attribute_type=float, is_array=True, required=True) or error
             error = self.validate(grid, name, 'bbox', attribute_type=float, is_array=True, required=True) or error
             error = self.validate(grid, name, 'srs', attribute_type=str, required=True) or error
             error = self.validate(grid, name, 'tile_size', attribute_type=int, default=256) or error
             scale = grid['resolution_scale']
             for r in grid['resolutions']:
                 if r * scale % 1 != 0.0:
-                    lor.error("The reolution %f * 'resolution_scale' is not an integer" % r)
+                    logger.error("The reolution %f * 'resolution_scale' is not an integer" % r)
                     error = True
-            
+
             grid['obj'] = FreeTileGrid(
                 resolutions=[int(r * scale) for r in grid['resolutions']],
                 scale=scale,
@@ -84,7 +88,7 @@ class TileGeneration:
                 error = self.validate(layer_object, name, 'data_buffer', attribute_type=int, default=128) or error
                 if layer_object['output_format'] == 'grid':
                     error = self.validate(layer_object, name, 'resolution', attribute_type=int, default=4) or error
-                    error = self.validate(layer_object, name, 'layers_fields', attribute_type=dict, default= {}) or error
+                    error = self.validate(layer_object, name, 'layers_fields', attribute_type=dict, default={}) or error
                     if layer_object['meta']:
                         logger.error("The layer '%s' is type or Mapnik/Grid, that can't support matatiles." %
                             (layer_object['name']))
@@ -133,17 +137,26 @@ class TileGeneration:
 
         error = self.validate(self.config, 'generation', 'config', attribute_type=dict, default={}) or error
         error = self.validate(self.config['generation'], 'generation', 'default_cache', attribute_type=str) or error
-        error = self.validate(self.config['generation'], 'generation', 'default_layers', is_array=True, attribute_type=str) or error
+        error = self.validate(self.config['generation'], 'generation', 'default_layers',
+            s_array=True, attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'authorised_user', attribute_type=str) or error
-        error = self.validate(self.config['generation'], 'generation', 'number_process', attribute_type=int, default=1) or error
-        error = self.validate(self.config['generation'], 'generation', 'maxconsecutive_errors', attribute_type=int, default=10) or error
+        error = self.validate(self.config['generation'], 'generation', 'number_process',
+            attribute_type=int, default=1) or error
+        error = self.validate(self.config['generation'], 'generation', 'maxconsecutive_errors',
+            attribute_type=int, default=10) or error
         error = self.validate(self.config['generation'], 'generation', 'geodata_folder', attribute_type=str) or error
-        error = self.validate(self.config['generation'], 'generation', 'deploy_config', attribute_type=str, default="tilegeneration/deploy.cfg") or error
-        error = self.validate(self.config['generation'], 'generation', 'disable_sync', attribute_type=bool, default=False) or error
-        error = self.validate(self.config['generation'], 'generation', 'disable_code', attribute_type=bool, default=False) or error
-        error = self.validate(self.config['generation'], 'generation', 'disable_database', attribute_type=bool, default=False) or error
-        error = self.validate(self.config['generation'], 'generation', 'disable_fillqueue', attribute_type=bool, default=False) or error
-        error = self.validate(self.config['generation'], 'generation', 'disable_tilesgen', attribute_type=bool, default=False) or error
+        error = self.validate(self.config['generation'], 'generation', 'deploy_config',
+            attribute_type=str, default="tilegeneration/deploy.cfg") or error
+        error = self.validate(self.config['generation'], 'generation', 'disable_sync',
+            attribute_type=bool, default=False) or error
+        error = self.validate(self.config['generation'], 'generation', 'disable_code',
+            attribute_type=bool, default=False) or error
+        error = self.validate(self.config['generation'], 'generation', 'disable_database',
+            attribute_type=bool, default=False) or error
+        error = self.validate(self.config['generation'], 'generation', 'disable_fillqueue',
+            attribute_type=bool, default=False) or error
+        error = self.validate(self.config['generation'], 'generation', 'disable_tilesgen',
+            attribute_type=bool, default=False) or error
 
         if error:
             exit(1)
@@ -168,7 +181,7 @@ class TileGeneration:
                         elif attribute_type == str:
                             if type(v) != str:
                                 obj[attribute][n] = str(v)
-                        elif attribute_type != None:
+                        elif attribute_type is not None:
                             if type(v) != attribute_type:
                                 logger.error("The attribute '%s' of the object %s has an element who is not a %s." %
                                     (attribute, obj_name, str(attribute_type)))
@@ -181,13 +194,14 @@ class TileGeneration:
             elif attribute_type == str:
                 if type(obj[attribute]) != str:
                     obj[attribute] = str(obj[attribute])
-            elif attribute_type != None and type(obj[attribute]) != attribute_type:
-                logger.error("The attribute '%s' of the object %s is not a %s." % (attribute, obj_name, str(attribute_type)))
+            elif attribute_type is not None and type(obj[attribute]) != attribute_type:
+                logger.error("The attribute '%s' of the object %s is not a %s." %
+                    (attribute, obj_name, str(attribute_type)))
                 return True
         elif required:
             logger.error("The attribute '%s' is required in the object %s." % (attribute, obj_name))
             return True
-        elif default != None:
+        elif default is not None:
             obj[attribute] = default
         return False
 
@@ -277,7 +291,7 @@ class TileGeneration:
         self.tilestream = store.list()
 
     def get(self, store, multiprocess=False):
-        if options.test > 0:
+        if self.options.test > 0:
             self.tilestream = store.get(self.tilestream)
         else:
             def safe_get(tile):
@@ -289,7 +303,7 @@ class TileGeneration:
             return imap(safe_get, ifilter(None, self.tilestream))
 
     def put(self, store, multiprocess=False):
-        if options.test > 0:
+        if self.options.test > 0:
             self.tilestream = store.put(self.tilestream)
         else:
             def safe_put(tile):
@@ -301,7 +315,7 @@ class TileGeneration:
             return imap(safe_put, ifilter(None, self.tilestream))
 
     def delete(self, store, multiprocess=False):
-        if options.test > 0:
+        if self.options.test > 0:
             self.tilestream = store.delete(self.tilestream)
         else:
             def safe_delete(tile):
@@ -313,7 +327,7 @@ class TileGeneration:
             return imap(safe_delete, ifilter(None, self.tilestream))
 
     def imap(self, tile_filter, multiprocess=False):
-        if options.test > 0:
+        if self.options.test > 0:
             self.tilestream = imap(tile_filter, self.tilestream)
         else:
             def safe_imap(tile):
@@ -325,7 +339,7 @@ class TileGeneration:
             return imap(safe_imap, ifilter(None, self.tilestream))
 
     def ifilter(self, tile_filter):
-        if options.test > 0:
+        if self.options.test > 0:
             self.tilestream = ifilter(tile_filter, self.tilestream)
         else:
             def safe_filter(tile):
@@ -404,7 +418,7 @@ class IntersectGeometryFilter(object):
                 self.grid['obj'].extent(tile.tilecoord)). \
                 intersects(self.geom)
 
-        if not intersect and tile.metatile
+        if not intersects and tile.metatile:
             tile.metatile.elapsed_togenerate -= 1
             if tile.metatile.elapsed_togenerate == 0:
                 self.queue_store.delete_one(tile.metatile)

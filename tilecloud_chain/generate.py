@@ -3,10 +3,11 @@
 import os
 import sys
 import logging
+from itertools import ifilter
 from getpass import getuser
 from optparse import OptionParser
 
-from tilecloud import Tile, TileCoord, consume
+from tilecloud import TileCoord, consume
 from tilecloud.store.url import URLTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.filesystem import FilesystemTileStore
@@ -55,7 +56,6 @@ def _gene(options, gene, layer):
         else:
             exit('unknown cache type: ' + cache['type'])
 
-
     meta = gene.layer['meta']
     if options.role in ('local', 'master'):
         # Generate a stream of metatiles
@@ -79,11 +79,11 @@ def _gene(options, gene, layer):
 
     if options.role == 'master':
         # Put the metatiles into the SQS queue
-        if self.config['generation']['number_process'] == 1:
+        if gene.config['generation']['number_process'] == 1:
             gene.put(sqs_tilestore)
         else:
             from multiprocessing import Pool
-            pool = Pool(self.config['generation']['number_process'])
+            pool = Pool(gene.config['generation']['number_process'])
             pool.imap_unordered(sqs_tilestore.put_one, ifilter(None, gene.tilestream))
 
         gene.put(sqs_tilestore)
@@ -166,9 +166,6 @@ def _gene(options, gene, layer):
         gene.ifilter(DropEmpty())
 
         gene.put(cache_tilestore)
-
-    if options.role == 'slave':
-        gene.imap(tile_error)
 
     gene.add_error_filters(logger)
 

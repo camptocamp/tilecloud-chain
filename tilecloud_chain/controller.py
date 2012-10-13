@@ -92,14 +92,12 @@ def main():
     if options.cost:
         all_size = 0
         tile_size = 0
-        nb_layers = 1
         if (options.layer):
             tile_size = gene.layer['cost']['tile_size'] / (1024.0 * 1024)
             (all_size, all_time, all_price) = _calculate_cost(gene, options)
         else:
             all_time = timedelta()
             all_price = 0
-            nb_layers = len(gene.config['generation']['default_layers'])
             for layer in gene.config['generation']['default_layers']:
                 print
                 print "===== %s =====" % layer
@@ -112,7 +110,8 @@ def main():
 
             print
             print "===== GLOBAL ====="
-            print 'Total generation time : %d %d:%02d:%02d [d h:mm:ss]' % (all_time.days, all_time.seconds / 3600, all_time.seconds % 3600 / 60, all_time.seconds % 60)
+            print 'Total generation time : %d %d:%02d:%02d [d h:mm:ss]' % \
+                (all_time.days, all_time.seconds / 3600, all_time.seconds % 3600 / 60, all_time.seconds % 60)
             print 'Total generation cost : %0.2f [$]' % price
         print
         print 'S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))
@@ -191,7 +190,7 @@ def _get_arguments(options):
     ]
     if options.bbox:
         arguments.extend(["--bbox", options.bbox])
-    if options.zoom or option.zoom == 0:
+    if options.zoom or options.zoom == 0:
         arguments.extend(["--zoom-level", options.zoom])
     if options.test:
         arguments.extend(["--test", options.test])
@@ -244,7 +243,8 @@ def _calculate_cost(gene, options):
             attribute_type=float, default=20.0) or error
 
     error = gene.validate(gene.config, 'config', 'cost', attribute_type=dict, default={}) or error
-    error = gene.validate(gene.config['cost'], 'cost', 'request_per_layers', attribute_type=int, default=10000000) or error
+    error = gene.validate(gene.config['cost'], 'cost', 'request_per_layers',
+        attribute_type=int, default=10000000) or error
     error = gene.validate(gene.config['cost'], 'cost', 'esb_size', attribute_type=int, default=100) or error
     # http://aws.amazon.com/s3/pricing/
     error = gene.validate(gene.config['cost'], 'cost', 's3', attribute_type=dict, default={}) or error
@@ -259,9 +259,11 @@ def _calculate_cost(gene, options):
     # http://aws.amazon.com/cloudfront/pricing/
     error = gene.validate(gene.config['cost'], 'cost', 'cloudfront', attribute_type=dict, default={}) or error
     # [$/get/10000]
-    error = gene.validate(gene.config['cost']['cloudfront'], 'cost.cloudfront', 'get', attribute_type=float, default=0.009) or error
+    error = gene.validate(gene.config['cost']['cloudfront'], 'cost.cloudfront', 'get',
+        attribute_type=float, default=0.009) or error
     # [$/Go]
-    error = gene.validate(gene.config['cost']['cloudfront'], 'cost.cloudfront', 'download', attribute_type=float, default=0.12) or error
+    error = gene.validate(gene.config['cost']['cloudfront'], 'cost.cloudfront', 'download',
+        attribute_type=float, default=0.12) or error
     # http://aws.amazon.com/ec2/pricing/
     error = gene.validate(gene.config['cost'], 'cost', 'ec2', attribute_type=dict, default={}) or error
     # medium
@@ -270,13 +272,15 @@ def _calculate_cost(gene, options):
     # http://aws.amazon.com/ebs/
     error = gene.validate(gene.config['cost'], 'cost', 'esb', attribute_type=dict, default={}) or error
     # [$/1Go/month]
-    error = gene.validate(gene.config['cost']['esb'], 'cost.esb', 'storage', attribute_type=float, default=0.11) or error
+    error = gene.validate(gene.config['cost']['esb'], 'cost.esb', 'storage',
+        attribute_type=float, default=0.11) or error
     # [$/ 1000 E/S/s /month]
     error = gene.validate(gene.config['cost']['esb'], 'cost.esb', 'io', attribute_type=float, default=260) or error
     # http://aws.amazon.com/sqs/pricing/
     error = gene.validate(gene.config['cost'], 'cost', 'sqs', attribute_type=dict, default={}) or error
     # [$/10000]
-    error = gene.validate(gene.config['cost']['sqs'], 'cost.sqs', 'request', attribute_type=float, default=0.01) or error
+    error = gene.validate(gene.config['cost']['sqs'], 'cost.sqs', 'request',
+        attribute_type=float, default=0.01) or error
 
     if error:
         exit(1)
@@ -352,7 +356,8 @@ def _calculate_cost(gene, options):
 
         all_time += time
         td = timedelta(milliseconds=time)
-        print "Time to generate: %d %d:%02d:%02d [d h:mm:ss]" % (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
+        print "Time to generate: %d %d:%02d:%02d [d h:mm:ss]" % \
+            (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
         c = gene.config['cost']['s3']['put'] * nb_tiles[z] / 1000.0
         price += c
         print 'S3 PUT: %0.2f [$]' % c
@@ -372,7 +377,8 @@ def _calculate_cost(gene, options):
 
     print
     td = timedelta(milliseconds=all_time)
-    print 'Generation time : %d %d:%02d:%02d [d h:mm:ss]' % (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
+    print 'Generation time : %d %d:%02d:%02d [d h:mm:ss]' % \
+        (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
     print 'Generation cost : %0.2f [$]' % price
 
     return (all_size, td, price)
@@ -400,9 +406,9 @@ def _generate_wmts_capabilities(gene, options):
 
     gene.validate_exists(gene.config, 'openlayers', 'config')
     error = False
-    error = gene.validate(self.config['openlayers'], 'srs', 'openlayers', attribute_type=str) or error
-    error = gene.validate(self.config['openlayers'], 'center_x', 'openlayers', attribute_type=int) or error
-    error = gene.validate(self.config['openlayers'], 'center_y', 'openlayers', attribute_type=int) or error
+    error = gene.validate(gene.config['openlayers'], 'srs', 'openlayers', attribute_type=str) or error
+    error = gene.validate(gene.config['openlayers'], 'center_x', 'openlayers', attribute_type=int) or error
+    error = gene.validate(gene.config['openlayers'], 'center_y', 'openlayers', attribute_type=int) or error
     error = gene.validate(cache, 'http_url', 'cache[%s]' % cache['name'], attribute_type=str, required=True) or error
     if error:
         exit(1)
@@ -425,9 +431,9 @@ def _generate_openlayers(gene, options):
 
     gene.validate_exists(gene.config, 'openlayers', 'config')
     error = False
-    error = gene.validate(self.config['openlayers'], 'srs', 'openlayers', attribute_type=str) or error
-    error = gene.validate(self.config['openlayers'], 'center_x', 'openlayers', attribute_type=int) or error
-    error = gene.validate(self.config['openlayers'], 'center_y', 'openlayers', attribute_type=int) or error
+    error = gene.validate(gene.config['openlayers'], 'srs', 'openlayers', attribute_type=str) or error
+    error = gene.validate(gene.config['openlayers'], 'center_x', 'openlayers', attribute_type=int) or error
+    error = gene.validate(gene.config['openlayers'], 'center_y', 'openlayers', attribute_type=int) or error
     if error:
         exit(1)
 
@@ -441,7 +447,8 @@ def _generate_openlayers(gene, options):
             layers=[{
                 'name': name,
                 'grid': layer['type'] == 'mapnik' and layer['output_format'] == 'grid',
-                'resolution': layer['resolution'] if layer['type'] == 'mapnik' and layer['output_format'] == 'grid' else None,
+                'resolution': layer['resolution'] if
+                        layer['type'] == 'mapnik' and layer['output_format'] == 'grid' else None,
             } for name, layer in gene.layers.items() if layer['grid_ref']['srs'] == gene.config['openlayers']['srs']])
 
     _send(openlayers_html, '/index.html', cache)
