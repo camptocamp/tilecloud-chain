@@ -56,72 +56,72 @@ class TileGeneration:
                 resolutions=[int(r * scale) for r in grid['resolutions']],
                 scale=scale,
                 max_extent=grid['bbox'],
-                tile_size=grid['tile_size'])
+                tile_size=grid['tile_size']) if not error else None
 
         default = self.config['layer_default']
         self.layers = {}
         self.validate_exists(self.config, 'config', 'layers')
         for lname, layer in self.config['layers'].items():
             name = "layer[%s]" % lname
-            layer_object = {}
             for k, v in default.items():
-                layer_object[k] = v
+                if k not in layer:
+                    layer[k] = v
 
-            for k, v in layer.items():
-                layer_object[k] = v
+            error = self.validate(layer, name, 'name', attribute_type=str, default=lname) or error
+            error = self.validate(layer, name, 'grid', attribute_type=str, required=True) or error
+            error = self.validate(layer, name, 'type', attribute_type=str, required=True,
+                enumeration=['wms', 'mapnik']) or error
 
-            error = self.validate(layer_object, name, 'name', attribute_type=str, default=lname) or error
-            error = self.validate(layer_object, name, 'grid', attribute_type=str, required=True) or error
-            error = self.validate(layer_object, name, 'type', attribute_type=str, required=True) or error
+            error = self.validate(layer, name, 'meta', attribute_type=bool, default=False) or error
+            error = self.validate(layer, name, 'meta_size', attribute_type=int, default=8) or error
+            error = self.validate(layer, name, 'meta_buffer', attribute_type=int,
+                default=0 if layer['type'] == 'mapnik' else 128) or error
 
-            error = self.validate(layer_object, name, 'meta', attribute_type=bool, default=False) or error
-            error = self.validate(layer_object, name, 'meta_size', attribute_type=int, default=8) or error
-            error = self.validate(layer_object, name, 'meta_buffer', attribute_type=int,
-                default=0 if layer_object['type'] == 'mapnik' else 128) or error
-
-            if layer_object['type'] == 'wms':
-                error = self.validate(layer_object, name, 'url', attribute_type=str, required=True) or error
-                error = self.validate(layer_object, name, 'layers', attribute_type=str, required=True) or error
-            if layer_object['type'] == 'mapnik':
-                error = self.validate(layer_object, name, 'mapfile', attribute_type=str, required=True) or error
-                error = self.validate(layer_object, name, 'output_format', attribute_type=str, default='png') or error
-                error = self.validate(layer_object, name, 'data_buffer', attribute_type=int, default=128) or error
-                if layer_object['output_format'] == 'grid':
-                    error = self.validate(layer_object, name, 'resolution', attribute_type=int, default=4) or error
-                    error = self.validate(layer_object, name, 'layers_fields', attribute_type=dict, default={}) or error
-                    if layer_object['meta']:
-                        logger.error("The layer '%s' is type or Mapnik/Grid, that can't support matatiles." %
-                            (layer_object['name']))
+            if layer['type'] == 'wms':
+                error = self.validate(layer, name, 'url', attribute_type=str, required=True) or error
+                error = self.validate(layer, name, 'layers', attribute_type=str, required=True) or error
+            if layer['type'] == 'mapnik':
+                error = self.validate(layer, name, 'mapfile', attribute_type=str, required=True) or error
+                error = self.validate(layer, name, 'output_format', attribute_type=str, default='png',
+                    enumeration=['png', 'png256', 'jpeg', 'grid']) or error
+                error = self.validate(layer, name, 'data_buffer', attribute_type=int, default=128) or error
+                if layer['output_format'] == 'grid':
+                    error = self.validate(layer, name, 'resolution', attribute_type=int, default=4) or error
+                    error = self.validate(layer, name, 'layers_fields', attribute_type=dict, default={}) or error
+                    if layer['meta']:
+                        logger.error("The layer '%s' is of type Mapnik/Grid, that can't support matatiles." %
+                            (layer['name']))
                         error = True
 
-            error = self.validate(layer_object, name, 'extension', attribute_type=str, required=True) or error
-            error = self.validate(layer_object, name, 'mime_type', attribute_type=str, required=True) or error
-            error = self.validate(layer_object, name, 'wmts_style', attribute_type=str, required=True) or error
-            error = self.validate(layer_object, name, 'dimensions', is_array=True, default=[])
-            for d in layer_object['dimensions']:
+            error = self.validate(layer, name, 'extension', attribute_type=str, required=True) or error
+            error = self.validate(layer, name, 'mime_type', attribute_type=str, required=True) or error
+            error = self.validate(layer, name, 'wmts_style', attribute_type=str, required=True) or error
+            error = self.validate(layer, name, 'dimensions', is_array=True, default=[]) or error
+            for d in layer['dimensions']:
                 dname = name + ".dimensions[%s]" % d.get('name', '')
                 error = self.validate(d, dname, 'name', attribute_type=str, required=True) or error
                 error = self.validate(d, dname, 'value', attribute_type=str, required=True) or error
-                error = self.validate(d, dname, 'values', attribute_type=str, is_array=True, default=[d['value']]) or error
+                error = self.validate(d, dname, 'values', attribute_type=str, is_array=True,
+                    default=[d['value']]) or error
                 error = self.validate(d, dname, 'default', attribute_type=str, default=d['value']) or error
 
             if 'empty_tile_detection' in layer:
-                error = self.validate(layer_object['empty_tile_detection'], name + '.empty_tile_detection',
+                error = self.validate(layer['empty_tile_detection'], name + '.empty_tile_detection',
                         'size', attribute_type=int, required=True) or error
-                error = self.validate(layer_object['empty_tile_detection'], name + '.empty_tile_detection',
+                error = self.validate(layer['empty_tile_detection'], name + '.empty_tile_detection',
                         'hash', attribute_type=int, required=True) or error
             if 'empty_metatile_detection' in layer:
-                error = self.validate(layer_object['empty_metatile_detection'], name + '.empty_metatile_detection',
+                error = self.validate(layer['empty_metatile_detection'], name + '.empty_metatile_detection',
                         'size', attribute_type=int, required=True) or error
-                error = self.validate(layer_object['empty_metatile_detection'], name + '.empty_metatile_detection',
+                error = self.validate(layer['empty_metatile_detection'], name + '.empty_metatile_detection',
                         'hash', attribute_type=int, required=True) or error
 
-            layer_object['grid_ref'] = self.grids[layer_object['grid']]
+            layer['grid_ref'] = self.grids[layer['grid']] if not error else None
 
-            self.layers[lname] = layer_object
+            self.layers[lname] = layer
 
         self.layer = None
-        if layer_name:
+        if layer_name and not error:
             self.set_layer(layer_name, options)
 
         self.validate_exists(self.config, 'config', 'caches')
@@ -129,10 +129,11 @@ class TileGeneration:
         for cname, cache in self.caches.items():
             name = "caches[%s]" % cname
             error = self.validate(cache, name, 'name', attribute_type=str, default=gname) or error
-            error = self.validate(cache, name, 'type', attribute_type=str, required=True) or error
+            error = self.validate(cache, name, 'type', attribute_type=str, required=True,
+                enumeration=['s3', 'filesystem']) or error
             if cache == 'filesystem':
                 error = self.validate(cache, name, 'folder', attribute_type=str, required=True) or error
-            if cache == 's3':
+            elif cache == 's3':
                 error = self.validate(cache, name, 'bucket', attribute_type=str, required=True) or error
 
         error = self.validate(self.config, 'generation', 'config', attribute_type=dict, default={}) or error
@@ -158,8 +159,8 @@ class TileGeneration:
         error = self.validate(self.config['generation'], 'generation', 'disable_tilesgen',
             attribute_type=bool, default=False) or error
 
-        if 'sns' in gene.config:
-            error = self.validate(self.config['sns'], 'sns', 'topic', attribute_type=str, require=True) or error
+        if 'sns' in self.config:
+            error = self.validate(self.config['sns'], 'sns', 'topic', attribute_type=str, required=True) or error
 
         if error:
             exit(1)
@@ -169,38 +170,45 @@ class TileGeneration:
             logger.error("The attribute '%s' is required in the object %s." % (attribute, obj_name))
             exit(1)
 
-    def validate(self, obj, obj_name, attribute, attribute_type=None, is_array=False, default=None, required=False):
+    def _validate_type(self, value, attribute_type, enumeration):
+        if attribute_type is not None:
+            if attribute_type == float:
+                if type(value) == int:
+                    value = float(value)
+                elif type(value) != attribute_type:
+                    return (True, None, str(attribute_type))
+            elif attribute_type == str:
+                if type(value) != str:
+                    value = str(value)
+            else:
+                if type(value) != attribute_type:
+                    return (True, None, str(attribute_type))
+        if enumeration:
+            return (value not in enumeration, value, str(enumeration))
+        return (False, value, None)
+
+    def validate(self, obj, obj_name, attribute, attribute_type=None, is_array=False,
+            default=None, required=False, enumeration=None):
         if attribute in obj:
             if is_array:
                 if type(obj[attribute]) == list:
                     for n, v in enumerate(obj[attribute]):
-                        if attribute_type == float:
-                            if type(v) == int:
-                                obj[attribute][n] = float(v)
-                            elif type(v) != attribute_type:
-                                logger.error("The attribute '%s' of the object %s has an element who is not a %s." %
-                                    (attribute, obj_name, str(attribute_type)))
-                                return True
-                        elif attribute_type == str:
-                            if type(v) != str:
-                                obj[attribute][n] = str(v)
-                        elif attribute_type is not None:
-                            if type(v) != attribute_type:
-                                logger.error("The attribute '%s' of the object %s has an element who is not a %s." %
-                                    (attribute, obj_name, str(attribute_type)))
-                                return True
+                        result, value, type_error = self._validate_type(v, attribute_type, enumeration)
+                        if result:
+                            logger.error("The attribute '%s' of the object %s has an element who is not a %s." %
+                                (attribute, obj_name, type_error))
+                            return True
+                        obj[attribute][n] = value
                 else:
                     logger.error("The attribute '%s' of the object %s is not an array." % (attribute, obj_name))
                     return True
-            elif attribute_type == float and type(obj[attribute]) == int:
-                obj[attribute] = float(obj[attribute])
-            elif attribute_type == str:
-                if type(obj[attribute]) != str:
-                    obj[attribute] = str(obj[attribute])
-            elif attribute_type is not None and type(obj[attribute]) != attribute_type:
-                logger.error("The attribute '%s' of the object %s is not a %s." %
-                    (attribute, obj_name, str(attribute_type)))
-                return True
+            else:
+                result, value, type_error = self._validate_type(obj[attribute], attribute_type, enumeration)
+                if result:
+                    logger.error("The attribute '%s' of the object %s is not a %s." %
+                        (attribute, obj_name, type_error))
+                    return True
+                obj[attribute] = value
         elif required:
             logger.error("The attribute '%s' is required in the object %s." % (attribute, obj_name))
             return True

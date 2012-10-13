@@ -4,6 +4,7 @@ import sys
 import math
 import logging
 import ConfigParser
+import boto
 from datetime import timedelta
 from subprocess import Popen, PIPE
 from optparse import OptionParser
@@ -222,6 +223,7 @@ def main():
             if 'sns' in gene.config:
                 sns = boto.connect_sns()
                 sns.publish(gene.config['sns']['topic'], "The time generation is finish", "Tile generation")
+
 
 def _get_project_dir(deploy_config):
     config = ConfigParser.ConfigParser()
