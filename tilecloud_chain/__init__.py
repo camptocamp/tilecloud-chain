@@ -277,19 +277,65 @@ class TileGeneration:
         self.tilestream = store.list()
 
     def get(self, store, multiprocess=False):
-        self.tilestream = store.get(self.tilestream)
+        if options.test > 0:
+            self.tilestream = store.get(self.tilestream)
+        else:
+            def safe_get(tile):
+                try:
+                    return store.get_one(tile)
+                except:
+                    tile.error = sys.exc_info()[0]
+                    return tile
+            return imap(safe_get, ifilter(None, self.tilestream))
 
     def put(self, store, multiprocess=False):
-        self.tilestream = store.put(self.tilestream)
+        if options.test > 0:
+            self.tilestream = store.put(self.tilestream)
+        else:
+            def safe_put(tile):
+                try:
+                    return store.put_one(tile)
+                except:
+                    tile.error = sys.exc_info()[0]
+                    return tile
+            return imap(safe_put, ifilter(None, self.tilestream))
 
     def delete(self, store, multiprocess=False):
-        self.tilestream = store.delete(self.tilestream)
+        if options.test > 0:
+            self.tilestream = store.delete(self.tilestream)
+        else:
+            def safe_delete(tile):
+                try:
+                    return store.delete_one(tile)
+                except:
+                    tile.error = sys.exc_info()[0]
+                    return tile
+            return imap(safe_delete, ifilter(None, self.tilestream))
 
-    def imap(self, filter, multiprocess=False):
-        self.tilestream = imap(filter, self.tilestream)
+    def imap(self, tile_filter, multiprocess=False):
+        if options.test > 0:
+            self.tilestream = imap(tile_filter, self.tilestream)
+        else:
+            def safe_imap(tile):
+                try:
+                    return tile_filter(tile)
+                except:
+                    tile.error = sys.exc_info()[0]
+                    return tile
+            return imap(safe_imap, ifilter(None, self.tilestream))
 
-    def ifilter(self, filter):
-        self.tilestream = ifilter(filter, self.tilestream)
+    def ifilter(self, tile_filter):
+        if options.test > 0:
+            self.tilestream = ifilter(tile_filter, self.tilestream)
+        else:
+            def safe_filter(tile):
+                if tile:
+                    try:
+                        return tile_filter(tile)
+                    except:
+                        tile.error = sys.exc_info()[0]
+                        return tile
+            return ifilter(safe_filter, self.tilestream)
 
 
 class HashDropper(object):

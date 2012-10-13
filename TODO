@@ -1,4 +1,3 @@
-- Catch all errors
 - Add possibility to measue generation speed
 - Add metrics as decorators
 
