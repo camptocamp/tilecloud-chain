@@ -5,10 +5,6 @@ import yaml
 from itertools import imap, ifilter
 from hashlib import sha1
 from cStringIO import StringIO
-#from multiprocessing import Pool
-#from multiprocessing.pool import ApplyResult
-#from multiprocessing.pool import ThreadPool as Pool
-from multiprocessing.dummy import Pool
 
 try:
     from PIL import Image
@@ -135,7 +131,6 @@ class TileGeneration:
             if cache == 's3':
                 error = self.validate(cache, name, 'bucket', attribute_type=str, required=True) or error
 
-        self.pool = None
         error = self.validate(self.config, 'generation', 'config', attribute_type=dict, default={}) or error
         error = self.validate(self.config['generation'], 'generation', 'default_cache', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'default_layers', is_array=True, attribute_type=str) or error
@@ -149,9 +144,6 @@ class TileGeneration:
         error = self.validate(self.config['generation'], 'generation', 'disable_database', attribute_type=bool, default=False) or error
         error = self.validate(self.config['generation'], 'generation', 'disable_fillqueue', attribute_type=bool, default=False) or error
         error = self.validate(self.config['generation'], 'generation', 'disable_tilesgen', attribute_type=bool, default=False) or error
-
-        if 'number_process' in self.config['generation']:
-            self.pool = Pool(self.config['generation']['number_process'])
 
         if error:
             exit(1)
@@ -284,47 +276,17 @@ class TileGeneration:
     def set_store(self, store):
         self.tilestream = store.list()
 
-#    def _wait(self, tile):
-#        print 88888
-#        print ApplyResult.wait(tile)
-#        print tile.get()
-#        return tile.get()
-
     def get(self, store, multiprocess=False):
-#        if multiprocess and self.pool:
-#            results = (self.pool.apply_async(Get(store), [t]) for t in self.tilestream)
-#            async_results = (self.pool.apply_async(store.get_one, (t,)) for t in self.tilestream)
-#            self.tilestream = imap(ApplyResult.wait, results)
-#            self.tilestream = imap(ApplyResult.get, results)
-#            self.tilestream = imap(self._wait, results)
-#            self.tilestream = self.pool.imap(store.get_one, ifilter(None, self.tilestream))
-#            self.tilestream = self.pool.imap(store.get_one, self.tilestream)
-#        else:
-            self.tilestream = store.get(self.tilestream)
+        self.tilestream = store.get(self.tilestream)
 
     def put(self, store, multiprocess=False):
-#        if multiprocess and self.pool:
-#            results = (self.pool.apply_async(store.put_one, (t,)) for t in self.tilestream)
-#            self.tilestream = imap(ApplyResult.wait, results)
-#            self.tilestream = self.pool.imap(store.put_one, ifilter(None, self.tilestream))
-#        else:
-            self.tilestream = store.put(self.tilestream)
+        self.tilestream = store.put(self.tilestream)
 
     def delete(self, store, multiprocess=False):
-#        if multiprocess and self.pool:
-#            results = (self.pool.apply_async(store.delete_one, (t,)) for t in self.tilestream)
-#            self.tilestream = imap(ApplyResult.wait, results)
-#            self.tilestream = self.pool.imap(store.delete_one, ifilter(None, self.tilestream))
-#        else:
-            self.tilestream = store.delete(self.tilestream)
+        self.tilestream = store.delete(self.tilestream)
 
     def imap(self, filter, multiprocess=False):
-#        if multiprocess and self.pool:
-#            async_results = (self.pool.apply_async(filter, (t,)) for t in self.tilestream)
-#            self.tilestream = imap(ApplyResult.wait, async_results)
-#            self.tilestream = self.pool.imap(filter, self.tilestream)
-#        else:
-            self.tilestream = imap(filter, self.tilestream)
+        self.tilestream = imap(filter, self.tilestream)
 
     def ifilter(self, filter):
         self.tilestream = ifilter(filter, self.tilestream)
