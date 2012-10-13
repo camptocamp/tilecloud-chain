@@ -55,6 +55,13 @@ def _gene(options, gene, layer):
 
     if options.role == 'master':
         # Put the metatiles into the SQS queue
+        if self.config['generation']['number_process'] == 1:
+            gene.put(sqs_tilestore)
+        else:
+            from multiprocessing import Pool
+            pool = Pool(self.config['generation']['number_process'])
+            pool.imap_unordered(sqs_tilestore.put_one, ifilter(None, gene.tilestream))
+
         gene.put(sqs_tilestore)
 
     elif options.role in ('local', 'slave', 'hash'):

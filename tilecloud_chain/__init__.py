@@ -135,7 +135,7 @@ class TileGeneration:
         error = self.validate(self.config['generation'], 'generation', 'default_cache', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'default_layers', is_array=True, attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'authorised_user', attribute_type=str) or error
-        error = self.validate(self.config['generation'], 'generation', 'number_process', attribute_type=int) or error
+        error = self.validate(self.config['generation'], 'generation', 'number_process', attribute_type=int, default=1) or error
         error = self.validate(self.config['generation'], 'generation', 'maxconsecutive_errors', attribute_type=int, default=10) or error
         error = self.validate(self.config['generation'], 'generation', 'geodata_folder', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'deploy_config', attribute_type=str, default="tilegeneration/deploy.cfg") or error
