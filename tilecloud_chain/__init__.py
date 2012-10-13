@@ -100,10 +100,10 @@ class TileGeneration:
             error = self.validate(layer_object, name, 'dimensions', is_array=True, default=[])
             for d in layer_object['dimensions']:
                 dname = name + ".dimensions[%s]" % d.get('name', '')
-                error = self.validate(d, dname, 'name', required=True) or error
-                error = self.validate(d, dname, 'value', required=True) or error
-                error = self.validate(d, dname, 'values', is_array=True, default=[d['value']]) or error
-                error = self.validate(d, dname, 'default', default=d['value']) or error
+                error = self.validate(d, dname, 'name', attribute_type=str, required=True) or error
+                error = self.validate(d, dname, 'value', attribute_type=str, required=True) or error
+                error = self.validate(d, dname, 'values', attribute_type=str, is_array=True, default=[d['value']]) or error
+                error = self.validate(d, dname, 'default', attribute_type=str, default=d['value']) or error
 
             if 'empty_tile_detection' in layer:
                 error = self.validate(layer_object['empty_tile_detection'], name + '.empty_tile_detection',
