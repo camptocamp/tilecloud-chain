@@ -131,9 +131,7 @@ def _gene(options, gene, layer):
                 gene.add_error_filters(logger)
 
                 # Discard tiles with certain content
-                if meta and 'empty_metatile_detection' in gene.layer \
-                        and 'size' in gene.layer['empty_metatile_detection'] \
-                        and 'hash' in gene.layer['empty_metatile_detection']:
+                if meta and 'empty_metatile_detection' in gene.layer:
                     empty_tile = gene.layer['empty_metatile_detection']
                     gene.imap(HashDropper(empty_tile['size'], empty_tile['hash'], store=cache_tilestore))
 
@@ -156,9 +154,7 @@ def _gene(options, gene, layer):
             gene.imap(HashLogger('empty_tile_detection', logger))
         else:
             # Discard tiles with certain content
-            if 'empty_tile_detection' in gene.layer \
-                    and 'size' in gene.layer['empty_tile_detection'] \
-                    and 'hash' in gene.layer['empty_tile_detection']:
+            if 'empty_tile_detection' in gene.layer:
                 empty_tile = gene.layer['empty_tile_detection']
                 gene.imap(HashDropper(empty_tile['size'], empty_tile['hash'], store=cache_tilestore))
 
