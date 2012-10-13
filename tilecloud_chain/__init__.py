@@ -158,6 +158,9 @@ class TileGeneration:
         error = self.validate(self.config['generation'], 'generation', 'disable_tilesgen',
             attribute_type=bool, default=False) or error
 
+        if 'sns' in gene.config:
+            error = self.validate(self.config['sns'], 'sns', 'topic', attribute_type=str, require=True) or error
+
         if error:
             exit(1)
 

@@ -81,3 +81,6 @@ cost:
     request_per_layers: 10000000
     # GeoData size [Go]
     esb_size: 100
+
+sns:
+    topic: arn:aws:sns:eu-west-1:your-account-id:tilecloud

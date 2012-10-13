@@ -219,6 +219,9 @@ def main():
             exit_cmds.append('sudo shutdown 0')
             run_remote(';'.join(exit_cmds))  # TODO demonize, send email
 
+            if 'sns' in gene.config:
+                sns = boto.connect_sns()
+                sns.publish(gene.config['sns']['topic'], "The time generation is finish", "Tile generation")
 
 def _get_project_dir(deploy_config):
     config = ConfigParser.ConfigParser()
