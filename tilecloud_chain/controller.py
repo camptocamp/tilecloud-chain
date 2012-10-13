@@ -69,17 +69,17 @@ def main():
     if options.cache is None:
         options.cache = gene.config['generation']['default_cache']
     if options.deploy_config is None:
-        options.deploy_config = gene.config['generation'].get('deploy_config', 'tilegeneration/deploy.cfg')
+        options.deploy_config = gene.config['generation']['deploy_config']
     if options.sync:
-        options.sync = not gene.config['generation'].get('disable_sync', False)
+        options.sync = not gene.config['generation']['disable_sync']
     if options.deploy_code:
-        options.deploy_code = not gene.config['generation'].get('disable_deploycode', False)
+        options.deploy_code = not gene.config['generation']['disable_code']
     if options.deploy_database:
-        options.deploy_database = not gene.config['generation'].get('disable_database', False)
+        options.deploy_database = not gene.config['generation']['disable_database']
     if options.fill_queue:
-        options.fill_queue = not gene.config['generation'].get('disable_fillqueue', False)
+        options.fill_queue = not gene.config['generation']['disable_fillqueue']
     if options.tiles_gen:
-        options.tiles_gen = not gene.config['generation'].get('disable_tilesgen', False)
+        options.tiles_gen = not gene.config['generation']['disable_tilesgen']
 
     if options.capabilities:
         _generate_wmts_capabilities(gene, options)
@@ -153,7 +153,7 @@ def main():
         arguments = _get_arguments(options)
         project_dir = _get_project_dir(options.deploy_config)
         pids = []
-        for i in range(gene.config['generation'].get('number_process', 1)):
+        for i in range(gene.config['generation']['number_process']):
             pids.append(run_remote('./buildout/bin/generate_tiles ' +
                 ' '.join(arguments), host, project_dir))
 
@@ -284,10 +284,10 @@ def _calculate_cost(gene, options):
     nb_metatiles = {}
     nb_tiles = {}
 
-    meta = gene.layer.get('meta', False)
+    meta = gene.layer['meta']
     if options.cost_algo == 'area':
         meta_size = gene.layer['meta_size'] if meta else None
-        tile_size = gene.layer['grid_ref'].get('tile_size', 256)
+        tile_size = gene.layer['grid_ref']['tile_size']
         for i, resolution in enumerate(gene.layer['grid_ref']['resolutions']):
             if meta:
                 size = meta_size * tile_size * resolution
@@ -352,7 +352,7 @@ def _calculate_cost(gene, options):
 
         all_time += time
         td = timedelta(milliseconds=time)
-        print "Time to generate: %d %d:%02d:%02d [d h:mn:ss]" % (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
+        print "Time to generate: %d %d:%02d:%02d [d h:mm:ss]" % (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
         c = gene.config['cost']['s3']['put'] * nb_tiles[z] / 1000.0
         price += c
         print 'S3 PUT: %0.2f [$]' % c
@@ -440,8 +440,8 @@ def _generate_openlayers(gene, options):
             http_url=cache['http_url'] % cache,
             layers=[{
                 'name': name,
-                'grid': layer.get('output_format', None) == 'grid',
-                'resolution': layer.get('resolution', None),
+                'grid': layer['type'] == 'mapnik' and layer['output_format'] == 'grid',
+                'resolution': layer['resolution'] if layer['type'] == 'mapnik' and layer['output_format'] == 'grid' else None,
             } for name, layer in gene.layers.items() if layer['grid_ref']['srs'] == gene.config['openlayers']['srs']])
 
     _send(openlayers_html, '/index.html', cache)

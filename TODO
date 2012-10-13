@@ -1,4 +1,3 @@
-- Add global validation and defaults
 - Catch all errors
 - Add safe metatile by adding a counter
 - Remove filtred from SQS
@@ -20,6 +19,3 @@
   http://code.activestate.com/recipes/576519-thread-pool-with-same-api-as-multiprocessingpool/
   http://stackoverflow.com/questions/4814970/subprocess-check-output-doesnt-seem-to-exist-python-2-6-5
 - Add tests
-
-TileCloud
-- Fix wmts layout without url

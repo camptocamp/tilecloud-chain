@@ -32,7 +32,7 @@ def _gene(options, gene, layer):
         # Create SQS queue
         sqs_tilestore = SQSTileStore(gene.get_sqs_queue())
 
-    meta = gene.layer.get('meta', False)
+    meta = gene.layer['meta']
     if options.role in ('local', 'master'):
         # Generate a stream of metatiles
         gene.init_tilecoords(options)
@@ -66,25 +66,31 @@ def _gene(options, gene, layer):
                     layers=gene.layer['layers'],
                     srs=gene.layer['grid_ref']['srs'],
                     format=gene.layer['extension'],
-                    border=(gene.layer.get('meta_buffer', 0) if meta else 0),
+                    border=gene.layer['meta_buffer'] if meta else 0,
                     tilegrid=gene.get_grid()['obj']
                 ),)
             ), True)
         elif gene.layer['type'] == 'mapnik':
             from tilecloud.store.mapnik_ import MapnikTileStore
 
-            if (meta and gene.layer.get('output_format', 'png') == 'grid'):
-                exit("Mapnik/Grid layers don't support metatiles.")
-
-            gene.get(MapnikTileStore(
-                tilegrid=gene.get_grid()['obj'],
-                mapfile=gene.layer['mapfile'],
-                image_buffer=(gene.layer.get('meta_buffer', 0) if meta else 0),
-                data_buffer=gene.layer.get('data_buffer', 128),
-                output_format=gene.layer.get('output_format', 'png'),
-                resolution=gene.layer.get('resolution', 4),
-                layers_fields=gene.layer.get('layers_fields', {})
-            ), False)
+            if gene.layer['output_format'] == 'grid':
+                gene.get(MapnikTileStore(
+                    tilegrid=gene.get_grid()['obj'],
+                    mapfile=gene.layer['mapfile'],
+                    image_buffer=gene.layer['meta_buffer'] if meta else 0,
+                    data_buffer=gene.layer['data_buffer'],
+                    output_format=gene.layer['output_format'],
+                    resolution=gene.layer['resolution'],
+                    layers_fields=gene.layer['layers_fields']
+                ), False)
+            else:
+                gene.get(MapnikTileStore(
+                    tilegrid=gene.get_grid()['obj'],
+                    mapfile=gene.layer['mapfile'],
+                    image_buffer=gene.layer['meta_buffer'] if meta else 0,
+                    data_buffer=gene.layer['data_buffer'],
+                    output_format=gene.layer['output_format'],
+                ), False)
 
         if options.role == 'slave':
             # Mark the metatile as done
@@ -109,8 +115,8 @@ def _gene(options, gene, layer):
             # Split the metatile image into individual tiles
             gene.get(MetaTileSplitterTileStore(
                     gene.layer['mime_type'],
-                    gene.layer['grid_ref'].get('tile_size', 256),
-                    gene.layer.get('meta_buffer', 0)), True)
+                    gene.layer['grid_ref']['tile_size'],
+                    gene.layer['meta_buffer']), True)
 
             if options.role != 'hash':
                 # Only keep tiles that intersect geometry

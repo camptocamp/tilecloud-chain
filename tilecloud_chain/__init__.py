@@ -73,11 +73,27 @@ class TileGeneration:
             error = self.validate(layer_object, name, 'name', attribute_type=str, default=lname) or error
             error = self.validate(layer_object, name, 'grid', attribute_type=str, required=True) or error
             error = self.validate(layer_object, name, 'type', attribute_type=str, required=True) or error
+
+            error = self.validate(layer_object, name, 'meta', attribute_type=bool, default=False) or error
+            error = self.validate(layer_object, name, 'meta_size', attribute_type=int, default=8) or error
+            error = self.validate(layer_object, name, 'meta_buffer', attribute_type=int,
+                default=0 if layer_object['type'] == 'mapnik' else 128) or error
+
             if layer_object['type'] == 'wms':
                 error = self.validate(layer_object, name, 'url', attribute_type=str, required=True) or error
                 error = self.validate(layer_object, name, 'layers', attribute_type=str, required=True) or error
             if layer_object['type'] == 'mapnik':
                 error = self.validate(layer_object, name, 'mapfile', attribute_type=str, required=True) or error
+                error = self.validate(layer_object, name, 'output_format', attribute_type=str, default='png') or error
+                error = self.validate(layer_object, name, 'data_buffer', attribute_type=int, default=128) or error
+                if layer_object['output_format'] == 'grid':
+                    error = self.validate(layer_object, name, 'resolution', attribute_type=int, default=4) or error
+                    error = self.validate(layer_object, name, 'layers_fields', attribute_type=dict, default= {}) or error
+                    if layer_object['meta']:
+                        logger.error("The layer '%s' is type or Mapnik/Grid, that can't support matatiles." %
+                            (layer_object['name']))
+                        error = True
+
             error = self.validate(layer_object, name, 'extension', attribute_type=str, required=True) or error
             error = self.validate(layer_object, name, 'mime_type', attribute_type=str, required=True) or error
             error = self.validate(layer_object, name, 'wmts_style', attribute_type=str, required=True) or error
@@ -88,10 +104,6 @@ class TileGeneration:
                 error = self.validate(d, dname, 'value', required=True) or error
                 error = self.validate(d, dname, 'values', is_array=True, default=[d['value']]) or error
                 error = self.validate(d, dname, 'default', default=d['value']) or error
-
-            error = self.validate(layer_object, name, 'meta', attribute_type=bool, default=False) or error
-            error = self.validate(layer_object, name, 'meta_size', attribute_type=int, default=8) or error
-            error = self.validate(layer_object, name, 'meta_buffer', attribute_type=int, default=128) or error
 
             if 'empty_tile_detection' in layer:
                 error = self.validate(layer_object['empty_tile_detection'], name + '.empty_tile_detection',
@@ -244,7 +256,7 @@ class TileGeneration:
         bounding_pyramid = BoundingPyramid(tilegrid=self.layer['grid_ref']['obj'])
         bounding_pyramid.fill(None, self.geom.bounds)
 
-        meta = self.layer.get('meta', False)
+        meta = self.layer['meta']
         if meta:
             if options.zoom or options.zoom == 0:
                 def metatilecoords(n, z):
