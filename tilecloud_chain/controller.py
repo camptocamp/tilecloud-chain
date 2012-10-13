@@ -47,6 +47,10 @@ def main():
             help='The cache name to use, default to main')
     parser.add_option('--capabilities', '--generate_wmts_capabilities', default=False, action="store_true",
             help='Generate the WMTS Capabilities and exit')
+    parser.add_option('--time', '--measure-generation-time',
+            default=None, dest='time', metavar="N",
+            help='Measure the generation time by creating N tiles to warm-up, '
+            'N tile to do the measure and N tiles to slow-down, this using the multiprocess.')
     parser.add_option('--cost', '--calculate-cost', default=False, action="store_true",
             help='Calculate the cost to generate and upload the tiles')
     parser.add_option('--cost-algo', '--calculate-cost-algorithm', default='area', dest='cost_algo',
@@ -147,18 +151,73 @@ def main():
         # TODO not imlpemented yet
         create_snapshot(host, gene.metadata['aws'])
 
-    if options.fill_queue or options.tiles_gen:
+    if options.time:
         # TODO test
-        arguments = _get_arguments(options)
+        arguments = _get_arguments(options, False)
+        arguments.extend(['--role', 'local'])
+        arguments.extend(['--time', options.time])
+        arguments.append("--daemonize")
+
         project_dir = _get_project_dir(options.deploy_config)
         pids = []
         for i in range(gene.config['generation']['number_process']):
             pids.append(run_remote('./buildout/bin/generate_tiles ' +
-                ' '.join(arguments), host, project_dir))
+                ' '.join(arguments) + ' > /tmp/time' + i, host, project_dir))
 
-        exit_cmds = ['while [ -e /proc/%i ]; do sleep 1; done' % pid for pid in pids]
-        exit_cmds.append('sudo shutdown 0')
-        run_remote(';'.join(exit_cmds))  # TODO demonize, send email
+        wait_cmds = ['while [ -e /proc/%i ]; do sleep 1; done' % pid for pid in pids]
+        run_remote(';'.join(wait_cmds))
+
+        tiles_size = []
+        times = []
+        for i in range(gene.config['generation']['number_process']):
+            results = run_remote('cat /tmp/time' + i).split()
+            times.append(results.pop())
+            tiles_size.extend(results)
+
+        mean_time = reduce(lambda x, y: x + y,
+            [timedelta(microseconds=int(r)) for r in times],
+            timedelta()) / len(times)
+        mean_time_ms = mean_time.seconds * 1000 + mean_time.microseconds / 1000.0
+
+        mean_size = reduce(lambda x, y: x + y, [int(r) for r in tiles_size], 0) / len(tiles_size)
+        mean_size_kb = mean_size / 1024.0
+
+        print 'A tile is generated in: %0.3f [ms]' % mean_time_ms
+        print 'Than mean generated tile size: %0.3f [kb]' % (mean_size_kb)
+        print '''config:
+    cost:
+        tileonly_generation_time: %0.3f
+        tile_generation_time: %0.3f
+        metatile_generation_time: 0
+        tile_size: 0.3f''' % (mean_time_ms, mean_time_ms, mean_size_kb)
+
+        run_remote('sudo shutdown 0')  # TODO demonize, send email
+
+    else:
+        if options.fill_queue:
+            # TODO test
+            arguments = _get_arguments(options)
+            arguments.extend(['--role', 'master'])
+
+            project_dir = _get_project_dir(options.deploy_config)
+            print run_remote('./buildout/bin/generate_tiles ' +
+                    ' '.join(arguments), host, project_dir)
+
+        if options.tiles_gen:
+            # TODO test
+            arguments = _get_arguments(options, False)
+            arguments.extend(['--role', 'slave'])
+            arguments.append("--daemonize")
+
+            project_dir = _get_project_dir(options.deploy_config)
+            pids = []
+            for i in range(gene.config['generation']['number_process']):
+                pids.append(run_remote('./buildout/bin/generate_tiles ' +
+                    ' '.join(arguments), host, project_dir))
+
+            exit_cmds = ['while [ -e /proc/%i ]; do sleep 1; done' % pid for pid in pids]
+            exit_cmds.append('sudo shutdown 0')
+            run_remote(';'.join(exit_cmds))  # TODO demonize, send email
 
 
 def _get_project_dir(deploy_config):
@@ -184,9 +243,7 @@ def _get_arguments(options):
     arguments = [
         "--config", options.config,
         "--layer", options.layer,
-        "--destination-cache", options.cache,
-        "--role", 'master' if options.fill_queue else 'slave'
-        "--daemonize"
+        "--destination-cache", options.cache
     ]
     if options.bbox:
         arguments.extend(["--bbox", options.bbox])

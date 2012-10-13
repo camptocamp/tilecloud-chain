@@ -138,7 +138,7 @@ class TileGeneration:
         error = self.validate(self.config, 'generation', 'config', attribute_type=dict, default={}) or error
         error = self.validate(self.config['generation'], 'generation', 'default_cache', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'default_layers',
-            s_array=True, attribute_type=str) or error
+            is_array=True, attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'authorised_user', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'number_process',
             attribute_type=int, default=1) or error
@@ -210,6 +210,12 @@ class TileGeneration:
 
         if options.bbox:
             self.init_geom(options.bbox)
+        elif options.time and 'bbox' in self.layer:
+            self.init_geom([
+                (self.layer['bbox'][0] + self.layer['bbox'][2]) / 2,
+                (self.layer['bbox'][1] + self.layer['bbox'][3]) / 2,
+                self.layer['bbox'][2], self.layer['bbox'][3]
+            ])
         elif 'bbox' in self.layer:
             self.init_geom(self.layer['bbox'])
         else:
@@ -261,6 +267,9 @@ class TileGeneration:
     def init_tilecoords(self, options):
         bounding_pyramid = BoundingPyramid(tilegrid=self.layer['grid_ref']['obj'])
         bounding_pyramid.fill(None, self.geom.bounds)
+
+        if options.time and not (options.zoom or options.zoom == 0):
+            options.zoom = max(bounding_pyramid.bounds)
 
         meta = self.layer['meta']
         if meta:

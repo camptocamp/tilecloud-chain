@@ -4,6 +4,7 @@ import os
 import sys
 import logging
 from itertools import ifilter
+from datetime import datetime
 from getpass import getuser
 from optparse import OptionParser
 
@@ -165,6 +166,11 @@ def _gene(options, gene, layer):
         gene.add_error_filters(logger)
         gene.ifilter(DropEmpty())
 
+        if options.time:
+            def log_size(tile):
+                print len(tile.data)
+            gene.imap(log_size)
+
         gene.put(cache_tilestore)
 
     gene.add_error_filters(logger)
@@ -180,7 +186,16 @@ def _gene(options, gene, layer):
         else:
             gene.delete(sqs_tilestore)
 
-    consume(gene.tilestream, options.test)
+    if options.time:
+        consume(gene.tilestream, options.time)
+        t1 = datetime.now()
+        consume(gene.tilestream, options.time)
+        t2 = datetime.now()
+        consume(gene.tilestream, options.time)
+        d = (t2 - t1) / options.time
+        print (d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds
+    else:
+        consume(gene.tilestream, options.test)
 
 
 def daemonize():
@@ -218,6 +233,10 @@ def main():
             help='The cache name to use')
     parser.add_option('-H', '--get-hash', metavar="TILE",
             help='get the empty tiles hash, use the specified TILE z/x/y')
+    parser.add_option('--time', '--measure-generation-time',
+            default=None, dest='time', metavar="N",
+            help='Measure the generation time by creating N tiles to warm-up, '
+            'N tile to do the measure and N tiles to slow-down')
     (options, args) = parser.parse_args()
     logging.basicConfig(
         format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
