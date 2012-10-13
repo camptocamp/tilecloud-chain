@@ -1,5 +1,6 @@
-- Add possibility to measue generation speed
 - Add metrics as decorators
+- Add possibility to measue generation speed
+- Send message when generated using Amazon SNS
 
 - Implement:
     - geodata sync
@@ -10,9 +11,4 @@
 - Integrate AWS host creator (buildcloud)
 - Add Rendering the world mode
 - Add Mapscript store
-- Multithread
-  try: http://stackoverflow.com/questions/6039150/python-multiple-simultaneous-threadpools
-  http://stackoverflow.com/questions/3033952/python-thread-pool-similar-to-the-multiprocessing-pool
-  http://code.activestate.com/recipes/576519-thread-pool-with-same-api-as-multiprocessingpool/
-  http://stackoverflow.com/questions/4814970/subprocess-check-output-doesnt-seem-to-exist-python-2-6-5
 - Add tests
