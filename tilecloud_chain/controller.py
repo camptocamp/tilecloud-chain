@@ -49,7 +49,7 @@ def main():
     parser.add_option('--capabilities', '--generate_wmts_capabilities', default=False, action="store_true",
             help='Generate the WMTS Capabilities and exit')
     parser.add_option('--time', '--measure-generation-time',
-            default=None, dest='time', metavar="N",
+            default=None, dest='time', metavar="N", type='int',
             help='Measure the generation time by creating N tiles to warm-up, '
             'N tile to do the measure and N tiles to slow-down, this using the multiprocess.')
     parser.add_option('--cost', '--calculate-cost', default=False, action="store_true",
