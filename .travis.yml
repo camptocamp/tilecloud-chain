@@ -1,0 +1,21 @@
+language: python
+
+python:
+  - 2.6
+  - 2.7
+
+before_install:
+  - python --version
+
+install:
+  - python bootstrap.py --version 1.5.2 --distribute --download-base
+            http://pypi.camptocamp.net/distribute-0.6.22_fix-issue-227/ --setup-source
+            http://pypi.camptocamp.net/distribute-0.6.22_fix-issue-227/distribute_setup.py
+
+script:
+  - ./buildout/bin/buildout
+
+notifications:
+  email:
+    recipients:
+      - stephane.brunner@gmail.com
