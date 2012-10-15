@@ -1,4 +1,3 @@
-
 grids:
     swissgrid:
         # scale used to work with work internaly with integer resolutions [optional, default to 1]
@@ -29,7 +28,7 @@ layer_default:
     grid: swissgrid
     type: wms
     # the URL of the WMS server to used
-    url: http://wms.geo.admin.ch/
+    url: http://${vars:host}/${vars:instanceid}/mapserv
     # file name extension
     extension: png
     # the bbox there we want to generate tiles
@@ -37,15 +36,15 @@ layer_default:
     # mime type used for the WMS request and the WMTS capabilities generation
     mime_type: image/png
     wmts_style: default
-    # the WMTS demensions definition [default to []]
+    # the WMTS dimensions definition [default to []]
     dimensions:
-        -   name: VERSION
+        -   name: DATE
             # the default value for the WMTS capabilities
-            default: 1
+            default: 2012
             # the generated value
-            value: 1
+            value: 2012
             # all the available values in the WMTS capabilities
-            values: [1]
+            values: [2012]
     # the meta tiles definition [default to off]
     meta: on
     # the meta tiles size [default to 8]
@@ -58,12 +57,12 @@ layer_default:
     # size and hash used to detect empty tiles and metatiles [optional, default to None]
     # can be generate by (with en emty tile):
     # ./buildout/bin/generate_tiles --get-hash <z/x/y> -l <layer_name>
-    empty_tile_detection:
-        size: 1096
-        hash: -2225832598072171888
-    empty_metatile_detection:
-        size: 4144
-        hash: -7657621180573147007
+#    empty_metatile_detection:
+#        size: 740
+#        hash: 3237839c217b51b8a9644d596982f342f8041546
+#    empty_tile_detection:
+#        size: 921
+#        hash: 1e3da153be87a493c4c71198366485f290cad43c
     cost:
         # default to 40 [ms]
         tileonly_generation_time: 40
@@ -76,20 +75,21 @@ layer_default:
 
 layers:
     plan:
-        layers: ch.swisstopo.geologie-geotechnik-gk500-lithologie_hauptgruppen
+        layers: plan
     plan_color:
         layers: plan_color
     ortho:
+        layers: ortho
         extension: jpeg
         mime_type: image/jpeg
         # no buffer needed on rater sources
         meta_buffer: 0
-        empty_tile_detection:
-            size: 1096
-            hash: -2225832598072171888
-        empty_metatile_detection:
-            size: 4144
-            hash: -7657621180573147007
+#        empty_metatile_detection:
+#            size: 66163
+#            hash: a9d16a1794586ef92129a2fb41a739451ed09914
+#        empty_metatile_detection:
+#            size: 1651
+#            hash: 2892fea0a474228f5d66a534b0b5231d923696da
     mapnik:
         type: mapnik
         # buffer to gets the data
