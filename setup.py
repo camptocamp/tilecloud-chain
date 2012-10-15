@@ -9,6 +9,7 @@ README = open(os.path.join(here, 'README.rst')).read()
 
 install_requires = [
     'tilecloud>=0.2dev-20121011',
+    'pillow',
     'requests',
     'psycopg2',
     'Shapely',
