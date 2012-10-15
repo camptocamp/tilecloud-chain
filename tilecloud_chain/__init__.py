@@ -32,6 +32,7 @@ class TileGeneration:
 
     def __init__(self, config_file, options, layer_name=None):
         self.config = yaml.load(file(config_file))
+        self.options = options
 
         self.validate_exists(self.config, 'config', 'grids')
         self.grids = self.config['grids']
