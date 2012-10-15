@@ -119,7 +119,7 @@ layers:
 generation:
     default_cache: local
     default_layers: [plan, plan_color, ortho]
-    # used to allod only a specific user to generate tiles (for rights issue)
+    # used to allowed only a specific user to generate tiles (for rights issue)
     authorised_user: www-data
 
     # not already implemented [optional]
@@ -139,7 +139,7 @@ generation:
     disable_code: no
     # disable database deploy, not already implemented [default to no]
     disable_database: no
-    # disable sqs tile queue filling , not already implemented [default to no]
+    # disable SQS tile queue filling , not already implemented [default to no]
     disable_fillqueue: no
     # disable tile generation, not already implemented [default to no]
     disable_tilesgen: no
