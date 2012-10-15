@@ -109,12 +109,12 @@ class TileGeneration:
                 error = self.validate(layer['empty_tile_detection'], name + '.empty_tile_detection',
                         'size', attribute_type=int, required=True) or error
                 error = self.validate(layer['empty_tile_detection'], name + '.empty_tile_detection',
-                        'hash', attribute_type=int, required=True) or error
+                        'hash', attribute_type=str, required=True) or error
             if 'empty_metatile_detection' in layer:
                 error = self.validate(layer['empty_metatile_detection'], name + '.empty_metatile_detection',
                         'size', attribute_type=int, required=True) or error
                 error = self.validate(layer['empty_metatile_detection'], name + '.empty_metatile_detection',
-                        'hash', attribute_type=int, required=True) or error
+                        'hash', attribute_type=str, required=True) or error
 
             layer['grid_ref'] = self.grids[layer['grid']] if not error else None
 
