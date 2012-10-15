@@ -98,8 +98,8 @@ def main():
         all_size = 0
         tile_size = 0
         if (options.layer):
-            tile_size = gene.layer['cost']['tile_size'] / (1024.0 * 1024)
             (all_size, all_time, all_price) = _calculate_cost(gene, options)
+            tile_size = gene.layer['cost']['tile_size'] / (1024.0 * 1024)
         else:
             all_time = timedelta()
             all_price = 0
@@ -107,8 +107,8 @@ def main():
                 print
                 print "===== %s =====" % layer
                 gene.set_layer(layer, options)
-                tile_size += gene.layer['cost']['tile_size'] / (1024.0 * 1024)
                 (size, time, price) = _calculate_cost(gene, options)
+                tile_size += gene.layer['cost']['tile_size'] / (1024.0 * 1024)
                 all_time += time
                 all_price += price
                 all_size += size
@@ -117,7 +117,7 @@ def main():
             print "===== GLOBAL ====="
             print 'Total generation time : %d %d:%02d:%02d [d h:mm:ss]' % \
                 (all_time.days, all_time.seconds / 3600, all_time.seconds % 3600 / 60, all_time.seconds % 60)
-            print 'Total generation cost : %0.2f [$]' % price
+            print 'Total generation cost : %0.2f [$]' % all_price
         print
         print 'S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))
         print 'S3 get: %0.2f [$/month]' % (
