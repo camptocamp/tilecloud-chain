@@ -393,7 +393,7 @@ class HashDropper(object):
                 sha1(tile.data).hexdigest() != self.sha1code:
             return tile
         else:
-            if self.store:
+            if self.store is not None:
                 if tile.tilecoord.n != 1:
                     self.store.delete((Tile(tilecoord) for tilecoord in tile.tilecoord))
                 else:
