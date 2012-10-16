@@ -137,8 +137,10 @@ def _gene(options, gene, layer):
                     gene.imap(HashDropper(empty_tile['size'], empty_tile['hash'], store=cache_tilestore))
 
             def add_elapsed_togenerate(metatile):
-                metatile.elapsed_togenerate = metatile.tilecoord.n ** 2
-                return True
+                if metatile is not None:
+                    metatile.elapsed_togenerate = metatile.tilecoord.n ** 2
+                    return True
+                return False
             gene.ifilter(add_elapsed_togenerate)
 
             # Split the metatile image into individual tiles

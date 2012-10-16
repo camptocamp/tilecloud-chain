@@ -439,7 +439,7 @@ class IntersectGeometryFilter(object):
                 self.grid['obj'].extent(tile.tilecoord)). \
                 intersects(self.geom)
 
-        if not intersects and tile.metatile:
+        if not intersects and hasattr(tile, 'metatile'):
             tile.metatile.elapsed_togenerate -= 1
             if tile.metatile.elapsed_togenerate == 0:
                 self.queue_store.delete_one(tile.metatile)
