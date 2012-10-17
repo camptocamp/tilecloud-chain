@@ -2,6 +2,7 @@ TileCloud Chain
 ===============
 
 Just syntax check:
+
 .. image:: https://secure.travis-ci.org/sbrunner/tilecloud-chain.png
 
 
