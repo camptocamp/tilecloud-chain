@@ -14,7 +14,7 @@ caches:
         type: filesystem
         # can includes %(folder)s for the folder
         http_url: http://taurus/tiles
-        folder: /var/www/tiles
+        folder: /var/sig/tilecache
     s3:
         type: s3
         # %(bucket)s and %(folder)s comes from this cache

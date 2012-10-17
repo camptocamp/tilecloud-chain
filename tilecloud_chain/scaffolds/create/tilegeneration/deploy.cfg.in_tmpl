@@ -1,5 +1,5 @@
 [DEFAULT]
-project = {{project}}
+project = {{package}}
 
 [main]
 hookdir = %(here)s/hooks/
@@ -11,9 +11,9 @@ active = false
 names = $${vars:db}
 
 [code]
-dir = /var/www/vhosts/<vhost>/private/{{project}}
-dest = /var/www/vhosts/???/private/{{project}}
+dir = /var/www/vhiosts/<vhost>/private/{{package}}
+dest = /var/www/vhosts/???/private/{{package}}
 
 [apache]
-dest = /var/www/vhosts/conf/{{project}}.conf
-content = Include /var/www/vhosts/???/private/{{project}}/apache/*.conf
+dest = /var/www/vhosts/conf/{{package}}.conf
+content = Include /var/www/vhosts/???/private/{{package}}/apache/*.conf
