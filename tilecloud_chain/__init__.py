@@ -272,8 +272,8 @@ class TileGeneration:
         self.imap(LogErrors(logger, logging.ERROR,
                 "Error in tile: %(tilecoord)s, %(error)r"))
         if 'maxconsecutive_errors' in self.config['generation']:
-            self.imap(MaximumConsecutiveErrors(
-                    self.config['generation']['maxconsecutive_errors']))
+            self.tilestream = imap(MaximumConsecutiveErrors(
+                    self.config['generation']['maxconsecutive_errors']), self.tilestream)
         self.ifilter(DropErrors())
 
     def init_tilecoords(self, options):
@@ -321,7 +321,22 @@ class TileGeneration:
                 except:
                     tile.error = sys.exc_info()[0]
                     return tile
-            return imap(safe_get, ifilter(None, self.tilestream))
+            self.tilestream = imap(safe_get, ifilter(None, self.tilestream))
+
+    def get2(self, store, multiprocess=False):
+        if self.options.test > 0:
+            self.tilestream = store.get(self.tilestream)
+        else:
+            def safe_get(tilestream):
+                for tile in tilestream:
+                    try:
+                        substream = store.get((tile,))
+                        for t in substream:
+                            yield t
+                    except:
+                        tile.error = sys.exc_info()[1]
+                        yield tile
+            self.tilestream = safe_get(self.tilestream)
 
     def put(self, store, multiprocess=False):
         if self.options.test > 0:
@@ -333,7 +348,7 @@ class TileGeneration:
                 except:
                     tile.error = sys.exc_info()[0]
                     return tile
-            return imap(safe_put, ifilter(None, self.tilestream))
+            self.tilestream = imap(safe_put, ifilter(None, self.tilestream))
 
     def delete(self, store, multiprocess=False):
         if self.options.test > 0:
@@ -345,7 +360,7 @@ class TileGeneration:
                 except:
                     tile.error = sys.exc_info()[0]
                     return tile
-            return imap(safe_delete, ifilter(None, self.tilestream))
+            self.tilestream = imap(safe_delete, ifilter(None, self.tilestream))
 
     def imap(self, tile_filter, multiprocess=False):
         if self.options.test > 0:
@@ -357,7 +372,7 @@ class TileGeneration:
                 except:
                     tile.error = sys.exc_info()[0]
                     return tile
-            return imap(safe_imap, ifilter(None, self.tilestream))
+            self.tilestream = imap(safe_imap, ifilter(None, self.tilestream))
 
     def ifilter(self, tile_filter):
         if self.options.test > 0:
@@ -370,7 +385,7 @@ class TileGeneration:
                     except:
                         tile.error = sys.exc_info()[0]
                         return tile
-            return ifilter(safe_filter, self.tilestream)
+            self.tilestream = ifilter(safe_filter, self.tilestream)
 
 
 class HashDropper(object):

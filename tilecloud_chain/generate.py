@@ -144,7 +144,7 @@ def _gene(options, gene, layer):
             gene.ifilter(add_elapsed_togenerate)
 
             # Split the metatile image into individual tiles
-            gene.get(MetaTileSplitterTileStore(
+            gene.get2(MetaTileSplitterTileStore(
                     gene.layer['mime_type'],
                     gene.layer['grid_ref']['tile_size'],
                     gene.layer['meta_buffer']), True)
