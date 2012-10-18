@@ -172,12 +172,15 @@ def main():
         times = []
         for i in range(gene.config['generation']['number_process']):
             results = run_remote('cat /tmp/time' + i).split()
-            times.append(results.pop())
-            tiles_size.extend(results)
+            for r in results:
+                if r.startswith('time: '):
+                    times.append(int(r.replace('time: ', '')))
+                elif r.startswith('size: '):
+                    tiles_size.append(int(r.replace('size: ', '')))
 
         mean_time = reduce(lambda x, y: x + y,
             [timedelta(microseconds=int(r)) for r in times],
-            timedelta()) / len(times)
+            timedelta()) / len(times) ** 2
         mean_time_ms = mean_time.seconds * 1000 + mean_time.microseconds / 1000.0
 
         mean_size = reduce(lambda x, y: x + y, [int(r) for r in tiles_size], 0) / len(tiles_size)

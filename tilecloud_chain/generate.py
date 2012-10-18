@@ -166,7 +166,7 @@ def _gene(options, gene, layer):
 
         if options.time:
             def log_size(tile):
-                print len(tile.data)
+                print 'size: ' + len(tile.data)
             gene.imap(log_size)
 
         gene.put(cache_tilestore)
@@ -185,13 +185,21 @@ def _gene(options, gene, layer):
             gene.delete(sqs_tilestore)
 
     if options.time:
-        consume(gene.tilestream, options.time)
-        t1 = datetime.now()
-        consume(gene.tilestream, options.time)
-        t2 = datetime.now()
-        consume(gene.tilestream, options.time)
-        d = (t2 - t1) / options.time
-        print (d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds
+        class log_time:
+            n = 0
+            t1 = None
+
+            def __call__(self, tile):
+                self.n += 1
+                if self.n == options.time:
+                    self.t1 = datetime.now()
+                elif self.n == 2 * options.time:
+                    t2 = datetime.now()
+                    d = (t2 - self.t1) / options.time
+                    print 'time: ' + (d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds
+        gene.imap(log_time)
+
+        consume(gene.tilestream, options.time * 3)
     else:
         consume(gene.tilestream, options.test)
 
