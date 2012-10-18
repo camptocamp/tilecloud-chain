@@ -334,7 +334,7 @@ class TileGeneration:
     def set_store(self, store):
         self.tilestream = store.list()
 
-    def get(self, store, multiprocess=False):
+    def get(self, store):
         if self.options.test > 0:
             self.tilestream = store.get(self.tilestream)
         else:
@@ -342,11 +342,11 @@ class TileGeneration:
                 try:
                     return store.get_one(tile)
                 except:
-                    tile.error = sys.exc_info()[0]
+                    tile.error = sys.exc_info()[1]
                     return tile
             self.tilestream = imap(safe_get, ifilter(None, self.tilestream))
 
-    def put(self, store, multiprocess=False):
+    def put(self, store):
         if self.options.test > 0:
             self.tilestream = store.put(self.tilestream)
         else:
@@ -354,11 +354,11 @@ class TileGeneration:
                 try:
                     return store.put_one(tile)
                 except:
-                    tile.error = sys.exc_info()[0]
+                    tile.error = sys.exc_info()[1]
                     return tile
             self.tilestream = imap(safe_put, ifilter(None, self.tilestream))
 
-    def delete(self, store, multiprocess=False):
+    def delete(self, store):
         if self.options.test > 0:
             self.tilestream = store.delete(self.tilestream)
         else:
@@ -366,11 +366,11 @@ class TileGeneration:
                 try:
                     return store.delete_one(tile)
                 except:
-                    tile.error = sys.exc_info()[0]
+                    tile.error = sys.exc_info()[1]
                     return tile
             self.tilestream = imap(safe_delete, ifilter(None, self.tilestream))
 
-    def imap(self, tile_filter, multiprocess=False):
+    def imap(self, tile_filter):
         if self.options.test > 0:
             self.tilestream = imap(tile_filter, self.tilestream)
         else:
@@ -378,7 +378,7 @@ class TileGeneration:
                 try:
                     return tile_filter(tile)
                 except:
-                    tile.error = sys.exc_info()[0]
+                    tile.error = sys.exc_info()[1]
                     return tile
             self.tilestream = imap(safe_imap, ifilter(None, self.tilestream))
 
@@ -391,7 +391,7 @@ class TileGeneration:
                     try:
                         return tile_filter(tile)
                     except:
-                        tile.error = sys.exc_info()[0]
+                        tile.error = sys.exc_info()[1]
                         return tile
             self.tilestream = ifilter(safe_filter, self.tilestream)
 

@@ -100,7 +100,7 @@ def _gene(options, gene, layer):
                     border=gene.layer['meta_buffer'] if meta else 0,
                     tilegrid=gene.get_grid()['obj']
                 ),)
-            ), True)
+            ))
         elif gene.layer['type'] == 'mapnik':
             from tilecloud.store.mapnik_ import MapnikTileStore
 
@@ -113,7 +113,7 @@ def _gene(options, gene, layer):
                     output_format=gene.layer['output_format'],
                     resolution=gene.layer['resolution'],
                     layers_fields=gene.layer['layers_fields']
-                ), False)
+                ))
             else:
                 gene.get(MapnikTileStore(
                     tilegrid=gene.get_grid()['obj'],
@@ -121,7 +121,7 @@ def _gene(options, gene, layer):
                     image_buffer=gene.layer['meta_buffer'] if meta else 0,
                     data_buffer=gene.layer['data_buffer'],
                     output_format=gene.layer['output_format'],
-                ), False)
+                ))
 
         if meta:
             if options.role == 'hash':
