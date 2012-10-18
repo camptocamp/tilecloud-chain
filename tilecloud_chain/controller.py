@@ -331,9 +331,25 @@ def _calculate_cost(gene, options):
         attribute_type=float, default=0.12) or error
     # http://aws.amazon.com/ec2/pricing/
     error = gene.validate(gene.config['cost'], 'cost', 'ec2', attribute_type=dict, default={}) or error
-    # medium
     # [$/hour]
-    error = gene.validate(gene.config['cost']['ec2'], 'cost.ec2', 'usage', attribute_type=float, default=0.17) or error
+    ec2cost = {
+        't1.micro': 0.02,
+        'm1.small': 0.085,
+        'm1.medium': 0.17,
+        'm1.large': 0.34,
+        'm1.xlarge': 0.68,
+        'm2.xlarge': 0.506,
+        'm2.2xlarge': 1.012,
+        'm2.4xlarge': 2.024,
+        'c1.medium': 0.186,
+        'c1.xlarge': 0.744,
+        'cc1.4xlarge': 1.3,  # usa-est-1
+        'cc1.8xlarge': 2.7,
+        'cg1.4xlarge': 2.36,
+        'hi1.4xlarge': 3.41,
+    }
+    error = gene.validate(gene.config['cost']['ec2'], 'cost.ec2', 'usage', attribute_type=float,
+        default=ec2cost[gene.config['generation']['ec2_host_type']]) or error
     # http://aws.amazon.com/ebs/
     error = gene.validate(gene.config['cost'], 'cost', 'esb', attribute_type=dict, default={}) or error
     # [$/1Go/month]

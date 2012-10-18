@@ -146,6 +146,10 @@ class TileGeneration:
         error = self.validate(self.config['generation'], 'generation', 'authorised_user', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'number_process',
             attribute_type=int, default=1) or error
+        error = self.validate(self.config['generation'], 'generation', 'ec2_host_type', attribute_type=str,
+            default='m1.medium', enumeration=['t1.micro', 'm1.small', 'm1.medium', 'm1.large', 'm1.xlarge',
+            'm2.xlarge', 'm2.2xlarge', 'm2.4xlarge', 'c1.medium', 'c1.xlarge', 'cc1.4xlarge', 'cc2.8xlarge',
+            'cg1.4xlarge', 'hi1.4xlarge']) or error
         error = self.validate(self.config['generation'], 'generation', 'maxconsecutive_errors',
             attribute_type=int, default=10) or error
         error = self.validate(self.config['generation'], 'generation', 'geodata_folder', attribute_type=str) or error
