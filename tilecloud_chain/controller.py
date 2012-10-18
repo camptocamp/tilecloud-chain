@@ -140,7 +140,7 @@ def main():
     if options.sync:
         # TODO test
         # sync geodata
-        run_local("rsync %(folder)s rsync://%(host):%(folder)s" % {
+        run_local("rsync -r %(folder)s rsync://%(host):%(folder)s" % {
             'folder': gene.config['forge']['geodata_folder'],
             'host': host})
 
@@ -243,7 +243,7 @@ def _deploy(options, host):
         components = "--components=[database]"
 
     if options.deploy_code or options.deploy_database:
-        run_local('deploy --remote %s %s %s' %
+        run_local('sudo -u deploy deploy --remote %s %s %s' %
             (components, options.deploy_config, host))
 
 
@@ -271,13 +271,11 @@ def aws_start(host_type):
 
 
 def run_local(cmd):
-    # TODO test
-    return Popen(['sudo', '-u', 'deploy'].extend(cmd.split(' ')), stdout=PIPE).communicate()[0]
+    return Popen(cmd.split(' '), stdout=PIPE).communicate()[0]
 
 
 def run_remote(cmd, host, project_dir):
-    # TODO test
-    return Popen(['ssh', '-f', 'deploy@%s' % host, 'cd %(project_dir)s; %(cmd)s' % {
+    return Popen(['ssh', '-f', host, 'cd %(project_dir)s; %(cmd)s' % {
             'cmd': cmd, 'project_dir': project_dir}], stdout=PIPE).communicate()[0]
 
 
