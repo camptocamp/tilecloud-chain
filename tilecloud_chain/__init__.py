@@ -21,6 +21,7 @@ from boto.sqs.jsonmessage import JSONMessage
 
 from tilecloud import Tile, BoundingPyramid, TileCoord
 from tilecloud.grid.free import FreeTileGrid
+from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors, DropErrors
 
 
@@ -269,6 +270,27 @@ class TileGeneration:
                     grid=self.get_grid(),
                     geom=self.geom))
 
+    def add_metatile_splitter(self):
+        store = MetaTileSplitterTileStore(
+            self.layer['mime_type'],
+            self.layer['grid_ref']['tile_size'],
+            self.layer['meta_buffer'])
+
+        if self.options.test > 0:
+            self.tilestream = store.get(self.tilestream)
+        else:
+            def safe_get(tilestream):
+                for metatile in tilestream:
+                    try:
+                        substream = store.get((metatile,))
+                        for tile in substream:
+                            tile.metatile = metatile
+                            yield tile
+                    except:
+                        metatile.error = sys.exc_info()[1] + " - " + metatile.data
+                        yield metatile
+            self.tilestream = safe_get(self.tilestream)
+
     def add_error_filters(self, logger):
         self.imap(LogErrors(logger, logging.ERROR,
                 "Error in tile: %(tilecoord)s, %(error)r"))
@@ -323,21 +345,6 @@ class TileGeneration:
                     tile.error = sys.exc_info()[0]
                     return tile
             self.tilestream = imap(safe_get, ifilter(None, self.tilestream))
-
-    def get2(self, store, multiprocess=False):
-        if self.options.test > 0:
-            self.tilestream = store.get(self.tilestream)
-        else:
-            def safe_get(tilestream):
-                for tile in tilestream:
-                    try:
-                        substream = store.get((tile,))
-                        for t in substream:
-                            yield t
-                    except:
-                        tile.error = sys.exc_info()[1]
-                        yield tile
-            self.tilestream = safe_get(self.tilestream)
 
     def put(self, store, multiprocess=False):
         if self.options.test > 0:

@@ -13,7 +13,6 @@ from tilecloud.store.url import URLTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.filesystem import FilesystemTileStore
 from tilecloud.store.sqs import SQSTileStore
-from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.logger import Logger
@@ -144,10 +143,7 @@ def _gene(options, gene, layer):
             gene.ifilter(add_elapsed_togenerate)
 
             # Split the metatile image into individual tiles
-            gene.get2(MetaTileSplitterTileStore(
-                    gene.layer['mime_type'],
-                    gene.layer['grid_ref']['tile_size'],
-                    gene.layer['meta_buffer']), True)
+            gene.add_metatile_splitter()
 
             if options.role != 'hash':
                 # Only keep tiles that intersect geometry
