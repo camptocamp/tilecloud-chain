@@ -20,7 +20,7 @@ caches:
         # %(bucket)s and %(folder)s comes from this cache
         http_url: https://%(host)s/%(bucket)s/%(folder)s
         bucket: tiles
-        folder: tiles
+        folder:
 
 # this defines some defaults values for all the layers
 layer_default:

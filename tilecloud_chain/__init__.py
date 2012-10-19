@@ -136,6 +136,7 @@ class TileGeneration:
                 error = self.validate(cache, name, 'folder', attribute_type=str, required=True) or error
             elif cache == 's3':
                 error = self.validate(cache, name, 'bucket', attribute_type=str, required=True) or error
+                error = self.validate(cache, name, 'folder', attribute_type=str, default='') or error
 
         error = self.validate(self.config, 'generation', 'config', attribute_type=dict, default={}) or error
         error = self.validate(self.config['generation'], 'generation', 'default_cache', attribute_type=str) or error
