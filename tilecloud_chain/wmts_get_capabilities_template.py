@@ -18,7 +18,8 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
           </ows:Get>
         </ows:HTTP>
       </ows:DCP>
-    </ows:Operation>
+    </ows:Operation>{%
+      for gettile in gettiles %}
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
@@ -31,7 +32,8 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
           </ows:Get>
         </ows:HTTP>
       </ows:DCP>
-    </ows:Operation>
+    </ows:Operation>{%
+      endfor %}
   </ows:OperationsMetadata>
   <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
@@ -50,14 +52,16 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
             for value in dimension['values'] %}
         <Value>{{value}}</Value> {%
             endfor %}
-      </Dimension> {%
-      endfor %}
+      </Dimension>{%
+      endfor %}{%
+      for gettile in gettiles %}
       <ResourceURL format="{{layer['mime_type']}}" resourceType="tile"
                    template="{{gettile}}/1.0.0/{{layername}}/{{layer['wmts_style']}}/{%
                         for dimension in layer['dimensions']
                             %}{{('{' + dimension['name'] + '}')}}{%
                         endfor
-                   %}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.{{layer['extension']}}" />
+                   %}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.{{layer['extension']}}" />{%
+      endfor %}
       <TileMatrixSetLink>
         <TileMatrixSet>{{layer["grid"]}}</TileMatrixSet>
       </TileMatrixSetLink>

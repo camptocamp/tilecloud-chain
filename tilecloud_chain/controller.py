@@ -5,6 +5,7 @@ import math
 import logging
 import ConfigParser
 import boto
+from copy import copy
 from datetime import timedelta
 from subprocess import Popen, PIPE
 from optparse import OptionParser
@@ -13,6 +14,9 @@ from tilecloud import Tile, TileStore, consume
 from tilecloud.lib.s3 import S3Connection
 
 from tilecloud_chain import TileGeneration
+
+
+logger = logging.getLogger(__name__)
 
 
 def main():
@@ -488,16 +492,32 @@ def _generate_wmts_capabilities(gene, options):
     error = gene.validate(gene.config['openlayers'], 'srs', 'openlayers', attribute_type=str) or error
     error = gene.validate(gene.config['openlayers'], 'center_x', 'openlayers', attribute_type=int) or error
     error = gene.validate(gene.config['openlayers'], 'center_y', 'openlayers', attribute_type=int) or error
-    error = gene.validate(cache, 'http_url', 'cache[%s]' % cache['name'], attribute_type=str, required=True) or error
+    error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_url', attribute_type=str, default=False) or error
+    error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_urls', attribute_type=list, default=False) or error
+    error = gene.validate(cache, 'cache[%s]' % cache['name'], 'hosts', attribute_type=list, default=False) or error
+    if not cache['http_url'] and not cache['http_urls']:
+        logger.error("The attribute 'http_url' or 'http_urls' is required in the object %s." %
+            ('cache[%s]' % cache['name']))
+        error = True
     if error:
         exit(1)
 
-    base_url = cache['http_url'] % cache
+    base_urls = []
+    if cache['http_url']:
+        if cache['hosts']:
+            cc = copy(cache)
+            for host in cache['hosts']:
+                cc['host'] = host
+                base_urls.append(cache['http_url'] % cc)
+        else:
+            base_urls = [cache['http_url'] % cache]
+    if cache['http_urls']:
+        base_urls = [url % cache for url in cache['http_urls']]
     capabilities = jinja2_template(wmts_get_capabilities_template,
             layers=gene.layers,
             grids=gene.grids,
-            getcapabilities=base_url + '/1.0.0/WMTSCapabilities.xml',
-            gettile=base_url,
+            getcapabilities=base_urls[0] + '/1.0.0/WMTSCapabilities.xml',
+            gettiles=base_urls,
             enumerate=enumerate, ceil=math.ceil, int=int)
 
     _send(capabilities, '/1.0.0/WMTSCapabilities.xml', cache)

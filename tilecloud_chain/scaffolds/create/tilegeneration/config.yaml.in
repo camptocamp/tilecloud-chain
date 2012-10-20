@@ -12,15 +12,25 @@ grids:
 caches:
     local:
         type: filesystem
-        # can includes %(folder)s for the folder
-        http_url: http://taurus/tiles
         folder: /var/sig/tilecache
+        # for GetCapabilities
+        # can includes %(folder)s comes from this cache
+        http_url: http://taurus/tiles
     s3:
         type: s3
-        # %(bucket)s and %(folder)s comes from this cache
-        http_url: https://%(host)s/%(bucket)s/%(folder)s
+        # the s3 bucket name
         bucket: tiles
-        folder:
+        # the used folder in the bucket [default to '']
+        folder: ''
+        # for GetCapabilities
+        # can includes %(bucket)s, %(folder)s and %(host)s comes from this cache
+        http_url: https://%(host)s/%(bucket)s/%(folder)s
+        hosts:
+        - wmts0.<host>
+        - wmts1.<host>
+        - wmts2.<host>
+        - wmts3.<host>
+        - wmts4.<host>
 
 # this defines some defaults values for all the layers
 layer_default:
