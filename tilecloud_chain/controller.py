@@ -105,8 +105,9 @@ def main():
     if options.cost:
         all_size = 0
         tile_size = 0
+        all_tiles = 0
         if (options.layer):
-            (all_size, all_time, all_price) = _calculate_cost(gene, options)
+            (all_size, all_time, all_price, all_tiles) = _calculate_cost(gene, options)
             tile_size = gene.layer['cost']['tile_size'] / (1024.0 * 1024)
         else:
             all_time = timedelta()
@@ -115,17 +116,19 @@ def main():
                 print
                 print "===== %s =====" % layer
                 gene.set_layer(layer, options)
-                (size, time, price) = _calculate_cost(gene, options)
+                (size, time, price, tiles) = _calculate_cost(gene, options)
                 tile_size += gene.layer['cost']['tile_size'] / (1024.0 * 1024)
                 all_time += time
                 all_price += price
                 all_size += size
+                all_tiles += tiles
 
             print
             print "===== GLOBAL ====="
-            print 'Total generation time : %d %d:%02d:%02d [d h:mm:ss]' % \
+            print "Total number of tiles: %i" % all_tiles
+            print 'Total generation time: %d %d:%02d:%02d [d h:mm:ss]' % \
                 (all_time.days, all_time.seconds / 3600, all_time.seconds % 3600 / 60, all_time.seconds % 60)
-            print 'Total generation cost : %0.2f [$]' % all_price
+            print 'Total generation cost: %0.2f [$]' % all_price
         print
         print 'S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))
         print 'S3 get: %0.2f [$/month]' % (
@@ -461,9 +464,11 @@ def _calculate_cost(gene, options):
     price = 0
     all_size = 0
     all_time = 0
+    all_tiles = 0
     for z in nb_tiles:
         print
         print "%i tiles in zoom %i." % (nb_tiles[z], z)
+        all_tiles += nb_tiles[z]
         if meta:
             time = times[z] + gene.layer['cost']['tile_generation_time'] * nb_tiles[z]
         else:
@@ -494,11 +499,12 @@ def _calculate_cost(gene, options):
 
     print
     td = timedelta(milliseconds=all_time)
+    print "Number of tiles: %i" % all_tiles
     print 'Generation time : %d %d:%02d:%02d [d h:mm:ss]' % \
         (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
     print 'Generation cost : %0.2f [$]' % price
 
-    return (all_size, td, price)
+    return (all_size, td, price, all_tiles)
 
 
 def _send(data, path, cache):
