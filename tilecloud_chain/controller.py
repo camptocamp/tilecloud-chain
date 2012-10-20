@@ -438,7 +438,7 @@ def _calculate_cost(gene, options):
                     for metatile in tiles:
                         for tilecoord in metatile.tilecoord:
                             yield Tile(tilecoord)
-            gene.get(MetaTileSplitter())
+            gene.tilestream = MetaTileSplitter().get(gene.tilestream)
 
             # Only keep tiles that intersect geometry
             gene.add_geom_filter()
