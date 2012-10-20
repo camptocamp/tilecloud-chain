@@ -1,0 +1,54 @@
+MAP
+  NAME "Tests"
+  STATUS ON
+  EXTENT 420000 30000 900000 350000
+
+  WEB
+    TEMPLATE dummyTemplateForWmsGetFeatureInfo
+    METADATA
+        "ows_title" "Tests"
+        "ows_encoding" "UTF-8"
+        "wms_enable_request" "GetMap"
+    END
+  END
+
+  PROJECTION
+    "init=EPSG:21781"
+  END
+
+  SYMBOL
+    NAME "circle"
+    TYPE ellipse
+    POINTS
+      1 1
+    END
+    FILLED true
+  END
+
+  LAYER
+    NAME "postgis-point"
+    TYPE POINT
+    CONNECTIONTYPE postgis
+    CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
+    DATA "the_geom FROM tests.point"
+    STATUS ON
+  END
+
+  LAYER
+    NAME "postgis-line"
+    TYPE LINE
+    CONNECTIONTYPE postgis
+    CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
+    DATA "the_geom FROM tests.line"
+    STATUS ON
+  END
+
+  LAYER
+    NAME "postgis-polygon"
+    TYPE POLYGON
+    CONNECTIONTYPE postgis
+    CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
+    DATA "the_geom FROM tests.polygon"
+    STATUS ON
+  END
+END

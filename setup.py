@@ -19,6 +19,15 @@ install_requires = [
     'pyramid',
 ]
 
+# nose plugins with options set in setup.cfg cannot be in
+# tests_require, they need be in setup_requires
+setup_requires = [
+    'nose',
+    'nosexcover',
+    'nose-progressive',
+    'ipdbplugin',
+    ]
+
 setup(
         name='tilecloud-chain',
         version='0.1',
@@ -41,6 +50,7 @@ setup(
         include_package_data=True,
         zip_safe=False,
         install_requires=install_requires,
+        setup_requires=setup_requires,
         entry_points={
             'console_scripts': [
                 'generate_tiles = tilecloud_chain.generate:main',

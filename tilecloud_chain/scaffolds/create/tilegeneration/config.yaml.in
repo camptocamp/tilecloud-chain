@@ -68,7 +68,7 @@ layer_default:
     meta_buffer: 128
     # connexion an sql to get the geometry where we want to generate tiles
 #    connection: user=www-data password=www-data dbname=<db> host=localhost
-#    sql: ST_Union(ST_Buffer(geom, 10, 2)) FROM <table>
+#    sql: ST_Buffer(ST_Union(geom), 10, 2) FROM <table>
     # size and hash used to detect empty tiles and metatiles [optional, default to None]
     # can be generate by (with en emty tile):
     # ./buildout/bin/generate_tiles --get-hash <z/x/y> -l <layer_name>

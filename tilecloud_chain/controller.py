@@ -164,7 +164,7 @@ def main():
     # start aws
     if not options.host:
         # TODO not imlpemented yet
-        host = aws_start(gene.metadata['aws']['host_type'])
+        host = aws_start(gene.config['generation']['ec2_host_type'])
     else:
         host = options.host
 
@@ -172,7 +172,7 @@ def main():
         # TODO test
         # sync geodata
         run_local("rsync -r %(folder)s rsync://%(host):%(folder)s" % {
-            'folder': gene.config['forge']['geodata_folder'],
+            'folder': gene.config['generation']['geodata_folder'],
             'host': host})
 
     # deploy
@@ -507,9 +507,9 @@ def _calculate_cost(gene, options):
     print
     td = timedelta(milliseconds=all_time)
     print "Number of tiles: %i" % all_tiles
-    print 'Generation time : %d %d:%02d:%02d [d h:mm:ss]' % \
+    print 'Generation time: %d %d:%02d:%02d [d h:mm:ss]' % \
         (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
-    print 'Generation cost : %0.2f [$]' % price
+    print 'Generation cost: %0.2f [$]' % price
 
     return (all_size, td, price, all_tiles)
 

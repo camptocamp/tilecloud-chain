@@ -1,0 +1,82 @@
+grids:
+    swissgrid:
+        resolutions: [1000, 500, 200, 100]
+        bbox: [420000, 30000, 900000, 350000]
+        tile_size: 256
+        srs: EPSG:21781
+
+caches:
+    local:
+        type: filesystem
+        http_url: http://taurus/tiles
+        folder: /var/www/tiles
+    s3:
+        type: s3
+        http_url: https://%(host)s/%(bucket)s/%(folder)s
+        host: s3-eu-west-1.amazonaws.com
+        bucket: tiles
+        folder: tiles
+
+layer_default:
+    grid: swissgrid
+    type: wms
+    url: http://localhost/mapserv
+    wmts_style: default
+    mime_type: image/png
+    extension: png
+    dimensions:
+    -   name: DATE
+        default: 2012
+        value: 2012
+        values: [2005, 2010, 2012]
+    meta: on
+    meta_size: 8
+    meta_buffer: 128
+    connection: user=postgres password=postgres dbname=tests host=localhost
+    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    cost:
+        # [ms]
+        tileonly_generation_time: 60
+        # [ms]
+        tile_generation_time: 30
+        # [ms]
+        metatile_generation_time: 30
+        # [ko]
+        tile_size: 20
+
+layers:
+    point:
+        layers: point
+        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
+    line:
+        layers: line
+        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.line
+    polygon:
+        layers: polygon
+        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    all:
+        layers: point,line,polygon
+
+generation:
+    default_cache: local
+    default_layers: [point, line]
+    maxconsecutive_errors: 2
+
+openlayers:
+    srs: EPSG:21781
+    center_x: 600000
+    center_y: 200000
+
+cost:
+    # [nb/month]
+    request_per_layers: 10000000
+    # GeoData size [Go]
+    esb_size: 100
+
+mapcache:
+    mapserver_url: http://localhost/mapserv
+    mapcache_url: /mapcache
+    config_file: mapcache.xml
+    resolutions: [1000, 500, 200, 100, 50, 10, 5, 2, 1]
+    layers: [polygon]
+
