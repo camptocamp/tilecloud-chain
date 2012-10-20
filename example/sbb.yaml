@@ -84,3 +84,22 @@ cost:
 
 sns:
     topic: arn:aws:sns:eu-west-1:your-account-id:tilecloud
+
+mapcache:
+    # The WMS server to cache [required]
+    
+    mapserver_url: http://${vars:host}/${vars:instanceid}/mapserv
+    # The URL of the cache server [required]
+    mapcache_url: /${vars:instanceid}/mapcache
+    # The generated config file [default to apache/mapcache.xml.in]
+    config_file: apache/mapcache.xml.in
+
+    # The resolutions to used by mapcache
+    resolutions: [750, 500, 250, 100, 50, 10, 5, 2, 1]
+    
+    # The memcache host and port [default to localhost / 11211]
+    memcache_host: localhost
+    memcache_port: 11211
+    # Layers to cache [required]
+    layers: [mapnik, grid]
+

@@ -47,6 +47,7 @@ class TileGeneration:
                 attribute_type=float, is_array=True, required=True) or error
             error = self.validate(grid, name, 'bbox', attribute_type=float, is_array=True, required=True) or error
             error = self.validate(grid, name, 'srs', attribute_type=str, required=True) or error
+            error = self.validate(grid, name, 'unit', attribute_type=str, default='m') or error
             error = self.validate(grid, name, 'tile_size', attribute_type=int, default=256) or error
             scale = grid['resolution_scale']
             for r in grid['resolutions']:

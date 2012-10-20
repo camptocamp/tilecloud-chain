@@ -64,6 +64,8 @@ def main():
             "of the genaration geometry, can also be 'count', to be base on number of tiles to generate.")
     parser.add_option('--ol', '--openlayers-test', default=False, action="store_true",
             help='Generate openlayers test page')
+    parser.add_option('--mapcache', '--generate-mapcache-config', default=False, action="store_true", dest='mapcache',
+            help='Generate MapCache configuration file')
     parser.add_option('--dump-config', default=False, action="store_true",
             help='Dump the used config with default values and exit')
 
@@ -84,6 +86,10 @@ def main():
         _generate_wmts_capabilities(gene, options)
         sys.exit(0)
 
+    if options.mapcache:
+        _generate_mapcache_config(gene, options)
+        sys.exit(0)
+
     if options.ol:
         _generate_openlayers(gene, options)
         sys.exit(0)
@@ -96,6 +102,7 @@ def main():
                 gene.set_layer(layer, options)
                 _validate_calculate_cost(gene)
         _validate_generate_wmts_capabilities(gene, gene.caches[options.cache])
+        _validate_generate_mapcache_config(gene)
         _validate_generate_openlayers(gene)
         for grild in gene.config['grids'].values():
             del grild['obj']
@@ -539,7 +546,7 @@ def _generate_wmts_capabilities(gene, options):
     from tilecloud_chain.wmts_get_capabilities_template import wmts_get_capabilities_template
 
     cache = gene.caches[options.cache]
-    _validate_generate_wmts_capabilities(cache)
+    _validate_generate_wmts_capabilities(gene, cache)
 
     base_urls = []
     if cache['http_url']:
@@ -560,6 +567,54 @@ def _generate_wmts_capabilities(gene, options):
             enumerate=enumerate, ceil=math.ceil, int=int)
 
     _send(capabilities, '/1.0.0/WMTSCapabilities.xml', cache)
+
+
+def _validate_generate_mapcache_config(gene):
+    error = False
+    error = gene.validate(gene.config, 'config', 'mapcache', attribute_type=dict, default={}) or error
+    error = gene.validate(gene.config['mapcache'], 'mapcache', 'mapserver_url', attribute_type=str,
+        default='http://${vars:host}/${vars:instanceid}/mapserv') or error
+    error = gene.validate(gene.config['mapcache'], 'mapcache', 'config_file', attribute_type=str,
+        default='apache/mapcache.xml.in') or error
+    error = gene.validate(gene.config['mapcache'], 'mapcache', 'resolutions', attribute_type=int,
+        is_array=True, required=True) or error
+    error = gene.validate(gene.config['mapcache'], 'mapcache', 'memcache_host', attribute_type=str,
+        default='localhost') or error
+    error = gene.validate(gene.config['mapcache'], 'mapcache', 'memcache_port', attribute_type=int,
+        default='11211') or error
+    error = gene.validate(gene.config['mapcache'], 'mapcache', 'layers', attribute_type=str, is_array=True,
+        required=True, enumeration=gene.config['layers'].keys()) or error
+
+    if 'layers' in gene.config['mapcache'] and 'resolutions' in gene.config['mapcache']:
+        for layer in gene.config['mapcache']['layers']:
+            if len(gene.layers[layer]['grid_ref']['resolutions']) > gene.config['mapcache']['resolutions']:
+                logger.error("The layer '%s' (grid '%s') has more resolutions than mapcache." %
+                    (layer, gene.layers[layer]['grid']))
+            else:
+                for i, resolution in enumerate(gene.layers[layer]['grid_ref']['resolutions']):
+                    if resolution != gene.config['mapcache']['resolutions'][i]:
+                        logger.error("The resolutions of layer '%s' (grid '%s') "
+                            "don't corresponds to mapcache resolutions (%f != %s)." %
+                            (layer, gene.layers[layer]['grid'], resolution, gene.config['mapcache']['resolutions'][i]))
+                        error = True
+
+    if error:
+        exit(1)
+
+
+def _generate_mapcache_config(gene, options):
+    from tilecloud_chain.mapcache_config_template import mapcache_config_template
+
+    _validate_generate_mapcache_config(gene)
+
+    config = jinja2_template(mapcache_config_template,
+            layers=gene.layers,
+            grids=gene.grids,
+            mapcache=gene.config['mapcache'])
+
+    f = open(gene.config['mapcache']['config_file'], 'w')
+    f.write(config)
+    f.close()
 
 
 def _validate_generate_openlayers(gene):

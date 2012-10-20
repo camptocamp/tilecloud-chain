@@ -3,10 +3,14 @@ grids:
     swissgrid_05:
         # scale used to work with work internaly with integer resolutions [default to 1]
         resolution_scale: 10
-        # resolutions, bbox, srs [required]
+        # resolutions [required]
         resolutions: [1000, 500, 250, 100, 50, 20, 10, 5, 2, 1, 0.5]
+        # bbox [required]
         bbox: [420000, 30000, 900000, 350000]
+        # srs [required]
         srs: EPSG:21781
+        # unit [default to 'm']
+        unit: m
         # [optional, default to 256]
         tile_size: 256
 
