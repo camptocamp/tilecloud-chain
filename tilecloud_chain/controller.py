@@ -5,6 +5,7 @@ import math
 import logging
 import ConfigParser
 import boto
+import yaml
 from copy import copy
 from datetime import timedelta
 from subprocess import Popen, PIPE
@@ -63,6 +64,8 @@ def main():
             "of the genaration geometry, can also be 'count', to be base on number of tiles to generate.")
     parser.add_option('--ol', '--openlayers-test', default=False, action="store_true",
             help='Generate openlayers test page')
+    parser.add_option('--dump-config', default=False, action="store_true",
+            help='Dump the used config with default values and exit')
 
     (options, args) = parser.parse_args()
     logging.basicConfig(
@@ -77,25 +80,26 @@ def main():
 
     if options.cache is None:
         options.cache = gene.config['generation']['default_cache']
-    if options.deploy_config is None:
-        options.deploy_config = gene.config['generation']['deploy_config']
-    if options.sync:
-        options.sync = not gene.config['generation']['disable_sync']
-    if options.deploy_code:
-        options.deploy_code = not gene.config['generation']['disable_code']
-    if options.deploy_database:
-        options.deploy_database = not gene.config['generation']['disable_database']
-    if options.fill_queue:
-        options.fill_queue = not gene.config['generation']['disable_fillqueue']
-    if options.tiles_gen:
-        options.tiles_gen = not gene.config['generation']['disable_tilesgen']
-
     if options.capabilities:
         _generate_wmts_capabilities(gene, options)
         sys.exit(0)
 
     if options.ol:
         _generate_openlayers(gene, options)
+        sys.exit(0)
+
+    if options.dump_config:
+        if (options.layer):
+            _validate_calculate_cost(gene)
+        else:
+            for layer in gene.config['generation']['default_layers']:
+                gene.set_layer(layer, options)
+                _validate_calculate_cost(gene)
+        _validate_generate_wmts_capabilities(gene, gene.caches[options.cache])
+        _validate_generate_openlayers(gene)
+        for grild in gene.config['grids'].values():
+            del grild['obj']
+        print yaml.dump(gene.config)
         sys.exit(0)
 
     if options.cost:
@@ -133,6 +137,19 @@ def main():
                 gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
         print 'ESB storage: %0.2f [$/month]' % (gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
         sys.exit(0)
+
+    if options.deploy_config is None:
+        options.deploy_config = gene.config['generation']['deploy_config']
+    if options.sync:
+        options.sync = not gene.config['generation']['disable_sync']
+    if options.deploy_code:
+        options.deploy_code = not gene.config['generation']['disable_code']
+    if options.deploy_database:
+        options.deploy_database = not gene.config['generation']['disable_database']
+    if options.fill_queue:
+        options.fill_queue = not gene.config['generation']['disable_fillqueue']
+    if options.tiles_gen:
+        options.tiles_gen = not gene.config['generation']['disable_tilesgen']
 
     # start aws
     if not options.host:
@@ -296,7 +313,7 @@ def status(options, gene):
     )
 
 
-def _calculate_cost(gene, options):
+def _validate_calculate_cost(gene):
     error = False
     name = "layer[%s]" % gene.layer['name']
     error = gene.validate(gene.layer, name, 'cost', attribute_type=dict, default={}) or error
@@ -367,6 +384,10 @@ def _calculate_cost(gene, options):
 
     if error:
         exit(1)
+
+
+def _calculate_cost(gene, options):
+    _validate_calculate_cost(gene)
 
     nb_metatiles = {}
     nb_tiles = {}
@@ -482,16 +503,8 @@ def _send(data, path, cache):
         f.close()
 
 
-def _generate_wmts_capabilities(gene, options):
-    from tilecloud_chain.wmts_get_capabilities_template import wmts_get_capabilities_template
-
-    cache = gene.caches[options.cache]
-
-    gene.validate_exists(gene.config, 'openlayers', 'config')
+def _validate_generate_wmts_capabilities(gene, cache):
     error = False
-    error = gene.validate(gene.config['openlayers'], 'srs', 'openlayers', attribute_type=str) or error
-    error = gene.validate(gene.config['openlayers'], 'center_x', 'openlayers', attribute_type=int) or error
-    error = gene.validate(gene.config['openlayers'], 'center_y', 'openlayers', attribute_type=int) or error
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_url', attribute_type=str, default=False) or error
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_urls', attribute_type=list, default=False) or error
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'hosts', attribute_type=list, default=False) or error
@@ -501,6 +514,13 @@ def _generate_wmts_capabilities(gene, options):
         error = True
     if error:
         exit(1)
+
+
+def _generate_wmts_capabilities(gene, options):
+    from tilecloud_chain.wmts_get_capabilities_template import wmts_get_capabilities_template
+
+    cache = gene.caches[options.cache]
+    _validate_generate_wmts_capabilities(cache)
 
     base_urls = []
     if cache['http_url']:
@@ -523,18 +543,25 @@ def _generate_wmts_capabilities(gene, options):
     _send(capabilities, '/1.0.0/WMTSCapabilities.xml', cache)
 
 
+def _validate_generate_openlayers(gene):
+    error = False
+    error = gene.validate(gene.config, 'config', 'openlayers', attribute_type=dict, default={}) or error
+    error = gene.validate(gene.config['openlayers'], 'openlayers', 'srs',
+        attribute_type=str, default='EPSG:21781') or error
+    error = gene.validate(gene.config['openlayers'], 'openlayers', 'center_x',
+        attribute_type=float, default=600000) or error
+    error = gene.validate(gene.config['openlayers'], 'openlayers', 'center_y',
+        attribute_type=float, default=200000) or error
+    if error:
+        exit(1)
+
+
 def _generate_openlayers(gene, options):
     from tilecloud_chain.openlayers_html import openlayers_html
     from tilecloud_chain.openlayers_js import openlayers_js
     from tilecloud_chain.openlayers import openlayers
 
-    gene.validate_exists(gene.config, 'openlayers', 'config')
-    error = False
-    error = gene.validate(gene.config['openlayers'], 'srs', 'openlayers', attribute_type=str) or error
-    error = gene.validate(gene.config['openlayers'], 'center_x', 'openlayers', attribute_type=int) or error
-    error = gene.validate(gene.config['openlayers'], 'center_y', 'openlayers', attribute_type=int) or error
-    if error:
-        exit(1)
+    _validate_generate_openlayers(gene)
 
     cache = gene.caches[options.cache]
 
