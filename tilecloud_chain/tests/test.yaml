@@ -1,6 +1,13 @@
 grids:
-    swissgrid:
-        resolutions: [1000, 500, 200, 100]
+    swissgrid_5:
+        resolutions: [100, 50, 20, 10, 5]
+        bbox: [420000, 30000, 900000, 350000]
+        tile_size: 256
+        srs: EPSG:21781
+
+    swissgrid_01:
+        resolutions: [1, 0.2, 0.1]
+        resolution_scale: 10
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
         srs: EPSG:21781
@@ -18,7 +25,7 @@ caches:
         folder: tiles
 
 layer_default:
-    grid: swissgrid
+    grid: swissgrid_5
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -54,12 +61,16 @@ layers:
     polygon:
         layers: polygon
         sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    polygon2:
+        layers: polygon
+        grid: swissgrid_01
+        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
     all:
         layers: point,line,polygon
 
 generation:
     default_cache: local
-    default_layers: [point, line]
+    default_layers: [line, polygon]
     maxconsecutive_errors: 2
 
 openlayers:
