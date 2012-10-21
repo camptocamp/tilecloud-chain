@@ -33,6 +33,11 @@ MAP
     CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
     DATA "the_geom FROM tests.point"
     STATUS ON
+    CLASS
+        COLOR 255 0 0
+        SIZE 10
+        SYMBOL "circle"
+    END
   END
 
   LAYER
@@ -42,6 +47,10 @@ MAP
     CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
     DATA "the_geom FROM tests.line"
     STATUS ON
+    CLASS
+        COLOR 0 0 255
+        WIDTH 5
+    END
   END
 
   LAYER
@@ -51,5 +60,9 @@ MAP
     CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
     DATA "the_geom FROM tests.polygon"
     STATUS ON
+    CLASS
+        OUTLINECOLOR 0 255 0
+        COLOR 255 255 0
+    END
   END
 END

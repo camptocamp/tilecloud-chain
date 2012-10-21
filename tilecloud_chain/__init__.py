@@ -292,7 +292,7 @@ class TileGeneration:
                             tile.metatile = metatile
                             yield tile
                     except:
-                        metatile.error = sys.exc_info()[1] + " - " + metatile.data
+                        metatile.error = str(sys.exc_info()[1]) + " - " + metatile.data
                         yield metatile
             self.tilestream = safe_get(self.tilestream)
 

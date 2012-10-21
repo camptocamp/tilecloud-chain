@@ -18,7 +18,7 @@ class CompareCase(TestCase):
                 try:
                     self.assertEquals(test[0].strip(), test[1].strip())
                 except AssertionError as e:
-                    log.info(n)
+                    log.info("Line: %i" % n)
                     raise e
 
     def assert_cmd_equals(self, cmd, main_func, result):
