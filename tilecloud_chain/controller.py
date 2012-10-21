@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import sys
 import math
 import logging
@@ -393,7 +394,7 @@ def _validate_calculate_cost(gene):
         attribute_type=float, default=0.01) or error
 
     if error:
-        exit(1)
+        exit(1)  # pragma: no cover
 
 
 def _calculate_cost(gene, options):
@@ -524,6 +525,10 @@ def _send(data, path, cache):
         s3key.put()
     else:
         folder = cache['folder'] or ''
+        filename = folder + path
+        directory = os.path.dirname(filename)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
         f = open(folder + path, 'w')
         f.write(data)
         f.close()
@@ -536,10 +541,10 @@ def _validate_generate_wmts_capabilities(gene, cache):
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'hosts', attribute_type=list, default=False) or error
     if not cache['http_url'] and not cache['http_urls']:
         logger.error("The attribute 'http_url' or 'http_urls' is required in the object %s." %
-            ('cache[%s]' % cache['name']))
-        error = True
+            ('cache[%s]' % cache['name']))  # pragma: no cover
+        error = True  # pragma: no cover
     if error:
-        exit(1)
+        exit(1)  # pragma: no cover
 
 
 def _generate_wmts_capabilities(gene, options):
@@ -576,7 +581,7 @@ def _validate_generate_mapcache_config(gene):
         default='http://${vars:host}/${vars:instanceid}/mapserv') or error
     error = gene.validate(gene.config['mapcache'], 'mapcache', 'config_file', attribute_type=str,
         default='apache/mapcache.xml.in') or error
-    error = gene.validate(gene.config['mapcache'], 'mapcache', 'resolutions', attribute_type=int,
+    error = gene.validate(gene.config['mapcache'], 'mapcache', 'resolutions', attribute_type=float,
         is_array=True, required=True) or error
     error = gene.validate(gene.config['mapcache'], 'mapcache', 'memcache_host', attribute_type=str,
         default='localhost') or error
@@ -589,17 +594,19 @@ def _validate_generate_mapcache_config(gene):
         for layer in gene.config['mapcache']['layers']:
             if len(gene.layers[layer]['grid_ref']['resolutions']) > gene.config['mapcache']['resolutions']:
                 logger.error("The layer '%s' (grid '%s') has more resolutions than mapcache." %
-                    (layer, gene.layers[layer]['grid']))
+                    (layer, gene.layers[layer]['grid']))  # pragma: no cover
+                error = True  # pragma: no cover
             else:
                 for i, resolution in enumerate(gene.layers[layer]['grid_ref']['resolutions']):
                     if resolution != gene.config['mapcache']['resolutions'][i]:
                         logger.error("The resolutions of layer '%s' (grid '%s') "
                             "don't corresponds to mapcache resolutions (%f != %s)." %
-                            (layer, gene.layers[layer]['grid'], resolution, gene.config['mapcache']['resolutions'][i]))
-                        error = True
+                            (layer, gene.layers[layer]['grid'],
+                            resolution, gene.config['mapcache']['resolutions'][i]))  # pragma: no cover
+                        error = True  # pragma: no cover
 
     if error:
-        exit(1)
+        exit(1)  # pragma: no cover
 
 
 def _generate_mapcache_config(gene, options):
@@ -627,7 +634,7 @@ def _validate_generate_openlayers(gene):
     error = gene.validate(gene.config['openlayers'], 'openlayers', 'center_y',
         attribute_type=float, default=200000) or error
     if error:
-        exit(1)
+        exit(1)  # pragma: no cover
 
 
 def _generate_openlayers(gene, options):

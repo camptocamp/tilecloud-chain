@@ -16,7 +16,22 @@ caches:
     local:
         type: filesystem
         http_url: http://taurus/tiles
-        folder: /var/www/tiles
+        folder: /tmp/tiles
+    multi_host:
+        type: filesystem
+        http_url: http://%(host)s/tiles
+        folder: /tmp/tiles
+        hosts:
+        - wmts1
+        - wmts2
+        - wmts3
+    multi_url:
+        type: filesystem
+        http_urls:
+        - http://wmts1/tiles
+        - http://wmts2/tiles
+        - http://wmts3/tiles
+        folder: /tmp/tiles
     s3:
         type: s3
         http_url: https://%(host)s/%(bucket)s/%(folder)s
@@ -67,7 +82,29 @@ layers:
         sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
     all:
         layers: point,line,polygon
-
+    mapnik:
+        type: mapnik
+        mapfile: tilecloud_chain/tests/test.mapnik
+        meta_buffer: 0
+        data_buffer: 128
+        output_format: png
+    mapnik_grid:
+        type: mapnik
+        mapfile: tilecloud_chain/tests/test.mapnik
+        meta: off
+        meta_buffer: 0
+        data_buffer: 128
+        output_format: grid
+        mime_type: application/utfgrid
+        extension: json
+        resolution: 16
+        layers_fields:
+            point:
+            - name
+            line:
+            - name
+            polygon:
+            - name
 generation:
     default_cache: local
     default_layers: [line, polygon]
@@ -88,6 +125,5 @@ mapcache:
     mapserver_url: http://localhost/mapserv
     mapcache_url: /mapcache
     config_file: mapcache.xml
-    resolutions: [1000, 500, 200, 100, 50, 10, 5, 2, 1]
-    layers: [polygon]
-
+    resolutions: [100, 50, 20, 10, 5, 2, 1, 0.5]
+    layers: [point, line, polygon]

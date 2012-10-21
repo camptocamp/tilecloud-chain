@@ -2,6 +2,8 @@
 
 from tilecloud_chain.tests import CompareCase
 
+from tilecloud_chain import controller
+
 
 class TestCost(CompareCase):
 
@@ -33,6 +35,7 @@ ESB storage: %(esb)s [$/month]"""
     def test_cost_point(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilecloud_chain/tests/test.yaml -l point',
+            controller.main,
             '\n'.join([
                 'Calculate zoom 4.',
                 'Calculate zoom 3.',
@@ -105,6 +108,7 @@ ESB storage: %(esb)s [$/month]"""
     def test_cost_point_count(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilecloud_chain/tests/test.yaml -l point --cost-algo count',
+            controller.main,
             '\n'.join([
                 'Calculate zoom 0.',
                 'Calculate zoom 1.',
@@ -177,6 +181,7 @@ ESB storage: %(esb)s [$/month]"""
     def test_cost_line(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilecloud_chain/tests/test.yaml -l line',
+            controller.main,
             '\n'.join([
                 'Calculate zoom 4.',
                 'Calculate zoom 3.',
@@ -249,6 +254,7 @@ ESB storage: %(esb)s [$/month]"""
     def test_cost_line_count(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilecloud_chain/tests/test.yaml -l line --cost-algo count',
+            controller.main,
             '\n'.join([
                 'Calculate zoom 0.',
                 'Calculate zoom 1.',
@@ -321,6 +327,7 @@ ESB storage: %(esb)s [$/month]"""
     def test_cost_polygon(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilecloud_chain/tests/test.yaml -l polygon',
+            controller.main,
             '\n'.join([
                 'Calculate zoom 4.',
                 'Calculate zoom 3.',
@@ -393,6 +400,7 @@ ESB storage: %(esb)s [$/month]"""
     def test_cost_polygon_count(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilecloud_chain/tests/test.yaml -l polygon --cost-algo count',
+            controller.main,
             '\n'.join([
                 'Calculate zoom 0.',
                 'Calculate zoom 1.',
@@ -465,6 +473,7 @@ ESB storage: %(esb)s [$/month]"""
     def test_cost_default(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilecloud_chain/tests/test.yaml',
+            controller.main,
             '\n'.join([
                 '',
                 '===== line =====',
@@ -606,6 +615,7 @@ ESB storage: %(esb)s [$/month]"""
     def test_cost_polygon2(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilecloud_chain/tests/test.yaml -l polygon2',
+            controller.main,
             '\n'.join([
                 'Calculate zoom 2.',
                 'Calculate zoom 1.',

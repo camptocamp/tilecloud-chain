@@ -131,7 +131,7 @@ class TileGeneration:
         self.caches = self.config['caches']
         for cname, cache in self.caches.items():
             name = "caches[%s]" % cname
-            error = self.validate(cache, name, 'name', attribute_type=str, default=gname) or error
+            error = self.validate(cache, name, 'name', attribute_type=str, default=cname) or error
             error = self.validate(cache, name, 'type', attribute_type=str, required=True,
                 enumeration=['s3', 'filesystem']) or error
             if cache == 'filesystem':

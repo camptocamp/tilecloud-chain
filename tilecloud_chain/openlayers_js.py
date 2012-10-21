@@ -49,15 +49,15 @@ OpenLayers.Request.GET({
         var capabilities = format.read(doc);
         {% for layer in layers %}
         map.addLayer(format.createLayer(capabilities, {
-            layer: "{{layer.name}}",
-            {% if layer.grid %}
+            layer: "{{layer.name}}",{%
+if layer.grid %}
             isBaseLayer: false,
-            utfgridResolution: {{layer.resolution}}
-            {% else %}
-            isBaseLayer: true
-            {% endif %}
-        }));
-        {% endfor %}
+            utfgridResolution: {{layer.resolution}}{%
+else %}
+            isBaseLayer: true{%
+endif %}
+        }));{%
+endfor %}
     },
     failure: function() {
         alert("Trouble getting capabilities doc");

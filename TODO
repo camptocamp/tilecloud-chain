@@ -1,3 +1,11 @@
+- Add tests
+    - mapnik (with utfgrid)
+    - local tile generation
+        - zoom
+        - layer
+        - bbox
+        - test
+        - time ?
 - Implement:
     - geodata sync
     - code deploy
@@ -7,4 +15,3 @@
 - Integrate AWS host creator (buildcloud)
 - Add Rendering the world mode
 - Add Mapscript store
-- Add tests
