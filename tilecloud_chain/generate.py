@@ -246,7 +246,7 @@ def main():
     (options, args) = parser.parse_args()
     logging.basicConfig(
         format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
-        level=logging.INFO if options.test < 0 else logging.DEBUG)
+        level=logging.ERROR if options.test < 0 else logging.DEBUG)
 
     if options.daemonize:
         print "Daemonize with pid %i." % daemonize()

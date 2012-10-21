@@ -32,11 +32,11 @@ class CompareCase(TestCase):
         sys.argv = cmd.split(' ')
         try:
             main_func()
-            self.fail("Main function don't call exit.")  # pragma: no cover
         except SystemExit:
-            for result in results:
-                f = open(result[0], 'r')
-                self.assert_result_equals(f.read(), result[1])
+            pass
+        for result in results:
+            f = open(result[0], 'r')
+            self.assert_result_equals(f.read(), result[1])
 
     def assert_yaml_equals(self, content, value):
         import yaml

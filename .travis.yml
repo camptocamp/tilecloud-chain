@@ -5,9 +5,10 @@ python:
   - 2.7
 
 before_install:
-  - sudo apt-get install -qq postgis postgresql-9.1-postgis apache2
+  - sudo apt-get install -qq postgis postgresql-9.1-postgis apache2 cgi-mapserver python-mapnik2
   - sudo -u postgres tilecloud_chain/tests/create_test_data.sh
   - sudo cp tilecloud_chain/tests/apache.conf /etc/apache2/sites-enabled/apache.conf
+  - sudo apache2ctl graceful
 
 install:
   - python bootstrap.py --version 1.5.2 --distribute --download-base

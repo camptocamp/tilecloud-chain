@@ -207,7 +207,7 @@ class TestController(CompareCase):
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_01</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>3571.42857143</ScaleDenominator>
@@ -242,7 +242,7 @@ class TestController(CompareCase):
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_5</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.857143</ScaleDenominator>
@@ -562,7 +562,7 @@ class TestController(CompareCase):
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_01</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>3571.42857143</ScaleDenominator>
@@ -597,7 +597,7 @@ class TestController(CompareCase):
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_5</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.857143</ScaleDenominator>
@@ -684,7 +684,7 @@ class TestController(CompareCase):
    <grid name="swissgrid_01">
       <size>256 256</size>
       <extent>420000.0 30000.0 900000.0 350000.0</extent>
-      <srs>EPSG:21781</srs>
+      <srs>epsg:21781</srs>
       <units>m</units>
       <resolutions>100.0 50.0 20.0 10.0 5.0 2.0 1.0 0.5 </resolutions>
       <origin>top-left</origin>
@@ -693,7 +693,7 @@ class TestController(CompareCase):
    <grid name="swissgrid_5">
       <size>256 256</size>
       <extent>420000.0 30000.0 900000.0 350000.0</extent>
-      <srs>EPSG:21781</srs>
+      <srs>epsg:21781</srs>
       <units>m</units>
       <resolutions>100.0 50.0 20.0 10.0 5.0 2.0 1.0 0.5 </resolutions>
       <origin>top-left</origin>
@@ -945,7 +945,7 @@ grids:
     name: swissgrid_01
     resolution_scale: 10
     resolutions: [1.0, 0.2, 0.1]
-    srs: EPSG:21781
+    srs: epsg:21781
     tile_size: 256
     unit: m
   swissgrid_5: &id003
@@ -953,7 +953,7 @@ grids:
     name: swissgrid_5
     resolution_scale: 1
     resolutions: [100.0, 50.0, 20.0, 10.0, 5.0]
-    srs: EPSG:21781
+    srs: epsg:21781
     tile_size: 256
     unit: m
 layer_default:
@@ -984,7 +984,7 @@ layers:
     grid: swissgrid_5
     grid_ref: *id003
     layers: point,line,polygon
-    meta: true
+    meta: false
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
@@ -1112,7 +1112,7 @@ mapcache:
   memcache_host: localhost
   memcache_port: '11211'
   resolutions: [100.0, 50.0, 20.0, 10.0, 5.0, 2.0, 1.0, 0.5]
-openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'EPSG:21781'}""")
+openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}""")
 
     def test_openlayers(self):
         self.assert_main_equals(
@@ -1168,7 +1168,7 @@ openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'EPSG:21781'}""")
 
 map = new OpenLayers.Map({
     div: "map",
-    projection: "EPSG:21781",
+    projection: "epsg:21781",
     controls: [
         new OpenLayers.Control.Navigation(),
         new OpenLayers.Control.Zoom(),

@@ -1,5 +1,4 @@
 - Add tests
-    - mapnik (with utfgrid)
     - local tile generation
         - zoom
         - layer

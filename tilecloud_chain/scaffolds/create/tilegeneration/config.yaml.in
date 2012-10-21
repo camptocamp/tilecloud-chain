@@ -8,7 +8,7 @@ grids:
         # bbox [required]
         bbox: [420000, 30000, 900000, 350000]
         # srs [required]
-        srs: EPSG:21781
+        srs: epsg:21781
         # unit [default to 'm']
         unit: m
         # [optional, default to 256]
@@ -163,7 +163,7 @@ generation:
 
 openlayers:
     # srs, center_x, center_y [required]
-    srs: EPSG:21781
+    srs: epsg:21781
     center_x: 600000
     center_y: 200000
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Map>
-    <Style name="point">
+    <Style name="polygon">
         <Rule>
-            <PointSymbolizer file="circle.svg" width="12" height="12" type="svg" />
+            <PolygonSymbolizer fill="blue"/>
         </Rule>
     </Style>
     <Style name="line">
@@ -13,20 +13,20 @@
             </LineSymbolizer>
         </Rule>
     </Style>
-    <Style name="polygon">
+    <Style name="point">
         <Rule>
-            <PolygonSymbolizer fill="blue"/>
+            <PointSymbolizer file="circle.svg" transform="scale(10)" />
         </Rule>
     </Style>
-    <Layer name="point">
-        <StyleName>point</StyleName>
+    <Layer name="polygon">
+        <StyleName>polygon</StyleName>
         <Datasource>
-            <Parameter name="table">tests.point</Parameter>
-            <Parameter name="geometry_field">geom</Parameter>
+            <Parameter name="table">tests.polygon</Parameter>
+            <Parameter name="geometry_field">the_geom</Parameter>
             <Parameter name="srid">21781</Parameter>
             <Parameter name="type">postgis</Parameter>
             <Parameter name="dbname">tests</Parameter>
-            <Parameter name="host">host</Parameter>
+            <Parameter name="host">localhost</Parameter>
             <Parameter name="port">5432</Parameter>
             <Parameter name="user">postgres</Parameter>
             <Parameter name="password">postgres</Parameter>
@@ -38,11 +38,11 @@
         <StyleName>line</StyleName>
         <Datasource>
             <Parameter name="table">tests.line</Parameter>
-            <Parameter name="geometry_field">geom</Parameter>
+            <Parameter name="geometry_field">the_geom</Parameter>
             <Parameter name="srid">21781</Parameter>
             <Parameter name="type">postgis</Parameter>
             <Parameter name="dbname">tests</Parameter>
-            <Parameter name="host">host</Parameter>
+            <Parameter name="host">localhost</Parameter>
             <Parameter name="port">5432</Parameter>
             <Parameter name="user">postgres</Parameter>
             <Parameter name="password">postgres</Parameter>
@@ -50,15 +50,15 @@
             <Parameter name="extent">420000, 30000, 900000, 350000</Parameter>
         </Datasource>
     </Layer>
-    <Layer name="polygon">
-        <StyleName>polygon</StyleName>
+    <Layer name="point">
+        <StyleName>point</StyleName>
         <Datasource>
-            <Parameter name="table">tests.polygon</Parameter>
-            <Parameter name="geometry_field">geom</Parameter>
+            <Parameter name="table">tests.point</Parameter>
+            <Parameter name="geometry_field">the_geom</Parameter>
             <Parameter name="srid">21781</Parameter>
             <Parameter name="type">postgis</Parameter>
             <Parameter name="dbname">tests</Parameter>
-            <Parameter name="host">host</Parameter>
+            <Parameter name="host">localhost</Parameter>
             <Parameter name="port">5432</Parameter>
             <Parameter name="user">postgres</Parameter>
             <Parameter name="password">postgres</Parameter>

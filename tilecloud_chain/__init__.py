@@ -440,7 +440,11 @@ class HashLogger(object):  # pragma: no cover
 
     def __call__(self, tile):
         ref = None
-        image = Image.open(StringIO(tile.data))
+        try:
+            image = Image.open(StringIO(tile.data))
+        except IOError as e:
+            self.logger.error(tile.data)
+            raise e
         for px in image.getdata():
             if ref is None:
                 ref = px
@@ -448,7 +452,7 @@ class HashLogger(object):  # pragma: no cover
                 self.logger.info("Warning: image is not uniform.")
                 break
 
-        self.logger.info("""Tile: %s
+        print("""Tile: %s
     %s:
         size: %i
         hash: %s""" % (str(tile.tilecoord), self.block, len(tile.data), sha1(tile.data).hexdigest()))

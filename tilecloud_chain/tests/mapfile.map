@@ -2,6 +2,7 @@ MAP
   NAME "Tests"
   STATUS ON
   EXTENT 420000 30000 900000 350000
+  MAXSIZE 2500
 
   WEB
     TEMPLATE dummyTemplateForWmsGetFeatureInfo
@@ -13,7 +14,7 @@ MAP
   END
 
   PROJECTION
-    "init=EPSG:21781"
+    "init=epsg:21781"
   END
 
   SYMBOL
@@ -26,7 +27,7 @@ MAP
   END
 
   LAYER
-    NAME "postgis-point"
+    NAME "point"
     TYPE POINT
     CONNECTIONTYPE postgis
     CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
@@ -35,7 +36,7 @@ MAP
   END
 
   LAYER
-    NAME "postgis-line"
+    NAME "line"
     TYPE LINE
     CONNECTIONTYPE postgis
     CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
@@ -44,7 +45,7 @@ MAP
   END
 
   LAYER
-    NAME "postgis-polygon"
+    NAME "polygon"
     TYPE POLYGON
     CONNECTIONTYPE postgis
     CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
