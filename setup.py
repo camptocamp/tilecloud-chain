@@ -21,7 +21,7 @@ install_requires = [
 
 setup(
         name='tilecloud-chain',
-        version='0.1',
+        version='0.2',
         description='tilecloud chain',
         long_description=README,
         classifiers=[
