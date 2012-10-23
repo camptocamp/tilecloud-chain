@@ -70,6 +70,15 @@ layers:
     point:
         layers: point
         sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
+    point_hash:
+        layers: point
+        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+        empty_metatile_detection:
+            size: 20743
+            hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+        empty_tile_detection:
+            size: 334
+            hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     line:
         layers: line
         sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.line

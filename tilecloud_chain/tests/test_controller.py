@@ -72,6 +72,28 @@ class TestController(CompareCase):
     </Layer>
 
     <Layer>
+      <ows:Title>point_hash</ows:Title>
+      <ows:Identifier>point_hash</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://taurus/tiles/1.0.0/point_hash/default/"""
+"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
       <ows:Title>polygon</ows:Title>
       <ows:Identifier>polygon</ows:Identifier>
       <Style isDefault="true">
@@ -384,6 +406,34 @@ class TestController(CompareCase):
 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts3/tiles/1.0.0/all/default/""" \
+"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>point_hash</ows:Title>
+      <ows:Identifier>point_hash</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/point_hash/default/""" \
+"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts2/tiles/1.0.0/point_hash/default/""" \
+"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts3/tiles/1.0.0/point_hash/default/""" \
 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -713,6 +763,19 @@ class TestController(CompareCase):
       </http>
    </source>
 
+   <source name="point_hash" type="wms">
+      <getmap>
+         <params>
+            <FORMAT>image/png</FORMAT>
+            <LAYERS>point</LAYERS>
+            <TRANSPARENT>TRUE</TRANSPARENT>
+         </params>
+      </getmap>
+      <http>
+         <url></url>
+      </http>
+   </source>
+
    <source name="polygon" type="wms">
       <getmap>
          <params>
@@ -794,6 +857,19 @@ class TestController(CompareCase):
 
    <tileset name="all">
       <source>all</source>
+      <cache>default</cache>
+      <grid>swissgrid_5</grid>
+      <metatile>8 8</metatile>
+      <metabuffer>128</metabuffer>
+      <expires>3600</expires> <!-- 1 hour -->
+      <auto_expire>13800</auto_expire> <!-- 4 hours -->
+      <dimensions>
+        <dimension type="values" name="DATE" default="2012">2012</dimension>
+      </dimensions>
+   </tileset>
+
+   <tileset name="point_hash">
+      <source>point_hash</source>
       <cache>default</cache>
       <grid>swissgrid_5</grid>
       <metatile>8 8</metatile>
@@ -1071,6 +1147,25 @@ layers:
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
+  point_hash:
+    connection: user=postgres password=postgres dbname=tests host=localhost
+    cost: *id001
+    dimensions: *id002
+    empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
+    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
+    extension: png
+    grid: swissgrid_5
+    grid_ref: *id003
+    layers: point
+    meta: true
+    meta_buffer: 128
+    meta_size: 8
+    mime_type: image/png
+    name: point_hash
+    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    type: wms
+    url: http://localhost/mapserv
+    wmts_style: default
   polygon:
     connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
@@ -1201,6 +1296,10 @@ OpenLayers.Request.GET({
 
         map.addLayer(format.createLayer(capabilities, {
             layer: "all",
+            isBaseLayer: true
+        }));
+        map.addLayer(format.createLayer(capabilities, {
+            layer: "point_hash",
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
