@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import os
 import sys
 import math
 import logging
 import ConfigParser
 import boto
+import yaml
+from copy import copy
 from datetime import timedelta
 from subprocess import Popen, PIPE
 from optparse import OptionParser
@@ -13,6 +16,9 @@ from tilecloud import Tile, TileStore, consume
 from tilecloud.lib.s3 import S3Connection
 
 from tilecloud_chain import TileGeneration
+
+
+logger = logging.getLogger(__name__)
 
 
 def main():
@@ -59,6 +65,10 @@ def main():
             "of the genaration geometry, can also be 'count', to be base on number of tiles to generate.")
     parser.add_option('--ol', '--openlayers-test', default=False, action="store_true",
             help='Generate openlayers test page')
+    parser.add_option('--mapcache', '--generate-mapcache-config', default=False, action="store_true", dest='mapcache',
+            help='Generate MapCache configuration file')
+    parser.add_option('--dump-config', default=False, action="store_true",
+            help='Dump the used config with default values and exit')
 
     (options, args) = parser.parse_args()
     logging.basicConfig(
@@ -73,6 +83,72 @@ def main():
 
     if options.cache is None:
         options.cache = gene.config['generation']['default_cache']
+    if options.capabilities:
+        _generate_wmts_capabilities(gene, options)
+        sys.exit(0)
+
+    if options.mapcache:
+        _generate_mapcache_config(gene, options)
+        sys.exit(0)
+
+    if options.ol:
+        _generate_openlayers(gene, options)
+        sys.exit(0)
+
+    if options.dump_config:
+        if (options.layer):
+            _validate_calculate_cost(gene)
+        else:
+            for layer in gene.config['generation']['default_layers']:
+                gene.set_layer(layer, options)
+                _validate_calculate_cost(gene)
+        _validate_generate_wmts_capabilities(gene, gene.caches[options.cache])
+        _validate_generate_mapcache_config(gene)
+        _validate_generate_openlayers(gene)
+        for grild in gene.config['grids'].values():
+            del grild['obj']
+        print yaml.dump(gene.config)
+        sys.exit(0)
+
+    if options.cost:
+        all_size = 0
+        tile_size = 0
+        all_tiles = 0
+        if (options.layer):
+            (all_size, all_time, all_price, all_tiles) = _calculate_cost(gene, options)
+            tile_size = gene.layer['cost']['tile_size'] / (1024.0 * 1024)
+        else:
+            all_time = timedelta()
+            all_price = 0
+            for layer in gene.config['generation']['default_layers']:
+                print
+                print "===== %s =====" % layer
+                gene.set_layer(layer, options)
+                (size, time, price, tiles) = _calculate_cost(gene, options)
+                tile_size += gene.layer['cost']['tile_size'] / (1024.0 * 1024)
+                all_time += time
+                all_price += price
+                all_size += size
+                all_tiles += tiles
+
+            print
+            print "===== GLOBAL ====="
+            print "Total number of tiles: %i" % all_tiles
+            print 'Total generation time: %d %d:%02d:%02d [d h:mm:ss]' % \
+                (all_time.days, all_time.seconds / 3600, all_time.seconds % 3600 / 60, all_time.seconds % 60)
+            print 'Total generation cost: %0.2f [$]' % all_price
+        print
+        print 'S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))
+        print 'S3 get: %0.2f [$/month]' % (
+            gene.config['cost']['s3']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
+            gene.config['cost']['s3']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
+        if 'cloudfront' in gene.config['cost']:
+            print 'CloudFront: %0.2f [$/month]' % (
+                gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
+                gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
+        print 'ESB storage: %0.2f [$/month]' % (gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
+        sys.exit(0)
+
     if options.deploy_config is None:
         options.deploy_config = gene.config['generation']['deploy_config']
     if options.sync:
@@ -86,62 +162,18 @@ def main():
     if options.tiles_gen:
         options.tiles_gen = not gene.config['generation']['disable_tilesgen']
 
-    if options.capabilities:
-        _generate_wmts_capabilities(gene, options)
-        sys.exit(0)
-
-    if options.ol:
-        _generate_openlayers(gene, options)
-        sys.exit(0)
-
-    if options.cost:
-        all_size = 0
-        tile_size = 0
-        if (options.layer):
-            (all_size, all_time, all_price) = _calculate_cost(gene, options)
-            tile_size = gene.layer['cost']['tile_size'] / (1024.0 * 1024)
-        else:
-            all_time = timedelta()
-            all_price = 0
-            for layer in gene.config['generation']['default_layers']:
-                print
-                print "===== %s =====" % layer
-                gene.set_layer(layer, options)
-                (size, time, price) = _calculate_cost(gene, options)
-                tile_size += gene.layer['cost']['tile_size'] / (1024.0 * 1024)
-                all_time += time
-                all_price += price
-                all_size += size
-
-            print
-            print "===== GLOBAL ====="
-            print 'Total generation time : %d %d:%02d:%02d [d h:mm:ss]' % \
-                (all_time.days, all_time.seconds / 3600, all_time.seconds % 3600 / 60, all_time.seconds % 60)
-            print 'Total generation cost : %0.2f [$]' % all_price
-        print
-        print 'S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))
-        print 'S3 get: %0.2f [$/month]' % (
-            gene.config['cost']['s3']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
-            gene.config['cost']['s3']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
-        if 'cloudfront' in gene.config['cost']:
-            print 'CloudFront: %0.2f [$/month]' % (
-                gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
-                gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
-        print 'ESB storage: %0.2f [$/month]' % (gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
-        sys.exit(0)
-
     # start aws
     if not options.host:
         # TODO not imlpemented yet
-        host = aws_start(gene.metadata['aws']['host_type'])
+        host = aws_start(gene.config['generation']['ec2_host_type'])
     else:
         host = options.host
 
     if options.sync:
         # TODO test
         # sync geodata
-        run_local("rsync %(folder)s rsync://%(host):%(folder)s" % {
-            'folder': gene.config['forge']['geodata_folder'],
+        run_local("rsync -r %(folder)s rsync://%(host):%(folder)s" % {
+            'folder': gene.config['generation']['geodata_folder'],
             'host': host})
 
     # deploy
@@ -172,12 +204,15 @@ def main():
         times = []
         for i in range(gene.config['generation']['number_process']):
             results = run_remote('cat /tmp/time' + i).split()
-            times.append(results.pop())
-            tiles_size.extend(results)
+            for r in results:
+                if r.startswith('time: '):
+                    times.append(int(r.replace('time: ', '')))
+                elif r.startswith('size: '):
+                    tiles_size.append(int(r.replace('size: ', '')))
 
         mean_time = reduce(lambda x, y: x + y,
             [timedelta(microseconds=int(r)) for r in times],
-            timedelta()) / len(times)
+            timedelta()) / len(times) ** 2
         mean_time_ms = mean_time.seconds * 1000 + mean_time.microseconds / 1000.0
 
         mean_size = reduce(lambda x, y: x + y, [int(r) for r in tiles_size], 0) / len(tiles_size)
@@ -240,7 +275,7 @@ def _deploy(options, host):
         components = "--components=[database]"
 
     if options.deploy_code or options.deploy_database:
-        run_local('deploy --remote %s %s %s' %
+        run_local('sudo -u deploy deploy --remote %s %s %s' %
             (components, options.deploy_config, host))
 
 
@@ -268,13 +303,11 @@ def aws_start(host_type):
 
 
 def run_local(cmd):
-    # TODO test
-    return Popen(['sudo', '-u', 'deploy'].extend(cmd.split(' ')), stdout=PIPE).communicate()[0]
+    return Popen(cmd.split(' '), stdout=PIPE).communicate()[0]
 
 
 def run_remote(cmd, host, project_dir):
-    # TODO test
-    return Popen(['ssh', '-f', 'deploy@%s' % host, 'cd %(project_dir)s; %(cmd)s' % {
+    return Popen(['ssh', '-f', host, 'cd %(project_dir)s; %(cmd)s' % {
             'cmd': cmd, 'project_dir': project_dir}], stdout=PIPE).communicate()[0]
 
 
@@ -291,7 +324,7 @@ def status(options, gene):
     )
 
 
-def _calculate_cost(gene, options):
+def _validate_calculate_cost(gene):
     error = False
     name = "layer[%s]" % gene.layer['name']
     error = gene.validate(gene.layer, name, 'cost', attribute_type=dict, default={}) or error
@@ -328,9 +361,25 @@ def _calculate_cost(gene, options):
         attribute_type=float, default=0.12) or error
     # http://aws.amazon.com/ec2/pricing/
     error = gene.validate(gene.config['cost'], 'cost', 'ec2', attribute_type=dict, default={}) or error
-    # medium
     # [$/hour]
-    error = gene.validate(gene.config['cost']['ec2'], 'cost.ec2', 'usage', attribute_type=float, default=0.17) or error
+    ec2cost = {
+        't1.micro': 0.02,
+        'm1.small': 0.085,
+        'm1.medium': 0.17,
+        'm1.large': 0.34,
+        'm1.xlarge': 0.68,
+        'm2.xlarge': 0.506,
+        'm2.2xlarge': 1.012,
+        'm2.4xlarge': 2.024,
+        'c1.medium': 0.186,
+        'c1.xlarge': 0.744,
+        'cc1.4xlarge': 1.3,  # usa-est-1
+        'cc1.8xlarge': 2.7,
+        'cg1.4xlarge': 2.36,
+        'hi1.4xlarge': 3.41,
+    }
+    error = gene.validate(gene.config['cost']['ec2'], 'cost.ec2', 'usage', attribute_type=float,
+        default=ec2cost[gene.config['generation']['ec2_host_type']]) or error
     # http://aws.amazon.com/ebs/
     error = gene.validate(gene.config['cost'], 'cost', 'esb', attribute_type=dict, default={}) or error
     # [$/1Go/month]
@@ -345,7 +394,11 @@ def _calculate_cost(gene, options):
         attribute_type=float, default=0.01) or error
 
     if error:
-        exit(1)
+        exit(1)  # pragma: no cover
+
+
+def _calculate_cost(gene, options):
+    _validate_calculate_cost(gene)
 
     nb_metatiles = {}
     nb_tiles = {}
@@ -354,12 +407,25 @@ def _calculate_cost(gene, options):
     if options.cost_algo == 'area':
         meta_size = gene.layer['meta_size'] if meta else None
         tile_size = gene.layer['grid_ref']['tile_size']
-        for i, resolution in enumerate(gene.layer['grid_ref']['resolutions']):
+        res = [{'r': r, 'i': i} for i, r in enumerate(gene.layer['grid_ref']['resolutions'])]
+        geom = gene.geom
+        geom_buffer = 0
+        meta_geom = gene.geom
+        meta_geom_buffer = 0
+        for res in sorted(res, key=lambda r: r['r']):
+            i = res['i']
+            resolution = res['r']
+            print "Calculate zoom %i." % i
+
             if meta:
                 size = meta_size * tile_size * resolution
-                nb_metatiles[i] = int(round(gene.geom.buffer(size * 0.6).area / size ** 2))
+                meta_geom = meta_geom.buffer(size * 0.6 - meta_geom_buffer)
+                meta_geom_buffer = size * 0.6
+                nb_metatiles[i] = int(round(meta_geom.area / size ** 2))
             size = tile_size * resolution
-            nb_tiles[i] = int(round(gene.geom.buffer(size * 0.6).area / size ** 2))
+            geom = geom.buffer(size * 0.6 - geom_buffer)
+            geom_buffer = size * 0.6
+            nb_tiles[i] = int(round(geom.area / size ** 2))
 
     elif options.cost_algo == 'count':
         gene.init_tilecoords(options)
@@ -380,7 +446,7 @@ def _calculate_cost(gene, options):
                     for metatile in tiles:
                         for tilecoord in metatile.tilecoord:
                             yield Tile(tilecoord)
-            gene.get(MetaTileSplitter())
+            gene.tilestream = MetaTileSplitter().get(gene.tilestream)
 
             # Only keep tiles that intersect geometry
             gene.add_geom_filter()
@@ -406,9 +472,11 @@ def _calculate_cost(gene, options):
     price = 0
     all_size = 0
     all_time = 0
+    all_tiles = 0
     for z in nb_tiles:
         print
         print "%i tiles in zoom %i." % (nb_tiles[z], z)
+        all_tiles += nb_tiles[z]
         if meta:
             time = times[z] + gene.layer['cost']['tile_generation_time'] * nb_tiles[z]
         else:
@@ -439,11 +507,12 @@ def _calculate_cost(gene, options):
 
     print
     td = timedelta(milliseconds=all_time)
-    print 'Generation time : %d %d:%02d:%02d [d h:mm:ss]' % \
+    print "Number of tiles: %i" % all_tiles
+    print 'Generation time: %d %d:%02d:%02d [d h:mm:ss]' % \
         (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
-    print 'Generation cost : %0.2f [$]' % price
+    print 'Generation cost: %0.2f [$]' % price
 
-    return (all_size, td, price)
+    return (all_size, td, price, all_tiles)
 
 
 def _send(data, path, cache):
@@ -456,34 +525,116 @@ def _send(data, path, cache):
         s3key.put()
     else:
         folder = cache['folder'] or ''
+        filename = folder + path
+        directory = os.path.dirname(filename)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
         f = open(folder + path, 'w')
         f.write(data)
         f.close()
+
+
+def _validate_generate_wmts_capabilities(gene, cache):
+    error = False
+    error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_url', attribute_type=str, default=False) or error
+    error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_urls', attribute_type=list, default=False) or error
+    error = gene.validate(cache, 'cache[%s]' % cache['name'], 'hosts', attribute_type=list, default=False) or error
+    if not cache['http_url'] and not cache['http_urls']:
+        logger.error("The attribute 'http_url' or 'http_urls' is required in the object %s." %
+            ('cache[%s]' % cache['name']))  # pragma: no cover
+        error = True  # pragma: no cover
+    if error:
+        exit(1)  # pragma: no cover
 
 
 def _generate_wmts_capabilities(gene, options):
     from tilecloud_chain.wmts_get_capabilities_template import wmts_get_capabilities_template
 
     cache = gene.caches[options.cache]
+    _validate_generate_wmts_capabilities(gene, cache)
 
-    gene.validate_exists(gene.config, 'openlayers', 'config')
-    error = False
-    error = gene.validate(gene.config['openlayers'], 'srs', 'openlayers', attribute_type=str) or error
-    error = gene.validate(gene.config['openlayers'], 'center_x', 'openlayers', attribute_type=int) or error
-    error = gene.validate(gene.config['openlayers'], 'center_y', 'openlayers', attribute_type=int) or error
-    error = gene.validate(cache, 'http_url', 'cache[%s]' % cache['name'], attribute_type=str, required=True) or error
-    if error:
-        exit(1)
-
-    base_url = cache['http_url'] % cache
+    base_urls = []
+    if cache['http_url']:
+        if cache['hosts']:
+            cc = copy(cache)
+            for host in cache['hosts']:
+                cc['host'] = host
+                base_urls.append(cache['http_url'] % cc)
+        else:
+            base_urls = [cache['http_url'] % cache]
+    if cache['http_urls']:
+        base_urls = [url % cache for url in cache['http_urls']]
     capabilities = jinja2_template(wmts_get_capabilities_template,
             layers=gene.layers,
             grids=gene.grids,
-            getcapabilities=base_url + '/1.0.0/WMTSCapabilities.xml',
-            gettile=base_url,
+            getcapabilities=base_urls[0] + '/1.0.0/WMTSCapabilities.xml',
+            gettiles=base_urls,
             enumerate=enumerate, ceil=math.ceil, int=int)
 
     _send(capabilities, '/1.0.0/WMTSCapabilities.xml', cache)
+
+
+def _validate_generate_mapcache_config(gene):
+    error = False
+    error = gene.validate(gene.config, 'config', 'mapcache', attribute_type=dict, default={}) or error
+    error = gene.validate(gene.config['mapcache'], 'mapcache', 'mapserver_url', attribute_type=str,
+        default='http://${vars:host}/${vars:instanceid}/mapserv') or error
+    error = gene.validate(gene.config['mapcache'], 'mapcache', 'config_file', attribute_type=str,
+        default='apache/mapcache.xml.in') or error
+    error = gene.validate(gene.config['mapcache'], 'mapcache', 'resolutions', attribute_type=float,
+        is_array=True, required=True) or error
+    error = gene.validate(gene.config['mapcache'], 'mapcache', 'memcache_host', attribute_type=str,
+        default='localhost') or error
+    error = gene.validate(gene.config['mapcache'], 'mapcache', 'memcache_port', attribute_type=int,
+        default='11211') or error
+    error = gene.validate(gene.config['mapcache'], 'mapcache', 'layers', attribute_type=str, is_array=True,
+        required=True, enumeration=gene.config['layers'].keys()) or error
+
+    if 'layers' in gene.config['mapcache'] and 'resolutions' in gene.config['mapcache']:
+        for layer in gene.config['mapcache']['layers']:
+            if len(gene.layers[layer]['grid_ref']['resolutions']) > gene.config['mapcache']['resolutions']:
+                logger.error("The layer '%s' (grid '%s') has more resolutions than mapcache." %
+                    (layer, gene.layers[layer]['grid']))  # pragma: no cover
+                error = True  # pragma: no cover
+            else:
+                for i, resolution in enumerate(gene.layers[layer]['grid_ref']['resolutions']):
+                    if resolution != gene.config['mapcache']['resolutions'][i]:
+                        logger.error("The resolutions of layer '%s' (grid '%s') "
+                            "don't corresponds to mapcache resolutions (%f != %s)." %
+                            (layer, gene.layers[layer]['grid'],
+                            resolution, gene.config['mapcache']['resolutions'][i]))  # pragma: no cover
+                        error = True  # pragma: no cover
+
+    if error:
+        exit(1)  # pragma: no cover
+
+
+def _generate_mapcache_config(gene, options):
+    from tilecloud_chain.mapcache_config_template import mapcache_config_template
+
+    _validate_generate_mapcache_config(gene)
+
+    config = jinja2_template(mapcache_config_template,
+            layers=gene.layers,
+            grids=gene.grids,
+            mapcache=gene.config['mapcache'])
+
+    f = open(gene.config['mapcache']['config_file'], 'w')
+    f.write(config)
+    f.close()
+
+
+def _validate_generate_openlayers(gene):
+    error = False
+    error = gene.validate(gene.config, 'config', 'openlayers', attribute_type=dict, default={}) or error
+    error = gene.validate(gene.config['openlayers'], 'openlayers', 'srs',
+        attribute_type=str, default='EPSG:21781') or error
+    error = gene.validate(gene.config['openlayers'], 'openlayers', 'center_x',
+        attribute_type=float, default=600000) or error
+    error = gene.validate(gene.config['openlayers'], 'openlayers', 'center_y',
+        attribute_type=float, default=200000) or error
+    if error:
+        exit(1)  # pragma: no cover
 
 
 def _generate_openlayers(gene, options):
@@ -491,13 +642,7 @@ def _generate_openlayers(gene, options):
     from tilecloud_chain.openlayers_js import openlayers_js
     from tilecloud_chain.openlayers import openlayers
 
-    gene.validate_exists(gene.config, 'openlayers', 'config')
-    error = False
-    error = gene.validate(gene.config['openlayers'], 'srs', 'openlayers', attribute_type=str) or error
-    error = gene.validate(gene.config['openlayers'], 'center_x', 'openlayers', attribute_type=int) or error
-    error = gene.validate(gene.config['openlayers'], 'center_y', 'openlayers', attribute_type=int) or error
-    if error:
-        exit(1)
+    _validate_generate_openlayers(gene)
 
     cache = gene.caches[options.cache]
 
