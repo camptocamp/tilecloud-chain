@@ -39,6 +39,8 @@ Install::
 
 Edit your layers configuration in ``./tilegeneration/config.yaml``.
 
+Default self documented file: https://github.com/sbrunner/tilecloud-chain/blob/master/tilecloud_chain/scaffolds/create/tilegeneration/config.yaml.in.
+
 Generate tiles::
 
     ./bin/generate_tiles
