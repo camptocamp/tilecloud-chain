@@ -21,6 +21,7 @@ from boto.sqs.jsonmessage import JSONMessage
 
 from tilecloud import Tile, BoundingPyramid, TileCoord
 from tilecloud.grid.free import FreeTileGrid
+from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors, DropErrors
 
 
@@ -46,6 +47,7 @@ class TileGeneration:
                 attribute_type=float, is_array=True, required=True) or error
             error = self.validate(grid, name, 'bbox', attribute_type=float, is_array=True, required=True) or error
             error = self.validate(grid, name, 'srs', attribute_type=str, required=True) or error
+            error = self.validate(grid, name, 'unit', attribute_type=str, default='m') or error
             error = self.validate(grid, name, 'tile_size', attribute_type=int, default=256) or error
             scale = grid['resolution_scale']
             for r in grid['resolutions']:
@@ -129,7 +131,7 @@ class TileGeneration:
         self.caches = self.config['caches']
         for cname, cache in self.caches.items():
             name = "caches[%s]" % cname
-            error = self.validate(cache, name, 'name', attribute_type=str, default=gname) or error
+            error = self.validate(cache, name, 'name', attribute_type=str, default=cname) or error
             error = self.validate(cache, name, 'type', attribute_type=str, required=True,
                 enumeration=['s3', 'filesystem']) or error
             if cache == 'filesystem':
@@ -145,6 +147,10 @@ class TileGeneration:
         error = self.validate(self.config['generation'], 'generation', 'authorised_user', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'number_process',
             attribute_type=int, default=1) or error
+        error = self.validate(self.config['generation'], 'generation', 'ec2_host_type', attribute_type=str,
+            default='m1.medium', enumeration=['t1.micro', 'm1.small', 'm1.medium', 'm1.large', 'm1.xlarge',
+            'm2.xlarge', 'm2.2xlarge', 'm2.4xlarge', 'c1.medium', 'c1.xlarge', 'cc1.4xlarge', 'cc2.8xlarge',
+            'cg1.4xlarge', 'hi1.4xlarge']) or error
         error = self.validate(self.config['generation'], 'generation', 'maxconsecutive_errors',
             attribute_type=int, default=10) or error
         error = self.validate(self.config['generation'], 'generation', 'geodata_folder', attribute_type=str) or error
@@ -222,7 +228,7 @@ class TileGeneration:
         self.layer = self.layers[layer]
 
         if options.bbox:
-            self.init_geom(options.bbox)
+            self.init_geom([int(c) for c in options.bbox.split(',')])
         elif options.time and 'bbox' in self.layer:
             self.init_geom([
                 (self.layer['bbox'][0] + self.layer['bbox'][2]) / 2,
@@ -255,6 +261,13 @@ class TileGeneration:
             cursor.execute("SELECT ST_AsText((SELECT " +
                 self.layer['sql'].strip('" ') + "))")
             self.geom = loads_wkt(cursor.fetchone()[0])
+            if extent:
+                self.geom = self.geom.intersection(Polygon((
+                    (extent[0], extent[1]),
+                    (extent[0], extent[3]),
+                    (extent[2], extent[3]),
+                    (extent[2], extent[1]),
+                )))
         elif extent:
             self.geom = Polygon((
                     (extent[0], extent[1]),
@@ -268,6 +281,27 @@ class TileGeneration:
             self.ifilter(IntersectGeometryFilter(
                     grid=self.get_grid(),
                     geom=self.geom))
+
+    def add_metatile_splitter(self):
+        store = MetaTileSplitterTileStore(
+            self.layer['mime_type'],
+            self.layer['grid_ref']['tile_size'],
+            self.layer['meta_buffer'])
+
+        if self.options.test > 0:
+            self.tilestream = store.get(self.tilestream)
+        else:
+            def safe_get(tilestream):
+                for metatile in tilestream:
+                    try:
+                        substream = store.get((metatile,))
+                        for tile in substream:
+                            tile.metatile = metatile
+                            yield tile
+                    except:
+                        metatile.error = str(sys.exc_info()[1]) + " - " + metatile.data
+                        yield metatile
+            self.tilestream = safe_get(self.tilestream)
 
     def add_error_filters(self, logger):
         self.imap(LogErrors(logger, logging.ERROR,
@@ -312,7 +346,7 @@ class TileGeneration:
     def set_store(self, store):
         self.tilestream = store.list()
 
-    def get(self, store, multiprocess=False):
+    def get(self, store):
         if self.options.test > 0:
             self.tilestream = store.get(self.tilestream)
         else:
@@ -320,26 +354,11 @@ class TileGeneration:
                 try:
                     return store.get_one(tile)
                 except:
-                    tile.error = sys.exc_info()[0]
+                    tile.error = sys.exc_info()[1]
                     return tile
             self.tilestream = imap(safe_get, ifilter(None, self.tilestream))
 
-    def get2(self, store, multiprocess=False):
-        if self.options.test > 0:
-            self.tilestream = store.get(self.tilestream)
-        else:
-            def safe_get(tilestream):
-                for tile in tilestream:
-                    try:
-                        substream = store.get((tile,))
-                        for t in substream:
-                            yield t
-                    except:
-                        tile.error = sys.exc_info()[1]
-                        yield tile
-            self.tilestream = safe_get(self.tilestream)
-
-    def put(self, store, multiprocess=False):
+    def put(self, store):
         if self.options.test > 0:
             self.tilestream = store.put(self.tilestream)
         else:
@@ -347,11 +366,11 @@ class TileGeneration:
                 try:
                     return store.put_one(tile)
                 except:
-                    tile.error = sys.exc_info()[0]
+                    tile.error = sys.exc_info()[1]
                     return tile
             self.tilestream = imap(safe_put, ifilter(None, self.tilestream))
 
-    def delete(self, store, multiprocess=False):
+    def delete(self, store):
         if self.options.test > 0:
             self.tilestream = store.delete(self.tilestream)
         else:
@@ -359,11 +378,11 @@ class TileGeneration:
                 try:
                     return store.delete_one(tile)
                 except:
-                    tile.error = sys.exc_info()[0]
+                    tile.error = sys.exc_info()[1]
                     return tile
             self.tilestream = imap(safe_delete, ifilter(None, self.tilestream))
 
-    def imap(self, tile_filter, multiprocess=False):
+    def imap(self, tile_filter):
         if self.options.test > 0:
             self.tilestream = imap(tile_filter, self.tilestream)
         else:
@@ -371,7 +390,7 @@ class TileGeneration:
                 try:
                     return tile_filter(tile)
                 except:
-                    tile.error = sys.exc_info()[0]
+                    tile.error = sys.exc_info()[1]
                     return tile
             self.tilestream = imap(safe_imap, ifilter(None, self.tilestream))
 
@@ -384,7 +403,7 @@ class TileGeneration:
                     try:
                         return tile_filter(tile)
                     except:
-                        tile.error = sys.exc_info()[0]
+                        tile.error = sys.exc_info()[1]
                         return tile
             self.tilestream = ifilter(safe_filter, self.tilestream)
 
@@ -428,7 +447,11 @@ class HashLogger(object):  # pragma: no cover
 
     def __call__(self, tile):
         ref = None
-        image = Image.open(StringIO(tile.data))
+        try:
+            image = Image.open(StringIO(tile.data))
+        except IOError as e:
+            self.logger.error(tile.data)
+            raise e
         for px in image.getdata():
             if ref is None:
                 ref = px
@@ -436,7 +459,7 @@ class HashLogger(object):  # pragma: no cover
                 self.logger.info("Warning: image is not uniform.")
                 break
 
-        self.logger.info("""Tile: %s
+        print("""Tile: %s
     %s:
         size: %i
         hash: %s""" % (str(tile.tilecoord), self.block, len(tile.data), sha1(tile.data).hexdigest()))

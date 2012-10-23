@@ -13,7 +13,6 @@ from tilecloud.store.url import URLTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.filesystem import FilesystemTileStore
 from tilecloud.store.sqs import SQSTileStore
-from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.logger import Logger
@@ -101,7 +100,7 @@ def _gene(options, gene, layer):
                     border=gene.layer['meta_buffer'] if meta else 0,
                     tilegrid=gene.get_grid()['obj']
                 ),)
-            ), True)
+            ))
         elif gene.layer['type'] == 'mapnik':
             from tilecloud.store.mapnik_ import MapnikTileStore
 
@@ -114,7 +113,7 @@ def _gene(options, gene, layer):
                     output_format=gene.layer['output_format'],
                     resolution=gene.layer['resolution'],
                     layers_fields=gene.layer['layers_fields']
-                ), False)
+                ))
             else:
                 gene.get(MapnikTileStore(
                     tilegrid=gene.get_grid()['obj'],
@@ -122,7 +121,7 @@ def _gene(options, gene, layer):
                     image_buffer=gene.layer['meta_buffer'] if meta else 0,
                     data_buffer=gene.layer['data_buffer'],
                     output_format=gene.layer['output_format'],
-                ), False)
+                ))
 
         if meta:
             if options.role == 'hash':
@@ -144,10 +143,7 @@ def _gene(options, gene, layer):
             gene.ifilter(add_elapsed_togenerate)
 
             # Split the metatile image into individual tiles
-            gene.get2(MetaTileSplitterTileStore(
-                    gene.layer['mime_type'],
-                    gene.layer['grid_ref']['tile_size'],
-                    gene.layer['meta_buffer']), True)
+            gene.add_metatile_splitter()
 
             if options.role != 'hash':
                 # Only keep tiles that intersect geometry
@@ -170,7 +166,7 @@ def _gene(options, gene, layer):
 
         if options.time:
             def log_size(tile):
-                print len(tile.data)
+                print 'size: ' + len(tile.data)
             gene.imap(log_size)
 
         gene.put(cache_tilestore)
@@ -189,13 +185,21 @@ def _gene(options, gene, layer):
             gene.delete(sqs_tilestore)
 
     if options.time:
-        consume(gene.tilestream, options.time)
-        t1 = datetime.now()
-        consume(gene.tilestream, options.time)
-        t2 = datetime.now()
-        consume(gene.tilestream, options.time)
-        d = (t2 - t1) / options.time
-        print (d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds
+        class log_time:
+            n = 0
+            t1 = None
+
+            def __call__(self, tile):
+                self.n += 1
+                if self.n == options.time:
+                    self.t1 = datetime.now()
+                elif self.n == 2 * options.time:
+                    t2 = datetime.now()
+                    d = (t2 - self.t1) / options.time
+                    print 'time: ' + (d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds
+        gene.imap(log_time)
+
+        consume(gene.tilestream, options.time * 3)
     else:
         consume(gene.tilestream, options.test)
 
@@ -242,7 +246,7 @@ def main():
     (options, args) = parser.parse_args()
     logging.basicConfig(
         format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
-        level=logging.INFO if options.test < 0 else logging.DEBUG)
+        level=logging.ERROR if options.test < 0 else logging.DEBUG)
 
     if options.daemonize:
         print "Daemonize with pid %i." % daemonize()
