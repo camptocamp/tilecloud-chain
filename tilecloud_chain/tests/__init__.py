@@ -2,6 +2,8 @@
 
 import logging
 import sys
+import os
+import shutil
 from cStringIO import StringIO
 from unittest import TestCase
 
@@ -50,3 +52,15 @@ class CompareCase(TestCase):
         self.assert_main_equals(cmd, main_func, [])
         sys.stdout = old_stdout
         self.assert_yaml_equals(mystdout.getvalue(), result)
+
+    def assert_tiles_generated(self, cmd, main_func, directory, tiles_pattern, tiles):
+        shutil.rmtree(directory)
+        self.assert_main_equals(cmd, main_func, [])
+        count = 0
+        for path, dirs, files in os.walk(directory):
+            if len(files) != 0:
+                log.info((path, files))
+                count += len(files)
+        self.assertEquals(count, len(tiles))
+        for tile in tiles:
+            self.assertTrue(os.path.exists(directory + tiles_pattern % tile))

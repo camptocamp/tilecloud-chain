@@ -228,7 +228,7 @@ class TileGeneration:
         self.layer = self.layers[layer]
 
         if options.bbox:
-            self.init_geom(options.bbox)
+            self.init_geom([int(c) for c in options.bbox.split(',')])
         elif options.time and 'bbox' in self.layer:
             self.init_geom([
                 (self.layer['bbox'][0] + self.layer['bbox'][2]) / 2,
@@ -261,6 +261,13 @@ class TileGeneration:
             cursor.execute("SELECT ST_AsText((SELECT " +
                 self.layer['sql'].strip('" ') + "))")
             self.geom = loads_wkt(cursor.fetchone()[0])
+            if extent:
+                self.geom = self.geom.intersection(Polygon((
+                    (extent[0], extent[1]),
+                    (extent[0], extent[3]),
+                    (extent[2], extent[3]),
+                    (extent[2], extent[1]),
+                )))
         elif extent:
             self.geom = Polygon((
                     (extent[0], extent[1]),

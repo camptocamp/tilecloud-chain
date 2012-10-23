@@ -49,7 +49,9 @@ MAP
     STATUS ON
     CLASS
         COLOR 0 0 255
-        WIDTH 5
+        STYLE
+            WIDTH 5
+        END
     END
   END
 
