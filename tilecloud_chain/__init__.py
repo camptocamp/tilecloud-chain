@@ -153,6 +153,8 @@ class TileGeneration:
             'cg1.4xlarge', 'hi1.4xlarge']) or error
         error = self.validate(self.config['generation'], 'generation', 'maxconsecutive_errors',
             attribute_type=int, default=10) or error
+        error = self.validate(self.config['generation'], 'generation', 'ssh_options',
+           attribute_type=str, default='') or error
         error = self.validate(self.config['generation'], 'generation', 'geodata_folder', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'deploy_config',
             attribute_type=str, default="tilegeneration/deploy.cfg") or error

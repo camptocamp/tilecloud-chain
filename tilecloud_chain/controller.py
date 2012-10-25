@@ -77,7 +77,7 @@ def main():
 
     gene = TileGeneration(options.config, options, layer_name=options.layer)
 
-    if options.status:
+    if options.status:  # pragma: no cover
         status(options, gene)
         sys.exit(0)
 
@@ -157,9 +157,9 @@ def main():
         options.deploy_code = not gene.config['generation']['disable_code']
     if options.deploy_database:
         options.deploy_database = not gene.config['generation']['disable_database']
-    if options.fill_queue:
+    if options.fill_queue:  # pragma: no cover
         options.fill_queue = not gene.config['generation']['disable_fillqueue']
-    if options.tiles_gen:
+    if options.tiles_gen:  # pragma: no cover
         options.tiles_gen = not gene.config['generation']['disable_tilesgen']
 
     # start aws
@@ -169,12 +169,11 @@ def main():
     else:
         host = options.host
 
-    if options.sync:
-        # TODO test
+    if options.sync and 'geodata_folder' in gene.config['generation']:
         # sync geodata
-        run_local("rsync -r %(folder)s rsync://%(host):%(folder)s" % {
-            'folder': gene.config['generation']['geodata_folder'],
-            'host': host})
+        run_local(['rsync', '-e', 'ssh ' + gene.config['generation']['ssh_options'],
+            '-r', gene.config['generation']['geodata_folder'],
+            host + ':' + gene.config['generation']['geodata_folder']])
 
     # deploy
     _deploy(options, host)
@@ -182,7 +181,7 @@ def main():
     if options.deploy_code or options.deploy_database \
             or options.sync:
         # TODO not imlpemented yet
-        create_snapshot(host, gene.metadata['aws'])
+        create_snapshot(host, gene)
 
     if options.time:
         # TODO test
@@ -230,7 +229,7 @@ def main():
         run_remote('sudo shutdown 0')  # TODO demonize, send email
 
     else:
-        if options.fill_queue:
+        if options.fill_queue:  # pragma: no cover
             # TODO test
             arguments = _get_arguments(options)
             arguments.extend(['--role', 'master'])
@@ -239,7 +238,7 @@ def main():
             print run_remote('./buildout/bin/generate_tiles ' +
                     ' '.join(arguments), host, project_dir)
 
-        if options.tiles_gen:
+        if options.tiles_gen:  # pragma: no cover
             # TODO test
             arguments = _get_arguments(options, False)
             arguments.extend(['--role', 'slave'])
@@ -294,24 +293,31 @@ def _get_arguments(options):
     return arguments
 
 
-def create_snapshot(host, config):
+def create_snapshot(host, gene):
     pass  # TODO
 
 
-def aws_start(host_type):
+def aws_start(host_type):  # pragma: no cover
     pass  # TODO
 
 
 def run_local(cmd):
-    return Popen(cmd.split(' '), stdout=PIPE).communicate()[0]
+    if type(cmd) != list:
+        cmd = cmd.split(' ')
+    return Popen(cmd, stdout=PIPE).communicate()[0]
 
 
-def run_remote(cmd, host, project_dir):
-    return Popen(['ssh', '-f', host, 'cd %(project_dir)s; %(cmd)s' % {
-            'cmd': cmd, 'project_dir': project_dir}], stdout=PIPE).communicate()[0]
+def run_remote(cmd, host, project_dir, gene):
+    cmd = ['ssh', '-f']
+    cmd.extend(gene.config['generation']['ssh_options'].split(' '))
+    cmd.append(host)
+    cmd.append('cd %(project_dir)s; %(cmd)s' % {
+        'cmd': cmd, 'project_dir': project_dir
+    })
+    return Popen(cmd, stdout=PIPE).communicate()[0]
 
 
-def status(options, gene):
+def status(options, gene):  # pragma: no cover
     # get SQS status
     attributes = gene.get_sqs_queue().get_attributes()
 
@@ -516,7 +522,7 @@ def _calculate_cost(gene, options):
 
 
 def _send(data, path, cache):
-    if cache['type'] == 's3':
+    if cache['type'] == 's3':  # pragma: no cover
         s3bucket = S3Connection().bucket(cache['bucket'])
         s3key = s3bucket.key(('%(folder)s' % cache) + path)
         s3key.body = data

@@ -120,6 +120,8 @@ generation:
     default_cache: local
     default_layers: [line, polygon]
     maxconsecutive_errors: 2
+    geodata_folder: tilecloud_chain/tests/
+    ssh_options: -o StrictHostKeyChecking=no
 
 openlayers:
     srs: epsg:21781

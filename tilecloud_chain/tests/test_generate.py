@@ -1,13 +1,19 @@
 # -*- coding: utf-8 -*-
 
+import os
+import shutil
 from itertools import product
 
 from tilecloud_chain.tests import CompareCase
-
 from tilecloud_chain import generate
 
 
 class TestGenerate(CompareCase):
+
+    @classmethod
+    def tearDownClass(self):
+        if os.path.exists('/tmp/tiles'):
+            shutil.rmtree('/tmp/tiles')
 
     def test_hash(self):
         self.assert_cmd_equals(

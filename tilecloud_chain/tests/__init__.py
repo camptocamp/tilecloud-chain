@@ -37,7 +37,7 @@ class CompareCase(TestCase):
         sys.stdout = old_stdout
         self.assert_result_equals(mystdout.getvalue(), result, regexp)
 
-    def assert_cmd_err_equals(self, cmd, main_func, result):
+    def assert_cmd_err_equals(self, cmd, main_func, result):  # pragma: no cover
         old_stderr = sys.stderr
         sys.stderr = mystderr = StringIO()
         self.assert_main_equals(cmd, main_func, [])
@@ -78,10 +78,9 @@ class CompareCase(TestCase):
         self.assert_yaml_equals(mystdout.getvalue(), result)
 
     def assert_tiles_generated(self, cmd, main_func, directory, tiles_pattern, tiles):
-        try:
+        if os.path.exists(directory):
             shutil.rmtree(directory)
-        except:
-            pass
+
         self.assert_main_equals(cmd, main_func, [])
         count = 0
         for path, dirs, files in os.walk(directory):
@@ -90,4 +89,8 @@ class CompareCase(TestCase):
                 count += len(files)
         self.assertEquals(count, len(tiles))
         for tile in tiles:
+            log.info(directory + tiles_pattern % tile)
             self.assertTrue(os.path.exists(directory + tiles_pattern % tile))
+
+    def assert_files_generated(self, cmd, main_func, directory, files):
+        self.assert_tiles_generated(cmd, main_func, directory, '%s', files)
