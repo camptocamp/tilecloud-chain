@@ -30,21 +30,21 @@ class CompareCase(TestCase):
                             log.info("  %i %s" % (i, content[i]))
                     raise e
 
-    def assert_cmd_equals(self, cmd, main_func, result, regexp=False):
+    def run_cmd(self, cmd, main_func):
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
-        self.assert_main_equals(cmd, main_func, [])
-        sys.stdout = old_stdout
-        self.assert_result_equals(mystdout.getvalue(), result, regexp)
-
-    def assert_cmd_err_equals(self, cmd, main_func, result):  # pragma: no cover
         old_stderr = sys.stderr
         sys.stderr = mystderr = StringIO()
         self.assert_main_equals(cmd, main_func, [])
+        sys.stdout = old_stdout
         sys.stderr = old_stderr
-        log.info(mystderr)
-        log.info(mystderr.getvalue())
-        self.assert_result_equals(mystderr.getvalue(), result)
+        return mystdout.getvalue(), mystderr.getvalue()
+
+    def assert_cmd_equals(self, cmd, main_func, result, regexp=False, empty_err=False):
+        out, err = self.run_cmd(cmd, main_func)
+        if empty_err:
+            self.assertEquals(err, '')
+        self.assert_result_equals(out, result, regexp)
 
     def assert_cmd_exit_equals(self, cmd, main_func, result):
         sys.argv = cmd.split(' ')
