@@ -26,6 +26,7 @@ setup_requires = [
     'nosexcover',
     'nose-progressive',
     'ipdbplugin',
+    'unittest2',
     ]
 
 setup(

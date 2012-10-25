@@ -2,15 +2,12 @@
 <Map>
     <Style name="polygon">
         <Rule>
-            <PolygonSymbolizer fill="blue"/>
+            <PolygonSymbolizer fill="blue" />
         </Rule>
     </Style>
     <Style name="line">
         <Rule>
-            <LineSymbolizer>
-                <CssParameter name="stroke">#0000ff</CssParameter>
-                <CssParameter name="stroke-width">4</CssParameter>
-            </LineSymbolizer>
+            <LineSymbolizer stroke="#0000ff" stroke-width="4" />
         </Rule>
     </Style>
     <Style name="point">
