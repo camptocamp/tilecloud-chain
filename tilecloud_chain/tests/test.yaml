@@ -140,3 +140,6 @@ mapcache:
     config_file: mapcache.xml
     resolutions: [100, 50, 20, 10, 5, 2, 1, 0.5]
     layers: [point, line, polygon]
+
+sns:
+    topic: sns_topic

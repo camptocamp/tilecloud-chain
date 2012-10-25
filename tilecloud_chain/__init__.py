@@ -10,7 +10,7 @@ from cStringIO import StringIO
 try:
     from PIL import Image
     Image  # suppress pyflakes warning
-except:
+except:  # pragma: no cover
     import Image
 
 import psycopg2
@@ -134,9 +134,9 @@ class TileGeneration:
             error = self.validate(cache, name, 'name', attribute_type=str, default=cname) or error
             error = self.validate(cache, name, 'type', attribute_type=str, required=True,
                 enumeration=['s3', 'filesystem']) or error
-            if cache == 'filesystem':
+            if cache['type'] == 'filesystem':
                 error = self.validate(cache, name, 'folder', attribute_type=str, required=True) or error
-            elif cache == 's3':
+            elif cache['type'] == 's3':
                 error = self.validate(cache, name, 'bucket', attribute_type=str, required=True) or error
                 error = self.validate(cache, name, 'folder', attribute_type=str, default='') or error
 
@@ -248,7 +248,7 @@ class TileGeneration:
 
         return self.grids[name]
 
-    def get_sqs_queue(self):
+    def get_sqs_queue(self):  # pragma: no cover
         config_sqs = self.config['forge']['sqs']
         connection = boto.sqs.connect_to_region(config_sqs['region_name'])
         queue = connection.create_queue(config_sqs['queue_name'])
@@ -355,7 +355,7 @@ class TileGeneration:
             def safe_get(tile):
                 try:
                     return store.get_one(tile)
-                except:
+                except:  # pragma: no cover
                     tile.error = sys.exc_info()[1]
                     return tile
             self.tilestream = imap(safe_get, ifilter(None, self.tilestream))
@@ -367,7 +367,7 @@ class TileGeneration:
             def safe_put(tile):
                 try:
                     return store.put_one(tile)
-                except:
+                except:  # pragma: no cover
                     tile.error = sys.exc_info()[1]
                     return tile
             self.tilestream = imap(safe_put, ifilter(None, self.tilestream))
@@ -379,7 +379,7 @@ class TileGeneration:
             def safe_delete(tile):
                 try:
                     return store.delete_one(tile)
-                except:
+                except:  # pragma: no cover
                     tile.error = sys.exc_info()[1]
                     return tile
             self.tilestream = imap(safe_delete, ifilter(None, self.tilestream))
@@ -391,7 +391,7 @@ class TileGeneration:
             def safe_imap(tile):
                 try:
                     return tile_filter(tile)
-                except:
+                except:  # pragma: no cover
                     tile.error = sys.exc_info()[1]
                     return tile
             self.tilestream = imap(safe_imap, ifilter(None, self.tilestream))
@@ -404,7 +404,7 @@ class TileGeneration:
                 if tile:
                     try:
                         return tile_filter(tile)
-                    except:
+                    except:  # pragma: no cover
                         tile.error = sys.exc_info()[1]
                         return tile
             self.tilestream = ifilter(safe_filter, self.tilestream)
@@ -483,7 +483,7 @@ class IntersectGeometryFilter(object):
         if not intersects and hasattr(tile, 'metatile'):
             tile.metatile.elapsed_togenerate -= 1
             if tile.metatile.elapsed_togenerate == 0:
-                self.queue_store.delete_one(tile.metatile)
+                self.queue_store.delete_one(tile.metatile)  # pragma: no cover
 
         return tile if intersects else None
 

@@ -392,7 +392,7 @@ def _validate_calculate_cost(gene):
     error = gene.validate(gene.config['cost']['esb'], 'cost.esb', 'storage',
         attribute_type=float, default=0.11) or error
     # [$/ 1000 E/S/s /month]
-    error = gene.validate(gene.config['cost']['esb'], 'cost.esb', 'io', attribute_type=float, default=260) or error
+    error = gene.validate(gene.config['cost']['esb'], 'cost.esb', 'io', attribute_type=float, default=260.0) or error
     # http://aws.amazon.com/sqs/pricing/
     error = gene.validate(gene.config['cost'], 'cost', 'sqs', attribute_type=dict, default={}) or error
     # [$/10000]

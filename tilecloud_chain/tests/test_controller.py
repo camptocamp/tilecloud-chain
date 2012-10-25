@@ -985,11 +985,7 @@ class TestController(CompareCase):
    <lock_dir>/tmp</lock_dir>
 </mapcache>"""]])
 
-    def test_config(self):
-        self.assert_cmd_yaml_equals(
-            './buildout/bin/generate_controller --dump-config -c tilecloud_chain/tests/test.yaml',
-            controller.main,
-            """caches:
+    CONFIG = """caches:
   local: {folder: /tmp/tiles, hosts: false, http_url: 'http://taurus/tiles', http_urls: false,
     name: local, type: filesystem}
   multi_host:
@@ -1003,8 +999,8 @@ class TestController(CompareCase):
     http_urls: ['http://wmts1/tiles', 'http://wmts2/tiles', 'http://wmts3/tiles']
     name: multi_url
     type: filesystem
-  s3: {bucket: tiles, folder: tiles, host: s3-eu-west-1.amazonaws.com, """
-            """http_url: 'https://%(host)s/%(bucket)s/%(folder)s',
+  s3: {bucket: tiles, folder: tiles, host: s3-eu-west-1.amazonaws.com, """ \
+        """http_url: 'https://%(host)s/%(bucket)s/%(folder)s',
     name: s3, type: s3}
 config: {}
 cost:
@@ -1222,246 +1218,18 @@ mapcache:
   memcache_host: localhost
   memcache_port: '11211'
   resolutions: [100.0, 50.0, 20.0, 10.0, 5.0, 2.0, 1.0, 0.5]
-openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}""")
+openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}
+sns: {topic: sns_topic}"""
+
+    def test_config(self):
+        self.assert_cmd_yaml_equals(
+            './buildout/bin/generate_controller --dump-config -c tilecloud_chain/tests/test.yaml',
+            controller.main, self.CONFIG)
 
     def test_config_layer(self):
         self.assert_cmd_yaml_equals(
             './buildout/bin/generate_controller --dump-config -l line -c tilecloud_chain/tests/test.yaml',
-            controller.main,
-            """caches:
-  local: {folder: /tmp/tiles, hosts: false, http_url: 'http://taurus/tiles', http_urls: false,
-    name: local, type: filesystem}
-  multi_host:
-    folder: /tmp/tiles
-    hosts: [wmts1, wmts2, wmts3]
-    http_url: http://%(host)s/tiles
-    name: multi_host
-    type: filesystem
-  multi_url:
-    folder: /tmp/tiles
-    http_urls: ['http://wmts1/tiles', 'http://wmts2/tiles', 'http://wmts3/tiles']
-    name: multi_url
-    type: filesystem
-  s3: {bucket: tiles, folder: tiles, host: s3-eu-west-1.amazonaws.com, """
-            """http_url: 'https://%(host)s/%(bucket)s/%(folder)s',
-    name: s3, type: s3}
-config: {}
-cost:
-  cloudfront: {download: 0.12, get: 0.009}
-  ec2: {usage: 0.17}
-  esb: {io: 260, storage: 0.11}
-  esb_size: 100
-  request_per_layers: 10000000
-  s3: {download: 0.12, get: 0.01, put: 0.01, storage: 0.125}
-  sqs: {request: 0.01}
-generation:
-  default_cache: local
-  default_layers: [line, polygon]
-  deploy_config: tilegeneration/deploy.cfg
-  disable_code: false
-  disable_database: false
-  disable_fillqueue: false
-  disable_sync: false
-  disable_tilesgen: false
-  ec2_host_type: m1.medium
-  geodata_folder: tilecloud_chain/tests/
-  maxconsecutive_errors: 2
-  number_process: 1
-  ssh_options: -o StrictHostKeyChecking=no
-grids:
-  swissgrid_01: &id004
-    bbox: [420000.0, 30000.0, 900000.0, 350000.0]
-    name: swissgrid_01
-    resolution_scale: 10
-    resolutions: [1.0, 0.2, 0.1]
-    srs: epsg:21781
-    tile_size: 256
-    unit: m
-  swissgrid_5: &id003
-    bbox: [420000.0, 30000.0, 900000.0, 350000.0]
-    name: swissgrid_5
-    resolution_scale: 1
-    resolutions: [100.0, 50.0, 20.0, 10.0, 5.0]
-    srs: epsg:21781
-    tile_size: 256
-    unit: m
-layer_default:
-  connection: user=postgres password=postgres dbname=tests host=localhost
-  cost: &id001 {metatile_generation_time: 30.0, tile_generation_time: 30.0, tile_size: 20.0,
-    tileonly_generation_time: 60.0}
-  dimensions: &id002
-  - default: '2012'
-    name: DATE
-    value: '2012'
-    values: ['2005', '2010', '2012']
-  extension: png
-  grid: swissgrid_5
-  meta: true
-  meta_buffer: 128
-  meta_size: 8
-  mime_type: image/png
-  sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
-  type: wms
-  url: http://localhost/mapserv
-  wmts_style: default
-layers:
-  all:
-    bbox: [550000, 170000, 560000, 180000]
-    connection: user=postgres password=postgres dbname=tests host=localhost
-    cost: *id001
-    dimensions: *id002
-    extension: png
-    grid: swissgrid_5
-    grid_ref: *id003
-    layers: point,line,polygon
-    meta: false
-    meta_buffer: 128
-    meta_size: 8
-    mime_type: image/png
-    name: all
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
-    type: wms
-    url: http://localhost/mapserv
-    wmts_style: default
-  line:
-    connection: user=postgres password=postgres dbname=tests host=localhost
-    cost: *id001
-    dimensions: *id002
-    extension: png
-    grid: swissgrid_5
-    grid_ref: *id003
-    layers: line
-    meta: true
-    meta_buffer: 128
-    meta_size: 8
-    mime_type: image/png
-    name: line
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.line
-    type: wms
-    url: http://localhost/mapserv
-    wmts_style: default
-  mapnik:
-    connection: user=postgres password=postgres dbname=tests host=localhost
-    cost: *id001
-    data_buffer: 128
-    dimensions: *id002
-    extension: png
-    grid: swissgrid_5
-    grid_ref: *id003
-    mapfile: tilecloud_chain/tests/test.mapnik
-    meta: true
-    meta_buffer: 0
-    meta_size: 8
-    mime_type: image/png
-    name: mapnik
-    output_format: png
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
-    type: mapnik
-    url: http://localhost/mapserv
-    wmts_style: default
-  mapnik_grid:
-    connection: user=postgres password=postgres dbname=tests host=localhost
-    cost: *id001
-    data_buffer: 128
-    dimensions: *id002
-    extension: json
-    grid: swissgrid_5
-    grid_ref: *id003
-    layers_fields:
-      line: [name]
-      point: [name]
-      polygon: [name]
-    mapfile: tilecloud_chain/tests/test.mapnik
-    meta: false
-    meta_buffer: 0
-    meta_size: 8
-    mime_type: application/utfgrid
-    name: mapnik_grid
-    output_format: grid
-    resolution: 16
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
-    type: mapnik
-    url: http://localhost/mapserv
-    wmts_style: default
-  point:
-    connection: user=postgres password=postgres dbname=tests host=localhost
-    cost: *id001
-    dimensions: *id002
-    extension: png
-    grid: swissgrid_5
-    grid_ref: *id003
-    layers: point
-    meta: true
-    meta_buffer: 128
-    meta_size: 8
-    mime_type: image/png
-    name: point
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
-    type: wms
-    url: http://localhost/mapserv
-    wmts_style: default
-  point_hash:
-    connection: user=postgres password=postgres dbname=tests host=localhost
-    cost: *id001
-    dimensions: *id002
-    empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
-    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
-    extension: png
-    grid: swissgrid_5
-    grid_ref: *id003
-    layers: point
-    meta: true
-    meta_buffer: 128
-    meta_size: 8
-    mime_type: image/png
-    name: point_hash
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
-    type: wms
-    url: http://localhost/mapserv
-    wmts_style: default
-  polygon:
-    connection: user=postgres password=postgres dbname=tests host=localhost
-    cost: *id001
-    dimensions: *id002
-    extension: png
-    grid: swissgrid_5
-    grid_ref: *id003
-    layers: polygon
-    meta: true
-    meta_buffer: 128
-    meta_size: 8
-    mime_type: image/png
-    name: polygon
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
-    type: wms
-    url: http://localhost/mapserv
-    wmts_style: default
-  polygon2:
-    connection: user=postgres password=postgres dbname=tests host=localhost
-    cost: *id001
-    dimensions: *id002
-    extension: png
-    grid: swissgrid_01
-    grid_ref: *id004
-    layers: polygon
-    meta: true
-    meta_buffer: 128
-    meta_size: 8
-    mime_type: image/png
-    name: polygon2
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
-    type: wms
-    url: http://localhost/mapserv
-    wmts_style: default
-mapcache:
-  config_file: mapcache.xml
-  layers: [point, line, polygon]
-  mapcache_url: /mapcache
-  mapserver_url: http://localhost/mapserv
-  memcache_host: localhost
-  memcache_port: '11211'
-  resolutions: [100.0, 50.0, 20.0, 10.0, 5.0, 2.0, 1.0, 0.5]
-openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}""")
+            controller.main, self.CONFIG)
 
     def test_openlayers(self):
         self.assert_main_equals(
