@@ -5,30 +5,54 @@ import sys
 import os
 import shutil
 from cStringIO import StringIO
-from unittest import TestCase
+from unittest2 import TestCase
 
 log = logging.getLogger(__name__)
 
 
 class CompareCase(TestCase):
 
-    def assert_result_equals(self, content, value):
-        log.info(content)
-        for n, test in enumerate(zip(value.split('\n'),
-                unicode(content.decode('utf-8')).split('\n'))):
+    def assert_result_equals(self, content, value, regexp=False):
+        content = unicode(content.decode('utf-8')).split('\n')
+        value = value.split('\n')
+        for n, test in enumerate(zip(content, value)):
             if test[0] != 'PASS...':
                 try:
-                    self.assertEquals(test[0].strip(), test[1].strip())
-                except AssertionError as e:
-                    log.info("Line: %i" % n)
+                    if regexp:
+                        self.assertRegexpMatches(test[0].strip(), test[1].strip())
+                    else:
+                        self.assertEquals(test[0].strip(), test[1].strip())
+                except AssertionError as e:  # pragma: no cover
+                    for i in range(max(0, n - 10), min(len(content), n + 11)):
+                        if i == n:
+                            log.info("> %i %s" % (i, content[i]))
+                        else:
+                            log.info("  %i %s" % (i, content[i]))
                     raise e
 
-    def assert_cmd_equals(self, cmd, main_func, result):
+    def assert_cmd_equals(self, cmd, main_func, result, regexp=False):
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
         self.assert_main_equals(cmd, main_func, [])
         sys.stdout = old_stdout
-        self.assert_result_equals(mystdout.getvalue(), result)
+        self.assert_result_equals(mystdout.getvalue(), result, regexp)
+
+    def assert_cmd_err_equals(self, cmd, main_func, result):  # pragma: no cover
+        old_stderr = sys.stderr
+        sys.stderr = mystderr = StringIO()
+        self.assert_main_equals(cmd, main_func, [])
+        sys.stderr = old_stderr
+        log.info(mystderr)
+        log.info(mystderr.getvalue())
+        self.assert_result_equals(mystderr.getvalue(), result)
+
+    def assert_cmd_exit_equals(self, cmd, main_func, result):
+        sys.argv = cmd.split(' ')
+        try:
+            main_func()
+            assert("exit() not called.")  # pragma: no cover
+        except SystemExit as e:
+            self.assertEquals(e.message, result)
 
     def assert_main_equals(self, cmd, main_func, results):
         sys.argv = cmd.split(' ')
@@ -54,7 +78,9 @@ class CompareCase(TestCase):
         self.assert_yaml_equals(mystdout.getvalue(), result)
 
     def assert_tiles_generated(self, cmd, main_func, directory, tiles_pattern, tiles):
-        shutil.rmtree(directory)
+        if os.path.exists(directory):
+            shutil.rmtree(directory)
+
         self.assert_main_equals(cmd, main_func, [])
         count = 0
         for path, dirs, files in os.walk(directory):
@@ -63,4 +89,8 @@ class CompareCase(TestCase):
                 count += len(files)
         self.assertEquals(count, len(tiles))
         for tile in tiles:
+            log.info(directory + tiles_pattern % tile)
             self.assertTrue(os.path.exists(directory + tiles_pattern % tile))
+
+    def assert_files_generated(self, cmd, main_func, directory, files):
+        self.assert_tiles_generated(cmd, main_func, directory, '%s', files)

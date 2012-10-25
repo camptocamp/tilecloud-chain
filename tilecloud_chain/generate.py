@@ -31,7 +31,7 @@ def _gene(options, gene, layer):
 
     if options.role in ('master', 'slave'):
         # Create SQS queue
-        sqs_tilestore = SQSTileStore(gene.get_sqs_queue())
+        sqs_tilestore = SQSTileStore(gene.get_sqs_queue())  # pragma: no cover
 
     if options.role in ('local', 'slave'):
         cache = gene.caches[options.cache]
@@ -49,12 +49,12 @@ def _gene(options, gene, layer):
         # store
         if cache['type'] == 's3':
             # on s3
-            cache_tilestore = S3TileStore(cache['bucket'], layout)
+            cache_tilestore = S3TileStore(cache['bucket'], layout)  # pragma: no cover
         elif cache['type'] == 'filesystem':
             # on filesystem
             cache_tilestore = FilesystemTileStore(layout)
         else:
-            exit('unknown cache type: ' + cache['type'])
+            exit('unknown cache type: ' + cache['type'])  # pragma: no cover
 
     meta = gene.layer['meta']
     if options.role in ('local', 'master'):
@@ -64,7 +64,7 @@ def _gene(options, gene, layer):
 
     elif options.role == 'slave':
         # Get the metatiles from the SQS queue
-        gene.set_store(sqs_tilestore)
+        gene.set_store(sqs_tilestore)  # pragma: no cover
 
     elif options.role == 'hash':
         z, x, y = (int(v) for v in options.get_hash.split('/'))
@@ -77,7 +77,7 @@ def _gene(options, gene, layer):
     if options.test > 0:
         gene.imap(Logger(logger, logging.DEBUG, '%(tilecoord)s'))
 
-    if options.role == 'master':
+    if options.role == 'master':  # pragma: no cover
         # Put the metatiles into the SQS queue
         if gene.config['generation']['number_process'] == 1:
             gene.put(sqs_tilestore)
@@ -139,7 +139,7 @@ def _gene(options, gene, layer):
                 if metatile is not None:
                     metatile.elapsed_togenerate = metatile.tilecoord.n ** 2
                     return True
-                return False
+                return False  # pragma: no cover
             gene.ifilter(add_elapsed_togenerate)
 
             # Split the metatile image into individual tiles
@@ -166,14 +166,15 @@ def _gene(options, gene, layer):
 
         if options.time:
             def log_size(tile):
-                print 'size: ' + len(tile.data)
+                print 'size: %i' % len(tile.data)
+                return tile
             gene.imap(log_size)
 
         gene.put(cache_tilestore)
 
     gene.add_error_filters(logger)
 
-    if options.role == 'slave':
+    if options.role == 'slave':  # pragma: no cover
         if meta:
             def decr_tile_in_metatile(tile):
                 tile.metatile.elapsed_togenerate -= 1
@@ -196,15 +197,16 @@ def _gene(options, gene, layer):
                 elif self.n == 2 * options.time:
                     t2 = datetime.now()
                     d = (t2 - self.t1) / options.time
-                    print 'time: ' + (d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds
-        gene.imap(log_time)
+                    print 'time: %i' % ((d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds)
+                return tile
+        gene.imap(log_time())
 
         consume(gene.tilestream, options.time * 3)
     else:
         consume(gene.tilestream, options.test)
 
 
-def daemonize():
+def daemonize():  # pragma: no cover
     try:
         pid = os.fork()
         if pid > 0:
@@ -240,7 +242,7 @@ def main():
     parser.add_option('-H', '--get-hash', metavar="TILE",
             help='get the empty tiles hash, use the specified TILE z/x/y')
     parser.add_option('--time', '--measure-generation-time',
-            default=None, dest='time', metavar="N",
+            default=None, dest='time', metavar="N", type='int',
             help='Measure the generation time by creating N tiles to warm-up, '
             'N tile to do the measure and N tiles to slow-down')
     (options, args) = parser.parse_args()
@@ -249,7 +251,7 @@ def main():
         level=logging.ERROR if options.test < 0 else logging.DEBUG)
 
     if options.daemonize:
-        print "Daemonize with pid %i." % daemonize()
+        print "Daemonize with pid %i." % daemonize()  # pragma: no cover
 
     gene = TileGeneration(options.config, options)
 

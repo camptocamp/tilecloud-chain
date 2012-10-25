@@ -70,6 +70,15 @@ layers:
     point:
         layers: point
         sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
+    point_hash:
+        layers: point
+        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+        empty_metatile_detection:
+            size: 20743
+            hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+        empty_tile_detection:
+            size: 334
+            hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     line:
         layers: line
         sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.line
@@ -111,6 +120,8 @@ generation:
     default_cache: local
     default_layers: [line, polygon]
     maxconsecutive_errors: 2
+    geodata_folder: tilecloud_chain/tests/
+    ssh_options: -o StrictHostKeyChecking=no
 
 openlayers:
     srs: epsg:21781
@@ -129,3 +140,6 @@ mapcache:
     config_file: mapcache.xml
     resolutions: [100, 50, 20, 10, 5, 2, 1, 0.5]
     layers: [point, line, polygon]
+
+sns:
+    topic: sns_topic
