@@ -266,16 +266,14 @@ def _get_project_dir(deploy_config):
 
 
 def _deploy(options, host):
-    # TODO test
     components = ""
-    if options.deploy_code and not options.deploy_database:
+    if options.deploy_code:
         components = "--components=[code]"
-    if options.deploy_database and not options.deploy_code:
-        components = "--components=[database]"
+    if options.deploy_database:
+        components = "--components=[databases]"
 
-    if options.deploy_code or options.deploy_database:
-        run_local('sudo -u deploy deploy --remote %s %s %s' %
-            (components, options.deploy_config, host))
+    run_local('sudo -u deploy deploy --remote %s %s %s' %
+        (components, options.deploy_config, host))
 
 
 def _get_arguments(options):

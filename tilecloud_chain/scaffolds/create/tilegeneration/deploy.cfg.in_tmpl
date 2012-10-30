@@ -11,7 +11,7 @@ active = false
 names = $${vars:db}
 
 [code]
-dir = /var/www/vhiosts/<vhost>/private/{{package}}
+dir = /var/www/vhosts/<vhost>/private/{{package}}
 dest = /var/www/vhosts/???/private/{{package}}
 
 [apache]
