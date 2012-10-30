@@ -160,8 +160,7 @@ size: 860
 size: 768
 time: [0-9]*
 size: 854
-size: 854""",
-            True)
+size: 854""", True, False)
 
 #    def test_daemonize(self):
 #        self.assert_cmd_equals(

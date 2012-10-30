@@ -1,0 +1,8 @@
+#!/bin/sh
+
+PROJECT_NAME=$1
+CODE_DIR=$2
+
+cd $CODE_DIR
+
+#python bootstrap.py --distribute
