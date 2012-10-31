@@ -29,7 +29,7 @@ def main():
     parser.add_option('--deploy-config', default=None, dest="deploy_config", metavar="FILE",
             help='path to the deploy configuration file')
     parser.add_option('-b', '--bbox',
-            help='restrict to specified bounding box')
+            help='restrict to specified bounding box (minx,miny,maxx,maxy)')
     parser.add_option('-z', '--zoom-level', type='int', dest='zoom',
             help='restrict to specified zoom level', metavar="ZOOM")
     parser.add_option('-l', '--layer', metavar="NAME",
@@ -69,6 +69,8 @@ def main():
             help='Generate MapCache configuration file')
     parser.add_option('--dump-config', default=False, action="store_true",
             help='Dump the used config with default values and exit')
+    parser.add_option('--shutdown', default=False, action="store_true",
+            help='Shut done the remote host after the task.')
 
     (options, args) = parser.parse_args()
     logging.basicConfig(
@@ -185,30 +187,33 @@ def main():
 
     if options.time:
         # TODO test
-        arguments = _get_arguments(options, False)
+        arguments = _get_arguments(options)
         arguments.extend(['--role', 'local'])
-        arguments.extend(['--time', options.time])
+        arguments.extend(['--time', str(options.time)])
         arguments.append("--daemonize")
 
         project_dir = _get_project_dir(options.deploy_config)
         pids = []
         for i in range(gene.config['generation']['number_process']):
             pids.append(run_remote('./buildout/bin/generate_tiles ' +
-                ' '.join(arguments) + ' > /tmp/time' + i, host, project_dir))
+                ' '.join(arguments) + ' --output-file /tmp/time%d' % i, host, project_dir, gene)[1])
 
-        wait_cmds = ['while [ -e /proc/%i ]; do sleep 1; done' % pid for pid in pids]
-        run_remote(';'.join(wait_cmds))
+        wait_cmds = ['while [ -e /proc/%s ]; do sleep 1; done' % pid for pid in pids]
+        run_remote(';'.join(wait_cmds), host, project_dir, gene)
 
         tiles_size = []
         times = []
         for i in range(gene.config['generation']['number_process']):
-            results = run_remote('cat /tmp/time' + i).split()
+            results = run_remote('cat /tmp/time%d' % i, host, project_dir, gene)[0].split('\n')
             for r in results:
                 if r.startswith('time: '):
                     times.append(int(r.replace('time: ', '')))
                 elif r.startswith('size: '):
                     tiles_size.append(int(r.replace('size: ', '')))
 
+        if len(times) == 0:  # pragma: no cover
+            logger.error("Not enough data")
+            sys.exit(1)
         mean_time = reduce(lambda x, y: x + y,
             [timedelta(microseconds=int(r)) for r in times],
             timedelta()) / len(times) ** 2
@@ -224,45 +229,47 @@ def main():
         tileonly_generation_time: %0.3f
         tile_generation_time: %0.3f
         metatile_generation_time: 0
-        tile_size: 0.3f''' % (mean_time_ms, mean_time_ms, mean_size_kb)
+        tile_size: %0.3f''' % (mean_time_ms, mean_time_ms, mean_size_kb)
 
-        run_remote('sudo shutdown 0')  # TODO demonize, send email
+        if options.shutdown:  # pragma: no cover
+            run_remote('sudo shutdown 0', host, project_dir, gene)  # TODO deamonize
+        sys.exit(0)
 
-    else:
-        if options.fill_queue:  # pragma: no cover
-            # TODO test
-            arguments = _get_arguments(options)
-            arguments.extend(['--role', 'master'])
+    if options.fill_queue:  # pragma: no cover
+        # TODO test
+        arguments = _get_arguments(options)
+        arguments.extend(['--role', 'master'])
 
-            project_dir = _get_project_dir(options.deploy_config)
-            print run_remote('./buildout/bin/generate_tiles ' +
-                    ' '.join(arguments), host, project_dir)
+        project_dir = _get_project_dir(options.deploy_config)
+        run_remote('./buildout/bin/generate_tiles ' +
+                ' '.join(arguments), host, project_dir, gene)
 
-        if options.tiles_gen:  # pragma: no cover
-            # TODO test
-            arguments = _get_arguments(options, False)
-            arguments.extend(['--role', 'slave'])
-            arguments.append("--daemonize")
+    if options.tiles_gen:  # pragma: no cover
+        # TODO test
+        arguments = _get_arguments(options)
+        arguments.extend(['--role', 'slave'])
+        arguments.append("--daemonize")
 
-            project_dir = _get_project_dir(options.deploy_config)
-            pids = []
-            for i in range(gene.config['generation']['number_process']):
-                pids.append(run_remote('./buildout/bin/generate_tiles ' +
-                    ' '.join(arguments), host, project_dir))
+        project_dir = _get_project_dir(options.deploy_config)
+        pids = []
+        for i in range(gene.config['generation']['number_process']):
+            pids.append(run_remote('./buildout/bin/generate_tiles ' +
+                ' '.join(arguments), host, project_dir, gene))
 
-            exit_cmds = ['while [ -e /proc/%i ]; do sleep 1; done' % pid for pid in pids]
+        exit_cmds = ['while [ -e /proc/%i ]; do sleep 1; done' % pid for pid in pids]
+        if options.shutdown:
             exit_cmds.append('sudo shutdown 0')
-            run_remote(';'.join(exit_cmds))  # TODO demonize, send email
+        run_remote(';'.join(exit_cmds), host, project_dir, gene)  # TODO demonize, send email
 
-            if 'sns' in gene.config:
-                sns = boto.connect_sns()
-                sns.publish(gene.config['sns']['topic'], "The time generation is finish", "Tile generation")
+        if 'sns' in gene.config:
+            sns = boto.connect_sns()
+            sns.publish(gene.config['sns']['topic'], "The time generation is finish", "Tile generation")
 
 
 def _get_project_dir(deploy_config):
     config = ConfigParser.ConfigParser()
     config.readfp(open(deploy_config))
-    return config.get('code', 'dest_dir')
+    return config.get('code', 'dest')
 
 
 def _deploy(options, host):
@@ -285,9 +292,9 @@ def _get_arguments(options):
     if options.bbox:
         arguments.extend(["--bbox", options.bbox])
     if options.zoom or options.zoom == 0:
-        arguments.extend(["--zoom-level", options.zoom])
+        arguments.extend(["--zoom-level", str(options.zoom)])
     if options.test:
-        arguments.extend(["--test", options.test])
+        arguments.extend(["--test", str(options.test)])
     return arguments
 
 
@@ -302,17 +309,18 @@ def aws_start(host_type):  # pragma: no cover
 def run_local(cmd):
     if type(cmd) != list:
         cmd = cmd.split(' ')
-    return Popen(cmd, stdout=PIPE).communicate()[0]
+    return Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
 
 
-def run_remote(cmd, host, project_dir, gene):
+def run_remote(remote_cmd, host, project_dir, gene):
     cmd = ['ssh', '-f']
     cmd.extend(gene.config['generation']['ssh_options'].split(' '))
     cmd.append(host)
     cmd.append('cd %(project_dir)s; %(cmd)s' % {
-        'cmd': cmd, 'project_dir': project_dir
+        'cmd': remote_cmd, 'project_dir': project_dir
     })
-    return Popen(cmd, stdout=PIPE).communicate()[0]
+
+    return Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
 
 
 def status(options, gene):  # pragma: no cover

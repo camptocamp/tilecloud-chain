@@ -6,3 +6,4 @@ CODE_DIR=$2
 cd $CODE_DIR
 
 python -S bootstrap.py
+./buildout/bin/buildout

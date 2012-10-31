@@ -38,6 +38,8 @@ class CompareCase(TestCase):
         self.assert_main_equals(cmd, main_func, [])
         sys.stdout = old_stdout
         sys.stderr = old_stderr
+        log.info(mystdout.getvalue())
+        log.info(mystderr.getvalue())
         return mystdout.getvalue(), mystderr.getvalue()
 
     def assert_cmd_equals(self, cmd, main_func, result, regexp=False, empty_err=False):
