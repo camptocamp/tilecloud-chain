@@ -263,7 +263,7 @@ def main():
 
         if 'sns' in gene.config:
             sns = boto.connect_sns()
-            sns.publish(gene.config['sns']['topic'], "The time generation is finish", "Tile generation")
+            sns.publish(gene.config['sns']['topic'], "The tile generation is finish", "Tile generation")
 
 
 def _get_project_dir(deploy_config):
