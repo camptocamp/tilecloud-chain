@@ -51,7 +51,7 @@ CODE_DIR=$2
 
 cd $CODE_DIR
 
-#python bootstrap.py --distribute""")
+python -S bootstrap.py""")
         f = open('/tmp/tests/test.conf', 'r')
         self.assert_result_equals(f.read(), 'test file')
 

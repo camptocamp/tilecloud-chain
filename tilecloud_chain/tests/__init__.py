@@ -43,7 +43,7 @@ class CompareCase(TestCase):
     def assert_cmd_equals(self, cmd, main_func, result, regexp=False, empty_err=False):
         out, err = self.run_cmd(cmd, main_func)
         if empty_err:
-            self.assertEquals(err, '')
+            self.assertEquals(err, '')  # pragma: no cover
         self.assert_result_equals(out, result, regexp)
 
     def assert_cmd_exit_equals(self, cmd, main_func, result):

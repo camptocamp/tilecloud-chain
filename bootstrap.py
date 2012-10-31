@@ -31,16 +31,20 @@ else:
     quote = str
 
 # See zc.buildout.easy_install._has_broken_dash_S for motivation and comments.
-stdout, stderr = subprocess.Popen(
-    [sys.executable, '-Sc',
-     'try:\n'
-     '    import ConfigParser\n'
-     'except ImportError:\n'
-     '    print 1\n'
-     'else:\n'
-     '    print 0\n'],
-    stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-has_broken_dash_S = bool(int(stdout.strip()))
+has_broken_dash_S = False
+try:
+    stdout, stderr = subprocess.Popen(
+        [sys.executable, '-Sc',
+         'try:\n'
+         '    import ConfigParser\n'
+         'except ImportError:\n'
+         '    print 1\n'
+         'else:\n'
+         '    print 0\n'],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    has_broken_dash_S = bool(int(stdout.strip()))
+except:
+    pass
 
 # In order to be more robust in the face of system Pythons, we want to
 # run without site-packages loaded.  This is somewhat tricky, in
