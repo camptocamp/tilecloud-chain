@@ -305,9 +305,10 @@ def _deploy(gene, host):
 def _get_arguments(options):
     arguments = [
         "--config", options.config,
-        "--layer", options.layer,
         "--destination-cache", options.cache
     ]
+    if options.layer:
+        arguments.extend(["--layer", options.layer])
     if options.bbox:
         arguments.extend(["--bbox", options.bbox])
     if options.zoom or options.zoom == 0:
