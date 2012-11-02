@@ -1015,6 +1015,7 @@ generation:
   default_cache: local
   default_layers: [line, polygon]
   deploy_config: tilecloud_chain/tests/deploy.cfg
+  deploy_user: deploy
   disable_code: false
   disable_database: false
   disable_fillqueue: false

@@ -178,7 +178,7 @@ def main():
             host + ':' + gene.config['generation']['geodata_folder']])
 
     # deploy
-    _deploy(options, host)
+    _deploy(gene, host)
 
     if options.deploy_code or options.deploy_database \
             or options.sync:
@@ -278,22 +278,28 @@ def _get_project_dir(deploy_config):
     return config.get('code', 'dest')
 
 
-def _deploy(options, host):
+def _deploy(gene, host):
     components = ""
     message = ''
-    if options.deploy_code and options.deploy_database:
+    if gene.options.deploy_code and gene.options.deploy_database:
         message = 'code and database'
         components = 'code,database'
-    if options.deploy_code:
+    elif gene.options.deploy_code:
         message = 'code'
         components = 'code'
-    if options.deploy_database:
+    elif gene.options.deploy_database:
         message = 'database'
         components = 'databases'
 
     print "==== Deploy %s ====" % message
-    run_local('sudo -u deploy deploy --remote %s %s %s' %
-        (components, options.deploy_config, host))
+    deploy_cmd = 'deploy'
+    if 'deploy_user' in gene.config['generation']:
+        deploy_cmd = 'sudo -u %s deploy' % gene.config['generation']['deploy_user']
+        index = host.find('@')
+        if index >= 0:  # pragma: no cover
+            host = host[index + 1:]
+    run_local('%s --remote --components=[%s] %s %s' %
+        (deploy_cmd, components, gene.options.deploy_config, host))
 
 
 def _get_arguments(options):
