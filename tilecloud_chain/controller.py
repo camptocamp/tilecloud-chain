@@ -7,6 +7,7 @@ import logging
 import ConfigParser
 import boto
 import yaml
+from boto import sns
 from copy import copy
 from datetime import timedelta
 from subprocess import Popen, PIPE
@@ -264,8 +265,11 @@ def main():
         run_remote(';'.join(exit_cmds), host, project_dir, gene)  # TODO demonize, send email
 
         if 'sns' in gene.config:
-            sns = boto.connect_sns()
-            sns.publish(gene.config['sns']['topic'], "The tile generation is finish", "Tile generation")
+            if 'region' in gene.config['sns']:
+                connection = sns.connect_to_region(gene.config['sns']['region'])
+            else:
+                connection = boto.connect_sns()
+            connection.publish(gene.config['sns']['topic'], "The tile generation is finish", "Tile generation")
 
 
 def _get_project_dir(deploy_config):
