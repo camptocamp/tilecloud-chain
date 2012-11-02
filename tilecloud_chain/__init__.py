@@ -249,9 +249,8 @@ class TileGeneration:
         return self.grids[name]
 
     def get_sqs_queue(self):  # pragma: no cover
-        config_sqs = self.config['forge']['sqs']
-        connection = boto.sqs.connect_to_region(config_sqs['region_name'])
-        queue = connection.create_queue(config_sqs['queue_name'])
+        connection = boto.sqs.connect_to_region(self.config['generation']['sqs_region_name'])
+        queue = connection.create_queue(self.config['generation']['sqs_queue_name'])
         queue.set_message_class(JSONMessage)
         return queue
 
