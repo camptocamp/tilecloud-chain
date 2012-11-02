@@ -254,9 +254,9 @@ def main():
         pids = []
         for i in range(gene.config['generation']['number_process']):
             pids.append(run_remote('./buildout/bin/generate_tiles ' +
-                ' '.join(arguments), host, project_dir, gene))
+                ' '.join(arguments), host, project_dir, gene)[1])
 
-        exit_cmds = ['while [ -e /proc/%i ]; do sleep 1; done' % pid for pid in pids]
+        exit_cmds = ['while [ -e /proc/%s ]; do sleep 1; done' % pid for pid in pids]
         if options.shutdown:
             exit_cmds.append('sudo shutdown 0')
         run_remote(';'.join(exit_cmds), host, project_dir, gene)  # TODO demonize, send email
