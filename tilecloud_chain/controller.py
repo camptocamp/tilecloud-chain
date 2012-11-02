@@ -71,12 +71,10 @@ def main():
             help='Dump the used config with default values and exit')
     parser.add_option('--shutdown', default=False, action="store_true",
             help='Shut done the remote host after the task.')
+    parser.add_option('-v', '--verbose', default=False, action="store_true",
+            help='Display debug message.')
 
     (options, args) = parser.parse_args()
-    logging.basicConfig(
-        format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
-        level=logging.INFO if options.test < 0 else logging.DEBUG)
-
     gene = TileGeneration(options.config, options, layer_name=options.layer)
 
     if options.status:  # pragma: no cover
@@ -172,6 +170,7 @@ def main():
         host = options.host
 
     if options.sync and 'geodata_folder' in gene.config['generation']:
+        print "==== Sync geodata ===="
         # sync geodata
         run_local(['rsync', '-e', 'ssh ' + gene.config['generation']['ssh_options'],
             '-r', gene.config['generation']['geodata_folder'],
@@ -182,7 +181,7 @@ def main():
 
     if options.deploy_code or options.deploy_database \
             or options.sync:
-        # TODO not imlpemented yet
+        # TODO not implemented yet
         create_snapshot(host, gene)
 
     if options.time:
@@ -222,6 +221,7 @@ def main():
         mean_size = reduce(lambda x, y: x + y, [int(r) for r in tiles_size], 0) / len(tiles_size)
         mean_size_kb = mean_size / 1024.0
 
+        print '==== Time results ===='
         print 'A tile is generated in: %0.3f [ms]' % mean_time_ms
         print 'Than mean generated tile size: %0.3f [kb]' % (mean_size_kb)
         print '''config:
@@ -236,6 +236,7 @@ def main():
         sys.exit(0)
 
     if options.fill_queue:  # pragma: no cover
+        print "==== Till queue ===="
         # TODO test
         arguments = _get_arguments(options)
         arguments.extend(['--role', 'master'])
@@ -245,6 +246,7 @@ def main():
                 ' '.join(arguments), host, project_dir, gene)
 
     if options.tiles_gen:  # pragma: no cover
+        print "==== Generate tiles ===="
         # TODO test
         arguments = _get_arguments(options)
         arguments.extend(['--role', 'slave'])
@@ -274,11 +276,18 @@ def _get_project_dir(deploy_config):
 
 def _deploy(options, host):
     components = ""
+    message = ''
+    if options.deploy_code and options.deploy_database:
+        message = 'code and database'
+        components = 'code,database'
     if options.deploy_code:
-        components = "--components=[code]"
+        message = 'code'
+        components = 'code'
     if options.deploy_database:
-        components = "--components=[databases]"
+        message = 'database'
+        components = 'databases'
 
+    print "==== Deploy %s ====" % message
     run_local('sudo -u deploy deploy --remote %s %s %s' %
         (components, options.deploy_config, host))
 
@@ -309,7 +318,12 @@ def aws_start(host_type):  # pragma: no cover
 def run_local(cmd):
     if type(cmd) != list:
         cmd = cmd.split(' ')
-    return Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
+
+    logger.debug(' '.join(cmd))
+    result = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
+    logger.info(result[0])
+    logger.error(result[1])
+    return result
 
 
 def run_remote(remote_cmd, host, project_dir, gene):
@@ -320,7 +334,11 @@ def run_remote(remote_cmd, host, project_dir, gene):
         'cmd': remote_cmd, 'project_dir': project_dir
     })
 
-    return Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
+    logger.debug(' '.join(cmd))
+    result = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
+    logger.info(result[0])
+    logger.error(result[1])
+    return result
 
 
 def status(options, gene):  # pragma: no cover
@@ -329,7 +347,7 @@ def status(options, gene):  # pragma: no cover
 
     print """Approximate number of tiles to generate: %s
     Approximate number of generating tiles: %s
-    Last modifiction in tile queue: %s""" % (
+    Last modification in tile queue: %s""" % (
         attributes['ApproximateNumberOfMessages'],
         attributes['ApproximateNumberOfMessagesNotVisible'],
         attributes['LastModifiedTimestamp']

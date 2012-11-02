@@ -29,7 +29,7 @@ class TestMultihost(CompareCase):
             './buildout/bin/generate_controller -c tilecloud_chain/tests/test.yaml --disable-sync --disable-code '
             '--disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             controller.main,
-            '')
+            '==== Deploy  ====')
 
     def test_code(self):
         if os.path.exists('/tmp/tests/test.conf'):
@@ -41,7 +41,7 @@ class TestMultihost(CompareCase):
             './buildout/bin/generate_controller -c tilecloud_chain/tests/test.yaml --disable-sync '
             '--disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             controller.main)
-        self.assertEquals(out, '')
+        self.assertEquals(out, '==== Deploy code ====\n')
         self.assertEquals(err, '')
         f = open('/tmp/tests/test/tilecloud_chain/tests/hooks/post-restore-code', 'r')
         self.assert_result_equals(f.read(), """#!/bin/sh
@@ -66,7 +66,7 @@ python -S bootstrap.py""")
             './buildout/bin/generate_controller -c tilecloud_chain/tests/test.yaml --disable-sync --disable-code '
             '--disable-fillqueue --disable-tilesgen --host localhost',
             controller.main)
-        self.assertEquals(out, '')
+        self.assertEquals(out, '==== Deploy database ====\n')
         self.assertEquals(err, '')
         self.assert_result_equals(Popen([
             'sudo', '-u', 'postgres', 'psql', '-d', 'tests-deploy', '-c', 'SELECT * FROM test'
@@ -80,7 +80,9 @@ python -S bootstrap.py""")
             './buildout/bin/generate_controller -c tilecloud_chain/tests/test.yaml '
             '--time 2 -l polygon --host localhost  --disable-sync --disable-database',
             controller.main,
-            """A tile is generated in: [0-9\.]* \[ms\]
+            """==== Deploy code ====
+==== Time results ====
+A tile is generated in: [0-9\.]* \[ms\]
 Than mean generated tile size: 0.809 \[kb\]
 config:
     cost:
@@ -94,7 +96,9 @@ config:
             '--time 1 -l polygon --host localhost  --disable-sync --disable-database '
             '--bbox 598000,198000,600000,200000 --zoom 4 --test 3',
             controller.main,
-            """A tile is generated in: [0-9\.]* \[ms\]
+            """==== Deploy code ====
+==== Time results ====
+A tile is generated in: [0-9\.]* \[ms\]
 Than mean generated tile size: 0.780 \[kb\]
 config:
     cost:

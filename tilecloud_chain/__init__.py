@@ -32,6 +32,15 @@ class TileGeneration:
     geom = None
 
     def __init__(self, config_file, options, layer_name=None):
+        level = logging.ERROR
+        if options.verbose:
+            level = logging.DEBUG
+        elif options.test > 0:
+            level = logging.INFO
+        logging.basicConfig(
+            format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
+            level=level)
+
         self.config = yaml.load(file(config_file))
         self.options = options
 
@@ -442,9 +451,8 @@ class HashLogger(object):  # pragma: no cover
     Log the tile size and hash.
     """
 
-    def __init__(self, block, logger):
+    def __init__(self, block):
         self.block = block
-        self.logger = logger
 
     def __call__(self, tile):
         ref = None
@@ -457,7 +465,7 @@ class HashLogger(object):  # pragma: no cover
             if ref is None:
                 ref = px
             elif px != ref:
-                self.logger.info("Warning: image is not uniform.")
+                logger.error("Warning: image is not uniform.")
                 break
 
         print("""Tile: %s
