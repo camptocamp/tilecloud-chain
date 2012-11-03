@@ -58,7 +58,7 @@ python -S bootstrap.py""")
         os.remove('/tmp/tests/test.conf')
         try:
             shutil.rmtree('/tmp/tests/test')
-        except:
+        except:  # pragma: no cover
             pass
 
     def test_database(self):

@@ -281,7 +281,7 @@ def _get_project_dir(deploy_config):
 def _deploy(gene, host):
     components = ""
     message = ''
-    if gene.options.deploy_code and gene.options.deploy_database:
+    if gene.options.deploy_code and gene.options.deploy_database:  # pragma: no cover
         message = 'code and database'
         components = 'code,database'
     elif gene.options.deploy_code:
