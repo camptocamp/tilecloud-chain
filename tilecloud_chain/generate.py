@@ -29,6 +29,8 @@ def _gene(options, gene, layer):
         options.role = 'hash'
         options.test = 1
 
+    output_file = open(options.output_file, 'w') if options.output_file else sys.stdout
+
     if options.role in ('master', 'slave'):
         # Create SQS queue
         sqs_tilestore = SQSTileStore(gene.get_sqs_queue())  # pragma: no cover
@@ -166,7 +168,7 @@ def _gene(options, gene, layer):
 
         if options.time:
             def log_size(tile):
-                print 'size: %i' % len(tile.data)
+                output_file.write('size: %i\n' % len(tile.data))
                 return tile
             gene.imap(log_size)
 
@@ -197,7 +199,7 @@ def _gene(options, gene, layer):
                 elif self.n == 2 * options.time:
                     t2 = datetime.now()
                     d = (t2 - self.t1) / options.time
-                    print 'time: %i' % ((d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds)
+                    output_file.write('time: %i\n' % ((d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds))
                 return tile
         gene.imap(log_time())
 
@@ -210,12 +212,12 @@ def daemonize():  # pragma: no cover
     try:
         pid = os.fork()
         if pid > 0:
-            # exit first parent
+            print "Daemonize with pid %i." % pid
+            sys.stderr.write(str(pid))
+            # exit parent
             sys.exit(0)
     except OSError, e:
         exit("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
-
-    return os.getpid()
 
 
 def main():
@@ -226,7 +228,7 @@ def main():
     parser.add_option('-d', '--daemonize', default=False, action="store_true",
             help='run as a deamon')
     parser.add_option('-b', '--bbox',
-            help='restrict to specified bounding box')
+            help='restrict to specified bounding box (minx,miny,maxx,maxy)')
     parser.add_option('-z', '--zoom-level', type='int', dest='zoom',
             help='restrict to specified zoom level', metavar="ZOOM")
     parser.add_option('-l', '--layer', metavar="NAME",
@@ -245,13 +247,15 @@ def main():
             default=None, dest='time', metavar="N", type='int',
             help='Measure the generation time by creating N tiles to warm-up, '
             'N tile to do the measure and N tiles to slow-down')
+    parser.add_option('--output-file',  metavar="FILE", default=None,
+            help='Specify file to output the time measure')
     (options, args) = parser.parse_args()
     logging.basicConfig(
         format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
         level=logging.ERROR if options.test < 0 else logging.DEBUG)
 
     if options.daemonize:
-        print "Daemonize with pid %i." % daemonize()  # pragma: no cover
+        daemonize()  # pragma: no cover
 
     gene = TileGeneration(options.config, options)
 
