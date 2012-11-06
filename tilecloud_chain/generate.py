@@ -77,7 +77,7 @@ def _gene(options, gene, layer):
 
     # At this stage, the tilestream contains metatiles that intersect geometry
     if options.test > 0:
-        gene.imap(Logger(logger, logging.DEBUG, '%(tilecoord)s'))
+        gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
     if options.role == 'master':  # pragma: no cover
         # Put the metatiles into the SQS queue
@@ -127,7 +127,7 @@ def _gene(options, gene, layer):
 
         if meta:
             if options.role == 'hash':
-                gene.imap(HashLogger('empty_metatile_detection', logger))
+                gene.imap(HashLogger('empty_metatile_detection'))
             else:
                 # Handle errors
                 gene.add_error_filters(logger)
@@ -152,7 +152,7 @@ def _gene(options, gene, layer):
                 gene.add_geom_filter()
 
         if options.role == 'hash':
-            gene.imap(HashLogger('empty_tile_detection', logger))
+            gene.imap(HashLogger('empty_tile_detection'))
         else:
             # Discard tiles with certain content
             if 'empty_tile_detection' in gene.layer:
@@ -249,10 +249,10 @@ def main():
             'N tile to do the measure and N tiles to slow-down')
     parser.add_option('--output-file',  metavar="FILE", default=None,
             help='Specify file to output the time measure')
+    parser.add_option('-v', '--verbose', default=False, action="store_true",
+            help='Display debug message.')
+
     (options, args) = parser.parse_args()
-    logging.basicConfig(
-        format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
-        level=logging.ERROR if options.test < 0 else logging.DEBUG)
 
     if options.daemonize:
         daemonize()  # pragma: no cover

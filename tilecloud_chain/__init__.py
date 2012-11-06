@@ -32,6 +32,15 @@ class TileGeneration:
     geom = None
 
     def __init__(self, config_file, options, layer_name=None):
+        level = logging.ERROR
+        if options.verbose:
+            level = logging.DEBUG
+        elif options.test > 0:
+            level = logging.INFO
+        logging.basicConfig(
+            format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
+            level=level)
+
         self.config = yaml.load(file(config_file))
         self.options = options
 
@@ -249,9 +258,8 @@ class TileGeneration:
         return self.grids[name]
 
     def get_sqs_queue(self):  # pragma: no cover
-        config_sqs = self.config['forge']['sqs']
-        connection = boto.sqs.connect_to_region(config_sqs['region_name'])
-        queue = connection.create_queue(config_sqs['queue_name'])
+        connection = boto.sqs.connect_to_region(self.config['generation']['sqs_region_name'])
+        queue = connection.create_queue(self.config['generation']['sqs_queue_name'])
         queue.set_message_class(JSONMessage)
         return queue
 
@@ -443,9 +451,8 @@ class HashLogger(object):  # pragma: no cover
     Log the tile size and hash.
     """
 
-    def __init__(self, block, logger):
+    def __init__(self, block):
         self.block = block
-        self.logger = logger
 
     def __call__(self, tile):
         ref = None
@@ -458,7 +465,7 @@ class HashLogger(object):  # pragma: no cover
             if ref is None:
                 ref = px
             elif px != ref:
-                self.logger.info("Warning: image is not uniform.")
+                logger.error("Warning: image is not uniform.")
                 break
 
         print("""Tile: %s

@@ -122,6 +122,7 @@ generation:
     maxconsecutive_errors: 2
     geodata_folder: tilecloud_chain/tests/
     deploy_config: tilecloud_chain/tests/deploy.cfg
+    deploy_user: deploy
     ssh_options: -o StrictHostKeyChecking=no
 
 openlayers:
