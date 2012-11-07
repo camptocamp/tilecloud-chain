@@ -1057,7 +1057,6 @@ layer_default:
   meta_buffer: 128
   meta_size: 8
   mime_type: image/png
-  sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
   type: wms
   url: http://localhost/mapserv
   wmts_style: default
@@ -1076,7 +1075,6 @@ layers:
     meta_size: 8
     mime_type: image/png
     name: all
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1172,7 +1170,6 @@ layers:
     meta_size: 8
     mime_type: image/png
     name: point_hash
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
