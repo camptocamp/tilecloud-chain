@@ -177,8 +177,24 @@ def main():
             '-r', gene.config['generation']['geodata_folder'],
             host + ':' + gene.config['generation']['geodata_folder']])
 
+    if options.deploy_code:
+        print "==== Sync and build code ===="
+        config = ConfigParser.ConfigParser()
+        config.readfp(open(options.deploy_config))
+        project_dir = config.get('code', 'dest')
+        run_local(['rsync', '-e', 'ssh ' + gene.config['generation']['ssh_options'],
+            '-r', '.',
+            host + ':' + project_dir])
+
+        run_remote('/usr/bin/python bootstrap.py --distribute', host, project_dir, gene)
+        run_remote('./buildout/bin/buildout -c buildout_tilegeneration.cfg', host, project_dir, gene)
+        run_remote('echo %s > %s' % (config.get('apache', 'content'), config.get('apache', 'dest')),
+                host, project_dir, gene)
+        run_remote('sudo apache2ctl graceful', host, project_dir, gene)
+
     # deploy
-    _deploy(gene, host)
+    if options.deploy_database:
+        _deploy(gene, host)
 
     if options.deploy_code or options.deploy_database \
             or options.sync:
@@ -279,27 +295,15 @@ def _get_project_dir(deploy_config):
 
 
 def _deploy(gene, host):
-    components = ""
-    message = ''
-    if gene.options.deploy_code and gene.options.deploy_database:  # pragma: no cover
-        message = 'code and database'
-        components = 'code,database'
-    elif gene.options.deploy_code:
-        message = 'code'
-        components = 'code'
-    elif gene.options.deploy_database:
-        message = 'database'
-        components = 'databases'
-
-    print "==== Deploy %s ====" % message
+    print "==== Deploy database ===="
     deploy_cmd = 'deploy'
     if 'deploy_user' in gene.config['generation']:
         deploy_cmd = 'sudo -u %s deploy' % gene.config['generation']['deploy_user']
         index = host.find('@')
         if index >= 0:  # pragma: no cover
             host = host[index + 1:]
-    run_local('%s --remote --components=[%s] %s %s' %
-        (deploy_cmd, components, gene.options.deploy_config, host))
+    run_local('%s --remote --components=[database] %s %s' %
+        (deploy_cmd, gene.options.deploy_config, host))
 
 
 def _get_arguments(options):
