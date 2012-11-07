@@ -1002,7 +1002,6 @@ class TestController(CompareCase):
   s3: {bucket: tiles, folder: tiles, host: s3-eu-west-1.amazonaws.com, """ \
         """http_url: 'https://%(host)s/%(bucket)s/%(folder)s',
     name: s3, type: s3}
-config: {}
 cost:
   cloudfront: {download: 0.12, get: 0.009}
   ec2: {usage: 0.17}
