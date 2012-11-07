@@ -21,7 +21,7 @@ before_install:
 
 install:
 - pip install -U mapnik2==2.1.0.1 --use-mirrors
-- python bootstrap.py
+- python bootstrap.py --distribute
 - ./buildout/bin/buildout
 
 script:
