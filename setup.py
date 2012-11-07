@@ -26,7 +26,8 @@ setup_requires = [
     'nose-progressive',
     'ipdbplugin',
     'unittest2',
-    ]
+    'testfixtures',
+]
 
 setup(
         name='tilecloud-chain',
@@ -46,7 +47,7 @@ setup(
         url='http://github.com/sbrunner/tilecloud-chain',
         license='BSD',
         keywords='gis tilecloud chain',
-        packages=find_packages(),
+        packages=find_packages(exclude=["*.tests", "*.tests.*"]),
         include_package_data=True,
         zip_safe=False,
         install_requires=install_requires,

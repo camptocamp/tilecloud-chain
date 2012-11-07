@@ -1,0 +1,25 @@
+grids:
+    swissgrid_1:
+        resolutions: [1]
+        bbox: [420000, 30000, 900000, 350000]
+        srs: epsg:21781
+        
+caches: {}
+
+layer_default:
+    grid: swissgrid_1
+    type: mapnik
+    meta: on
+    mapfile: test.mapnik
+    wmts_style: default
+
+layers:
+    a: 
+        output_format: png
+        extension: png
+        mime_type: image/png
+    b: 
+        output_format: grid
+        extension: json
+        mime_type: application/json
+

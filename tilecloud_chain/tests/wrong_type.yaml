@@ -1,0 +1,15 @@
+grids:
+    swissgrid_2:
+        resolutions: [2]
+        resolution_scale: 5.5
+        bbox: [a, b, c]
+        srs: [epsg21781]
+    swissgrid_1:
+        resolutions: [1]
+        bbox: 123
+        srs: {}
+    swissgrid_3: {}
+        
+caches: {}
+
+layers: {}

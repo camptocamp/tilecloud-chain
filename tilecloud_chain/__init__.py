@@ -59,9 +59,9 @@ class TileGeneration:
             error = self.validate(grid, name, 'unit', attribute_type=str, default='m') or error
             error = self.validate(grid, name, 'tile_size', attribute_type=int, default=256) or error
             scale = grid['resolution_scale']
-            for r in grid['resolutions']:
+            for r in grid.get('resolutions', []):
                 if r * scale % 1 != 0.0:
-                    logger.error("The reolution %f * 'resolution_scale' is not an integer" % r)
+                    logger.error("The reolution %s * resolution_scale %i is not an integer." % (r, scale))
                     error = True
 
             grid['obj'] = FreeTileGrid(
@@ -70,7 +70,7 @@ class TileGeneration:
                 max_extent=grid['bbox'],
                 tile_size=grid['tile_size']) if not error else None
 
-        default = self.config['layer_default']
+        default = self.config.get('layer_default', {})
         self.layers = {}
         self.validate_exists(self.config, 'config', 'layers')
         for lname, layer in self.config['layers'].items():
@@ -149,7 +149,7 @@ class TileGeneration:
                 error = self.validate(cache, name, 'bucket', attribute_type=str, required=True) or error
                 error = self.validate(cache, name, 'folder', attribute_type=str, default='') or error
 
-        error = self.validate(self.config, 'generation', 'config', attribute_type=dict, default={}) or error
+        error = self.validate(self.config, 'config', 'generation', attribute_type=dict, default={}) or error
         error = self.validate(self.config['generation'], 'generation', 'default_cache', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'default_layers',
             is_array=True, attribute_type=str) or error
@@ -197,7 +197,10 @@ class TileGeneration:
                 elif type(value) != attribute_type:
                     return (True, None, str(attribute_type))
             elif attribute_type == str:
-                if type(value) != str:
+                typ = type(value)
+                if typ == list or typ == dict:
+                    return (True, None, str(attribute_type))
+                if typ != str:
                     value = str(value)
             else:
                 if type(value) != attribute_type:
