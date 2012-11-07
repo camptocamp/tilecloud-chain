@@ -356,7 +356,7 @@ class TileGeneration:
         self.tilestream = (
             Tile(tilecoord) for tilecoord in tilecoords)
 
-    def set_store(self, store):
+    def set_store(self, store):  # pragma: no cover
         self.tilestream = store.list()
 
     def get(self, store):
@@ -383,7 +383,7 @@ class TileGeneration:
                     return tile
             self.tilestream = imap(safe_put, ifilter(None, self.tilestream))
 
-    def delete(self, store):
+    def delete(self, store):  # pragma: no cover
         if self.options.test > 0:
             self.tilestream = store.delete(self.tilestream)
         else:
@@ -504,11 +504,6 @@ class IntersectGeometryFilter(object):
                 (bbox[2], bbox[3]),
                 (bbox[2], bbox[1])))
 
-    def bounds_polygon(self, bounds):
-        return self.bbox_polygon((
-                bounds[0].start, bounds[1].start,
-                bounds[0].stop, bounds[1].stop))
-
 
 class DropEmpty(object):
     """
@@ -517,6 +512,6 @@ class DropEmpty(object):
 
     def __call__(self, tile):
         if not tile or not tile.data:
-            return None
+            return None  # pragma: no cover
         else:
             return tile

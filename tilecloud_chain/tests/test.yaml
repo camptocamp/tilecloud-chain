@@ -55,7 +55,6 @@ layer_default:
     meta_size: 8
     meta_buffer: 128
     connection: user=postgres password=postgres dbname=tests host=localhost
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
     cost:
         # [ms]
         tileonly_generation_time: 60
@@ -72,7 +71,6 @@ layers:
         sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
     point_hash:
         layers: point
-        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
         empty_metatile_detection:
             size: 20743
             hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -99,6 +97,7 @@ layers:
         meta_buffer: 0
         data_buffer: 128
         output_format: png
+        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
     mapnik_grid:
         type: mapnik
         mapfile: tilecloud_chain/tests/test.mapnik
@@ -109,6 +108,7 @@ layers:
         mime_type: application/utfgrid
         extension: json
         resolution: 16
+        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
         layers_fields:
             point:
             - name

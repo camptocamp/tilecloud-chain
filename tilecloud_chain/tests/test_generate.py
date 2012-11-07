@@ -162,6 +162,18 @@ time: [0-9]*
 size: 854
 size: 854""", True, False)
 
+    def test_time_layer_bbox(self):
+        self.assert_cmd_equals(
+            './buildout/bin/generate_tiles -c tilecloud_chain/tests/test.yaml --time 2 -l all',
+            generate.main,
+            """size: 854
+size: 854
+size: 854
+size: 854
+time: [0-9]*
+size: 854
+size: 854""", True, False)
+
 #    def test_daemonize(self):
 #        self.assert_cmd_equals(
 #            './buildout/bin/generate_tiles -c tilecloud_chain/tests/test.yaml -t 1 --daemonize',
