@@ -149,10 +149,12 @@ generation:
     ssh_options: ''
 
     # geodata folder to sync with the tile worker, not already implemented
-    geodata_folder: /var/sig/package
+    geodata_folder: /var/sig/package/
 
     # [default to tilegeneration/deploy.cfg]
     deploy_config: tilegeneration/deploy.cfg
+    # The user used to deploy
+    #deploy_user: deploy
 
     # disable geodata sync, not already implemented [default to no]
     disable_sync: no
@@ -179,3 +181,4 @@ cost:
 
 sns:
     topic: arn:aws:sns:eu-west-1:your-account-id:tilecloud
+    region: eu-west-1

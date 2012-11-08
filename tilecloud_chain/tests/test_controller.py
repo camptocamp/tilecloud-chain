@@ -1216,7 +1216,7 @@ mapcache:
   memcache_port: '11211'
   resolutions: [100.0, 50.0, 20.0, 10.0, 5.0, 2.0, 1.0, 0.5]
 openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}
-sns: {topic: sns_topic}"""
+sns: {region: eu-west-1, topic: sns_topic}"""
 
     def test_config(self):
         self.assert_cmd_yaml_equals(
