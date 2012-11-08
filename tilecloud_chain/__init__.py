@@ -165,6 +165,8 @@ class TileGeneration:
         error = self.validate(self.config['generation'], 'generation', 'ssh_options',
            attribute_type=str, default='') or error
         error = self.validate(self.config['generation'], 'generation', 'geodata_folder', attribute_type=str) or error
+        if 'geodata_folder' in self.config['generation'] and self.config['generation']['geodata_folder'][-1] != '/':
+            self.config['generation']['geodata_folder'] += '/'
         error = self.validate(self.config['generation'], 'generation', 'deploy_config',
             attribute_type=str, default="tilegeneration/deploy.cfg") or error
         error = self.validate(self.config['generation'], 'generation', 'disable_sync',
@@ -180,6 +182,7 @@ class TileGeneration:
 
         if 'sns' in self.config:
             error = self.validate(self.config['sns'], 'sns', 'topic', attribute_type=str, required=True) or error
+            error = self.validate(self.config['sns'], 'sns', 'region', attribute_type=str, default='eu-west-1') or error
 
         if error:
             exit(1)

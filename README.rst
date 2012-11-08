@@ -1,8 +1,6 @@
 TileCloud Chain
 ===============
 
-Just syntax check:
-
 .. image:: https://secure.travis-ci.org/sbrunner/tilecloud-chain.png
 
 
@@ -10,9 +8,9 @@ The goal of TileCloud Chain is to have tools around tile generation on a chain l
 
 Source: WMS, Mapnik, and probably in future MapScript.
 
-Optionaly use an SQS queue.
+Optionally use an SQS queue.
 
-Destination in WMTS layout, on localhost or on S3.
+Destination in WMTS layout, on local filesystem or on S3.
 
 Feature:
 
@@ -25,7 +23,7 @@ Feature:
 - Obtain the hash of an empty tile
 - In future, measure tile generation speed
 - Calculate cost and generation time.
-- In future, manage the AWG hosts that generate tiles.
+- In future, manage the AWS hosts that generate tiles.
 - Delete empty tiles.
 
 Use it
