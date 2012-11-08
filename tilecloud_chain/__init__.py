@@ -366,6 +366,8 @@ class TileGeneration:
             def safe_get(tile):
                 try:
                     return store.get_one(tile)
+                except KeyboardInterrupt:  # pragma: no cover
+                    exit("User interrupt")
                 except:  # pragma: no cover
                     tile.error = sys.exc_info()[1]
                     return tile
@@ -378,6 +380,8 @@ class TileGeneration:
             def safe_put(tile):
                 try:
                     return store.put_one(tile)
+                except KeyboardInterrupt:  # pragma: no cover
+                    exit("User interrupt")
                 except:  # pragma: no cover
                     tile.error = sys.exc_info()[1]
                     return tile
@@ -390,6 +394,8 @@ class TileGeneration:
             def safe_delete(tile):
                 try:
                     return store.delete_one(tile)
+                except KeyboardInterrupt:  # pragma: no cover
+                    exit("User interrupt")
                 except:  # pragma: no cover
                     tile.error = sys.exc_info()[1]
                     return tile
@@ -402,6 +408,8 @@ class TileGeneration:
             def safe_imap(tile):
                 try:
                     return tile_filter(tile)
+                except KeyboardInterrupt:  # pragma: no cover
+                    exit("User interrupt")
                 except:  # pragma: no cover
                     tile.error = sys.exc_info()[1]
                     return tile
@@ -415,6 +423,8 @@ class TileGeneration:
                 if tile:
                     try:
                         return tile_filter(tile)
+                    except KeyboardInterrupt:  # pragma: no cover
+                        exit("User interrupt")
                     except:  # pragma: no cover
                         tile.error = sys.exc_info()[1]
                         return tile
