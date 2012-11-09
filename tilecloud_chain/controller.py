@@ -365,8 +365,14 @@ def run_remote(remote_cmd, host, project_dir, gene):
     if 'ssh_options' in gene.config['generation']:
         cmd.extend(gene.config['generation']['ssh_options'].split(' '))
     cmd.append(host)
-    cmd.append('cd %(project_dir)s; %(cmd)s' % {
-        'cmd': remote_cmd, 'project_dir': project_dir
+    cmd.append('cd %(project_dir)s;'
+            'export AWS_ACCESS_KEY_ID=%(access_key)s;'
+            'export AWS_SECRET_ACCESS_KEY=%(secret_key)s;'
+            '%(cmd)s' % {
+        'cmd': remote_cmd,
+        'access_key': os.getenv('AWS_ACCESS_KEY_ID'),
+        'secret_key': os.getenv('AWS_SECRET_ACCESS_KEY'),
+        'project_dir': project_dir
     })
 
     logger.debug('Run: %s.' % ' '.join([_quote(c) for c in cmd]))
