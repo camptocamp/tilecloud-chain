@@ -336,11 +336,24 @@ def aws_start(host_type):  # pragma: no cover
     pass  # TODO
 
 
+def _quote(arg):
+    if ' ' in arg:
+        if "'" in arg:
+            if '"' in arg:
+                return "'%s'" % arg.replace("'", "\\'")
+            else:
+                return '"%s"' % arg
+        else:
+            return "'%s'" % arg
+    else:
+        return arg
+
+
 def run_local(cmd):
     if type(cmd) != list:
         cmd = cmd.split(' ')
 
-    logger.debug(' '.join(cmd))
+    logger.debug('Run: %s.' % ' '.join([_quote(c) for c in cmd]))
     result = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
     logger.info(result[0])
     logger.error(result[1])
@@ -356,7 +369,7 @@ def run_remote(remote_cmd, host, project_dir, gene):
         'cmd': remote_cmd, 'project_dir': project_dir
     })
 
-    logger.debug(' '.join(cmd))
+    logger.debug('Run: %s.' % ' '.join([_quote(c) for c in cmd]))
     result = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
     logger.info(result[0])
     logger.error(result[1])
