@@ -255,7 +255,7 @@ def main():
         tile_size: %0.3f''' % (mean_time_ms, mean_time_ms, mean_size_kb)
 
         if options.shutdown:  # pragma: no cover
-            run_remote('sudo shutdown 0', host, project_dir, gene)  # TODO deamonize
+            run_remote('sudo shutdown 0', host, project_dir, gene)
         sys.exit(0)
 
     if options.fill_queue:  # pragma: no cover
@@ -284,7 +284,7 @@ def main():
         exit_cmds = ['while [ -e /proc/%s ]; do sleep 1; done' % pid for pid in pids]
         if options.shutdown:
             exit_cmds.append('sudo shutdown 0')
-        run_remote(';'.join(exit_cmds), host, project_dir, gene)  # TODO demonize, send email
+        run_remote(';'.join(exit_cmds), host, project_dir, gene)  # TODO demonize
 
         if 'sns' in gene.config:
             if 'region' in gene.config['sns']:
