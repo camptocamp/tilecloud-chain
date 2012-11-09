@@ -172,19 +172,25 @@ def main():
 
     if options.sync and 'geodata_folder' in gene.config['generation']:
         print "==== Sync geodata ===="
+        ssh_options = ''
+        if 'ssh_options' in gene.config['generation']:
+            ssh_options = gene.config['generation']['ssh_options']
         # sync geodata
-        run_local(['rsync', '-e', 'ssh ' + gene.config['generation']['ssh_options'],
+        run_local(['rsync', '--delete', '-e', 'ssh ' + ssh_options,
             '-r', gene.config['generation']['geodata_folder'],
             host + ':' + gene.config['generation']['geodata_folder']])
 
     if options.deploy_code:
         print "==== Sync and build code ===="
+        cmd = ['rsync', '--delete', ]
+        if 'ssh_options' in gene.config['generation']:
+            cmd += ['-e', 'ssh ' + gene.config['generation']['ssh_options']]
+            ssh_options = gene.config['generation']['ssh_options']
         config = ConfigParser.ConfigParser()
         config.readfp(open(options.deploy_config))
         project_dir = config.get('code', 'dest')
-        run_local(['rsync', '-e', 'ssh ' + gene.config['generation']['ssh_options'],
-            '-r', '.',
-            host + ':' + project_dir])
+        cmd += ['-r', '.', host + ':' + project_dir]
+        run_local(cmd)
 
         run_remote('/usr/bin/python bootstrap.py --distribute', host, project_dir, gene)
         run_remote('./buildout/bin/buildout -c buildout_tilegeneration.cfg', host, project_dir, gene)
@@ -342,8 +348,9 @@ def run_local(cmd):
 
 
 def run_remote(remote_cmd, host, project_dir, gene):
-    cmd = ['ssh', '-f']
-    cmd.extend(gene.config['generation']['ssh_options'].split(' '))
+    cmd = ['ssh']
+    if 'ssh_options' in gene.config['generation']:
+        cmd.extend(gene.config['generation']['ssh_options'].split(' '))
     cmd.append(host)
     cmd.append('cd %(project_dir)s; %(cmd)s' % {
         'cmd': remote_cmd, 'project_dir': project_dir
