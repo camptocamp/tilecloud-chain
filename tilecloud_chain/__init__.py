@@ -274,8 +274,9 @@ class TileGeneration:
         if 'connection' in self.layer and 'sql' in self.layer:
             conn = psycopg2.connect(self.layer['connection'])
             cursor = conn.cursor()
-            cursor.execute("SELECT ST_AsText((SELECT " +
-                self.layer['sql'].strip('" ') + "))")
+            sql = 'SELECT ST_AsText((SELECT %s))' % self.layer['sql']
+            logger.debug('Execute SQL: %s.' % sql)
+            cursor.execute(sql)
             self.geom = loads_wkt(cursor.fetchone()[0])
             if extent:
                 self.geom = self.geom.intersection(Polygon((
