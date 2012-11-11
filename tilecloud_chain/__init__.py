@@ -163,7 +163,7 @@ class TileGeneration:
         error = self.validate(self.config['generation'], 'generation', 'maxconsecutive_errors',
             attribute_type=int, default=10) or error
         error = self.validate(self.config['generation'], 'generation', 'ssh_options',
-           attribute_type=str, default='') or error
+           attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'geodata_folder', attribute_type=str) or error
         if 'geodata_folder' in self.config['generation'] and self.config['generation']['geodata_folder'][-1] != '/':
             self.config['generation']['geodata_folder'] += '/'
@@ -274,8 +274,9 @@ class TileGeneration:
         if 'connection' in self.layer and 'sql' in self.layer:
             conn = psycopg2.connect(self.layer['connection'])
             cursor = conn.cursor()
-            cursor.execute("SELECT ST_AsText((SELECT " +
-                self.layer['sql'].strip('" ') + "))")
+            sql = 'SELECT ST_AsText((SELECT %s))' % self.layer['sql']
+            logger.debug('Execute SQL: %s.' % sql)
+            cursor.execute(sql)
             self.geom = loads_wkt(cursor.fetchone()[0])
             if extent:
                 self.geom = self.geom.intersection(Polygon((

@@ -172,19 +172,25 @@ def main():
 
     if options.sync and 'geodata_folder' in gene.config['generation']:
         print "==== Sync geodata ===="
+        ssh_options = ''
+        if 'ssh_options' in gene.config['generation']:
+            ssh_options = gene.config['generation']['ssh_options']
         # sync geodata
-        run_local(['rsync', '-e', 'ssh ' + gene.config['generation']['ssh_options'],
+        run_local(['rsync', '--delete', '-e', 'ssh ' + ssh_options,
             '-r', gene.config['generation']['geodata_folder'],
             host + ':' + gene.config['generation']['geodata_folder']])
 
     if options.deploy_code:
         print "==== Sync and build code ===="
+        cmd = ['rsync', '--delete', ]
+        if 'ssh_options' in gene.config['generation']:
+            cmd += ['-e', 'ssh ' + gene.config['generation']['ssh_options']]
+            ssh_options = gene.config['generation']['ssh_options']
         config = ConfigParser.ConfigParser()
         config.readfp(open(options.deploy_config))
         project_dir = config.get('code', 'dest')
-        run_local(['rsync', '-e', 'ssh ' + gene.config['generation']['ssh_options'],
-            '-r', '.',
-            host + ':' + project_dir])
+        cmd += ['-r', '.', host + ':' + project_dir]
+        run_local(cmd)
 
         run_remote('/usr/bin/python bootstrap.py --distribute', host, project_dir, gene)
         run_remote('./buildout/bin/buildout -c buildout_tilegeneration.cfg', host, project_dir, gene)
@@ -249,7 +255,7 @@ def main():
         tile_size: %0.3f''' % (mean_time_ms, mean_time_ms, mean_size_kb)
 
         if options.shutdown:  # pragma: no cover
-            run_remote('sudo shutdown 0', host, project_dir, gene)  # TODO deamonize
+            run_remote('sudo shutdown 0', host, project_dir, gene)
         sys.exit(0)
 
     if options.fill_queue:  # pragma: no cover
@@ -278,7 +284,7 @@ def main():
         exit_cmds = ['while [ -e /proc/%s ]; do sleep 1; done' % pid for pid in pids]
         if options.shutdown:
             exit_cmds.append('sudo shutdown 0')
-        run_remote(';'.join(exit_cmds), host, project_dir, gene)  # TODO demonize, send email
+        run_remote(';'.join(exit_cmds), host, project_dir, gene)  # TODO demonize
 
         if 'sns' in gene.config:
             if 'region' in gene.config['sns']:
@@ -330,11 +336,24 @@ def aws_start(host_type):  # pragma: no cover
     pass  # TODO
 
 
+def _quote(arg):
+    if ' ' in arg:
+        if "'" in arg:
+            if '"' in arg:
+                return "'%s'" % arg.replace("'", "\\'")
+            else:
+                return '"%s"' % arg
+        else:
+            return "'%s'" % arg
+    else:
+        return arg
+
+
 def run_local(cmd):
     if type(cmd) != list:
         cmd = cmd.split(' ')
 
-    logger.debug(' '.join(cmd))
+    logger.debug('Run: %s.' % ' '.join([_quote(c) for c in cmd]))
     result = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
     logger.info(result[0])
     logger.error(result[1])
@@ -342,14 +361,21 @@ def run_local(cmd):
 
 
 def run_remote(remote_cmd, host, project_dir, gene):
-    cmd = ['ssh', '-f']
-    cmd.extend(gene.config['generation']['ssh_options'].split(' '))
+    cmd = ['ssh']
+    if 'ssh_options' in gene.config['generation']:
+        cmd.extend(gene.config['generation']['ssh_options'].split(' '))
     cmd.append(host)
-    cmd.append('cd %(project_dir)s; %(cmd)s' % {
-        'cmd': remote_cmd, 'project_dir': project_dir
+    cmd.append('cd %(project_dir)s;'
+            'export AWS_ACCESS_KEY_ID=%(access_key)s;'
+            'export AWS_SECRET_ACCESS_KEY=%(secret_key)s;'
+            '%(cmd)s' % {
+        'cmd': remote_cmd,
+        'access_key': os.getenv('AWS_ACCESS_KEY_ID'),
+        'secret_key': os.getenv('AWS_SECRET_ACCESS_KEY'),
+        'project_dir': project_dir
     })
 
-    logger.debug(' '.join(cmd))
+    logger.debug('Run: %s.' % ' '.join([_quote(c) for c in cmd]))
     result = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
     logger.info(result[0])
     logger.error(result[1])
