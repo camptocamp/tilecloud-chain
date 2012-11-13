@@ -1355,3 +1355,10 @@ OpenLayers.Request.GET({
         OpenLayers.Console.error.apply(OpenLayers.Console, arguments);
     }
 });"""]])
+
+    def test_quote(self):
+        self.assertEquals(controller._quote("abc"), "abc")
+        self.assertEquals(controller._quote("a b c"), "'a b c'")
+        self.assertEquals(controller._quote("'a b c'"), "\"'a b c'\"")
+        self.assertEquals(controller._quote('"a b c"'), '\'"a b c"\'')
+        self.assertEquals(controller._quote("a\" b' c"), "'a\" b\\' c'")
