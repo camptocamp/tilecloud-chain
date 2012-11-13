@@ -150,7 +150,8 @@ class TileGeneration:
                 error = self.validate(cache, name, 'folder', attribute_type=str, default='') or error
 
         error = self.validate(self.config, 'config', 'generation', attribute_type=dict, default={}) or error
-        error = self.validate(self.config['generation'], 'generation', 'default_cache', attribute_type=str) or error
+        error = self.validate(self.config['generation'], 'generation', 'default_cache',
+            attribute_type=str, default='default') or error
         error = self.validate(self.config['generation'], 'generation', 'default_layers',
             is_array=True, attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'authorised_user', attribute_type=str) or error
@@ -167,10 +168,15 @@ class TileGeneration:
         error = self.validate(self.config['generation'], 'generation', 'geodata_folder', attribute_type=str) or error
         if 'geodata_folder' in self.config['generation'] and self.config['generation']['geodata_folder'][-1] != '/':
             self.config['generation']['geodata_folder'] += '/'
+        error = self.validate(self.config['generation'], 'generation', 'code_folder', attribute_type=str) or error
+        if 'code_folder' in self.config['generation'] and self.config['generation']['code_folder'][-1] != '/':
+            self.config['generation']['code_folder'] += '/'
         error = self.validate(self.config['generation'], 'generation', 'deploy_config',
             attribute_type=str, default="tilegeneration/deploy.cfg") or error
         error = self.validate(self.config['generation'], 'generation', 'buildout_config',
             attribute_type=str, default="tilegeneration/buildout.cfg") or error
+        error = self.validate(self.config['generation'], 'generation', 'apache_config', attribute_type=str) or error
+        error = self.validate(self.config['generation'], 'generation', 'apache_content', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'disable_sync',
             attribute_type=bool, default=False) or error
         error = self.validate(self.config['generation'], 'generation', 'disable_code',

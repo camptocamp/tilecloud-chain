@@ -148,8 +148,11 @@ generation:
     # SSH options [default to '']
     ssh_options: ''
 
-    # geodata folder to sync with the tile worker, not already implemented
+    # geodata folder to sync with the tile worker
     geodata_folder: /var/sig/package/
+
+    # destination code folder to sync with the tile worker
+    code_folder: /var/www/vhosts/<vhost>/private/<package>
 
     # [default to tilegeneration/deploy.cfg]
     deploy_config: tilegeneration/deploy.cfg
@@ -159,6 +162,10 @@ generation:
     # [default to tilegeneration/buildout.cfg]
     buildout_config: tilegeneration/buildout.cfg
 
+    # apache destination config file and content
+    apache_config: /var/www/vhosts/<vhost>/conf/<package>.conf
+    apache_content: Include /var/www/vhosts/<vhost>/private/<package>/apache/*.conf
+    
     # disable geodata sync, not already implemented [default to no]
     disable_sync: no
     # disable code deploy, not already implemented [default to no]
