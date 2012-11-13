@@ -1011,6 +1011,10 @@ cost:
   s3: {download: 0.12, get: 0.01, put: 0.01, storage: 0.125}
   sqs: {request: 0.01}
 generation:
+  apache_config: /tmp/tests/test.conf
+  apache_content: test file
+  buildout_config: buildout.cfg
+  code_folder: /tmp/tests/test/
   default_cache: local
   default_layers: [line, polygon]
   deploy_config: tilecloud_chain/tests/deploy.cfg
@@ -1351,3 +1355,10 @@ OpenLayers.Request.GET({
         OpenLayers.Console.error.apply(OpenLayers.Console, arguments);
     }
 });"""]])
+
+    def test_quote(self):
+        self.assertEquals(controller._quote("abc"), "abc")
+        self.assertEquals(controller._quote("a b c"), "'a b c'")
+        self.assertEquals(controller._quote("'a b c'"), "\"'a b c'\"")
+        self.assertEquals(controller._quote('"a b c"'), '\'"a b c"\'')
+        self.assertEquals(controller._quote("a\" b' c"), "'a\" b\\' c'")

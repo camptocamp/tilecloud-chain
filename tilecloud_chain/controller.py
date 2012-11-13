@@ -4,7 +4,6 @@ import os
 import sys
 import math
 import logging
-import ConfigParser
 import boto
 import yaml
 from boto import sns
@@ -182,20 +181,25 @@ def main():
 
     if options.deploy_code:
         print "==== Sync and build code ===="
+        error = gene.validate(gene.config['generation'], 'generation', 'code_folder', required=True)
+        if error:
+            exit(1)  # pragma: no cover
+
         cmd = ['rsync', '--delete', ]
         if 'ssh_options' in gene.config['generation']:
             cmd += ['-e', 'ssh ' + gene.config['generation']['ssh_options']]
             ssh_options = gene.config['generation']['ssh_options']
-        config = ConfigParser.ConfigParser()
-        config.readfp(open(options.deploy_config))
-        project_dir = config.get('code', 'dest')
+
+        project_dir = gene.config['generation']['code_folder']
         cmd += ['-r', '.', host + ':' + project_dir]
         run_local(cmd)
 
         run_remote('/usr/bin/python bootstrap.py --distribute', host, project_dir, gene)
-        run_remote('./buildout/bin/buildout -c buildout_tilegeneration.cfg', host, project_dir, gene)
-        run_remote('echo %s > %s' % (config.get('apache', 'content'), config.get('apache', 'dest')),
+        run_remote('./buildout/bin/buildout -c %s' % gene.config['generation']['buildout_config'],
                 host, project_dir, gene)
+        if 'apache_content' in gene.config['generation'] and 'apache_config' in gene.config['generation']:
+            run_remote('echo %s > %s' % (gene.config['generation']['apache_content'],
+                gene.config['generation']['apache_config']), host, project_dir, gene)
         run_remote('sudo apache2ctl graceful', host, project_dir, gene)
 
     # deploy
@@ -214,7 +218,7 @@ def main():
         arguments.extend(['--time', str(options.time)])
         arguments.append("--daemonize")
 
-        project_dir = _get_project_dir(options.deploy_config)
+        project_dir = gene.config['generation']['code_folder']
         pids = []
         for i in range(gene.config['generation']['number_process']):
             pids.append(run_remote('./buildout/bin/generate_tiles ' +
@@ -264,7 +268,7 @@ def main():
         arguments = _get_arguments(options)
         arguments.extend(['--role', 'master'])
 
-        project_dir = _get_project_dir(options.deploy_config)
+        project_dir = gene.config['generation']['code_folder']
         run_remote('./buildout/bin/generate_tiles ' +
                 ' '.join(arguments), host, project_dir, gene)
 
@@ -275,7 +279,7 @@ def main():
         arguments.extend(['--role', 'slave'])
         arguments.append("--daemonize")
 
-        project_dir = _get_project_dir(options.deploy_config)
+        project_dir = gene.config['generation']['code_folder']
         pids = []
         for i in range(gene.config['generation']['number_process']):
             pids.append(run_remote('./buildout/bin/generate_tiles ' +
@@ -292,12 +296,6 @@ def main():
             else:
                 connection = boto.connect_sns()
             connection.publish(gene.config['sns']['topic'], "The tile generation is finish", "Tile generation")
-
-
-def _get_project_dir(deploy_config):
-    config = ConfigParser.ConfigParser()
-    config.readfp(open(deploy_config))
-    return config.get('code', 'dest')
 
 
 def _deploy(gene, host):

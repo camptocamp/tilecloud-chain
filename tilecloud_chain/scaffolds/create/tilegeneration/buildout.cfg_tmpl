@@ -1,5 +1,5 @@
 [buildout]
-extends = CONST_buildout.cfg
+extends = ../buildout.cfg
 
 [vars]
 # instance id

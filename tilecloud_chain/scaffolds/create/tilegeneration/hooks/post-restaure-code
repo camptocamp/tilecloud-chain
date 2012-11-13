@@ -1,9 +1,0 @@
-#!/bin/sh
-
-PROJECT_NAME=$1
-CODE_DIR=$2
-
-cd $CODE_DIR
-
-python -S bootstrap.py
-./buildout/bin/buildout -c buildout_tilegeneration.cfg
