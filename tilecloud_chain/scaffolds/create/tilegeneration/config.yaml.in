@@ -156,6 +156,9 @@ generation:
     # The user used to deploy
     #deploy_user: deploy
 
+    # [default to tilegeneration/buildout.cfg]
+    buildout_config: tilegeneration/buildout.cfg
+
     # disable geodata sync, not already implemented [default to no]
     disable_sync: no
     # disable code deploy, not already implemented [default to no]

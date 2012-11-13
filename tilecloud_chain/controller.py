@@ -193,7 +193,7 @@ def main():
         run_local(cmd)
 
         run_remote('/usr/bin/python bootstrap.py --distribute', host, project_dir, gene)
-        run_remote('./buildout/bin/buildout -c buildout_tilegeneration.cfg', host, project_dir, gene)
+        run_remote('./buildout/bin/buildout -c %s' % gene.config['generation']['buildout_config'], host, project_dir, gene)
         run_remote('echo %s > %s' % (config.get('apache', 'content'), config.get('apache', 'dest')),
                 host, project_dir, gene)
         run_remote('sudo apache2ctl graceful', host, project_dir, gene)

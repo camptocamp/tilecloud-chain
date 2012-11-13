@@ -169,6 +169,8 @@ class TileGeneration:
             self.config['generation']['geodata_folder'] += '/'
         error = self.validate(self.config['generation'], 'generation', 'deploy_config',
             attribute_type=str, default="tilegeneration/deploy.cfg") or error
+        error = self.validate(self.config['generation'], 'generation', 'buildout_config',
+            attribute_type=str, default="tilegeneration/buildout.cfg") or error
         error = self.validate(self.config['generation'], 'generation', 'disable_sync',
             attribute_type=bool, default=False) or error
         error = self.validate(self.config['generation'], 'generation', 'disable_code',
