@@ -47,7 +47,7 @@ setup(
         keywords='gis tilecloud chain',
         packages=find_packages(exclude=["*.tests", "*.tests.*"]),
         include_package_data=True,
-        zip_safe=True,
+        zip_safe=False,
         install_requires=install_requires,
         setup_requires=setup_requires,
         tests_require=tests_require,
