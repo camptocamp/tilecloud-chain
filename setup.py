@@ -18,13 +18,11 @@ install_requires = [
     'jinja2',
     'pyramid',
 ]
-
-# nose plugins with options set in setup.cfg cannot be in
-# tests_require, they need be in setup_requires
 setup_requires = [
-    'nosexcover',
-    'nose-progressive',
-    'ipdbplugin',
+    'nose',
+]
+tests_require = [
+    'coverage',
     'unittest2',
     'testfixtures',
 ]
@@ -49,9 +47,10 @@ setup(
         keywords='gis tilecloud chain',
         packages=find_packages(exclude=["*.tests", "*.tests.*"]),
         include_package_data=True,
-        zip_safe=True,
+        zip_safe=False,
         install_requires=install_requires,
         setup_requires=setup_requires,
+        tests_require=tests_require,
         entry_points={
             'console_scripts': [
                 'generate_tiles = tilecloud_chain.generate:main',

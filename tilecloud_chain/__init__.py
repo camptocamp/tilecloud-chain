@@ -174,10 +174,10 @@ class TileGeneration:
         error = self.validate(self.config['generation'], 'generation', 'deploy_config',
             attribute_type=str, default="tilegeneration/deploy.cfg") or error
         error = self.validate(self.config['generation'], 'generation', 'buildout_config',
-            attribute_type=str, default="tilegeneration/buildout.cfg") or error
+            attribute_type=str, default="buildout_tilegeneration.cfg") or error
         error = self.validate(self.config['generation'], 'generation', 'apache_config', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'apache_content', attribute_type=str) or error
-        error = self.validate(self.config['generation'], 'generation', 'disable_sync',
+        error = self.validate(self.config['generation'], 'generation', 'disable_geodata',
             attribute_type=bool, default=False) or error
         error = self.validate(self.config['generation'], 'generation', 'disable_code',
             attribute_type=bool, default=False) or error
@@ -491,7 +491,7 @@ class HashLogger(object):  # pragma: no cover
         try:
             image = Image.open(StringIO(tile.data))
         except IOError as e:
-            self.logger.error(tile.data)
+            logger.error(tile.data)
             raise e
         for px in image.getdata():
             if ref is None:
