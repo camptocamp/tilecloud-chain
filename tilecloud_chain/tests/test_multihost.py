@@ -11,22 +11,22 @@ from tilecloud_chain import controller
 class TestMultihost(CompareCase):
 
     def test_sync(self):
-        directory = os.getenv("HOME") + "/tilecloud_chain/tests/hooks/"
+        directory = os.getenv("HOME") + "/tests/hooks/"
         if os.path.exists(directory):
             shutil.rmtree(directory)  # pragma: no cover
         os.makedirs(directory)
 
         self.assert_files_generated(
-            './buildout/bin/generate_controller -c tilecloud_chain/tests/test.yaml --disable-code '
+            './buildout/bin/generate_controller -c tests/test.yaml --disable-code '
             '--disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             controller.main,
             directory,
-            os.listdir('tilecloud_chain/tests/hooks')
+            os.listdir('tests/hooks')
         )
 
     def test_none(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller -c tilecloud_chain/tests/test.yaml --disable-sync --disable-code '
+            './buildout/bin/generate_controller -c tests/test.yaml --disable-sync --disable-code '
             '--disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             controller.main,
             '')
@@ -34,16 +34,16 @@ class TestMultihost(CompareCase):
     def test_code(self):
         if os.path.exists('/tmp/tests/test.conf'):
             os.remove('/tmp/tests/test.conf')  # pragma: no cover
-        if os.path.exists('/tmp/tests/test/tilecloud_chain/tests/hooks/post-restore-code'):
-            os.remove('/tmp/tests/test/tilecloud_chain/tests/hooks/post-restore-code')  # pragma: no cover
+        if os.path.exists('/tmp/tests/test/tests/hooks/post-restore-code'):
+            os.remove('/tmp/tests/test/tests/hooks/post-restore-code')  # pragma: no cover
 
         out, err = self.run_cmd(
-            './buildout/bin/generate_controller -c tilecloud_chain/tests/test.yaml --disable-sync '
+            './buildout/bin/generate_controller -c tests/test.yaml --disable-sync '
             '--disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             controller.main)
         self.assertEquals(out, '==== Sync and build code ====\n')
         self.assertEquals(err, '')
-        f = open('/tmp/tests/test/tilecloud_chain/tests/hooks/post-restore-database', 'r')
+        f = open('/tmp/tests/test/tests/hooks/post-restore-database', 'r')
         self.assert_result_equals(f.read(), "echo SUCCESS")
         f = open('/tmp/tests/test.conf', 'r')
         self.assert_result_equals(f.read(), 'test file')
@@ -56,7 +56,7 @@ class TestMultihost(CompareCase):
 
     def test_database(self):
         out, err = self.run_cmd(
-            './buildout/bin/generate_controller -c tilecloud_chain/tests/test.yaml --disable-sync --disable-code '
+            './buildout/bin/generate_controller -c tests/test.yaml --disable-sync --disable-code '
             '--disable-fillqueue --disable-tilesgen --host localhost',
             controller.main)
         self.assertEquals(out, '==== Deploy database ====\n')
@@ -70,7 +70,7 @@ class TestMultihost(CompareCase):
 
     def test_time(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller -c tilecloud_chain/tests/test.yaml '
+            './buildout/bin/generate_controller -c tests/test.yaml '
             '--time 2 -l polygon --host localhost  --disable-sync --disable-database',
             controller.main,
             """==== Sync and build code ====
@@ -85,7 +85,7 @@ config:
         tile_size: 0.809""", True)
 
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller -c tilecloud_chain/tests/test.yaml '
+            './buildout/bin/generate_controller -c tests/test.yaml '
             '--time 1 -l polygon --host localhost  --disable-sync --disable-database '
             '--bbox 598000,198000,600000,200000 --zoom 4 --test 3',
             controller.main,
