@@ -315,7 +315,13 @@ class TileGeneration:
             self.layer['meta_buffer'])
 
         if self.options.test > 0:
-            self.tilestream = store.get(self.tilestream)
+            def meta_get(tilestream):
+                for metatile in tilestream:
+                    substream = store.get((metatile,))
+                    for tile in substream:
+                        tile.metatile = metatile
+                        yield tile
+            self.tilestream = meta_get(self.tilestream)
         else:
             def safe_get(tilestream):
                 for metatile in tilestream:
