@@ -1022,7 +1022,7 @@ generation:
   disable_code: false
   disable_database: false
   disable_fillqueue: false
-  disable_sync: false
+  disable_geodata: false
   disable_tilesgen: false
   ec2_host_type: m1.medium
   geodata_folder: tests/

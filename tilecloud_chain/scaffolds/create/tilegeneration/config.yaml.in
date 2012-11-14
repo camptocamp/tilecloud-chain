@@ -167,7 +167,7 @@ generation:
     apache_content: Include /var/www/c2c_geoportal/private/{{package}}/apache/*.conf
     
     # disable geodata sync, not already implemented [default to no]
-    disable_sync: no
+    disable_geodata: no
     # disable code deploy, not already implemented [default to no]
     disable_code: no
     # disable database deploy, not already implemented [default to no]

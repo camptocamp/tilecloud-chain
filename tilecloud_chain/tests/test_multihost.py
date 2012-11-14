@@ -26,7 +26,7 @@ class TestMultihost(CompareCase):
 
     def test_none(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller -c tests/test.yaml --disable-sync --disable-code '
+            './buildout/bin/generate_controller -c tests/test.yaml --disable-geodata --disable-code '
             '--disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             controller.main,
             '')
@@ -38,7 +38,7 @@ class TestMultihost(CompareCase):
             os.remove('/tmp/tests/test/tests/hooks/post-restore-code')  # pragma: no cover
 
         out, err = self.run_cmd(
-            './buildout/bin/generate_controller -c tests/test.yaml --disable-sync '
+            './buildout/bin/generate_controller -c tests/test.yaml --disable-geodata '
             '--disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             controller.main)
         self.assertEquals(out, '==== Sync and build code ====\n')
@@ -56,7 +56,7 @@ class TestMultihost(CompareCase):
 
     def test_database(self):
         out, err = self.run_cmd(
-            './buildout/bin/generate_controller -c tests/test.yaml --disable-sync --disable-code '
+            './buildout/bin/generate_controller -c tests/test.yaml --disable-geodata --disable-code '
             '--disable-fillqueue --disable-tilesgen --host localhost',
             controller.main)
         self.assertEquals(out, '==== Deploy database ====\n')
@@ -71,7 +71,7 @@ class TestMultihost(CompareCase):
     def test_time(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller -c tests/test.yaml '
-            '--time 2 -l polygon --host localhost  --disable-sync --disable-database',
+            '--time 2 -l polygon --host localhost  --disable-geodata --disable-database',
             controller.main,
             """==== Sync and build code ====
 ==== Time results ====
@@ -86,7 +86,7 @@ config:
 
         self.assert_cmd_equals(
             './buildout/bin/generate_controller -c tests/test.yaml '
-            '--time 1 -l polygon --host localhost  --disable-sync --disable-database '
+            '--time 1 -l polygon --host localhost  --disable-geodata --disable-database '
             '--bbox 598000,198000,600000,200000 --zoom 4 --test 3',
             controller.main,
             """==== Sync and build code ====

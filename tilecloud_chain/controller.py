@@ -38,7 +38,7 @@ def main():
             help='test with generating N tiles, and add log messages')
     parser.add_option('-s', '--status', default=False, action="store_true",
             help='display status and exit')
-    parser.add_option('--disable-sync', default=True, action="store_false", dest="sync",
+    parser.add_option('--disable-geodata', default=True, action="store_false", dest="geodata",
             help='disable geodata synchronisation')
     parser.add_option('--disable-code', default=True, action="store_false", dest="deploy_code",
             help='disable deploy application code')
@@ -151,8 +151,8 @@ def main():
 
     if options.deploy_config is None:
         options.deploy_config = gene.config['generation']['deploy_config']
-    if options.sync:
-        options.sync = not gene.config['generation']['disable_sync']
+    if options.geodata:
+        options.geodata = not gene.config['generation']['disable_geodata']
     if options.deploy_code:
         options.deploy_code = not gene.config['generation']['disable_code']
     if options.deploy_database:
@@ -169,7 +169,7 @@ def main():
     else:
         host = options.host
 
-    if options.sync and 'geodata_folder' in gene.config['generation']:
+    if options.geodata and 'geodata_folder' in gene.config['generation']:
         print "==== Sync geodata ===="
         ssh_options = ''
         if 'ssh_options' in gene.config['generation']:
@@ -207,7 +207,7 @@ def main():
         _deploy(gene, host)
 
     if options.deploy_code or options.deploy_database \
-            or options.sync:
+            or options.geodata:
         # TODO not implemented yet
         create_snapshot(host, gene)
 

@@ -177,7 +177,7 @@ class TileGeneration:
             attribute_type=str, default="buildout_tilegeneration.cfg") or error
         error = self.validate(self.config['generation'], 'generation', 'apache_config', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'apache_content', attribute_type=str) or error
-        error = self.validate(self.config['generation'], 'generation', 'disable_sync',
+        error = self.validate(self.config['generation'], 'generation', 'disable_geodata',
             attribute_type=bool, default=False) or error
         error = self.validate(self.config['generation'], 'generation', 'disable_code',
             attribute_type=bool, default=False) or error
