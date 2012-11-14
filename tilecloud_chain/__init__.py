@@ -301,11 +301,12 @@ class TileGeneration:
                     (extent[2], extent[1]),
                 ))
 
-    def add_geom_filter(self):
+    def add_geom_filter(self, queue_store=None):
         if self.geom:
             self.ifilter(IntersectGeometryFilter(
                     grid=self.get_grid(),
-                    geom=self.geom))
+                    geom=self.geom,
+                    queue_store=queue_store))
 
     def add_metatile_splitter(self):
         store = MetaTileSplitterTileStore(
@@ -514,7 +515,7 @@ class IntersectGeometryFilter(object):
 
         if not intersects and hasattr(tile, 'metatile'):
             tile.metatile.elapsed_togenerate -= 1
-            if tile.metatile.elapsed_togenerate == 0:
+            if tile.metatile.elapsed_togenerate == 0 and self.queue_store is not None:
                 self.queue_store.delete_one(tile.metatile)  # pragma: no cover
 
         return tile if intersects else None

@@ -31,6 +31,7 @@ def _gene(options, gene, layer):
 
     output_file = open(options.output_file, 'w') if options.output_file else sys.stdout
 
+    sqs_tilestore = None
     if options.role in ('master', 'slave'):
         # Create SQS queue
         sqs_tilestore = SQSTileStore(gene.get_sqs_queue())  # pragma: no cover
@@ -149,7 +150,7 @@ def _gene(options, gene, layer):
 
             if options.role != 'hash':
                 # Only keep tiles that intersect geometry
-                gene.add_geom_filter()
+                gene.add_geom_filter(sqs_tilestore)
 
         if options.role == 'hash':
             gene.imap(HashLogger('empty_tile_detection'))
