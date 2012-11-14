@@ -21,7 +21,7 @@ class TestController(CompareCase):
 
     def test_capabilities(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --capabilities -c tests/test.yaml',
+            './buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml',
             controller.main,
             [['/tmp/tiles/1.0.0/WMTSCapabilities.xml', """<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -717,21 +717,21 @@ class TestController(CompareCase):
 
     def test_multi_host_capabilities(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --capabilities -c tests/test.yaml '
+            './buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
             '--destination-cache multi_host',
             controller.main,
             [['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     def test_multi_url_capabilities(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --capabilities -c tests/test.yaml '
+            './buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
             '--destination-cache multi_url',
             controller.main,
             [['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     def test_mapcache(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --mapcache -c tests/test.yaml',
+            './buildout/bin/generate_controller --mapcache -c tilegeneration/test.yaml',
             controller.main,
             [['mapcache.xml', """<?xml version="1.0" encoding="UTF-8"?>
 <mapcache>
@@ -1025,7 +1025,7 @@ generation:
   disable_geodata: false
   disable_tilesgen: false
   ec2_host_type: m1.medium
-  geodata_folder: tests/
+  geodata_folder: tilecloud_chain/
   maxconsecutive_errors: 2
   number_process: 1
   ssh_options: -o StrictHostKeyChecking=no
@@ -1107,7 +1107,7 @@ layers:
     extension: png
     grid: swissgrid_5
     grid_ref: *id003
-    mapfile: tests/test.mapnik
+    mapfile: mapfile/test.mapnik
     meta: true
     meta_buffer: 0
     meta_size: 8
@@ -1130,7 +1130,7 @@ layers:
       line: [name]
       point: [name]
       polygon: [name]
-    mapfile: tests/test.mapnik
+    mapfile: mapfile/test.mapnik
     meta: false
     meta_buffer: 0
     meta_size: 8
@@ -1224,17 +1224,17 @@ sns: {region: eu-west-1, topic: sns_topic}"""
 
     def test_config(self):
         self.assert_cmd_yaml_equals(
-            './buildout/bin/generate_controller --dump-config -c tests/test.yaml',
+            './buildout/bin/generate_controller --dump-config -c tilegeneration/test.yaml',
             controller.main, self.CONFIG)
 
     def test_config_layer(self):
         self.assert_cmd_yaml_equals(
-            './buildout/bin/generate_controller --dump-config -l line -c tests/test.yaml',
+            './buildout/bin/generate_controller --dump-config -l line -c tilegeneration/test.yaml',
             controller.main, self.CONFIG)
 
     def test_openlayers(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --ol -c tests/test.yaml',
+            './buildout/bin/generate_controller --ol -c tilegeneration/test.yaml',
             controller.main,
             [['/tmp/tiles/index.html', """<!DOCTYPE html>
 <html>

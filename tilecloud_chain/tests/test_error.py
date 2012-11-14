@@ -11,7 +11,7 @@ class TestError(CompareCase):
     @log_capture()
     def test_resolution(self, l):
         self.run_cmd(
-            './buildout/bin/generate_controller -c tests/wrong_resolutions.yaml',
+            './buildout/bin/generate_controller -c tilegeneration/wrong_resolutions.yaml',
             controller.main)
         l.check(
             ('tilecloud_chain', 'ERROR', "The reolution 0.1 * resolution_scale 5 is not an integer."),
@@ -22,7 +22,7 @@ class TestError(CompareCase):
     @log_capture()
     def test_mapnik_grid_meta(self, l):
         self.run_cmd(
-            './buildout/bin/generate_controller -c tests/wrong_mapnik_grid_meta.yaml',
+            './buildout/bin/generate_controller -c tilegeneration/wrong_mapnik_grid_meta.yaml',
             controller.main)
         l.check(
             ('tilecloud_chain', 'ERROR', "The layer 'b' is of type Mapnik/Grid, that can't support matatiles."),
@@ -33,7 +33,7 @@ class TestError(CompareCase):
     @log_capture()
     def test_exists(self, l):
         self.run_cmd(
-            './buildout/bin/generate_controller -c tests/wrong_exists.yaml',
+            './buildout/bin/generate_controller -c tilegeneration/wrong_exists.yaml',
             controller.main)
         l.check(
             ('tilecloud_chain', 'ERROR', "The attribute 'grids' is required in the object config."),
@@ -44,7 +44,7 @@ class TestError(CompareCase):
     @log_capture()
     def test_type(self, l):
         self.run_cmd(
-            './buildout/bin/generate_controller -v -c tests/wrong_type.yaml',
+            './buildout/bin/generate_controller -v -c tilegeneration/wrong_type.yaml',
             controller.main)
         l.check(
             ('tilecloud_chain', 'ERROR', "The attribute 'resolutions' is required in the object grid[swissgrid_3]."),

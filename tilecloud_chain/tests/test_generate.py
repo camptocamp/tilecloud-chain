@@ -17,7 +17,7 @@ class TestGenerate(CompareCase):
 
     def test_hash(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_tiles --get-hash 4/0/0 -c tests/test.yaml',
+            './buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml',
             generate.main,
             """Tile: 4/0/0:+8/+8
     empty_metatile_detection:
@@ -38,7 +38,7 @@ Tile: 4/0/0
 
     def test_hash_mapnik(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_tiles --get-hash 4/0/0 -c tests/test.yaml -l mapnik',
+            './buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l mapnik',
             generate.main,
             """Tile: 4/0/0:+8/+8
     empty_metatile_detection:
@@ -51,7 +51,7 @@ Tile: 4/0/0
 
     def test_hash_mapnik_grid(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_tiles --get-hash 4/0/0 -c tests/test.yaml -l all',
+            './buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l all',
             generate.main,
             """Tile: 4/0/0
     empty_tile_detection:
@@ -60,7 +60,7 @@ Tile: 4/0/0
 
     def test_test_all(self):
         self.assert_tiles_generated(
-            './buildout/bin/generate_tiles -c tests/test.yaml -t 1',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1',
             generate.main,
             "/tmp/tiles/",
             '1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png', [
@@ -70,7 +70,7 @@ Tile: 4/0/0
 
     def test_zoom(self):
         self.assert_tiles_generated(
-            './buildout/bin/generate_tiles -c tests/test.yaml -l point --zoom 1',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point --zoom 1',
             generate.main,
             "/tmp/tiles/",
             '1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png', [
@@ -79,7 +79,7 @@ Tile: 4/0/0
 
     def test_bbox(self):
         self.assert_tiles_generated(
-            './buildout/bin/generate_tiles -c tests/test.yaml -l polygon -z 0',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l polygon -z 0',
             generate.main,
             "/tmp/tiles/",
             '1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png',
@@ -87,7 +87,7 @@ Tile: 4/0/0
         )
 
         self.assert_tiles_generated(
-            './buildout/bin/generate_tiles -c tests/test.yaml -l polygon -z 0'
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l polygon -z 0'
             ' -b 550000,170000,560000,180000',
             generate.main,
             "/tmp/tiles/",
@@ -97,7 +97,7 @@ Tile: 4/0/0
         )
 
         self.assert_tiles_generated(
-            './buildout/bin/generate_tiles -c tests/test.yaml -l all -z 0',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l all -z 0',
             generate.main,
             "/tmp/tiles/",
             '1.0.0/all/default/2012/swissgrid_5/0/%i/%i.png', [
@@ -107,7 +107,7 @@ Tile: 4/0/0
 
     def test_hash_generation(self):
         self.assert_tiles_generated(
-            './buildout/bin/generate_tiles -c tests/test.yaml -l point_hash -z 0',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash -z 0',
             generate.main,
             "/tmp/tiles/",
             '1.0.0/point_hash/default/2012/swissgrid_5/0/%i/%i.png', [
@@ -116,7 +116,7 @@ Tile: 4/0/0
 
     def test_mapnik(self):
         self.assert_tiles_generated(
-            './buildout/bin/generate_tiles -c tests/test.yaml -l mapnik -z 0',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l mapnik -z 0',
             generate.main,
             "/tmp/tiles/",
             '1.0.0/mapnik/default/2012/swissgrid_5/0/%i/%i.png',
@@ -125,7 +125,7 @@ Tile: 4/0/0
 
     def test_mapnik_grid(self):
         self.assert_tiles_generated(
-            './buildout/bin/generate_tiles -c tests/test.yaml -l mapnik_grid -z 0',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l mapnik_grid -z 0',
             generate.main,
             "/tmp/tiles/",
             '1.0.0/mapnik_grid/default/2012/swissgrid_5/0/%i/%i.json',
@@ -146,13 +146,13 @@ Tile: 4/0/0
 
     def test_not_authorised_user(self):
         self.assert_cmd_exit_equals(
-            './buildout/bin/generate_tiles -c tests/test-authorised.yaml',
+            './buildout/bin/generate_tiles -c tilegeneration/test-authorised.yaml',
             generate.main,
             """not authorised, authorised user is: www-data.""")
 
     def test_time(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_tiles -c tests/test.yaml --time 2 -l polygon',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml --time 2 -l polygon',
             generate.main,
             """size: 776
 size: 860
@@ -164,7 +164,7 @@ size: 854""", True, False)
 
     def test_time_layer_bbox(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_tiles -c tests/test.yaml --time 2 -l all',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml --time 2 -l all',
             generate.main,
             """size: 854
 size: 854
@@ -176,7 +176,7 @@ size: 854""", True, False)
 
 #    def test_daemonize(self):
 #        self.assert_cmd_equals(
-#            './buildout/bin/generate_tiles -c tests/test.yaml -t 1 --daemonize',
+#            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 --daemonize',
 #            generate.main,
 #            """Daemonize with pid [0-9]*.""",
 #            True)

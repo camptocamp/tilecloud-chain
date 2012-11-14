@@ -491,7 +491,7 @@ class HashLogger(object):  # pragma: no cover
         try:
             image = Image.open(StringIO(tile.data))
         except IOError as e:
-            self.logger.error(tile.data)
+            logger.error(tile.data)
             raise e
         for px in image.getdata():
             if ref is None:

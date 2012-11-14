@@ -93,14 +93,14 @@ layers:
         bbox: [550000, 170000, 560000, 180000]
     mapnik:
         type: mapnik
-        mapfile: tests/test.mapnik
+        mapfile: mapfile/test.mapnik
         meta_buffer: 0
         data_buffer: 128
         output_format: png
         sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
     mapnik_grid:
         type: mapnik
-        mapfile: tests/test.mapnik
+        mapfile: mapfile/test.mapnik
         meta: off
         meta_buffer: 0
         data_buffer: 128
@@ -120,7 +120,7 @@ generation:
     default_cache: local
     default_layers: [line, polygon]
     maxconsecutive_errors: 2
-    geodata_folder: tests
+    geodata_folder: tilecloud_chain
     deploy_config: tests/deploy.cfg
     buildout_config: buildout.cfg
     deploy_user: deploy
