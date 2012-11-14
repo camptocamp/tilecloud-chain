@@ -159,8 +159,8 @@ generation:
     # The user used to deploy
     #deploy_user: deploy
 
-    # [default to tilegeneration/buildout.cfg]
-    buildout_config: tilegeneration/buildout.cfg
+    # [default to buildout_tilegeneration.cfg]
+    buildout_config: buildout_tilegeneration.cfg
 
     # apache destination config file and content
     apache_config: /var/www/vhosts/<vhost>/conf/<package>.conf
