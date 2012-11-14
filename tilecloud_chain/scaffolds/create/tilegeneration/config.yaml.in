@@ -43,7 +43,7 @@ layer_default:
     grid: swissgrid_05
     type: wms
     # the URL of the WMS server to used
-    url: http://${vars:host}/${vars:instanceid}/mapserv
+    url: http://${facts:fdqn}/${vars:instanceid}/mapserv
     # file name extension
     extension: png
     # the bbox there we want to generate tiles

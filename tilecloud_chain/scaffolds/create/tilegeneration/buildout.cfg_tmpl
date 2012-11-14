@@ -1,6 +1,12 @@
 [buildout]
 extends = ../buildout.cfg
 
+[template]
+extends += facts
+
+[facts]
+recipe = c2c.recipe.facts
+
 [vars]
 # instance id
 instanceid = {{project}}

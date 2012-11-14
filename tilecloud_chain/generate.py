@@ -3,7 +3,6 @@
 import os
 import sys
 import logging
-from itertools import ifilter
 from datetime import datetime
 from getpass import getuser
 from optparse import OptionParser
@@ -31,6 +30,7 @@ def _gene(options, gene, layer):
 
     output_file = open(options.output_file, 'w') if options.output_file else sys.stdout
 
+    sqs_tilestore = None
     if options.role in ('master', 'slave'):
         # Create SQS queue
         sqs_tilestore = SQSTileStore(gene.get_sqs_queue())  # pragma: no cover
@@ -81,13 +81,6 @@ def _gene(options, gene, layer):
 
     if options.role == 'master':  # pragma: no cover
         # Put the metatiles into the SQS queue
-        if gene.config['generation']['number_process'] == 1:
-            gene.put(sqs_tilestore)
-        else:
-            from multiprocessing import Pool
-            pool = Pool(gene.config['generation']['number_process'])
-            pool.imap_unordered(sqs_tilestore.put_one, ifilter(None, gene.tilestream))
-
         gene.put(sqs_tilestore)
 
     elif options.role in ('local', 'slave', 'hash'):
@@ -149,7 +142,7 @@ def _gene(options, gene, layer):
 
             if options.role != 'hash':
                 # Only keep tiles that intersect geometry
-                gene.add_geom_filter()
+                gene.add_geom_filter(sqs_tilestore)
 
         if options.role == 'hash':
             gene.imap(HashLogger('empty_tile_detection'))
