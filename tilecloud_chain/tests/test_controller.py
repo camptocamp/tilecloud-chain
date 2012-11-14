@@ -21,7 +21,7 @@ class TestController(CompareCase):
 
     def test_capabilities(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --capabilities -c tilecloud_chain/tests/test.yaml',
+            './buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml',
             controller.main,
             [['/tmp/tiles/1.0.0/WMTSCapabilities.xml', """<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -717,21 +717,21 @@ class TestController(CompareCase):
 
     def test_multi_host_capabilities(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --capabilities -c tilecloud_chain/tests/test.yaml '
+            './buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
             '--destination-cache multi_host',
             controller.main,
             [['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     def test_multi_url_capabilities(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --capabilities -c tilecloud_chain/tests/test.yaml '
+            './buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
             '--destination-cache multi_url',
             controller.main,
             [['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     def test_mapcache(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --mapcache -c tilecloud_chain/tests/test.yaml',
+            './buildout/bin/generate_controller --mapcache -c tilegeneration/test.yaml',
             controller.main,
             [['mapcache.xml', """<?xml version="1.0" encoding="UTF-8"?>
 <mapcache>
@@ -1017,15 +1017,15 @@ generation:
   code_folder: /tmp/tests/test/
   default_cache: local
   default_layers: [line, polygon]
-  deploy_config: tilecloud_chain/tests/deploy.cfg
+  deploy_config: tests/deploy.cfg
   deploy_user: deploy
   disable_code: false
   disable_database: false
   disable_fillqueue: false
-  disable_sync: false
+  disable_geodata: false
   disable_tilesgen: false
   ec2_host_type: m1.medium
-  geodata_folder: tilecloud_chain/tests/
+  geodata_folder: tilecloud_chain/
   maxconsecutive_errors: 2
   number_process: 1
   ssh_options: -o StrictHostKeyChecking=no
@@ -1107,7 +1107,7 @@ layers:
     extension: png
     grid: swissgrid_5
     grid_ref: *id003
-    mapfile: tilecloud_chain/tests/test.mapnik
+    mapfile: mapfile/test.mapnik
     meta: true
     meta_buffer: 0
     meta_size: 8
@@ -1130,7 +1130,7 @@ layers:
       line: [name]
       point: [name]
       polygon: [name]
-    mapfile: tilecloud_chain/tests/test.mapnik
+    mapfile: mapfile/test.mapnik
     meta: false
     meta_buffer: 0
     meta_size: 8
@@ -1224,17 +1224,17 @@ sns: {region: eu-west-1, topic: sns_topic}"""
 
     def test_config(self):
         self.assert_cmd_yaml_equals(
-            './buildout/bin/generate_controller --dump-config -c tilecloud_chain/tests/test.yaml',
+            './buildout/bin/generate_controller --dump-config -c tilegeneration/test.yaml',
             controller.main, self.CONFIG)
 
     def test_config_layer(self):
         self.assert_cmd_yaml_equals(
-            './buildout/bin/generate_controller --dump-config -l line -c tilecloud_chain/tests/test.yaml',
+            './buildout/bin/generate_controller --dump-config -l line -c tilegeneration/test.yaml',
             controller.main, self.CONFIG)
 
     def test_openlayers(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --ol -c tilecloud_chain/tests/test.yaml',
+            './buildout/bin/generate_controller --ol -c tilegeneration/test.yaml',
             controller.main,
             [['/tmp/tiles/index.html', """<!DOCTYPE html>
 <html>
