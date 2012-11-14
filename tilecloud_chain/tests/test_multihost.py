@@ -43,15 +43,8 @@ class TestMultihost(CompareCase):
             controller.main)
         self.assertEquals(out, '==== Sync and build code ====\n')
         self.assertEquals(err, '')
-        f = open('/tmp/tests/test/tilecloud_chain/tests/hooks/post-restore-code', 'r')
-        self.assert_result_equals(f.read(), """#!/bin/sh
-
-PROJECT_NAME=$1
-CODE_DIR=$2
-
-cd $CODE_DIR
-
-python -S bootstrap.py""")
+        f = open('/tmp/tests/test/tilecloud_chain/tests/hooks/post-restore-database', 'r')
+        self.assert_result_equals(f.read(), "echo SUCCESS")
         f = open('/tmp/tests/test.conf', 'r')
         self.assert_result_equals(f.read(), 'test file')
 
