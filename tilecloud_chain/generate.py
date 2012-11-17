@@ -28,8 +28,6 @@ def _gene(options, gene, layer):
         options.role = 'hash'
         options.test = 1
 
-    output_file = open(options.output_file, 'w') if options.output_file else sys.stdout
-
     sqs_tilestore = None
     if options.role in ('master', 'slave'):
         # Create SQS queue
@@ -161,7 +159,7 @@ def _gene(options, gene, layer):
 
         if options.time:
             def log_size(tile):
-                output_file.write('size: %i\n' % len(tile.data))
+                sys.stdout.write('size: %i\n' % len(tile.data))
                 return tile
             gene.imap(log_size)
 
@@ -192,7 +190,7 @@ def _gene(options, gene, layer):
                 elif self.n == 2 * options.time:
                     t2 = datetime.now()
                     d = (t2 - self.t1) / options.time
-                    output_file.write('time: %i\n' % ((d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds))
+                    sys.stdout.write('time: %i\n' % ((d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds))
                 return tile
         gene.imap(log_time())
 
@@ -240,8 +238,6 @@ def main():
             default=None, dest='time', metavar="N", type='int',
             help='Measure the generation time by creating N tiles to warm-up, '
             'N tile to do the measure and N tiles to slow-down')
-    parser.add_option('--output-file',  metavar="FILE", default=None,
-            help='Specify file to output the time measure')
     parser.add_option('-v', '--verbose', default=False, action="store_true",
             help='Display debug message.')
 
