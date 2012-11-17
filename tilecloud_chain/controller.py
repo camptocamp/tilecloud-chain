@@ -212,26 +212,23 @@ def main():
         create_snapshot(host, gene)
 
     if options.time:
-        # TODO test
         arguments = _get_arguments(options)
         arguments.extend(['--role', 'local'])
         arguments.extend(['--time', str(options.time)])
-        arguments.append("--daemonize")
 
         project_dir = gene.config['generation']['code_folder']
-        pids = []
+        processes = []
         for i in range(gene.config['generation']['number_process']):
-            pids.append(run_remote('./buildout/bin/generate_tiles ' +
-                ' '.join(arguments) + ' --output-file /tmp/time%d' % i, host, project_dir, gene)[1])
-
-        wait_cmds = ['while [ -e /proc/%s ]; do sleep 1; done' % pid for pid in pids]
-        run_remote(';'.join(wait_cmds), host, project_dir, gene)
+            processes.append(run_remote_process('./buildout/bin/generate_tiles ' +
+                ' '.join(arguments), host, project_dir, gene))
 
         tiles_size = []
         times = []
-        for i in range(gene.config['generation']['number_process']):
-            results = run_remote('cat /tmp/time%d' % i, host, project_dir, gene)[0].split('\n')
-            for r in results:
+        for p in processes:
+            results = p.communicate()
+            if results[1] != '':
+                logger.debug('ERROR: %s' % results[1])
+            for r in results[0].split('\n'):
                 if r.startswith('time: '):
                     times.append(int(r.replace('time: ', '')))
                 elif r.startswith('size: '):
@@ -280,15 +277,19 @@ def main():
         arguments.append("--daemonize")
 
         project_dir = gene.config['generation']['code_folder']
-        pids = []
+        processes = []
         for i in range(gene.config['generation']['number_process']):
-            pids.append(run_remote('./buildout/bin/generate_tiles ' +
-                ' '.join(arguments), host, project_dir, gene)[1])
+            processes.append(run_remote_process('./buildout/bin/generate_tiles ' +
+                ' '.join(arguments), host, project_dir, gene))
 
-        exit_cmds = ['while [ -e /proc/%s ]; do sleep 1; done' % pid for pid in pids]
+        if options.shutdown or 'sns' in gene.config:
+            for p in processes:
+                p.communicate()  # wait process end
+        else:
+            print 'Tile generation started in background'
+
         if options.shutdown:
-            exit_cmds.append('sudo shutdown 0')
-        run_remote(';'.join(exit_cmds), host, project_dir, gene)  # TODO demonize
+            run_remote('sudo shutdown 0')
 
         if 'sns' in gene.config:
             if 'region' in gene.config['sns']:
@@ -343,6 +344,8 @@ def _quote(arg):
                 return '"%s"' % arg
         else:
             return "'%s'" % arg
+    elif arg == '':
+        return "''"
     else:
         return arg
 
@@ -358,23 +361,33 @@ def run_local(cmd):
     return result
 
 
-def run_remote(remote_cmd, host, project_dir, gene):
+def run_remote_process(remote_cmd, host, project_dir, gene):
     cmd = ['ssh']
     if 'ssh_options' in gene.config['generation']:
         cmd.extend(gene.config['generation']['ssh_options'].split(' '))
+    if host is None:  # pragma: no cover
+        exit('host option is required.')
     cmd.append(host)
+    env = ''
+    if os.getenv('AWS_ACCESS_KEY_ID') and os.getenv('AWS_SECRET_ACCESS_KEY'):
+        env = 'export AWS_ACCESS_KEY_ID=%(access_key)s;export AWS_SECRET_ACCESS_KEY=%(secret_key)s;' % {
+            'access_key': os.getenv('AWS_ACCESS_KEY_ID'),
+            'secret_key': os.getenv('AWS_SECRET_ACCESS_KEY'),
+        }
     cmd.append('cd %(project_dir)s;'
-            'export AWS_ACCESS_KEY_ID=%(access_key)s;'
-            'export AWS_SECRET_ACCESS_KEY=%(secret_key)s;'
+            '%(env)s'
             '%(cmd)s' % {
         'cmd': remote_cmd,
-        'access_key': os.getenv('AWS_ACCESS_KEY_ID'),
-        'secret_key': os.getenv('AWS_SECRET_ACCESS_KEY'),
+        'env': env,
         'project_dir': project_dir
     })
 
     logger.debug('Run: %s.' % ' '.join([_quote(c) for c in cmd]))
-    result = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
+    return Popen(cmd, stdout=PIPE, stderr=PIPE)
+
+
+def run_remote(remote_cmd, host, project_dir, gene):
+    result = run_remote_process(remote_cmd, host, project_dir, gene).communicate()
     logger.info(result[0])
     logger.error(result[1])
     return result
