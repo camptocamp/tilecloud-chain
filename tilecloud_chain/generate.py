@@ -74,7 +74,7 @@ def _gene(options, gene, layer):
             gene.set_tilecoords([TileCoord(z, x, y)])
 
     # At this stage, the tilestream contains metatiles that intersect geometry
-    if options.test > 0:
+    if options.test > 0 or options.verbose:
         gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
     if options.role == 'master':  # pragma: no cover
@@ -151,7 +151,7 @@ def _gene(options, gene, layer):
                 gene.imap(HashDropper(empty_tile['size'], empty_tile['hash'], store=cache_tilestore))
 
     if options.role in ('local', 'slave'):
-        if options.test > 0:
+        if options.test > 0 or options.verbose:
             gene.imap(Logger(logger, logging.DEBUG, '%(tilecoord)s'))
 
         gene.add_error_filters(logger)
