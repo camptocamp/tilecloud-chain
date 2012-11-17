@@ -159,8 +159,11 @@ generation:
     # The user used to deploy [default to None]
     #deploy_user: deploy
 
-    # [default to buildout_tilegeneration.cfg]
-    buildout_config: buildout_tilegeneration.cfg
+
+    # The build commands. [default to ["python bootstrap.py --distribute", "./buildout/bin/buildout -c buildout_tilegeneration.cfg"]]
+    build_cmds:
+    - python bootstrap.py --distribute
+    - ./buildout/bin/buildout -c buildout_tilegeneration.cfg
 
     # apache destination config file and content
     apache_config: /var/www/c2c_geoportal/conf/{{package}}.conf
