@@ -205,9 +205,19 @@ class TileGeneration:
 
     def _validate_type(self, value, attribute_type, enumeration):
         if attribute_type is not None:
+            if attribute_type == int and type(value) == str:
+                try:
+                    value = int(round(eval(value)))
+                except:
+                    return (True, None, 'right int expression: %s' % value)
             if attribute_type == float:
                 if type(value) == int:
                     value = float(value)
+                if type(value) == str:
+                    try:
+                        value = float(eval(value))
+                    except:
+                        return (True, None, 'right float expression: %s' % value)
                 elif type(value) != attribute_type:
                     return (True, None, str(attribute_type))
             elif attribute_type == str:

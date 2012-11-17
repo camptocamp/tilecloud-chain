@@ -138,15 +138,15 @@ generation:
     authorised_user: www-data
 
     # not already implemented [optional]
-    number_process: 8
+    number_process: ${facts:processorcount} * 1.5
     # type of ec2 host, can be t1.micro, m1.small, m1.medium, m1.large, m1.xlarge, m2.xlarge, m2.2xlarge, m2.4xlarge, c1.medium, c1.xlarge, cc1.4xlarge, cc2.8xlarge, cg1.4xlarge, hi1.4xlarge, default is m1.medium
     ec2_host_type: m1.medium
 
     # not already implemented [defaut to 10]
     maxconsecutive_errors: 10
 
-    # SSH options [default to '']
-    ssh_options: ''
+    # SSH options [default to None]
+    #ssh_options:
 
     # geodata folder to sync with the tile worker
     geodata_folder: /var/sig/package/
@@ -168,7 +168,7 @@ generation:
     # apache destination config file and content
     apache_config: /var/www/c2c_geoportal/conf/{{package}}.conf
     apache_content: Include /var/www/c2c_geoportal/private/{{package}}/apache/*.conf
-    
+
     # disable geodata sync, not already implemented [default to no]
     disable_geodata: no
     # disable code deploy, not already implemented [default to no]
