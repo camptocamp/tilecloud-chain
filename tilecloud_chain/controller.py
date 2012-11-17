@@ -194,9 +194,8 @@ def main():
         cmd += ['-r', '.', host + ':' + project_dir]
         run_local(cmd)
 
-        run_remote('/usr/bin/python bootstrap.py --distribute', host, project_dir, gene)
-        run_remote('./buildout/bin/buildout -c %s' % gene.config['generation']['buildout_config'],
-                host, project_dir, gene)
+        for cmd in gene.config['generation']['build_cmds']:
+            run_remote(cmd, host, project_dir, gene)
         if 'apache_content' in gene.config['generation'] and 'apache_config' in gene.config['generation']:
             run_remote('echo %s > %s' % (gene.config['generation']['apache_content'],
                 gene.config['generation']['apache_config']), host, project_dir, gene)

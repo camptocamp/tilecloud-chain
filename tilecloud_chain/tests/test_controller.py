@@ -1013,7 +1013,9 @@ cost:
 generation:
   apache_config: /tmp/tests/test.conf
   apache_content: test file
-  buildout_config: buildout.cfg
+  build_cmds:
+  - python bootstrap.py --distribute
+  - ./buildout/bin/buildout
   code_folder: /tmp/tests/test/
   default_cache: local
   default_layers: [line, polygon]

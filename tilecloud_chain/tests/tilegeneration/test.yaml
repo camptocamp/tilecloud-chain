@@ -122,7 +122,9 @@ generation:
     maxconsecutive_errors: 2
     geodata_folder: tilecloud_chain
     deploy_config: tests/deploy.cfg
-    buildout_config: buildout.cfg
+    build_cmds:
+    - python bootstrap.py --distribute
+    - ./buildout/bin/buildout
     deploy_user: deploy
     ssh_options: -o StrictHostKeyChecking=no
     code_folder: /tmp/tests/test

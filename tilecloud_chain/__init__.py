@@ -173,8 +173,11 @@ class TileGeneration:
             self.config['generation']['code_folder'] += '/'
         error = self.validate(self.config['generation'], 'generation', 'deploy_config',
             attribute_type=str, default="tilegeneration/deploy.cfg") or error
-        error = self.validate(self.config['generation'], 'generation', 'buildout_config',
-            attribute_type=str, default="buildout_tilegeneration.cfg") or error
+        error = self.validate(self.config['generation'], 'generation', 'build_cmds',
+            attribute_type=str, is_array=True, default=[
+                "python bootstrap.py --distribute",
+                "./buildout/bin/buildout -c buildout_tilegeneration.cfg"
+            ]) or error
         error = self.validate(self.config['generation'], 'generation', 'apache_config', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'apache_content', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'disable_geodata',
