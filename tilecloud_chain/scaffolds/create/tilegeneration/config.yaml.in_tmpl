@@ -145,8 +145,8 @@ generation:
     # not already implemented [defaut to 10]
     maxconsecutive_errors: 10
 
-    # SSH options [default to '']
-    ssh_options: ''
+    # SSH options [default to None]
+    #ssh_options:
 
     # geodata folder to sync with the tile worker
     geodata_folder: /var/sig/package/
