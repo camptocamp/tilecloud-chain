@@ -15,7 +15,7 @@ from bottle import jinja2_template
 from tilecloud import Tile, TileStore, consume
 from tilecloud.lib.s3 import S3Connection
 
-from tilecloud_chain import TileGeneration
+from tilecloud_chain import TileGeneration, add_comon_options
 
 
 logger = logging.getLogger(__name__)
@@ -24,18 +24,9 @@ logger = logging.getLogger(__name__)
 def main():
     parser = OptionParser(
         'Used to generate the tiles from a WMS or Mapnik, to WMST on filsystem or S3, optionaly use an SQS queue')
-    parser.add_option('-c', '--config', default='tilegeneration/config.yaml',
-            help='path to the configuration file', metavar="FILE")
+    add_comon_options(parser)
     parser.add_option('--deploy-config', default=None, dest="deploy_config", metavar="FILE",
             help='path to the deploy configuration file')
-    parser.add_option('-b', '--bbox',
-            help='restrict to specified bounding box (minx,miny,maxx,maxy)')
-    parser.add_option('-z', '--zoom-level', type='int', dest='zoom',
-            help='restrict to specified zoom level', metavar="ZOOM")
-    parser.add_option('-l', '--layer', metavar="NAME",
-            help='the layer to generate')
-    parser.add_option('-t', '--test', type='int', default=None, metavar="N",
-            help='test with generating N tiles, and add log messages')
     parser.add_option('-s', '--status', default=False, action="store_true",
             help='display status and exit')
     parser.add_option('--disable-geodata', default=True, action="store_false", dest="geodata",
@@ -50,14 +41,8 @@ def main():
             help='disable tile generation')
     parser.add_option('-H', '--host', default=None,
             help='The host used to generate tiles')
-    parser.add_option('--destination-cache', dest='cache', metavar="NAME",
-            help='The cache name to use, default to main')
     parser.add_option('--capabilities', '--generate_wmts_capabilities', default=False, action="store_true",
             help='Generate the WMTS Capabilities and exit')
-    parser.add_option('--time', '--measure-generation-time',
-            default=None, dest='time', metavar="N", type='int',
-            help='Measure the generation time by creating N tiles to warm-up, '
-            'N tile to do the measure and N tiles to slow-down, this using the multiprocess.')
     parser.add_option('--cost', '--calculate-cost', default=False, action="store_true",
             help='Calculate the cost to generate and upload the tiles')
     parser.add_option('--cost-algo', '--calculate-cost-algorithm', default='area', dest='cost_algo',
@@ -71,8 +56,6 @@ def main():
             help='Dump the used config with default values and exit')
     parser.add_option('--shutdown', default=False, action="store_true",
             help='Shut done the remote host after the task.')
-    parser.add_option('-v', '--verbose', default=False, action="store_true",
-            help='Display debug message.')
 
     (options, args) = parser.parse_args()
     gene = TileGeneration(options.config, options, layer_name=options.layer)
