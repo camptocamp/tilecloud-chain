@@ -53,7 +53,7 @@ class TestError(CompareCase):
             ('tilecloud_chain', 'ERROR', "The attribute 'resolution_scale' of the object grid[swissgrid_2] "
                 "is not a <type 'int'>."),
             ('tilecloud_chain', 'ERROR', "The attribute 'bbox' of the object grid[swissgrid_2] "
-                "has an element who is not a <type 'float'>."),
+                "has an element who is not a right float expression: a."),
             ('tilecloud_chain', 'ERROR', "The attribute 'srs' of the object grid[swissgrid_2] is not a <type 'str'>."),
             ('tilecloud_chain', 'ERROR', "The attribute 'bbox' of the object grid[swissgrid_1] is not an array."),
             ('tilecloud_chain', 'ERROR', "The attribute 'srs' of the object grid[swissgrid_1] is not a <type 'str'>."),
