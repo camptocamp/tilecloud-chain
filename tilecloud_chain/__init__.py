@@ -28,6 +28,30 @@ from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors, DropErro
 logger = logging.getLogger(__name__)
 
 
+def add_comon_options(parser):
+    parser.add_option('-c', '--config', default='tilegeneration/config.yaml',
+            help='path to the configuration file', metavar="FILE")
+    parser.add_option('-b', '--bbox',
+            help='restrict to specified bounding box (minx,miny,maxx,maxy)')
+    parser.add_option('-z', '--zoom-level', type='int', dest='zoom',
+            help='restrict to specified zoom level', metavar="ZOOM")
+    parser.add_option('-l', '--layer', metavar="NAME",
+            help='the layer to generate')
+    parser.add_option('--no-geom', default=True, action="store_false", dest="geom",
+            help="Don't the geometry available in the sql")
+    parser.add_option('-t', '--test', type='int', default=None,
+            help='test with generating N tiles, and add log messages', metavar="N")
+    parser.add_option('--cache', '--destination-cache',
+            default=None, dest='cache', metavar="NAME",
+            help='The cache name to use')
+    parser.add_option('--time', '--measure-generation-time',
+            default=None, dest='time', metavar="N", type='int',
+            help='Measure the generation time by creating N tiles to warm-up, '
+            'N tile to do the measure and N tiles to slow-down')
+    parser.add_option('-v', '--verbose', default=False, action="store_true",
+            help='Display debug message.')
+
+
 class TileGeneration:
     geom = None
 
@@ -292,7 +316,7 @@ class TileGeneration:
 
     def init_geom(self, extent=None):
         self.geom = None
-        if 'connection' in self.layer and 'sql' in self.layer:
+        if self.options.geom and 'connection' in self.layer and 'sql' in self.layer:
             conn = psycopg2.connect(self.layer['connection'])
             cursor = conn.cursor()
             sql = 'SELECT ST_AsText((SELECT %s))' % self.layer['sql']

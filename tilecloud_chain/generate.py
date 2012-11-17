@@ -16,7 +16,7 @@ from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.logger import Logger
 
-from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty
+from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty, add_comon_options
 
 logger = logging.getLogger(__name__)
 
@@ -214,32 +214,14 @@ def daemonize():  # pragma: no cover
 def main():
 
     parser = OptionParser('Used to generate the tiles')
-    parser.add_option('-c', '--config', default='tilegeneration/config.yaml',
-            help='path to configuration file', metavar="FILE")
+    add_comon_options(parser)
     parser.add_option('-d', '--daemonize', default=False, action="store_true",
             help='run as a deamon')
-    parser.add_option('-b', '--bbox',
-            help='restrict to specified bounding box (minx,miny,maxx,maxy)')
-    parser.add_option('-z', '--zoom-level', type='int', dest='zoom',
-            help='restrict to specified zoom level', metavar="ZOOM")
-    parser.add_option('-l', '--layer', metavar="NAME",
-            help='the layer to generate')
-    parser.add_option('-t', '--test', type='int', default=None,
-            help='test with generating N tiles, and add log messages', metavar="N")
     parser.add_option('-r', '--role', default='local',
             help='local/master/slave, master to file the queue and '
             'slave to generate the tiles')
-    parser.add_option('--cache', '--destination-cache',
-            default=None, dest='cache', metavar="NAME",
-            help='The cache name to use')
     parser.add_option('-H', '--get-hash', metavar="TILE",
             help='get the empty tiles hash, use the specified TILE z/x/y')
-    parser.add_option('--time', '--measure-generation-time',
-            default=None, dest='time', metavar="N", type='int',
-            help='Measure the generation time by creating N tiles to warm-up, '
-            'N tile to do the measure and N tiles to slow-down')
-    parser.add_option('-v', '--verbose', default=False, action="store_true",
-            help='Display debug message.')
 
     (options, args) = parser.parse_args()
 
