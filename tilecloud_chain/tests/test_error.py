@@ -3,7 +3,7 @@
 from testfixtures import log_capture
 
 from tilecloud_chain.tests import CompareCase
-from tilecloud_chain import controller
+from tilecloud_chain import controller, TileGeneration
 
 
 class TestError(CompareCase):
@@ -60,3 +60,57 @@ class TestError(CompareCase):
             ('tilecloud_chain.tests', 'INFO', ''),
             ('tilecloud_chain.tests', 'INFO', ''),
         )
+
+    def test_validate_type(self):
+        class Opt:
+            verbose = False
+            test = 0
+        gene = TileGeneration('tilegeneration/test.yaml', Opt())
+        obj = {'value': 1}
+        self.assertEquals(gene.validate(obj, 'object', 'value', int), False)
+        self.assertEquals(obj['value'],  1)
+
+        obj = {'value': 1.0}
+        self.assertEquals(gene.validate(obj, 'object', 'value', int), True)
+
+        obj = {'value': '1 + 1'}
+        self.assertEquals(gene.validate(obj, 'object', 'value', int), False)
+        self.assertEquals(obj['value'],  2)
+
+        obj = {'value': '1 * 1.5'}
+        self.assertEquals(gene.validate(obj, 'object', 'value', int), False)
+        self.assertEquals(obj['value'],  2)
+
+        obj = {'value': 'a'}
+        self.assertEquals(gene.validate(obj, 'object', 'value', int), True)
+
+        obj = {'value': {}}
+        self.assertEquals(gene.validate(obj, 'object', 'value', int), True)
+
+        obj = {'value': []}
+        self.assertEquals(gene.validate(obj, 'object', 'value', int), True)
+
+        obj = {'value': 1}
+        self.assertEquals(gene.validate(obj, 'object', 'value', float), False)
+        self.assertEquals(obj['value'],  1.0)
+
+        obj = {'value': 1.0}
+        self.assertEquals(gene.validate(obj, 'object', 'value', float), False)
+        self.assertEquals(obj['value'],  1.0)
+
+        obj = {'value': '1 + 1'}
+        self.assertEquals(gene.validate(obj, 'object', 'value', float), False)
+        self.assertEquals(obj['value'],  2.0)
+
+        obj = {'value': '1 * 1.5'}
+        self.assertEquals(gene.validate(obj, 'object', 'value', float), False)
+        self.assertEquals(obj['value'],  1.5)
+
+        obj = {'value': 'a'}
+        self.assertEquals(gene.validate(obj, 'object', 'value', float), True)
+
+        obj = {'value': {}}
+        self.assertEquals(gene.validate(obj, 'object', 'value', float), True)
+
+        obj = {'value': []}
+        self.assertEquals(gene.validate(obj, 'object', 'value', float), True)
