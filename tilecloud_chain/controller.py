@@ -351,7 +351,7 @@ def run_remote_process(remote_cmd, host, project_dir, gene):
         exit('host option is required.')
     cmd.append(host)
     env = ''
-    if os.getenv('AWS_ACCESS_KEY_ID') and os.getenv('AWS_SECRET_ACCESS_KEY'):
+    if os.getenv('AWS_ACCESS_KEY_ID') and os.getenv('AWS_SECRET_ACCESS_KEY'):  # pragma: no cover
         env = 'export AWS_ACCESS_KEY_ID=%(access_key)s;export AWS_SECRET_ACCESS_KEY=%(secret_key)s;' % {
             'access_key': os.getenv('AWS_ACCESS_KEY_ID'),
             'secret_key': os.getenv('AWS_SECRET_ACCESS_KEY'),

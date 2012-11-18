@@ -1364,3 +1364,4 @@ OpenLayers.Request.GET({
         self.assertEquals(controller._quote("'a b c'"), "\"'a b c'\"")
         self.assertEquals(controller._quote('"a b c"'), '\'"a b c"\'')
         self.assertEquals(controller._quote("a\" b' c"), "'a\" b\\' c'")
+        self.assertEquals(controller._quote(""), "''")
