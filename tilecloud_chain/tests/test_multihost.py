@@ -5,7 +5,7 @@ import shutil
 from subprocess import Popen, PIPE
 
 from tilecloud_chain.tests import CompareCase
-from tilecloud_chain import controller
+from tilecloud_chain import controller, TileGeneration
 
 
 class TestMultihost(CompareCase):
@@ -95,7 +95,7 @@ config:
 
         self.assert_cmd_equals(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
-            '--time 1 -l polygon --host localhost  --disable-geodata --disable-database '
+            '--time 1 -l polygon --host localhost --disable-geodata --disable-database '
             '--bbox 598000,198000,600000,200000 --zoom 4 --test 3',
             controller.main,
             """==== Sync and build code ====
@@ -108,3 +108,47 @@ config:
         tile_generation_time: [0-9\.]*
         metatile_generation_time: 0
         tile_size: 0.780""", True)
+
+    def test_time_near(self):
+        self.assert_cmd_equals(
+            './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
+            '-l point --time 50 --near 550000,180000 --zoom 4 --host localhost '
+            '--disable-geodata --disable-database',
+            controller.main,
+            """==== Sync and build code ====
+==== Time results ====
+A tile is generated in: [0-9\.]* \[ms\]
+Than mean generated tile size: 0.326 \[kb\]
+config:
+    cost:
+        tileonly_generation_time: [0-9\.]*
+        tile_generation_time: [0-9\.]*
+        metatile_generation_time: 0
+        tile_size: 0.326""", True)
+
+    def test_time_no_geom(self):
+        self.assert_cmd_equals(
+            './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
+            '-l point --time 1 --no-geom --bbox 550000,180000,555000,185000 --zoom 4 --host localhost '
+            '--disable-geodata --disable-database',
+            controller.main,
+            """==== Sync and build code ====
+==== Time results ====
+A tile is generated in: [0-9\.]* \[ms\]
+Than mean generated tile size: 0.326 \[kb\]
+config:
+    cost:
+        tileonly_generation_time: [0-9\.]*
+        tile_generation_time: [0-9\.]*
+        metatile_generation_time: 0
+        tile_size: 0.326""", True)
+
+    def test_near(self):
+        class Opt:
+            zoom = 3
+            test = 196
+            near = '600000,200000'
+            verbose = False
+            time = None
+        gene = TileGeneration('tilecloud_chain/tests/tilegeneration/test.yaml', Opt(), 'point')
+        self.assertEquals(gene.geom.bounds, (583840.0, 173360.0, 624800.0, 214320.0))
