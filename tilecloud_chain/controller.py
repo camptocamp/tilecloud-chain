@@ -306,6 +306,8 @@ def _get_arguments(options):
         arguments.extend(["--zoom-level", str(options.zoom)])
     if options.test:
         arguments.extend(["--test", str(options.test)])
+    if not options.geom:
+        arguments.append("--no-geom")
     return arguments
 
 
