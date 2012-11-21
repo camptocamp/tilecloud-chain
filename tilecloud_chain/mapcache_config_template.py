@@ -35,9 +35,9 @@ mapcache_config_template = """<?xml version="1.0" encoding="UTF-8"?>
    <tileset name="{{layername}}">
       <source>{{layername}}</source>
       <cache>default</cache>
-      <grid>{{layer['grid']}}</grid>
+      <grid>{{layer['grid']}}</grid>{% if layer['meta'] %}
       <metatile>{{layer['meta_size']}} {{layer['meta_size']}}</metatile>
-      <metabuffer>{{layer['meta_buffer']}}</metabuffer>
+      <metabuffer>{{layer['meta_buffer']}}</metabuffer>{% endif %}
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>{%

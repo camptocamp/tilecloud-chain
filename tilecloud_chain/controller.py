@@ -300,7 +300,9 @@ def _get_arguments(options):
     ]
     if options.layer:
         arguments.extend(["--layer", options.layer])
-    if options.bbox:
+    if options.near:
+        arguments.extend(["--near", str(options.near)])
+    elif options.bbox:
         arguments.extend(["--bbox", options.bbox])
     if options.zoom or options.zoom == 0:
         arguments.extend(["--zoom-level", str(options.zoom)])
