@@ -119,7 +119,7 @@ def _gene(options, gene, layer):
         if meta:
             if options.role == 'hash':
                 gene.imap(HashLogger('empty_metatile_detection'))
-            else:
+            elif not options.near:
                 # Handle errors
                 gene.add_error_filters(logger)
 
@@ -144,7 +144,7 @@ def _gene(options, gene, layer):
 
         if options.role == 'hash':
             gene.imap(HashLogger('empty_tile_detection'))
-        else:
+        elif not options.near:
             # Discard tiles with certain content
             if 'empty_tile_detection' in gene.layer:
                 empty_tile = gene.layer['empty_tile_detection']

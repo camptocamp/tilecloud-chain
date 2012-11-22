@@ -3,6 +3,7 @@
 import sys
 import logging
 import yaml
+from math import ceil, sqrt
 from itertools import imap, ifilter
 from hashlib import sha1
 from cStringIO import StringIO
@@ -50,6 +51,10 @@ def add_comon_options(parser):
             'N tile to do the measure and N tiles to slow-down')
     parser.add_option('-v', '--verbose', default=False, action="store_true",
             help='Display debug message.')
+    parser.add_option('--near', default=None,
+            help='This option is a good replacement of --bbox, to used with '
+            '--time or --test and --zoom, implies --no-geom. '
+            'It automaticaly measure a bbox around the NEAR position that corresponds to the metatiles.')
 
 
 class TileGeneration:
@@ -109,7 +114,10 @@ class TileGeneration:
                 enumeration=['wms', 'mapnik']) or error
 
             error = self.validate(layer, name, 'meta', attribute_type=bool, default=False) or error
-            error = self.validate(layer, name, 'meta_size', attribute_type=int, default=8) or error
+            if not layer['meta']:
+                layer['meta_size'] = 1
+            else:
+                error = self.validate(layer, name, 'meta_size', attribute_type=int, default=8) or error
             error = self.validate(layer, name, 'meta_buffer', attribute_type=int,
                 default=0 if layer['type'] == 'mapnik' else 128) or error
 
@@ -289,14 +297,34 @@ class TileGeneration:
     def set_layer(self, layer, options):
         self.layer = self.layers[layer]
 
-        if options.bbox:
-            self.init_geom([int(c) for c in options.bbox.split(',')])
-        elif options.time and 'bbox' in self.layer:
-            self.init_geom([
+        if options.near or (options.time and 'bbox' in self.layer and options.zoom):
+            if not options.zoom:  # pragma: no cover
+                exit('Option --near needs the option --zoom.')
+            if not (options.time or options.test):  # pragma: no cover
+                exit('Option --near needs the option --time or --test.')
+            position = [float(p) for p in options.near.split(',')] if options.near else [
                 (self.layer['bbox'][0] + self.layer['bbox'][2]) / 2,
                 (self.layer['bbox'][1] + self.layer['bbox'][3]) / 2,
-                self.layer['bbox'][2], self.layer['bbox'][3]
+            ]
+            bbox = self.layer['grid_ref']['bbox']
+            diff = [position[0] - bbox[0], position[1] - bbox[1]]
+            resolution = self.layer['grid_ref']['resolutions'][options.zoom]
+            mt_to_m = self.layer['meta_size'] * self.layer['grid_ref']['tile_size'] * resolution
+            mt = [float(d) / mt_to_m for d in diff]
+
+            nb_tile = options.time * 3 if options.time else options.test
+            nb_mt = nb_tile / (self.layer['meta_size'] ** 2)
+            nb_sqrt_mt = ceil(sqrt(nb_mt))
+
+            mt_origin = [round(m - nb_sqrt_mt / 2) for m in mt]
+            self.init_geom([
+                bbox[0] + mt_origin[0] * mt_to_m,
+                bbox[1] + mt_origin[1] * mt_to_m,
+                bbox[0] + (mt_origin[0] + nb_sqrt_mt) * mt_to_m,
+                bbox[1] + (mt_origin[1] + nb_sqrt_mt) * mt_to_m,
             ])
+        elif options.bbox:
+            self.init_geom([int(c) for c in options.bbox.split(',')])
         elif 'bbox' in self.layer:
             self.init_geom(self.layer['bbox'])
         else:
@@ -316,7 +344,8 @@ class TileGeneration:
 
     def init_geom(self, extent=None):
         self.geom = None
-        if self.options.geom and 'connection' in self.layer and 'sql' in self.layer:
+        if not self.options.near and self.options.geom and \
+                'connection' in self.layer and 'sql' in self.layer:
             conn = psycopg2.connect(self.layer['connection'])
             cursor = conn.cursor()
             sql = 'SELECT ST_AsText((SELECT %s))' % self.layer['sql']

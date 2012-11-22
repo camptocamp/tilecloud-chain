@@ -871,8 +871,6 @@ class TestController(CompareCase):
       <source>all</source>
       <cache>default</cache>
       <grid>swissgrid_5</grid>
-      <metatile>8 8</metatile>
-      <metabuffer>128</metabuffer>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
@@ -923,8 +921,6 @@ class TestController(CompareCase):
       <source>mapnik_grid</source>
       <cache>default</cache>
       <grid>swissgrid_5</grid>
-      <metatile>8 8</metatile>
-      <metabuffer>0</metabuffer>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
@@ -1078,7 +1074,7 @@ layers:
     layers: point,line,polygon
     meta: false
     meta_buffer: 128
-    meta_size: 8
+    meta_size: 1
     mime_type: image/png
     name: all
     type: wms
@@ -1135,7 +1131,7 @@ layers:
     mapfile: mapfile/test.mapnik
     meta: false
     meta_buffer: 0
-    meta_size: 8
+    meta_size: 1
     mime_type: application/utfgrid
     name: mapnik_grid
     output_format: grid

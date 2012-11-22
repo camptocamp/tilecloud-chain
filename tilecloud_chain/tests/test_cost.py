@@ -764,3 +764,76 @@ ESB storage: %(esb)s [$/month]"""
                     'cloudfront': '31.89',
                     'esb': '11.00',
                 }]))
+
+    def test_cost_no_geom(self):
+        self.assert_cmd_equals(
+            './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l point --no-geom',
+            controller.main,
+            '\n'.join([
+                'Calculate zoom 4.',
+                'Calculate zoom 3.',
+                'Calculate zoom 2.',
+                'Calculate zoom 1.',
+                'Calculate zoom 0.',
+                '',
+                '9 meta tiles in zoom 0.',
+                '25 meta tiles in zoom 1.',
+                '116 meta tiles in zoom 2.',
+                '414 meta tiles in zoom 3.',
+                '1560 meta tiles in zoom 4.',
+                self.ZOOM_SUMMARY % {
+                    'tiles': '273',
+                    'zoom': '0',
+                    'time': '0 0:00:08',
+                    's3': '0.00',
+                    'ec2': '0.00',
+                    'esb': '0.00',
+                    'sqs': '0.00'
+                },
+                self.ZOOM_SUMMARY % {
+                    'tiles': '1014',
+                    'zoom': '1',
+                    'time': '0 0:00:31',
+                    's3': '0.01',
+                    'ec2': '0.00',
+                    'esb': '0.00',
+                    'sqs': '0.00'
+                },
+                self.ZOOM_SUMMARY % {
+                    'tiles': '6048',
+                    'zoom': '2',
+                    'time': '0 0:03:04',
+                    's3': '0.06',
+                    'ec2': '0.01',
+                    'esb': '0.03',
+                    'sqs': '0.00'
+                },
+                self.ZOOM_SUMMARY % {
+                    'tiles': '23814',
+                    'zoom': '3',
+                    'time': '0 0:12:06',
+                    's3': '0.24',
+                    'ec2': '0.03',
+                    'esb': '0.10',
+                    'sqs': '0.00'
+                },
+                self.ZOOM_SUMMARY % {
+                    'tiles': '94501',
+                    'zoom': '4',
+                    'time': '0 0:48:01',
+                    's3': '0.95',
+                    'ec2': '0.14',
+                    'esb': '0.40',
+                    'sqs': '0.00'
+                },
+                self.LAYER_SUMMARY % {
+                    'tiles': '125650',
+                    'time': '0 1:03:53',
+                    'cost': '1.97'
+                },
+                self.FINAL_SUMMARY % {
+                    'storage': '0.00',
+                    'get': '32.89',
+                    'cloudfront': '31.89',
+                    'esb': '11.00',
+                }]))
