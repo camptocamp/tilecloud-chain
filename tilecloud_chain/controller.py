@@ -289,7 +289,7 @@ def _deploy(gene, host):
         index = host.find('@')
         if index >= 0:  # pragma: no cover
             host = host[index + 1:]
-    run_local('%s --remote --components=[database] %s %s' %
+    run_local('%s --remote --components=[databases] %s %s' %
         (deploy_cmd, gene.options.deploy_config, host))
 
 
