@@ -1,5 +1,8 @@
 [buildout]
 extends = ../buildout.cfg
+parts = eggs
+    activate
+    template
 
 [template]
 extends += facts
