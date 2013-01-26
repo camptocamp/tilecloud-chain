@@ -65,6 +65,7 @@ class TestError(CompareCase):
         class Opt:
             verbose = False
             test = 0
+            zoom = None
         gene = TileGeneration('tilegeneration/test.yaml', Opt())
         obj = {'value': 1}
         self.assertEquals(gene.validate(obj, 'object', 'value', int), False)

@@ -147,7 +147,7 @@ config:
 
     def test_near(self):
         class Opt:
-            zoom = 3
+            zoom = '3'
             test = 196
             near = '600000,200000'
             verbose = False
