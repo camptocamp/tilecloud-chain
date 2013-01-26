@@ -675,16 +675,26 @@ ESB storage: %(esb)s [$/month]"""
                 'Calculate zoom 1.',
                 'Calculate zoom 0.',
                 '',
-                self.ZOOM_SUMMARY % {'tiles': '2', 'zoom': '0', 'time': '0 0:00:00', 's3': '0.00',
-                    'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'},
-                self.ZOOM_SUMMARY % {'tiles': '4', 'zoom': '1', 'time': '0 0:00:00', 's3': '0.00',
-                    'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'},
-                self.ZOOM_SUMMARY % {'tiles': '10', 'zoom': '2', 'time': '0 0:00:00', 's3': '0.00',
-                    'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'},
-                self.ZOOM_SUMMARY % {'tiles': '26', 'zoom': '3', 'time': '0 0:00:01', 's3': '0.00',
-                    'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'},
-                self.ZOOM_SUMMARY % {'tiles': '81', 'zoom': '4', 'time': '0 0:00:04', 's3': '0.00',
-                    'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'},
+                self.ZOOM_SUMMARY % {
+                    'tiles': '2', 'zoom': '0', 'time': '0 0:00:00', 's3': '0.00',
+                    'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
+                },
+                self.ZOOM_SUMMARY % {
+                    'tiles': '4', 'zoom': '1', 'time': '0 0:00:00', 's3': '0.00',
+                    'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
+                },
+                self.ZOOM_SUMMARY % {
+                    'tiles': '10', 'zoom': '2', 'time': '0 0:00:00', 's3': '0.00',
+                    'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
+                },
+                self.ZOOM_SUMMARY % {
+                    'tiles': '26', 'zoom': '3', 'time': '0 0:00:01', 's3': '0.00',
+                    'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
+                },
+                self.ZOOM_SUMMARY % {
+                    'tiles': '81', 'zoom': '4', 'time': '0 0:00:04', 's3': '0.00',
+                    'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
+                },
                 self.LAYER_SUMMARY % {
                     'tiles': '123',
                     'time': '0 0:00:07',

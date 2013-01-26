@@ -75,7 +75,8 @@ Tile: 4/0/0
             "/tmp/tiles/",
             '1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png', [
                 ('point', 1, 11, 14), ('point', 1, 15, 8)
-        ])
+            ]
+        )
 
     def test_bbox(self):
         self.assert_tiles_generated(
@@ -112,7 +113,8 @@ Tile: 4/0/0
             "/tmp/tiles/",
             '1.0.0/point_hash/default/2012/swissgrid_5/0/%i/%i.png', [
                 (5, 7), (7, 4)
-        ])
+            ]
+        )
 
     def test_mapnik(self):
         self.assert_tiles_generated(
@@ -132,13 +134,15 @@ Tile: 4/0/0
             list(product((5, 6, 7), (4, 5, 6, 7)))
         )
         f = open('/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/5/5.json', 'r')
-        self.assert_result_equals(f.read(), '{"keys": ["", "1"], "data": {"1": {"name": "polygon1"}}, "grid": '
+        self.assert_result_equals(
+            f.read(), '{"keys": ["", "1"], "data": {"1": {"name": "polygon1"}}, "grid": '
             '["                ", "                ", "                ", "                ", "                "'
             ', "                ", "                ", "                ", "                ", "                "'
             ', "                ", "                ", "                ", "                ", "!!!!!!!!!!!!!!!!", '
             '"!!!!!!!!!!!!!!!!"]}')
         f = open('/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/6/5.json', 'r')
-        self.assert_result_equals(f.read(), '{"keys": ["1"], "data": {"1": {"name": "polygon1"}}, "grid": '
+        self.assert_result_equals(
+            f.read(), '{"keys": ["1"], "data": {"1": {"name": "polygon1"}}, "grid": '
             '["                ", "                ", "                ", "                ", "                ", '
             '"                ", "                ", "                ", "                ", "                ", '
             '"                ", "                ", "                ", "                ", "                ", '

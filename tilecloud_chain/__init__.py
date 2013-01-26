@@ -30,31 +30,51 @@ logger = logging.getLogger(__name__)
 
 
 def add_comon_options(parser):
-    parser.add_option('-c', '--config', default='tilegeneration/config.yaml',
-            help='path to the configuration file', metavar="FILE")
-    parser.add_option('-b', '--bbox',
-            help='restrict to specified bounding box (minx,miny,maxx,maxy)')
-    parser.add_option('-z', '--zoom-level', type='int', dest='zoom',
-            help='restrict to specified zoom level', metavar="ZOOM")
-    parser.add_option('-l', '--layer', metavar="NAME",
-            help='the layer to generate')
-    parser.add_option('--no-geom', default=True, action="store_false", dest="geom",
-            help="Don't the geometry available in the sql")
-    parser.add_option('-t', '--test', type='int', default=None,
-            help='test with generating N tiles, and add log messages', metavar="N")
-    parser.add_option('--cache', '--destination-cache',
-            default=None, dest='cache', metavar="NAME",
-            help='The cache name to use')
-    parser.add_option('--time', '--measure-generation-time',
-            default=None, dest='time', metavar="N", type='int',
-            help='Measure the generation time by creating N tiles to warm-up, '
-            'N tile to do the measure and N tiles to slow-down')
-    parser.add_option('-v', '--verbose', default=False, action="store_true",
-            help='Display debug message.')
-    parser.add_option('--near', default=None,
-            help='This option is a good replacement of --bbox, to used with '
-            '--time or --test and --zoom, implies --no-geom. '
-            'It automaticaly measure a bbox around the NEAR position that corresponds to the metatiles.')
+    parser.add_option(
+        '-c', '--config', default='tilegeneration/config.yaml',
+        help='path to the configuration file', metavar="FILE"
+    )
+    parser.add_option(
+        '-b', '--bbox',
+        help='restrict to specified bounding box (minx,miny,maxx,maxy)'
+    )
+    parser.add_option(
+        '-z', '--zoom-level', type='int', dest='zoom',
+        help='restrict to specified zoom level', metavar="ZOOM"
+    )
+    parser.add_option(
+        '-l', '--layer', metavar="NAME",
+        help='the layer to generate'
+    )
+    parser.add_option(
+        '--no-geom', default=True, action="store_false", dest="geom",
+        help="Don't the geometry available in the sql"
+    )
+    parser.add_option(
+        '-t', '--test', type='int', default=None,
+        help='test with generating N tiles, and add log messages', metavar="N"
+    )
+    parser.add_option(
+        '--cache', '--destination-cache',
+        default=None, dest='cache', metavar="NAME",
+        help='The cache name to use'
+    )
+    parser.add_option(
+        '--time', '--measure-generation-time',
+        default=None, dest='time', metavar="N", type='int',
+        help='Measure the generation time by creating N tiles to warm-up, '
+        'N tile to do the measure and N tiles to slow-down'
+    )
+    parser.add_option(
+        '-v', '--verbose', default=False, action="store_true",
+        help='Display debug message.'
+    )
+    parser.add_option(
+        '--near', default=None,
+        help='This option is a good replacement of --bbox, to used with '
+        '--time or --test and --zoom, implies --no-geom. '
+        'It automaticaly measure a bbox around the NEAR position that corresponds to the metatiles.'
+    )
 
 
 class TileGeneration:
@@ -79,10 +99,14 @@ class TileGeneration:
         for gname, grid in self.config['grids'].items():
             name = "grid[%s]" % gname
             error = self.validate(grid, name, 'name', attribute_type=str, default=gname) or error
-            error = self.validate(grid, name, 'resolution_scale',
-                attribute_type=int, default=1) or error
-            error = self.validate(grid, name, 'resolutions',
-                attribute_type=float, is_array=True, required=True) or error
+            error = self.validate(
+                grid, name, 'resolution_scale',
+                attribute_type=int, default=1
+            ) or error
+            error = self.validate(
+                grid, name, 'resolutions',
+                attribute_type=float, is_array=True, required=True
+            ) or error
             error = self.validate(grid, name, 'bbox', attribute_type=float, is_array=True, required=True) or error
             error = self.validate(grid, name, 'srs', attribute_type=str, required=True) or error
             error = self.validate(grid, name, 'unit', attribute_type=str, default='m') or error
@@ -110,31 +134,39 @@ class TileGeneration:
 
             error = self.validate(layer, name, 'name', attribute_type=str, default=lname) or error
             error = self.validate(layer, name, 'grid', attribute_type=str, required=True) or error
-            error = self.validate(layer, name, 'type', attribute_type=str, required=True,
-                enumeration=['wms', 'mapnik']) or error
+            error = self.validate(
+                layer, name, 'type', attribute_type=str, required=True,
+                enumeration=['wms', 'mapnik']
+            ) or error
 
             error = self.validate(layer, name, 'meta', attribute_type=bool, default=False) or error
             if not layer['meta']:
                 layer['meta_size'] = 1
             else:
                 error = self.validate(layer, name, 'meta_size', attribute_type=int, default=8) or error
-            error = self.validate(layer, name, 'meta_buffer', attribute_type=int,
-                default=0 if layer['type'] == 'mapnik' else 128) or error
+            error = self.validate(
+                layer, name, 'meta_buffer', attribute_type=int,
+                default=0 if layer['type'] == 'mapnik' else 128
+            ) or error
 
             if layer['type'] == 'wms':
                 error = self.validate(layer, name, 'url', attribute_type=str, required=True) or error
                 error = self.validate(layer, name, 'layers', attribute_type=str, required=True) or error
             if layer['type'] == 'mapnik':
                 error = self.validate(layer, name, 'mapfile', attribute_type=str, required=True) or error
-                error = self.validate(layer, name, 'output_format', attribute_type=str, default='png',
-                    enumeration=['png', 'png256', 'jpeg', 'grid']) or error
+                error = self.validate(
+                    layer, name, 'output_format', attribute_type=str, default='png',
+                    enumeration=['png', 'png256', 'jpeg', 'grid']
+                ) or error
                 error = self.validate(layer, name, 'data_buffer', attribute_type=int, default=128) or error
                 if layer['output_format'] == 'grid':
                     error = self.validate(layer, name, 'resolution', attribute_type=int, default=4) or error
                     error = self.validate(layer, name, 'layers_fields', attribute_type=dict, default={}) or error
                     if layer['meta']:
-                        logger.error("The layer '%s' is of type Mapnik/Grid, that can't support matatiles." %
-                            (layer['name']))
+                        logger.error(
+                            "The layer '%s' is of type Mapnik/Grid, that can't support matatiles." %
+                            (layer['name'])
+                        )
                         error = True
 
             error = self.validate(layer, name, 'extension', attribute_type=str, required=True) or error
@@ -145,20 +177,30 @@ class TileGeneration:
                 dname = name + ".dimensions[%s]" % d.get('name', '')
                 error = self.validate(d, dname, 'name', attribute_type=str, required=True) or error
                 error = self.validate(d, dname, 'value', attribute_type=str, required=True) or error
-                error = self.validate(d, dname, 'values', attribute_type=str, is_array=True,
-                    default=[d['value']]) or error
+                error = self.validate(
+                    d, dname, 'values', attribute_type=str, is_array=True,
+                    default=[d['value']]
+                ) or error
                 error = self.validate(d, dname, 'default', attribute_type=str, default=d['value']) or error
 
             if 'empty_tile_detection' in layer:
-                error = self.validate(layer['empty_tile_detection'], name + '.empty_tile_detection',
-                        'size', attribute_type=int, required=True) or error
-                error = self.validate(layer['empty_tile_detection'], name + '.empty_tile_detection',
-                        'hash', attribute_type=str, required=True) or error
+                error = self.validate(
+                    layer['empty_tile_detection'], name + '.empty_tile_detection',
+                    'size', attribute_type=int, required=True
+                ) or error
+                error = self.validate(
+                    layer['empty_tile_detection'], name + '.empty_tile_detection',
+                    'hash', attribute_type=str, required=True
+                ) or error
             if 'empty_metatile_detection' in layer:
-                error = self.validate(layer['empty_metatile_detection'], name + '.empty_metatile_detection',
-                        'size', attribute_type=int, required=True) or error
-                error = self.validate(layer['empty_metatile_detection'], name + '.empty_metatile_detection',
-                        'hash', attribute_type=str, required=True) or error
+                error = self.validate(
+                    layer['empty_metatile_detection'], name + '.empty_metatile_detection',
+                    'size', attribute_type=int, required=True
+                ) or error
+                error = self.validate(
+                    layer['empty_metatile_detection'], name + '.empty_metatile_detection',
+                    'hash', attribute_type=str, required=True
+                ) or error
 
             layer['grid_ref'] = self.grids[layer['grid']] if not error else None
 
@@ -173,8 +215,10 @@ class TileGeneration:
         for cname, cache in self.caches.items():
             name = "caches[%s]" % cname
             error = self.validate(cache, name, 'name', attribute_type=str, default=cname) or error
-            error = self.validate(cache, name, 'type', attribute_type=str, required=True,
-                enumeration=['s3', 'filesystem']) or error
+            error = self.validate(
+                cache, name, 'type', attribute_type=str, required=True,
+                enumeration=['s3', 'filesystem']
+            ) or error
             if cache['type'] == 'filesystem':
                 error = self.validate(cache, name, 'folder', attribute_type=str, required=True) or error
             elif cache['type'] == 's3':
@@ -182,46 +226,73 @@ class TileGeneration:
                 error = self.validate(cache, name, 'folder', attribute_type=str, default='') or error
 
         error = self.validate(self.config, 'config', 'generation', attribute_type=dict, default={}) or error
-        error = self.validate(self.config['generation'], 'generation', 'default_cache',
-            attribute_type=str, default='default') or error
-        error = self.validate(self.config['generation'], 'generation', 'default_layers',
-            is_array=True, attribute_type=str) or error
+        error = self.validate(
+            self.config['generation'], 'generation', 'default_cache',
+            attribute_type=str, default='default'
+        ) or error
+        error = self.validate(
+            self.config['generation'], 'generation', 'default_layers',
+            is_array=True, attribute_type=str
+        ) or error
         error = self.validate(self.config['generation'], 'generation', 'authorised_user', attribute_type=str) or error
-        error = self.validate(self.config['generation'], 'generation', 'number_process',
-            attribute_type=int, default=1) or error
-        error = self.validate(self.config['generation'], 'generation', 'ec2_host_type', attribute_type=str,
-            default='m1.medium', enumeration=['t1.micro', 'm1.small', 'm1.medium', 'm1.large', 'm1.xlarge',
-            'm2.xlarge', 'm2.2xlarge', 'm2.4xlarge', 'c1.medium', 'c1.xlarge', 'cc1.4xlarge', 'cc2.8xlarge',
-            'cg1.4xlarge', 'hi1.4xlarge']) or error
-        error = self.validate(self.config['generation'], 'generation', 'maxconsecutive_errors',
-            attribute_type=int, default=10) or error
-        error = self.validate(self.config['generation'], 'generation', 'ssh_options',
-           attribute_type=str) or error
+        error = self.validate(
+            self.config['generation'], 'generation', 'number_process',
+            attribute_type=int, default=1
+        ) or error
+        error = self.validate(
+            self.config['generation'], 'generation', 'ec2_host_type', attribute_type=str,
+            default='m1.medium', enumeration=[
+                't1.micro', 'm1.small', 'm1.medium', 'm1.large', 'm1.xlarge',
+                'm2.xlarge', 'm2.2xlarge', 'm2.4xlarge', 'c1.medium', 'c1.xlarge', 'cc1.4xlarge', 'cc2.8xlarge',
+                'cg1.4xlarge', 'hi1.4xlarge'
+            ]
+        ) or error
+        error = self.validate(
+            self.config['generation'], 'generation', 'maxconsecutive_errors',
+            attribute_type=int, default=10
+        ) or error
+        error = self.validate(
+            self.config['generation'], 'generation', 'ssh_options',
+            attribute_type=str
+        ) or error
         error = self.validate(self.config['generation'], 'generation', 'geodata_folder', attribute_type=str) or error
         if 'geodata_folder' in self.config['generation'] and self.config['generation']['geodata_folder'][-1] != '/':
             self.config['generation']['geodata_folder'] += '/'
         error = self.validate(self.config['generation'], 'generation', 'code_folder', attribute_type=str) or error
         if 'code_folder' in self.config['generation'] and self.config['generation']['code_folder'][-1] != '/':
             self.config['generation']['code_folder'] += '/'
-        error = self.validate(self.config['generation'], 'generation', 'deploy_config',
+        error = self.validate(
+            self.config['generation'], 'generation', 'deploy_config',
             attribute_type=str, default="tilegeneration/deploy.cfg") or error
-        error = self.validate(self.config['generation'], 'generation', 'build_cmds',
+        error = self.validate(
+            self.config['generation'], 'generation', 'build_cmds',
             attribute_type=str, is_array=True, default=[
                 "python bootstrap.py --distribute",
                 "./buildout/bin/buildout -c buildout_tilegeneration.cfg"
-            ]) or error
+            ]
+        ) or error
         error = self.validate(self.config['generation'], 'generation', 'apache_config', attribute_type=str) or error
         error = self.validate(self.config['generation'], 'generation', 'apache_content', attribute_type=str) or error
-        error = self.validate(self.config['generation'], 'generation', 'disable_geodata',
-            attribute_type=bool, default=False) or error
-        error = self.validate(self.config['generation'], 'generation', 'disable_code',
-            attribute_type=bool, default=False) or error
-        error = self.validate(self.config['generation'], 'generation', 'disable_database',
-            attribute_type=bool, default=False) or error
-        error = self.validate(self.config['generation'], 'generation', 'disable_fillqueue',
-            attribute_type=bool, default=False) or error
-        error = self.validate(self.config['generation'], 'generation', 'disable_tilesgen',
-            attribute_type=bool, default=False) or error
+        error = self.validate(
+            self.config['generation'], 'generation', 'disable_geodata',
+            attribute_type=bool, default=False
+        ) or error
+        error = self.validate(
+            self.config['generation'], 'generation', 'disable_code',
+            attribute_type=bool, default=False
+        ) or error
+        error = self.validate(
+            self.config['generation'], 'generation', 'disable_database',
+            attribute_type=bool, default=False
+        ) or error
+        error = self.validate(
+            self.config['generation'], 'generation', 'disable_fillqueue',
+            attribute_type=bool, default=False
+        ) or error
+        error = self.validate(
+            self.config['generation'], 'generation', 'disable_tilesgen',
+            attribute_type=bool, default=False
+        ) or error
 
         if 'sns' in self.config:
             error = self.validate(self.config['sns'], 'sns', 'topic', attribute_type=str, required=True) or error
@@ -265,7 +336,8 @@ class TileGeneration:
             return (value not in enumeration, value, str(enumeration))
         return (False, value, None)
 
-    def validate(self, obj, obj_name, attribute, attribute_type=None, is_array=False,
+    def validate(
+            self, obj, obj_name, attribute, attribute_type=None, is_array=False,
             default=None, required=False, enumeration=None):
         if attribute in obj:
             if is_array:
@@ -273,8 +345,10 @@ class TileGeneration:
                     for n, v in enumerate(obj[attribute]):
                         result, value, type_error = self._validate_type(v, attribute_type, enumeration)
                         if result:
-                            logger.error("The attribute '%s' of the object %s has an element who is not a %s." %
-                                (attribute, obj_name, type_error))
+                            logger.error(
+                                "The attribute '%s' of the object %s has an element who is not a %s." %
+                                (attribute, obj_name, type_error)
+                            )
                             return True
                         obj[attribute][n] = value
                 else:
@@ -283,8 +357,10 @@ class TileGeneration:
             else:
                 result, value, type_error = self._validate_type(obj[attribute], attribute_type, enumeration)
                 if result:
-                    logger.error("The attribute '%s' of the object %s is not a %s." %
-                        (attribute, obj_name, type_error))
+                    logger.error(
+                        "The attribute '%s' of the object %s is not a %s." %
+                        (attribute, obj_name, type_error)
+                    )
                     return True
                 obj[attribute] = value
         elif required:
@@ -361,18 +437,19 @@ class TileGeneration:
                 )))
         elif extent:
             self.geom = Polygon((
-                    (extent[0], extent[1]),
-                    (extent[0], extent[3]),
-                    (extent[2], extent[3]),
-                    (extent[2], extent[1]),
-                ))
+                (extent[0], extent[1]),
+                (extent[0], extent[3]),
+                (extent[2], extent[3]),
+                (extent[2], extent[1]),
+            ))
 
     def add_geom_filter(self, queue_store=None):
         if self.geom:
             self.ifilter(IntersectGeometryFilter(
-                    grid=self.get_grid(),
-                    geom=self.geom,
-                    queue_store=queue_store))
+                grid=self.get_grid(),
+                geom=self.geom,
+                queue_store=queue_store
+            ))
 
     def add_metatile_splitter(self):
         store = MetaTileSplitterTileStore(
@@ -402,11 +479,13 @@ class TileGeneration:
             self.tilestream = safe_get(self.tilestream)
 
     def add_error_filters(self, logger):
-        self.imap(LogErrors(logger, logging.ERROR,
-                "Error in tile: %(tilecoord)s, %(error)r"))
+        self.imap(LogErrors(
+            logger, logging.ERROR,
+            "Error in tile: %(tilecoord)s, %(error)r"
+        ))
         if 'maxconsecutive_errors' in self.config['generation']:
             self.tilestream = imap(MaximumConsecutiveErrors(
-                    self.config['generation']['maxconsecutive_errors']), self.tilestream)
+                self.config['generation']['maxconsecutive_errors']), self.tilestream)
         self.ifilter(DropErrors())
 
     def init_tilecoords(self, options):
@@ -582,8 +661,8 @@ class IntersectGeometryFilter(object):
 
     def __call__(self, tile):
         intersects = self.bbox_polygon(
-                self.grid['obj'].extent(tile.tilecoord)). \
-                intersects(self.geom)
+            self.grid['obj'].extent(tile.tilecoord)). \
+            intersects(self.geom)
 
         if not intersects and hasattr(tile, 'metatile'):
             tile.metatile.elapsed_togenerate -= 1
@@ -594,10 +673,11 @@ class IntersectGeometryFilter(object):
 
     def bbox_polygon(self, bbox):
         return Polygon((
-                (bbox[0], bbox[1]),
-                (bbox[0], bbox[3]),
-                (bbox[2], bbox[3]),
-                (bbox[2], bbox[1])))
+            (bbox[0], bbox[1]),
+            (bbox[0], bbox[3]),
+            (bbox[2], bbox[3]),
+            (bbox[2], bbox[1])
+        ))
 
 
 class DropEmpty(object):
