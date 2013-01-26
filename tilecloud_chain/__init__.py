@@ -304,27 +304,28 @@ class TileGeneration:
             ) % options.zoom
             if options.zoom.find('-') >= 0:
                 r = options.zoom.split('-')
-                if len(r) != 2:
+                if len(r) != 2:  # pragma: no cover
                     logger.error(error_message)
                     error = True
                 try:
                     options.zoom = range(int(r[0]), int(r[1]) + 1)
-                except ValueError:
+                except ValueError:  # pragma: no cover
                     logger.error(error_message)
                     error = True
             elif options.zoom.find(',') >= 0:
                 try:
                     options.zoom = [int(z) for z in options.zoom.split(',')]
-                except ValueError:
+                except ValueError:  # pragma: no cover
                     logger.error(error_message)
                     error = True
             else:
                 try:
                     options.zoom = [int(options.zoom)]
-                except ValueError:
+                except ValueError:  # pragma: no cover
                     logger.error(error_message)
                     error = True
-        if error:
+
+        if error:  # pragma: no cover
             exit(1)
 
         self.layer = None
