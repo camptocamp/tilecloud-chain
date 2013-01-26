@@ -43,8 +43,10 @@ class TestMultihost(CompareCase):
         if os.path.exists('/tmp/tests/test.conf'):
             os.remove('/tmp/tests/test.conf')  # pragma: no cover
         if os.path.exists('/tmp/tests/test/tilecloud_chain/tests/tilegeneration/hooks/post-restore-code'):
-            os.remove('/tmp/tests/test/tilecloud_chain/tests/tilegeneration/hooks/'
-                'post-restore-code')  # pragma: no cover
+            os.remove(
+                '/tmp/tests/test/tilecloud_chain/tests/tilegeneration/hooks/'
+                'post-restore-code'
+            )  # pragma: no cover
 
         out, err = self.run_cmd(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml --disable-geodata '
