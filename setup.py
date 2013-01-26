@@ -10,13 +10,14 @@ README = open(os.path.join(here, 'README.rst')).read()
 install_requires = [
     'tilecloud>=0.2dev-20121011',
     'pillow',
-    'requests',
+    'requests==0.14.2',
     'psycopg2',
     'Shapely',
-    'boto',
+    'boto>=2.0',
     'PyYAML',
     'jinja2',
     'pyramid',
+    'simplejson',
 ]
 setup_requires = [
     'nose',
