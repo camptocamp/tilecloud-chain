@@ -39,8 +39,8 @@ def add_comon_options(parser):
         help='restrict to specified bounding box (minx,miny,maxx,maxy)'
     )
     parser.add_option(
-        '-z', '--zoom-level', type='int', dest='zoom',
-        help='restrict to specified zoom level', metavar="ZOOM"
+        '-z', '--zoom',
+        help='restrict to specified zoom level, or a zooms range (2-5), or a zooms list (2,4,5)'
     )
     parser.add_option(
         '-l', '--layer', metavar="NAME",
@@ -206,10 +206,6 @@ class TileGeneration:
 
             self.layers[lname] = layer
 
-        self.layer = None
-        if layer_name and not error:
-            self.set_layer(layer_name, options)
-
         self.validate_exists(self.config, 'config', 'caches')
         self.caches = self.config['caches']
         for cname, cache in self.caches.items():
@@ -301,6 +297,40 @@ class TileGeneration:
         if error:
             exit(1)
 
+        if options.zoom:
+            error_message = (
+                "The zoom argument '%s' has incorect format, "
+                "it can be a single value, a range (3-9), a list of values (2,5,7)."
+            ) % options.zoom
+            if options.zoom.find('-') >= 0:
+                r = options.zoom.split('-')
+                if len(r) != 2:
+                    logger.error(error_message)
+                    error = True
+                try:
+                    options.zoom = range(int(r[0]), int(r[1]) + 1)
+                except ValueError:
+                    logger.error(error_message)
+                    error = True
+            elif options.zoom.find(',') >= 0:
+                try:
+                    options.zoom = [int(z) for z in options.zoom.split(',')]
+                except ValueError:
+                    logger.error(error_message)
+                    error = True
+            else:
+                try:
+                    options.zoom = [int(options.zoom)]
+                except ValueError:
+                    logger.error(error_message)
+                    error = True
+        if error:
+            exit(1)
+
+        self.layer = None
+        if layer_name and not error:
+            self.set_layer(layer_name, options)
+
     def validate_exists(self, obj, obj_name, attribute):
         if attribute not in obj:
             logger.error("The attribute '%s' is required in the object %s." % (attribute, obj_name))
@@ -374,8 +404,8 @@ class TileGeneration:
         self.layer = self.layers[layer]
 
         if options.near or (options.time and 'bbox' in self.layer and options.zoom):
-            if not options.zoom:  # pragma: no cover
-                exit('Option --near needs the option --zoom.')
+            if not options.zoom or len(options.zoom) != 1:  # pragma: no cover
+                exit('Option --near needs the option --zoom with one value.')
             if not (options.time or options.test):  # pragma: no cover
                 exit('Option --near needs the option --time or --test.')
             position = [float(p) for p in options.near.split(',')] if options.near else [
@@ -384,7 +414,7 @@ class TileGeneration:
             ]
             bbox = self.layer['grid_ref']['bbox']
             diff = [position[0] - bbox[0], position[1] - bbox[1]]
-            resolution = self.layer['grid_ref']['resolutions'][options.zoom]
+            resolution = self.layer['grid_ref']['resolutions'][options.zoom[0]]
             mt_to_m = self.layer['meta_size'] * self.layer['grid_ref']['tile_size'] * resolution
             mt = [float(d) / mt_to_m for d in diff]
 
@@ -492,27 +522,32 @@ class TileGeneration:
         bounding_pyramid = BoundingPyramid(tilegrid=self.layer['grid_ref']['obj'])
         bounding_pyramid.fill(None, self.geom.bounds)
 
-        if options.time and not (options.zoom or options.zoom == 0):
-            options.zoom = max(bounding_pyramid.bounds)
+        if options.time and not options.zoom:
+            options.zoom = [max(bounding_pyramid.bounds)]
 
         meta = self.layer['meta']
         if meta:
-            if options.zoom or options.zoom == 0:
-                def metatilecoords(n, z):
-                    xbounds, ybounds = bounding_pyramid.bounds[z]
-                    metatilecoord = TileCoord(z, xbounds.start, ybounds.start).metatilecoord(n)
-                    x = metatilecoord.x
-                    while x < xbounds.stop:
-                        y = metatilecoord.y
-                        while y < ybounds.stop:
-                            yield TileCoord(z, x, y, n)
-                            y += n
-                        x += n
+            if options.zoom:
+                def metatilecoords(n, zoom):
+                    for z in zoom:
+                        xbounds, ybounds = bounding_pyramid.bounds[z]
+                        metatilecoord = TileCoord(z, xbounds.start, ybounds.start).metatilecoord(n)
+                        x = metatilecoord.x
+                        while x < xbounds.stop:
+                            y = metatilecoord.y
+                            while y < ybounds.stop:
+                                yield TileCoord(z, x, y, n)
+                                y += n
+                            x += n
                 self.set_tilecoords(metatilecoords(self.layer['meta_size'], options.zoom))
             else:
                 self.set_tilecoords(bounding_pyramid.metatilecoords(self.layer['meta_size']))
-        elif options.zoom or options.zoom == 0:
-            self.set_tilecoords(bounding_pyramid.ziter(options.zoom))
+        elif options.zoom:
+            def ziter():
+                for z in options.zoom:
+                    for tile in bounding_pyramid.ziter(z):
+                        yield tile
+            self.set_tilecoords(ziter())
         else:
             self.set_tilecoords(bounding_pyramid)
 
