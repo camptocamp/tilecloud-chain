@@ -351,8 +351,8 @@ def _get_arguments(options):
         arguments.extend(["--near", str(options.near)])
     elif options.bbox:
         arguments.extend(["--bbox", options.bbox])
-    if options.zoom or options.zoom == 0:
-        arguments.extend(["--zoom-level", str(options.zoom)])
+    if options.zoom:
+        arguments.extend(["--zoom", ','.join([str(z) for z in options.zoom])])
     if options.test:
         arguments.extend(["--test", str(options.test)])
     if not options.geom:

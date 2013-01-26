@@ -78,6 +78,30 @@ Tile: 4/0/0
             ]
         )
 
+    def test_zoom_range(self):
+        self.assert_tiles_generated(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point --zoom 1-3',
+            generate.main,
+            "/tmp/tiles/",
+            '1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png', [
+                ('point', 1, 11, 14), ('point', 1, 15, 8),
+                ('point', 2, 29, 35), ('point', 2, 39, 21),
+                ('point', 3, 58, 70), ('point', 3, 78, 42), ('point', 3, 78, 43),
+            ]
+        )
+
+    def test_zoom_list(self):
+        self.assert_tiles_generated(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point --zoom 0,2,3',
+            generate.main,
+            "/tmp/tiles/",
+            '1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png', [
+                ('point', 0, 5, 7), ('point', 0, 7, 4),
+                ('point', 2, 29, 35), ('point', 2, 39, 21),
+                ('point', 3, 58, 70), ('point', 3, 78, 42), ('point', 3, 78, 43),
+            ]
+        )
+
     def test_bbox(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l polygon -z 0',
