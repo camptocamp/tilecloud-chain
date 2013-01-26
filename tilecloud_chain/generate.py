@@ -41,8 +41,10 @@ def _gene(options, gene, layer):
             url=cache['folder'],
             style=gene.layer['wmts_style'],
             format='.' + gene.layer['extension'],
-            dimensions=[(str(dimension['name']), str(dimension['default']))
-                    for dimension in gene.layer['dimensions']],
+            dimensions=[
+                (str(dimension['name']), str(dimension['default']))
+                for dimension in gene.layer['dimensions']
+            ],
             tile_matrix_set=gene.layer['grid'],
             request_encoding='REST',
         )
@@ -215,13 +217,19 @@ def main():
 
     parser = OptionParser('Used to generate the tiles')
     add_comon_options(parser)
-    parser.add_option('-d', '--daemonize', default=False, action="store_true",
-            help='run as a deamon')
-    parser.add_option('-r', '--role', default='local',
-            help='local/master/slave, master to file the queue and '
-            'slave to generate the tiles')
-    parser.add_option('-H', '--get-hash', metavar="TILE",
-            help='get the empty tiles hash, use the specified TILE z/x/y')
+    parser.add_option(
+        '-d', '--daemonize', default=False, action="store_true",
+        help='run as a deamon'
+    )
+    parser.add_option(
+        '-r', '--role', default='local',
+        help='local/master/slave, master to file the queue and '
+        'slave to generate the tiles'
+    )
+    parser.add_option(
+        '-H', '--get-hash', metavar="TILE",
+        help='get the empty tiles hash, use the specified TILE z/x/y'
+    )
 
     (options, args) = parser.parse_args()
 

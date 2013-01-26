@@ -23,7 +23,9 @@ class TestController(CompareCase):
         self.assert_main_equals(
             './buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml',
             controller.main,
-            [['/tmp/tiles/1.0.0/WMTSCapabilities.xml', """<?xml version="1.0" encoding="UTF-8"?>
+            [[
+                '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
+                """<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
               xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xmlns:gml="http://www.opengis.net/gml"
@@ -77,7 +79,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://taurus/tiles/1.0.0/all/default/"""
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -99,7 +101,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://taurus/tiles/1.0.0/point_hash/default/"""
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -121,7 +123,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://taurus/tiles/1.0.0/polygon/default/"""
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -143,7 +145,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://taurus/tiles/1.0.0/point/default/"""
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -165,7 +167,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="application/utfgrid" resourceType="tile"
                    template="http://taurus/tiles/1.0.0/mapnik_grid/default/"""
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -187,7 +189,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://taurus/tiles/1.0.0/line/default/"""
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -209,7 +211,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://taurus/tiles/1.0.0/polygon2/default/"""
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_01</TileMatrixSet>
       </TileMatrixSetLink>
@@ -231,7 +233,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://taurus/tiles/1.0.0/mapnik/default/"""
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -412,13 +414,13 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/all/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts2/tiles/1.0.0/all/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts3/tiles/1.0.0/all/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -440,13 +442,13 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/point_hash/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts2/tiles/1.0.0/point_hash/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts3/tiles/1.0.0/point_hash/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -468,13 +470,13 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/polygon/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts2/tiles/1.0.0/polygon/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts3/tiles/1.0.0/polygon/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -496,13 +498,13 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/point/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts2/tiles/1.0.0/point/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts3/tiles/1.0.0/point/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -524,13 +526,13 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="application/utfgrid" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/mapnik_grid/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <ResourceURL format="application/utfgrid" resourceType="tile"
                    template="http://wmts2/tiles/1.0.0/mapnik_grid/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <ResourceURL format="application/utfgrid" resourceType="tile"
                    template="http://wmts3/tiles/1.0.0/mapnik_grid/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -552,13 +554,13 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/line/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts2/tiles/1.0.0/line/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts3/tiles/1.0.0/line/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -580,13 +582,13 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/polygon2/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts2/tiles/1.0.0/polygon2/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts3/tiles/1.0.0/polygon2/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_01</TileMatrixSet>
       </TileMatrixSetLink>
@@ -608,13 +610,13 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/mapnik/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts2/tiles/1.0.0/mapnik/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts3/tiles/1.0.0/mapnik/default/""" \
-"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
