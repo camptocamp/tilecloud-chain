@@ -32,6 +32,10 @@ caches:
         - http://wmts2/tiles
         - http://wmts3/tiles
         folder: /tmp/tiles
+    mbtiles:
+        type: mbtiles
+        http_url: http://taurus/tiles
+        folder: /tmp/tiles/mbtiles
     s3:
         type: s3
         http_url: https://%(host)s/%(bucket)s/%(folder)s

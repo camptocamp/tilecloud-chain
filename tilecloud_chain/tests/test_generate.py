@@ -68,6 +68,14 @@ Tile: 4/0/0
             ]
         )
 
+    def test_mbtile(self):
+        self.assert_tiles_generated(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml --cache mbtiles -l point --zoom 1',
+            generate.main,
+            "/tmp/tiles/mbtiles/",
+            '1.0.0/point/default/2012/swissgrid_5.png.mbtiles', [()]
+        )
+
     def test_zoom(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point --zoom 1',

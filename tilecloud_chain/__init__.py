@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os
 import logging
 import yaml
+import sqlite3
 from math import ceil, sqrt
 from itertools import imap, ifilter
 from hashlib import sha1
@@ -23,6 +25,10 @@ from boto.sqs.jsonmessage import JSONMessage
 from tilecloud import Tile, BoundingPyramid, TileCoord
 from tilecloud.grid.free import FreeTileGrid
 from tilecloud.store.metatile import MetaTileSplitterTileStore
+from tilecloud.store.s3 import S3TileStore
+from tilecloud.store.mbtiles import MBTilesTileStore
+from tilecloud.store.filesystem import FilesystemTileStore
+from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors, DropErrors
 
 
@@ -75,6 +81,41 @@ def add_comon_options(parser):
         '--time or --test and --zoom, implies --no-geom. '
         'It automaticaly measure a bbox around the NEAR position that corresponds to the metatiles.'
     )
+
+
+def get_store(cache, layer, dimensions=None):
+    # build layout
+    layout = WMTSTileLayout(
+        layer=layer['name'],
+        url=cache['folder'],
+        style=layer['wmts_style'],
+        format='.' + layer['extension'],
+        dimensions=dimensions if dimensions else [
+            (str(dimension['name']), str(dimension['default']))
+            for dimension in layer['dimensions']
+        ],
+        tile_matrix_set=layer['grid'],
+        request_encoding='REST',
+    )
+    # store
+    if cache['type'] == 's3':
+        # on s3
+        cache_tilestore = S3TileStore(cache['bucket'], layout)  # pragma: no cover
+    if cache['type'] == 'mbtiles':
+        # on mbtiles file
+        filename = layout.filename(TileCoord(0, 0, 0)).replace(
+            '/0/0/0', ''
+        ) + '.mbtiles'
+        if not os.path.exists(os.path.dirname(filename)):
+            os.makedirs(os.path.dirname(filename))
+        cache_tilestore = MBTilesTileStore(sqlite3.connect(filename))
+    elif cache['type'] == 'filesystem':
+        # on filesystem
+        cache_tilestore = FilesystemTileStore(layout)
+    else:
+        exit('unknown cache type: ' + cache['type'])  # pragma: no cover
+
+    return cache_tilestore
 
 
 class TileGeneration:
@@ -213,9 +254,9 @@ class TileGeneration:
             error = self.validate(cache, name, 'name', attribute_type=str, default=cname) or error
             error = self.validate(
                 cache, name, 'type', attribute_type=str, required=True,
-                enumeration=['s3', 'filesystem']
+                enumeration=['s3', 'filesystem', 'mbtiles']
             ) or error
-            if cache['type'] == 'filesystem':
+            if cache['type'] == 'filesystem' or cache['type'] == 'mbtiles':
                 error = self.validate(cache, name, 'folder', attribute_type=str, required=True) or error
             elif cache['type'] == 's3':
                 error = self.validate(cache, name, 'bucket', attribute_type=str, required=True) or error
