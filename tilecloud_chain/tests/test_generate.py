@@ -69,12 +69,79 @@ Tile: 4/0/0
         )
 
     def test_mbtile(self):
+        from pyramid.testing import DummyRequest
+        from pyramid.httpexceptions import HTTPNoContent, HTTPBadRequest
+        from tilecloud_chain.views.serve import Serve
+
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml --cache mbtiles -l point --zoom 1',
             generate.main,
             "/tmp/tiles/mbtiles/",
             '1.0.0/point/default/2012/swissgrid_5.png.mbtiles', [()]
         )
+
+        request = DummyRequest()
+        request.registry.settings = {
+            'tilegeneration': {
+                'configfile': 'tilegeneration/test.yaml',
+                'cache': 'mbtiles',
+                'strict': True,
+            }
+        }
+        request.params = {
+            'Service': 'WMTS',
+            'Request': 'GetTile',
+            'Version': '1.0.0',
+            'Format': 'png',
+            'Layer': 'point',
+            'Style': 'default',
+            'TileMatrixSet': 'swissgrid_5',
+            'TileMatrix': '1',
+            'TileRow': '14',
+            'TileCol': '11',
+        }
+        serve = Serve(request)
+        serve.serve()
+        self.assertEquals(request.response.content_type, 'image/png')
+
+        request.params['TileRow'] = '15'
+        self.assertRaises(HTTPNoContent, serve.serve)
+
+        request.params['Service'] = 'test'
+        self.assertRaises(HTTPBadRequest, serve.serve)
+
+        request.params['Service'] = 'WMTS'
+        request.params['Request'] = 'test'
+        self.assertRaises(HTTPBadRequest, serve.serve)
+
+        request.params['Request'] = 'GetTile'
+        request.params['Version'] = '0.9'
+        self.assertRaises(HTTPBadRequest, serve.serve)
+
+        request.params['Version'] = '1.0.0'
+        request.params['Format'] = 'jpeg'
+        self.assertRaises(HTTPBadRequest, serve.serve)
+
+        request.params['Format'] = 'png'
+        request.params['Layer'] = 'test'
+        self.assertRaises(HTTPBadRequest, serve.serve)
+
+        request.params['Layer'] = 'point'
+        request.params['Style'] = 'test'
+        self.assertRaises(HTTPBadRequest, serve.serve)
+
+        request.params['Style'] = 'default'
+        request.params['TileMatrixSet'] = 'test'
+        self.assertRaises(HTTPBadRequest, serve.serve)
+
+        request.params['TileMatrixSet'] = 'swissgrid_5'
+        del request.params['Service']
+        self.assertRaises(HTTPBadRequest, serve.serve)
+
+        request.params['Service'] = 'test'
+        request.registry.settings['tilegeneration']['strict'] = False
+        serve = Serve(request)
+        self.assertRaises(HTTPNoContent, serve.serve)
 
     def test_zoom(self):
         self.assert_tiles_generated(

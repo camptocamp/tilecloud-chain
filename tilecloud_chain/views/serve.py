@@ -27,23 +27,110 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-def load_tilecache_config(settings):
+from tilecloud import Tile, TileCoord
+from tilecloud_chain import TileGeneration
+
+from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPBadRequest, HTTPNoContent
 
 
-@wsgiapp
-def tilecache(environ, start_response):
-    try:
-        expiration = _service.config.getint('cache', 'expire')
-    except ConfigParser.NoOptionError:
-        expiration = DEFAULT_EXPIRATION
+class Serve(TileGeneration):
 
-    # custom_start_response adds cache headers to the response
-    def custom_start_response(status, headers, exc_info=None):
-        headers.append(('Cache-Control',
-                'public, max-age=%s' % expiration))
-        headers.append(('Expires',
-                email.Utils.formatdate(time.time() + expiration,
-                False, True)))
-        return start_response(status, headers, exc_info)
+    def __init__(self, request):
+        self.request = request
+        self.settings = request.registry.settings['tilegeneration']
 
-    return wsgiHandler(environ, custom_start_response)
+        self.tilegeneration = TileGeneration(self.settings['configfile'])
+        self.cache = self.tilegeneration.caches[
+            self.settings['cache'] if 'cache' in self.settings
+            else self.settings['generation']['default_cache']
+        ]
+        self.stores = {}
+        self.strict = 'strict' in self.settings and self.settings['strict']
+
+    @view_config(route_name='serve_tiles')
+    def serve(self):
+        params = {}
+        for param, value in self.request.params.items():
+            params[param.lower()] = value
+
+        if \
+                not 'service' in params or \
+                not 'request' in params or \
+                not 'version' in params or \
+                not 'format' in params or \
+                not 'layer' in params or \
+                not 'tilematrixset' in params or \
+                not 'tilematrix' in params or \
+                not 'tilerow' in params or \
+                not 'tilecol' in params:
+            raise HTTPBadRequest("Not all required parameters are present")
+
+        if self.strict:
+            if params['service'] != 'WMTS':
+                raise HTTPBadRequest("Wrong Service '%s'" % params['service'])
+            if params['request'] != 'GetTile':
+                raise HTTPBadRequest("Wrong Request '%s'" % params['request'])
+            if params['version'] != '1.0.0':
+                raise HTTPBadRequest("Wrong Version '%s'" % params['version'])
+
+        if params['layer'] in self.tilegeneration.layers:
+            layer = self.tilegeneration.layers[params['layer']]
+        else:
+            raise HTTPBadRequest("Wrong Layer '%s'" % params['version'])
+
+        if self.strict:
+            if params['format'] != layer['extension']:
+                raise HTTPBadRequest("Wrong Format '%s'" % params['format'])
+            if params['style'] != layer['wmts_style']:
+                raise HTTPBadRequest("Wrong Style '%s'" % params['style'])
+            if params['tilematrixset'] != layer['grid']:
+                raise HTTPBadRequest("Wrong TileMatrixSet '%s'" % params['tilematrixset'])
+
+        store_ref = [
+            params['layer'],
+            params['style'],
+            params['tilematrixset'],
+            params['format'],
+        ]
+        dimensions = []
+        for dimension in layer['dimensions']:
+            value = \
+                params[dimension['name'].lower()] \
+                if dimension['name'].lower() in params \
+                else dimension['default']
+            dimensions.append((dimension['name'], value))
+            store_ref.extend((dimension['name'], value))
+
+        store_ref = '/'.join(store_ref)
+        if store_ref in self.stores:
+            store = self.stores[store_ref]  # pragma: no cover
+        else:
+            if self.strict:
+                store = self.tilegeneration.get_store(self.cache, layer, dimensions)
+            else:
+                mime = {
+                    'png': 'image/png',
+                    'jpg': 'image/jpeg',
+                    'jpeg': 'image/jpeg',
+                    'json': 'application/json',
+                }
+                store = self.tilegeneration.get_store(self.cache, {
+                    'name': params['layer'],
+                    'wmts_style': params['style'],
+                    'grid': params['tilematrixset'],
+                    'extension': params['format'],
+                    'mime_type': mime[params['format']],
+                }, dimensions)
+
+        tile = Tile(TileCoord(
+            int(params['tilematrix']),
+            int(params['tilerow']),
+            int(params['tilecol'])
+        ))
+        tile = store.get_one(tile)
+        if tile:
+            self.request.response.body_file = tile.data
+            self.request.response.content_type = tile.content_type
+        else:
+            raise HTTPNoContent()

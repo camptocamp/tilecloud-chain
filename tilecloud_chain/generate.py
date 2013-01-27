@@ -13,7 +13,7 @@ from tilecloud.store.sqs import SQSTileStore
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.filter.logger import Logger
 
-from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty, add_comon_options, get_store
+from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty, add_comon_options
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ def _gene(options, gene, layer):
 
     if options.role in ('local', 'slave'):
         cache = gene.caches[options.cache]
-        cache_tilestore = get_store(cache, gene.layer)
+        cache_tilestore = gene.get_store(cache, gene.layer)
         if cache_tilestore is None:
             exit('unknown cache type: ' + cache['type'])  # pragma: no cover
 
