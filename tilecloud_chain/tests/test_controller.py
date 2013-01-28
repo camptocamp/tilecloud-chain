@@ -986,6 +986,7 @@ class TestController(CompareCase):
     CONFIG = """caches:
   local: {folder: /tmp/tiles, hosts: false, http_url: 'http://taurus/tiles', http_urls: false,
     name: local, type: filesystem}
+  mbtiles: {folder: /tmp/tiles/mbtiles, http_url: 'http://taurus/tiles', name: mbtiles, type: mbtiles}
   multi_host:
     folder: /tmp/tiles
     hosts: [wmts1, wmts2, wmts3]

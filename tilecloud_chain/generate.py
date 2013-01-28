@@ -9,11 +9,8 @@ from optparse import OptionParser
 
 from tilecloud import TileCoord, consume
 from tilecloud.store.url import URLTileStore
-from tilecloud.store.s3 import S3TileStore
-from tilecloud.store.filesystem import FilesystemTileStore
 from tilecloud.store.sqs import SQSTileStore
 from tilecloud.layout.wms import WMSTileLayout
-from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.logger import Logger
 
 from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty, add_comon_options
@@ -35,27 +32,8 @@ def _gene(options, gene, layer):
 
     if options.role in ('local', 'slave'):
         cache = gene.caches[options.cache]
-        # build layout
-        layout = WMTSTileLayout(
-            layer=layer,
-            url=cache['folder'],
-            style=gene.layer['wmts_style'],
-            format='.' + gene.layer['extension'],
-            dimensions=[
-                (str(dimension['name']), str(dimension['default']))
-                for dimension in gene.layer['dimensions']
-            ],
-            tile_matrix_set=gene.layer['grid'],
-            request_encoding='REST',
-        )
-        # store
-        if cache['type'] == 's3':
-            # on s3
-            cache_tilestore = S3TileStore(cache['bucket'], layout)  # pragma: no cover
-        elif cache['type'] == 'filesystem':
-            # on filesystem
-            cache_tilestore = FilesystemTileStore(layout)
-        else:
+        cache_tilestore = gene.get_store(cache, gene.layer)
+        if cache_tilestore is None:
             exit('unknown cache type: ' + cache['type'])  # pragma: no cover
 
     meta = gene.layer['meta']
