@@ -218,6 +218,28 @@ class TestController(CompareCase):
     </Layer>
 
     <Layer>
+      <ows:Title>point_px_buffer</ows:Title>
+      <ows:Identifier>point_px_buffer</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://taurus/tiles/1.0.0/point_px_buffer/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
       <ows:Title>mapnik</ows:Title>
       <ows:Identifier>mapnik</ows:Identifier>
       <Style isDefault="true">
@@ -595,6 +617,34 @@ class TestController(CompareCase):
     </Layer>
 
     <Layer>
+      <ows:Title>point_px_buffer</ows:Title>
+      <ows:Identifier>point_px_buffer</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/point_px_buffer/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts2/tiles/1.0.0/point_px_buffer/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts3/tiles/1.0.0/point_px_buffer/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
       <ows:Title>mapnik</ows:Title>
       <ows:Identifier>mapnik</ows:Identifier>
       <Style isDefault="true">
@@ -855,6 +905,19 @@ class TestController(CompareCase):
       </http>
    </source>
 
+   <source name="point_px_buffer" type="wms">
+      <getmap>
+         <params>
+            <FORMAT>image/png</FORMAT>
+            <LAYERS>point</LAYERS>
+            <TRANSPARENT>TRUE</TRANSPARENT>
+         </params>
+      </getmap>
+      <http>
+         <url></url>
+      </http>
+   </source>
+
    <source name="mapnik" type="wms">
       <getmap>
          <params>
@@ -947,6 +1010,19 @@ class TestController(CompareCase):
       <source>polygon2</source>
       <cache>default</cache>
       <grid>swissgrid_01</grid>
+      <metatile>8 8</metatile>
+      <metabuffer>128</metabuffer>
+      <expires>3600</expires> <!-- 1 hour -->
+      <auto_expire>13800</auto_expire> <!-- 4 hours -->
+      <dimensions>
+        <dimension type="values" name="DATE" default="2012">2012</dimension>
+      </dimensions>
+   </tileset>
+
+   <tileset name="point_px_buffer">
+      <source>point_px_buffer</source>
+      <cache>default</cache>
+      <grid>swissgrid_5</grid>
       <metatile>8 8</metatile>
       <metabuffer>128</metabuffer>
       <expires>3600</expires> <!-- 1 hour -->
@@ -1080,6 +1156,7 @@ layers:
     meta_size: 1
     mime_type: image/png
     name: all
+    px_buffer: false
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1096,6 +1173,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     name: line
+    px_buffer: false
     sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.line
     type: wms
     url: http://localhost/mapserv
@@ -1114,6 +1192,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     name: mapnik
+    px_buffer: false
     output_format: png
     sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
     type: mapnik
@@ -1137,6 +1216,7 @@ layers:
     meta_size: 1
     mime_type: application/utfgrid
     name: mapnik_grid
+    px_buffer: false
     output_format: grid
     resolution: 16
     sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
@@ -1156,6 +1236,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     name: point
+    px_buffer: false
     sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
     type: wms
     url: http://localhost/mapserv
@@ -1175,6 +1256,25 @@ layers:
     meta_size: 8
     mime_type: image/png
     name: point_hash
+    px_buffer: false
+    type: wms
+    url: http://localhost/mapserv
+    wmts_style: default
+  point_px_buffer:
+    connection: user=postgres password=postgres dbname=tests host=localhost
+    cost: *id001
+    dimensions: *id002
+    extension: png
+    grid: swissgrid_5
+    grid_ref: *id003
+    layers: point
+    meta: true
+    meta_buffer: 128
+    meta_size: 8
+    mime_type: image/png
+    name: point_px_buffer
+    px_buffer: 100.0
+    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1191,6 +1291,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     name: polygon
+    px_buffer: false
     sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
     type: wms
     url: http://localhost/mapserv
@@ -1208,6 +1309,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     name: polygon2
+    px_buffer: false
     sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
     type: wms
     url: http://localhost/mapserv
@@ -1344,6 +1446,10 @@ OpenLayers.Request.GET({
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "polygon2",
+            isBaseLayer: true
+        }));
+        map.addLayer(format.createLayer(capabilities, {
+            layer: "point_px_buffer",
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
