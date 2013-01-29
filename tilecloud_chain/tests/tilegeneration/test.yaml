@@ -73,6 +73,10 @@ layers:
     point:
         layers: point
         sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
+    point_px_buffer:
+        layers: point
+        px_buffer: 100
+        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
     point_hash:
         layers: point
         empty_metatile_detection:
