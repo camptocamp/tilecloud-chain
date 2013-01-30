@@ -140,6 +140,7 @@ class TileGeneration:
 
             error = self.validate(layer, name, 'name', attribute_type=str, default=lname) or error
             error = self.validate(layer, name, 'grid', attribute_type=str, required=True) or error
+            error = self.validate(layer, name, 'px_buffer', attribute_type=float, default=False) or error
             error = self.validate(
                 layer, name, 'type', attribute_type=str, required=True,
                 enumeration=['wms', 'mapnik']
@@ -494,6 +495,7 @@ class TileGeneration:
 
     def init_geom(self, extent=None):
         self.geom = None
+        self.z_geoms = None
         if not self.options.near and self.options.geom and \
                 'connection' in self.layer and 'sql' in self.layer:
             conn = psycopg2.connect(self.layer['connection'])
@@ -517,8 +519,19 @@ class TileGeneration:
                 (extent[2], extent[1]),
             ))
 
+        if self.layer['px_buffer']:
+            self.z_geoms = {}
+            for zoom, resolution in enumerate(self.layer['grid_ref']['resolutions']):
+                self.z_geoms[zoom] = self.geom.buffer(resolution * self.layer['px_buffer'])
+
     def add_geom_filter(self, queue_store=None):
-        if self.geom:
+        if self.z_geoms:
+            self.ifilter(IntersectGeometryFilter(
+                grid=self.get_grid(),
+                z_geoms=self.z_geoms,
+                queue_store=queue_store
+            ))
+        elif self.geom:
             self.ifilter(IntersectGeometryFilter(
                 grid=self.get_grid(),
                 geom=self.geom,
@@ -733,15 +746,19 @@ class HashLogger(object):  # pragma: no cover
 
 class IntersectGeometryFilter(object):
 
-    def __init__(self, grid, geom=None, queue_store=None):
+    def __init__(self, grid, geom=None, z_geoms=None, queue_store=None):
         self.grid = grid
-        self.geom = geom or self.bbox_polygon(self.grid.max_extent)
+        self.z_geoms = z_geoms
+        if self.z_geoms is None:
+            self.geom = geom or self.bbox_polygon(self.grid['bbox'])
         self.queue_store = queue_store
 
     def __call__(self, tile):
         intersects = self.bbox_polygon(
-            self.grid['obj'].extent(tile.tilecoord)). \
-            intersects(self.geom)
+            self.grid['obj'].extent(tile.tilecoord)
+        ).intersects(
+            self.geom if not self.z_geoms else self.z_geoms[tile.tilecoord.z]
+        )
 
         if not intersects and hasattr(tile, 'metatile'):
             tile.metatile.elapsed_togenerate -= 1
