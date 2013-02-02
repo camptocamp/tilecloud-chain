@@ -259,6 +259,15 @@ Tile: 4/0/0
             '"                ", "                ", "                ", "                ", "                ", '
             '"                "]}')
 
+    def test_mapnik_grid_drop(self):
+        self.assert_tiles_generated(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l mapnik_grid_drop -z 0',
+            generate.main,
+            "/tmp/tiles/",
+            '1.0.0/mapnik_grid_drop/default/2012/swissgrid_5/0/%i/%i.json',
+            ((5, 7), (7, 4))
+        )
+
     def test_not_authorised_user(self):
         self.assert_cmd_exit_equals(
             './buildout/bin/generate_tiles -c tilegeneration/test-authorised.yaml',
