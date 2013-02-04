@@ -8,9 +8,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 
 install_requires = [
-    'tilecloud>=0.2dev-20121011',
-    'pillow',
-    'requests==0.14.2',
+    'tilecloud>=0.2dev-20130204',
     'psycopg2',
     'Shapely',
     'boto>=2.0',

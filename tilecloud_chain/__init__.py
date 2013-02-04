@@ -169,6 +169,9 @@ class TileGeneration:
                 if layer['output_format'] == 'grid':
                     error = self.validate(layer, name, 'resolution', attribute_type=int, default=4) or error
                     error = self.validate(layer, name, 'layers_fields', attribute_type=dict, default={}) or error
+                    error = self.validate(
+                        layer, name, 'drop_empty_utfgrid', attribute_type=bool, default=False
+                    ) or error
                     if layer['meta']:
                         logger.error(
                             "The layer '%s' is of type Mapnik/Grid, that can't support matatiles." %

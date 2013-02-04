@@ -174,6 +174,28 @@ class TestController(CompareCase):
     </Layer>
 
     <Layer>
+      <ows:Title>mapnik_grid_drop</ows:Title>
+      <ows:Identifier>mapnik_grid_drop</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>application/utfgrid</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="application/utfgrid" resourceType="tile"
+                   template="http://taurus/tiles/1.0.0/mapnik_grid_drop/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
       <ows:Title>line</ows:Title>
       <ows:Identifier>line</ows:Identifier>
       <Style isDefault="true">
@@ -561,6 +583,34 @@ class TestController(CompareCase):
     </Layer>
 
     <Layer>
+      <ows:Title>mapnik_grid_drop</ows:Title>
+      <ows:Identifier>mapnik_grid_drop</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>application/utfgrid</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="application/utfgrid" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/mapnik_grid_drop/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+      <ResourceURL format="application/utfgrid" resourceType="tile"
+                   template="http://wmts2/tiles/1.0.0/mapnik_grid_drop/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+      <ResourceURL format="application/utfgrid" resourceType="tile"
+                   template="http://wmts3/tiles/1.0.0/mapnik_grid_drop/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
       <ows:Title>line</ows:Title>
       <ows:Identifier>line</ows:Identifier>
       <Style isDefault="true">
@@ -879,6 +929,19 @@ class TestController(CompareCase):
       </http>
    </source>
 
+   <source name="mapnik_grid_drop" type="wms">
+      <getmap>
+         <params>
+            <FORMAT>application/utfgrid</FORMAT>
+            <LAYERS></LAYERS>
+            <TRANSPARENT>FALSE</TRANSPARENT>
+         </params>
+      </getmap>
+      <http>
+         <url></url>
+      </http>
+   </source>
+
    <source name="line" type="wms">
       <getmap>
          <params>
@@ -984,6 +1047,17 @@ class TestController(CompareCase):
 
    <tileset name="mapnik_grid">
       <source>mapnik_grid</source>
+      <cache>default</cache>
+      <grid>swissgrid_5</grid>
+      <expires>3600</expires> <!-- 1 hour -->
+      <auto_expire>13800</auto_expire> <!-- 4 hours -->
+      <dimensions>
+        <dimension type="values" name="DATE" default="2012">2012</dimension>
+      </dimensions>
+   </tileset>
+
+   <tileset name="mapnik_grid_drop">
+      <source>mapnik_grid_drop</source>
       <cache>default</cache>
       <grid>swissgrid_5</grid>
       <expires>3600</expires> <!-- 1 hour -->
@@ -1206,6 +1280,7 @@ layers:
     extension: json
     grid: swissgrid_5
     grid_ref: *id003
+    drop_empty_utfgrid: false
     layers_fields:
       line: [name]
       point: [name]
@@ -1216,6 +1291,30 @@ layers:
     meta_size: 1
     mime_type: application/utfgrid
     name: mapnik_grid
+    px_buffer: false
+    output_format: grid
+    resolution: 16
+    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    type: mapnik
+    url: http://localhost/mapserv
+    wmts_style: default
+  mapnik_grid_drop:
+    connection: user=postgres password=postgres dbname=tests host=localhost
+    cost: *id001
+    data_buffer: 128
+    dimensions: *id002
+    extension: json
+    grid: swissgrid_5
+    grid_ref: *id003
+    drop_empty_utfgrid: true
+    layers_fields:
+      point: [name]
+    mapfile: mapfile/test.mapnik
+    meta: false
+    meta_buffer: 0
+    meta_size: 1
+    mime_type: application/utfgrid
+    name: mapnik_grid_drop
     px_buffer: false
     output_format: grid
     resolution: 16
@@ -1437,6 +1536,11 @@ OpenLayers.Request.GET({
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "mapnik_grid",
+            isBaseLayer: false,
+            utfgridResolution: 16
+        }));
+        map.addLayer(format.createLayer(capabilities, {
+            layer: "mapnik_grid_drop",
             isBaseLayer: false,
             utfgridResolution: 16
         }));

@@ -85,7 +85,8 @@ def _gene(options, gene, layer):
                     data_buffer=gene.layer['data_buffer'],
                     output_format=gene.layer['output_format'],
                     resolution=gene.layer['resolution'],
-                    layers_fields=gene.layer['layers_fields']
+                    layers_fields=gene.layer['layers_fields'],
+                    drop_empty_utfgrid=gene.layer['drop_empty_utfgrid'],
                 ))
             else:
                 gene.get(MapnikTileStore(
