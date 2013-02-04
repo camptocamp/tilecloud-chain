@@ -121,6 +121,8 @@ layers:
         extension: json
         # mime type used for the WMTS capabilities generation
         mime_type: application/utfgrid
+        # drop the empty tiles
+        drop_empty_utfgrid: on
         # UTFGrid resolution [px]
         resolution: 4
         # no metatiles (not supported for UTFGrid)

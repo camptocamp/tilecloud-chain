@@ -124,6 +124,21 @@ layers:
             - name
             polygon:
             - name
+    mapnik_grid_drop:
+        type: mapnik
+        mapfile: mapfile/test.mapnik
+        meta: off
+        meta_buffer: 0
+        data_buffer: 128
+        output_format: grid
+        mime_type: application/utfgrid
+        extension: json
+        drop_empty_utfgrid: on
+        resolution: 16
+        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+        layers_fields:
+            point:
+            - name
 generation:
     default_cache: local
     default_layers: [line, polygon]
