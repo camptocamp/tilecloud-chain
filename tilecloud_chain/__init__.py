@@ -9,6 +9,7 @@ from math import ceil, sqrt
 from itertools import imap, ifilter
 from hashlib import sha1
 from cStringIO import StringIO
+from fractions import Fraction
 
 try:
     from PIL import Image
@@ -107,21 +108,26 @@ class TileGeneration:
             error = self.validate(grid, name, 'name', attribute_type=str, default=gname) or error
             error = self.validate(
                 grid, name, 'resolution_scale',
-                attribute_type=int, default=1
+                attribute_type=int
             ) or error
             error = self.validate(
                 grid, name, 'resolutions',
                 attribute_type=float, is_array=True, required=True
             ) or error
+            if not error and 'resolution_scale' not in grid:
+                scale = self._resolution_scale(grid['resolutions'])
+                grid['resolution_scale'] = scale
+            elif not error:
+                scale = grid['resolution_scale']
+                for r in grid['resolutions']:
+                    if r * scale % 1 != 0.0:
+                        logger.error("The reolution %s * resolution_scale %i is not an integer." % (r, scale))
+                        error = True
+
             error = self.validate(grid, name, 'bbox', attribute_type=float, is_array=True, required=True) or error
             error = self.validate(grid, name, 'srs', attribute_type=str, required=True) or error
             error = self.validate(grid, name, 'unit', attribute_type=str, default='m') or error
             error = self.validate(grid, name, 'tile_size', attribute_type=int, default=256) or error
-            scale = grid['resolution_scale']
-            for r in grid.get('resolutions', []):
-                if r * scale % 1 != 0.0:
-                    logger.error("The reolution %s * resolution_scale %i is not an integer." % (r, scale))
-                    error = True
 
             grid['obj'] = FreeTileGrid(
                 resolutions=[int(r * scale) for r in grid['resolutions']],
@@ -341,6 +347,33 @@ class TileGeneration:
         self.layer = None
         if layer_name and not error:
             self.set_layer(layer_name, options)
+
+    def _primefactors(self, x):
+        factorlist = []
+        loop = 2
+        while loop <= x:
+            if x % loop == 0:
+                x /= loop
+                factorlist.append(loop)
+            else:
+                loop += 1
+        return factorlist
+
+    def _resolution_scale(self, resolutions):
+        prime_fact = {}
+        for resolution in resolutions:
+            denominator = Fraction(str(resolution)).denominator
+            prime_factors = self._primefactors(denominator)
+            for factor in set(prime_factors):
+                if factor not in prime_fact:
+                    prime_fact[factor] = 0
+
+                prime_fact[factor] = max(prime_fact[factor], len([f for f in prime_factors if f == factor]))
+
+        result = 1
+        for fact, nb in prime_fact.items():
+            result *= fact ** nb
+        return result
 
     def get_store(self, cache, layer, dimensions=None):
         # build layout
