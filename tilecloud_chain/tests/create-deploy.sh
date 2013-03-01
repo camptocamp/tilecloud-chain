@@ -2,6 +2,7 @@ yes ""|adduser --ingroup travis deploy --disabled-password
 mkdir /home/deploy/.ssh
 ssh-keygen -t rsa -C your_email@youremail.com -P '' -f /home/deploy/.ssh/id_rsa
 touch /home/deploy/.ssh/authorized_keys
+chmod 600 /home/deploy/.ssh/authorized_keys
 cat /home/travis/.ssh/id_rsa.pub >> /home/deploy/.ssh/authorized_keys
 cat /home/deploy/.ssh/id_rsa.pub >> /home/deploy/.ssh/authorized_keys
 ln -s /home/deploy/.ssh/authorized_keys /home/deploy/.ssh/authorized_keys2
