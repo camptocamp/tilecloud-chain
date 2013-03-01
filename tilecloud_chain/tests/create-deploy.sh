@@ -4,6 +4,7 @@ ssh-keygen -t rsa -C your_email@youremail.com -P '' -f /home/deploy/.ssh/id_rsa
 touch /home/deploy/.ssh/authorized_keys
 cat /home/travis/.ssh/id_rsa.pub >> /home/deploy/.ssh/authorized_keys
 cat /home/deploy/.ssh/id_rsa.pub >> /home/deploy/.ssh/authorized_keys
+ln -s /home/deploy/.ssh/authorized_keys /home/deploy/.ssh/authorized_keys2
 touch /home/deploy/.ssh/config
 echo "Host localhost" >> /home/deploy/.ssh/config
 echo "   StrictHostKeyChecking no" >> /home/deploy/.ssh/config
