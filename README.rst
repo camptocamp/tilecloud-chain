@@ -50,5 +50,5 @@ From source
 
 Build it::
 
-    python bootstrap.py --distribute
+    python bootstrap.py --distribute -v 1.7.1
     ./buildout/bin/buildout
