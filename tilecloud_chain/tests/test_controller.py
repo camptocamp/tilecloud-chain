@@ -375,6 +375,36 @@ class TestController(CompareCase):
 
     </TileMatrixSet>
 
+    <TileMatrixSet>
+      <ows:Identifier>swissgrid_025</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>892.857142857</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>7500</MatrixWidth>
+        <MatrixHeight>5000</MatrixHeight>
+      </TileMatrix>
+
+    </TileMatrixSet>
+
+    <TileMatrixSet>
+      <ows:Identifier>swissgrid_2_5</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>8928.57142857</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>750</MatrixWidth>
+        <MatrixHeight>500</MatrixHeight>
+      </TileMatrix>
+
+    </TileMatrixSet>
+
   </Contents>
 </Capabilities>"""]])
 
@@ -814,6 +844,36 @@ class TestController(CompareCase):
 
     </TileMatrixSet>
 
+    <TileMatrixSet>
+      <ows:Identifier>swissgrid_025</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>892.857142857</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>7500</MatrixWidth>
+        <MatrixHeight>5000</MatrixHeight>
+      </TileMatrix>
+
+    </TileMatrixSet>
+
+    <TileMatrixSet>
+      <ows:Identifier>swissgrid_2_5</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>8928.57142857</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>750</MatrixWidth>
+        <MatrixHeight>500</MatrixHeight>
+      </TileMatrix>
+
+    </TileMatrixSet>
+
   </Contents>
 </Capabilities>"""
 
@@ -855,6 +915,24 @@ class TestController(CompareCase):
    </grid>
 
    <grid name="swissgrid_5">
+      <size>256 256</size>
+      <extent>420000.0 30000.0 900000.0 350000.0</extent>
+      <srs>epsg:21781</srs>
+      <units>m</units>
+      <resolutions>100.0 50.0 20.0 10.0 5.0 2.0 1.0 0.5 </resolutions>
+      <origin>top-left</origin>
+   </grid>
+
+   <grid name="swissgrid_025">
+      <size>256 256</size>
+      <extent>420000.0 30000.0 900000.0 350000.0</extent>
+      <srs>epsg:21781</srs>
+      <units>m</units>
+      <resolutions>100.0 50.0 20.0 10.0 5.0 2.0 1.0 0.5 </resolutions>
+      <origin>top-left</origin>
+   </grid>
+
+   <grid name="swissgrid_2_5">
       <size>256 256</size>
       <extent>420000.0 30000.0 900000.0 350000.0</extent>
       <srs>epsg:21781</srs>
@@ -1186,6 +1264,22 @@ grids:
     name: swissgrid_01
     resolution_scale: 10
     resolutions: [1.0, 0.2, 0.1]
+    srs: epsg:21781
+    tile_size: 256
+    unit: m
+  swissgrid_025:
+    bbox: [420000.0, 30000.0, 900000.0, 350000.0]
+    name: swissgrid_025
+    resolution_scale: 4
+    resolutions: [0.25]
+    srs: epsg:21781
+    tile_size: 256
+    unit: m
+  swissgrid_2_5:
+    bbox: [420000.0, 30000.0, 900000.0, 350000.0]
+    name: swissgrid_2_5
+    resolution_scale: 2
+    resolutions: [2.5]
     srs: epsg:21781
     tile_size: 256
     unit: m
