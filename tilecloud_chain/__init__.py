@@ -745,7 +745,8 @@ class HashDropper(object):
         else:
             if self.store is not None:
                 if tile.tilecoord.n != 1:
-                    self.store.delete((Tile(tilecoord) for tilecoord in tile.tilecoord))
+                    for tilecoord in tile.tilecoord:
+                        self.store.delete_one(Tile(tilecoord))
                 else:
                     self.store.delete_one(tile)
             return None

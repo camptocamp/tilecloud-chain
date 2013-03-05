@@ -304,3 +304,44 @@ size: 854""", True, False)
 #            generate.main,
 #            """Daemonize with pid [0-9]*.""",
 #            True)
+
+    def _touch(self, pattern, tiles):
+        for tile in tiles:
+            path = pattern % tile
+            directory = os.path.dirname(path)
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            f = open(path, 'w')
+            f.close()
+
+    def test_delete_meta(self):
+        if os.path.exists('/tmp/tiles/'):
+            shutil.rmtree('/tmp/tiles/')
+        self._touch(
+            '/tmp/tiles/1.0.0/point_hash/default/2012/swissgrid_5/0/%i/%i.png',
+            list(product(range(12), range(16)))
+        )
+        self.assert_tiles_generated_deleted(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash -z 0',
+            generate.main,
+            '/tmp/tiles/',
+            '1.0.0/point_hash/default/2012/swissgrid_5/0/%i/%i.png', [
+                (5, 7), (7, 4)
+            ]
+        )
+
+    def test_delete_no_meta(self):
+        if os.path.exists('/tmp/tiles/'):
+            shutil.rmtree('/tmp/tiles/')
+        self._touch(
+            '/tmp/tiles/1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png',
+            list(product(range(12), range(16)))
+        )
+        self.assert_tiles_generated_deleted(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash_no_meta -z 0',
+            generate.main,
+            '/tmp/tiles/',
+            '1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png', [
+                (5, 7), (7, 4)
+            ]
+        )

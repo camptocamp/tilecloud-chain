@@ -96,6 +96,12 @@ layers:
         empty_tile_detection:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+    point_hash_no_meta:
+        layers: point
+        meta: off
+        empty_tile_detection:
+            size: 334
+            hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     line:
         layers: line
         sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.line
