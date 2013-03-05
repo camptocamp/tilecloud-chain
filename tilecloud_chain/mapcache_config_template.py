@@ -13,7 +13,7 @@ mapcache_config_template = """<?xml version="1.0" encoding="UTF-8"?>
       <extent>{{grid['bbox'][0]}} {{grid['bbox'][1]}} {{grid['bbox'][2]}} {{grid['bbox'][3]}}</extent>
       <srs>{{grid['srs']}}</srs>
       <units>{{grid['unit']}}</units>
-      <resolutions>{% for r in mapcache['resolutions'] %}{{r}} {% endfor %}</resolutions>
+      <resolutions>{% for r in grid['resolutions'] %}{{r}} {% endfor %}</resolutions>
       <origin>top-left</origin>
    </grid>
 {% endfor %}

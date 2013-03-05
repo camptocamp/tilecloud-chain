@@ -727,10 +727,6 @@ def _validate_generate_mapcache_config(gene):
         default='apache/mapcache.xml.in'
     ) or error
     error = gene.validate(
-        gene.config['mapcache'], 'mapcache', 'resolutions', attribute_type=float,
-        is_array=True, required=True
-    ) or error
-    error = gene.validate(
         gene.config['mapcache'], 'mapcache', 'memcache_host', attribute_type=str,
         default='localhost'
     ) or error
@@ -742,25 +738,6 @@ def _validate_generate_mapcache_config(gene):
         gene.config['mapcache'], 'mapcache', 'layers', attribute_type=str, is_array=True,
         required=True, enumeration=gene.config['layers'].keys()
     ) or error
-
-    if 'layers' in gene.config['mapcache'] and 'resolutions' in gene.config['mapcache']:
-        for layer in gene.config['mapcache']['layers']:
-            if len(gene.layers[layer]['grid_ref']['resolutions']) > gene.config['mapcache']['resolutions']:
-                logger.error(
-                    "The layer '%s' (grid '%s') has more resolutions than mapcache." %
-                    (layer, gene.layers[layer]['grid'])
-                )  # pragma: no cover
-                error = True  # pragma: no cover
-            else:
-                for i, resolution in enumerate(gene.layers[layer]['grid_ref']['resolutions']):
-                    if resolution != gene.config['mapcache']['resolutions'][i]:
-                        logger.error(
-                            "The resolutions of layer '%s' (grid '%s') "
-                            "don't corresponds to mapcache resolutions (%f != %s)." %
-                            (layer, gene.layers[layer]['grid'],
-                            resolution, gene.config['mapcache']['resolutions'][i])
-                        )  # pragma: no cover
-                        error = True  # pragma: no cover
 
     if error:
         exit(1)  # pragma: no cover

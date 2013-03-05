@@ -146,6 +146,7 @@ class TileGeneration:
 
             error = self.validate(layer, name, 'name', attribute_type=str, default=lname) or error
             error = self.validate(layer, name, 'grid', attribute_type=str, required=True) or error
+            error = self.validate(layer, name, 'min_resolution_seed', attribute_type=float) or error
             error = self.validate(layer, name, 'px_buffer', attribute_type=float, default=False) or error
             error = self.validate(
                 layer, name, 'type', attribute_type=str, required=True,
@@ -618,6 +619,12 @@ class TileGeneration:
         if options.time and not options.zoom:
             options.zoom = [max(bounding_pyramid.bounds)]
 
+        if not options.zoom and 'min_resolution_seed' in self.layer:
+            options.zoom = []
+            for z, resolution in enumerate(self.layer['grid_ref']['resolutions']):
+                if resolution >= self.layer['min_resolution_seed']:
+                    options.zoom.append(z)
+
         meta = self.layer['meta']
         if meta:
             if options.zoom:
@@ -646,7 +653,8 @@ class TileGeneration:
 
     def set_tilecoords(self, tilecoords):
         self.tilestream = (
-            Tile(tilecoord) for tilecoord in tilecoords)
+            Tile(tilecoord) for tilecoord in tilecoords
+        )
 
     def set_store(self, store):  # pragma: no cover
         self.tilestream = store.list()
