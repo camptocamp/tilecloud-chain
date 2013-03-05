@@ -64,6 +64,28 @@ class TestController(CompareCase):
   <Contents>
 
     <Layer>
+      <ows:Title>point_hash_no_meta</ows:Title>
+      <ows:Identifier>point_hash_no_meta</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://taurus/tiles/1.0.0/point_hash_no_meta/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
       <ows:Title>all</ows:Title>
       <ows:Identifier>all</ows:Identifier>
       <Style isDefault="true">
@@ -471,6 +493,34 @@ class TestController(CompareCase):
   </ows:OperationsMetadata>
   <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
+
+    <Layer>
+      <ows:Title>point_hash_no_meta</ows:Title>
+      <ows:Identifier>point_hash_no_meta</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/point_hash_no_meta/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts2/tiles/1.0.0/point_hash_no_meta/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts3/tiles/1.0.0/point_hash_no_meta/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
 
     <Layer>
       <ows:Title>all</ows:Title>
@@ -942,6 +992,19 @@ class TestController(CompareCase):
    </grid>
 
 
+   <source name="point_hash_no_meta" type="wms">
+      <getmap>
+         <params>
+            <FORMAT>image/png</FORMAT>
+            <LAYERS>point</LAYERS>
+            <TRANSPARENT>TRUE</TRANSPARENT>
+         </params>
+      </getmap>
+      <http>
+         <url></url>
+      </http>
+   </source>
+
    <source name="all" type="wms">
       <getmap>
          <params>
@@ -1072,6 +1135,17 @@ class TestController(CompareCase):
       </http>
    </source>
 
+
+   <tileset name="point_hash_no_meta">
+      <source>point_hash_no_meta</source>
+      <cache>default</cache>
+      <grid>swissgrid_5</grid>
+      <expires>3600</expires> <!-- 1 hour -->
+      <auto_expire>13800</auto_expire> <!-- 4 hours -->
+      <dimensions>
+        <dimension type="values" name="DATE" default="2012">2012</dimension>
+      </dimensions>
+   </tileset>
 
    <tileset name="all">
       <source>all</source>
@@ -1434,6 +1508,24 @@ layers:
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
+  point_hash_no_meta:
+    connection: user=postgres password=postgres dbname=tests host=localhost
+    cost: *id001
+    dimensions: *id002
+    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
+    extension: png
+    grid: swissgrid_5
+    grid_ref: *id003
+    layers: point
+    meta: false
+    meta_buffer: 128
+    meta_size: 1
+    mime_type: image/png
+    name: point_hash_no_meta
+    px_buffer: false
+    type: wms
+    url: http://localhost/mapserv
+    wmts_style: default
   point_hash:
     connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
@@ -1612,6 +1704,10 @@ OpenLayers.Request.GET({
         }
         var capabilities = format.read(doc);
 
+        map.addLayer(format.createLayer(capabilities, {
+            layer: "point_hash_no_meta",
+            isBaseLayer: true
+        }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "all",
             isBaseLayer: true
