@@ -165,6 +165,19 @@ Tile: 4/0/0
             ]
         )
 
+    def test_no_zoom(self):
+        self.assert_tiles_generated(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point',
+            generate.main,
+            "/tmp/tiles/",
+            '1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png', [
+                ('point', 0, 5, 7), ('point', 0, 7, 4),
+                ('point', 1, 11, 14), ('point', 1, 15, 8),
+                ('point', 2, 29, 35), ('point', 2, 39, 21),
+                ('point', 3, 58, 70), ('point', 3, 78, 42), ('point', 3, 78, 43),
+            ]
+        )
+
     def test_py_buffer(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_px_buffer --zoom 0-2',

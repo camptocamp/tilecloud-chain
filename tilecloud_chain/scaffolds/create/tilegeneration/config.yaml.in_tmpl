@@ -37,9 +37,11 @@ caches:
 
 # this defines some defaults values for all the layers
 layer_default:
+    type: wms
     # name of the grid to use (defined in grids)
     grid: swissgrid_05
-    type: wms
+    # The minimum resolution to seed, useful to use with mapcache, optional.
+    # min_resolution_seed: 1
     # the URL of the WMS server to used
     url: http://${facts:fqdn}/${vars:instanceid}/mapserv
     # file name extension
