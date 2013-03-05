@@ -83,6 +83,9 @@ class CompareCase(TestCase):
         if os.path.exists(directory):
             shutil.rmtree(directory)
 
+        self.assert_tiles_generated_deleted(cmd, main_func, directory, tiles_pattern, tiles)
+
+    def assert_tiles_generated_deleted(self, cmd, main_func, directory, tiles_pattern, tiles):
         self.assert_main_equals(cmd, main_func, [])
         count = 0
         for path, dirs, files in os.walk(directory):
