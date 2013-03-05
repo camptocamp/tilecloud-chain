@@ -84,6 +84,7 @@ layers:
     point:
         layers: point
         sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
+        min_resolution_seed: 10
     point_px_buffer:
         layers: point
         px_buffer: 100
@@ -180,7 +181,6 @@ mapcache:
     mapserver_url: http://localhost/mapserv
     mapcache_url: /mapcache
     config_file: mapcache.xml
-    resolutions: [100, 50, 20, 10, 5, 2, 1, 0.5]
     layers: [point, line, polygon]
 
 sns:

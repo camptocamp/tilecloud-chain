@@ -910,7 +910,7 @@ class TestController(CompareCase):
       <extent>420000.0 30000.0 900000.0 350000.0</extent>
       <srs>epsg:21781</srs>
       <units>m</units>
-      <resolutions>100.0 50.0 20.0 10.0 5.0 2.0 1.0 0.5 </resolutions>
+      <resolutions>1.0 0.2 0.1 </resolutions>
       <origin>top-left</origin>
    </grid>
 
@@ -919,7 +919,7 @@ class TestController(CompareCase):
       <extent>420000.0 30000.0 900000.0 350000.0</extent>
       <srs>epsg:21781</srs>
       <units>m</units>
-      <resolutions>100.0 50.0 20.0 10.0 5.0 2.0 1.0 0.5 </resolutions>
+      <resolutions>100.0 50.0 20.0 10.0 5.0 </resolutions>
       <origin>top-left</origin>
    </grid>
 
@@ -928,7 +928,7 @@ class TestController(CompareCase):
       <extent>420000.0 30000.0 900000.0 350000.0</extent>
       <srs>epsg:21781</srs>
       <units>m</units>
-      <resolutions>100.0 50.0 20.0 10.0 5.0 2.0 1.0 0.5 </resolutions>
+      <resolutions>0.25 </resolutions>
       <origin>top-left</origin>
    </grid>
 
@@ -937,7 +937,7 @@ class TestController(CompareCase):
       <extent>420000.0 30000.0 900000.0 350000.0</extent>
       <srs>epsg:21781</srs>
       <units>m</units>
-      <resolutions>100.0 50.0 20.0 10.0 5.0 2.0 1.0 0.5 </resolutions>
+      <resolutions>2.5 </resolutions>
       <origin>top-left</origin>
    </grid>
 
@@ -1428,6 +1428,7 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
+    min_resolution_seed: 10.0
     name: point
     px_buffer: false
     sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
@@ -1514,7 +1515,6 @@ mapcache:
   mapserver_url: http://localhost/mapserv
   memcache_host: localhost
   memcache_port: '11211'
-  resolutions: [100.0, 50.0, 20.0, 10.0, 5.0, 2.0, 1.0, 0.5]
 openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}
 sns: {region: eu-west-1, topic: sns_topic}"""
 

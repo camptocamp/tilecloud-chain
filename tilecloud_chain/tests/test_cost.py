@@ -114,13 +114,11 @@ ESB storage: %(esb)s [$/month]"""
                 'Calculate zoom 1.',
                 'Calculate zoom 2.',
                 'Calculate zoom 3.',
-                'Calculate zoom 4.',
                 '',
                 '1 meta tiles in zoom 0.',
                 '1 meta tiles in zoom 1.',
                 '2 meta tiles in zoom 2.',
                 '2 meta tiles in zoom 3.',
-                '2 meta tiles in zoom 4.',
                 self.ZOOM_SUMMARY % {
                     'tiles': '2',
                     'zoom': '0',
@@ -157,17 +155,8 @@ ESB storage: %(esb)s [$/month]"""
                     'esb': '0.00',
                     'sqs': '0.00'
                 },
-                self.ZOOM_SUMMARY % {
-                    'tiles': '3',
-                    'zoom': '4',
-                    'time': '0 0:00:00',
-                    's3': '0.00',
-                    'ec2': '0.00',
-                    'esb': '0.00',
-                    'sqs': '0.00'
-                },
                 self.LAYER_SUMMARY % {
-                    'tiles': '12',
+                    'tiles': '9',
                     'time': '0 0:00:00',
                     'cost': '0.00'
                 },
