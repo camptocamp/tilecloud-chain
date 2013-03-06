@@ -28,7 +28,7 @@ tests_require = [
 
 setup(
         name='tilecloud-chain',
-        version='0.4',
+        version='0.5',
         description='tilecloud chain',
         long_description=README,
         classifiers=[
