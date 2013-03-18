@@ -184,8 +184,6 @@ cost:
     esb_size: 100
 
 mapcache:
-    mapserver_url: http://localhost/mapserv
-    mapcache_url: /mapcache
     config_file: mapcache.xml
     layers: [point, line, polygon]
 

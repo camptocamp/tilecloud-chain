@@ -1001,7 +1001,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url></url>
+         <url>http://localhost/mapserv</url>
       </http>
    </source>
 
@@ -1014,7 +1014,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url></url>
+         <url>http://localhost/mapserv</url>
       </http>
    </source>
 
@@ -1027,7 +1027,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url></url>
+         <url>http://localhost/mapserv</url>
       </http>
    </source>
 
@@ -1040,7 +1040,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url></url>
+         <url>http://localhost/mapserv</url>
       </http>
    </source>
 
@@ -1053,7 +1053,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url></url>
+         <url>http://localhost/mapserv</url>
       </http>
    </source>
 
@@ -1066,7 +1066,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url></url>
+         <url>http://localhost/mapserv</url>
       </http>
    </source>
 
@@ -1079,7 +1079,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url></url>
+         <url>http://localhost/mapserv</url>
       </http>
    </source>
 
@@ -1092,7 +1092,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url></url>
+         <url>http://localhost/mapserv</url>
       </http>
    </source>
 
@@ -1105,7 +1105,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url></url>
+         <url>http://localhost/mapserv</url>
       </http>
    </source>
 
@@ -1118,7 +1118,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url></url>
+         <url>http://localhost/mapserv</url>
       </http>
    </source>
 
@@ -1131,7 +1131,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url></url>
+         <url>http://localhost/mapserv</url>
       </http>
    </source>
 
@@ -1140,6 +1140,7 @@ class TestController(CompareCase):
       <source>point_hash_no_meta</source>
       <cache>default</cache>
       <grid>swissgrid_5</grid>
+      <format>image/png</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
@@ -1151,6 +1152,7 @@ class TestController(CompareCase):
       <source>all</source>
       <cache>default</cache>
       <grid>swissgrid_5</grid>
+      <format>image/png</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
@@ -1164,6 +1166,7 @@ class TestController(CompareCase):
       <grid>swissgrid_5</grid>
       <metatile>8 8</metatile>
       <metabuffer>128</metabuffer>
+      <format>image/png</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
@@ -1177,6 +1180,7 @@ class TestController(CompareCase):
       <grid>swissgrid_5</grid>
       <metatile>8 8</metatile>
       <metabuffer>128</metabuffer>
+      <format>image/png</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
@@ -1190,6 +1194,7 @@ class TestController(CompareCase):
       <grid>swissgrid_5</grid>
       <metatile>8 8</metatile>
       <metabuffer>128</metabuffer>
+      <format>image/png</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
@@ -1201,6 +1206,7 @@ class TestController(CompareCase):
       <source>mapnik_grid</source>
       <cache>default</cache>
       <grid>swissgrid_5</grid>
+      <format>application/utfgrid</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
@@ -1212,6 +1218,7 @@ class TestController(CompareCase):
       <source>mapnik_grid_drop</source>
       <cache>default</cache>
       <grid>swissgrid_5</grid>
+      <format>application/utfgrid</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
@@ -1225,6 +1232,7 @@ class TestController(CompareCase):
       <grid>swissgrid_5</grid>
       <metatile>8 8</metatile>
       <metabuffer>128</metabuffer>
+      <format>image/png</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
@@ -1238,6 +1246,7 @@ class TestController(CompareCase):
       <grid>swissgrid_01</grid>
       <metatile>8 8</metatile>
       <metabuffer>128</metabuffer>
+      <format>image/png</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
@@ -1251,6 +1260,7 @@ class TestController(CompareCase):
       <grid>swissgrid_5</grid>
       <metatile>8 8</metatile>
       <metabuffer>128</metabuffer>
+      <format>image/png</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
@@ -1264,6 +1274,7 @@ class TestController(CompareCase):
       <grid>swissgrid_5</grid>
       <metatile>8 8</metatile>
       <metabuffer>0</metabuffer>
+      <format>image/png</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
@@ -1271,6 +1282,15 @@ class TestController(CompareCase):
       </dimensions>
    </tileset>
 
+
+   <format name="image/png" type="PNG">
+      <compression>fast</compression>
+      <colors>256</colors>
+   </format>
+   <format name="image/jpeg" type="JPEG">
+      <quality>90</quality>
+      <photometric>rgb</photometric>
+   </format>
 
    <service type="wms" enabled="false"/>
    <service type="wmts" enabled="true"/>
@@ -1280,7 +1300,7 @@ class TestController(CompareCase):
    <service type="ve" enabled="false"/>
    <service type="demo" enabled="false"/>
 
-   <default_format>JPEG</default_format>
+   <default_format>image/jpeg</default_format>
    <errors>report</errors>
    <lock_dir>/tmp</lock_dir>
 </mapcache>"""]])
@@ -1600,13 +1620,7 @@ layers:
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
-mapcache:
-  config_file: mapcache.xml
-  layers: [point, line, polygon]
-  mapcache_url: /mapcache
-  mapserver_url: http://localhost/mapserv
-  memcache_host: localhost
-  memcache_port: '11211'
+mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: '11211'}
 openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}
 sns: {region: eu-west-1, topic: sns_topic}"""
 

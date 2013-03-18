@@ -719,12 +719,8 @@ def _validate_generate_mapcache_config(gene):
     error = False
     error = gene.validate(gene.config, 'config', 'mapcache', attribute_type=dict, default={}) or error
     error = gene.validate(
-        gene.config['mapcache'], 'mapcache', 'mapserver_url', attribute_type=str,
-        default='http://${vars:host}/${vars:instanceid}/mapserv'
-    ) or error
-    error = gene.validate(
         gene.config['mapcache'], 'mapcache', 'config_file', attribute_type=str,
-        default='apache/mapcache.xml.in'
+        default='apache/mapcache.xml'
     ) or error
     error = gene.validate(
         gene.config['mapcache'], 'mapcache', 'memcache_host', attribute_type=str,
@@ -733,10 +729,6 @@ def _validate_generate_mapcache_config(gene):
     error = gene.validate(
         gene.config['mapcache'], 'mapcache', 'memcache_port', attribute_type=int,
         default='11211'
-    ) or error
-    error = gene.validate(
-        gene.config['mapcache'], 'mapcache', 'layers', attribute_type=str, is_array=True,
-        required=True, enumeration=gene.config['layers'].keys()
     ) or error
 
     if error:
