@@ -185,7 +185,6 @@ cost:
 
 mapcache:
     config_file: mapcache.xml
-    layers: [point, line, polygon]
 
 sns:
     topic: sns_topic
