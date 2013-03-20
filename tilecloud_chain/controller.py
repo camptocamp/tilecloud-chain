@@ -744,7 +744,8 @@ def _generate_mapcache_config(gene, options):
         mapcache_config_template,
         layers=gene.layers,
         grids=gene.grids,
-        mapcache=gene.config['mapcache']
+        mapcache=gene.config['mapcache'],
+        min=min
     )
 
     f = open(gene.config['mapcache']['config_file'], 'w')
