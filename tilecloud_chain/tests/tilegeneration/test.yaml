@@ -10,18 +10,21 @@ grids:
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
         srs: epsg:21781
+        matrix_identifier: resolution
 
     swissgrid_2_5:
         resolutions: [2.5]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
         srs: epsg:21781
+        matrix_identifier: resolution
 
     swissgrid_025:
         resolutions: [0.25]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
         srs: epsg:21781
+        matrix_identifier: resolution
 
 caches:
     local:

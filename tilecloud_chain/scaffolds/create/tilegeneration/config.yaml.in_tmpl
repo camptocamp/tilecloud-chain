@@ -11,6 +11,9 @@ grids:
         unit: m
         # [optional, default to 256]
         tile_size: 256
+        # Used matrix identifier, 'resolution' or 'zoom' default to 'zoom'
+        # 'resolution' don't work with MapCache
+        matrix_identifier: zoom
 
 # In all cache you can specify to generate the capabilities:
 #

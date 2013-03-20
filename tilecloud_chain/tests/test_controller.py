@@ -311,7 +311,7 @@ class TestController(CompareCase):
       <ows:Identifier>swissgrid_01</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
-        <ows:Identifier>0</ows:Identifier>
+        <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>3571.42857143</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
@@ -321,7 +321,7 @@ class TestController(CompareCase):
       </TileMatrix>
 
       <TileMatrix>
-        <ows:Identifier>1</ows:Identifier>
+        <ows:Identifier>0_2</ows:Identifier>
         <ScaleDenominator>714.285714286</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
@@ -331,7 +331,7 @@ class TestController(CompareCase):
       </TileMatrix>
 
       <TileMatrix>
-        <ows:Identifier>2</ows:Identifier>
+        <ows:Identifier>0_1</ows:Identifier>
         <ScaleDenominator>357.142857143</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
@@ -401,7 +401,7 @@ class TestController(CompareCase):
       <ows:Identifier>swissgrid_025</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
-        <ows:Identifier>0</ows:Identifier>
+        <ows:Identifier>0_25</ows:Identifier>
         <ScaleDenominator>892.857142857</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
@@ -416,7 +416,7 @@ class TestController(CompareCase):
       <ows:Identifier>swissgrid_2_5</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
-        <ows:Identifier>0</ows:Identifier>
+        <ows:Identifier>2_5</ows:Identifier>
         <ScaleDenominator>8928.57142857</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
@@ -808,7 +808,7 @@ class TestController(CompareCase):
       <ows:Identifier>swissgrid_01</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
-        <ows:Identifier>0</ows:Identifier>
+        <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>3571.42857143</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
@@ -818,7 +818,7 @@ class TestController(CompareCase):
       </TileMatrix>
 
       <TileMatrix>
-        <ows:Identifier>1</ows:Identifier>
+        <ows:Identifier>0_2</ows:Identifier>
         <ScaleDenominator>714.285714286</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
@@ -828,7 +828,7 @@ class TestController(CompareCase):
       </TileMatrix>
 
       <TileMatrix>
-        <ows:Identifier>2</ows:Identifier>
+        <ows:Identifier>0_1</ows:Identifier>
         <ScaleDenominator>357.142857143</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
@@ -898,7 +898,7 @@ class TestController(CompareCase):
       <ows:Identifier>swissgrid_025</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
-        <ows:Identifier>0</ows:Identifier>
+        <ows:Identifier>0_25</ows:Identifier>
         <ScaleDenominator>892.857142857</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
@@ -913,7 +913,7 @@ class TestController(CompareCase):
       <ows:Identifier>swissgrid_2_5</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
-        <ows:Identifier>0</ows:Identifier>
+        <ows:Identifier>2_5</ows:Identifier>
         <ScaleDenominator>8928.57142857</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
@@ -1278,6 +1278,7 @@ generation:
 grids:
   swissgrid_01: &id004
     bbox: [420000.0, 30000.0, 900000.0, 350000.0]
+    matrix_identifier: resolution
     name: swissgrid_01
     resolution_scale: 10
     resolutions: [1.0, 0.2, 0.1]
@@ -1286,6 +1287,7 @@ grids:
     unit: m
   swissgrid_025:
     bbox: [420000.0, 30000.0, 900000.0, 350000.0]
+    matrix_identifier: resolution
     name: swissgrid_025
     resolution_scale: 4
     resolutions: [0.25]
@@ -1294,6 +1296,7 @@ grids:
     unit: m
   swissgrid_2_5:
     bbox: [420000.0, 30000.0, 900000.0, 350000.0]
+    matrix_identifier: resolution
     name: swissgrid_2_5
     resolution_scale: 2
     resolutions: [2.5]
@@ -1302,6 +1305,7 @@ grids:
     unit: m
   swissgrid_5: &id003
     bbox: [420000.0, 30000.0, 900000.0, 350000.0]
+    matrix_identifier: zoom
     name: swissgrid_5
     resolution_scale: 1
     resolutions: [100.0, 50.0, 20.0, 10.0, 5.0]
