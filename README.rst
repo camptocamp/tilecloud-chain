@@ -52,3 +52,21 @@ Build it::
 
     python bootstrap.py --distribute -v 1.7.1
     ./buildout/bin/buildout
+
+Changes
+-------
+
+Release 0.5
+~~~~~~~~~~~
+
+1. SQS config change:
+
+.. code:: javascript
+
+    layers:
+        layer_name:
+            sqs:
+                # The region where the SQS queue is
+                region: eu-west-1
+                # The SQS queue name, it should already exists
+                queue: the_name

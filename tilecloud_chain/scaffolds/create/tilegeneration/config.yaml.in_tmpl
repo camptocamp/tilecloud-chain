@@ -212,6 +212,15 @@ generation:
     # the memcache port, default to 11211
 #    memcache_port: 11211
 
+
+# The SQS queue is used with the '--role=master' (to fill the queue)
+# and '--role=slave' (to consume the queue) options of 'generate_tiles'.
+sqs:
+    # The region where the SQS queue is
+    region: eu-west-1
+    # The SQS queue name, it should already exists
+    queue: the_name
+
 openlayers:
     # srs, center_x, center_y [required]
     srs: epsg:21781

@@ -85,6 +85,8 @@ layers:
         layers: point
         sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
         min_resolution_seed: 10
+        sqs:
+            queue: sqs_point
     point_px_buffer:
         layers: point
         px_buffer: 100
