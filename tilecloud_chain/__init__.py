@@ -55,7 +55,7 @@ def add_comon_options(parser):
     )
     parser.add_option(
         '--no-geom', default=True, action="store_false", dest="geom",
-        help="Don't the geometry available in the sql"
+        help="Don't the geometry available in the SQL"
     )
     parser.add_option(
         '-t', '--test', type='int', default=None,
@@ -80,7 +80,7 @@ def add_comon_options(parser):
         '--near', default=None,
         help='This option is a good replacement of --bbox, to used with '
         '--time or --test and --zoom, implies --no-geom. '
-        'It automaticaly measure a bbox around the NEAR position that corresponds to the metatiles.'
+        'It automatically measure a bbox around the NEAR position that corresponds to the metatiles.'
     )
 
 
@@ -121,7 +121,7 @@ class TileGeneration:
                 scale = grid['resolution_scale']
                 for r in grid['resolutions']:
                     if r * scale % 1 != 0.0:
-                        logger.error("The reolution %s * resolution_scale %i is not an integer." % (r, scale))
+                        logger.error("The resolution %s * resolution_scale %i is not an integer." % (r, scale))
                         error = True
 
             error = self.validate(grid, name, 'bbox', attribute_type=float, is_array=True, required=True) or error
