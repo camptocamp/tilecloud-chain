@@ -27,7 +27,7 @@ mapcache_config_template = """<?xml version="1.0" encoding="UTF-8"?>
          </params>
       </getmap>
       <http>
-         <url>{{mapserver_url}}</url>
+         <url>{{layer['url']}}</url>
       </http>
    </source>
 {% endif %}{% endfor %}
@@ -38,6 +38,7 @@ mapcache_config_template = """<?xml version="1.0" encoding="UTF-8"?>
       <grid>{{layer['grid']}}</grid>{% if layer['meta'] %}
       <metatile>{{layer['meta_size']}} {{layer['meta_size']}}</metatile>
       <metabuffer>{{layer['meta_buffer']}}</metabuffer>{% endif %}
+      <format>{{layer['mime_type']}}</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>{%
@@ -48,6 +49,15 @@ endfor %}
    </tileset>
 {% endfor %}
 
+   <format name="image/png" type="PNG">
+      <compression>fast</compression>
+      <colors>256</colors>
+   </format>
+   <format name="image/jpeg" type="JPEG">
+      <quality>90</quality>
+      <photometric>rgb</photometric>
+   </format>
+
    <service type="wms" enabled="false"/>
    <service type="wmts" enabled="true"/>
    <service type="tms" enabled="false"/>
@@ -56,7 +66,7 @@ endfor %}
    <service type="ve" enabled="false"/>
    <service type="demo" enabled="false"/>
 
-   <default_format>JPEG</default_format>
+   <default_format>image/jpeg</default_format>
    <errors>report</errors>
    <lock_dir>/tmp</lock_dir>
 </mapcache>"""

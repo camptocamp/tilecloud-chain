@@ -1,5 +1,5 @@
 grids:
-    # grid name, I just recommands to add the min resoblution because it's common to not generate all the layers at the same resolution.
+    # grid name, I just recommends to add the min resolution because it's common to not generate all the layers at the same resolution.
     swissgrid_05:
         # resolutions [required]
         resolutions: [1000, 500, 250, 100, 50, 20, 10, 5, 2, 1, 0.5]
@@ -181,6 +181,36 @@ generation:
     disable_fillqueue: no
     # disable tile generation, not already implemented [default to no]
     disable_tilesgen: no
+
+# The mapcache configuration
+# Purposed apache configuration (apache/tiles.conf.in):
+## <Location /${vars:instanceid}/tiles>
+##     ExpiresActive on
+##     ExpiresDefault "now plus 8 hours"
+##     Header add Access-Control-Allow-Origin "*"
+## </Location>
+## Alias /${vars:instanceid}/tiles /var/sig/tilecache/<project>
+## RewriteRule ^/${vars:instanceid}/tiles/1.0.0/([a-z0-9_]+)/([a-z0-9_]+)/([a-z0-9_]+)/([a-z0-9_]+)/1([1-9])/(.*)$ /${vars:instanceid}/mapcache/wmts/1.0.0/$1/$2/$3/$4/1$5/$6 [PT]
+## MapCacheAlias /${vars:instanceid}/mapcache "${buildout:directory}/apache/mapcache.xml"
+# Purposed buildout config to generate it automaticaly:
+## [buildout]
+## parts: += mapcache
+##
+## [mapcache]
+## recipe = collective.recipe.cmd:py
+## on_install = true
+## on_update = true
+## cmds =
+##   >>> ./buildout/bin/generate_controller --mapcache
+## uninstall_cmds =
+##   >>> rm apache/mapcache.xml
+#mapcache:
+    # the generated file
+#    config_file: apache/mapcache.xml
+    # the memcache host, default to localhost
+#    memcache_host: localhost
+    # the memcache port, default to 11211
+#    memcache_port: 11211
 
 openlayers:
     # srs, center_x, center_y [required]
