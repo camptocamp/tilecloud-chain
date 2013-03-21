@@ -218,6 +218,15 @@ class TileGeneration:
                     layer['empty_metatile_detection'], name + '.empty_metatile_detection',
                     'hash', attribute_type=str, required=True
                 ) or error
+            if 'sqs' in layer:
+                error = self.validate(
+                    layer['sqs'], name + '.sqs', 'queue',
+                    attribute_type=str, required=True
+                ) or error
+                error = self.validate(
+                    layer['sqs'], name + '.sqs', 'region',
+                    attribute_type=str, default='eu-west-1'
+                ) or error
 
             layer['grid_ref'] = self.grids[layer['grid']] if not error else None
 
@@ -525,8 +534,8 @@ class TileGeneration:
         return self.grids[name]
 
     def get_sqs_queue(self):  # pragma: no cover
-        connection = boto.sqs.connect_to_region(self.config['generation']['sqs_region_name'])
-        queue = connection.create_queue(self.config['generation']['sqs_queue_name'])
+        connection = boto.sqs.connect_to_region(self.layer['sqs']['region'])
+        queue = connection.create_queue(self.layer['sqs']['queue'])
         queue.set_message_class(JSONMessage)
         return queue
 

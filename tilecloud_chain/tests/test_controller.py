@@ -1526,6 +1526,7 @@ layers:
     name: point
     px_buffer: false
     sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
+    sqs: {queue: sqs_point, region: eu-west-1}
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
