@@ -113,6 +113,7 @@ layers:
         sql: the_geom AS geom FROM tests.line
     polygon:
         layers: polygon
+        meta: off
         sql: the_geom AS geom FROM tests.polygon
     polygon2:
         layers: polygon

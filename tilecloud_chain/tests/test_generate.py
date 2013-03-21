@@ -27,10 +27,6 @@ Tile: 4/0/0
     empty_tile_detection:
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
-Tile: 4/0/0:+8/+8
-    empty_metatile_detection:
-        size: 20743
-        hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
 Tile: 4/0/0
     empty_tile_detection:
         size: 334
@@ -74,10 +70,10 @@ Tile: 4/0/0
         from tilecloud_chain.views.serve import Serve
 
         self.assert_tiles_generated(
-            './buildout/bin/generate_tiles -c tilegeneration/test.yaml --cache mbtiles -l point --zoom 1',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml --cache mbtiles -l point_hash --zoom 1',
             generate.main,
             "/tmp/tiles/mbtiles/",
-            '1.0.0/point/default/2012/swissgrid_5.png.mbtiles', [()]
+            '1.0.0/point_hash/default/2012/swissgrid_5.png.mbtiles', [()]
         )
 
         request = DummyRequest()
@@ -93,7 +89,7 @@ Tile: 4/0/0
             'Request': 'GetTile',
             'Version': '1.0.0',
             'Format': 'png',
-            'Layer': 'point',
+            'Layer': 'point_hash',
             'Style': 'default',
             'TileMatrixSet': 'swissgrid_5',
             'TileMatrix': '1',
@@ -126,7 +122,7 @@ Tile: 4/0/0
         request.params['Layer'] = 'test'
         self.assertRaises(HTTPBadRequest, serve.serve)
 
-        request.params['Layer'] = 'point'
+        request.params['Layer'] = 'point_hash'
         request.params['Style'] = 'test'
         self.assertRaises(HTTPBadRequest, serve.serve)
 
@@ -145,23 +141,23 @@ Tile: 4/0/0
 
     def test_zoom(self):
         self.assert_tiles_generated(
-            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point --zoom 1',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --zoom 1',
             generate.main,
             "/tmp/tiles/",
             '1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png', [
-                ('point', 1, 11, 14), ('point', 1, 15, 8)
+                ('point_hash', 1, 11, 14), ('point_hash', 1, 15, 8)
             ]
         )
 
     def test_zoom_range(self):
         self.assert_tiles_generated(
-            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point --zoom 1-3',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --zoom 1-3',
             generate.main,
             "/tmp/tiles/",
             '1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png', [
-                ('point', 1, 11, 14), ('point', 1, 15, 8),
-                ('point', 2, 29, 35), ('point', 2, 39, 21),
-                ('point', 3, 58, 70), ('point', 3, 78, 42), ('point', 3, 78, 43),
+                ('point_hash', 1, 11, 14), ('point_hash', 1, 15, 8),
+                ('point_hash', 2, 29, 35), ('point_hash', 2, 39, 21),
+                ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42), ('point_hash', 3, 78, 43),
             ]
         )
 

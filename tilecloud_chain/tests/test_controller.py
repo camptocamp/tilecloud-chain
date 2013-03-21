@@ -1139,8 +1139,6 @@ class TestController(CompareCase):
       <source>polygon</source>
       <cache>default</cache>
       <grid>swissgrid_5</grid>
-      <metatile>8 8</metatile>
-      <metabuffer>128</metabuffer>
       <format>image/png</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
@@ -1520,9 +1518,9 @@ layers:
     grid: swissgrid_5
     grid_ref: *id003
     layers: polygon
-    meta: true
+    meta: false
     meta_buffer: 128
-    meta_size: 8
+    meta_size: 1
     mime_type: image/png
     name: polygon
     px_buffer: false
