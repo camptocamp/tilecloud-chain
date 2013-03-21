@@ -44,6 +44,8 @@ Generate WMTS capabilities::
 
     ./bin/generate_controller --generate_wmts_capabilities
 
+Please use the ``--debug`` to report issue.
+
 
 From source
 -----------
@@ -70,3 +72,5 @@ Release 0.5
                 region: eu-west-1
                 # The SQS queue name, it should already exists
                 queue: the_name
+
+2. Add debug option (--debug), please use it to report issue.
