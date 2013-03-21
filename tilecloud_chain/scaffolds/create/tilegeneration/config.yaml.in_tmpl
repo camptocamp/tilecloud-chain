@@ -139,13 +139,13 @@ generation:
     # used to allowed only a specific user to generate tiles (for rights issue)
     authorised_user: www-data
 
+    # maximum allowed consecutive errors, after it exit [default to 10]
+    maxconsecutive_errors: 10
+
     # not already implemented [optional]
     number_process: ${facts:processorcount} * 1.5
     # type of ec2 host, can be t1.micro, m1.small, m1.medium, m1.large, m1.xlarge, m2.xlarge, m2.2xlarge, m2.4xlarge, c1.medium, c1.xlarge, cc1.4xlarge, cc2.8xlarge, cg1.4xlarge, hi1.4xlarge, default is m1.medium
     ec2_host_type: m1.medium
-
-    # maximum allowed consecutive errors, after it exit [default to 10]
-    maxconsecutive_errors: 10
 
     # SSH options [default to None]
     #ssh_options:
@@ -211,6 +211,15 @@ generation:
 #    memcache_host: localhost
     # the memcache port, default to 11211
 #    memcache_port: 11211
+
+
+# The SQS queue is used with the '--role=master' (to fill the queue)
+# and '--role=slave' (to consume the queue) options of 'generate_tiles'.
+sqs:
+    # The region where the SQS queue is
+    region: eu-west-1
+    # The SQS queue name, it should already exists
+    queue: the_name
 
 openlayers:
     # srs, center_x, center_y [required]
