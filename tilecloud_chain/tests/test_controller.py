@@ -1351,6 +1351,8 @@ layers:
     connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002
+    empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
+    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
     grid: swissgrid_5
     grid_ref: *id003
@@ -1374,9 +1376,9 @@ layers:
     grid: swissgrid_5
     grid_ref: *id003
     mapfile: mapfile/test.mapnik
-    meta: true
-    meta_buffer: 0
-    meta_size: 8
+    meta: false
+    meta_buffer: 128
+    meta_size: 1
     mime_type: image/png
     name: mapnik
     px_buffer: false
@@ -1400,7 +1402,7 @@ layers:
       polygon: [name]
     mapfile: mapfile/test.mapnik
     meta: false
-    meta_buffer: 0
+    meta_buffer: 128
     meta_size: 1
     mime_type: application/utfgrid
     name: mapnik_grid
@@ -1518,6 +1520,8 @@ layers:
     connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002
+    empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
+    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
     grid: swissgrid_5
     grid_ref: *id003
@@ -1536,6 +1540,8 @@ layers:
     connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002
+    empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
+    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
     grid: swissgrid_01
     grid_ref: *id004
