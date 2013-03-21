@@ -17,7 +17,10 @@ mapcache_config_template = """<?xml version="1.0" encoding="UTF-8"?>
       <origin>top-left</origin>
    </grid>
 {% endfor %}
-{% for layername, layer in layers.items() %}{% if layer['type'] != 'mapnikh' %}
+{% for layername, layer in layers.items() %}{%
+if layer['type'] != 'mapnik' and (
+    'min_resolution_seed' not in layer or
+    min(layer['grid_ref']['resolutions']) < layer['min_resolution_seed']) %}
    <source name="{{layername}}" type="wms">
       <getmap>
          <params>
@@ -31,7 +34,10 @@ mapcache_config_template = """<?xml version="1.0" encoding="UTF-8"?>
       </http>
    </source>
 {% endif %}{% endfor %}
-{% for layername, layer in layers.items() %}
+{% for layername, layer in layers.items() %}{%
+if layer['type'] != 'mapnik' and (
+    'min_resolution_seed' not in layer or
+    min(layer['grid_ref']['resolutions']) < layer['min_resolution_seed']) %}
    <tileset name="{{layername}}">
       <source>{{layername}}</source>
       <cache>default</cache>
@@ -47,7 +53,7 @@ for dim in layer['dimensions'] %}
 endfor %}
       </dimensions>
    </tileset>
-{% endfor %}
+{% endif %}{% endfor %}
 
    <format name="image/png" type="PNG">
       <compression>fast</compression>
