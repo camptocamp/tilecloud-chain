@@ -1057,32 +1057,6 @@ class TestController(CompareCase):
       </http>
    </source>
 
-   <source name="mapnik_grid" type="wms">
-      <getmap>
-         <params>
-            <FORMAT>application/utfgrid</FORMAT>
-            <LAYERS></LAYERS>
-            <TRANSPARENT>FALSE</TRANSPARENT>
-         </params>
-      </getmap>
-      <http>
-         <url>http://localhost/mapserv</url>
-      </http>
-   </source>
-
-   <source name="mapnik_grid_drop" type="wms">
-      <getmap>
-         <params>
-            <FORMAT>application/utfgrid</FORMAT>
-            <LAYERS></LAYERS>
-            <TRANSPARENT>FALSE</TRANSPARENT>
-         </params>
-      </getmap>
-      <http>
-         <url>http://localhost/mapserv</url>
-      </http>
-   </source>
-
    <source name="line" type="wms">
       <getmap>
          <params>
@@ -1114,19 +1088,6 @@ class TestController(CompareCase):
          <params>
             <FORMAT>image/png</FORMAT>
             <LAYERS>point</LAYERS>
-            <TRANSPARENT>TRUE</TRANSPARENT>
-         </params>
-      </getmap>
-      <http>
-         <url>http://localhost/mapserv</url>
-      </http>
-   </source>
-
-   <source name="mapnik" type="wms">
-      <getmap>
-         <params>
-            <FORMAT>image/png</FORMAT>
-            <LAYERS></LAYERS>
             <TRANSPARENT>TRUE</TRANSPARENT>
          </params>
       </getmap>
@@ -1202,30 +1163,6 @@ class TestController(CompareCase):
       </dimensions>
    </tileset>
 
-   <tileset name="mapnik_grid">
-      <source>mapnik_grid</source>
-      <cache>default</cache>
-      <grid>swissgrid_5</grid>
-      <format>application/utfgrid</format>
-      <expires>3600</expires> <!-- 1 hour -->
-      <auto_expire>13800</auto_expire> <!-- 4 hours -->
-      <dimensions>
-        <dimension type="values" name="DATE" default="2012">2012</dimension>
-      </dimensions>
-   </tileset>
-
-   <tileset name="mapnik_grid_drop">
-      <source>mapnik_grid_drop</source>
-      <cache>default</cache>
-      <grid>swissgrid_5</grid>
-      <format>application/utfgrid</format>
-      <expires>3600</expires> <!-- 1 hour -->
-      <auto_expire>13800</auto_expire> <!-- 4 hours -->
-      <dimensions>
-        <dimension type="values" name="DATE" default="2012">2012</dimension>
-      </dimensions>
-   </tileset>
-
    <tileset name="line">
       <source>line</source>
       <cache>default</cache>
@@ -1260,20 +1197,6 @@ class TestController(CompareCase):
       <grid>swissgrid_5</grid>
       <metatile>8 8</metatile>
       <metabuffer>128</metabuffer>
-      <format>image/png</format>
-      <expires>3600</expires> <!-- 1 hour -->
-      <auto_expire>13800</auto_expire> <!-- 4 hours -->
-      <dimensions>
-        <dimension type="values" name="DATE" default="2012">2012</dimension>
-      </dimensions>
-   </tileset>
-
-   <tileset name="mapnik">
-      <source>mapnik</source>
-      <cache>default</cache>
-      <grid>swissgrid_5</grid>
-      <metatile>8 8</metatile>
-      <metabuffer>0</metabuffer>
       <format>image/png</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
