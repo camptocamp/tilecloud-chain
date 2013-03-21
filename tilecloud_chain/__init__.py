@@ -532,7 +532,6 @@ class TileGeneration:
 
     def init_geom(self, extent=None):
         self.geom = None
-        self.z_geoms = None
         if not self.options.near and self.options.geom and \
                 'connection' in self.layer and 'sql' in self.layer:
             conn = psycopg2.connect(self.layer['connection'])
@@ -556,23 +555,13 @@ class TileGeneration:
                 (extent[2], extent[1]),
             ))
 
-        if self.layer['px_buffer']:
-            self.z_geoms = {}
-            for zoom, resolution in enumerate(self.layer['grid_ref']['resolutions']):
-                self.z_geoms[zoom] = self.geom.buffer(resolution * self.layer['px_buffer'])
-
     def add_geom_filter(self, queue_store=None):
-        if self.z_geoms:
-            self.ifilter(IntersectGeometryFilter(
-                grid=self.get_grid(),
-                z_geoms=self.z_geoms,
-                queue_store=queue_store
-            ))
-        elif self.geom:
+        if self.geom:
             self.ifilter(IntersectGeometryFilter(
                 grid=self.get_grid(),
                 geom=self.geom,
-                queue_store=queue_store
+                queue_store=queue_store,
+                px_buffer=self.layer['px_buffer'] + self.layer['meta_buffer']
             ))
 
     def add_metatile_splitter(self):
@@ -791,19 +780,19 @@ class HashLogger(object):  # pragma: no cover
 
 class IntersectGeometryFilter(object):
 
-    def __init__(self, grid, geom=None, z_geoms=None, queue_store=None):
+    def __init__(self, grid, geom=None, queue_store=None, px_buffer=0):
         self.grid = grid
-        self.z_geoms = z_geoms
-        if self.z_geoms is None:
-            self.geom = geom or self.bbox_polygon(self.grid['bbox'])
+        self.geom = geom
         self.queue_store = queue_store
+        self.px_buffer = px_buffer
 
     def __call__(self, tile):
         intersects = self.bbox_polygon(
-            self.grid['obj'].extent(tile.tilecoord)
-        ).intersects(
-            self.geom if not self.z_geoms else self.z_geoms[tile.tilecoord.z]
-        )
+            self.grid['obj'].extent(
+                tile.tilecoord,
+                grid['resolutions'][tile.tilecoord.z] * px_buffer
+            )
+        ).intersects(self.geom)
 
         if not intersects and hasattr(tile, 'metatile'):
             tile.metatile.elapsed_togenerate -= 1

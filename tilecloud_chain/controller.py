@@ -542,27 +542,25 @@ def _calculate_cost(gene, options):
 
     meta = gene.layer['meta']
     if options.cost_algo == 'area':
-        meta_size = gene.layer['meta_size'] if meta else None
         tile_size = gene.layer['grid_ref']['tile_size']
-        res = [{'r': r, 'i': i} for i, r in enumerate(gene.layer['grid_ref']['resolutions'])]
-        geom = gene.geom
-        geom_buffer = 0
-        meta_geom = gene.geom
-        meta_geom_buffer = 0
-        for res in sorted(res, key=lambda r: r['r']):
-            i = res['i']
-            resolution = res['r']
-            print "Calculate zoom %i." % i
+        for zoom, resolution in enumerate(gene.layer['grid_ref']['resolutions']):
+            print "Calculate zoom %i." % zoom
 
             if meta:
-                size = meta_size * tile_size * resolution
-                meta_geom = meta_geom.buffer(size * 0.6 - meta_geom_buffer)
-                meta_geom_buffer = size * 0.6
-                nb_metatiles[i] = int(round(meta_geom.area / size ** 2))
+                size = tile_size * gene.layer['meta_size'] * resolution
+                meta_buffer = size * 0.7 + \
+                    (
+                        gene.layer['meta_buffer'] + gene.layer['px_buffer']
+                    ) * resolution
+                meta_geom = gene.geom.buffer(meta_buffer, 1)
+                nb_metatiles[zoom] = int(round(meta_geom.area / size ** 2))
             size = tile_size * resolution
-            geom = geom.buffer(size * 0.6 - geom_buffer)
-            geom_buffer = size * 0.6
-            nb_tiles[i] = int(round(geom.area / size ** 2))
+            tile_buffer = size * 0.7 + \
+                (
+                    gene.layer['meta_buffer'] + gene.layer['px_buffer']
+                ) * resolution
+            geom = gene.geom.buffer(tile_buffer, 1)
+            nb_tiles[zoom] = int(round(geom.area / size ** 2))
 
     elif options.cost_algo == 'count':
         gene.init_tilecoords(options)
