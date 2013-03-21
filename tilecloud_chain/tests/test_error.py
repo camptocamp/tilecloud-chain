@@ -14,7 +14,7 @@ class TestError(CompareCase):
             './buildout/bin/generate_controller -c tilegeneration/wrong_resolutions.yaml',
             controller.main)
         l.check(
-            ('tilecloud_chain', 'ERROR', "The reolution 0.1 * resolution_scale 5 is not an integer."),
+            ('tilecloud_chain', 'ERROR', "The resolution 0.1 * resolution_scale 5 is not an integer."),
             ('tilecloud_chain.tests', 'INFO', ''),
             ('tilecloud_chain.tests', 'INFO', ''),
         )
