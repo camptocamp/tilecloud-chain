@@ -86,14 +86,14 @@ layer_default:
 layers:
     point:
         layers: point
-        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
+        sql: the_geom AS geom FROM tests.point
         min_resolution_seed: 10
         sqs:
             queue: sqs_point
     point_px_buffer:
         layers: point
         px_buffer: 100
-        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
+        sql: the_geom AS geom FROM tests.point
     point_hash:
         layers: point
         empty_metatile_detection:
@@ -110,14 +110,14 @@ layers:
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     line:
         layers: line
-        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.line
+        sql: the_geom AS geom FROM tests.line
     polygon:
         layers: polygon
-        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+        sql: the_geom AS geom FROM tests.polygon
     polygon2:
         layers: polygon
         grid: swissgrid_01
-        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+        sql: the_geom AS geom FROM tests.polygon
     all:
         layers: point,line,polygon
         meta: off
@@ -128,7 +128,7 @@ layers:
         meta_buffer: 0
         data_buffer: 128
         output_format: png
-        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+        sql: the_geom AS geom FROM tests.polygon
     mapnik_grid:
         type: mapnik
         mapfile: mapfile/test.mapnik
@@ -139,7 +139,7 @@ layers:
         mime_type: application/utfgrid
         extension: json
         resolution: 16
-        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+        sql: the_geom AS geom FROM tests.polygon
         layers_fields:
             point:
             - name
@@ -158,7 +158,7 @@ layers:
         extension: json
         drop_empty_utfgrid: on
         resolution: 16
-        sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+        sql: the_geom AS geom FROM tests.polygon
         layers_fields:
             point:
             - name

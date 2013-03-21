@@ -1363,7 +1363,7 @@ layers:
     mime_type: image/png
     name: line
     px_buffer: false
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.line
+    sql: the_geom AS geom FROM tests.line
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1383,7 +1383,7 @@ layers:
     name: mapnik
     px_buffer: false
     output_format: png
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    sql: the_geom AS geom FROM tests.polygon
     type: mapnik
     url: http://localhost/mapserv
     wmts_style: default
@@ -1409,7 +1409,7 @@ layers:
     px_buffer: false
     output_format: grid
     resolution: 16
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    sql: the_geom AS geom FROM tests.polygon
     type: mapnik
     url: http://localhost/mapserv
     wmts_style: default
@@ -1433,7 +1433,7 @@ layers:
     px_buffer: false
     output_format: grid
     resolution: 16
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    sql: the_geom AS geom FROM tests.polygon
     type: mapnik
     url: http://localhost/mapserv
     wmts_style: default
@@ -1452,7 +1452,7 @@ layers:
     min_resolution_seed: 10.0
     name: point
     px_buffer: false
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
+    sql: the_geom AS geom FROM tests.point
     sqs: {queue: sqs_point, region: eu-west-1}
     type: wms
     url: http://localhost/mapserv
@@ -1508,7 +1508,7 @@ layers:
     mime_type: image/png
     name: point_px_buffer
     px_buffer: 100.0
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
+    sql: the_geom AS geom FROM tests.point
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1526,7 +1526,7 @@ layers:
     mime_type: image/png
     name: polygon
     px_buffer: false
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    sql: the_geom AS geom FROM tests.polygon
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1544,7 +1544,7 @@ layers:
     mime_type: image/png
     name: polygon2
     px_buffer: false
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    sql: the_geom AS geom FROM tests.polygon
     type: wms
     url: http://localhost/mapserv
     wmts_style: default

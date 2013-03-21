@@ -19,8 +19,9 @@ except:  # pragma: no cover
     import Image
 
 import psycopg2
-from shapely.wkt import loads as loads_wkt
+from shapely.wkb import loads as loads_wkb
 from shapely.geometry import Polygon
+from shapely.ops import cascaded_union
 import boto.sqs
 from boto.sqs.jsonmessage import JSONMessage
 
@@ -569,10 +570,11 @@ class TileGeneration:
                 'connection' in self.layer and 'sql' in self.layer:
             conn = psycopg2.connect(self.layer['connection'])
             cursor = conn.cursor()
-            sql = 'SELECT ST_AsText((SELECT %s))' % self.layer['sql']
+            sql = 'SELECT ST_AsBinary(geom) FROM (SELECT %s) AS g' % self.layer['sql']
             logger.debug('Execute SQL: %s.' % sql)
             cursor.execute(sql)
-            self.geom = loads_wkt(cursor.fetchone()[0])
+            geoms = [loads_wkb(str(r[0])) for r in cursor.fetchall()]
+            self.geom = cascaded_union(geoms)
             if extent:
                 self.geom = self.geom.intersection(Polygon((
                     (extent[0], extent[1]),
