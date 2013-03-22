@@ -544,6 +544,9 @@ def _calculate_cost(gene, options):
     if options.cost_algo == 'area':
         tile_size = gene.layer['grid_ref']['tile_size']
         for zoom, resolution in enumerate(gene.layer['grid_ref']['resolutions']):
+            if 'min_resolution_seed' in gene.layer and resolution < gene.layer['min_resolution_seed']:
+                continue
+
             print "Calculate zoom %i." % zoom
 
             if meta:
