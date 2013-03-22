@@ -151,6 +151,7 @@ config:
             test = 196
             near = '600000,200000'
             verbose = False
+            debug = False
             time = None
         gene = TileGeneration('tilecloud_chain/tests/tilegeneration/test.yaml', Opt(), 'point')
         self.assertEquals(gene.geom.bounds, (583840.0, 173360.0, 624800.0, 214320.0))
