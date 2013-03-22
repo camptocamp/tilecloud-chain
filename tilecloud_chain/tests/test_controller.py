@@ -1559,17 +1559,13 @@ sns: {region: eu-west-1, topic: sns_topic}"""
             controller.main, self.CONFIG)
 
     def test_openlayers(self):
-        self.assert_main_equals(
-            './buildout/bin/generate_controller --ol -c tilegeneration/test.yaml',
-            controller.main,
-            [['/tmp/tiles/index.html', """<!DOCTYPE html>
+        html = """<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>OpenLayers test page</title>
-    <link rel="stylesheet" href="http://openlayers.org/dev/theme/default/style.css" type="text/css">
     <style>
         html, body, #map {
             width: 100%;
@@ -1591,8 +1587,8 @@ sns: {region: eu-west-1, topic: sns_topic}"""
     <script src="OpenLayers.js"></script>
     <script src="wmts.js"></script>
 </body>
-</html>"""],
-            ['/tmp/tiles/wmts.js', """var callback = function(infoLookup) {
+</html>"""
+        js = """var callback = function(infoLookup) {
     var msg = "";
     if (infoLookup) {
         var info;
@@ -1634,7 +1630,7 @@ map = new OpenLayers.Map({
 
 var format = new OpenLayers.Format.WMTSCapabilities();
 OpenLayers.Request.GET({
-    url: "http://taurus/tiles/1.0.0/WMTSCapabilities.xml",
+    url: "%s",
     success: function(request) {
         var doc = request.responseXML;
         if (!doc || !doc.documentElement) {
@@ -1644,48 +1640,59 @@ OpenLayers.Request.GET({
 
         map.addLayer(format.createLayer(capabilities, {
             layer: "point_hash_no_meta",
+            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "all",
+            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "point_hash",
+            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "polygon",
+            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "point",
+            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "mapnik_grid",
+            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: false,
             utfgridResolution: 16
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "mapnik_grid_drop",
+            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: false,
             utfgridResolution: 16
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "line",
+            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "polygon2",
+            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "point_px_buffer",
+            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "mapnik",
+            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
     },
@@ -1693,7 +1700,33 @@ OpenLayers.Request.GET({
         alert("Trouble getting capabilities doc");
         OpenLayers.Console.error.apply(OpenLayers.Console, arguments);
     }
-});"""]])
+});"""
+        self.assert_main_equals(
+            './buildout/bin/generate_controller --ol -c tilegeneration/test.yaml',
+            controller.main,
+            [
+                ['/tmp/tiles/index.html', html],
+                ['/tmp/tiles/wmts.js', js % 'http://taurus/tiles/1.0.0/WMTSCapabilities.xml']
+            ]
+        )
+
+        self.assert_main_equals(
+            './buildout/bin/generate_controller --ol -c tilegeneration/test.yaml --cache multi_host',
+            controller.main,
+            [
+                ['/tmp/tiles/index.html', html],
+                ['/tmp/tiles/wmts.js', js % 'http://wmts1/tiles/1.0.0/WMTSCapabilities.xml']
+            ]
+        )
+
+        self.assert_main_equals(
+            './buildout/bin/generate_controller --ol -c tilegeneration/test.yaml --cache multi_url',
+            controller.main,
+            [
+                ['/tmp/tiles/index.html', html],
+                ['/tmp/tiles/wmts.js', js % 'http://wmts1/tiles/1.0.0/WMTSCapabilities.xml']
+            ]
+        )
 
     def test_quote(self):
         self.assertEquals(controller._quote("abc"), "abc")
