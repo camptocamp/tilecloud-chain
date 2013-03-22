@@ -5,7 +5,6 @@ openlayers_html = """<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>OpenLayers test page</title>
-    <link rel="stylesheet" href="http://openlayers.org/dev/theme/default/style.css" type="text/css">
     <style>
         html, body, #map {
             width: 100%;

@@ -12,13 +12,26 @@ grids:
         # [optional, default to 256]
         tile_size: 256
 
+# In all cache you can specify to generate the capabilities:
+#
+# 'http_url', he can include all attribute of this cache.
+#
+# 'http_urls' (array), he can include all attribute of this cache.
+#
+# 'http_url' and 'hosts' (array), 'http_url' can include all attribute of this cache,
+# and host is a value from hosts.
 caches:
     local:
         type: filesystem
         folder: /var/sig/tilecache
         # for GetCapabilities
-        # can includes %(folder)s comes from this cache
-        http_url: http://taurus/tiles
+        http_url: https://%(host)s/%(folder)s
+        hosts:
+        - wmts0.<host>
+        - wmts1.<host>
+        - wmts2.<host>
+        - wmts3.<host>
+        - wmts4.<host>
     s3:
         type: s3
         # the s3 bucket name
@@ -26,14 +39,9 @@ caches:
         # the used folder in the bucket [default to '']
         folder: ''
         # for GetCapabilities
-        # can includes %(bucket)s, %(folder)s and %(host)s comes from this cache
         http_url: https://%(host)s/%(bucket)s/%(folder)s
         hosts:
         - wmts0.<host>
-        - wmts1.<host>
-        - wmts2.<host>
-        - wmts3.<host>
-        - wmts4.<host>
 
 # this defines some defaults values for all the layers
 layer_default:

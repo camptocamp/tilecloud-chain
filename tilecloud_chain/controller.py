@@ -652,13 +652,13 @@ def _calculate_cost(gene, options):
     return (all_size, td, price, all_tiles)
 
 
-def _send(data, path, cache):
+def _send(data, path, mime_type, cache):
     if cache['type'] == 's3':  # pragma: no cover
         s3bucket = S3Connection().bucket(cache['bucket'])
         s3key = s3bucket.key(('%(folder)s' % cache) + path)
         s3key.body = data
         s3key['Content-Encoding'] = 'utf-8'
-        s3key['Content-Type'] = 'text/xml'
+        s3key['Content-Type'] = mime_type
         s3key.put()
     else:
         folder = cache['folder'] or ''
@@ -712,7 +712,7 @@ def _generate_wmts_capabilities(gene, options):
         enumerate=enumerate, ceil=math.ceil, int=int
     )
 
-    _send(capabilities, '/1.0.0/WMTSCapabilities.xml', cache)
+    _send(capabilities, '/1.0.0/WMTSCapabilities.xml', 'application/xml', cache)
 
 
 def _validate_generate_mapcache_config(gene):
@@ -772,31 +772,53 @@ def _validate_generate_openlayers(gene):
         exit(1)  # pragma: no cover
 
 
+def _get_resource(ressource):
+    path = os.path.join(os.path.dirname(__file__), ressource)
+    f = open(path)
+    data = f.read()
+    f.close()
+    return data
+
+
 def _generate_openlayers(gene, options):
     from tilecloud_chain.openlayers_html import openlayers_html
     from tilecloud_chain.openlayers_js import openlayers_js
-    from tilecloud_chain.openlayers import openlayers
 
     _validate_generate_openlayers(gene)
 
     cache = gene.caches[options.cache]
+
+    http_url = ''
+    if 'http_url' in cache:
+        if 'hosts' in cache:
+            cc = copy(cache)
+            cc['host'] = cache['hosts'][0]
+            http_url = cache['http_url'] % cc
+        else:
+            http_url = cache['http_url'] % cache
+    if 'http_urls' in cache:
+        http_url = cache['http_urls'][0] % cache
 
     js = jinja2_template(
         openlayers_js,
         srs=gene.config['openlayers']['srs'],
         center_x=gene.config['openlayers']['center_x'],
         center_y=gene.config['openlayers']['center_y'],
-        http_url=cache['http_url'] % cache,
+        http_url=http_url,
         layers=[
             {
                 'name': name,
                 'grid': layer['type'] == 'mapnik' and layer['output_format'] == 'grid',
+                'maxExtent': layer['grid_ref']['bbox'],
                 'resolution': layer['resolution'] if
                 layer['type'] == 'mapnik' and layer['output_format'] == 'grid' else None,
             } for name, layer in gene.layers.items() if layer['grid_ref']['srs'] == gene.config['openlayers']['srs']
         ]
     )
 
-    _send(openlayers_html, '/index.html', cache)
-    _send(js, '/wmts.js', cache)
-    _send(openlayers, '/OpenLayers.js', cache)
+    _send(openlayers_html, '/index.html', 'text/html', cache)
+    _send(js, '/wmts.js', 'application/javascript', cache)
+    _send(_get_resource('OpenLayers.js'), '/OpenLayers.js', 'application/javascript', cache)
+    _send(_get_resource('OpenLayers-style.css'), '/theme/default/style.css', 'text/css', cache)
+    _send(_get_resource('layer-switcher-maximize.png'), '/img/layer-switcher-maximize.png', 'image/png', cache)
+    _send(_get_resource('layer-switcher-minimize.png'), '/img/layer-switcher-minimize.png', 'image/png', cache)

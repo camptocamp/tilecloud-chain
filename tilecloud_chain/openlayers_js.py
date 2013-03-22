@@ -49,7 +49,8 @@ OpenLayers.Request.GET({
         var capabilities = format.read(doc);
         {% for layer in layers %}
         map.addLayer(format.createLayer(capabilities, {
-            layer: "{{layer.name}}",{%
+            layer: "{{layer.name}}",
+            maxExtent: {{layer.maxExtent}},{%
 if layer.grid %}
             isBaseLayer: false,
             utfgridResolution: {{layer.resolution}}{%
