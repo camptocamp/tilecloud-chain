@@ -15,7 +15,7 @@ from bottle import jinja2_template
 from tilecloud import Tile, TileStore, consume
 from tilecloud.lib.s3 import S3Connection
 
-from tilecloud_chain import TileGeneration, add_comon_options
+from tilecloud_chain import TileGeneration, add_comon_options, get_tile_matrix_identifier
 
 
 logger = logging.getLogger(__name__)
@@ -709,6 +709,7 @@ def _generate_wmts_capabilities(gene, options):
         grids=gene.grids,
         getcapabilities=base_urls[0] + '/1.0.0/WMTSCapabilities.xml',
         gettiles=base_urls,
+        get_tile_matrix_identifier=get_tile_matrix_identifier,
         enumerate=enumerate, ceil=math.ceil, int=int
     )
 

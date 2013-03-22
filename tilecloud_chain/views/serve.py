@@ -124,6 +124,7 @@ class Serve(TileGeneration):
                 }, dimensions)
 
         tile = Tile(TileCoord(
+            # TODO fix for matrix_identifier = resolution
             int(params['tilematrix']),
             int(params['tilerow']),
             int(params['tilecol'])
