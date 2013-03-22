@@ -60,7 +60,7 @@ Tile: 4/0/0
             generate.main,
             "/tmp/tiles/",
             '1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png', [
-                ('line', 0, 7, 4), ('polygon', 0, 5, 4)
+                ('line', 0, 0, 0), ('polygon', 0, 5, 4)
             ]
         )
 
@@ -157,20 +157,20 @@ Tile: 4/0/0
             '1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png', [
                 ('point_hash', 1, 11, 14), ('point_hash', 1, 15, 8),
                 ('point_hash', 2, 29, 35), ('point_hash', 2, 39, 21),
-                ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42), ('point_hash', 3, 78, 43),
+                ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42),
             ]
         )
 
     def test_no_zoom(self):
         self.assert_tiles_generated(
-            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash',
             generate.main,
             "/tmp/tiles/",
             '1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png', [
-                ('point', 0, 5, 7), ('point', 0, 7, 4),
-                ('point', 1, 11, 14), ('point', 1, 15, 8),
-                ('point', 2, 29, 35), ('point', 2, 39, 21),
-                ('point', 3, 58, 70), ('point', 3, 78, 42), ('point', 3, 78, 43),
+                ('point_hash', 0, 5, 7), ('point_hash', 0, 7, 4),
+                ('point_hash', 1, 11, 14), ('point_hash', 1, 15, 8),
+                ('point_hash', 2, 29, 35), ('point_hash', 2, 39, 21),
+                ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42),
             ]
         )
 
@@ -180,21 +180,21 @@ Tile: 4/0/0
             generate.main,
             "/tmp/tiles/",
             '1.0.0/point_px_buffer/default/2012/swissgrid_5/%i/%i/%i.png', [
-                (0, 5, 6), (0, 5, 7), (0, 6, 6), (0, 6, 7), (0, 7, 3), (0, 7, 4),
-                (1, 11, 13), (1, 11, 14), (1, 12, 13), (1, 12, 14), (1, 15, 8),
-                (2, 29, 35), (2, 29, 34), (2, 28, 34), (2, 28, 35), (2, 38, 21), (2, 39, 21),
+                (0, 5, 7), (0, 7, 4),
+                (1, 11, 14), (1, 15, 8),
+                (2, 29, 35), (2, 39, 21),
             ]
         )
 
     def test_zoom_list(self):
         self.assert_tiles_generated(
-            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point --zoom 0,2,3',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --zoom 0,2,3',
             generate.main,
             "/tmp/tiles/",
             '1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png', [
-                ('point', 0, 5, 7), ('point', 0, 7, 4),
-                ('point', 2, 29, 35), ('point', 2, 39, 21),
-                ('point', 3, 58, 70), ('point', 3, 78, 42), ('point', 3, 78, 43),
+                ('point_hash', 0, 5, 7), ('point_hash', 0, 7, 4),
+                ('point_hash', 2, 29, 35), ('point_hash', 2, 39, 21),
+                ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42),
             ]
         )
 
@@ -290,10 +290,10 @@ Tile: 4/0/0
             """size: 776
 size: 860
 size: 860
-size: 768
+size: 860
 time: [0-9]*
-size: 854
-size: 854""", True, False)
+size: 860
+size: 860""", True, False)
 
     def test_time_layer_bbox(self):
         self.assert_cmd_equals(
@@ -327,14 +327,14 @@ size: 854""", True, False)
         if os.path.exists('/tmp/tiles/'):
             shutil.rmtree('/tmp/tiles/')
         self._touch(
-            '/tmp/tiles/1.0.0/point_hash/default/2012/swissgrid_5/0/%i/%i.png',
+            '/tmp/tiles/1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png',
             list(product(range(12), range(16)))
         )
         self.assert_tiles_generated_deleted(
-            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash -z 0',
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash_no_meta -z 0',
             generate.main,
             '/tmp/tiles/',
-            '1.0.0/point_hash/default/2012/swissgrid_5/0/%i/%i.png', [
+            '1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png', [
                 (5, 7), (7, 4)
             ]
         )

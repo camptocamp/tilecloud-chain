@@ -1487,8 +1487,10 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
+    min_resolution_seed: 10.0
     name: point_hash
     px_buffer: false
+    sql: the_geom AS geom FROM tests.point
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1496,6 +1498,8 @@ layers:
     connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002
+    empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
+    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
     grid: swissgrid_5
     grid_ref: *id003

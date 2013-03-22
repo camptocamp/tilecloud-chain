@@ -94,8 +94,16 @@ layers:
         layers: point
         px_buffer: 100
         sql: the_geom AS geom FROM tests.point
+        empty_metatile_detection:
+            size: 20743
+            hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+        empty_tile_detection:
+            size: 334
+            hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     point_hash:
         layers: point
+        sql: the_geom AS geom FROM tests.point
+        min_resolution_seed: 10
         empty_metatile_detection:
             size: 20743
             hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
