@@ -48,7 +48,7 @@ def add_comon_options(parser):
         help='restrict to specified bounding box (minx,miny,maxx,maxy)'
     )
     parser.add_option(
-        '-z', '--zoom',
+        '-z', '--zoom', default=None,
         help='restrict to specified zoom level, or a zooms range (2-5), or a zooms list (2,4,5)'
     )
     parser.add_option(
@@ -639,10 +639,10 @@ class TileGeneration:
         bounding_pyramid = BoundingPyramid(tilegrid=self.layer['grid_ref']['obj'])
         bounding_pyramid.fill(None, self.geom.bounds)
 
-        if options.time and not options.zoom:
+        if options.time and options.zoom is None:
             options.zoom = [max(bounding_pyramid.bounds)]
 
-        if not options.zoom and 'min_resolution_seed' in self.layer:
+        if options.zoom is None and 'min_resolution_seed' in self.layer:
             options.zoom = []
             for z, resolution in enumerate(self.layer['grid_ref']['resolutions']):
                 if resolution >= self.layer['min_resolution_seed']:
@@ -650,7 +650,7 @@ class TileGeneration:
 
         meta = self.layer['meta']
         if meta:
-            if options.zoom:
+            if options.zoom is not None:
                 def metatilecoords(n, zoom):
                     for z in zoom:
                         xbounds, ybounds = bounding_pyramid.bounds[z]
@@ -665,7 +665,7 @@ class TileGeneration:
                 self.set_tilecoords(metatilecoords(self.layer['meta_size'], options.zoom))
             else:
                 self.set_tilecoords(bounding_pyramid.metatilecoords(self.layer['meta_size']))
-        elif options.zoom:
+        elif options.zoom is not None:
             def ziter():
                 for z in options.zoom:
                     for tile in bounding_pyramid.ziter(z):
