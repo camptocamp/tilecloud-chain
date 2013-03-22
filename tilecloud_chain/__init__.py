@@ -89,6 +89,18 @@ def add_comon_options(parser):
     )
 
 
+def get_tile_matrix_identifier(grid, resolution=None, zoom=None):
+    if grid is None or grid['matrix_identifier'] == 'zoom':
+        return str(zoom)
+    else:
+        if resolution is None:
+            resolution = grid['resolutions'][zoom]
+        if int(resolution) == resolution:
+            return str(int(resolution))
+        else:
+            return str(resolution).replace('.', '_')
+
+
 class TileGeneration:
     geom = None
 
@@ -133,6 +145,10 @@ class TileGeneration:
             error = self.validate(grid, name, 'srs', attribute_type=str, required=True) or error
             error = self.validate(grid, name, 'unit', attribute_type=str, default='m') or error
             error = self.validate(grid, name, 'tile_size', attribute_type=int, default=256) or error
+            error = self.validate(
+                grid, name, 'matrix_identifier', attribute_type=str, default='zoom',
+                enumeration=['zoom', 'resolution']
+            ) or error
 
             grid['obj'] = FreeTileGrid(
                 resolutions=[int(r * scale) for r in grid['resolutions']],
@@ -392,6 +408,7 @@ class TileGeneration:
 
     def get_store(self, cache, layer, dimensions=None):
         # build layout
+        grid = layer['grid_ref'] if 'grid_ref' in layer else None
         layout = WMTSTileLayout(
             layer=layer['name'],
             url=cache['folder'],
@@ -402,6 +419,7 @@ class TileGeneration:
                 for dimension in layer['dimensions']
             ],
             tile_matrix_set=layer['grid'],
+            tile_matrix=lambda z: get_tile_matrix_identifier(grid, zoom=z),
             request_encoding='REST',
         )
         # store

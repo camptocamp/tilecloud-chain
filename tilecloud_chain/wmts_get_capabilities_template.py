@@ -84,7 +84,7 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
         set left = grid['bbox'][0] %}{%
         set top = grid['bbox'][3] %}
       <TileMatrix>
-        <ows:Identifier>{{i}}</ows:Identifier>
+        <ows:Identifier>{{ get_tile_matrix_identifier(grid, resolution=resolution, zoom=i) }}</ows:Identifier>
         <ScaleDenominator>{{resolution / 0.00028}}</ScaleDenominator>
         <TopLeftCorner>{{left}} {{top}}</TopLeftCorner>
         <TileWidth>{{grid['tile_size']}}</TileWidth>
