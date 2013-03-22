@@ -73,7 +73,7 @@ def _gene(options, gene, layer):
                     border=gene.layer['meta_buffer'] if meta else 0,
                     tilegrid=gene.get_grid()['obj']
                 ),)
-            ))
+            ), "Get tile from WMS")
         elif gene.layer['type'] == 'mapnik':
             from tilecloud.store.mapnik_ import MapnikTileStore
 
@@ -87,7 +87,7 @@ def _gene(options, gene, layer):
                     resolution=gene.layer['resolution'],
                     layers_fields=gene.layer['layers_fields'],
                     drop_empty_utfgrid=gene.layer['drop_empty_utfgrid'],
-                ))
+                ), "Create Mapnik grid tile")
             else:
                 gene.get(MapnikTileStore(
                     tilegrid=gene.get_grid()['obj'],
@@ -95,7 +95,7 @@ def _gene(options, gene, layer):
                     image_buffer=gene.layer['meta_buffer'] if meta else 0,
                     data_buffer=gene.layer['data_buffer'],
                     output_format=gene.layer['output_format'],
-                ))
+                ), "Create Mapnik tile")
 
         if meta:
             if options.role == 'hash':
@@ -144,7 +144,7 @@ def _gene(options, gene, layer):
                 return tile
             gene.imap(log_size)
 
-        gene.put(cache_tilestore)
+        gene.put(cache_tilestore, "Store the tile")
 
     gene.add_error_filters(logger)
 
@@ -197,7 +197,7 @@ def main():
     parser = OptionParser('Used to generate the tiles')
     add_comon_options(parser)
     parser.add_option(
-        '-d', '--daemonize', default=False, action="store_true",
+        '--daemonize', default=False, action="store_true",
         help='run as a deamon'
     )
     parser.add_option(

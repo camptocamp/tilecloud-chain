@@ -64,6 +64,7 @@ class TestError(CompareCase):
     def test_validate_type(self):
         class Opt:
             verbose = False
+            debug = False
             test = 0
             zoom = None
         gene = TileGeneration('tilegeneration/test.yaml', Opt())
