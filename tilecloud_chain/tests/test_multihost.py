@@ -87,13 +87,13 @@ class TestMultihost(CompareCase):
             """==== Sync and build code ====
 ==== Time results ====
 A tile is generated in: [0-9\.]* \[ms\]
-Than mean generated tile size: 0.809 \[kb\]
+Than mean generated tile size: 0.826 \[kb\]
 config:
     cost:
         tileonly_generation_time: [0-9\.]*
         tile_generation_time: [0-9\.]*
         metatile_generation_time: 0
-        tile_size: 0.809""", True)
+        tile_size: 0.826""", True)
 
         self.assert_cmd_equals(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
