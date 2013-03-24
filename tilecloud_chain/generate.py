@@ -19,7 +19,11 @@ logger = logging.getLogger(__name__)
 
 
 def _gene(options, gene, layer):
-    gene.set_layer(layer, options)
+    if options.role == 'slave':
+        # no geom needed for slave mode
+        gene.layer = gene.layers[layer]
+    else:
+        gene.set_layer(layer, options)
 
     if options.get_hash:
         options.role = 'hash'
