@@ -1139,8 +1139,6 @@ class TestController(CompareCase):
       <source>polygon</source>
       <cache>default</cache>
       <grid>swissgrid_5</grid>
-      <metatile>8 8</metatile>
-      <metabuffer>128</metabuffer>
       <format>image/png</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
@@ -1363,7 +1361,7 @@ layers:
     mime_type: image/png
     name: line
     px_buffer: false
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.line
+    sql: the_geom AS geom FROM tests.line
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1383,7 +1381,7 @@ layers:
     name: mapnik
     px_buffer: false
     output_format: png
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    sql: the_geom AS geom FROM tests.polygon
     type: mapnik
     url: http://localhost/mapserv
     wmts_style: default
@@ -1409,7 +1407,7 @@ layers:
     px_buffer: false
     output_format: grid
     resolution: 16
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    sql: the_geom AS geom FROM tests.polygon
     type: mapnik
     url: http://localhost/mapserv
     wmts_style: default
@@ -1433,7 +1431,7 @@ layers:
     px_buffer: false
     output_format: grid
     resolution: 16
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    sql: the_geom AS geom FROM tests.polygon
     type: mapnik
     url: http://localhost/mapserv
     wmts_style: default
@@ -1452,7 +1450,7 @@ layers:
     min_resolution_seed: 10.0
     name: point
     px_buffer: false
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
+    sql: the_geom AS geom FROM tests.point
     sqs: {queue: sqs_point, region: eu-west-1}
     type: wms
     url: http://localhost/mapserv
@@ -1489,8 +1487,10 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
+    min_resolution_seed: 10.0
     name: point_hash
     px_buffer: false
+    sql: the_geom AS geom FROM tests.point
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1498,6 +1498,8 @@ layers:
     connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002
+    empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
+    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
     grid: swissgrid_5
     grid_ref: *id003
@@ -1508,7 +1510,7 @@ layers:
     mime_type: image/png
     name: point_px_buffer
     px_buffer: 100.0
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.point
+    sql: the_geom AS geom FROM tests.point
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1520,13 +1522,13 @@ layers:
     grid: swissgrid_5
     grid_ref: *id003
     layers: polygon
-    meta: true
+    meta: false
     meta_buffer: 128
-    meta_size: 8
+    meta_size: 1
     mime_type: image/png
     name: polygon
     px_buffer: false
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    sql: the_geom AS geom FROM tests.polygon
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1544,7 +1546,7 @@ layers:
     mime_type: image/png
     name: polygon2
     px_buffer: false
-    sql: ST_Buffer(ST_Union(the_geom), 100, 2) FROM tests.polygon
+    sql: the_geom AS geom FROM tests.polygon
     type: wms
     url: http://localhost/mapserv
     wmts_style: default

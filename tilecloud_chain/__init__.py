@@ -19,8 +19,9 @@ except:  # pragma: no cover
     import Image
 
 import psycopg2
-from shapely.wkt import loads as loads_wkt
+from shapely.wkb import loads as loads_wkb
 from shapely.geometry import Polygon
+from shapely.ops import cascaded_union
 import boto.sqs
 from boto.sqs.jsonmessage import JSONMessage
 
@@ -47,7 +48,7 @@ def add_comon_options(parser):
         help='restrict to specified bounding box (minx,miny,maxx,maxy)'
     )
     parser.add_option(
-        '-z', '--zoom',
+        '-z', '--zoom', default=None,
         help='restrict to specified zoom level, or a zooms range (2-5), or a zooms list (2,4,5)'
     )
     parser.add_option(
@@ -564,15 +565,15 @@ class TileGeneration:
 
     def init_geom(self, extent=None):
         self.geom = None
-        self.z_geoms = None
         if not self.options.near and self.options.geom and \
                 'connection' in self.layer and 'sql' in self.layer:
             conn = psycopg2.connect(self.layer['connection'])
             cursor = conn.cursor()
-            sql = 'SELECT ST_AsText((SELECT %s))' % self.layer['sql']
+            sql = 'SELECT ST_AsBinary(geom) FROM (SELECT %s) AS g' % self.layer['sql']
             logger.debug('Execute SQL: %s.' % sql)
             cursor.execute(sql)
-            self.geom = loads_wkt(cursor.fetchone()[0])
+            geoms = [loads_wkb(str(r[0])) for r in cursor.fetchall()]
+            self.geom = cascaded_union(geoms)
             if extent:
                 self.geom = self.geom.intersection(Polygon((
                     (extent[0], extent[1]),
@@ -588,23 +589,13 @@ class TileGeneration:
                 (extent[2], extent[1]),
             ))
 
-        if self.layer['px_buffer']:
-            self.z_geoms = {}
-            for zoom, resolution in enumerate(self.layer['grid_ref']['resolutions']):
-                self.z_geoms[zoom] = self.geom.buffer(resolution * self.layer['px_buffer'])
-
     def add_geom_filter(self, queue_store=None):
-        if self.z_geoms:
-            self.ifilter(IntersectGeometryFilter(
-                grid=self.get_grid(),
-                z_geoms=self.z_geoms,
-                queue_store=queue_store
-            ))
-        elif self.geom:
+        if self.geom:
             self.ifilter(IntersectGeometryFilter(
                 grid=self.get_grid(),
                 geom=self.geom,
-                queue_store=queue_store
+                queue_store=queue_store,
+                px_buffer=self.layer['px_buffer'] + self.layer['meta_buffer']
             ))
 
     def add_metatile_splitter(self):
@@ -648,10 +639,10 @@ class TileGeneration:
         bounding_pyramid = BoundingPyramid(tilegrid=self.layer['grid_ref']['obj'])
         bounding_pyramid.fill(None, self.geom.bounds)
 
-        if options.time and not options.zoom:
+        if options.time and options.zoom is None:
             options.zoom = [max(bounding_pyramid.bounds)]
 
-        if not options.zoom and 'min_resolution_seed' in self.layer:
+        if options.zoom is None and 'min_resolution_seed' in self.layer:
             options.zoom = []
             for z, resolution in enumerate(self.layer['grid_ref']['resolutions']):
                 if resolution >= self.layer['min_resolution_seed']:
@@ -659,7 +650,7 @@ class TileGeneration:
 
         meta = self.layer['meta']
         if meta:
-            if options.zoom:
+            if options.zoom is not None:
                 def metatilecoords(n, zoom):
                     for z in zoom:
                         xbounds, ybounds = bounding_pyramid.bounds[z]
@@ -674,7 +665,7 @@ class TileGeneration:
                 self.set_tilecoords(metatilecoords(self.layer['meta_size'], options.zoom))
             else:
                 self.set_tilecoords(bounding_pyramid.metatilecoords(self.layer['meta_size']))
-        elif options.zoom:
+        elif options.zoom is not None:
             def ziter():
                 for z in options.zoom:
                     for tile in bounding_pyramid.ziter(z):
@@ -844,19 +835,19 @@ class HashLogger(object):  # pragma: no cover
 
 class IntersectGeometryFilter(object):
 
-    def __init__(self, grid, geom=None, z_geoms=None, queue_store=None):
+    def __init__(self, grid, geom=None, queue_store=None, px_buffer=0):
         self.grid = grid
-        self.z_geoms = z_geoms
-        if self.z_geoms is None:
-            self.geom = geom or self.bbox_polygon(self.grid['bbox'])
+        self.geom = geom
         self.queue_store = queue_store
+        self.px_buffer = px_buffer
 
     def __call__(self, tile):
         intersects = self.bbox_polygon(
-            self.grid['obj'].extent(tile.tilecoord)
-        ).intersects(
-            self.geom if not self.z_geoms else self.z_geoms[tile.tilecoord.z]
-        )
+            self.grid['obj'].extent(
+                tile.tilecoord,
+                self.grid['resolutions'][tile.tilecoord.z] * self.px_buffer
+            )
+        ).intersects(self.geom)
 
         if not intersects and hasattr(tile, 'metatile'):
             tile.metatile.elapsed_togenerate -= 1
