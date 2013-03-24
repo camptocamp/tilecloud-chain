@@ -107,7 +107,10 @@ def _gene(options, gene, layer):
                 # Discard tiles with certain content
                 if meta and 'empty_metatile_detection' in gene.layer:
                     empty_tile = gene.layer['empty_metatile_detection']
-                    gene.imap(HashDropper(empty_tile['size'], empty_tile['hash'], store=cache_tilestore))
+                    gene.imap(HashDropper(
+                        empty_tile['size'], empty_tile['hash'], store=cache_tilestore,
+                        queue_store=sqs_tilestore
+                    ))
 
             def add_elapsed_togenerate(metatile):
                 if metatile is not None:
@@ -119,17 +122,16 @@ def _gene(options, gene, layer):
             # Split the metatile image into individual tiles
             gene.add_metatile_splitter()
 
-            if options.role != 'hash':
-                # Only keep tiles that intersect geometry
-                gene.add_geom_filter(sqs_tilestore)
-
         if options.role == 'hash':
             gene.imap(HashLogger('empty_tile_detection'))
         elif not options.near:
             # Discard tiles with certain content
             if 'empty_tile_detection' in gene.layer:
                 empty_tile = gene.layer['empty_tile_detection']
-                gene.imap(HashDropper(empty_tile['size'], empty_tile['hash'], store=cache_tilestore))
+                gene.imap(HashDropper(
+                    empty_tile['size'], empty_tile['hash'], store=cache_tilestore,
+                    queue_store=sqs_tilestore if not meta else None
+                ))
 
     if options.role in ('local', 'slave'):
         if options.test > 0 or options.verbose:
