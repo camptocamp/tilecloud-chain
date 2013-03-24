@@ -119,14 +119,32 @@ layers:
     line:
         layers: line
         sql: the_geom AS geom FROM tests.line
+        empty_metatile_detection:
+            size: 20743
+            hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+        empty_tile_detection:
+            size: 334
+            hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     polygon:
         layers: polygon
         meta: off
         sql: the_geom AS geom FROM tests.polygon
+        empty_metatile_detection:
+            size: 20743
+            hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+        empty_tile_detection:
+            size: 334
+            hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     polygon2:
         layers: polygon
         grid: swissgrid_01
         sql: the_geom AS geom FROM tests.polygon
+        empty_metatile_detection:
+            size: 20743
+            hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+        empty_tile_detection:
+            size: 334
+            hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     all:
         layers: point,line,polygon
         meta: off
@@ -134,7 +152,7 @@ layers:
     mapnik:
         type: mapnik
         mapfile: mapfile/test.mapnik
-        meta_buffer: 0
+        meta: off
         data_buffer: 128
         output_format: png
         sql: the_geom AS geom FROM tests.polygon
@@ -142,7 +160,6 @@ layers:
         type: mapnik
         mapfile: mapfile/test.mapnik
         meta: off
-        meta_buffer: 0
         data_buffer: 128
         output_format: grid
         mime_type: application/utfgrid

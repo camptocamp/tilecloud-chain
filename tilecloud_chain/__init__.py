@@ -784,10 +784,11 @@ class HashDropper(object):
     The ``store`` is used to delete the empty tiles.
     """
 
-    def __init__(self, size, sha1code, store=None):
+    def __init__(self, size, sha1code, store=None, queue_store=None):
         self.size = size
         self.sha1code = sha1code
         self.store = store
+        self.queue_store = queue_store
 
     def __call__(self, tile):
         if len(tile.data) != self.size or \
@@ -801,6 +802,10 @@ class HashDropper(object):
                 else:
                     self.store.delete_one(tile)
             logger.info("The tile %s is dropped" % str(tile.tilecoord))
+            if self.queue_store is not None:
+                self.queue_store.delete_one(tile)
+            if hasattr(tile, 'metatile'):
+                tile.metatile.elapsed_togenerate -= 1
             return None
 
 

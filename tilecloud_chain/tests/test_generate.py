@@ -36,11 +36,7 @@ Tile: 4/0/0
         self.assert_cmd_equals(
             './buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l mapnik',
             generate.main,
-            """Tile: 4/0/0:+8/+8
-    empty_metatile_detection:
-        size: 16375
-        hash: b1087dd40c5d54e70c1824355a7dec802224c7f5
-Tile: 4/0/0
+            """Tile: 4/0/0
     empty_tile_detection:
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8""")
@@ -60,7 +56,7 @@ Tile: 4/0/0
             generate.main,
             "/tmp/tiles/",
             '1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png', [
-                ('line', 0, 0, 0), ('polygon', 0, 5, 4)
+                ('line', 0, 7, 4), ('polygon', 0, 5, 4)
             ]
         )
 
