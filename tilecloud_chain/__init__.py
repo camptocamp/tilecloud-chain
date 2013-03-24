@@ -106,7 +106,7 @@ class TileGeneration:
     geom = None
 
     def __init__(self, config_file, options=None, layer_name=None):
-        level = logging.ERROR
+        level = logging.WARNING
         if options and options.verbose:
             level = logging.INFO
         elif options and options.debug:
@@ -642,11 +642,39 @@ class TileGeneration:
         if options.time and options.zoom is None:
             options.zoom = [max(bounding_pyramid.bounds)]
 
-        if options.zoom is None and 'min_resolution_seed' in self.layer:
-            options.zoom = []
-            for z, resolution in enumerate(self.layer['grid_ref']['resolutions']):
-                if resolution >= self.layer['min_resolution_seed']:
-                    options.zoom.append(z)
+        if options.zoom is not None:
+            zoom_max = len(self.layer['grid_ref']['resolutions']) - 1
+            for zoom in options.zoom:
+                if zoom > zoom_max:
+                    logger.warn(
+                        "Warning: zoom %i is greater than the maximum zoom %i"
+                        " of grid %s of layer %s, ignored." % (
+                            zoom, zoom_max, self.layer['grid'], self.layer['name']
+                        )
+                    )
+            options.zoom = [z for z in options.zoom if z <= zoom_max]
+
+        if 'min_resolution_seed' in self.layer:
+            if options.zoom is None:
+                options.zoom = []
+                for z, resolution in enumerate(self.layer['grid_ref']['resolutions']):
+                    if resolution >= self.layer['min_resolution_seed']:
+                        options.zoom.append(z)
+            else:
+                for zoom in options.zoom:
+                    resolution = self.layer['grid_ref']['resolutions'][zoom]
+                    if resolution < self.layer['min_resolution_seed']:
+                        logger.warn(
+                            "Warning: zoom %i corresponds to resolution %s is smaller"
+                            " than the 'min_resolution_seed' %s of layer %s, ignored." %
+                            (
+                                zoom, resolution, self.layer['min_resolution_seed'], self.layer['name']
+                            )
+                        )
+                options.zoom = [
+                    z for z in options.zoom if
+                    self.layer['grid_ref']['resolutions'][z] >= self.layer['min_resolution_seed']
+                ]
 
         meta = self.layer['meta']
         if meta:

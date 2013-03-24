@@ -3,7 +3,7 @@
 from testfixtures import log_capture
 
 from tilecloud_chain.tests import CompareCase
-from tilecloud_chain import controller, TileGeneration
+from tilecloud_chain import controller, generate, TileGeneration
 
 
 class TestError(CompareCase):
@@ -57,6 +57,22 @@ class TestError(CompareCase):
             ('tilecloud_chain', 'ERROR', "The attribute 'srs' of the object grid[swissgrid_2] is not a <type 'str'>."),
             ('tilecloud_chain', 'ERROR', "The attribute 'bbox' of the object grid[swissgrid_1] is not an array."),
             ('tilecloud_chain', 'ERROR', "The attribute 'srs' of the object grid[swissgrid_1] is not a <type 'str'>."),
+            ('tilecloud_chain.tests', 'INFO', ''),
+            ('tilecloud_chain.tests', 'INFO', ''),
+        )
+
+    @log_capture()
+    def test_zoom_errors(self, l):
+        self.run_cmd(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point --zoom 4,10',
+            generate.main)
+        l.check(
+            ('tilecloud_chain', 'DEBUG', 'Execute SQL: SELECT ST_AsBinary(geom) FROM (SELECT the_geom AS geom '
+             'FROM tests.point) AS g.'),
+            ('tilecloud_chain', 'WARNING', "Warning: zoom 10 is greater than the maximum "
+             "zoom 4 of grid swissgrid_5 of layer point, ignored."),
+            ('tilecloud_chain', 'WARNING', "Warning: zoom 4 corresponds to resolution 5.0 "
+             "is smaller than the 'min_resolution_seed' 10.0 of layer point, ignored."),
             ('tilecloud_chain.tests', 'INFO', ''),
             ('tilecloud_chain.tests', 'INFO', ''),
         )
