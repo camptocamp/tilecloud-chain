@@ -213,19 +213,31 @@ Generate all the tiles::
 
 Generate a specific layer::
 
-    ./buildout/bin/generate_tiles --layer <a_layer>
+    ./buildout/bin/generate_tiles --layer=<a_layer>
 
 Generate a specific zoom::
 
-    ./buildout/bin/generate_tiles --zoom 5
+    ./buildout/bin/generate_tiles --zoom=5
 
 Generate a specific zoom range::
 
-    ./buildout/bin/generate_tiles --zoom 2-8
+    ./buildout/bin/generate_tiles --zoom=2-8
 
 Generate a specific some zoom levels::
 
-    ./buildout/bin/generate_tiles --zoom 2,4,7
+    ./buildout/bin/generate_tiles --zoom=2,4,7
+
+Generate tiles on a bbox::
+
+    ./buildout/bin/generate_tiles --bbox=<minx,miny,maxx,maxy>
+
+Generate a tiles near a tile coordinate (useful for test)::
+
+    ./buildout/bin/generate_tiles --near=z/x/y
+
+Generate a tiles in a deferent cache than the default one::
+
+    ./buildout/bin/generate_tiles --cache=<a_cache>
 
 And don't forget to generate the WMTS Capabilities::
 
