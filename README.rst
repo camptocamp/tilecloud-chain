@@ -24,7 +24,10 @@ Feature:
 - Delete empty tiles.
 
 
-Use it
+.. contents:: Table of contents
+
+
+Get it
 ------
 
 Install::
@@ -35,19 +38,11 @@ Install::
 
 Edit your layers configuration in ``./tilegeneration/config.yaml``.
 
-Default self documented file: https://github.com/sbrunner/tilecloud-chain/blob/master/tilecloud_chain/scaffolds/create/tilegeneration/config.yaml.in.
-
-Generate tiles::
-
-    ./buildout/bin/generate_tiles --help
-
-Generate controller::
-
-    ./buildout/bin/generate_controller --help
+`Default configuration file <https://github.com/sbrunner/tilecloud-chain/blob/master/tilecloud_chain/scaffolds/create/tilegeneration/config.yaml.in_tmpl>`_.
 
 
 Configure hash
-~~~~~~~~~~~~~~
+--------------
 
 We can filter tiles and metatiles by using an hash.
 
@@ -66,12 +61,12 @@ To eaysly generate this configuration we can use the following command::
 
     ./buildout/bin/generate_tiles --get-hash <z/x/y> -l <layer_name>
 
-Where `<z/x/y>` should refers en empty tile/metatile. Generally it's a good
+Where ``<z/x/y>`` should refers en empty tile/metatile. Generally it's a good
 idea to use z as the maximum zoom, x and y as 0.
 
 
 Configure geom/sql
-~~~~~~~~~~~~~~~~~~
+------------------
 
 We can generate the tiles only on some geometries stored in PostGis.
 
@@ -86,7 +81,7 @@ It's preferable to use simple geometries, too complex geometries can slow down t
 
 
 Configure MapCache
-~~~~~~~~~~~~~~~~~~
+------------------
 
 For the last zoom levels we can use MapCache.
 
@@ -97,13 +92,13 @@ The MapCache configuration look like this (default values):
 
 .. code:: yaml
 
-mapcache:
-    # The generated file
-    config_file: apache/mapcache.xml
-    # The memcache host
-    memcache_host: localhost
-    # the memcache port
-    memcache_port: 11211
+    mapcache:
+        # The generated file
+        config_file: apache/mapcache.xml
+        # The memcache host
+        memcache_host: localhost
+        # the memcache port
+        memcache_port: 11211
 
 To generate the MapCache configuration we use the command::
 
@@ -138,7 +133,7 @@ tiles, configure MapCache and redirect on MapCache for the last zoom levels
 
 
 Configure S3
-~~~~~~~~~~~~
+------------
 
 The cache configuration is like this:
 
@@ -164,7 +159,7 @@ Before running an operation on S3 don't miss to set the following variable::
 
 
 Configure SQS
-~~~~~~~~~~~~~
+-------------
 
 The configuration in layer is like this:
 
@@ -193,7 +188,7 @@ And then generate the tiles present in the SQS queue::
 
 
 Use MBTile
-~~~~~~~~~~
+----------
 
 The cache configuration is like this:
 
@@ -210,7 +205,7 @@ To serve them there is a view named `serve_tiles`.
 
 
 Generate tiles
-~~~~~~~~~~~~~~
+--------------
 
 Generate all the tiles::
 
@@ -237,7 +232,7 @@ And don't forget to generate the WMTS Capabilities::
     ./buildout/bin/generate_controller --capabilities
 
 Explain cost
-~~~~~~~~~~~~~
+-------------
 
 Configuration (default values):
 
@@ -277,7 +272,7 @@ Layer configuration (default values):
         tile_size: 20.0,
         tileonly_generation_time: 60.0
 
-The following commands can be used to know the time and cost to do generation.
+The following commands can be used to know the time and cost to do generation::
 
     ./buildout/bin/generate_controller --cost
 
@@ -285,7 +280,7 @@ This suppose that you use a separate AWS host to generate the tiles.
 
 
 Configure SNS
-~~~~~~~~~~~~~
+-------------
 
 SNS can be used to send a message when the generation ends.
 
@@ -306,7 +301,7 @@ Before running the generation miss to set the following variable::
 
 
 Openlayers pink tiles
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 To avoid the OpenLayers red tiles on missing empty tiles we can add the following CSS rule:
 
@@ -318,7 +313,7 @@ To avoid the OpenLayers red tiles on missing empty tiles we can add the followin
 
 
 OpenLayers test page
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 To generate a test page use::
 
@@ -326,29 +321,29 @@ To generate a test page use::
 
 
 Configure and explain AWS
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 
 The generation can be deported on an external host.
 
 
 Other usefull options
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
-`--verbose` or `-v`: used to display info message.
+``--verbose`` or ``-v``: used to display info message.
 
-`--debug` or `-d`: used to display debug message, pleas use this option to report issue.
+``--debug`` or ``-d``: used to display debug message, pleas use this option to report issue.
 
-`--test` or `-t` <n>: used to generate only <n> tiles, useful for test.
+``--test <n>`` or ``-t <n>``: used to generate only ``<n>`` tiles, useful for test.
 
 
 Important remarks
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 Especially on S3 the grid name, the layer name, the dimensions, can't be changed
 (understand if we want to change them we should regenerate all the tiles).
 
 By default we also can't insert a zoom level, if you think that you need it we can
-set the grid property `matrix_identifier: resolution`, bit it don't work with MapCache.
+set the grid property ``matrix_identifier: resolution``, bit it don't work with MapCache.
 
 Please use the ``--debug`` to report issue.
 
@@ -365,7 +360,6 @@ Build it::
 Changes
 -------
 
-
 Release 0.5
 ~~~~~~~~~~~
 
@@ -381,7 +375,7 @@ Release 0.5
                 # The SQS queue name, it should already exists
                 queue: the_name
 
-2. Add debug option (--debug), please use it to report issue.
+2. Add debug option (``--debug``), please use it to report issue.
 
-3. Now the 'sql' request can return a set of geometries in a column names geom 
-   but the syntax change a little bit => '<column> AS geom FROM <table>'
+3. Now the ``sql`` request can return a set of geometries in a column names geom
+   but the syntax change a little bit => ``<column> AS geom FROM <table>``
