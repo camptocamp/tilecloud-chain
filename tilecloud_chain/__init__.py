@@ -596,7 +596,7 @@ class TileGeneration:
                 geom=self.geom,
                 queue_store=queue_store,
                 px_buffer=self.layer['px_buffer'] + self.layer['meta_buffer']
-            ))
+            ), "Intersect with geom")
 
     def add_metatile_splitter(self):
         store = MetaTileSplitterTileStore(
