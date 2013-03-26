@@ -110,13 +110,13 @@ We can also use a buildout task to automatise it::
     parts: += mapcache
 
     [mapcache]
-    recipe = collective.recipe.cmd:py
+    recipe = collective.recipe.cmd
     on_install = true
     on_update = true
     cmds =
-      >>> ./buildout/bin/generate_controller --mapcache
+      ./buildout/bin/generate_controller --mapcache
     uninstall_cmds =
-      >>> rm apache/mapcache.xml
+      rm apache/mapcache.xml
 
 And finally we can use the following Apache configuration to serve the
 tiles, configure MapCache and redirect on MapCache for the last zoom levels
