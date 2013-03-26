@@ -58,8 +58,7 @@ def _gene(options, gene, layer):
             gene.set_tilecoords([TileCoord(z, x, y)])
 
     # At this stage, the tilestream contains metatiles that intersect geometry
-    if options.test > 0 or options.verbose:
-        gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
+    gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
     if options.role == 'master':  # pragma: no cover
         # Put the metatiles into the SQS queue
@@ -125,6 +124,7 @@ def _gene(options, gene, layer):
 
             # Split the metatile image into individual tiles
             gene.add_metatile_splitter()
+            gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
         if options.role == 'hash':
             gene.imap(HashLogger('empty_tile_detection'))
@@ -138,9 +138,6 @@ def _gene(options, gene, layer):
                 ))
 
     if options.role in ('local', 'slave'):
-        if options.test > 0 or options.verbose:
-            gene.imap(Logger(logger, logging.DEBUG, '%(tilecoord)s'))
-
         gene.add_error_filters(logger)
         gene.ifilter(DropEmpty())
 
