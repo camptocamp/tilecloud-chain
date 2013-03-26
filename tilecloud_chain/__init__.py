@@ -107,6 +107,8 @@ class TileGeneration:
 
     def __init__(self, config_file, options=None, layer_name=None):
         level = logging.WARNING
+        if options and options.verbose and options.debug:
+            exit("Debug and verbose options can't be used together")
         if options and options.verbose:
             level = logging.INFO
         elif options and options.debug:
