@@ -107,6 +107,8 @@ class TileGeneration:
 
     def __init__(self, config_file, options=None, layer_name=None):
         level = logging.WARNING
+        if options and options.verbose and options.debug:
+            exit("Debug and verbose options can't be used together")
         if options and options.verbose:
             level = logging.INFO
         elif options and options.debug:
@@ -570,7 +572,7 @@ class TileGeneration:
             conn = psycopg2.connect(self.layer['connection'])
             cursor = conn.cursor()
             sql = 'SELECT ST_AsBinary(geom) FROM (SELECT %s) AS g' % self.layer['sql']
-            logger.debug('Execute SQL: %s.' % sql)
+            logger.info('Execute SQL: %s.' % sql)
             cursor.execute(sql)
             geoms = [loads_wkb(str(r[0])) for r in cursor.fetchall()]
             self.geom = cascaded_union(geoms)
