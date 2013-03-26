@@ -344,6 +344,7 @@ Other usefull options
 ``--verbose`` or ``-v``: used to display info message.
 
 ``--debug`` or ``-d``: used to display debug message, pleas use this option to report issue.
+With the debug mode we don't catch exceptions, and we don't log time messages.
 
 ``--test <n>`` or ``-t <n>``: used to generate only ``<n>`` tiles, useful for test.
 
