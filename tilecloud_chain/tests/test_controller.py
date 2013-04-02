@@ -1228,7 +1228,7 @@ class TestController(CompareCase):
 
     CONFIG = """caches:
   local: {folder: /tmp/tiles, hosts: false, http_url: 'http://taurus/tiles', http_urls: false,
-    name: local, type: filesystem}
+    name: local, type: filesystem, wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml}
   mbtiles: {folder: /tmp/tiles/mbtiles, http_url: 'http://taurus/tiles', name: mbtiles, type: mbtiles}
   multi_host:
     folder: /tmp/tiles
