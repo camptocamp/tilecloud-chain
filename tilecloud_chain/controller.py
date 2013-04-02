@@ -674,6 +674,10 @@ def _send(data, path, mime_type, cache):
 
 def _validate_generate_wmts_capabilities(gene, cache):
     error = False
+    error = gene.validate(
+        cache, 'cache[%s]' % cache['name'], 'wmtscapabilities_file', attribute_type=str,
+        default='1.0.0/WMTSCapabilities.xml'
+    ) or error
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_url', attribute_type=str, default=False) or error
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_urls', attribute_type=list, default=False) or error
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'hosts', attribute_type=list, default=False) or error
@@ -708,7 +712,9 @@ def _generate_wmts_capabilities(gene, options):
         wmts_get_capabilities_template,
         layers=gene.layers,
         grids=gene.grids,
-        getcapabilities=base_urls[0] + '/1.0.0/WMTSCapabilities.xml',
+        getcapabilities=base_urls[0] + '/' + cache['wmtscapabilities_file']
+        if cache['wmtscapabilities_file'][0] != '/'
+        else cache['wmtscapabilities_file'],
         gettiles=base_urls,
         get_tile_matrix_identifier=get_tile_matrix_identifier,
         enumerate=enumerate, ceil=math.ceil, int=int
