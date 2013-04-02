@@ -313,7 +313,7 @@ Before running the generation miss to set the following variable::
 
 
 Openlayers pink tiles
---------------------
+---------------------
 
 To avoid the OpenLayers red tiles on missing empty tiles we can add the following CSS rule:
 
