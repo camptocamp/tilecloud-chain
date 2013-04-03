@@ -27,7 +27,7 @@ install:
 - ./buildout/bin/buildout
 
 script:
-- find tilecloud_chain -name \*.py | grep -v tilecloud_chain/openlayers.py | xargs ./buildout/bin/flake8 --max-line-length=120
+- find tilecloud_chain -name \*.py | xargs ./buildout/bin/flake8 --max-line-length=120
 - ./buildout/bin/python setup.py nosetests --stop
 
 notifications:

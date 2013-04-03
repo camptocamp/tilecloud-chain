@@ -676,8 +676,10 @@ def _validate_generate_wmts_capabilities(gene, cache):
     error = False
     error = gene.validate(
         cache, 'cache[%s]' % cache['name'], 'wmtscapabilities_file', attribute_type=str,
-        default='1.0.0/WMTSCapabilities.xml'
+        default='/1.0.0/WMTSCapabilities.xml'
     ) or error
+    if cache['wmtscapabilities_file'][0] != '/':
+        cache['wmtscapabilities_file'] = '/' + cache['name']['wmtscapabilities_file']
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_url', attribute_type=str, default=False) or error
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_urls', attribute_type=list, default=False) or error
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'hosts', attribute_type=list, default=False) or error
@@ -708,19 +710,18 @@ def _generate_wmts_capabilities(gene, options):
             base_urls = [cache['http_url'] % cache]
     if cache['http_urls']:
         base_urls = [url % cache for url in cache['http_urls']]
+
     capabilities = jinja2_template(
         wmts_get_capabilities_template,
         layers=gene.layers,
         grids=gene.grids,
-        getcapabilities=base_urls[0] + '/' + cache['wmtscapabilities_file']
-        if cache['wmtscapabilities_file'][0] != '/'
-        else cache['wmtscapabilities_file'],
+        getcapabilities=base_urls[0] + cache['wmtscapabilities_file'],
         gettiles=base_urls,
         get_tile_matrix_identifier=get_tile_matrix_identifier,
         enumerate=enumerate, ceil=math.ceil, int=int
     )
 
-    _send(capabilities, '/1.0.0/WMTSCapabilities.xml', 'application/xml', cache)
+    _send(capabilities, cache['wmtscapabilities_file'], 'application/xml', cache)
 
 
 def _validate_generate_mapcache_config(gene):
