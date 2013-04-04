@@ -378,7 +378,7 @@ Release 0.5
 
 1. SQS config change:
 
-.. code:: javascript
+.. code:: yaml
 
     layers:
         layer_name:
