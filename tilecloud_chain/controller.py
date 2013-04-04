@@ -679,7 +679,7 @@ def _validate_generate_wmts_capabilities(gene, cache):
         default='/1.0.0/WMTSCapabilities.xml'
     ) or error
     if cache['wmtscapabilities_file'][0] != '/':
-        cache['wmtscapabilities_file'] = '/' + cache['name']['wmtscapabilities_file']
+        cache['wmtscapabilities_file'] = '/' + cache['wmtscapabilities_file']
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_url', attribute_type=str, default=False) or error
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_urls', attribute_type=list, default=False) or error
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'hosts', attribute_type=list, default=False) or error
