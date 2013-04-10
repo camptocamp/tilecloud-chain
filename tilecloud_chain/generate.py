@@ -19,11 +19,32 @@ logger = logging.getLogger(__name__)
 
 
 def _gene(options, gene, layer):
-    if options.role == 'slave':
-        # no geom needed for slave mode
+    if options.role == 'slave' or options.get_hash or options.get_bbox:
         gene.layer = gene.layers[layer]
     else:
         gene.set_layer(layer, options)
+
+    if options.get_bbox:
+        if not gene.layer:
+            exit("A layer is required with --get-bbox option")
+        try:
+            parts = options.get_bbox.split(':')
+            z, x, y = (int(v) for v in parts[0].split('/'))
+            if len(parts) == 1:
+                tilecoord = TileCoord(z, x, y)
+            elif len(parts) == 2:
+                tilecoord = TileCoord(z, x, y, int(parts[1].split('/')[0]))
+            else:
+                exit("Tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n" % options.get_bbox)
+            print \
+                "Tile bounds: [%i,%i,%i,%i]" % \
+                gene.layer['grid_ref']['obj'].extent(tilecoord)
+            exit()
+        except ValueError as e:
+            exit(
+                "Tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n\n%r" %
+                (options.get_bbox, e)
+            )
 
     if options.get_hash:
         options.role = 'hash'
@@ -212,6 +233,10 @@ def main():
         '-H', '--get-hash', metavar="TILE",
         help='get the empty tiles hash, use the specified TILE z/x/y'
     )
+    parser.add_option(
+        '--get-bbox', metavar="TILE",
+        help='get the bbox of a tile, use the specified TILE z/x/y, or z/x/y:+n/+n for metatiles'
+    )
 
     (options, args) = parser.parse_args()
 
@@ -220,7 +245,7 @@ def main():
 
     gene = TileGeneration(options.config, options)
 
-    if not options.get_hash and \
+    if not options.get_hash and not options.get_bbox and \
             'authorised_user' in gene.config['generation'] and \
             gene.config['generation']['authorised_user'] != getuser():
         exit('not authorised, authorised user is: %s.' % gene.config['generation']['authorised_user'])
@@ -230,6 +255,8 @@ def main():
 
     if (options.layer):
         _gene(options, gene, options.layer)
+    elif options.get_bbox:
+        exit("With --get-bbox option we needs to specify a layer")
     else:
         for layer in gene.config['generation']['default_layers']:
             _gene(options, gene, layer)
