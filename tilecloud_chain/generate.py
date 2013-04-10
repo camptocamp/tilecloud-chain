@@ -72,11 +72,19 @@ def _gene(options, gene, layer):
         gene.set_store(sqs_tilestore)  # pragma: no cover
 
     elif options.role == 'hash':
-        z, x, y = (int(v) for v in options.get_hash.split('/'))
-        if meta:
-            gene.set_tilecoords([TileCoord(z, x, y, gene.layer['meta_size'])])
-        else:
-            gene.set_tilecoords([TileCoord(z, x, y)])
+        if not gene.layer:
+            exit("A layer is required with --get-hash option")
+        try:
+            z, x, y = (int(v) for v in options.get_hash.split('/'))
+            if meta:
+                gene.set_tilecoords([TileCoord(z, x, y, gene.layer['meta_size'])])
+            else:
+                gene.set_tilecoords([TileCoord(z, x, y)])
+        except ValueError as e:
+            exit(
+                "Tile '%s' is not in the format 'z/x/y'\n%r" %
+                (options.get_hash, e)
+            )
 
     # At this stage, the tilestream contains metatiles that intersect geometry
     gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
@@ -257,6 +265,8 @@ def main():
         _gene(options, gene, options.layer)
     elif options.get_bbox:
         exit("With --get-bbox option we needs to specify a layer")
+    elif options.get_hash:
+        exit("With --get-hash option we needs to specify a layer")
     else:
         for layer in gene.config['generation']['default_layers']:
             _gene(options, gene, layer)

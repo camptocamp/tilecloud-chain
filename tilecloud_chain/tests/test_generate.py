@@ -17,16 +17,12 @@ class TestGenerate(CompareCase):
 
     def test_hash(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml',
+            './buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l point',
             generate.main,
             """Tile: 4/0/0:+8/+8
     empty_metatile_detection:
         size: 20743
         hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
-Tile: 4/0/0
-    empty_tile_detection:
-        size: 334
-        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
 Tile: 4/0/0
     empty_tile_detection:
         size: 334
