@@ -2,6 +2,8 @@
 
 from testfixtures import log_capture
 
+from nose.plugins.attrib import attr
+
 from tilecloud_chain.tests import CompareCase
 from tilecloud_chain import controller, generate, TileGeneration
 
@@ -9,6 +11,7 @@ from tilecloud_chain import controller, generate, TileGeneration
 class TestError(CompareCase):
 
     @log_capture()
+    @attr(resolution=True)
     def test_resolution(self, l):
         self.run_cmd(
             './buildout/bin/generate_controller -c tilegeneration/wrong_resolutions.yaml',
@@ -20,6 +23,7 @@ class TestError(CompareCase):
         )
 
     @log_capture()
+    @attr(mapnik_grid_meta=True)
     def test_mapnik_grid_meta(self, l):
         self.run_cmd(
             './buildout/bin/generate_controller -c tilegeneration/wrong_mapnik_grid_meta.yaml',
@@ -31,6 +35,7 @@ class TestError(CompareCase):
         )
 
     @log_capture()
+    @attr(exists=True)
     def test_exists(self, l):
         self.run_cmd(
             './buildout/bin/generate_controller -c tilegeneration/wrong_exists.yaml',
@@ -42,6 +47,7 @@ class TestError(CompareCase):
         )
 
     @log_capture()
+    @attr(type=True)
     def test_type(self, l):
         self.run_cmd(
             './buildout/bin/generate_controller -v -c tilegeneration/wrong_type.yaml',
@@ -62,6 +68,7 @@ class TestError(CompareCase):
         )
 
     @log_capture()
+    @attr(zoom_errors=True)
     def test_zoom_errors(self, l):
         self.run_cmd(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point --zoom 4,10',
@@ -77,6 +84,7 @@ class TestError(CompareCase):
             ('tilecloud_chain.tests', 'INFO', ''),
         )
 
+    @attr(validate_type=True)
     def test_validate_type(self):
         class Opt:
             verbose = False

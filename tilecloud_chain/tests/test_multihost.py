@@ -4,6 +4,8 @@ import os
 import shutil
 from subprocess import Popen, PIPE
 
+from nose.plugins.attrib import attr
+
 from tilecloud_chain.tests import CompareCase
 from tilecloud_chain import controller, TileGeneration
 
@@ -18,6 +20,7 @@ class TestMultihost(CompareCase):
     def tearDownClass(self):
         os.chdir('tilecloud_chain/tests')
 
+    @attr(geodata=True)
     def test_geodata(self):
         directory = os.getenv("HOME") + "/tilecloud_chain/tests/tilegeneration/hooks/"
         if os.path.exists(directory):
@@ -32,6 +35,7 @@ class TestMultihost(CompareCase):
             os.listdir('tilecloud_chain/tests/tilegeneration/hooks')
         )
 
+    @attr(none=True)
     def test_none(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml --disable-geodata '
@@ -39,6 +43,7 @@ class TestMultihost(CompareCase):
             controller.main,
             '')
 
+    @attr(code=True)
     def test_code(self):
         if os.path.exists('/tmp/tests/test.conf'):
             os.remove('/tmp/tests/test.conf')  # pragma: no cover
@@ -65,6 +70,7 @@ class TestMultihost(CompareCase):
         except:  # pragma: no cover
             pass
 
+    @attr(database=True)
     def test_database(self):
         out, err = self.run_cmd(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml --disable-geodata '
@@ -79,6 +85,7 @@ class TestMultihost(CompareCase):
  referance
 (1 row)""")
 
+    @attr(time=True)
     def test_time(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
@@ -111,6 +118,7 @@ config:
         metatile_generation_time: 0
         tile_size: 0.780""", True)
 
+    @attr(time_near=True)
     def test_time_near(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
@@ -128,6 +136,7 @@ config:
         metatile_generation_time: 0
         tile_size: 0.326""", True)
 
+    @attr(time_no_geom=True)
     def test_time_no_geom(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
@@ -145,6 +154,7 @@ config:
         metatile_generation_time: 0
         tile_size: 0.326""", True)
 
+    @attr(near=True)
     def test_near(self):
         class Opt:
             zoom = '3'
