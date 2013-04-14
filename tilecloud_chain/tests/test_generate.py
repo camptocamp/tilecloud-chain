@@ -342,7 +342,7 @@ size: 854""", True, False)
             f.close()
 
     def test_delete_meta(self):
-        if os.path.exists('/tmp/tiles/'):
+        if os.path.exists('/tmp/tiles/'):  # pragma: no cover
             shutil.rmtree('/tmp/tiles/')
         self._touch(
             '/tmp/tiles/1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png',

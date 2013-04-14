@@ -107,11 +107,11 @@ class TileGeneration:
 
     def __init__(self, config_file, options=None, layer_name=None):
         level = logging.WARNING
-        if options and options.verbose and options.debug:
+        if options and options.verbose and options.debug:  # pragma: no cover
             exit("Debug and verbose options can't be used together")
         if options and options.verbose:
             level = logging.INFO
-        elif options and options.debug:
+        elif options and options.debug:  # pragma: no cover
             level = logging.DEBUG
         logging.basicConfig(
             format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
@@ -606,14 +606,14 @@ class TileGeneration:
             self.layer['grid_ref']['tile_size'],
             self.layer['meta_buffer'])
 
-        if self.options.debug > 0:
-            def meta_get(tilestream):
+        if self.options.debug:
+            def meta_get(tilestream):  # pragma: no cover
                 for metatile in tilestream:
                     substream = store.get((metatile,))
                     for tile in substream:
                         tile.metatile = metatile
                         yield tile
-            self.tilestream = meta_get(self.tilestream)
+            self.tilestream = meta_get(self.tilestream)  # pragma: no cover
         else:
             def safe_get(tilestream):
                 for metatile in tilestream:
@@ -713,8 +713,8 @@ class TileGeneration:
         self.tilestream = store.list()
 
     def get(self, store, time_message=None):
-        if self.options.debug > 0:
-            self.tilestream = store.get(self.tilestream)
+        if self.options.debug:
+            self.tilestream = store.get(self.tilestream)  # pragma: no cover
         else:
             def safe_get(tile):
                 try:
@@ -731,8 +731,8 @@ class TileGeneration:
             self.tilestream = imap(safe_get, ifilter(None, self.tilestream))
 
     def put(self, store, time_message=None):
-        if self.options.debug > 0:
-            self.tilestream = store.put(self.tilestream)
+        if self.options.debug:
+            self.tilestream = store.put(self.tilestream)  # pragma: no cover
         else:
             def safe_put(tile):
                 try:
@@ -749,7 +749,7 @@ class TileGeneration:
             self.tilestream = imap(safe_put, ifilter(None, self.tilestream))
 
     def delete(self, store, time_message=None):  # pragma: no cover
-        if self.options.debug > 0:
+        if self.options.debug:
             self.tilestream = store.delete(self.tilestream)
         else:
             def safe_delete(tile):
@@ -767,14 +767,14 @@ class TileGeneration:
             self.tilestream = imap(safe_delete, ifilter(None, self.tilestream))
 
     def imap(self, tile_filter, time_message=None):
-        if self.options.debug > 0:
-            self.tilestream = imap(tile_filter, self.tilestream)
+        if self.options.debug:
+            self.tilestream = imap(tile_filter, self.tilestream)  # pragma: no cover
         else:
             def safe_imap(tile):
                 try:
                     n = datetime.now()
                     t = tile_filter(tile)
-                    if time_message:
+                    if time_message:  # pragma: no cover
                         logger.info("%s in %s" % (time_message, str(datetime.now() - n)))
                     return t
                 except KeyboardInterrupt:  # pragma: no cover
@@ -785,8 +785,8 @@ class TileGeneration:
             self.tilestream = imap(safe_imap, ifilter(None, self.tilestream))
 
     def ifilter(self, tile_filter, time_message=None):
-        if self.options.debug > 0:
-            self.tilestream = ifilter(tile_filter, self.tilestream)
+        if self.options.debug:
+            self.tilestream = ifilter(tile_filter, self.tilestream)  # pragma: no cover
         else:
             def safe_filter(tile):
                 if tile:
@@ -832,7 +832,7 @@ class HashDropper(object):
                 else:
                     self.store.delete_one(tile)
             logger.info("The tile %s is dropped" % str(tile.tilecoord))
-            if self.queue_store is not None:
+            if self.queue_store is not None:  # pragma: no cover
                 self.queue_store.delete_one(tile)
             if hasattr(tile, 'metatile'):
                 tile.metatile.elapsed_togenerate -= 1

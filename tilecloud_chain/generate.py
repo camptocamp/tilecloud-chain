@@ -26,7 +26,7 @@ def _gene(options, gene, layer):
 
     if options.get_bbox:
         if not gene.layer:
-            exit("A layer is required with --get-bbox option")
+            exit("A layer is required with --get-bbox option")  # pragma: no cover
         try:
             parts = options.get_bbox.split(':')
             z, x, y = (int(v) for v in parts[0].split('/'))
@@ -34,13 +34,13 @@ def _gene(options, gene, layer):
                 tilecoord = TileCoord(z, x, y)
             elif len(parts) == 2:
                 tilecoord = TileCoord(z, x, y, int(parts[1].split('/')[0]))
-            else:
+            else:  # pragma: no cover
                 exit("Tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n" % options.get_bbox)
             print \
                 "Tile bounds: [%i,%i,%i,%i]" % \
                 gene.layer['grid_ref']['obj'].extent(tilecoord)
             exit()
-        except ValueError as e:
+        except ValueError as e:  # pragma: no cover
             exit(
                 "Tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n\n%r" %
                 (options.get_bbox, e)
@@ -73,14 +73,14 @@ def _gene(options, gene, layer):
 
     elif options.role == 'hash':
         if not gene.layer:
-            exit("A layer is required with --get-hash option")
+            exit("A layer is required with --get-hash option")  # pragma: no cover
         try:
             z, x, y = (int(v) for v in options.get_hash.split('/'))
             if meta:
                 gene.set_tilecoords([TileCoord(z, x, y, gene.layer['meta_size'])])
             else:
                 gene.set_tilecoords([TileCoord(z, x, y)])
-        except ValueError as e:
+        except ValueError as e:  # pragma: no cover
             exit(
                 "Tile '%s' is not in the format 'z/x/y'\n%r" %
                 (options.get_hash, e)
@@ -264,9 +264,9 @@ def main():
     if (options.layer):
         _gene(options, gene, options.layer)
     elif options.get_bbox:
-        exit("With --get-bbox option we needs to specify a layer")
+        exit("With --get-bbox option we needs to specify a layer")  # pragma: no cover
     elif options.get_hash:
-        exit("With --get-hash option we needs to specify a layer")
+        exit("With --get-hash option we needs to specify a layer")  # pragma: no cover
     else:
         for layer in gene.config['generation']['default_layers']:
             _gene(options, gene, layer)
