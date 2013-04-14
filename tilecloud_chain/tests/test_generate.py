@@ -31,6 +31,24 @@ Tile: 4/0/0
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8""")
 
+    @attr(get_bbox=True)
+    def test_get_bbox(self):
+        self.assert_cmd_equals(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml --get-bbox 4/4/4 -l point',
+            generate.main,
+            """Tile bounds: [425120,343600,426400,344880]
+""")
+        self.assert_cmd_equals(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml --get-bbox 4/4/4:+1/+1 -l point',
+            generate.main,
+            """Tile bounds: [425120,343600,426400,344880]
+""")
+        self.assert_cmd_equals(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml --get-bbox 4/4/4:+2/+2 -l point',
+            generate.main,
+            """Tile bounds: [425120,342320,427680,344880]
+""")
+
     @attr(hash_mapnik=True)
     def test_hash_mapnik(self):
         self.assert_cmd_equals(
