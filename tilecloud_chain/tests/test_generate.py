@@ -4,6 +4,7 @@ import os
 import shutil
 from itertools import product
 
+from testfixtures import log_capture
 from nose.plugins.attrib import attr
 
 from tilecloud_chain.tests import CompareCase
@@ -29,7 +30,8 @@ class TestGenerate(CompareCase):
 Tile: 4/0/0
     empty_tile_detection:
         size: 334
-        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8""")
+        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+""")
 
     @attr(get_bbox=True)
     def test_get_bbox(self):
@@ -57,7 +59,8 @@ Tile: 4/0/0
             """Tile: 4/0/0
     empty_tile_detection:
         size: 334
-        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8""")
+        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+""")
 
     @attr(hash_mapnik_grid=True)
     def test_hash_mapnik_grid(self):
@@ -67,7 +70,8 @@ Tile: 4/0/0
             """Tile: 4/0/0
     empty_tile_detection:
         size: 334
-        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8""")
+        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+""")
 
     @attr(test_all=True)
     def test_test_all(self):
@@ -338,6 +342,58 @@ Tile: 4/0/0
             generate.main,
             """not authorised, authorised user is: www-data.""")
 
+    @log_capture()
+    @attr(verbose=True)
+    def test_verbose(self, l):
+        self.run_cmd(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 2 -v -l polygon',
+            generate.main
+        )
+        self.assert_result_equals(
+            str(l),
+            """tilecloud_chain INFO
+  Execute SQL: SELECT ST_AsBinary\(geom\) FROM \(SELECT the_geom AS geom FROM tests.polygon\) AS g.
+tilecloud_chain INFO
+  Intersect with geom in 0:00:00.[0-9]*
+tilecloud_chain.generate INFO
+  0/4/5
+tilecloud.store.url DEBUG
+  GET http://localhost/mapserv\?STYLES=&SERVICE=WMS&FORMAT=image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&"""
+            """VERSION=1.1.1&BBOX=522400.000000%2C196400.000000%2C548000.000000%2C222000.000000&LAYERS=polygon&"""
+            """SRS=epsg%3A21781&TRANSPARENT=TRUE
+requests.packages.urllib3.connectionpool INFO
+  Starting new HTTP connection \(1\): localhost
+requests.packages.urllib3.connectionpool DEBUG
+  "GET /mapserv\?STYLES=&SERVICE=WMS&FORMAT=image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&"""
+            """BBOX=522400.000000%2C196400.000000%2C548000.000000%2C222000.000000&LAYERS=polygon&SRS=epsg%3A21781&"""
+            """TRANSPARENT=TRUE HTTP/1.1" 200 None
+tilecloud_chain INFO
+  Get tile from WMS in 0:00:00.[0-9]*
+tilecloud_chain INFO
+  Store the tile in 0:00:00.[0-9]*
+tilecloud_chain INFO
+  Intersect with geom in 0:00:00.[0-9]*
+tilecloud_chain.generate INFO
+  0/4/6
+tilecloud.store.url DEBUG
+  GET http://localhost/mapserv\?STYLES=&SERVICE=WMS&FORMAT=image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&"""
+            """VERSION=1.1.1&BBOX=522400.000000%2C170800.000000%2C548000.000000%2C196400.000000&LAYERS=polygon&"""
+            """SRS=epsg%3A21781&TRANSPARENT=TRUE
+requests.packages.urllib3.connectionpool DEBUG
+  "GET /mapserv\?STYLES=&SERVICE=WMS&FORMAT=image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&"""
+            """BBOX=522400.000000%2C170800.000000%2C548000.000000%2C196400.000000&LAYERS=polygon&SRS=epsg%3A21781&"""
+            """TRANSPARENT=TRUE HTTP/1.1" 200 None
+tilecloud_chain INFO
+  Get tile from WMS in 0:00:00.[0-9]*
+tilecloud_chain INFO
+  Store the tile in 0:00:00.[0-9]*
+tilecloud_chain.tests INFO
+
+tilecloud_chain.tests INFO
+""",
+            True
+        )
+
     @attr(time=True)
     def test_time(self):
         self.assert_cmd_equals(
@@ -349,7 +405,8 @@ size: 860
 size: 860
 time: [0-9]*
 size: 860
-size: 860""", True, False)
+size: 860
+""", True, False)
 
     @attr(time_layer_bbox=True)
     def test_time_layer_bbox(self):
@@ -362,7 +419,8 @@ size: 854
 size: 854
 time: [0-9]*
 size: 854
-size: 854""", True, False)
+size: 854
+""", True, False)
 
 #    def test_daemonize(self):
 #        self.assert_cmd_equals(

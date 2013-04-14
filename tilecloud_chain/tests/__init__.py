@@ -29,6 +29,7 @@ class CompareCase(TestCase):
                         else:
                             log.info("  %i %s" % (i, content[i]))
                     raise e
+        self.assertEquals(len(value), len(content))
 
     def run_cmd(self, cmd, main_func):
         old_stdout = sys.stdout

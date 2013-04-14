@@ -32,7 +32,8 @@ Total generation cost: %(cost)s [$]"""
 S3 Storage: %(storage)s [$/month]
 S3 get: %(get)s [$/month]
 CloudFront: %(cloudfront)s [$/month]
-ESB storage: %(esb)s [$/month]"""
+ESB storage: %(esb)s [$/month]
+"""
 
     @attr(cost_point=True)
     def test_cost_point(self):
