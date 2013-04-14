@@ -56,6 +56,32 @@ Tile: 4/0/0
             ]
         )
 
+    def test_zoom_identifier(self):
+        self.assert_tiles_generated(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 -l polygon2 -z 0',
+            generate.main,
+            "/tmp/tiles/",
+            '1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png', [
+                ('polygon2', '1', 585, 429)
+            ]
+        )
+        self.assert_tiles_generated(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 -l polygon2 -z 1',
+            generate.main,
+            "/tmp/tiles/",
+            '1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png', [
+                ('polygon2', '0_2', 2929, 2148)
+            ]
+        )
+        self.assert_tiles_generated(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 -l polygon2 -z 2',
+            generate.main,
+            "/tmp/tiles/",
+            '1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png', [
+                ('polygon2', '0_1', 5859, 4296)
+            ]
+        )
+
     def test_mbtile(self):
         from pyramid.testing import DummyRequest
         from pyramid.httpexceptions import HTTPNoContent, HTTPBadRequest
