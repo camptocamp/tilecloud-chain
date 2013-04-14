@@ -19,6 +19,7 @@ class TestGenerate(CompareCase):
             shutil.rmtree('/tmp/tiles')
 
     @attr(hash=True)
+    @attr(general=True)
     def test_hash(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l point',
@@ -34,6 +35,7 @@ Tile: 4/0/0
 """)
 
     @attr(get_bbox=True)
+    @attr(general=True)
     def test_get_bbox(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml --get-bbox 4/4/4 -l point',
@@ -52,6 +54,7 @@ Tile: 4/0/0
 """)
 
     @attr(hash_mapnik=True)
+    @attr(general=True)
     def test_hash_mapnik(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l mapnik',
@@ -63,6 +66,7 @@ Tile: 4/0/0
 """)
 
     @attr(hash_mapnik_grid=True)
+    @attr(general=True)
     def test_hash_mapnik_grid(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l all',
@@ -74,6 +78,7 @@ Tile: 4/0/0
 """)
 
     @attr(test_all=True)
+    @attr(general=True)
     def test_test_all(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1',
@@ -85,6 +90,7 @@ Tile: 4/0/0
         )
 
     @attr(zoom_identifier=True)
+    @attr(general=True)
     def test_zoom_identifier(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 -l polygon2 -z 0',
@@ -112,6 +118,7 @@ Tile: 4/0/0
         )
 
     @attr(mbtile=True)
+    @attr(general=True)
     def test_mbtile(self):
         from pyramid.testing import DummyRequest
         from pyramid.httpexceptions import HTTPNoContent, HTTPBadRequest
@@ -188,6 +195,7 @@ Tile: 4/0/0
         self.assertRaises(HTTPNoContent, serve.serve)
 
     @attr(zoom=True)
+    @attr(general=True)
     def test_zoom(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --zoom 1',
@@ -199,6 +207,7 @@ Tile: 4/0/0
         )
 
     @attr(zoom_range=True)
+    @attr(general=True)
     def test_zoom_range(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --zoom 1-3',
@@ -212,6 +221,7 @@ Tile: 4/0/0
         )
 
     @attr(no_zoom=True)
+    @attr(general=True)
     def test_no_zoom(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash',
@@ -226,6 +236,7 @@ Tile: 4/0/0
         )
 
     @attr(py_buffer=True)
+    @attr(general=True)
     def test_py_buffer(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_px_buffer --zoom 0-2',
@@ -239,6 +250,7 @@ Tile: 4/0/0
         )
 
     @attr(zoom_list=True)
+    @attr(general=True)
     def test_zoom_list(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --zoom 0,2,3',
@@ -252,6 +264,7 @@ Tile: 4/0/0
         )
 
     @attr(layer_bbox=True)
+    @attr(general=True)
     def test_layer_bbox(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l polygon -z 0',
@@ -281,6 +294,7 @@ Tile: 4/0/0
         )
 
     @attr(hash_generation=True)
+    @attr(general=True)
     def test_hash_generation(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash -z 0',
@@ -292,6 +306,7 @@ Tile: 4/0/0
         )
 
     @attr(mapnik=True)
+    @attr(general=True)
     def test_mapnik(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l mapnik -z 0',
@@ -302,6 +317,7 @@ Tile: 4/0/0
         )
 
     @attr(mapnik_grid=True)
+    @attr(general=True)
     def test_mapnik_grid(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l mapnik_grid -z 0',
@@ -326,6 +342,7 @@ Tile: 4/0/0
             '"                "]}')
 
     @attr(mapnik_grid_drop=True)
+    @attr(general=True)
     def test_mapnik_grid_drop(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l mapnik_grid_drop -z 0',
@@ -336,6 +353,7 @@ Tile: 4/0/0
         )
 
     @attr(not_authorised_user=True)
+    @attr(general=True)
     def test_not_authorised_user(self):
         self.assert_cmd_exit_equals(
             './buildout/bin/generate_tiles -c tilegeneration/test-authorised.yaml',
@@ -344,6 +362,7 @@ Tile: 4/0/0
 
     @log_capture()
     @attr(verbose=True)
+    @attr(general=True)
     def test_verbose(self, l):
         self.run_cmd(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 2 -v -l polygon',
@@ -422,6 +441,8 @@ size: 854
 size: 854
 """, True, False)
 
+#    @attr(daemonize=True)
+#    @attr(general=True)
 #    def test_daemonize(self):
 #        self.assert_cmd_equals(
 #            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 --daemonize',
@@ -439,6 +460,7 @@ size: 854
             f.close()
 
     @attr(delete_meta=True)
+    @attr(general=True)
     def test_delete_meta(self):
         if os.path.exists('/tmp/tiles/'):  # pragma: no cover
             shutil.rmtree('/tmp/tiles/')
@@ -456,6 +478,7 @@ size: 854
         )
 
     @attr(delete_no_meta=True)
+    @attr(general=True)
     def test_delete_no_meta(self):
         if os.path.exists('/tmp/tiles/'):
             shutil.rmtree('/tmp/tiles/')

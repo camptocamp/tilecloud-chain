@@ -93,6 +93,7 @@ class CompareCase(TestCase):
             if len(files) != 0:
                 log.info((path, files))
                 count += len(files)
+
         self.assertEquals(count, len(tiles))
         for tile in tiles:
             log.info(directory + tiles_pattern % tile)

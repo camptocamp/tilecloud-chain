@@ -36,6 +36,7 @@ ESB storage: %(esb)s [$/month]
 """
 
     @attr(cost_point=True)
+    @attr(general=True)
     def test_cost_point(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l point',
@@ -99,6 +100,7 @@ ESB storage: %(esb)s [$/month]
                 }]))
 
     @attr(cost_point_count=True)
+    @attr(general=True)
     def test_cost_point_count(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l point --cost-algo count',
@@ -162,6 +164,7 @@ ESB storage: %(esb)s [$/month]
                 }]))
 
     @attr(cost_line=True)
+    @attr(general=True)
     def test_cost_line(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l line',
@@ -236,6 +239,7 @@ ESB storage: %(esb)s [$/month]
                 }]))
 
     @attr(cost_line_count=True)
+    @attr(general=True)
     def test_cost_line_count(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l line --cost-algo count',
@@ -310,6 +314,7 @@ ESB storage: %(esb)s [$/month]
                 }]))
 
     @attr(cost_polygon=True)
+    @attr(general=True)
     def test_cost_polygon(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l polygon',
@@ -379,6 +384,7 @@ ESB storage: %(esb)s [$/month]
                 }]))
 
     @attr(cost_polygon_count=True)
+    @attr(general=True)
     def test_cost_polygon_count(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l polygon --cost-algo count',
@@ -448,6 +454,7 @@ ESB storage: %(esb)s [$/month]
                 }]))
 
     @attr(cost_default=True)
+    @attr(general=True)
     def test_cost_default(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml',
@@ -638,6 +645,7 @@ ESB storage: %(esb)s [$/month]
                 }]))
 
     @attr(cost_nometa=True)
+    @attr(general=True)
     def test_cost_nometa(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l all',
@@ -682,6 +690,7 @@ ESB storage: %(esb)s [$/month]
                 }]))
 
     @attr(cost_layer_bbox=True)
+    @attr(general=True)
     def test_cost_layer_bbox(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l all --cost-algo count',
@@ -751,6 +760,7 @@ ESB storage: %(esb)s [$/month]
                 }]))
 
     @attr(cost_no_geom=True)
+    @attr(general=True)
     def test_cost_no_geom(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l point --no-geom',
