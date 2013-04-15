@@ -723,6 +723,8 @@ class TileGeneration:
                     if time_message:
                         logger.info("%s in %s" % (time_message, str(datetime.now() - n)))
                     return t
+                except SystemExit as e:  # pragma: no cover
+                    raise e
                 except KeyboardInterrupt:  # pragma: no cover
                     exit("User interrupt")
                 except:  # pragma: no cover
@@ -741,6 +743,8 @@ class TileGeneration:
                     if time_message:
                         logger.info("%s in %s" % (time_message, str(datetime.now() - n)))
                     return t
+                except SystemExit as e:  # pragma: no cover
+                    raise e
                 except KeyboardInterrupt:  # pragma: no cover
                     exit("User interrupt")
                 except:  # pragma: no cover
@@ -759,6 +763,8 @@ class TileGeneration:
                     if time_message:
                         logger.info("%s in %s" % (time_message, str(datetime.now() - n)))
                     return t
+                except SystemExit as e:  # pragma: no cover
+                    raise e
                 except KeyboardInterrupt:  # pragma: no cover
                     exit("User interrupt")
                 except:  # pragma: no cover
@@ -777,6 +783,8 @@ class TileGeneration:
                     if time_message:  # pragma: no cover
                         logger.info("%s in %s" % (time_message, str(datetime.now() - n)))
                     return t
+                except SystemExit as e:  # pragma: no cover
+                    raise e
                 except KeyboardInterrupt:  # pragma: no cover
                     exit("User interrupt")
                 except:  # pragma: no cover
@@ -796,6 +804,8 @@ class TileGeneration:
                         if time_message:
                             logger.info("%s in %s" % (time_message, str(datetime.now() - n)))
                         return t
+                    except SystemExit as e:  # pragma: no cover
+                        raise e
                     except KeyboardInterrupt:  # pragma: no cover
                         exit("User interrupt")
                     except:  # pragma: no cover
@@ -839,7 +849,7 @@ class HashDropper(object):
             return None
 
 
-class HashLogger(object):  # pragma: no cover
+class HashLogger(object):
     """
     Log the tile size and hash.
     """
@@ -851,15 +861,14 @@ class HashLogger(object):  # pragma: no cover
         ref = None
         try:
             image = Image.open(StringIO(tile.data))
-        except IOError as e:
+        except IOError as e:  # pragma: no cover
             logger.error(tile.data)
             raise e
         for px in image.getdata():
             if ref is None:
                 ref = px
             elif px != ref:
-                logger.error("Warning: image is not uniform.")
-                break
+                exit("Error: image is not uniform.")
 
         print("""Tile: %s
     %s:

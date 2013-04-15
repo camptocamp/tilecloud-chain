@@ -18,9 +18,9 @@ class TestGenerate(CompareCase):
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')
 
-    @attr(hash=True)
+    @attr(get_hash=True)
     @attr(general=True)
-    def test_hash(self):
+    def test_get_hash(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l point',
             generate.main,
@@ -33,6 +33,14 @@ Tile: 4/0/0
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
 """)
+
+    @attr(get_wrong_hash=True)
+    @attr(general=True)
+    def test_get_wrong_hash(self):
+        self.assert_cmd_exit_equals(
+            './buildout/bin/generate_tiles --get-hash 0/7/5 -c tilegeneration/test.yaml -l all',
+            generate.main,
+            """Error: image is not uniform.""")
 
     @attr(get_bbox=True)
     @attr(general=True)
