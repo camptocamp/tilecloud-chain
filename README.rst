@@ -41,8 +41,121 @@ Edit your layers configuration in ``./tilegeneration/config.yaml``.
 `Default configuration file <https://github.com/sbrunner/tilecloud-chain/blob/master/tilecloud_chain/scaffolds/create/tilegeneration/config.yaml.in_tmpl>`_.
 
 
+Configure grids
+---------------
+
+The ``grid`` describe hos the tiles are arranged.
+
+Especially on ``s3`` be careful to choice every theres before generating the tiles.
+It possible that to change one of them you should regenerate all the tiles.
+
+The ``resolutions`` in [px/m] describe all the resolution available for this layer.
+On raster layer have a look on the maximum resolution of the source files, it's not needed
+to generate tiles in smaller resolution than the sources, it preferable to use the OpenLayers client zoom.
+Notes that you can add a resolution at the end without regeneration all the tiles.
+
+The ``bbox`` should correspond to the resolution extent, to reduce where the tiles are generated use the
+``bbox`` available on the layer.
+
+The ``srs`` specify the code of the projection.
+
+The ``unit`` unit used by the projection.
+
+The ``tile_size`` in [px] default to 256.
+
+The ``matrix_identifier`` default to ``zoom`` can also be ``resolution`` is how the z index is build to store
+the tiles, for example, for the resolutions ``[2, 1, 0.5]`` the used value are ``[0, 1, 2]`` it it's based on the zoom
+and ``[2, 1, 0_5]`` if it's based on the resolution. The second has the advantage to allows to add a new
+resolution without regenerate all the tiles, but it don't work with MapCache.
+
+
+Configure caches
+----------------
+
+There tree available tiles cache: ``s3``, ``mbtile`` and ``filesystem``.
+
+The best solution to store the tiles is ``s3``, ``mbtiles`` has the advantage to have only one file per
+layer - style  dimensions. To serve the ``mbtile`` there is a view named ``serve_tiles``.
+
+``s3`` need a ``bucket`` an a ``folder`` (default to '').
+
+``mbtiles`` and ``filesystem`` just need a ``folder``.
+
+On all the cache we can add some information to generate the url where the tiles are available.
+This is needed to generate the capabilities. We can specify:
+
+* ``http_url`` direct url to the tiles root.
+* ``http_urls`` (array) urls ti the tiles root.
+* ``http_url`` and ``hosts`` (array), where each value of ``hosts`` is used to replace ``%(host)s`` in ``http_url``.
+
+In all case ``http_url`` or ``http_urls`` can include all attribute of this cache as ``%(attribute)s``.
+
+
+Configure layers
+----------------
+
+First of all, all the attributes in ``layer_default`` are copied in all the layers to define the default values.
+
+We have two ``type`` of layer: ``wms`` or ``mapnik``.
+
+To start the common attributes are:
+
+The ``min_resolution_seed`` included minimum resolution that is seeded, other resolutions are served by MapCache.
+
+The ``bbox`` is used to limit the tiles generation.
+
+
+WMTS layout
+~~~~~~~~~~~
+
+To generate the files path sand the WMTS capabilities we need some additional informations:
+
+The ``mime_type`` of the tiles, it's also used by the WMS GetMap ant to upload the tile.
+
+The ``wmts_style``, default to 'default'.
+
+The ``extension`` is used to end the filename.
+
+The ``dimensions`` (default to  []) is an array of object that have a ``name``, a ``default`` value specified in the capabilities,
+a ``value`` to generate the tiles, and an array of ``values`` that all the possible value available in the capabilities.
+
+For example if you generate the tiles and capabilities with the following configuration:
+
+.. code:: yaml
+
+    dimensions:
+        -   name: DATE
+            default: 2012
+            value: 2012
+            values: [2012]
+
+than with the following configuration:
+
+.. code:: yaml
+
+    dimensions:
+        -   name: DATE
+            default: 2012
+            value: 2013
+            values: [2012, 2013]
+
+We will have two set of tiles 2012 and 2013 that booth are accessible by the capabilities, and by default we will see the first set of tiles.
+
+
+Metatiles
+~~~~~~~~~
+
+The metatiles are activated by setting ``meta`` to ``on`` (by default it's ``off``).
+
+The metatiles are used for two thing first to generate multiple tiles with only one WMS query
+by setting ``meta_size`` to 8 we will generate a square of 8 by 8 tiles in one shot.
+
+The second usage of metatiles is to don't have cutted label name, this is solved by getting a bigger image
+and cutting the borders. The ``meta_buffer`` should be set to a bigger value to the half size of the longest label.
+
+
 Configure hash
---------------
+~~~~~~~~~~~~~~
 
 We can filter tiles and metatiles by using an hash.
 
@@ -57,7 +170,7 @@ The configuration of this hash is in the layer like this:
         size: 921
         hash: 1e3da153be87a493c4c71198366485f290cad43c
 
-To eaysly generate this configuration we can use the following command::
+To easily generate this configuration we can use the following command::
 
     ./buildout/bin/generate_tiles --get-hash <z/x/y> -l <layer_name>
 
@@ -66,7 +179,7 @@ idea to use z as the maximum zoom, x and y as 0.
 
 
 Configure geom/sql
-------------------
+~~~~~~~~~~~~~~~~~~
 
 We can generate the tiles only on some geometries stored in PostGis.
 
@@ -79,6 +192,62 @@ The configuration is in the layer like this:
 
 It's preferable to use simple geometries, too complex geometries can slow down the generation.
 
+
+WMS layers
+~~~~~~~~~~
+
+The additional value needed by the WMS is the URL of the server and the ``layers``.
+
+The previously defined ``mime_type`` is also used in the WMS requests.
+
+
+Mapnik layers
+~~~~~~~~~~~~~
+
+We ned to specify the ``mapfile`` path.
+
+With mapnik we have the possibility to specify a ``data_buffer`` than we should set the unneeded ``meta_buffer`` to 0.
+
+And the ``output_format`` used for the mapnik renderer, can be ``png``, ``png256``, ``jpeg``, ``grid`` (grid_renderer).
+
+
+~~~~~~~~~~~~~~~~~~
+Mapnik grid layers
+~~~~~~~~~~~~~~~~~~
+
+With mapnik we can generate UTFGrid tiles (JSON format that describe the tiles present on a corresponding tile)
+by using the ``output_format`` 'grid', see also: https://github.com/mapnik/mapnik/wiki/MapnikRenderers#grid_renderer.
+
+Specific configuration:
+
+We have a specific way to ``drop_empty_utfgrid`` by using the ``on`` value.
+
+We should specify the speudo pixel size [px] with the ``resolution``.
+
+And the ``layers_fields`` that we want to get the attributes.
+Object withe the layer name as key and the values in an array as value.
+
+Il fact the Mapnik documentation say that's working only for one layer.
+
+And don't miss the change the ``extension`` to ``json``, and the ``mime_type`` to ``application/utfgrid``
+and the ``meta`` to ``off`` (not supported).
+
+Configuration example:
+
+.. code:: yaml
+
+    grid:
+        type: mapnik
+        mapfile: style.mapnik
+        output_format: grid
+        extension: json
+        mime_type: application/utfgrid
+        drop_empty_utfgrid: on
+        resolution: 4
+        meta: off
+        data_buffer: 128
+        layers_fields:
+            buildings: [name, street]
 
 Configure MapCache
 ------------------
@@ -187,23 +356,6 @@ And then generate the tiles present in the SQS queue::
     ./buildout/bin/generate_controller --role slave --layer <a_layer>
 
 
-Use MBTile
-----------
-
-The cache configuration is like this:
-
-.. code:: yaml
-
-    mbtiles:
-        type: mbtiles
-        http_url: http://taurus/tiles
-        folder: /tmp/tiles/mbtiles
-
-The advantage is to store all the tiles of a layer in one file.
-
-To serve them there is a view named `serve_tiles`.
-
-
 Generate tiles
 --------------
 
@@ -242,6 +394,7 @@ Generate a tiles in a deferent cache than the default one::
 And don't forget to generate the WMTS Capabilities::
 
     ./buildout/bin/generate_controller --capabilities
+
 
 Explain cost
 -------------

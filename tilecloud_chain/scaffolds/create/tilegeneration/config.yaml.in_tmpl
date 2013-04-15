@@ -15,14 +15,6 @@ grids:
         # 'resolution' don't work with MapCache
         matrix_identifier: zoom
 
-# In all cache you can specify to generate the capabilities:
-#
-# 'http_url', he can include all attribute of this cache.
-#
-# 'http_urls' (array), he can include all attribute of this cache.
-#
-# 'http_url' and 'hosts' (array), 'http_url' can include all attribute of this cache,
-# and host is a value from hosts.
 caches:
     local:
         type: filesystem
@@ -37,9 +29,7 @@ caches:
         - wmts4.<host>
     s3:
         type: s3
-        # the s3 bucket name
         bucket: tiles
-        # the used folder in the bucket [default to '']
         folder: ''
         # for GetCapabilities
         http_url: https://%(host)s/%(bucket)s/%(folder)s
@@ -49,7 +39,6 @@ caches:
 # this defines some defaults values for all the layers
 layer_default:
     type: wms
-    # name of the grid to use (defined in grids)
     grid: swissgrid_05
     # The minimum resolution to seed, useful to use with mapcache, optional.
     # min_resolution_seed: 1
@@ -117,33 +106,7 @@ layers:
 #        empty_metatile_detection:
 #            size: 1651
 #            hash: 2892fea0a474228f5d66a534b0b5231d923696da
-    mapnik:
-        type: mapnik
-        # buffer to gets the data
-        # with mapnik it's better to use data_buffer than meta_buffer
-        meta_buffer: 0
-        data_buffer: 128
-        mapfile: style.mapnik
-        # the output_format used for the mapnik renderer, can be png, png256, jpeg, grid (grid_renderer)
-        output_format: png
-    grid:
-        type: mapnik
-        mapfile: style.mapnik
-        output_format: grid
-        extension: json
-        # mime type used for the WMTS capabilities generation
-        mime_type: application/utfgrid
-        # drop the empty tiles
-        drop_empty_utfgrid: on
-        # UTFGrid resolution [px]
-        resolution: 4
-        # no metatiles (not supported for UTFGrid)
-        meta: off
-        data_buffer: 128
-        # fields names to extort to the UTFGrid
-        layers_fields:
-            foo: [name]
-            bar: [name, description]
+
 
 generation:
     default_cache: local
