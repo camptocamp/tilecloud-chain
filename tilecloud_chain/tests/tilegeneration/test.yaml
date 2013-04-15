@@ -149,7 +149,7 @@ layers:
     all:
         layers: point,line,polygon
         meta: off
-        bbox: [550000, 170000, 560000, 180000]
+        bbox: [550000.0, 170000.0, 560000.0, 180000.0]
     mapnik:
         type: mapnik
         mapfile: mapfile/test.mapnik
