@@ -884,11 +884,6 @@ class IntersectGeometryFilter(object):
             )
         ).intersects(self.geom)
 
-        if not intersects and hasattr(tile, 'metatile'):
-            tile.metatile.elapsed_togenerate -= 1
-            if tile.metatile.elapsed_togenerate == 0 and self.queue_store is not None:
-                self.queue_store.delete_one(tile.metatile)  # pragma: no cover
-
         return tile if intersects else None
 
     def bbox_polygon(self, bbox):
