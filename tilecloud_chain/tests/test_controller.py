@@ -3,6 +3,8 @@
 import os
 import shutil
 
+from nose.plugins.attrib import attr
+
 from tilecloud_chain.tests import CompareCase
 from tilecloud_chain import controller
 
@@ -19,6 +21,8 @@ class TestController(CompareCase):
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')
 
+    @attr(capabilities=True)
+    @attr(general=True)
     def test_capabilities(self):
         self.assert_main_equals(
             './buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml',
@@ -927,6 +931,8 @@ class TestController(CompareCase):
   </Contents>
 </Capabilities>"""
 
+    @attr(multi_host_capabilities=True)
+    @attr(general=True)
     def test_multi_host_capabilities(self):
         self.assert_main_equals(
             './buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
@@ -934,6 +940,8 @@ class TestController(CompareCase):
             controller.main,
             [['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
+    @attr(multi_url_capabilities=True)
+    @attr(general=True)
     def test_multi_url_capabilities(self):
         self.assert_main_equals(
             './buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
@@ -941,6 +949,8 @@ class TestController(CompareCase):
             controller.main,
             [['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
+    @attr(mapcache=True)
+    @attr(general=True)
     def test_mapcache(self):
         self.assert_main_equals(
             './buildout/bin/generate_controller --mapcache -c tilegeneration/test.yaml',
@@ -1560,16 +1570,22 @@ mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: '
 openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}
 sns: {region: eu-west-1, topic: sns_topic}"""
 
+    @attr(config=True)
+    @attr(general=True)
     def test_config(self):
         self.assert_cmd_yaml_equals(
             './buildout/bin/generate_controller --dump-config -c tilegeneration/test.yaml',
             controller.main, self.CONFIG)
 
+    @attr(config_layer=True)
+    @attr(general=True)
     def test_config_layer(self):
         self.assert_cmd_yaml_equals(
             './buildout/bin/generate_controller --dump-config -l line -c tilegeneration/test.yaml',
             controller.main, self.CONFIG)
 
+    @attr(openlayers=True)
+    @attr(general=True)
     def test_openlayers(self):
         html = """<!DOCTYPE html>
 <html>
@@ -1740,6 +1756,8 @@ OpenLayers.Request.GET({
             ]
         )
 
+    @attr(quote=True)
+    @attr(general=True)
     def test_quote(self):
         self.assertEquals(controller._quote("abc"), "abc")
         self.assertEquals(controller._quote("a b c"), "'a b c'")

@@ -29,6 +29,7 @@ class CompareCase(TestCase):
                         else:
                             log.info("  %i %s" % (i, content[i]))
                     raise e
+        self.assertEquals(len(value), len(content))
 
     def run_cmd(self, cmd, main_func):
         old_stdout = sys.stdout
@@ -92,6 +93,7 @@ class CompareCase(TestCase):
             if len(files) != 0:
                 log.info((path, files))
                 count += len(files)
+
         self.assertEquals(count, len(tiles))
         for tile in tiles:
             log.info(directory + tiles_pattern % tile)
