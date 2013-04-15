@@ -1,7 +1,7 @@
-from pyramid.scaffolds.template import Template
+from pyramid.scaffolds.template import Template  # pragma: no cover
 
 
-class Create(Template):
+class Create(Template):  # pragma: no cover
     _template_dir = 'create'
     summary = 'Template used to create a tilecloud chain project'
 

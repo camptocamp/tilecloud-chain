@@ -4,6 +4,9 @@ import os
 import shutil
 from itertools import product
 
+from testfixtures import log_capture
+from nose.plugins.attrib import attr
+
 from tilecloud_chain.tests import CompareCase
 from tilecloud_chain import generate
 
@@ -15,7 +18,9 @@ class TestGenerate(CompareCase):
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')
 
-    def test_hash(self):
+    @attr(get_hash=True)
+    @attr(general=True)
+    def test_get_hash(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l point',
             generate.main,
@@ -26,8 +31,38 @@ class TestGenerate(CompareCase):
 Tile: 4/0/0
     empty_tile_detection:
         size: 334
-        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8""")
+        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+""")
 
+    @attr(get_wrong_hash=True)
+    @attr(general=True)
+    def test_get_wrong_hash(self):
+        self.assert_cmd_exit_equals(
+            './buildout/bin/generate_tiles --get-hash 0/7/5 -c tilegeneration/test.yaml -l all',
+            generate.main,
+            """Error: image is not uniform.""")
+
+    @attr(get_bbox=True)
+    @attr(general=True)
+    def test_get_bbox(self):
+        self.assert_cmd_equals(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml --get-bbox 4/4/4 -l point',
+            generate.main,
+            """Tile bounds: [425120,343600,426400,344880]
+""")
+        self.assert_cmd_equals(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml --get-bbox 4/4/4:+1/+1 -l point',
+            generate.main,
+            """Tile bounds: [425120,343600,426400,344880]
+""")
+        self.assert_cmd_equals(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml --get-bbox 4/4/4:+2/+2 -l point',
+            generate.main,
+            """Tile bounds: [425120,342320,427680,344880]
+""")
+
+    @attr(hash_mapnik=True)
+    @attr(general=True)
     def test_hash_mapnik(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l mapnik',
@@ -35,8 +70,11 @@ Tile: 4/0/0
             """Tile: 4/0/0
     empty_tile_detection:
         size: 334
-        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8""")
+        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+""")
 
+    @attr(hash_mapnik_grid=True)
+    @attr(general=True)
     def test_hash_mapnik_grid(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l all',
@@ -44,8 +82,11 @@ Tile: 4/0/0
             """Tile: 4/0/0
     empty_tile_detection:
         size: 334
-        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8""")
+        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+""")
 
+    @attr(test_all=True)
+    @attr(general=True)
     def test_test_all(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1',
@@ -56,6 +97,36 @@ Tile: 4/0/0
             ]
         )
 
+    @attr(zoom_identifier=True)
+    @attr(general=True)
+    def test_zoom_identifier(self):
+        self.assert_tiles_generated(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 -l polygon2 -z 0',
+            generate.main,
+            "/tmp/tiles/",
+            '1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png', [
+                ('polygon2', '1', 585, 429)
+            ]
+        )
+        self.assert_tiles_generated(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 -l polygon2 -z 1',
+            generate.main,
+            "/tmp/tiles/",
+            '1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png', [
+                ('polygon2', '0_2', 2929, 2148)
+            ]
+        )
+        self.assert_tiles_generated(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 -l polygon2 -z 2',
+            generate.main,
+            "/tmp/tiles/",
+            '1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png', [
+                ('polygon2', '0_1', 5859, 4296)
+            ]
+        )
+
+    @attr(mbtile=True)
+    @attr(general=True)
     def test_mbtile(self):
         from pyramid.testing import DummyRequest
         from pyramid.httpexceptions import HTTPNoContent, HTTPBadRequest
@@ -131,6 +202,8 @@ Tile: 4/0/0
         serve = Serve(request)
         self.assertRaises(HTTPNoContent, serve.serve)
 
+    @attr(zoom=True)
+    @attr(general=True)
     def test_zoom(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --zoom 1',
@@ -141,6 +214,8 @@ Tile: 4/0/0
             ]
         )
 
+    @attr(zoom_range=True)
+    @attr(general=True)
     def test_zoom_range(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --zoom 1-3',
@@ -153,6 +228,8 @@ Tile: 4/0/0
             ]
         )
 
+    @attr(no_zoom=True)
+    @attr(general=True)
     def test_no_zoom(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash',
@@ -166,6 +243,8 @@ Tile: 4/0/0
             ]
         )
 
+    @attr(py_buffer=True)
+    @attr(general=True)
     def test_py_buffer(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_px_buffer --zoom 0-2',
@@ -178,6 +257,8 @@ Tile: 4/0/0
             ]
         )
 
+    @attr(zoom_list=True)
+    @attr(general=True)
     def test_zoom_list(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --zoom 0,2,3',
@@ -190,7 +271,9 @@ Tile: 4/0/0
             ]
         )
 
-    def test_bbox(self):
+    @attr(layer_bbox=True)
+    @attr(general=True)
+    def test_layer_bbox(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l polygon -z 0',
             generate.main,
@@ -218,6 +301,8 @@ Tile: 4/0/0
             ]
         )
 
+    @attr(hash_generation=True)
+    @attr(general=True)
     def test_hash_generation(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash -z 0',
@@ -228,6 +313,8 @@ Tile: 4/0/0
             ]
         )
 
+    @attr(mapnik=True)
+    @attr(general=True)
     def test_mapnik(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l mapnik -z 0',
@@ -237,6 +324,8 @@ Tile: 4/0/0
             list(product((5, 6, 7), (4, 5, 6, 7)))
         )
 
+    @attr(mapnik_grid=True)
+    @attr(general=True)
     def test_mapnik_grid(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l mapnik_grid -z 0',
@@ -260,6 +349,8 @@ Tile: 4/0/0
             '"                ", "                ", "                ", "                ", "                ", '
             '"                "]}')
 
+    @attr(mapnik_grid_drop=True)
+    @attr(general=True)
     def test_mapnik_grid_drop(self):
         self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l mapnik_grid_drop -z 0',
@@ -269,12 +360,68 @@ Tile: 4/0/0
             ((5, 7), (7, 4))
         )
 
+    @attr(not_authorised_user=True)
+    @attr(general=True)
     def test_not_authorised_user(self):
         self.assert_cmd_exit_equals(
             './buildout/bin/generate_tiles -c tilegeneration/test-authorised.yaml',
             generate.main,
             """not authorised, authorised user is: www-data.""")
 
+    @log_capture()
+    @attr(verbose=True)
+    @attr(general=True)
+    def test_verbose(self, l):
+        self.run_cmd(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 2 -v -l polygon',
+            generate.main
+        )
+        self.assert_result_equals(
+            str(l),
+            """tilecloud_chain INFO
+  Execute SQL: SELECT ST_AsBinary\(geom\) FROM \(SELECT the_geom AS geom FROM tests.polygon\) AS g.
+tilecloud_chain INFO
+  Intersect with geom in 0:00:00.[0-9]*
+tilecloud_chain.generate INFO
+  0/4/5
+tilecloud.store.url DEBUG
+  GET http://localhost/mapserv\?STYLES=&SERVICE=WMS&FORMAT=image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&"""
+            """VERSION=1.1.1&BBOX=522400.000000%2C196400.000000%2C548000.000000%2C222000.000000&LAYERS=polygon&"""
+            """SRS=epsg%3A21781&TRANSPARENT=TRUE
+requests.packages.urllib3.connectionpool INFO
+  Starting new HTTP connection \(1\): localhost
+requests.packages.urllib3.connectionpool DEBUG
+  "GET /mapserv\?STYLES=&SERVICE=WMS&FORMAT=image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&"""
+            """BBOX=522400.000000%2C196400.000000%2C548000.000000%2C222000.000000&LAYERS=polygon&SRS=epsg%3A21781&"""
+            """TRANSPARENT=TRUE HTTP/1.1" 200 None
+tilecloud_chain INFO
+  Get tile from WMS in 0:00:00.[0-9]*
+tilecloud_chain INFO
+  Store the tile in 0:00:00.[0-9]*
+tilecloud_chain INFO
+  Intersect with geom in 0:00:00.[0-9]*
+tilecloud_chain.generate INFO
+  0/4/6
+tilecloud.store.url DEBUG
+  GET http://localhost/mapserv\?STYLES=&SERVICE=WMS&FORMAT=image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&"""
+            """VERSION=1.1.1&BBOX=522400.000000%2C170800.000000%2C548000.000000%2C196400.000000&LAYERS=polygon&"""
+            """SRS=epsg%3A21781&TRANSPARENT=TRUE
+requests.packages.urllib3.connectionpool DEBUG
+  "GET /mapserv\?STYLES=&SERVICE=WMS&FORMAT=image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&"""
+            """BBOX=522400.000000%2C170800.000000%2C548000.000000%2C196400.000000&LAYERS=polygon&SRS=epsg%3A21781&"""
+            """TRANSPARENT=TRUE HTTP/1.1" 200 None
+tilecloud_chain INFO
+  Get tile from WMS in 0:00:00.[0-9]*
+tilecloud_chain INFO
+  Store the tile in 0:00:00.[0-9]*
+tilecloud_chain.tests INFO
+
+tilecloud_chain.tests INFO
+""",
+            True
+        )
+
+    @attr(time=True)
     def test_time(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml --time 2 -l polygon',
@@ -285,8 +432,10 @@ size: 860
 size: 860
 time: [0-9]*
 size: 860
-size: 860""", True, False)
+size: 860
+""", True, False)
 
+    @attr(time_layer_bbox=True)
     def test_time_layer_bbox(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml --time 2 -l all',
@@ -297,8 +446,11 @@ size: 854
 size: 854
 time: [0-9]*
 size: 854
-size: 854""", True, False)
+size: 854
+""", True, False)
 
+#    @attr(daemonize=True)
+#    @attr(general=True)
 #    def test_daemonize(self):
 #        self.assert_cmd_equals(
 #            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 --daemonize',
@@ -315,8 +467,10 @@ size: 854""", True, False)
             f = open(path, 'w')
             f.close()
 
+    @attr(delete_meta=True)
+    @attr(general=True)
     def test_delete_meta(self):
-        if os.path.exists('/tmp/tiles/'):
+        if os.path.exists('/tmp/tiles/'):  # pragma: no cover
             shutil.rmtree('/tmp/tiles/')
         self._touch(
             '/tmp/tiles/1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png',
@@ -331,6 +485,8 @@ size: 854""", True, False)
             ]
         )
 
+    @attr(delete_no_meta=True)
+    @attr(general=True)
     def test_delete_no_meta(self):
         if os.path.exists('/tmp/tiles/'):
             shutil.rmtree('/tmp/tiles/')

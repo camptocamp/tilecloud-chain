@@ -4,6 +4,8 @@ import os
 import shutil
 from subprocess import Popen, PIPE
 
+from nose.plugins.attrib import attr
+
 from tilecloud_chain.tests import CompareCase
 from tilecloud_chain import controller, TileGeneration
 
@@ -18,6 +20,7 @@ class TestMultihost(CompareCase):
     def tearDownClass(self):
         os.chdir('tilecloud_chain/tests')
 
+    @attr(geodata=True)
     def test_geodata(self):
         directory = os.getenv("HOME") + "/tilecloud_chain/tests/tilegeneration/hooks/"
         if os.path.exists(directory):
@@ -32,6 +35,7 @@ class TestMultihost(CompareCase):
             os.listdir('tilecloud_chain/tests/tilegeneration/hooks')
         )
 
+    @attr(none=True)
     def test_none(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml --disable-geodata '
@@ -39,6 +43,7 @@ class TestMultihost(CompareCase):
             controller.main,
             '')
 
+    @attr(code=True)
     def test_code(self):
         if os.path.exists('/tmp/tests/test.conf'):
             os.remove('/tmp/tests/test.conf')  # pragma: no cover
@@ -55,9 +60,9 @@ class TestMultihost(CompareCase):
         self.assertEquals(out, '==== Sync and build code ====\n')
         self.assertEquals(err, '')
         f = open('/tmp/tests/test/tilecloud_chain/tests/tilegeneration/hooks/post-restore-database', 'r')
-        self.assert_result_equals(f.read(), "echo SUCCESS")
+        self.assert_result_equals(f.read(), "echo SUCCESS\n")
         f = open('/tmp/tests/test.conf', 'r')
-        self.assert_result_equals(f.read(), 'test file')
+        self.assert_result_equals(f.read(), 'test file\n')
 
         os.remove('/tmp/tests/test.conf')
         try:
@@ -65,6 +70,7 @@ class TestMultihost(CompareCase):
         except:  # pragma: no cover
             pass
 
+    @attr(database=True)
     def test_database(self):
         out, err = self.run_cmd(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml --disable-geodata '
@@ -77,8 +83,11 @@ class TestMultihost(CompareCase):
         ], stdout=PIPE).communicate()[0], """   name
 -----------
  referance
-(1 row)""")
+(1 row)
 
+""")
+
+    @attr(time=True)
     def test_time(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
@@ -93,7 +102,8 @@ config:
         tileonly_generation_time: [0-9\.]*
         tile_generation_time: [0-9\.]*
         metatile_generation_time: 0
-        tile_size: 0.826""", True)
+        tile_size: 0.826
+""", True)
 
         self.assert_cmd_equals(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
@@ -109,8 +119,10 @@ config:
         tileonly_generation_time: [0-9\.]*
         tile_generation_time: [0-9\.]*
         metatile_generation_time: 0
-        tile_size: 0.780""", True)
+        tile_size: 0.780
+""", True)
 
+    @attr(time_near=True)
     def test_time_near(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
@@ -126,8 +138,10 @@ config:
         tileonly_generation_time: [0-9\.]*
         tile_generation_time: [0-9\.]*
         metatile_generation_time: 0
-        tile_size: 0.326""", True)
+        tile_size: 0.326
+""", True)
 
+    @attr(time_no_geom=True)
     def test_time_no_geom(self):
         self.assert_cmd_equals(
             './buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
@@ -143,8 +157,10 @@ config:
         tileonly_generation_time: [0-9\.]*
         tile_generation_time: [0-9\.]*
         metatile_generation_time: 0
-        tile_size: 0.326""", True)
+        tile_size: 0.326
+""", True)
 
+    @attr(near=True)
     def test_near(self):
         class Opt:
             zoom = '3'
