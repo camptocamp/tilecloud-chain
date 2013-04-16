@@ -10,7 +10,7 @@ from tilecloud_chain import controller, generate, TileGeneration
 
 class TestError(CompareCase):
 
-    @log_capture()
+    @log_capture('tilecloud_chain')
     @attr(resolution=True)
     @attr(general=True)
     def test_resolution(self, l):
@@ -19,11 +19,9 @@ class TestError(CompareCase):
             controller.main)
         l.check(
             ('tilecloud_chain', 'ERROR', "The resolution 0.1 * resolution_scale 5 is not an integer."),
-            ('tilecloud_chain.tests', 'INFO', ''),
-            ('tilecloud_chain.tests', 'INFO', ''),
         )
 
-    @log_capture()
+    @log_capture('tilecloud_chain')
     @attr(mapnik_grid_meta=True)
     @attr(general=True)
     def test_mapnik_grid_meta(self, l):
@@ -32,11 +30,9 @@ class TestError(CompareCase):
             controller.main)
         l.check(
             ('tilecloud_chain', 'ERROR', "The layer 'b' is of type Mapnik/Grid, that can't support matatiles."),
-            ('tilecloud_chain.tests', 'INFO', ''),
-            ('tilecloud_chain.tests', 'INFO', ''),
         )
 
-    @log_capture()
+    @log_capture('tilecloud_chain')
     @attr(exists=True)
     @attr(general=True)
     def test_exists(self, l):
@@ -45,11 +41,9 @@ class TestError(CompareCase):
             controller.main)
         l.check(
             ('tilecloud_chain', 'ERROR', "The attribute 'grids' is required in the object config."),
-            ('tilecloud_chain.tests', 'INFO', ''),
-            ('tilecloud_chain.tests', 'INFO', ''),
         )
 
-    @log_capture()
+    @log_capture('tilecloud_chain')
     @attr(type=True)
     @attr(general=True)
     def test_type(self, l):
@@ -67,11 +61,9 @@ class TestError(CompareCase):
             ('tilecloud_chain', 'ERROR', "The attribute 'srs' of the object grid[swissgrid_2] is not a <type 'str'>."),
             ('tilecloud_chain', 'ERROR', "The attribute 'bbox' of the object grid[swissgrid_1] is not an array."),
             ('tilecloud_chain', 'ERROR', "The attribute 'srs' of the object grid[swissgrid_1] is not a <type 'str'>."),
-            ('tilecloud_chain.tests', 'INFO', ''),
-            ('tilecloud_chain.tests', 'INFO', ''),
         )
 
-    @log_capture()
+    @log_capture('tilecloud_chain')
     @attr(zoom_errors=True)
     @attr(general=True)
     def test_zoom_errors(self, l):
@@ -85,8 +77,6 @@ class TestError(CompareCase):
              "zoom 4 of grid swissgrid_5 of layer point, ignored."),
             ('tilecloud_chain', 'WARNING', "Warning: zoom 4 corresponds to resolution 5.0 "
              "is smaller than the 'min_resolution_seed' 10.0 of layer point, ignored."),
-            ('tilecloud_chain.tests', 'INFO', ''),
-            ('tilecloud_chain.tests', 'INFO', ''),
         )
 
     @attr(validate_type=True)

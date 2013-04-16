@@ -7,7 +7,7 @@ import shutil
 from cStringIO import StringIO
 from unittest2 import TestCase
 
-log = logging.getLogger(__name__)
+log = logging.getLogger("tests")
 
 
 class CompareCase(TestCase):
@@ -46,7 +46,7 @@ class CompareCase(TestCase):
     def assert_cmd_equals(self, cmd, main_func, result, regexp=False, empty_err=False):
         out, err = self.run_cmd(cmd, main_func)
         if empty_err:
-            self.assertEquals(err, '')  # pragma: no cover
+            self.assertEquals(err, '')
         self.assert_result_equals(out, result, regexp)
 
     def assert_cmd_exit_equals(self, cmd, main_func, result):
@@ -87,7 +87,7 @@ class CompareCase(TestCase):
         self.assert_tiles_generated_deleted(cmd, main_func, directory, tiles_pattern, tiles)
 
     def assert_tiles_generated_deleted(self, cmd, main_func, directory, tiles_pattern, tiles):
-        self.assert_main_equals(cmd, main_func, [])
+        self.assert_cmd_equals(cmd, main_func, '', False, True)
         count = 0
         for path, dirs, files in os.walk(directory):
             if len(files) != 0:
