@@ -278,7 +278,7 @@ class TileGeneration:
         ) or error
         error = self.validate(
             self.config['generation'], 'generation', 'default_layers',
-            is_array=True, attribute_type=str
+            is_array=True, attribute_type=str, default=self.layers.keys()
         ) or error
         error = self.validate(self.config['generation'], 'generation', 'authorised_user', attribute_type=str) or error
         error = self.validate(
