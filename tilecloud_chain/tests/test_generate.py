@@ -293,6 +293,16 @@ Tile: 4/0/0
         )
 
         self.assert_tiles_generated(
+            './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l polygon -z 0'
+            ' -b 550000.0,170000.0,560000.0,180000.0',
+            generate.main,
+            "/tmp/tiles/",
+            '1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png', [
+                (6, 5), (7, 5)
+            ]
+        )
+
+        self.assert_tiles_generated(
             './buildout/bin/generate_tiles -c tilegeneration/test.yaml -l all -z 0',
             generate.main,
             "/tmp/tiles/",
