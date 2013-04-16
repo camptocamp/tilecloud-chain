@@ -1340,7 +1340,7 @@ layer_default:
   wmts_style: default
 layers:
   all:
-    bbox: [550000, 170000, 560000, 180000]
+    bbox: [550000.0, 170000.0, 560000.0, 180000.0]
     connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002

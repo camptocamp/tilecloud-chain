@@ -547,7 +547,7 @@ class TileGeneration:
                 bbox[1] + (mt_origin[1] + nb_sqrt_mt) * mt_to_m,
             ])
         elif options.bbox:
-            self.init_geom([int(c) for c in options.bbox.split(',')])
+            self.init_geom([float(c) for c in options.bbox.split(',')])
         elif 'bbox' in self.layer:
             self.init_geom(self.layer['bbox'])
         else:
