@@ -39,9 +39,9 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_point(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l point',
-            controller.main,
-            '\n'.join([
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l point',
+            main_func=controller.main,
+            result='\n'.join([
                 'Calculate zoom 0.',
                 'Calculate zoom 1.',
                 'Calculate zoom 2.',
@@ -103,9 +103,9 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_point_count(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l point --cost-algo count',
-            controller.main,
-            '\n'.join([
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l point --cost-algo count',
+            main_func=controller.main,
+            result='\n'.join([
                 'Calculate zoom 0.',
                 'Calculate zoom 1.',
                 'Calculate zoom 2.',
@@ -167,9 +167,9 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_line(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l line',
-            controller.main,
-            '\n'.join([
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l line',
+            main_func=controller.main,
+            result='\n'.join([
                 'Calculate zoom 0.',
                 'Calculate zoom 1.',
                 'Calculate zoom 2.',
@@ -242,9 +242,9 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_line_count(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l line --cost-algo count',
-            controller.main,
-            '\n'.join([
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l line --cost-algo count',
+            main_func=controller.main,
+            result='\n'.join([
                 'Calculate zoom 0.',
                 'Calculate zoom 1.',
                 'Calculate zoom 2.',
@@ -317,9 +317,9 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_polygon(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l polygon',
-            controller.main,
-            '\n'.join([
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l polygon',
+            main_func=controller.main,
+            result='\n'.join([
                 'Calculate zoom 0.',
                 'Calculate zoom 1.',
                 'Calculate zoom 2.',
@@ -387,9 +387,9 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_polygon_count(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l polygon --cost-algo count',
-            controller.main,
-            '\n'.join([
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l polygon --cost-algo count',
+            main_func=controller.main,
+            result='\n'.join([
                 'Calculate zoom 0.',
                 'Calculate zoom 1.',
                 'Calculate zoom 2.',
@@ -457,9 +457,9 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_default(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml',
-            controller.main,
-            '\n'.join([
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test.yaml',
+            main_func=controller.main,
+            result='\n'.join([
                 '',
                 '===== line =====',
                 'Calculate zoom 0.',
@@ -595,9 +595,9 @@ ESB storage: %(esb)s [$/month]
 
     def test_cost_polygon2(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l polygon2',
-            controller.main,
-            '\n'.join([
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l polygon2',
+            main_func=controller.main,
+            result='\n'.join([
                 'Calculate zoom 0.',
                 'Calculate zoom 1.',
                 'Calculate zoom 2.',
@@ -648,9 +648,9 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_nometa(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l all',
-            controller.main,
-            '\n'.join([
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l all',
+            main_func=controller.main,
+            result='\n'.join([
                 'Calculate zoom 0.',
                 'Calculate zoom 1.',
                 'Calculate zoom 2.',
@@ -693,9 +693,9 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_layer_bbox(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l all --cost-algo count',
-            controller.main,
-            '\n'.join([
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l all --cost-algo count',
+            main_func=controller.main,
+            result='\n'.join([
                 'Calculate zoom 0.',
                 'Calculate zoom 1.',
                 'Calculate zoom 2.',
@@ -763,9 +763,9 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_no_geom(self):
         self.assert_cmd_equals(
-            './buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l point --no-geom',
-            controller.main,
-            '\n'.join([
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test.yaml -l point --no-geom',
+            main_func=controller.main,
+            result='\n'.join([
                 'Calculate zoom 0.',
                 'Calculate zoom 1.',
                 'Calculate zoom 2.',

@@ -25,9 +25,9 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_capabilities(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml',
-            controller.main,
-            [[
+            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml',
+            main_func=controller.main,
+            results=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
                 """<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -935,27 +935,27 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_multi_host_capabilities(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
+            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
             '--destination-cache multi_host',
-            controller.main,
-            [['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
+            main_func=controller.main,
+            results=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     @attr(multi_url_capabilities=True)
     @attr(general=True)
     def test_multi_url_capabilities(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
+            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
             '--destination-cache multi_url',
-            controller.main,
-            [['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
+            main_func=controller.main,
+            results=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     @attr(mapcache=True)
     @attr(general=True)
     def test_mapcache(self):
         self.assert_main_equals(
-            './buildout/bin/generate_controller --mapcache -c tilegeneration/test.yaml',
-            controller.main,
-            [['mapcache.xml', """<?xml version="1.0" encoding="UTF-8"?>
+            cmd='./buildout/bin/generate_controller --mapcache -c tilegeneration/test.yaml',
+            main_func=controller.main,
+            results=[['mapcache.xml', """<?xml version="1.0" encoding="UTF-8"?>
 <mapcache>
     <cache name="default" type="memcache">
        <server>
@@ -1574,15 +1574,15 @@ sns: {region: eu-west-1, topic: sns_topic}"""
     @attr(general=True)
     def test_config(self):
         self.assert_cmd_yaml_equals(
-            './buildout/bin/generate_controller --dump-config -c tilegeneration/test.yaml',
-            controller.main, self.CONFIG)
+            cmd='./buildout/bin/generate_controller --dump-config -c tilegeneration/test.yaml',
+            main_func=controller.main, result=self.CONFIG)
 
     @attr(config_layer=True)
     @attr(general=True)
     def test_config_layer(self):
         self.assert_cmd_yaml_equals(
-            './buildout/bin/generate_controller --dump-config -l line -c tilegeneration/test.yaml',
-            controller.main, self.CONFIG)
+            cmd='./buildout/bin/generate_controller --dump-config -l line -c tilegeneration/test.yaml',
+            main_func=controller.main, result=self.CONFIG)
 
     @attr(openlayers=True)
     @attr(general=True)
@@ -1730,27 +1730,27 @@ OpenLayers.Request.GET({
     }
 });"""
         self.assert_main_equals(
-            './buildout/bin/generate_controller --ol -c tilegeneration/test.yaml',
-            controller.main,
-            [
+            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test.yaml',
+            main_func=controller.main,
+            results=[
                 ['/tmp/tiles/index.html', html],
                 ['/tmp/tiles/wmts.js', js % 'http://taurus/tiles/1.0.0/WMTSCapabilities.xml']
             ]
         )
 
         self.assert_main_equals(
-            './buildout/bin/generate_controller --ol -c tilegeneration/test.yaml --cache multi_host',
-            controller.main,
-            [
+            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test.yaml --cache multi_host',
+            main_func=controller.main,
+            results=[
                 ['/tmp/tiles/index.html', html],
                 ['/tmp/tiles/wmts.js', js % 'http://wmts1/tiles/1.0.0/WMTSCapabilities.xml']
             ]
         )
 
         self.assert_main_equals(
-            './buildout/bin/generate_controller --ol -c tilegeneration/test.yaml --cache multi_url',
-            controller.main,
-            [
+            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test.yaml --cache multi_url',
+            main_func=controller.main,
+            results=[
                 ['/tmp/tiles/index.html', html],
                 ['/tmp/tiles/wmts.js', js % 'http://wmts1/tiles/1.0.0/WMTSCapabilities.xml']
             ]
