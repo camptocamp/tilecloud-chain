@@ -12,9 +12,9 @@ log = logging.getLogger("tests")
 
 class CompareCase(TestCase):
 
-    def assert_result_equals(self, result, value, regexp=False):
-        content = unicode(result.decode('utf-8')).split('\n')
-        value = value.split('\n')
+    def assert_result_equals(self, result, content, regexp=False):
+        content = unicode(content.decode('utf-8')).split('\n')
+        value = result.split('\n')
         for n, test in enumerate(zip(content, value)):
             if test[0] != 'PASS...':
                 try:
@@ -47,7 +47,7 @@ class CompareCase(TestCase):
         out, err = self.run_cmd(cmd, main_func)
         if empty_err:
             self.assertEquals(err, '')
-        self.assert_result_equals(value=out, **kargs)
+        self.assert_result_equals(content=out, **kargs)
 
     def assert_cmd_exit_equals(self, cmd, main_func, result):
         sys.argv = cmd.split(' ')
@@ -87,8 +87,8 @@ class CompareCase(TestCase):
 
         self.assert_tiles_generated_deleted(directory=directory, **kargs)
 
-    def assert_tiles_generated_deleted(self, directory, tiles, **kargs):
-        self.assert_cmd_equals(**kargs)
+    def assert_tiles_generated_deleted(self, directory, tiles_pattern, tiles, result='', **kargs):
+        self.assert_cmd_equals(result=result, **kargs)
         count = 0
         for path, dirs, files in os.walk(directory):
             if len(files) != 0:

@@ -32,16 +32,17 @@ class TestMultihost(CompareCase):
             '--disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             main_func=controller.main,
             directory=directory,
-            files=os.listdir('tilecloud_chain/tests/tilegeneration/hooks'),
-            out="""==== Sync geodata ====
+            tiles=os.listdir('tilecloud_chain/tests/tilegeneration/hooks'),
+            result="""==== Sync geodata ====
 """
         )
 
     @attr(none=True)
     def test_none(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml --disable-geodata '
-            '--disable-code --disable-database --disable-fillqueue --disable-tilesgen --host localhost',
+            cmd='./buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
+            '--disable-geodata --disable-code --disable-database --disable-fillqueue --disable-tilesgen '
+            '--host localhost',
             main_func=controller.main,
             result='')
 
@@ -56,8 +57,8 @@ class TestMultihost(CompareCase):
             )  # pragma: no cover
 
         out, err = self.run_cmd(
-            cmd='./buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml --disable-geodata '
-            '--disable-database --disable-fillqueue --disable-tilesgen --host localhost',
+            cmd='./buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
+            '--disable-geodata --disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             main_func=controller.main)
         self.assertEquals(out, '==== Sync and build code ====\n')
         self.assertEquals(err, '')
@@ -75,8 +76,8 @@ class TestMultihost(CompareCase):
     @attr(database=True)
     def test_database(self):
         out, err = self.run_cmd(
-            cmd='./buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml --disable-geodata '
-            '--disable-code --disable-fillqueue --disable-tilesgen --host localhost',
+            cmd='./buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
+            '--disable-geodata --disable-code --disable-fillqueue --disable-tilesgen --host localhost',
             main_func=controller.main)
         self.assertEquals(out, '==== Deploy database ====\n')
         self.assertEquals(err, '')

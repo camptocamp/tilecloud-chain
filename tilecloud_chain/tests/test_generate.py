@@ -487,9 +487,9 @@ size: 854
 #            regexp=True)
 #        l.check()
 
-    def _touch(self, pattern, tiles):
+    def _touch(self, tiles_pattern, tiles):
         for tile in tiles:
-            path = pattern % tile
+            path = tiles_pattern % tile
             directory = os.path.dirname(path)
             if not os.path.exists(directory):
                 os.makedirs(directory)
@@ -502,7 +502,7 @@ size: 854
         if os.path.exists('/tmp/tiles/'):  # pragma: no cover
             shutil.rmtree('/tmp/tiles/')
         self._touch(
-            directory='/tmp/tiles/1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png',
+            tiles_pattern='/tmp/tiles/1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png',
             tiles=list(product(range(12), range(16)))
         )
         self.assert_tiles_generated_deleted(
@@ -521,8 +521,8 @@ size: 854
         if os.path.exists('/tmp/tiles/'):
             shutil.rmtree('/tmp/tiles/')
         self._touch(
-            directory='/tmp/tiles/1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png',
-            list(product(range(12), range(16)))
+            tiles_pattern='/tmp/tiles/1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png',
+            tiles=list(product(range(12), range(16)))
         )
         self.assert_tiles_generated_deleted(
             cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash_no_meta -z 0',
