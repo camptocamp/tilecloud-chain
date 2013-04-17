@@ -63,9 +63,10 @@ class CompareCase(TestCase):
             main_func()
         except SystemExit:
             pass
-        for result in results:
-            f = open(result[0], 'r')
-            self.assert_result_equals(f.read(), result[1])
+        if results:
+            for result in results:
+                f = open(result[0], 'r')
+                self.assert_result_equals(f.read(), result[1])
 
     def assert_yaml_equals(self, content, value):
         import yaml
@@ -80,14 +81,14 @@ class CompareCase(TestCase):
         sys.stdout = old_stdout
         self.assert_yaml_equals(mystdout.getvalue(), result)
 
-    def assert_tiles_generated(self, cmd, main_func, directory, tiles_pattern, tiles):
+    def assert_tiles_generated(self, cmd, main_func, directory, tiles_pattern, tiles, out='', empty_err=True):
         if os.path.exists(directory):
             shutil.rmtree(directory)
 
-        self.assert_tiles_generated_deleted(cmd, main_func, directory, tiles_pattern, tiles)
+        self.assert_tiles_generated_deleted(cmd, main_func, directory, tiles_pattern, tiles, out=out, empty_err=empty_err)
 
-    def assert_tiles_generated_deleted(self, cmd, main_func, directory, tiles_pattern, tiles):
-        self.assert_cmd_equals(cmd, main_func, '', False, True)
+    def assert_tiles_generated_deleted(self, cmd, main_func, directory, tiles_pattern, tiles, out='', empty_err=True):
+        self.assert_cmd_equals(cmd, main_func, out, False, empty_err)
         count = 0
         for path, dirs, files in os.walk(directory):
             if len(files) != 0:
@@ -99,5 +100,5 @@ class CompareCase(TestCase):
             log.info(directory + tiles_pattern % tile)
             self.assertTrue(os.path.exists(directory + tiles_pattern % tile))
 
-    def assert_files_generated(self, cmd, main_func, directory, files):
-        self.assert_tiles_generated(cmd, main_func, directory, '%s', files)
+    def assert_files_generated(self, cmd, main_func, directory, files, out='', empty_err=True):
+        self.assert_tiles_generated(cmd, main_func, directory, '%s', files, out=out, empty_err=empty_err)

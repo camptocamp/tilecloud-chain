@@ -624,7 +624,7 @@ class TileGeneration:
                             yield tile
                     except GeneratorExit as e:
                         raise e
-                    except:
+                    except:  # pragma: no cover
                         metatile.error = str(sys.exc_info()[1]) + " - " + metatile.data
                         yield metatile
             self.tilestream = safe_get(self.tilestream)

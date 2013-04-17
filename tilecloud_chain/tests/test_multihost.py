@@ -32,7 +32,9 @@ class TestMultihost(CompareCase):
             '--disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             controller.main,
             directory,
-            os.listdir('tilecloud_chain/tests/tilegeneration/hooks')
+            os.listdir('tilecloud_chain/tests/tilegeneration/hooks'),
+            out="""==== Sync geodata ====
+"""
         )
 
     @attr(none=True)
