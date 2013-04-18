@@ -246,7 +246,7 @@ def main():
         times = []
         for p in processes:
             results = p.communicate()
-            if results[1] != '':
+            if results[1] != '':  # pragma: no cover
                 logger.debug('ERROR: %s' % results[1])
             for r in results[0].split('\n'):
                 if r.startswith('time: '):
