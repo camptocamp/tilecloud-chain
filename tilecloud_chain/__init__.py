@@ -622,7 +622,9 @@ class TileGeneration:
                         for tile in substream:
                             tile.metatile = metatile
                             yield tile
-                    except:
+                    except GeneratorExit as e:
+                        raise e
+                    except:  # pragma: no cover
                         metatile.error = str(sys.exc_info()[1]) + " - " + metatile.data
                         yield metatile
             self.tilestream = safe_get(self.tilestream)
@@ -723,6 +725,8 @@ class TileGeneration:
                     if time_message:
                         logger.info("%s in %s" % (time_message, str(datetime.now() - n)))
                     return t
+                except GeneratorExit as e:  # pragma: no cover
+                    raise e
                 except SystemExit as e:  # pragma: no cover
                     raise e
                 except KeyboardInterrupt:  # pragma: no cover
@@ -743,6 +747,8 @@ class TileGeneration:
                     if time_message:
                         logger.info("%s in %s" % (time_message, str(datetime.now() - n)))
                     return t
+                except GeneratorExit as e:  # pragma: no cover
+                    raise e
                 except SystemExit as e:  # pragma: no cover
                     raise e
                 except KeyboardInterrupt:  # pragma: no cover
@@ -763,6 +769,8 @@ class TileGeneration:
                     if time_message:
                         logger.info("%s in %s" % (time_message, str(datetime.now() - n)))
                     return t
+                except GeneratorExit as e:  # pragma: no cover
+                    raise e
                 except SystemExit as e:  # pragma: no cover
                     raise e
                 except KeyboardInterrupt:  # pragma: no cover
@@ -783,6 +791,8 @@ class TileGeneration:
                     if time_message:  # pragma: no cover
                         logger.info("%s in %s" % (time_message, str(datetime.now() - n)))
                     return t
+                except GeneratorExit as e:  # pragma: no cover
+                    raise e
                 except SystemExit as e:  # pragma: no cover
                     raise e
                 except KeyboardInterrupt:  # pragma: no cover
@@ -804,6 +814,8 @@ class TileGeneration:
                         if time_message:
                             logger.info("%s in %s" % (time_message, str(datetime.now() - n)))
                         return t
+                    except GeneratorExit as e:  # pragma: no cover
+                        raise e
                     except SystemExit as e:  # pragma: no cover
                         raise e
                     except KeyboardInterrupt:  # pragma: no cover
