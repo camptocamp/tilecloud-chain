@@ -667,7 +667,7 @@ def _send(data, path, mime_type, cache):
         directory = os.path.dirname(filename)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        f = open(folder + path, 'w')
+        f = open(folder + path, 'wb')
         f.write(data)
         f.close()
 
