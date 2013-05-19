@@ -50,11 +50,12 @@ def _gene(options, gene, layer):
         # Create SQS queue
         sqs_tilestore = SQSTileStore(gene.get_sqs_queue())  # pragma: no cover
 
+    cache_tilestore = None
     if options.role in ('local', 'slave'):
         cache = gene.caches[options.cache]
         cache_tilestore = gene.get_store(cache, gene.layer)
         if cache_tilestore is None:
-            exit('unknown cache type: ' + cache['type'])  # pragma: no cover
+            exit('Unknown cache type: ' + cache['type'])  # pragma: no cover
 
     meta = gene.layer['meta']
     if options.tiles_file:
@@ -161,6 +162,9 @@ def _gene(options, gene, layer):
         if options.role == 'hash':
             gene.imap(HashLogger('empty_tile_detection'))
         elif not options.near:
+            # Handle errors
+            gene.add_error_filters(logger)
+
             # Discard tiles with certain content
             if 'empty_tile_detection' in gene.layer:
                 empty_tile = gene.layer['empty_tile_detection']
@@ -220,6 +224,8 @@ def _gene(options, gene, layer):
         consume(gene.tilestream, options.time * 3)
     else:
         consume(gene.tilestream, options.test)
+    if cache_tilestore is not None and hasattr(cache_tilestore, 'connection'):
+        cache_tilestore.connection.close()
 
     if options.role != 'hash' and options.time is None and 'sns' in gene.config:  # pragma: no cover
         if 'region' in gene.config['sns']:
