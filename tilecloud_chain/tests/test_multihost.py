@@ -94,12 +94,12 @@ class TestMultihost(CompareCase):
     def test_time(self):
         self.assert_cmd_equals(
             cmd='./buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
-            '--time 2 -l polygon --host localhost  --disable-geodata --disable-database',
+            '--time 2 -l polygon --host localhost --disable-geodata --disable-database',
             main_func=controller.main,
             result="""==== Sync and build code ====
 ==== Time results ====
 A tile is generated in: [0-9\.]* \[ms\]
-Than mean generated tile size: 0.826 \[kb\]
+Then mean generated tile size: 0.826 \[kb\]
 config:
     cost:
         tileonly_generation_time: [0-9\.]*
@@ -116,7 +116,7 @@ config:
             result="""==== Sync and build code ====
 ==== Time results ====
 A tile is generated in: [0-9\.]* \[ms\]
-Than mean generated tile size: 0.780 \[kb\]
+Then mean generated tile size: 0.780 \[kb\]
 config:
     cost:
         tileonly_generation_time: [0-9\.]*
@@ -135,7 +135,7 @@ config:
             result="""==== Sync and build code ====
 ==== Time results ====
 A tile is generated in: [0-9\.]* \[ms\]
-Than mean generated tile size: 0.326 \[kb\]
+Then mean generated tile size: 0.326 \[kb\]
 config:
     cost:
         tileonly_generation_time: [0-9\.]*
@@ -154,7 +154,7 @@ config:
             result="""==== Sync and build code ====
 ==== Time results ====
 A tile is generated in: [0-9\.]* \[ms\]
-Than mean generated tile size: 0.326 \[kb\]
+Then mean generated tile size: 0.326 \[kb\]
 config:
     cost:
         tileonly_generation_time: [0-9\.]*

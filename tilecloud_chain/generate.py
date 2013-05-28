@@ -87,7 +87,14 @@ def _gene(options, gene, layer):
             )
 
     # At this stage, the tilestream contains metatiles that intersect geometry
-    gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
+    def logTile(tile):
+        variables = dict()
+        variables.update(tile.__dict__)
+        variables.update(tile.tilecoord.__dict__)
+        sys.stdout.write("%(tilecoord)s          \r" % variables)
+        sys.stdout.flush()
+        return tile
+    gene.imap(logTile)
 
     if options.role == 'master':  # pragma: no cover
         # Put the metatiles into the SQS queue
