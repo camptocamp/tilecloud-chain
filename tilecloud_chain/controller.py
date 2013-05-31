@@ -195,7 +195,7 @@ def main():
     if options.geodata and 'geodata_folder' in gene.config['generation']:
         print "==== Sync geodata ===="
         ssh_options = ''
-        if 'ssh_options' in gene.config['generation']:
+        if 'ssh_options' in gene.config['generation']:  # pragma: no cover
             ssh_options = gene.config['generation']['ssh_options']
         # sync geodata
         run_local([
@@ -211,7 +211,7 @@ def main():
             exit(1)  # pragma: no cover
 
         cmd = ['rsync', '--delete', ]
-        if 'ssh_options' in gene.config['generation']:
+        if 'ssh_options' in gene.config['generation']:  # pragma: no cover
             cmd += ['-e', 'ssh ' + gene.config['generation']['ssh_options']]
             ssh_options = gene.config['generation']['ssh_options']
 
@@ -408,7 +408,7 @@ def run_local(cmd):
 
 def run_remote_process(remote_cmd, host, project_dir, gene):
     cmd = ['ssh']
-    if 'ssh_options' in gene.config['generation']:
+    if 'ssh_options' in gene.config['generation']:  # pragma: no cover
         cmd.extend(gene.config['generation']['ssh_options'].split(' '))
     if host is None:  # pragma: no cover
         exit('host option is required.')
