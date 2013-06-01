@@ -1282,7 +1282,6 @@ generation:
   geodata_folder: tilecloud_chain/
   maxconsecutive_errors: 2
   number_process: 1
-  ssh_options: -o StrictHostKeyChecking=no
 grids:
   swissgrid_01: &id004
     bbox: [420000.0, 30000.0, 900000.0, 350000.0]

@@ -199,7 +199,6 @@ generation:
     - python bootstrap.py --distribute
     - ./buildout/bin/buildout
     deploy_user: deploy
-    ssh_options: -o StrictHostKeyChecking=no
     code_folder: /tmp/tests/test
     apache_config: /tmp/tests/test.conf
     apache_content: test file
