@@ -57,7 +57,7 @@ class CompareCase(TestCase):
         except SystemExit as e:
             self.assertEquals(e.message, result)
 
-    def assert_main_equals(self, cmd, main_func, results):
+    def assert_main_equals(self, cmd, main_func, results, **kargs):
         sys.argv = cmd.split(' ')
         try:
             main_func()
@@ -66,7 +66,7 @@ class CompareCase(TestCase):
         if results:
             for result in results:
                 f = open(result[0], 'r')
-                self.assert_result_equals(f.read(), result[1])
+                self.assert_result_equals(f.read(), result[1], **kargs)
 
     def assert_yaml_equals(self, content, value):
         import yaml

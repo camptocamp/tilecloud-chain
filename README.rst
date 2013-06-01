@@ -269,9 +269,17 @@ The MapCache configuration look like this (default values):
         # the memcache port
         memcache_port: 11211
 
+    apache:
+        config_file: apache/tiles.conf.in
+        expires: 8
+
 To generate the MapCache configuration we use the command::
 
-    ./buildout/bin/generate_controller --mapcache
+    ./buildout/bin/generate_controller --generate-mapcache-config
+
+To generate the Apache configuration we use the command::
+
+    ./buildout/bin/generate_controller --generate-apache-config
 
 We can also use a buildout task to automatise it::
 
@@ -283,22 +291,11 @@ We can also use a buildout task to automatise it::
     on_install = true
     on_update = true
     cmds =
-      ./buildout/bin/generate_controller --mapcache
+      ./buildout/bin/generate_controller --generate-mapcache-config
+      ./buildout/bin/generate_controller --generate-apache-config
     uninstall_cmds =
       rm apache/mapcache.xml
-
-And finally we can use the following Apache configuration to serve the
-tiles, configure MapCache and redirect on MapCache for the last zoom levels
-(11-19 in this example)::
-
-    <Location /${vars:instanceid}/tiles>
-        ExpiresActive on
-        ExpiresDefault "now plus 8 hours"
-        Header add Access-Control-Allow-Origin "*"
-    </Location>
-    Alias /${vars:instanceid}/tiles /var/sig/tilecache/<project>
-    RewriteRule ^/${vars:instanceid}/tiles/1.0.0/([a-z0-9_]+)/([a-z0-9_]+)/([a-z0-9_]+)/([a-z0-9_]+)/1([1-9])/(.*)$ /${vars:instanceid}/mapcache/wmts/1.0.0/$1/$2/$3/$4/1$5/$6 [PT]
-    MapCacheAlias /${vars:instanceid}/mapcache "${buildout:directory}/apache/mapcache.xml"
+      rm apache/tiles.conf.in
 
 
 Configure S3
@@ -525,6 +522,12 @@ Build it::
 
 Changes
 -------
+
+Release 0.6
+~~~~~~~~~~~
+
+1. Now the apache configuration can be generated, it support
+   ``filesystem`` ``cache`` and ``MapCache``.
 
 Release 0.5
 ~~~~~~~~~~~
