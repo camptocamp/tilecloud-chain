@@ -1236,7 +1236,26 @@ class TestController(CompareCase):
    <lock_dir>/tmp</lock_dir>
 </mapcache>"""]])
 
-    CONFIG = """caches:
+    @attr(apache=True)
+    @attr(general=True)
+    def test_apache(self):
+        self.assert_main_equals(
+            cmd='./buildout/bin/generate_controller --apache -c tilegeneration/test.yaml',
+            main_func=controller.main,
+            results=[['tiles.conf.in', """<Location /${vars:instanceid}/tiles>
+    ExpiresActive on
+    ExpiresDefault "now plus 8 hours"
+</Location>
+Alias /${vars:instanceid}/tiles /tmp/tiles
+RewriteRule ^/${vars:instanceid}/tiles/1.0.0/point_hash/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
+                """/${vars:instanceid}/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
+RewriteRule ^/${vars:instanceid}/tiles/1.0.0/point/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
+                """/${vars:instanceid}/mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
+MapCacheAlias /${vars:instanceid}/mapcache "${buildout:directory}/mapcache.xml"
+"""]])
+
+    CONFIG = """apache: {config_file: tiles.conf.in, expires: 8}
+caches:
   local: {folder: /tmp/tiles, hosts: false, http_url: 'http://taurus/tiles', http_urls: false,
     name: local, type: filesystem, wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml}
   mbtiles: {folder: /tmp/tiles/mbtiles, http_url: 'http://taurus/tiles', name: mbtiles, type: mbtiles}
