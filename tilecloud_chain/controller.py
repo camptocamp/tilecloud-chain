@@ -6,6 +6,7 @@ import math
 import logging
 import boto
 import yaml
+import re
 from boto import sns
 from copy import copy
 from datetime import timedelta
@@ -23,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     parser = OptionParser(
-        'Used to generate the tiles from a WMS or Mapnik, to WMST on filsystem or S3, optionaly use an SQS queue')
+        'Used to generate the tiles from a WMS or Mapnik, to WMTS on filsystem or S3, optionaly use an SQS queue')
     add_comon_options(parser)
     parser.add_option(
         '--deploy-config', default=None, dest="deploy_config", metavar="FILE",
@@ -194,7 +195,7 @@ def main():
     if options.geodata and 'geodata_folder' in gene.config['generation']:
         print "==== Sync geodata ===="
         ssh_options = ''
-        if 'ssh_options' in gene.config['generation']:
+        if 'ssh_options' in gene.config['generation']:  # pragma: no cover
             ssh_options = gene.config['generation']['ssh_options']
         # sync geodata
         run_local([
@@ -210,7 +211,7 @@ def main():
             exit(1)  # pragma: no cover
 
         cmd = ['rsync', '--delete', ]
-        if 'ssh_options' in gene.config['generation']:
+        if 'ssh_options' in gene.config['generation']:  # pragma: no cover
             cmd += ['-e', 'ssh ' + gene.config['generation']['ssh_options']]
             ssh_options = gene.config['generation']['ssh_options']
 
@@ -257,6 +258,8 @@ def main():
             results = p.communicate()
             if results[1] != '':  # pragma: no cover
                 logger.debug('ERROR: %s' % results[1])
+            results = (re.sub(u'\n[^\n]*\r', u'\n', results[0]), )
+            results = (re.sub(u'^[^\n]*\r', u'', results[0]), )
             for r in results[0].split('\n'):
                 if r.startswith('time: '):
                     times.append(int(r.replace('time: ', '')))
@@ -278,7 +281,7 @@ def main():
 
         print '==== Time results ===='
         print 'A tile is generated in: %0.3f [ms]' % mean_time_ms
-        print 'Than mean generated tile size: %0.3f [kb]' % (mean_size_kb)
+        print 'Then mean generated tile size: %0.3f [kb]' % (mean_size_kb)
         print '''config:
     cost:
         tileonly_generation_time: %0.3f
@@ -405,7 +408,7 @@ def run_local(cmd):
 
 def run_remote_process(remote_cmd, host, project_dir, gene):
     cmd = ['ssh']
-    if 'ssh_options' in gene.config['generation']:
+    if 'ssh_options' in gene.config['generation']:  # pragma: no cover
         cmd.extend(gene.config['generation']['ssh_options'].split(' '))
     if host is None:  # pragma: no cover
         exit('host option is required.')

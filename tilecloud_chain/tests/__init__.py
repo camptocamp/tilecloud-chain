@@ -3,6 +3,7 @@
 import logging
 import sys
 import os
+import re
 import shutil
 from cStringIO import StringIO
 from unittest2 import TestCase
@@ -13,7 +14,10 @@ log = logging.getLogger("tests")
 class CompareCase(TestCase):
 
     def assert_result_equals(self, result, content, regexp=False):
-        content = unicode(content.decode('utf-8')).split('\n')
+        content = unicode(content.decode('utf-8'))
+        content = re.sub(u'\n[^\n]*\r', u'\n', content)
+        content = re.sub(u'^[^\n]*\r', u'', content)
+        content = content.split('\n')
         value = result.split('\n')
         for n, test in enumerate(zip(content, value)):
             if test[0] != 'PASS...':

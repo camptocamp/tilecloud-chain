@@ -326,7 +326,7 @@ class TileGeneration:
         error = self.validate(
             self.config['generation'], 'generation', 'build_cmds',
             attribute_type=str, is_array=True, default=[
-                "python bootstrap.py --distribute",
+                "python bootstrap.py --distribute -v 1.7.1",
                 "./buildout/bin/buildout -c buildout_tilegeneration.cfg"
             ]
         ) or error

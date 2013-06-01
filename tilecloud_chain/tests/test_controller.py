@@ -1285,7 +1285,7 @@ generation:
   apache_config: /tmp/tests/test.conf
   apache_content: test file
   build_cmds:
-  - python bootstrap.py --distribute
+  - python bootstrap.py --distribute -v 1.7.1
   - ./buildout/bin/buildout
   code_folder: /tmp/tests/test/
   default_cache: local
