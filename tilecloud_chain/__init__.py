@@ -2,6 +2,7 @@
 
 import sys
 import os
+import re
 import logging
 import yaml
 import sqlite3
@@ -125,7 +126,9 @@ class TileGeneration:
         error = False
         for gname, grid in self.config['grids'].items():
             name = "grid[%s]" % gname
-            error = self.validate(grid, name, 'name', attribute_type=str, default=gname) or error
+            error = self.validate(
+                grid, name, 'name', attribute_type=str, default=gname, regex="^[a-zA-Z0-9_]+$"
+            ) or error
             error = self.validate(
                 grid, name, 'resolution_scale',
                 attribute_type=int
@@ -168,7 +171,9 @@ class TileGeneration:
                 if k not in layer:
                     layer[k] = v
 
-            error = self.validate(layer, name, 'name', attribute_type=str, default=lname) or error
+            error = self.validate(
+                layer, name, 'name', attribute_type=str, default=lname, regex="^[a-zA-Z0-9_]+$"
+            ) or error
             error = self.validate(layer, name, 'grid', attribute_type=str, required=True) or error
             error = self.validate(layer, name, 'min_resolution_seed', attribute_type=float) or error
             error = self.validate(layer, name, 'px_buffer', attribute_type=float, default=False) or error
@@ -212,17 +217,25 @@ class TileGeneration:
 
             error = self.validate(layer, name, 'extension', attribute_type=str, required=True) or error
             error = self.validate(layer, name, 'mime_type', attribute_type=str, required=True) or error
-            error = self.validate(layer, name, 'wmts_style', attribute_type=str, required=True) or error
+            error = self.validate(
+                layer, name, 'wmts_style', attribute_type=str, required=True, regex="^[a-zA-Z0-9_]+$"
+            ) or error
             error = self.validate(layer, name, 'dimensions', is_array=True, default=[]) or error
             for d in layer['dimensions']:
                 dname = name + ".dimensions[%s]" % d.get('name', '')
-                error = self.validate(d, dname, 'name', attribute_type=str, required=True) or error
-                error = self.validate(d, dname, 'value', attribute_type=str, required=True) or error
                 error = self.validate(
-                    d, dname, 'values', attribute_type=str, is_array=True,
-                    default=[d['value']]
+                    d, dname, 'name', attribute_type=str, required=True, regex="^[a-zA-Z0-9_]+$"
                 ) or error
-                error = self.validate(d, dname, 'default', attribute_type=str, default=d['value']) or error
+                error = self.validate(
+                    d, dname, 'value', attribute_type=str, required=True, regex="^[a-zA-Z0-9_]+$"
+                ) or error
+                error = self.validate(
+                    d, dname, 'values', attribute_type=str, is_array=True, default=[d['value']]
+                ) or error
+                error = self.validate(
+                    d, dname, 'default', attribute_type=str, default=d['value'],
+                    regex="^[a-zA-Z0-9_]+$"
+                ) or error
 
             if 'empty_tile_detection' in layer:
                 error = self.validate(
@@ -453,7 +466,7 @@ class TileGeneration:
             logger.error("The attribute '%s' is required in the object %s." % (attribute, obj_name))
             exit(1)
 
-    def _validate_type(self, value, attribute_type, enumeration):
+    def _validate_type(self, value, attribute_type, enumeration, regex=None):
         if attribute_type is not None:
             if attribute_type == int and type(value) == str:
                 try:
@@ -476,6 +489,9 @@ class TileGeneration:
                     return (True, None, str(attribute_type))
                 if typ != str:
                     value = str(value)
+                if regex:
+                    if re.search(regex, value) is None:  # pragma: no cover
+                        return (True, None, "value '%s' don't respect regex '%s'" % (value, regex))
             else:
                 if type(value) != attribute_type:
                     return (True, None, str(attribute_type))
@@ -485,12 +501,12 @@ class TileGeneration:
 
     def validate(
             self, obj, obj_name, attribute, attribute_type=None, is_array=False,
-            default=None, required=False, enumeration=None):
+            default=None, required=False, enumeration=None, **kargs):
         if attribute in obj:
             if is_array:
                 if type(obj[attribute]) == list:
                     for n, v in enumerate(obj[attribute]):
-                        result, value, type_error = self._validate_type(v, attribute_type, enumeration)
+                        result, value, type_error = self._validate_type(v, attribute_type, enumeration, **kargs)
                         if result:
                             logger.error(
                                 "The attribute '%s' of the object %s has an element who is not a %s." %
@@ -502,7 +518,7 @@ class TileGeneration:
                     logger.error("The attribute '%s' of the object %s is not an array." % (attribute, obj_name))
                     return True
             else:
-                result, value, type_error = self._validate_type(obj[attribute], attribute_type, enumeration)
+                result, value, type_error = self._validate_type(obj[attribute], attribute_type, enumeration, **kargs)
                 if result:
                     logger.error(
                         "The attribute '%s' of the object %s is not a %s." %
