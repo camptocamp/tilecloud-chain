@@ -1642,6 +1642,7 @@ map = new OpenLayers.Map({
         new OpenLayers.Control.Zoom(),
         new OpenLayers.Control.MousePosition(),
         new OpenLayers.Control.LayerSwitcher(),
+        new OpenLayers.Control.Permalink(),
         new OpenLayers.Control.UTFGrid({
             callback: callback,
             handlerMode: "hover",
