@@ -13,27 +13,27 @@ log = logging.getLogger("tests")
 
 class CompareCase(TestCase):
 
-    def assert_result_equals(self, result, content, regexp=False):
-        content = unicode(content.decode('utf-8'))
-        content = re.sub(u'\n[^\n]*\r', u'\n', content)
-        content = re.sub(u'^[^\n]*\r', u'', content)
-        content = content.split('\n')
-        value = result.split('\n')
-        for n, test in enumerate(zip(content, value)):
+    def assert_result_equals(self, result, expected, regex=False):
+        expected = expected.split('\n')
+        result = unicode(result.decode('utf-8'))
+        result = re.sub(u'\n[^\n]*\r', u'\n', result)
+        result = re.sub(u'^[^\n]*\r', u'', result)
+        result = result.split('\n')
+        for n, test in enumerate(zip(expected, result)):
             if test[0] != 'PASS...':
                 try:
-                    if regexp:
-                        self.assertRegexpMatches(test[0].strip(), test[1].strip())
+                    if regex:
+                        self.assertRegexpMatches(test[1].strip(), '^%s$' % test[0].strip())
                     else:
                         self.assertEquals(test[0].strip(), test[1].strip())
                 except AssertionError as e:  # pragma: no cover
-                    for i in range(max(0, n - 10), min(len(content), n + 11)):
+                    for i in range(max(0, n - 10), min(len(result), n + 11)):
                         if i == n:
-                            log.info("> %i %s" % (i, content[i]))
+                            log.info("> %i %s" % (i, result[i]))
                         else:
-                            log.info("  %i %s" % (i, content[i]))
+                            log.info("  %i %s" % (i, result[i]))
                     raise e
-        self.assertEquals(len(value), len(content))
+        self.assertEquals(len(expected), len(result))
 
     def run_cmd(self, cmd, main_func):
         old_stdout = sys.stdout
@@ -51,26 +51,26 @@ class CompareCase(TestCase):
         out, err = self.run_cmd(cmd, main_func)
         if empty_err:
             self.assertEquals(err, '')
-        self.assert_result_equals(content=out, **kargs)
+        self.assert_result_equals(result=out, **kargs)
 
-    def assert_cmd_exit_equals(self, cmd, main_func, result):
+    def assert_cmd_exit_equals(self, cmd, main_func, expected):
         sys.argv = cmd.split(' ')
         try:
             main_func()
             assert("exit() not called.")  # pragma: no cover
         except SystemExit as e:
-            self.assertEquals(e.message, result)
+            self.assertEquals(e.message, expected)
 
-    def assert_main_equals(self, cmd, main_func, results, **kargs):
+    def assert_main_equals(self, cmd, main_func, expected, **kargs):
         sys.argv = cmd.split(' ')
         try:
             main_func()
         except SystemExit:
             pass
-        if results:
-            for result in results:
-                f = open(result[0], 'r')
-                self.assert_result_equals(f.read(), result[1], **kargs)
+        if expected:
+            for expect in expected:
+                f = open(expect[0], 'r')
+                self.assert_result_equals(f.read(), expect[1], **kargs)
 
     def assert_yaml_equals(self, content, value):
         import yaml
@@ -91,8 +91,8 @@ class CompareCase(TestCase):
 
         self.assert_tiles_generated_deleted(directory=directory, **kargs)
 
-    def assert_tiles_generated_deleted(self, directory, tiles_pattern, tiles, result='', **kargs):
-        self.assert_cmd_equals(result=result, **kargs)
+    def assert_tiles_generated_deleted(self, directory, tiles_pattern, tiles, expected='', **kargs):
+        self.assert_cmd_equals(expected=expected, **kargs)
         count = 0
         for path, dirs, files in os.walk(directory):
             if len(files) != 0:

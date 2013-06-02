@@ -9,7 +9,19 @@ grids:
         bbox: 123
         srs: {}
     swissgrid_3: {}
+    swissgrid!: {}
         
 caches: {}
 
-layers: {}
+layers:
+    hi!:
+        wmts_style: yo!
+        dimensions:
+        -   name: DATE!
+            default: 2010!
+            value: 2012!
+            values: [2005!, 2010!, 2012!]
+        -   name: time
+            default: 1
+            value: 1
+            values: [1]

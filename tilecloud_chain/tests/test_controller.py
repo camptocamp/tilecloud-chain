@@ -27,9 +27,9 @@ class TestController(CompareCase):
         self.assert_main_equals(
             cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml',
             main_func=controller.main,
-            results=[[
+            expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
-                """<?xml version="1.0" encoding="UTF-8"?>
+                u"""<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
               xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xmlns:gml="http://www.opengis.net/gml"
@@ -434,7 +434,7 @@ class TestController(CompareCase):
   </Contents>
 </Capabilities>"""]])
 
-    MULTIHOST_CAPABILITIES = """<?xml version="1.0" encoding="UTF-8"?>
+    MULTIHOST_CAPABILITIES = u"""<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
               xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xmlns:gml="http://www.opengis.net/gml"
@@ -938,7 +938,7 @@ class TestController(CompareCase):
             cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
             '--destination-cache multi_host',
             main_func=controller.main,
-            results=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
+            expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     @attr(multi_url_capabilities=True)
     @attr(general=True)
@@ -947,7 +947,7 @@ class TestController(CompareCase):
             cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
             '--destination-cache multi_url',
             main_func=controller.main,
-            results=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
+            expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     @attr(mapcache=True)
     @attr(general=True)
@@ -955,7 +955,7 @@ class TestController(CompareCase):
         self.assert_main_equals(
             cmd='./buildout/bin/generate_controller --mapcache -c tilegeneration/test.yaml',
             main_func=controller.main,
-            results=[['mapcache.xml', """<?xml version="1.0" encoding="UTF-8"?>
+            expected=[['mapcache.xml', u"""<?xml version="1.0" encoding="UTF-8"?>
 <mapcache>
     <cache name="default" type="memcache">
        <server>
@@ -1242,7 +1242,7 @@ class TestController(CompareCase):
         self.assert_main_equals(
             cmd='./buildout/bin/generate_controller --apache -c tilegeneration/test.yaml',
             main_func=controller.main,
-            results=[['tiles.conf.in', """<Location /${vars:instanceid}/tiles>
+            expected=[['tiles.conf.in', u"""<Location /${vars:instanceid}/tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
 </Location>
@@ -1254,7 +1254,7 @@ RewriteRule ^/${vars:instanceid}/tiles/1.0.0/point/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]
 MapCacheAlias /${vars:instanceid}/mapcache "${buildout:directory}/mapcache.xml"
 """]])
 
-    CONFIG = """apache: {config_file: tiles.conf.in, expires: 8}
+    CONFIG = u"""apache: {config_file: tiles.conf.in, expires: 8}
 caches:
   local: {folder: /tmp/tiles, hosts: false, http_url: 'http://taurus/tiles', http_urls: false,
     name: local, type: filesystem, wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml}
@@ -1584,7 +1584,7 @@ layers:
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
-mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: '11211'}
+mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 11211}
 openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}
 sns: {region: eu-west-1, topic: sns_topic}"""
 
@@ -1605,7 +1605,7 @@ sns: {region: eu-west-1, topic: sns_topic}"""
     @attr(openlayers=True)
     @attr(general=True)
     def test_openlayers(self):
-        html = """<!DOCTYPE html>
+        html = u"""<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -1634,7 +1634,7 @@ sns: {region: eu-west-1, topic: sns_topic}"""
     <script src="wmts.js"></script>
 </body>
 </html>"""
-        js = """var callback = function(infoLookup) {
+        js = u"""var callback = function(infoLookup) {
     var msg = "";
     if (infoLookup) {
         var info;
@@ -1751,7 +1751,7 @@ OpenLayers.Request.GET({
         self.assert_main_equals(
             cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test.yaml',
             main_func=controller.main,
-            results=[
+            expected=[
                 ['/tmp/tiles/index.html', html],
                 ['/tmp/tiles/wmts.js', js % 'http://taurus/tiles/1.0.0/WMTSCapabilities.xml']
             ]
@@ -1760,7 +1760,7 @@ OpenLayers.Request.GET({
         self.assert_main_equals(
             cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test.yaml --cache multi_host',
             main_func=controller.main,
-            results=[
+            expected=[
                 ['/tmp/tiles/index.html', html],
                 ['/tmp/tiles/wmts.js', js % 'http://wmts1/tiles/1.0.0/WMTSCapabilities.xml']
             ]
@@ -1769,7 +1769,7 @@ OpenLayers.Request.GET({
         self.assert_main_equals(
             cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test.yaml --cache multi_url',
             main_func=controller.main,
-            results=[
+            expected=[
                 ['/tmp/tiles/index.html', html],
                 ['/tmp/tiles/wmts.js', js % 'http://wmts1/tiles/1.0.0/WMTSCapabilities.xml']
             ]
