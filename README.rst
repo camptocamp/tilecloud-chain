@@ -393,6 +393,20 @@ And don't forget to generate the WMTS Capabilities::
     ./buildout/bin/generate_controller --capabilities
 
 
+Tiles error file
+----------------
+
+If we set a file path in config file:
+
+.. code:: yaml
+
+    generation:
+        error_file: <path>
+
+The tiles that in error will be appen to the file, ant the tiles can be regenerated with
+``./buildout/bin/generate_tiles --layer <layer> --tiles-file <path>``.
+
+
 Explain cost
 -------------
 
@@ -526,8 +540,24 @@ Changes
 Release 0.6
 ~~~~~~~~~~~
 
-1. Now the apache configuration can be generated, it support
-   ``filesystem`` ``cache`` and ``MapCache``.
+1. Now the apache configuration can be generated with ``./buildout/bin/generate_controller --generate-apache-config``,
+   it support ``filesystem`` ``cache`` and ``MapCache``.
+
+2. Windows fixes.
+
+3. Use console revrite (\r) to log generated tiles coordinates.
+
+4. Now if no layers is specified in ``generation:default_layers`` we generate all layers by default.
+
+5. Now bbox to be floats.
+
+6. New ``--get-bbox`` option to get the bboy of a tile.
+
+7. Add coveralls support (https://coveralls.io/r/sbrunner/tilecloud-chain).
+
+8. Add an config option ``generation:error_file`` and a command option ``--tiles-file``
+   to store and regenerate errored tiles. 
+
 
 Release 0.5
 ~~~~~~~~~~~
