@@ -67,8 +67,6 @@ def _gene(options, gene, layer):
         gene.set_store(sqs_tilestore)  # pragma: no cover
 
     elif options.role == 'hash':
-        if not gene.layer:
-            exit("A layer is required with --get-hash option")  # pragma: no cover
         try:
             z, x, y = (int(v) for v in options.get_hash.split('/'))
             if meta:

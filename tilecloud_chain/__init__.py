@@ -864,7 +864,7 @@ class TileGeneration:
             self.tilestream = ifilter(safe_filter, self.tilestream)
 
 
-class HashDropper(object):
+class HashDropper:
     """
     Create a filter to remove the tiles data where they have
     the specified size and hash.
@@ -899,7 +899,7 @@ class HashDropper(object):
             return None
 
 
-class HashLogger(object):
+class HashLogger:
     """
     Log the tile size and hash.
     """
@@ -927,7 +927,7 @@ class HashLogger(object):
         return tile
 
 
-class IntersectGeometryFilter(object):
+class IntersectGeometryFilter:
 
     def __init__(self, grid, geom=None, queue_store=None, px_buffer=0):
         self.grid = grid
@@ -954,7 +954,7 @@ class IntersectGeometryFilter(object):
         ))
 
 
-class DropEmpty(object):
+class DropEmpty:
     """
     Create a filter for dropping all tiles with errors.
     """
