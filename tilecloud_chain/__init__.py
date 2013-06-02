@@ -187,33 +187,34 @@ class TileGeneration:
                 layer['meta_size'] = 1
             else:
                 error = self.validate(layer, name, 'meta_size', attribute_type=int, default=8) or error
-            error = self.validate(
-                layer, name, 'meta_buffer', attribute_type=int,
-                default=0 if layer['type'] == 'mapnik' else 128
-            ) or error
-
-            if layer['type'] == 'wms':
-                error = self.validate(layer, name, 'url', attribute_type=str, required=True) or error
-                error = self.validate(layer, name, 'layers', attribute_type=str, required=True) or error
-            if layer['type'] == 'mapnik':
-                error = self.validate(layer, name, 'mapfile', attribute_type=str, required=True) or error
+            if 'type' in layer:
                 error = self.validate(
-                    layer, name, 'output_format', attribute_type=str, default='png',
-                    enumeration=['png', 'png256', 'jpeg', 'grid']
+                    layer, name, 'meta_buffer', attribute_type=int,
+                    default=0 if layer['type'] == 'mapnik' else 128
                 ) or error
-                error = self.validate(layer, name, 'data_buffer', attribute_type=int, default=128) or error
-                if layer['output_format'] == 'grid':
-                    error = self.validate(layer, name, 'resolution', attribute_type=int, default=4) or error
-                    error = self.validate(layer, name, 'layers_fields', attribute_type=dict, default={}) or error
+
+                if layer['type'] == 'wms':
+                    error = self.validate(layer, name, 'url', attribute_type=str, required=True) or error
+                    error = self.validate(layer, name, 'layers', attribute_type=str, required=True) or error
+                if layer['type'] == 'mapnik':
+                    error = self.validate(layer, name, 'mapfile', attribute_type=str, required=True) or error
                     error = self.validate(
-                        layer, name, 'drop_empty_utfgrid', attribute_type=bool, default=False
+                        layer, name, 'output_format', attribute_type=str, default='png',
+                        enumeration=['png', 'png256', 'jpeg', 'grid']
                     ) or error
-                    if layer['meta']:
-                        logger.error(
-                            "The layer '%s' is of type Mapnik/Grid, that can't support matatiles." %
-                            (layer['name'])
-                        )
-                        error = True
+                    error = self.validate(layer, name, 'data_buffer', attribute_type=int, default=128) or error
+                    if layer['output_format'] == 'grid':
+                        error = self.validate(layer, name, 'resolution', attribute_type=int, default=4) or error
+                        error = self.validate(layer, name, 'layers_fields', attribute_type=dict, default={}) or error
+                        error = self.validate(
+                            layer, name, 'drop_empty_utfgrid', attribute_type=bool, default=False
+                        ) or error
+                        if layer['meta']:
+                            logger.error(
+                                "The layer '%s' is of type Mapnik/Grid, that can't support matatiles." %
+                                (layer['name'])
+                            )
+                            error = True
 
             error = self.validate(layer, name, 'extension', attribute_type=str, required=True) or error
             error = self.validate(layer, name, 'mime_type', attribute_type=str, required=True) or error
@@ -224,7 +225,7 @@ class TileGeneration:
             for d in layer['dimensions']:
                 dname = name + ".dimensions[%s]" % d.get('name', '')
                 error = self.validate(
-                    d, dname, 'name', attribute_type=str, required=True, regex="^[a-zA-Z0-9_]+$"
+                    d, dname, 'name', attribute_type=str, required=True, regex="^[A-Z0-9_]+$"
                 ) or error
                 error = self.validate(
                     d, dname, 'value', attribute_type=str, required=True, regex="^[a-zA-Z0-9_]+$"
@@ -489,8 +490,8 @@ class TileGeneration:
                     return (True, None, str(attribute_type))
                 if typ != str:
                     value = str(value)
-                if regex:
-                    if re.search(regex, value) is None:  # pragma: no cover
+                if regex is not None:
+                    if re.search(regex, value) is None:
                         return (True, None, "value '%s' don't respect regex '%s'" % (value, regex))
             else:
                 if type(value) != attribute_type:
@@ -502,35 +503,44 @@ class TileGeneration:
     def validate(
             self, obj, obj_name, attribute, attribute_type=None, is_array=False,
             default=None, required=False, enumeration=None, **kargs):
-        if attribute in obj:
-            if is_array:
-                if type(obj[attribute]) == list:
-                    for n, v in enumerate(obj[attribute]):
-                        result, value, type_error = self._validate_type(v, attribute_type, enumeration, **kargs)
-                        if result:
-                            logger.error(
-                                "The attribute '%s' of the object %s has an element who is not a %s." %
-                                (attribute, obj_name, type_error)
-                            )
-                            return True
-                        obj[attribute][n] = value
-                else:
-                    logger.error("The attribute '%s' of the object %s is not an array." % (attribute, obj_name))
-                    return True
+        if attribute not in obj:
+            if required:
+                logger.error("The attribute '%s' is required in the object %s." % (attribute, obj_name))
+                return True
+            elif default is False:
+                # no value
+                obj[attribute] = False
+                # no test
+                return False
+            elif default is not None:
+                obj[attribute] = default
             else:
-                result, value, type_error = self._validate_type(obj[attribute], attribute_type, enumeration, **kargs)
-                if result:
-                    logger.error(
-                        "The attribute '%s' of the object %s is not a %s." %
-                        (attribute, obj_name, type_error)
-                    )
-                    return True
-                obj[attribute] = value
-        elif required:
-            logger.error("The attribute '%s' is required in the object %s." % (attribute, obj_name))
-            return True
-        elif default is not None:
-            obj[attribute] = default
+                # no value to test
+                return False
+
+        if is_array:
+            if type(obj[attribute]) == list:
+                for n, v in enumerate(obj[attribute]):
+                    result, value, type_error = self._validate_type(v, attribute_type, enumeration, **kargs)
+                    if result:
+                        logger.error(
+                            "The attribute '%s' of the object %s has an element who is not a %s." %
+                            (attribute, obj_name, type_error)
+                        )
+                        return True
+                    obj[attribute][n] = value
+            else:
+                logger.error("The attribute '%s' of the object %s is not an array." % (attribute, obj_name))
+                return True
+        else:
+            result, value, type_error = self._validate_type(obj[attribute], attribute_type, enumeration, **kargs)
+            if result:
+                logger.error(
+                    "The attribute '%s' of the object %s is not a %s." %
+                    (attribute, obj_name, type_error)
+                )
+                return True
+            obj[attribute] = value
         return False
 
     def set_layer(self, layer, options):

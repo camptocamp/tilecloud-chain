@@ -25,7 +25,7 @@ class TestGenerate(CompareCase):
         self.assert_cmd_equals(
             cmd='./buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l point',
             main_func=generate.main,
-            result="""Tile: 4/0/0:+8/+8
+            expected="""Tile: 4/0/0:+8/+8
     empty_metatile_detection:
         size: 20743
         hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -43,7 +43,7 @@ Tile: 4/0/0
         self.assert_cmd_exit_equals(
             cmd='./buildout/bin/generate_tiles --get-hash 0/7/5 -c tilegeneration/test.yaml -l all',
             main_func=generate.main,
-            result="""Error: image is not uniform.""")
+            expected="""Error: image is not uniform.""")
         l.check()
 
     @attr(get_bbox=True)
@@ -53,17 +53,17 @@ Tile: 4/0/0
         self.assert_cmd_equals(
             cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml --get-bbox 4/4/4 -l point',
             main_func=generate.main,
-            result="""Tile bounds: [425120,343600,426400,344880]
+            expected="""Tile bounds: [425120,343600,426400,344880]
 """)
         self.assert_cmd_equals(
             cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml --get-bbox 4/4/4:+1/+1 -l point',
             main_func=generate.main,
-            result="""Tile bounds: [425120,343600,426400,344880]
+            expected="""Tile bounds: [425120,343600,426400,344880]
 """)
         self.assert_cmd_equals(
             cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml --get-bbox 4/4/4:+2/+2 -l point',
             main_func=generate.main,
-            result="""Tile bounds: [425120,342320,427680,344880]
+            expected="""Tile bounds: [425120,342320,427680,344880]
 """)
         l.check()
 
@@ -74,7 +74,7 @@ Tile: 4/0/0
         self.assert_cmd_equals(
             cmd='./buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l mapnik',
             main_func=generate.main,
-            result="""Tile: 4/0/0
+            expected="""Tile: 4/0/0
     empty_tile_detection:
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
@@ -88,7 +88,7 @@ Tile: 4/0/0
         self.assert_cmd_equals(
             cmd='./buildout/bin/generate_tiles --get-hash 4/0/0 -c tilegeneration/test.yaml -l all',
             main_func=generate.main,
-            result="""Tile: 4/0/0
+            expected="""Tile: 4/0/0
     empty_tile_detection:
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
@@ -427,7 +427,7 @@ Tile: 4/0/0
         self.assert_cmd_exit_equals(
             cmd='./buildout/bin/generate_tiles -c tilegeneration/test-authorised.yaml',
             main_func=generate.main,
-            result="""not authorised, authorised user is: www-data.""")
+            expected="""not authorised, authorised user is: www-data.""")
         l.check()
 
     @attr(verbose=True)
@@ -446,7 +446,7 @@ Tile: 4/0/0
         self.assert_cmd_equals(
             cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml --time 2 -l polygon',
             main_func=generate.main,
-            result="""size: 776
+            expected="""size: 776
 size: 860
 size: 860
 size: 860
@@ -454,7 +454,7 @@ time: [0-9]*
 size: 860
 size: 860
 """,
-            regexp=True,
+            regex=True,
             empty_err=True)
         l.check()
 
@@ -464,7 +464,7 @@ size: 860
         self.assert_cmd_equals(
             cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml --time 2 -l all',
             main_func=generate.main,
-            result="""size: 854
+            expected="""size: 854
 size: 854
 size: 854
 size: 854
@@ -472,7 +472,7 @@ time: [0-9]*
 size: 854
 size: 854
 """,
-            regexp=True,
+            regex=True,
             empty_err=True)
         l.check()
 
@@ -483,8 +483,8 @@ size: 854
 #        self.assert_cmd_equals(
 #            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 --daemonize',
 #            main_func=generate.main,
-#            result="""Daemonize with pid [0-9]*.""",
-#            regexp=True)
+#            expected="""Daemonize with pid [0-9]*.""",
+#            regex=True)
 #        l.check()
 
     def _touch(self, tiles_pattern, tiles):

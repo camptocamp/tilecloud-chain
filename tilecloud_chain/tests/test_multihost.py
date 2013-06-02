@@ -33,7 +33,7 @@ class TestMultihost(CompareCase):
             main_func=controller.main,
             directory=directory,
             tiles=os.listdir('tilecloud_chain/tests/tilegeneration/hooks'),
-            result="""==== Sync geodata ====
+            expected="""==== Sync geodata ====
 """
         )
 
@@ -44,7 +44,7 @@ class TestMultihost(CompareCase):
             '--disable-geodata --disable-code --disable-database --disable-fillqueue --disable-tilesgen '
             '--host localhost',
             main_func=controller.main,
-            result='')
+            expected='')
 
     @attr(code=True)
     def test_code(self):
@@ -96,7 +96,7 @@ class TestMultihost(CompareCase):
             cmd='./buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
             '--time 2 -l polygon --host localhost --disable-geodata --disable-database',
             main_func=controller.main,
-            result="""==== Sync and build code ====
+            expected="""==== Sync and build code ====
 ==== Time results ====
 A tile is generated in: [0-9\.]* \[ms\]
 Then mean generated tile size: 0.826 \[kb\]
@@ -106,14 +106,14 @@ config:
         tile_generation_time: [0-9\.]*
         metatile_generation_time: 0
         tile_size: 0.826
-""", regexp=True)
+""", regex=True)
 
         self.assert_cmd_equals(
             cmd='./buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
             '--time 1 -l polygon --host localhost --disable-geodata --disable-database '
             '--bbox 598000,198000,600000,200000 --zoom 4 --test 3',
             main_func=controller.main,
-            result="""==== Sync and build code ====
+            expected="""==== Sync and build code ====
 ==== Time results ====
 A tile is generated in: [0-9\.]* \[ms\]
 Then mean generated tile size: 0.780 \[kb\]
@@ -123,7 +123,7 @@ config:
         tile_generation_time: [0-9\.]*
         metatile_generation_time: 0
         tile_size: 0.780
-""", regexp=True)
+""", regex=True)
 
     @attr(time_near=True)
     def test_time_near(self):
@@ -132,7 +132,7 @@ config:
             '-l point --time 50 --near 550000,180000 --zoom 3 --host localhost '
             '--disable-geodata --disable-database',
             main_func=controller.main,
-            result="""==== Sync and build code ====
+            expected="""==== Sync and build code ====
 ==== Time results ====
 A tile is generated in: [0-9\.]* \[ms\]
 Then mean generated tile size: 0.326 \[kb\]
@@ -142,7 +142,7 @@ config:
         tile_generation_time: [0-9\.]*
         metatile_generation_time: 0
         tile_size: 0.326
-""", regexp=True)
+""", regex=True)
 
     @attr(time_no_geom=True)
     def test_time_no_geom(self):
@@ -151,7 +151,7 @@ config:
             '-l point --time 1 --no-geom --bbox 550000,180000,555000,185000 --zoom 3 --host localhost '
             '--disable-geodata --disable-database',
             main_func=controller.main,
-            result="""==== Sync and build code ====
+            expected="""==== Sync and build code ====
 ==== Time results ====
 A tile is generated in: [0-9\.]* \[ms\]
 Then mean generated tile size: 0.326 \[kb\]
@@ -161,7 +161,7 @@ config:
         tile_generation_time: [0-9\.]*
         metatile_generation_time: 0
         tile_size: 0.326
-""", regexp=True)
+""", regex=True)
 
     @attr(near=True)
     def test_near(self):
