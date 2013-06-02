@@ -544,6 +544,7 @@ class TileGeneration:
         return False
 
     def set_layer(self, layer, options):
+        self.log_tiles_error(message="Start the layer '%s' generation" % layer)
         self.layer = self.layers[layer]
 
         if options.near or (options.time and 'bbox' in self.layer and options.zoom):
@@ -657,6 +658,22 @@ class TileGeneration:
 
     error_file = None
 
+    def log_tiles_error(self, tilecoord=None, message=None):
+        if 'error_file' in self.config['generation']:
+            time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+            if self.error_file is None:
+                self.error_file = open(self.config['generation']['error_file'], 'a')
+                self.error_file.write('# [%s] Start generation\n' % time)
+
+            if tilecoord is None:
+                self.error_file.write('# [%s] %s\n' % (time, message.replace('\n', ' ')))
+
+            if message is None:
+                self.error_file.write('%s # [%s]\n' % (tilecoord, time))
+
+            if tilecoord is not None and message is not None:
+                self.error_file.write('%s # [%s] %s\n' % (tilecoord, time, message.replace('\n', ' ')))
+
     def add_error_filters(self, logger):
         self.imap(LogErrors(
             logger, logging.ERROR,
@@ -666,13 +683,10 @@ class TileGeneration:
             self.tilestream = imap(MaximumConsecutiveErrors(
                 self.config['generation']['maxconsecutive_errors']), self.tilestream)
         if 'error_file' in self.config['generation']:
-            if self.error_file is None:
-                self.error_file = open(self.config['generation']['error_file'], 'a')
-                self.error_file.write('# Start import at %s\n' % datetime.now().strftime('%d-%m-%Y %H:%M:%S'))
 
             def do(tile):
                 if tile and tile.error:
-                    self.error_file.write('%s # %s\n' % (tile.tilecoord, tile.error.replace('\n', ' ')))
+                    self.log_tiles_error(tilecoord=tile.tilecoord, message=tile.error)
                 return tile
             self.imap(do)
         self.ifilter(DropErrors())
