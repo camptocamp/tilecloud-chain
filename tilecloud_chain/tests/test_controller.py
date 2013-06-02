@@ -25,7 +25,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_capabilities(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml',
+            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test_fix.yaml',
             main_func=controller.main,
             expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
@@ -935,7 +935,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_multi_host_capabilities(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
+            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test_fix.yaml '
             '--destination-cache multi_host',
             main_func=controller.main,
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
@@ -944,7 +944,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_multi_url_capabilities(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test.yaml '
+            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test_fix.yaml '
             '--destination-cache multi_url',
             main_func=controller.main,
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
@@ -953,7 +953,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_mapcache(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --mapcache -c tilegeneration/test.yaml',
+            cmd='./buildout/bin/generate_controller --mapcache -c tilegeneration/test_fix.yaml',
             main_func=controller.main,
             expected=[['mapcache.xml', u"""<?xml version="1.0" encoding="UTF-8"?>
 <mapcache>
@@ -1240,7 +1240,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_apache(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --apache -c tilegeneration/test.yaml',
+            cmd='./buildout/bin/generate_controller --apache -c tilegeneration/test_fix.yaml',
             main_func=controller.main,
             expected=[['tiles.conf.in', u"""<Location /${vars:instanceid}/tiles>
     ExpiresActive on
@@ -1298,6 +1298,7 @@ generation:
   disable_geodata: false
   disable_tilesgen: false
   ec2_host_type: m1.medium
+  error_file: error.list
   geodata_folder: tilecloud_chain/
   maxconsecutive_errors: 2
   number_process: 1
@@ -1592,14 +1593,14 @@ sns: {region: eu-west-1, topic: sns_topic}"""
     @attr(general=True)
     def test_config(self):
         self.assert_cmd_yaml_equals(
-            cmd='./buildout/bin/generate_controller --dump-config -c tilegeneration/test.yaml',
+            cmd='./buildout/bin/generate_controller --dump-config -c tilegeneration/test_fix.yaml',
             main_func=controller.main, result=self.CONFIG)
 
     @attr(config_layer=True)
     @attr(general=True)
     def test_config_layer(self):
         self.assert_cmd_yaml_equals(
-            cmd='./buildout/bin/generate_controller --dump-config -l line -c tilegeneration/test.yaml',
+            cmd='./buildout/bin/generate_controller --dump-config -l line -c tilegeneration/test_fix.yaml',
             main_func=controller.main, result=self.CONFIG)
 
     @attr(openlayers=True)
@@ -1749,7 +1750,7 @@ OpenLayers.Request.GET({
     }
 });"""
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test.yaml',
+            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test_fix.yaml',
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],
@@ -1758,7 +1759,7 @@ OpenLayers.Request.GET({
         )
 
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test.yaml --cache multi_host',
+            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test_fix.yaml --cache multi_host',
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],
@@ -1767,7 +1768,7 @@ OpenLayers.Request.GET({
         )
 
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test.yaml --cache multi_url',
+            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test_fix.yaml --cache multi_url',
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],
