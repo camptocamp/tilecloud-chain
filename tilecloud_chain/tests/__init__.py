@@ -72,6 +72,18 @@ class CompareCase(TestCase):
                 f = open(expect[0], 'r')
                 self.assert_result_equals(f.read(), expect[1], **kargs)
 
+    def assert_main_except_equals(self, cmd, main_func, expected, **kargs):
+        sys.argv = cmd.split(' ')
+        try:
+            main_func()
+            assert("exit() not called.")  # pragma: no cover
+        except:
+            pass
+        if expected:
+            for expect in expected:
+                f = open(expect[0], 'r')
+                self.assert_result_equals(f.read(), expect[1], **kargs)
+
     def assert_yaml_equals(self, content, value):
         import yaml
         content = yaml.dump(yaml.load(content), width=120)
