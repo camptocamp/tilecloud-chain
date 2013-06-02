@@ -13,7 +13,8 @@ from tilecloud.store.sqs import SQSTileStore
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.filter.logger import Logger
 
-from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty, add_comon_options
+from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty, TilesFileStore, \
+    add_comon_options, parse_tilecoord
 
 logger = logging.getLogger(__name__)
 
@@ -25,17 +26,8 @@ def _gene(options, gene, layer):
         gene.set_layer(layer, options)
 
     if options.get_bbox:
-        if not gene.layer:
-            exit("A layer is required with --get-bbox option")  # pragma: no cover
         try:
-            parts = options.get_bbox.split(':')
-            z, x, y = (int(v) for v in parts[0].split('/'))
-            if len(parts) == 1:
-                tilecoord = TileCoord(z, x, y)
-            elif len(parts) == 2:
-                tilecoord = TileCoord(z, x, y, int(parts[1].split('/')[0]))
-            else:  # pragma: no cover
-                exit("Tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n" % options.get_bbox)
+            tilecoord = parse_tilecoord(options.get_bbox)
             print \
                 "Tile bounds: [%i,%i,%i,%i]" % \
                 gene.layer['grid_ref']['obj'].extent(tilecoord)
@@ -62,7 +54,10 @@ def _gene(options, gene, layer):
             exit('unknown cache type: ' + cache['type'])  # pragma: no cover
 
     meta = gene.layer['meta']
-    if options.role in ('local', 'master'):
+    if options.tiles_file:
+        gene.set_store(TilesFileStore(options.tiles_file))
+
+    elif options.role in ('local', 'master'):
         # Generate a stream of metatiles
         gene.init_tilecoords(options)
         gene.add_geom_filter()
@@ -232,7 +227,6 @@ def daemonize():  # pragma: no cover
 
 
 def main():
-
     parser = OptionParser('Used to generate the tiles')
     add_comon_options(parser)
     parser.add_option(
@@ -252,6 +246,10 @@ def main():
         '--get-bbox', metavar="TILE",
         help='get the bbox of a tile, use the specified TILE z/x/y, or z/x/y:+n/+n for metatiles'
     )
+    parser.add_option(
+        '--tiles-file', metavar="FILE",
+        help='Generate the tiles from a tiles file, use the format z/x/y, or z/x/y:+n/+n for metatiles'
+    )
 
     (options, args) = parser.parse_args()
 
@@ -268,12 +266,21 @@ def main():
     if options.cache is None:
         options.cache = gene.config['generation']['default_cache']
 
-    if (options.layer):
-        _gene(options, gene, options.layer)
-    elif options.get_bbox:
-        exit("With --get-bbox option we needs to specify a layer")  # pragma: no cover
-    elif options.get_hash:
-        exit("With --get-hash option we needs to specify a layer")  # pragma: no cover
-    else:
-        for layer in gene.config['generation']['default_layers']:
-            _gene(options, gene, layer)
+    if options.tiles_file and options.role not in ['local', 'master']:  # pragma: no cover
+        exit("The --tiles-file option worky only with role local or master")
+
+    try:
+        if (options.layer):
+            _gene(options, gene, options.layer)
+        elif options.get_bbox:  # pragma: no cover
+            exit("With --get-bbox option we needs to specify a layer")
+        elif options.get_hash:  # pragma: no cover
+            exit("With --get-hash option we needs to specify a layer")
+        elif options.tiles_file:  # pragma: no cover
+            exit("With --tiles-file option we needs to specify a layer")
+        else:
+            for layer in gene.config['generation']['default_layers']:
+                _gene(options, gene, layer)
+    finally:
+        if gene.error_file is not None:
+            gene.error_file.close()

@@ -533,3 +533,29 @@ size: 854
                 (5, 7), (7, 4)
             ]
         )
+
+    @attr(error_file=True)
+    @attr(general=True)
+    def test_error_file(self):
+        if os.path.exists('error.list'):
+            os.remove('error.list')
+        self.assert_main_except_equals(
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_error',
+            main_func=generate.main,
+            expected=[[
+                'error.list',
+                u"""# Start import at [0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]
+0/0/0:\+8/\+8 # cannot identify image file - .*
+0/0/8:\+8/\+8 # cannot identify image file - .*
+"""]],
+            regex=True)
+
+        self.assert_tiles_generated(
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --tiles-file error.list',
+            main_func=generate.main,
+            directory="/tmp/tiles/",
+            tiles_pattern='1.0.0/point_hash/default/2012/swissgrid_5/%i/%i/%i.png',
+            tiles=[
+                (0, 5, 7), (0, 7, 4)
+            ]
+        )

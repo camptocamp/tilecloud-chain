@@ -655,6 +655,8 @@ class TileGeneration:
                         yield metatile
             self.tilestream = safe_get(self.tilestream)
 
+    error_file = None
+
     def add_error_filters(self, logger):
         self.imap(LogErrors(
             logger, logging.ERROR,
@@ -663,6 +665,16 @@ class TileGeneration:
         if 'maxconsecutive_errors' in self.config['generation']:
             self.tilestream = imap(MaximumConsecutiveErrors(
                 self.config['generation']['maxconsecutive_errors']), self.tilestream)
+        if 'error_file' in self.config['generation']:
+            if self.error_file is None:
+                self.error_file = open(self.config['generation']['error_file'], 'a')
+                self.error_file.write('# Start import at %s\n' % datetime.now().strftime('%d-%m-%Y %H:%M:%S'))
+
+            def do(tile):
+                if tile and tile.error:
+                    self.error_file.write('%s # %s\n' % (tile.tilecoord, tile.error.replace('\n', ' ')))
+                return tile
+            self.imap(do)
         self.ifilter(DropErrors())
 
     def init_tilecoords(self, options):
@@ -952,3 +964,38 @@ class DropEmpty(object):
             return None  # pragma: no cover
         else:
             return tile
+
+
+def parse_tilecoord(string_representation):
+    parts = string_representation.split(':')
+    coords = [int(v) for v in parts[0].split('/')]
+    if len(coords) != 3:  # pragma: no cover
+        raise ValueError("Wrong number of coordinates")
+    z, x, y = coords
+    if len(parts) == 1:
+        tilecoord = TileCoord(z, x, y)
+    elif len(parts) == 2:
+        meta = parts[1].split('/')
+        if len(meta) != 2:  # pragma: no cover
+            raise ValueError("No one '/' in meta coordinates")
+        tilecoord = TileCoord(z, x, y, int(meta[0]))
+    else:  # pragma: no cover
+        raise ValueError("More than on ':' in the tilecoord")
+    return tilecoord
+
+
+class TilesFileStore:
+    def __init__(self, tiles_file):
+        self.tiles_file = open(tiles_file)
+
+    def list(self):
+        while True:
+            line = self.tiles_file.readline()
+            if not line:
+                return
+            line = line.split('#')[0].strip()
+            if line != '':
+                try:
+                    yield Tile(parse_tilecoord(line))
+                except ValueError as e:  # pragma: no cover
+                    logger.error("A tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n\n%r" % (line, e))
