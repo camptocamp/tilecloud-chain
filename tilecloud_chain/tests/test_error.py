@@ -51,6 +51,11 @@ class TestError(CompareCase):
             cmd='./buildout/bin/generate_controller -v -c tilegeneration/wrong_type.yaml',
             main_func=controller.main)
         l.check(
+            ('tilecloud_chain', 'ERROR', "The attribute 'name' of the object grid[swissgrid!] is not a "
+                "value 'swissgrid!' don't respect regex '^[a-zA-Z0-9_]+$'."),
+            ('tilecloud_chain', 'ERROR', "The attribute 'resolutions' is required in the object grid[swissgrid!]."),
+            ('tilecloud_chain', 'ERROR', "The attribute 'bbox' is required in the object grid[swissgrid!]."),
+            ('tilecloud_chain', 'ERROR', "The attribute 'srs' is required in the object grid[swissgrid!]."),
             ('tilecloud_chain', 'ERROR', "The attribute 'resolutions' is required in the object grid[swissgrid_3]."),
             ('tilecloud_chain', 'ERROR', "The attribute 'bbox' is required in the object grid[swissgrid_3]."),
             ('tilecloud_chain', 'ERROR', "The attribute 'srs' is required in the object grid[swissgrid_3]."),
@@ -61,6 +66,22 @@ class TestError(CompareCase):
             ('tilecloud_chain', 'ERROR', "The attribute 'srs' of the object grid[swissgrid_2] is not a <type 'str'>."),
             ('tilecloud_chain', 'ERROR', "The attribute 'bbox' of the object grid[swissgrid_1] is not an array."),
             ('tilecloud_chain', 'ERROR', "The attribute 'srs' of the object grid[swissgrid_1] is not a <type 'str'>."),
+            ('tilecloud_chain', 'ERROR', "The attribute 'name' of the object layer[hi!] is not a "
+                "value 'hi!' don't respect regex '^[a-zA-Z0-9_]+$'."),
+            ('tilecloud_chain', 'ERROR', "The attribute 'grid' is required in the object layer[hi!]."),
+            ('tilecloud_chain', 'ERROR', "The attribute 'type' is required in the object layer[hi!]."),
+            ('tilecloud_chain', 'ERROR', "The attribute 'extension' is required in the object layer[hi!]."),
+            ('tilecloud_chain', 'ERROR', "The attribute 'mime_type' is required in the object layer[hi!]."),
+            ('tilecloud_chain', 'ERROR', "The attribute 'wmts_style' of the object layer[hi!] is not a "
+                "value 'yo!' don't respect regex '^[a-zA-Z0-9_]+$'."),
+            ('tilecloud_chain', 'ERROR', "The attribute 'name' of the object layer[hi!].dimensions[DATE!] is not a "
+                "value 'DATE!' don't respect regex '^[A-Z0-9_]+$'."),
+            ('tilecloud_chain', 'ERROR', "The attribute 'value' of the object layer[hi!].dimensions[DATE!] is not a "
+                "value '2012!' don't respect regex '^[a-zA-Z0-9_]+$'."),
+            ('tilecloud_chain', 'ERROR', "The attribute 'default' of the object layer[hi!].dimensions[DATE!] is not a "
+                "value '2010!' don't respect regex '^[a-zA-Z0-9_]+$'."),
+            ('tilecloud_chain', 'ERROR', "The attribute 'name' of the object layer[hi!].dimensions[time] is not a "
+                "value 'time' don't respect regex '^[A-Z0-9_]+$'.")
         )
 
     @log_capture('tilecloud_chain')
