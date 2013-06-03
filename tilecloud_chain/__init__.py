@@ -588,7 +588,7 @@ class TileGeneration:
 
     def get_sqs_queue(self):  # pragma: no cover
         connection = boto.sqs.connect_to_region(self.layer['sqs']['region'])
-        queue = connection.create_queue(self.layer['sqs']['queue'])
+        queue = connection.get_queue(self.layer['sqs']['queue'])
         queue.set_message_class(JSONMessage)
         return queue
 
@@ -906,10 +906,13 @@ class HashDropper:
                 else:
                     self.store.delete_one(tile)
             logger.info("The tile %s is dropped" % str(tile.tilecoord))
-            if self.queue_store is not None:  # pragma: no cover
-                self.queue_store.delete_one(tile)
             if hasattr(tile, 'metatile'):
                 tile.metatile.elapsed_togenerate -= 1
+                if tile.metatile.elapsed_togenerate == 0 and self.queue_store is not None:
+                    self.queue_store.delete_one(tile.metatile)  # pragma: no cover
+            elif self.queue_store is not None:  # pragma: no cover
+                self.queue_store.delete_one(tile)
+
             return None
 
 

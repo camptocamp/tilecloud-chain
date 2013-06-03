@@ -163,7 +163,7 @@ def _gene(options, gene, layer):
                 empty_tile = gene.layer['empty_tile_detection']
                 gene.imap(HashDropper(
                     empty_tile['size'], empty_tile['hash'], store=cache_tilestore,
-                    queue_store=sqs_tilestore if not meta else None
+                    queue_store=sqs_tilestore
                 ))
 
     if options.role in ('local', 'slave'):
