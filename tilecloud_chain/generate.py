@@ -3,10 +3,13 @@
 import os
 import sys
 import logging
+import socket
 from datetime import datetime
 from getpass import getuser
 from optparse import OptionParser
 
+import boto
+from boto import sns
 from tilecloud import TileCoord, consume
 from tilecloud.store.url import URLTileStore
 from tilecloud.store.sqs import SQSTileStore
@@ -14,7 +17,7 @@ from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.filter.logger import Logger
 
 from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty, TilesFileStore, \
-    add_comon_options, parse_tilecoord
+    add_comon_options, parse_tilecoord, quote
 
 logger = logging.getLogger(__name__)
 
@@ -210,6 +213,30 @@ def _gene(options, gene, layer):
         consume(gene.tilestream, options.time * 3)
     else:
         consume(gene.tilestream, options.test)
+
+    if 'sns' in gene.config:
+        if 'region' in gene.config['sns']:
+            connection = sns.connect_to_region(gene.config['sns']['region'])
+        else:
+            connection = boto.connect_sns()
+        connection.publish(
+            gene.config['sns']['topic'],
+            """The tile generation is finish
+Layer: %(layer)s
+Role: %(role)s
+Host: %(host)s
+Command: %(cmd)s""" %
+            {
+                'role': options.role,
+                'layer': gene.layer['name'],
+                'host': socket.getfqdn(),
+                'cmd': ' '.join([quote(arg) for arg in sys.argv])
+            },
+            "Tile generation (%(layer)s - %(role)s)" % {
+                'role': options.role,
+                'layer': gene.layer['name']
+            }
+        )
 
 
 def daemonize():  # pragma: no cover

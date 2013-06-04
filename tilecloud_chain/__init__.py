@@ -983,6 +983,21 @@ class DropEmpty:
             return tile
 
 
+def quote(arg):
+    if ' ' in arg:
+        if "'" in arg:
+            if '"' in arg:
+                return "'%s'" % arg.replace("'", "\\'")
+            else:
+                return '"%s"' % arg
+        else:
+            return "'%s'" % arg
+    elif arg == '':
+        return "''"
+    else:
+        return arg
+
+
 def parse_tilecoord(string_representation):
     parts = string_representation.split(':')
     coords = [int(v) for v in parts[0].split('/')]

@@ -1586,8 +1586,7 @@ layers:
     url: http://localhost/mapserv
     wmts_style: default
 mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 11211}
-openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}
-sns: {region: eu-west-1, topic: sns_topic}"""
+openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}"""
 
     @attr(config=True)
     @attr(general=True)
@@ -1779,9 +1778,10 @@ OpenLayers.Request.GET({
     @attr(quote=True)
     @attr(general=True)
     def test_quote(self):
-        self.assertEquals(controller._quote("abc"), "abc")
-        self.assertEquals(controller._quote("a b c"), "'a b c'")
-        self.assertEquals(controller._quote("'a b c'"), "\"'a b c'\"")
-        self.assertEquals(controller._quote('"a b c"'), '\'"a b c"\'')
-        self.assertEquals(controller._quote("a\" b' c"), "'a\" b\\' c'")
-        self.assertEquals(controller._quote(""), "''")
+        from tilecloud_chain import quote
+        self.assertEquals(quote("abc"), "abc")
+        self.assertEquals(quote("a b c"), "'a b c'")
+        self.assertEquals(quote("'a b c'"), "\"'a b c'\"")
+        self.assertEquals(quote('"a b c"'), '\'"a b c"\'')
+        self.assertEquals(quote("a\" b' c"), "'a\" b\\' c'")
+        self.assertEquals(quote(""), "''")
