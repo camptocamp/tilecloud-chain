@@ -344,13 +344,13 @@ Before running the generation miss to set the following variable::
     export AWS_ACCESS_KEY_ID=...
     export AWS_SECRET_ACCESS_KEY=...
 
-To use the SQS queue we should first fille the queue::
+To use the SQS queue we should first fill the queue::
 
-    ./buildout/bin/generate_controller --role master --layer <a_layer>
+    ./buildout/bin/generate_tiles --role master --layer <a_layer>
 
 And then generate the tiles present in the SQS queue::
 
-    ./buildout/bin/generate_controller --role slave --layer <a_layer>
+    ./buildout/bin/generate_tiles --role slave --layer <a_layer>
 
 
 Generate tiles

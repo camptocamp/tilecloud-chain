@@ -7,6 +7,7 @@ import logging
 import boto
 import yaml
 import re
+import socket
 from boto import sns
 from copy import copy
 from datetime import timedelta
@@ -16,7 +17,7 @@ from bottle import jinja2_template
 from tilecloud import Tile, TileStore, consume
 from tilecloud.lib.s3 import S3Connection
 
-from tilecloud_chain import TileGeneration, add_comon_options, get_tile_matrix_identifier
+from tilecloud_chain import TileGeneration, add_comon_options, get_tile_matrix_identifier, quote
 
 
 logger = logging.getLogger(__name__)
@@ -335,7 +336,16 @@ def main():
                 connection = sns.connect_to_region(gene.config['sns']['region'])
             else:
                 connection = boto.connect_sns()
-            connection.publish(gene.config['sns']['topic'], "The tile generation is finish", "Tile generation")
+            connection.publish(
+                gene.config['sns']['topic'],
+                """The tile generation is finish
+Host: %(host)s
+Command: %(cmd)s""" %
+                {
+                    'host': socket.getfqdn(),
+                    'cmd': ' '.join([quote(arg) for arg in sys.argv])
+                },
+                "Tile generation controller")
 
 
 def _deploy(gene, host):
@@ -380,26 +390,11 @@ def aws_start(host_type):  # pragma: no cover
     pass  # TODO
 
 
-def _quote(arg):
-    if ' ' in arg:
-        if "'" in arg:
-            if '"' in arg:
-                return "'%s'" % arg.replace("'", "\\'")
-            else:
-                return '"%s"' % arg
-        else:
-            return "'%s'" % arg
-    elif arg == '':
-        return "''"
-    else:
-        return arg
-
-
 def run_local(cmd):
     if type(cmd) != list:
         cmd = cmd.split(' ')
 
-    logger.debug('Run: %s.' % ' '.join([_quote(c) for c in cmd]))
+    logger.debug('Run: %s.' % ' '.join([quote(c) for c in cmd]))
     result = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
     logger.info(result[0])
     logger.error(result[1])
@@ -429,7 +424,7 @@ def run_remote_process(remote_cmd, host, project_dir, gene):
         }
     )
 
-    logger.debug('Run: %s.' % ' '.join([_quote(c) for c in cmd]))
+    logger.debug('Run: %s.' % ' '.join([quote(c) for c in cmd]))
     return Popen(cmd, stdout=PIPE, stderr=PIPE)
 
 
