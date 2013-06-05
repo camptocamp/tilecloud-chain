@@ -266,11 +266,17 @@ The MapCache configuration look like this (default values):
         config_file: apache/mapcache.xml
         # The memcache host
         memcache_host: localhost
-        # the memcache port
+        # The memcache port
         memcache_port: 11211
+        # The mapcache location
+        location: /${vars:instanceid}/mapcache
 
     apache:
-        config_file: apache/tiles.conf.in
+        # Generated file
+        config_file: apache/tiles.conf
+        # Serve tiles location
+        location: /${vars:instanceid}/tiles
+        # Expires header in hours
         expires: 8
 
 To generate the MapCache configuration we use the command::

@@ -1242,19 +1242,19 @@ class TestController(CompareCase):
         self.assert_main_equals(
             cmd='./buildout/bin/generate_controller --apache -c tilegeneration/test_fix.yaml',
             main_func=controller.main,
-            expected=[['tiles.conf.in', u"""<Location /${vars:instanceid}/tiles>
+            expected=[['tiles.conf', u"""<Location /tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
 </Location>
-Alias /${vars:instanceid}/tiles /tmp/tiles
-RewriteRule ^/${vars:instanceid}/tiles/1.0.0/point_hash/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
-                """/${vars:instanceid}/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
-RewriteRule ^/${vars:instanceid}/tiles/1.0.0/point/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
-                """/${vars:instanceid}/mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
-MapCacheAlias /${vars:instanceid}/mapcache "${buildout:directory}/mapcache.xml"
-"""]])
+Alias /tiles /tmp/tiles
+RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
+                """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
+RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
+                """/mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
+MapCacheAlias /mapcache "%s"
+""" % (os.path.abspath('mapcache.xml'))]])
 
-    CONFIG = u"""apache: {config_file: tiles.conf.in, expires: 8}
+    CONFIG = u"""apache: {config_file: tiles.conf, expires: 8, location: /tiles}
 caches:
   local: {folder: /tmp/tiles, hosts: false, http_url: 'http://taurus/tiles', http_urls: false,
     name: local, type: filesystem, wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml}
@@ -1585,7 +1585,7 @@ layers:
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
-mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 11211}
+mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 11211, location: /mapcache}
 openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}"""
 
     @attr(config=True)

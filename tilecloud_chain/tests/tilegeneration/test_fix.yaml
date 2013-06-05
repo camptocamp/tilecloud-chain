@@ -219,4 +219,4 @@ mapcache:
     config_file: mapcache.xml
 
 apache:
-    config_file: tiles.conf.in
+    config_file: tiles.conf
