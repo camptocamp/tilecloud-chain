@@ -746,6 +746,10 @@ def _validate_generate_mapcache_config(gene):
         gene.config['mapcache'], 'mapcache', 'memcache_port', attribute_type=int,
         default='11211'
     ) or error
+    error = gene.validate(
+        gene.config['mapcache'], 'mapcache', 'location', attribute_type=str,
+        default='/mapcache'
+    ) or error
 
     if error:
         exit(1)  # pragma: no cover
@@ -773,8 +777,12 @@ def _validate_generate_apache_config(gene):
     error = False
     error = gene.validate(gene.config, 'config', 'apache', attribute_type=dict, default={}) or error
     error = gene.validate(
+        gene.config['apache'], 'apache', 'location', attribute_type=str,
+        default='/tiles'
+    ) or error
+    error = gene.validate(
         gene.config['apache'], 'apache', 'config_file', attribute_type=str,
-        default='apache/tiles.conf.in'
+        default='apache/tiles.conf'
     ) or error
     error = gene.validate(
         gene.config['apache'], 'apache', 'expires', attribute_type=int,
@@ -790,16 +798,18 @@ def _generate_apache_config(gene, options):
     cache = gene.caches[options.cache]
 
     f = open(gene.config['apache']['config_file'], 'w')
-    f.write("""<Location /${vars:instanceid}/tiles>
+    f.write("""<Location %(location)s>
     ExpiresActive on
     ExpiresDefault "now plus %(expires)i hours"
 </Location>
 """ % {
+        'location': gene.config['apache']['location'],
         'expires': gene.config['apache']['expires']
     })
     if cache['type'] == 'filesystem':
-        f.write("""Alias /${vars:instanceid}/tiles %(files_folder)s
+        f.write("""Alias %(location)s %(files_folder)s
 """ % {
+            'location': gene.config['apache']['location'],
             'files_folder': cache['folder']
         })
 
@@ -810,11 +820,15 @@ def _generate_apache_config(gene, options):
             res = [r for r in layer['grid_ref']['resolutions'] if r < layer['min_resolution_seed']]
             dim = len(layer['dimensions'])
             for r in res:
-                use_mapcache = True
-                f.write("""RewriteRule ^/${vars:instanceid}/tiles/1.0.0/%(layer)s/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/"""
-                        """%(dimensions_re)s/%(zoom)s/(.*)$ /${vars:instanceid}/mapcache/wmts/1.0.0/%(layer)s/$1/$2/"""
+                if not use_mapcache:
+                    _validate_generate_mapcache_config(gene)
+                    use_mapcache = True
+                f.write("""RewriteRule ^%(tiles_location)s/1.0.0/%(layer)s/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/"""
+                        """%(dimensions_re)s/%(zoom)s/(.*)$ %(mapcache_location)s/wmts/1.0.0/%(layer)s/$1/$2/"""
                         """%(dimensions_rep)s/%(zoom)s/%(final)s [PT]
 """ % {
+                    'tiles_location': gene.config['apache']['location'],
+                    'mapcache_location': gene.config['mapcache']['location'],
                     'layer': layer['name'],
                     'dimensions_re': '/'.join(['([a-zA-Z0-9_]+)' for e in range(dim)]),
                     'dimensions_rep': '/'.join(['$%i' % (e + 3) for e in range(dim)]),
@@ -823,12 +837,10 @@ def _generate_apache_config(gene, options):
                 })
 
     if use_mapcache:
-        _validate_generate_mapcache_config(gene)
-        mcf = gene.config['mapcache']['config_file']
-        f.write("""MapCacheAlias /${vars:instanceid}/mapcache "%(mapcache_config)s"
+        f.write("""MapCacheAlias %(mapcache_location)s "%(mapcache_config)s"
 """ % {
-            'mapcache_config':  ('' if mcf.startswith('/') else
-                '${buildout:directory}/') + gene.config['mapcache']['config_file']
+            'mapcache_location': gene.config['mapcache']['location'],
+            'mapcache_config': os.path.abspath(gene.config['mapcache']['config_file'])
         })
 
     f.close()
