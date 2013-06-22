@@ -24,7 +24,7 @@ class TestMultihost(CompareCase):
     def test_geodata(self):
         directory = os.getenv("HOME") + "/tilecloud_chain/tests/tilegeneration/hooks/"
         if os.path.exists(directory):
-            shutil.rmtree(directory)  # pragma: no cover
+            shutil.rmtree(directory)
         os.makedirs(directory)
 
         self.assert_files_generated(
@@ -49,12 +49,12 @@ class TestMultihost(CompareCase):
     @attr(code=True)
     def test_code(self):
         if os.path.exists('/tmp/tests/test.conf'):
-            os.remove('/tmp/tests/test.conf')  # pragma: no cover
+            os.remove('/tmp/tests/test.conf')
         if os.path.exists('/tmp/tests/test/tilecloud_chain/tests/tilegeneration/hooks/post-restore-code'):
             os.remove(
                 '/tmp/tests/test/tilecloud_chain/tests/tilegeneration/hooks/'
                 'post-restore-code'
-            )  # pragma: no cover
+            )
 
         out, err = self.run_cmd(
             cmd='./buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
@@ -70,7 +70,7 @@ class TestMultihost(CompareCase):
         os.remove('/tmp/tests/test.conf')
         try:
             shutil.rmtree('/tmp/tests/test')
-        except:  # pragma: no cover
+        except:
             pass
 
     @attr(database=True)

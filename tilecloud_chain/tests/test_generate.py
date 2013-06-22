@@ -499,7 +499,7 @@ size: 854
     @attr(delete_meta=True)
     @attr(general=True)
     def test_delete_meta(self):
-        if os.path.exists('/tmp/tiles/'):  # pragma: no cover
+        if os.path.exists('/tmp/tiles/'):
             shutil.rmtree('/tmp/tiles/')
         self._touch(
             tiles_pattern='/tmp/tiles/1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png',

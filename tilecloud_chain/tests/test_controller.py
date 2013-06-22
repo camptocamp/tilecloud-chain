@@ -14,7 +14,7 @@ class TestController(CompareCase):
     @classmethod
     def setUpClass(cls):
         if os.path.exists('/tmp/tiles'):
-            shutil.rmtree('/tmp/tiles')  # pragma: no cover
+            shutil.rmtree('/tmp/tiles')
 
     @classmethod
     def tearDownClass(self):
