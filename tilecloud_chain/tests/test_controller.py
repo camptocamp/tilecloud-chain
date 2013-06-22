@@ -13,11 +13,13 @@ class TestController(CompareCase):
 
     @classmethod
     def setUpClass(cls):
+        os.chdir('tilecloud_chain/tests')
         if os.path.exists('/tmp/tiles'):
-            shutil.rmtree('/tmp/tiles')  # pragma: no cover
+            shutil.rmtree('/tmp/tiles')
 
     @classmethod
     def tearDownClass(self):
+        os.chdir('../..')
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')
 

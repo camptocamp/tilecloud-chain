@@ -354,7 +354,7 @@ class TileGeneration:
             attribute_type=bool, default=False
         ) or error
 
-        if 'sns' in self.config:
+        if 'sns' in self.config:  # pragma: no cover
             error = self.validate(self.config['sns'], 'sns', 'topic', attribute_type=str, required=True) or error
             error = self.validate(self.config['sns'], 'sns', 'region', attribute_type=str, default='eu-west-1') or error
 
