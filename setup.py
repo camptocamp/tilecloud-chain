@@ -18,7 +18,7 @@ install_requires = [
     'simplejson',
 ]
 setup_requires = [
-    'nose',
+    'nose==1.3.0',
 ]
 tests_require = [
     'coverage',

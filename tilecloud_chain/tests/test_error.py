@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 from testfixtures import log_capture
 
 from nose.plugins.attrib import attr
@@ -9,6 +10,14 @@ from tilecloud_chain import controller, generate, TileGeneration
 
 
 class TestError(CompareCase):
+
+    @classmethod
+    def setUpClass(cls):
+        os.chdir('tilecloud_chain/tests')
+
+    @classmethod
+    def tearDownClass(self):
+        os.chdir('../..')
 
     @log_capture('tilecloud_chain')
     @attr(resolution=True)

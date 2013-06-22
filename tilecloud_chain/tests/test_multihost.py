@@ -12,14 +12,6 @@ from tilecloud_chain import controller, TileGeneration
 
 class TestMultihost(CompareCase):
 
-    @classmethod
-    def setUpClass(cls):
-        os.chdir('../..')
-
-    @classmethod
-    def tearDownClass(self):
-        os.chdir('tilecloud_chain/tests')
-
     @attr(geodata=True)
     def test_geodata(self):
         directory = os.getenv("HOME") + "/tilecloud_chain/tests/tilegeneration/hooks/"

@@ -14,7 +14,14 @@ from tilecloud_chain import generate
 class TestGenerate(CompareCase):
 
     @classmethod
+    def setUpClass(cls):
+        os.chdir('tilecloud_chain/tests')
+        if os.path.exists('/tmp/tiles'):
+            shutil.rmtree('/tmp/tiles')
+
+    @classmethod
     def tearDownClass(self):
+        os.chdir('../..')
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')
 
