@@ -26,7 +26,7 @@ class CompareCase(TestCase):
                         self.assertRegexpMatches(test[1].strip(), '^%s$' % test[0].strip())
                     else:
                         self.assertEquals(test[0].strip(), test[1].strip())
-                except AssertionError as e:  # pragma: no cover
+                except AssertionError as e:
                     for i in range(max(0, n - 10), min(len(result), n + 11)):
                         if i == n:
                             log.info("> %i %s" % (i, result[i]))
@@ -57,7 +57,7 @@ class CompareCase(TestCase):
         sys.argv = cmd.split(' ')
         try:
             main_func()
-            assert("exit() not called.")  # pragma: no cover
+            assert("exit() not called.")
         except SystemExit as e:
             self.assertEquals(e.message, expected)
 
@@ -76,7 +76,7 @@ class CompareCase(TestCase):
         sys.argv = cmd.split(' ')
         try:
             main_func()
-            assert("exit() not called.")  # pragma: no cover
+            assert("exit() not called.")
         except:
             pass
         if expected:

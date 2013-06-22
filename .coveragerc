@@ -1,2 +1,3 @@
 [run]
-source=tilecloud_chain
+source = tilecloud_chain
+omit = */tests/*

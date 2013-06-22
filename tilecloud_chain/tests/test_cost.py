@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 from nose.plugins.attrib import attr
 
 from tilecloud_chain.tests import CompareCase
@@ -8,6 +9,14 @@ from tilecloud_chain import controller
 
 
 class TestCost(CompareCase):
+
+    @classmethod
+    def setUpClass(cls):
+        os.chdir('tilecloud_chain/tests')
+
+    @classmethod
+    def tearDownClass(self):
+        os.chdir('../..')
 
     ZOOM_SUMMARY = """
 %(tiles)s tiles in zoom %(zoom)s.

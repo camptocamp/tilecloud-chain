@@ -214,7 +214,7 @@ def _gene(options, gene, layer):
     else:
         consume(gene.tilestream, options.test)
 
-    if 'sns' in gene.config:
+    if 'sns' in gene.config:  # pragma: no cover
         if 'region' in gene.config['sns']:
             connection = sns.connect_to_region(gene.config['sns']['region'])
         else:
