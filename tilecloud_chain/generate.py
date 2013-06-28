@@ -182,6 +182,13 @@ def _gene(options, gene, layer):
         gene.put(cache_tilestore, "Store the tile")
 
     gene.add_error_filters(logger)
+    if options.generated_tiles_file:  # pragma: no cover
+        generated_tiles_file = open(options.generated_tiles_file, 'a')
+
+        def do(tile):
+            generated_tiles_file.write('%s\n' % (tile.tilecoord, ))
+            return tile
+        gene.imap(do)
 
     if options.role == 'slave':  # pragma: no cover
         if meta:
@@ -274,6 +281,10 @@ def main():
     parser.add_option(
         '--tiles-file', metavar="FILE",
         help='Generate the tiles from a tiles file, use the format z/x/y, or z/x/y:+n/+n for metatiles'
+    )
+    parser.add_option(
+        '--generated-tiles-file', metavar="FILE",
+        help='Store the tiles in a file (unrecommended)'
     )
 
     (options, args) = parser.parse_args()
