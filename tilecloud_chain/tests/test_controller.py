@@ -1248,11 +1248,40 @@ class TestController(CompareCase):
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
 </Location>
+
 Alias /tiles /tmp/tiles
+
 RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
 RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
+
+MapCacheAlias /mapcache "%s"
+""" % (os.path.abspath('mapcache.xml'))]])
+
+    @attr(apache_s3=True)
+    @attr(general=True)
+    def test_apache_s3(self):
+        self.assert_main_equals(
+            cmd='./buildout/bin/generate_controller --cache s3 --apache -c tilegeneration/test_fix.yaml',
+            main_func=controller.main,
+            expected=[['tiles.conf', u"""<Location /tiles>
+    ExpiresActive on
+    ExpiresDefault "now plus 8 hours"
+</Location>
+
+<Proxy http://s3-eu-west-1.amazonaws.com/tiles/tiles/*>
+    Order deny,allow
+    Allow from all
+</Proxy>
+ProxyPass /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
+ProxyPassReverse /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
+
+RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
+                """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
+RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
+                """/mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
+
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
 
@@ -1272,9 +1301,9 @@ caches:
     http_urls: ['http://wmts1/tiles', 'http://wmts2/tiles', 'http://wmts3/tiles']
     name: multi_url
     type: filesystem
-  s3: {bucket: tiles, folder: tiles, host: s3-eu-west-1.amazonaws.com, """ \
+  s3: {bucket: tiles, folder: tiles/, host: s3-eu-west-1.amazonaws.com, """ \
         """http_url: 'https://%(host)s/%(bucket)s/%(folder)s',
-    name: s3, type: s3}
+    name: s3, region: eu-west-1, type: s3}
 cost:
   cloudfront: {download: 0.12, get: 0.009}
   ec2: {usage: 0.17}
