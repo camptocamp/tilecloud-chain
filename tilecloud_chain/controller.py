@@ -802,15 +802,31 @@ def _generate_apache_config(gene, options):
     ExpiresActive on
     ExpiresDefault "now plus %(expires)i hours"
 </Location>
+
 """ % {
         'location': gene.config['apache']['location'],
         'expires': gene.config['apache']['expires']
     })
     if cache['type'] == 'filesystem':
         f.write("""Alias %(location)s %(files_folder)s
+
 """ % {
             'location': gene.config['apache']['location'],
             'files_folder': cache['folder']
+        })
+    elif cache['type'] == 's3':
+        f.write("""<Proxy http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s*>
+    Order deny,allow
+    Allow from all
+</Proxy>
+ProxyPass %(location)s/ http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s
+ProxyPassReverse %(location)s/ http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s
+
+""" % {
+            'location': gene.config['apache']['location'],
+            'region': cache['region'],
+            'bucket': cache['bucket'],
+            'folder': cache['folder']
         })
 
     use_mapcache = False
@@ -837,7 +853,8 @@ def _generate_apache_config(gene, options):
                 })
 
     if use_mapcache:
-        f.write("""MapCacheAlias %(mapcache_location)s "%(mapcache_config)s"
+        f.write("""
+MapCacheAlias %(mapcache_location)s "%(mapcache_config)s"
 """ % {
             'mapcache_location': gene.config['mapcache']['location'],
             'mapcache_config': os.path.abspath(gene.config['mapcache']['config_file'])

@@ -283,8 +283,10 @@ class TileGeneration:
                 error = self.validate(cache, name, 'folder', attribute_type=str, required=True) or error
             elif cache['type'] == 's3':
                 error = self.validate(cache, name, 'bucket', attribute_type=str, required=True) or error
+                error = self.validate(cache, name, 'region', attribute_type=str, default='eu-west-1') or error
                 error = self.validate(cache, name, 'folder', attribute_type=str, default='') or error
-
+                if len(cache['folder']) > 0 and cache['folder'][-1] != '/':
+                    cache['folder'] += '/'
         error = self.validate(self.config, 'config', 'generation', attribute_type=dict, default={}) or error
         error = self.validate(
             self.config['generation'], 'generation', 'default_cache',
