@@ -493,6 +493,15 @@ To avoid the OpenLayers red tiles on missing empty tiles we can add the followin
         display: none;
     }
 
+To completely hide the missing tiles, useful for a transparent layer,
+or for an opaque layer:
+
+.. code:: css
+
+    .olImageLoadError {
+        background-color: white;
+    }
+
 
 OpenLayers test page
 --------------------
