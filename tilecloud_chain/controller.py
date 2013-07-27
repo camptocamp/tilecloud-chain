@@ -322,7 +322,7 @@ def main():
                     ' '.join(arguments), host, project_dir, gene)
             )
 
-        if options.shutdown or 'sns' in gene.config:
+        if options.shutdown:
             for p in processes:
                 p.communicate()  # wait process end
         else:
