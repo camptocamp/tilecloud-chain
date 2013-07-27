@@ -1617,7 +1617,8 @@ layers:
     url: http://localhost/mapserv
     wmts_style: default
 mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 11211, location: /mapcache}
-openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}"""
+openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}
+sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}"""
 
     @attr(config=True)
     @attr(general=True)

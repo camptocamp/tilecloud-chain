@@ -98,7 +98,7 @@ class TestError(CompareCase):
     @attr(general=True)
     def test_zoom_errors(self, l):
         self.run_cmd(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point --zoom 4,10',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10',
             main_func=generate.main)
         l.check(
             ('tilecloud_chain', 'INFO', 'Execute SQL: SELECT ST_AsBinary(geom) FROM (SELECT the_geom AS geom '
