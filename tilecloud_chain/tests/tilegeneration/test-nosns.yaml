@@ -222,7 +222,3 @@ mapcache:
 
 apache:
     config_file: tiles.conf
-
-sns:
-    topic: arn:aws:sns:eu-west-1:your-account-id:tilecloud
-    region: eu-west-1

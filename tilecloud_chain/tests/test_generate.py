@@ -107,7 +107,7 @@ Tile: 4/0/0
     @log_capture('tilecloud_chain', level=30)
     def test_test_all(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -t 1',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png',
@@ -122,7 +122,7 @@ Tile: 4/0/0
     @log_capture('tilecloud_chain', level=30)
     def test_zoom_identifier(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 -l polygon2 -z 0',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 0',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png',
@@ -131,7 +131,7 @@ Tile: 4/0/0
             ]
         )
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 -l polygon2 -z 1',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 1',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png',
@@ -140,7 +140,7 @@ Tile: 4/0/0
             ]
         )
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 1 -l polygon2 -z 2',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 2',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png',
@@ -159,7 +159,8 @@ Tile: 4/0/0
         from tilecloud_chain.views.serve import Serve
 
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml --cache mbtiles -l point_hash --zoom 1',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml '
+                '--cache mbtiles -l point_hash --zoom 1',
             main_func=generate.main,
             directory="/tmp/tiles/mbtiles/",
             tiles_pattern='1.0.0/point_hash/default/2012/swissgrid_5.png.mbtiles',
@@ -169,7 +170,7 @@ Tile: 4/0/0
         request = DummyRequest()
         request.registry.settings = {
             'tilegeneration': {
-                'configfile': 'tilegeneration/test.yaml',
+                'configfile': 'tilegeneration/test-nosns.yaml',
                 'cache': 'mbtiles',
                 'strict': True,
             }
@@ -235,7 +236,7 @@ Tile: 4/0/0
     @log_capture('tilecloud_chain', level=30)
     def test_zoom(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --zoom 1',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point_hash --zoom 1',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png',
@@ -250,7 +251,7 @@ Tile: 4/0/0
     @log_capture('tilecloud_chain', level=30)
     def test_zoom_range(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --zoom 1-3',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point_hash --zoom 1-3',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png',
@@ -267,7 +268,7 @@ Tile: 4/0/0
     @log_capture('tilecloud_chain', level=30)
     def test_no_zoom(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point_hash',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png',
@@ -285,7 +286,7 @@ Tile: 4/0/0
     @log_capture('tilecloud_chain', level=30)
     def test_py_buffer(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_px_buffer --zoom 0-2',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point_px_buffer --zoom 0-2',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/point_px_buffer/default/2012/swissgrid_5/%i/%i/%i.png',
@@ -302,7 +303,7 @@ Tile: 4/0/0
     @log_capture('tilecloud_chain', level=30)
     def test_zoom_list(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --zoom 0,2,3',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point_hash --zoom 0,2,3',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png',
@@ -319,7 +320,7 @@ Tile: 4/0/0
     @log_capture('tilecloud_chain', level=30)
     def test_layer_bbox(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l polygon -z 0',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l polygon -z 0',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png',
@@ -327,7 +328,7 @@ Tile: 4/0/0
         )
 
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l polygon -z 0'
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l polygon -z 0'
             ' -b 550000,170000,560000,180000',
             main_func=generate.main,
             directory="/tmp/tiles/",
@@ -338,7 +339,7 @@ Tile: 4/0/0
         )
 
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l polygon -z 0'
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l polygon -z 0'
             ' -b 550000.0,170000.0,560000.0,180000.0',
             main_func=generate.main,
             directory="/tmp/tiles/",
@@ -349,7 +350,7 @@ Tile: 4/0/0
         )
 
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l all -z 0',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l all -z 0',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/all/default/2012/swissgrid_5/0/%i/%i.png',
@@ -364,7 +365,7 @@ Tile: 4/0/0
     @log_capture('tilecloud_chain', level=30)
     def test_hash_generation(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash -z 0',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point_hash -z 0',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/point_hash/default/2012/swissgrid_5/0/%i/%i.png',
@@ -379,7 +380,7 @@ Tile: 4/0/0
     @log_capture('tilecloud_chain', level=30)
     def test_mapnik(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l mapnik -z 0',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l mapnik -z 0',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/mapnik/default/2012/swissgrid_5/0/%i/%i.png',
@@ -392,7 +393,7 @@ Tile: 4/0/0
     @log_capture('tilecloud_chain', level=30)
     def test_mapnik_grid(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l mapnik_grid -z 0',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l mapnik_grid -z 0',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/mapnik_grid/default/2012/swissgrid_5/0/%i/%i.json',
@@ -419,7 +420,7 @@ Tile: 4/0/0
     @log_capture('tilecloud_chain', level=30)
     def test_mapnik_grid_drop(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l mapnik_grid_drop -z 0',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l mapnik_grid_drop -z 0',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/mapnik_grid_drop/default/2012/swissgrid_5/0/%i/%i.json',
@@ -442,7 +443,7 @@ Tile: 4/0/0
     @log_capture('tilecloud_chain', level=30)
     def test_verbose(self, l):
         self.run_cmd(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -t 2 -v -l polygon',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -t 2 -v -l polygon',
             main_func=generate.main
         )
         l.check()
@@ -513,7 +514,7 @@ size: 854
             tiles=list(product(range(12), range(16)))
         )
         self.assert_tiles_generated_deleted(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash_no_meta -z 0',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point_hash_no_meta -z 0',
             main_func=generate.main,
             directory='/tmp/tiles/',
             tiles_pattern='1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png',
@@ -532,7 +533,7 @@ size: 854
             tiles=list(product(range(12), range(16)))
         )
         self.assert_tiles_generated_deleted(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash_no_meta -z 0',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point_hash_no_meta -z 0',
             main_func=generate.main,
             directory='/tmp/tiles/',
             tiles_pattern='1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png',
@@ -547,7 +548,7 @@ size: 854
         if os.path.exists('error.list'):
             os.remove('error.list')
         self.assert_main_except_equals(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_error',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point_error',
             main_func=generate.main,
             expected=[[
                 'error.list',
@@ -559,7 +560,7 @@ size: 854
             regex=True)
 
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test.yaml -l point_hash --tiles-file error.list',
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point_hash --tiles-file error.list',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/point_hash/default/2012/swissgrid_5/%i/%i/%i.png',
