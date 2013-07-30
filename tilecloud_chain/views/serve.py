@@ -28,9 +28,11 @@
 
 import logging
 
+import httplib2
+
 from tilecloud import Tile, TileCoord
 from tilecloud.lib.s3 import S3Connection
-from tilecloud_chain import TileGeneration
+from tilecloud_chain import TileGeneration, IntersectGeometryFilter
 
 from pyramid.httpexceptions import HTTPBadRequest, HTTPNoContent
 
@@ -43,6 +45,8 @@ class Serve(TileGeneration):
     def __init__(self, request):
         self.request = request
         self.settings = request.registry.settings['tilegeneration']
+        self.filters = {}
+        self.http = httplib2.Http()
 
         self.tilegeneration = TileGeneration(self.settings['configfile'])
         self.cache = self.tilegeneration.caches[
@@ -73,14 +77,14 @@ class Serve(TileGeneration):
                 wmtscapabilities_file = self.cache['wmtscapabilities_file']
                 if '/'.join(path) == wmtscapabilities_file[1:]:
                     params['service'] = 'WMTS'
-                    params['request'] = 'GetCapabilities'
                     params['version'] = '1.0.0'
+                    params['request'] = 'GetCapabilities'
                 else:
                     raise HTTPBadRequest("Not enough path")
             else:
                 params['service'] = 'WMTS'
-                params['request'] = 'GetTile'
                 params['version'] = path[0]
+                params['request'] = 'GetTile'
 
                 last = path[-1].split('.')
                 params['format'] = last[-1]
@@ -135,6 +139,13 @@ class Serve(TileGeneration):
             if params['tilematrixset'] != layer['grid']:
                 raise HTTPBadRequest("Wrong TileMatrixSet '%s'" % params['tilematrixset'])
 
+        tile = Tile(TileCoord(
+            # TODO fix for matrix_identifier = resolution
+            int(params['tilematrix']),
+            int(params['tilerow']),
+            int(params['tilecol']),
+        ))
+
         store_ref = [
             params['layer'],
             params['style'],
@@ -154,6 +165,19 @@ class Serve(TileGeneration):
                     store_ref.extend((dimension['name'], value))
             else:
                 raise HTTPBadRequest("KVP not supported on nonstrict mode")
+
+        if layer['name'] not in self.filters:
+            self.filters[layer['name']] = IntersectGeometryFilter(
+                grid=layer['grid_ref'],
+                geoms=self.tilegeneration.get_geoms(layer),
+                px_buffer=layer['px_buffer'] + layer['meta_buffer']
+            )
+        layer_filter = self.filters[layer['name']]
+        if not layer_filter(tile):  # TODO integrate with mapcache
+            url = 'base_url/' + '/'.join(['path'])
+            self.http.request(url, headers={
+                'Host': 'host'
+            })
 
         store_ref = '/'.join(store_ref)
         if store_ref in self.stores:
@@ -177,12 +201,6 @@ class Serve(TileGeneration):
                         'mime_type': mime[params['format']],
                     }, dimensions)
 
-        tile = Tile(TileCoord(
-            # TODO fix for matrix_identifier = resolution
-            int(params['tilematrix']),
-            int(params['tilecol']),
-            int(params['tilerow']),
-        ))
         tile = store.get_one(tile)
         if tile:
             if type(tile.data) == buffer:

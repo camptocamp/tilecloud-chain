@@ -16,6 +16,7 @@ install_requires = [
     'jinja2',
     'pyramid',
     'simplejson',
+    'httplib2',
 ]
 setup_requires = [
     'nose==1.3.0',

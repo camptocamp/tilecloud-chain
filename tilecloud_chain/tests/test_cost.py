@@ -337,16 +337,16 @@ ESB storage: %(esb)s [$/month]
                 'Calculate zoom 4.',
                 '',
                 self.ZOOM_SUMMARY % {
-                    'tiles': '19',
+                    'tiles': '13',
                     'zoom': '0',
-                    'time': '0 0:00:01',
+                    'time': '0 0:00:00',
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '47',
+                    'tiles': '35',
                     'zoom': '1',
                     'time': '0 0:00:02',
                     's3': '0.00',
@@ -355,35 +355,35 @@ ESB storage: %(esb)s [$/month]
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '193',
+                    'tiles': '167',
                     'zoom': '2',
-                    'time': '0 0:00:11',
+                    'time': '0 0:00:10',
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '649',
+                    'tiles': '601',
                     'zoom': '3',
-                    'time': '0 0:00:38',
+                    'time': '0 0:00:36',
                     's3': '0.01',
                     'ec2': '0.00',
                     'esb': '0.01',
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '2364',
+                    'tiles': '2268',
                     'zoom': '4',
-                    'time': '0 0:02:21',
+                    'time': '0 0:02:16',
                     's3': '0.02',
                     'ec2': '0.01',
                     'esb': '0.02',
                     'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
-                    'tiles': '3272',
-                    'time': '0 0:03:16',
+                    'tiles': '3084',
+                    'time': '0 0:03:05',
                     'cost': '0.07'
                 },
                 self.FINAL_SUMMARY % {
@@ -543,16 +543,16 @@ ESB storage: %(esb)s [$/month]
                 'Calculate zoom 4.',
                 '',
                 self.ZOOM_SUMMARY % {
-                    'tiles': '19',
+                    'tiles': '13',
                     'zoom': '0',
-                    'time': '0 0:00:01',
+                    'time': '0 0:00:00',
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '47',
+                    'tiles': '35',
                     'zoom': '1',
                     'time': '0 0:00:02',
                     's3': '0.00',
@@ -561,40 +561,40 @@ ESB storage: %(esb)s [$/month]
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '193',
+                    'tiles': '167',
                     'zoom': '2',
-                    'time': '0 0:00:11',
+                    'time': '0 0:00:10',
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '649',
+                    'tiles': '601',
                     'zoom': '3',
-                    'time': '0 0:00:38',
+                    'time': '0 0:00:36',
                     's3': '0.01',
                     'ec2': '0.00',
                     'esb': '0.01',
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '2364',
+                    'tiles': '2268',
                     'zoom': '4',
-                    'time': '0 0:02:21',
+                    'time': '0 0:02:16',
                     's3': '0.02',
                     'ec2': '0.01',
                     'esb': '0.02',
                     'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
-                    'tiles': '3272',
-                    'time': '0 0:03:16',
+                    'tiles': '3084',
+                    'time': '0 0:03:05',
                     'cost': '0.07'
                 },
                 self.GLOBAL_SUMMARY % {
-                    'tiles': '3593',
-                    'time': '0 0:03:26',
+                    'tiles': '3405',
+                    'time': '0 0:03:15',
                     'cost': '0.07'
                 },
                 self.FINAL_SUMMARY % {
@@ -669,28 +669,28 @@ ESB storage: %(esb)s [$/month]
                 'Calculate zoom 4.',
                 '',
                 self.ZOOM_SUMMARY % {
-                    'tiles': '5', 'zoom': '0', 'time': '0 0:00:00', 's3': '0.00',
+                    'tiles': '2', 'zoom': '0', 'time': '0 0:00:00', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '7', 'zoom': '1', 'time': '0 0:00:00', 's3': '0.00',
+                    'tiles': '4', 'zoom': '1', 'time': '0 0:00:00', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '16', 'zoom': '2', 'time': '0 0:00:00', 's3': '0.00',
+                    'tiles': '10', 'zoom': '2', 'time': '0 0:00:00', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '37', 'zoom': '3', 'time': '0 0:00:02', 's3': '0.00',
+                    'tiles': '27', 'zoom': '3', 'time': '0 0:00:01', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '101', 'zoom': '4', 'time': '0 0:00:06', 's3': '0.00',
+                    'tiles': '84', 'zoom': '4', 'time': '0 0:00:05', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
-                    'tiles': '166',
-                    'time': '0 0:00:09',
+                    'tiles': '127',
+                    'time': '0 0:00:07',
                     'cost': '0.00'
                 },
                 self.FINAL_SUMMARY % {

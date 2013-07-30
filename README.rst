@@ -197,7 +197,21 @@ The configuration is in the layer like this:
 .. code:: yaml
 
     connection: user=www-data password=www-data dbname=<db> host=localhost
-    sql: <column> AS geom FROM <table>
+    geoms:
+    -   sql: <column> AS geom FROM <table>
+        min_resolution: <resolution> # included, optional, last win
+        max_resolution: <resolution> # included, optional, last win
+
+Example:
+
+.. code:: yaml
+
+    connection: user=postgres password=postgres dbname=tests host=localhost
+    geoms:
+    -   sql: the_geom AS geom FROM tests.polygon
+    -   sql: the_geom AS geom FROM tests.point
+        min_resolution: 10
+        max_resolution: 20
 
 It's preferable to use simple geometries, too complex geometries can slow down the generation.
 
@@ -561,6 +575,27 @@ Build it::
 Changes
 -------
 
+Release 0.7
+~~~~~~~~~~~
+
+1. Support of deferent geoms per layers, requires configuration changes, old version:
+
+.. code:: yaml
+
+    connection: user=www-data password=www-data dbname=<db> host=localhost
+    sql: <column> AS geom FROM <table>
+
+to new version:
+
+.. code:: yaml
+
+    connection: user=www-data password=www-data dbname=<db> host=localhost
+    geoms:
+    -   sql: <column> AS geom FROM <table>
+
+For more informations read #Configure geom/sql
+
+
 Release 0.6
 ~~~~~~~~~~~
 
@@ -569,13 +604,13 @@ Release 0.6
 
 2. Windows fixes.
 
-3. Use console revrite (\r) to log generated tiles coordinates.
+3. Use console rewrite (\r) to log generated tiles coordinates.
 
 4. Now if no layers is specified in ``generation:default_layers`` we generate all layers by default.
 
 5. Now bbox to be floats.
 
-6. New ``--get-bbox`` option to get the bboy of a tile.
+6. New ``--get-bbox`` option to get the bbox of a tile.
 
 7. Add coveralls support (https://coveralls.io/r/sbrunner/tilecloud-chain).
 

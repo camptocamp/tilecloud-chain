@@ -1398,6 +1398,7 @@ layers:
     cost: *id001
     dimensions: *id002
     extension: png
+    geoms: []
     grid: swissgrid_5
     grid_ref: *id003
     layers: point,line,polygon
@@ -1417,6 +1418,8 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.line}
     grid: swissgrid_5
     grid_ref: *id003
     layers: line
@@ -1426,7 +1429,6 @@ layers:
     mime_type: image/png
     name: line
     px_buffer: false
-    sql: the_geom AS geom FROM tests.line
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1436,6 +1438,8 @@ layers:
     data_buffer: 128
     dimensions: *id002
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_5
     grid_ref: *id003
     mapfile: mapfile/test.mapnik
@@ -1446,7 +1450,6 @@ layers:
     name: mapnik
     px_buffer: false
     output_format: png
-    sql: the_geom AS geom FROM tests.polygon
     type: mapnik
     url: http://localhost/mapserv
     wmts_style: default
@@ -1456,6 +1459,8 @@ layers:
     data_buffer: 128
     dimensions: *id002
     extension: json
+    geoms:
+    - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_5
     grid_ref: *id003
     drop_empty_utfgrid: false
@@ -1472,7 +1477,6 @@ layers:
     px_buffer: false
     output_format: grid
     resolution: 16
-    sql: the_geom AS geom FROM tests.polygon
     type: mapnik
     url: http://localhost/mapserv
     wmts_style: default
@@ -1482,6 +1486,8 @@ layers:
     data_buffer: 128
     dimensions: *id002
     extension: json
+    geoms:
+    - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_5
     grid_ref: *id003
     drop_empty_utfgrid: true
@@ -1496,7 +1502,6 @@ layers:
     px_buffer: false
     output_format: grid
     resolution: 16
-    sql: the_geom AS geom FROM tests.polygon
     type: mapnik
     url: http://localhost/mapserv
     wmts_style: default
@@ -1505,6 +1510,8 @@ layers:
     cost: *id001
     dimensions: *id002
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.point}
     grid: swissgrid_5
     grid_ref: *id003
     layers: point
@@ -1515,7 +1522,6 @@ layers:
     min_resolution_seed: 10.0
     name: point
     px_buffer: false
-    sql: the_geom AS geom FROM tests.point
     sqs: {queue: sqs_point, region: eu-west-1}
     type: wms
     url: http://localhost/mapserv
@@ -1526,6 +1532,7 @@ layers:
     dimensions: *id002
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    geoms: []
     grid: swissgrid_5
     grid_ref: *id003
     layers: point
@@ -1545,6 +1552,8 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.point}
     grid: swissgrid_5
     grid_ref: *id003
     layers: point
@@ -1555,7 +1564,6 @@ layers:
     min_resolution_seed: 10.0
     name: point_hash
     px_buffer: false
-    sql: the_geom AS geom FROM tests.point
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1566,6 +1574,8 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.point}
     grid: swissgrid_5
     grid_ref: *id003
     layers: point
@@ -1575,7 +1585,6 @@ layers:
     mime_type: image/png
     name: point_px_buffer
     px_buffer: 100.0
-    sql: the_geom AS geom FROM tests.point
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1586,6 +1595,8 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_5
     grid_ref: *id003
     layers: polygon
@@ -1595,7 +1606,6 @@ layers:
     mime_type: image/png
     name: polygon
     px_buffer: false
-    sql: the_geom AS geom FROM tests.polygon
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1606,6 +1616,8 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_01
     grid_ref: *id004
     layers: polygon
@@ -1615,7 +1627,6 @@ layers:
     mime_type: image/png
     name: polygon2
     px_buffer: false
-    sql: the_geom AS geom FROM tests.polygon
     type: wms
     url: http://localhost/mapserv
     wmts_style: default

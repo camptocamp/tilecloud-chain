@@ -556,20 +556,17 @@ def _calculate_cost(gene, options):
 
             print "Calculate zoom %i." % zoom
 
+            px_buffer = gene.layer['px_buffer'] + \
+                gene.layer['meta_buffer'] if meta else 0
+            m_buffer = px_buffer * resolution
             if meta:
                 size = tile_size * gene.layer['meta_size'] * resolution
-                meta_buffer = size * 0.7 + \
-                    (
-                        gene.layer['meta_buffer'] + gene.layer['px_buffer']
-                    ) * resolution
-                meta_geom = gene.geom.buffer(meta_buffer, 1)
+                meta_buffer = size * 0.7 + m_buffer
+                meta_geom = gene.geoms[zoom].buffer(meta_buffer, 1)
                 nb_metatiles[zoom] = int(round(meta_geom.area / size ** 2))
             size = tile_size * resolution
-            tile_buffer = size * 0.7 + \
-                (
-                    gene.layer['meta_buffer'] + gene.layer['px_buffer']
-                ) * resolution
-            geom = gene.geom.buffer(tile_buffer, 1)
+            tile_buffer = size * 0.7 + m_buffer
+            geom = gene.geoms[zoom].buffer(tile_buffer, 1)
             nb_tiles[zoom] = int(round(geom.area / size ** 2))
 
     elif options.cost_algo == 'count':

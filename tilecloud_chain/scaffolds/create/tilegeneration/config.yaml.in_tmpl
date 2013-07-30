@@ -63,7 +63,8 @@ layer_default:
     # connexion an sql to get geometries (in column named geom) where we want to generate tiles
     # Warn: too complex result can slow down the application
 #    connection: user=www-data password=www-data dbname=<db> host=localhost
-#    sql: <column> AS geom FROM <table>
+#    geoms:
+#        -   sql: <column> AS geom FROM <table>
     # size and hash used to detect empty tiles and metatiles [optional, default to None]
     empty_metatile_detection:
         size: 740
