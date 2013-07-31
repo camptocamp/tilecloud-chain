@@ -15,13 +15,13 @@ class TestGenerate(CompareCase):
 
     @classmethod
     def setUpClass(cls):
-        os.chdir('tilecloud_chain/tests')
+        os.chdir(os.path.dirname(__file__))
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')
 
     @classmethod
     def tearDownClass(self):
-        os.chdir('../..')
+        os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')
 
