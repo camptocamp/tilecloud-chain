@@ -72,9 +72,9 @@ class Serve(TileGeneration):
             if len(path) < 7:
                 wmtscapabilities_file = self.cache['wmtscapabilities_file']
                 if '/'.join(path) == wmtscapabilities_file[1:]:
-                    self.request.response.body = self._get(wmtscapabilities_file)
-                    self.request.response.content_type = "application/xml"
-                    return self.request.response
+                    params['service'] = 'WMTS'
+                    params['request'] = 'GetCapabilities'
+                    params['version'] = '1.0.0'
                 else:
                     raise HTTPBadRequest("Not enough path")
             else:
@@ -110,10 +110,18 @@ class Serve(TileGeneration):
         if self.strict:
             if params['service'] != 'WMTS':
                 raise HTTPBadRequest("Wrong Service '%s'" % params['service'])
-            if params['request'] != 'GetTile':
-                raise HTTPBadRequest("Wrong Request '%s'" % params['request'])
             if params['version'] != '1.0.0':
                 raise HTTPBadRequest("Wrong Version '%s'" % params['version'])
+
+        if params['request'] == 'GetCapabilities':
+            wmtscapabilities_file = self.cache['wmtscapabilities_file']
+            self.request.response.body = self._get(wmtscapabilities_file)
+            self.request.response.content_type = "application/xml"
+            return self.request.response
+
+        if self.strict:
+            if params['request'] != 'GetTile':
+                raise HTTPBadRequest("Wrong Request '%s'" % params['request'])
 
             if params['layer'] in self.tilegeneration.layers:
                 layer = self.tilegeneration.layers[params['layer']]
