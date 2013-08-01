@@ -279,6 +279,12 @@ class TileGeneration:
                 cache, name, 'type', attribute_type=str, required=True,
                 enumeration=['s3', 'filesystem', 'mbtiles']
             ) or error
+            error = self.validate(
+                cache, 'cache[%s]' % cache['name'], 'wmtscapabilities_file', attribute_type=str,
+                default='/1.0.0/WMTSCapabilities.xml'
+            ) or error
+            if cache['wmtscapabilities_file'][0] != '/':
+                cache['wmtscapabilities_file'] = '/' + cache['wmtscapabilities_file']
             if cache['type'] == 'filesystem' or cache['type'] == 'mbtiles':
                 error = self.validate(cache, name, 'folder', attribute_type=str, required=True) or error
             elif cache['type'] == 's3':
@@ -433,7 +439,7 @@ class TileGeneration:
             url=cache['folder'],
             style=layer['wmts_style'],
             format='.' + layer['extension'],
-            dimensions=dimensions if dimensions else [
+            dimensions=dimensions if dimensions is not None else [
                 (str(dimension['name']), str(dimension['default']))
                 for dimension in layer['dimensions']
             ],
@@ -455,6 +461,7 @@ class TileGeneration:
             cache_tilestore = MBTilesTileStore(
                 sqlite3.connect(filename),
                 content_type=layer['mime_type'],
+                tilecoord_in_topleft=True,
             )
         elif cache['type'] == 'filesystem':
             # on filesystem
@@ -670,7 +677,7 @@ class TileGeneration:
             if tilecoord is None:
                 self.error_file.write('# [%s] %s\n' % (time, message.replace('\n', ' ')))
 
-            if message is None:
+            if message is None:  # pragma: no cover
                 self.error_file.write('%s # [%s]\n' % (tilecoord, time))
 
             if tilecoord is not None and message is not None:
@@ -681,16 +688,16 @@ class TileGeneration:
             logger, logging.ERROR,
             "Error in tile: %(tilecoord)s, %(error)r"
         ))
-        if 'maxconsecutive_errors' in self.config['generation']:
-            self.tilestream = imap(MaximumConsecutiveErrors(
-                self.config['generation']['maxconsecutive_errors']), self.tilestream)
         if 'error_file' in self.config['generation']:
 
             def do(tile):
                 if tile and tile.error:
-                    self.log_tiles_error(tilecoord=tile.tilecoord, message=tile.error)
+                    self.log_tiles_error(tilecoord=tile.tilecoord, message=repr(tile.error))
                 return tile
             self.imap(do)
+        if 'maxconsecutive_errors' in self.config['generation']:
+            self.tilestream = imap(MaximumConsecutiveErrors(
+                self.config['generation']['maxconsecutive_errors']), self.tilestream)
         self.ifilter(DropErrors())
 
     def init_tilecoords(self, options):

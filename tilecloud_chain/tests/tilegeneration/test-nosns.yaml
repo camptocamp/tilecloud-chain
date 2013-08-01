@@ -51,6 +51,7 @@ caches:
         type: mbtiles
         http_url: http://taurus/tiles
         folder: /tmp/tiles/mbtiles
+        wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
     s3:
         type: s3
         http_url: https://%(host)s/%(bucket)s/%(folder)s
