@@ -481,7 +481,10 @@ class TileGeneration:
             )
         elif cache['type'] == 'filesystem':
             # on filesystem
-            cache_tilestore = FilesystemTileStore(layout)
+            cache_tilestore = FilesystemTileStore(
+                layout,
+                content_type=layer['mime_type'],
+            )
         else:
             exit('unknown cache type: ' + cache['type'])  # pragma: no cover
 
