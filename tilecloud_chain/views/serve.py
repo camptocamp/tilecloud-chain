@@ -54,7 +54,6 @@ class Serve(TileGeneration):
             else self.tilegeneration.config['generation']['default_cache']
         ]
         self.stores = {}
-        self.strict = 'strict' not in self.settings or self.settings['strict']
 
     # get capabilities or legend files
     def _get(self, path):
@@ -111,11 +110,10 @@ class Serve(TileGeneration):
                     not 'tilecol' in params:
                 raise HTTPBadRequest("Not all required parameters are present")
 
-        if self.strict:
-            if params['service'] != 'WMTS':
-                raise HTTPBadRequest("Wrong Service '%s'" % params['service'])
-            if params['version'] != '1.0.0':
-                raise HTTPBadRequest("Wrong Version '%s'" % params['version'])
+        if params['service'] != 'WMTS':
+            raise HTTPBadRequest("Wrong Service '%s'" % params['service'])
+        if params['version'] != '1.0.0':
+            raise HTTPBadRequest("Wrong Version '%s'" % params['version'])
 
         if params['request'] == 'GetCapabilities':
             wmtscapabilities_file = self.cache['wmtscapabilities_file']
@@ -123,21 +121,20 @@ class Serve(TileGeneration):
             self.request.response.content_type = "application/xml"
             return self.request.response
 
-        if self.strict:
-            if params['request'] != 'GetTile':
-                raise HTTPBadRequest("Wrong Request '%s'" % params['request'])
+        if params['request'] != 'GetTile':
+            raise HTTPBadRequest("Wrong Request '%s'" % params['request'])
 
-            if params['layer'] in self.tilegeneration.layers:
-                layer = self.tilegeneration.layers[params['layer']]
-            else:
-                raise HTTPBadRequest("Wrong Layer '%s'" % params['layer'])
+        if params['layer'] in self.tilegeneration.layers:
+            layer = self.tilegeneration.layers[params['layer']]
+        else:
+            raise HTTPBadRequest("Wrong Layer '%s'" % params['layer'])
 
-            if params['format'] != layer['extension']:
-                raise HTTPBadRequest("Wrong Format '%s'" % params['format'])
-            if params['style'] != layer['wmts_style']:
-                raise HTTPBadRequest("Wrong Style '%s'" % params['style'])
-            if params['tilematrixset'] != layer['grid']:
-                raise HTTPBadRequest("Wrong TileMatrixSet '%s'" % params['tilematrixset'])
+        if params['format'] != layer['extension']:
+            raise HTTPBadRequest("Wrong Format '%s'" % params['format'])
+        if params['style'] != layer['wmts_style']:
+            raise HTTPBadRequest("Wrong Style '%s'" % params['style'])
+        if params['tilematrixset'] != layer['grid']:
+            raise HTTPBadRequest("Wrong TileMatrixSet '%s'" % params['tilematrixset'])
 
         tile = Tile(TileCoord(
             # TODO fix for matrix_identifier = resolution
@@ -154,17 +151,14 @@ class Serve(TileGeneration):
         ]
 
         if 'path' not in self.request.matchdict:
-            if self.strict:
-                dimensions = []
-                for dimension in layer['dimensions']:
-                    value = \
-                        params[dimension['name'].lower()] \
-                        if dimension['name'].lower() in params \
-                        else dimension['default']
-                    dimensions.append((dimension['name'], value))
-                    store_ref.extend((dimension['name'], value))
-            else:
-                raise HTTPBadRequest("KVP not supported on nonstrict mode")
+            dimensions = []
+            for dimension in layer['dimensions']:
+                value = \
+                    params[dimension['name'].lower()] \
+                    if dimension['name'].lower() in params \
+                    else dimension['default']
+                dimensions.append((dimension['name'], value))
+                store_ref.extend((dimension['name'], value))
 
         if layer['name'] not in self.filters:
             self.filters[layer['name']] = IntersectGeometryFilter(
@@ -183,23 +177,7 @@ class Serve(TileGeneration):
         if store_ref in self.stores:
             store = self.stores[store_ref]  # pragma: no cover
         else:
-            if self.strict:
-                store = self.tilegeneration.get_store(self.cache, layer, dimensions)
-            else:
-                mime = {
-                    'png': 'image/png',
-                    'jpg': 'image/jpeg',
-                    'jpeg': 'image/jpeg',
-                    'json': 'application/json',
-                }
-                store = self.tilegeneration.get_store(
-                    self.cache, {
-                        'name': params['layer'],
-                        'wmts_style': params['style'],
-                        'grid': params['tilematrixset'],
-                        'extension': params['format'],
-                        'mime_type': mime[params['format']],
-                    }, dimensions)
+            store = self.tilegeneration.get_store(self.cache, layer, dimensions)
 
         tile = store.get_one(tile)
         if tile:
