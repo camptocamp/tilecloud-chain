@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+
 from nose.plugins.attrib import attr
 
 from tilecloud_chain.tests import CompareCase
@@ -12,11 +13,11 @@ class TestCost(CompareCase):
 
     @classmethod
     def setUpClass(cls):
-        os.chdir('tilecloud_chain/tests')
+        os.chdir(os.path.dirname(__file__))
 
     @classmethod
     def tearDownClass(self):
-        os.chdir('../..')
+        os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
     ZOOM_SUMMARY = """
 %(tiles)s tiles in zoom %(zoom)s.

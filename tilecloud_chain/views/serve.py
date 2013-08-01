@@ -26,12 +26,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import logging
 
 from tilecloud import Tile, TileCoord
+from tilecloud.lib.s3 import S3Connection
 from tilecloud_chain import TileGeneration
 
-from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPBadRequest, HTTPNoContent
+
+
+logger = logging.getLogger(__name__)
 
 
 class Serve(TileGeneration):
@@ -43,28 +47,65 @@ class Serve(TileGeneration):
         self.tilegeneration = TileGeneration(self.settings['configfile'])
         self.cache = self.tilegeneration.caches[
             self.settings['cache'] if 'cache' in self.settings
-            else self.settings['generation']['default_cache']
+            else self.tilegeneration.config['generation']['default_cache']
         ]
         self.stores = {}
-        self.strict = 'strict' in self.settings and self.settings['strict']
+        self.strict = 'strict' not in self.settings or self.settings['strict']
 
-    @view_config(route_name='serve_tiles')
-    def serve(self):
+    # get capabilities or legend files
+    def _get(self, path):
+        if self.cache['type'] == 's3':  # pragma: no cover
+            s3bucket = S3Connection().bucket(self.cache['bucket'])
+            s3key = s3bucket.key(('%(folder)s' % self.cache) + path)
+            return s3key.get().body
+        else:
+            folder = self.cache['folder'] or ''
+            with open(folder + path, 'rb') as file:
+                data = file.read()
+            return data
+
+    def __call__(self):
         params = {}
-        for param, value in self.request.params.items():
-            params[param.lower()] = value
+        dimensions = None
+        if 'path' in self.request.matchdict:
+            path = self.request.matchdict['path']
+            if len(path) < 7:
+                wmtscapabilities_file = self.cache['wmtscapabilities_file']
+                if '/'.join(path) == wmtscapabilities_file[1:]:
+                    self.request.response.body = self._get(wmtscapabilities_file)
+                    self.request.response.content_type = "application/xml"
+                    return self.request.response
+                else:
+                    raise HTTPBadRequest("Not enough path")
+            else:
+                params['service'] = 'WMTS'
+                params['request'] = 'GetTile'
+                params['version'] = path[0]
 
-        if \
-                not 'service' in params or \
-                not 'request' in params or \
-                not 'version' in params or \
-                not 'format' in params or \
-                not 'layer' in params or \
-                not 'tilematrixset' in params or \
-                not 'tilematrix' in params or \
-                not 'tilerow' in params or \
-                not 'tilecol' in params:
-            raise HTTPBadRequest("Not all required parameters are present")
+                last = path[-1].split('.')
+                params['format'] = last[-1]
+                params['layer'] = path[1]
+                params['style'] = path[2]
+                dimensions = [('Dimension', v) for v in path[3:-4]]
+                params['tilematrixset'] = path[-4]
+                params['tilematrix'] = path[-3]
+                params['tilerow'] = path[-2]
+                params['tilecol'] = last[0]
+        else:
+            for param, value in self.request.params.items():
+                params[param.lower()] = value
+
+            if \
+                    not 'service' in params or \
+                    not 'request' in params or \
+                    not 'version' in params or \
+                    not 'format' in params or \
+                    not 'layer' in params or \
+                    not 'tilematrixset' in params or \
+                    not 'tilematrix' in params or \
+                    not 'tilerow' in params or \
+                    not 'tilecol' in params:
+                raise HTTPBadRequest("Not all required parameters are present")
 
         if self.strict:
             if params['service'] != 'WMTS':
@@ -74,12 +115,11 @@ class Serve(TileGeneration):
             if params['version'] != '1.0.0':
                 raise HTTPBadRequest("Wrong Version '%s'" % params['version'])
 
-        if params['layer'] in self.tilegeneration.layers:
-            layer = self.tilegeneration.layers[params['layer']]
-        else:
-            raise HTTPBadRequest("Wrong Layer '%s'" % params['version'])
+            if params['layer'] in self.tilegeneration.layers:
+                layer = self.tilegeneration.layers[params['layer']]
+            else:
+                raise HTTPBadRequest("Wrong Layer '%s'" % params['layer'])
 
-        if self.strict:
             if params['format'] != layer['extension']:
                 raise HTTPBadRequest("Wrong Format '%s'" % params['format'])
             if params['style'] != layer['wmts_style']:
@@ -93,14 +133,19 @@ class Serve(TileGeneration):
             params['tilematrixset'],
             params['format'],
         ]
-        dimensions = []
-        for dimension in layer['dimensions']:
-            value = \
-                params[dimension['name'].lower()] \
-                if dimension['name'].lower() in params \
-                else dimension['default']
-            dimensions.append((dimension['name'], value))
-            store_ref.extend((dimension['name'], value))
+
+        if 'path' not in self.request.matchdict:
+            if self.strict:
+                dimensions = []
+                for dimension in layer['dimensions']:
+                    value = \
+                        params[dimension['name'].lower()] \
+                        if dimension['name'].lower() in params \
+                        else dimension['default']
+                    dimensions.append((dimension['name'], value))
+                    store_ref.extend((dimension['name'], value))
+            else:
+                raise HTTPBadRequest("KVP not supported on nonstrict mode")
 
         store_ref = '/'.join(store_ref)
         if store_ref in self.stores:
@@ -115,23 +160,28 @@ class Serve(TileGeneration):
                     'jpeg': 'image/jpeg',
                     'json': 'application/json',
                 }
-                store = self.tilegeneration.get_store(self.cache, {
-                    'name': params['layer'],
-                    'wmts_style': params['style'],
-                    'grid': params['tilematrixset'],
-                    'extension': params['format'],
-                    'mime_type': mime[params['format']],
-                }, dimensions)
+                store = self.tilegeneration.get_store(
+                    self.cache, {
+                        'name': params['layer'],
+                        'wmts_style': params['style'],
+                        'grid': params['tilematrixset'],
+                        'extension': params['format'],
+                        'mime_type': mime[params['format']],
+                    }, dimensions)
 
         tile = Tile(TileCoord(
             # TODO fix for matrix_identifier = resolution
             int(params['tilematrix']),
+            int(params['tilecol']),
             int(params['tilerow']),
-            int(params['tilecol'])
         ))
         tile = store.get_one(tile)
         if tile:
-            self.request.response.body_file = tile.data
+            if type(tile.data) == buffer:
+                self.request.response.body_file = tile.data
+            else:
+                self.request.response.body = tile.data
             self.request.response.content_type = tile.content_type
+            return self.request.response
         else:
             raise HTTPNoContent()
