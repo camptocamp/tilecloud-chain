@@ -571,6 +571,44 @@ class TileGeneration:
             obj[attribute] = value
         return False
 
+    def validate_apache_config(self):
+        error = False
+        error = self.validate(self.config, 'config', 'apache', attribute_type=dict, default={}) or error
+        error = self.validate(
+            self.config['apache'], 'apache', 'location', attribute_type=str,
+            default='/tiles'
+        ) or error
+        error = self.validate(
+            self.config['apache'], 'apache', 'config_file', attribute_type=str,
+            default='apache/tiles.conf'
+        ) or error
+        error = self.validate(
+            self.config['apache'], 'apache', 'expires', attribute_type=int,
+            default=8
+        ) or error
+        return not error
+
+    def validate_mapcache_config(self):
+        error = False
+        error = self.validate(self.config, 'config', 'mapcache', attribute_type=dict, default={}) or error
+        error = self.validate(
+            self.config['mapcache'], 'mapcache', 'config_file', attribute_type=str,
+            default='apache/mapcache.xml'
+        ) or error
+        error = self.validate(
+            self.config['mapcache'], 'mapcache', 'memcache_host', attribute_type=str,
+            default='localhost'
+        ) or error
+        error = self.validate(
+            self.config['mapcache'], 'mapcache', 'memcache_port', attribute_type=int,
+            default='11211'
+        ) or error
+        error = self.validate(
+            self.config['mapcache'], 'mapcache', 'location', attribute_type=str,
+            default='/mapcache'
+        ) or error
+        return not error
+
     def set_layer(self, layer, options):
         self.log_tiles_error(message="Start the layer '%s' generation" % layer)
         self.layer = self.layers[layer]
@@ -664,15 +702,23 @@ class TileGeneration:
                         layer_geoms[z] = geom
         return layer_geoms
 
+    def get_geoms_filter(self, layer, grid, geoms, queue_store=None):
+        return IntersectGeometryFilter(
+            grid=grid,
+            geoms=geoms,
+            queue_store=queue_store,
+            px_buffer=(
+                layer['px_buffer'] +
+                layer['meta_buffer'] if layer['meta'] else 0
+            )
+        )
+
     def add_geom_filter(self, queue_store=None):
-        self.ifilter(IntersectGeometryFilter(
+        self.ifilter(self.get_geoms_filter(
+            layer=self.layer,
             grid=self.get_grid(),
             geoms=self.geoms,
             queue_store=queue_store,
-            px_buffer=(
-                self.layer['px_buffer'] +
-                self.layer['meta_buffer'] if self.layer['meta'] else 0
-            )
         ), "Intersect with geom")
 
     def add_metatile_splitter(self):

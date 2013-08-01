@@ -75,16 +75,7 @@ Configure caches
 There tree available tiles cache: ``s3``, ``mbtile`` and ``filesystem``.
 
 The best solution to store the tiles is ``s3``, ``mbtiles`` has the advantage to have only one file per
-layer - style  dimensions. To serve the ``mbtile`` there is a view that can be used as following:
-
-..code:: python
-
-    config.get_settings().update({
-        'tilegeneration_configfile': '<the configuration file>',
-        'tilegeneration_cache': '<the cache to use>' # default is generation/default_cache
-    })
-    config.add_route('serve_tiles', '/tiles/*path')
-    config.add_view('tilecloud_chain.views.serve:Serve', route_name='serve_tiles')
+layer - style  dimensions.
 
 ``s3`` need a ``bucket`` an a ``folder`` (default to '').
 
@@ -306,9 +297,61 @@ To generate the MapCache configuration we use the command::
 
     ./buildout/bin/generate_controller --generate-mapcache-config
 
+
+Serve the tiles
+---------------
+
+There two ways to serve the tiles, with Apache configuration, or with a Python wiew.
+
+The advantage of the python view are:
+
+ * Can serve Mbtiles or Berkley DB.
+ * Return `204 No Content` HTTP code in place of `404 Not Found` (or `403 Forbidden` for s3).
+ * Can be used in `KVP` mode.
+ * Can have zone per layer where are the tiles, otherwise it redirect on mapcache.
+
 To generate the Apache configuration we use the command::
 
     ./buildout/bin/generate_controller --generate-apache-config
+
+To use tue Python view you should used the following:
+
+..code:: python
+
+    config.get_settings().update({
+        'tilegeneration_configfile': '<the configuration file>',
+    })
+    config.add_route('serve_tiles', '/tiles/*path')
+    config.add_view('tilecloud_chain.views.serve:Serve', route_name='serve_tiles')
+
+..*
+
+And configure as it:
+
+.. code:: yaml
+
+    serve:
+        layers: a_layer # Restrict to serve an sertain number of layers [default to all]
+        cache: mbtiles # The used cache [default use generation/default_cache]
+        # the url without location to MapCache, [default to http://localhost/]
+        mapcache_base: http://localhost/
+        mapcache_headers: # headers, can be used to acces to an other Apache vhost [default to {}]
+            Host: localhost
+        geoms_redirect: true # use the geoms to redirect to MapCache [defaut to false]
+
+The minimal config is to enhable it:
+
+.. code:: yaml
+
+    serve:
+
+You should also configure the `http_url` of the used `cache`, to somthing like
+`https://%(host)s/${instanceid}/tiles` to don't use the `serve` view, and
+`https://%(host)s/${instanceid}/wsgi/tiles` to use it.
+
+
+Generate configuration in buildout
+----------------------------------
 
 We can also use a buildout task to automatise it::
 

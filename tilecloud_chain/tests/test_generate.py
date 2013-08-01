@@ -272,9 +272,7 @@ class TestGenerate(CompareCase):
 
         request = DummyRequest()
         request.registry.settings = {
-            'tilegeneration': {
-                'configfile': 'tilegeneration/test-nosns.yaml',
-            }
+            'tilegeneration_configfile': 'tilegeneration/test-nosns.yaml',
         }
         request.params = {
             'Service': 'WMTS',
@@ -340,13 +338,13 @@ class TestGenerate(CompareCase):
     @attr(mbtiles_rest=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
-    def test_mbtile_rest(self, l):
+    def test_mbtiles_rest(self, l):
         from pyramid.testing import DummyRequest
         from pyramid.httpexceptions import HTTPNoContent, HTTPBadRequest
         from tilecloud_chain.views.serve import Serve
 
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -d -c tilegeneration/test-nosns.yaml --cache mbtiles'
+            cmd='./buildout/bin/generate_tiles -d -c tilegeneration/test-serve.yaml'
                 ' -l point_hash --zoom 1',
             main_func=generate.main,
             directory="/tmp/tiles/mbtiles/",
@@ -357,8 +355,7 @@ class TestGenerate(CompareCase):
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-nosns.yaml '
-                '--cache mbtiles',
+            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-serve.yaml',
             main_func=controller.main,
             directory="/tmp/tiles/mbtiles/",
             tiles_pattern='1.0.0/%s',
@@ -370,10 +367,7 @@ class TestGenerate(CompareCase):
 
         request = DummyRequest()
         request.registry.settings = {
-            'tilegeneration': {
-                'configfile': 'tilegeneration/test.yaml',
-                'cache': 'mbtiles',
-            }
+            'tilegeneration_configfile': 'tilegeneration/test-serve.yaml',
         }
         request.matchdict = {
             'path': [
@@ -417,7 +411,7 @@ class TestGenerate(CompareCase):
         ]
         Serve(request)()
         self.assertEquals(request.response.content_type, 'application/xml')
-        self.assertEquals(len(request.response.body), 14813)
+        self.assertEquals(len(request.response.body), 4203)
 
         l.check()
 

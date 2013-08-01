@@ -27,12 +27,12 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
-
 import httplib2
+import types
 
 from tilecloud import Tile, TileCoord
 from tilecloud.lib.s3 import S3Connection
-from tilecloud_chain import TileGeneration, IntersectGeometryFilter
+from tilecloud_chain import TileGeneration
 
 from pyramid.httpexceptions import HTTPBadRequest, HTTPNoContent
 
@@ -44,32 +44,91 @@ class Serve(TileGeneration):
 
     def __init__(self, request):
         self.request = request
-        self.settings = request.registry.settings['tilegeneration']
+        self.settings = request.registry.settings
         self.filters = {}
         self.http = httplib2.Http()
 
-        self.tilegeneration = TileGeneration(self.settings['configfile'])
+        self.tilegeneration = TileGeneration(self.settings['tilegeneration_configfile'])
+        if not self.tilegeneration.validate_apache_config():
+            raise "Apache configuration error"
         self.cache = self.tilegeneration.caches[
-            self.settings['cache'] if 'cache' in self.settings
-            else self.tilegeneration.config['generation']['default_cache']
+            self.tilegeneration.config['serve']['cache'] if
+            'cache' in self.tilegeneration.config['serve'] else
+            self.tilegeneration.config['generation']['default_cache']
         ]
-        self.stores = {}
 
-    # get capabilities or legend files
-    def _get(self, path):
         if self.cache['type'] == 's3':  # pragma: no cover
             s3bucket = S3Connection().bucket(self.cache['bucket'])
-            s3key = s3bucket.key(('%(folder)s' % self.cache) + path)
-            return s3key.get().body
+
+            def _get(self, path):
+                global s3bucket
+                try:
+                    s3key = s3bucket.key(('%(folder)s' % self.cache) + path)
+                    return s3key.get().body
+                except:
+                    s3bucket = S3Connection().bucket(self.cache['bucket'])
+                    s3key = s3bucket.key(('%(folder)s' % self.cache) + path)
+                    return s3key.get().body
         else:
             folder = self.cache['folder'] or ''
-            with open(folder + path, 'rb') as file:
-                data = file.read()
-            return data
+
+            def _get(self, path):
+                with open(folder + path, 'rb') as file:
+                    data = file.read()
+                return data
+        # get capabilities or other static files
+        self._get = types.MethodType(_get, self)
+
+        geoms_redirect = bool(self.tilegeneration.config['serve']['geoms_redirect']) if \
+            'geoms_redirect' in self.tilegeneration.config['serve'] else False
+
+        self.layers = self.tilegeneration.config['serve']['layers'] if \
+            'layers' in self.tilegeneration.config['serve'] else \
+            self.tilegeneration.layers.keys()
+        self.stores = {}
+        for layer_name in self.layers:
+            layer = self.tilegeneration.layers[layer_name]
+
+            # build geoms redirect
+            if geoms_redirect:
+                if not self.tilegeneration.validate_mapcache_config():
+                    raise "Mapcache configuration error"
+
+                mapcache_base = self.tilegeneration.config['serve']['mapcache_base'] if \
+                    'mapcache_base' in self.tilegeneration.config['serve'] else \
+                    'http://localhost/'
+                self.mapcache_baseurl = mapcache_base + self.tilegeneration.config['apache']['location']
+                self.mapcache_header = self.tilegeneration.config['serve']['mapcache_headers'] if \
+                    'mapcache_headers' in self.tilegeneration.config['serve'] else {}
+
+                self.filters[layer_name] = self.tilegeneration.get_geoms_filter(
+                    layer=layer,
+                    grid=layer['grid_ref'],
+                    geoms=self.tilegeneration.get_geoms(layer),
+                )
+
+            # build stores
+            store_defs = [{
+                'ref': [layer_name],
+                'dimensions': [],
+            }]
+            for dimension in layer['dimensions']:
+                new_store_defs = []
+                for store_def in store_defs:
+                    for value in dimension['values']:
+                        new_store_defs.append({
+                            'ref': store_def['ref'] + [value],
+                            'dimensions': store_def['dimensions'] + [(dimension['name'], value)],
+                        })
+                store_defs = new_store_defs
+            for store_def in store_defs:
+                self.stores['/'.join(store_def['ref'])] = \
+                    self.tilegeneration.get_store(self.cache, layer, store_def['dimensions'])
 
     def __call__(self):
         params = {}
-        dimensions = None
+        dimensions = []
+
         if 'path' in self.request.matchdict:
             path = self.request.matchdict['path']
             if len(path) < 7:
@@ -89,7 +148,7 @@ class Serve(TileGeneration):
                 params['format'] = last[-1]
                 params['layer'] = path[1]
                 params['style'] = path[2]
-                dimensions = [('Dimension', v) for v in path[3:-4]]
+                dimensions = path[3:-4]
                 params['tilematrixset'] = path[-4]
                 params['tilematrix'] = path[-3]
                 params['tilerow'] = path[-2]
@@ -124,10 +183,18 @@ class Serve(TileGeneration):
         if params['request'] != 'GetTile':
             raise HTTPBadRequest("Wrong Request '%s'" % params['request'])
 
-        if params['layer'] in self.tilegeneration.layers:
+        if params['layer'] in self.layers:
             layer = self.tilegeneration.layers[params['layer']]
         else:
             raise HTTPBadRequest("Wrong Layer '%s'" % params['layer'])
+
+        if 'path' not in self.request.matchdict:
+            for dimension in layer['dimensions']:
+                dimensions.append(
+                    params[dimension['name'].lower()]
+                    if dimension['name'].lower() in params
+                    else dimension['default']
+                )
 
         if params['format'] != layer['extension']:
             raise HTTPBadRequest("Wrong Format '%s'" % params['format'])
@@ -143,41 +210,22 @@ class Serve(TileGeneration):
             int(params['tilecol']),
         ))
 
-        store_ref = [
-            params['layer'],
-            params['style'],
-            params['tilematrixset'],
-            params['format'],
-        ]
+        if layer['name'] in self.filters:
+            layer_filter = self.filters[layer['name']]
+            if not layer_filter(tile):
+                self.http.request(
+                    self.mapcache_baseurl + '/'.join(['path']),
+                    headers=self.mapcache_header
+                )
 
-        if 'path' not in self.request.matchdict:
-            dimensions = []
-            for dimension in layer['dimensions']:
-                value = \
-                    params[dimension['name'].lower()] \
-                    if dimension['name'].lower() in params \
-                    else dimension['default']
-                dimensions.append((dimension['name'], value))
-                store_ref.extend((dimension['name'], value))
-
-        if layer['name'] not in self.filters:
-            self.filters[layer['name']] = IntersectGeometryFilter(
-                grid=layer['grid_ref'],
-                geoms=self.tilegeneration.get_geoms(layer),
-                px_buffer=layer['px_buffer'] + layer['meta_buffer']
-            )
-        layer_filter = self.filters[layer['name']]
-        if not layer_filter(tile):  # TODO integrate with mapcache
-            url = 'base_url/' + '/'.join(['path'])
-            self.http.request(url, headers={
-                'Host': 'host'
-            })
-
-        store_ref = '/'.join(store_ref)
+        store_ref = '/'.join([params['layer']] + dimensions)
         if store_ref in self.stores:
             store = self.stores[store_ref]  # pragma: no cover
         else:
-            store = self.tilegeneration.get_store(self.cache, layer, dimensions)
+            raise HTTPBadRequest(
+                "No store found for layer '%s' and dimensions %s" %
+                (layer['name'], ', '.join(dimensions))
+            )
 
         tile = store.get_one(tile)
         if tile:

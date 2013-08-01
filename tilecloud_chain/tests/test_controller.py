@@ -1259,6 +1259,19 @@ RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
 
+        self.assert_main_equals(
+            cmd='./buildout/bin/generate_controller --apache -c tilegeneration/test-serve.yaml',
+            main_func=controller.main,
+            expected=[['tiles.conf', u"""<Location /tiles>
+    ExpiresActive on
+    ExpiresDefault "now plus 8 hours"
+</Location>
+
+Alias /tiles /tmp/tiles/mbtiles
+
+MapCacheAlias /mapcache "%s"
+""" % (os.path.abspath('mapcache.xml'))]])
+
     @attr(apache_s3=True)
     @attr(general=True)
     def test_apache_s3(self):
