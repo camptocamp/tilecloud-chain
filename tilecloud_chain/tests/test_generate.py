@@ -223,6 +223,21 @@ class TestGenerate(CompareCase):
             )
         l.check()
 
+    @attr(empty_bboxp=True)
+    @attr(general=True)
+    @log_capture('tilecloud_chain', level=30)
+    def test_empty_bbox(self, l):
+        for d in ('-d', ''):
+            self.assert_tiles_generated(
+                cmd='./buildout/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml '
+                    '-l point_hash --bbox 700000,250000,800000,300000',
+                main_func=generate.main,
+                directory="/tmp/tiles/",
+                tiles_pattern='1.0.0/%s',
+                tiles=[
+                ]
+            )
+
     @attr(serve_kvp=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
