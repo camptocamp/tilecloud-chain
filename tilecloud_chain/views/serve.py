@@ -29,6 +29,7 @@
 import logging
 import httplib2
 import types
+import datetime
 
 from tilecloud import Tile, TileCoord
 from tilecloud.lib.s3 import S3Connection
@@ -52,7 +53,7 @@ class Serve(TileGeneration):
         if not self.tilegeneration.validate_apache_config():
             raise "Apache configuration error"
 
-        self.expires_houres = self.tilegeneration.config['apache']['expires']
+        self.expires_hours = self.tilegeneration.config['apache']['expires']
 
         self.cache = self.tilegeneration.caches[
             self.tilegeneration.config['serve']['cache'] if
@@ -140,7 +141,7 @@ class Serve(TileGeneration):
 
         if 'path' in self.request.matchdict:
             path = self.request.matchdict['path']
-            if len(path) = 2 and path[0] = '1.0.0' and path[1].lower() = 'wmtscapabilities.xml':
+            if len(path) == 2 and path[0] == '1.0.0' and path[1].lower() == 'wmtscapabilities.xml':
                 params['service'] = 'WMTS'
                 params['version'] = '1.0.0'
                 params['request'] = 'GetCapabilities'
@@ -242,8 +243,8 @@ class Serve(TileGeneration):
                 self.request.response.body = tile.data
             self.request.response.content_type = tile.content_type
             self.request.response.headers['Expires'] = \
-                datetime.datetime.utcnow() + datetime.timedelta(houres=self.expires_houres)
-            self.request.response.headers['Cache-Control'] = "max-age=" + str(3600 * self.expires_houres)
+                datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
+            self.request.response.headers['Cache-Control'] = "max-age=" + str(3600 * self.expires_hours)
             return self.request.response
         else:
             raise HTTPNoContent()
