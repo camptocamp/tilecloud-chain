@@ -51,6 +51,9 @@ class Serve(TileGeneration):
         self.tilegeneration = TileGeneration(self.settings['tilegeneration_configfile'])
         if not self.tilegeneration.validate_apache_config():
             raise "Apache configuration error"
+
+        self.expires_houres = self.tilegeneration.config['apache']['expires']
+
         self.cache = self.tilegeneration.caches[
             self.tilegeneration.config['serve']['cache'] if
             'cache' in self.tilegeneration.config['serve'] else
@@ -137,14 +140,12 @@ class Serve(TileGeneration):
 
         if 'path' in self.request.matchdict:
             path = self.request.matchdict['path']
-            if len(path) < 7:
-                wmtscapabilities_file = self.cache['wmtscapabilities_file']
-                if '/'.join(path) == wmtscapabilities_file[1:]:
-                    params['service'] = 'WMTS'
-                    params['version'] = '1.0.0'
-                    params['request'] = 'GetCapabilities'
-                else:
-                    raise HTTPBadRequest("Not enough path")
+            if len(path) = 2 and path[0] = '1.0.0' and path[1].lower() = 'wmtscapabilities.xml':
+                params['service'] = 'WMTS'
+                params['version'] = '1.0.0'
+                params['request'] = 'GetCapabilities'
+            elif len(path) < 7:
+                raise HTTPBadRequest("Not enough path")
             else:
                 params['service'] = 'WMTS'
                 params['version'] = path[0]
@@ -240,6 +241,9 @@ class Serve(TileGeneration):
             else:
                 self.request.response.body = tile.data
             self.request.response.content_type = tile.content_type
+            self.request.response.headers['Expires'] = \
+                datetime.datetime.utcnow() + datetime.timedelta(houres=self.expires_houres)
+            self.request.response.headers['Cache-Control'] = "max-age=" + str(3600 * self.expires_houres)
             return self.request.response
         else:
             raise HTTPNoContent()
