@@ -411,7 +411,7 @@ class TestGenerate(CompareCase):
         ]
         Serve(request)()
         self.assertEquals(request.response.content_type, 'application/xml')
-        self.assertEquals(len(request.response.body), 4203)
+        self.assertEquals(len(request.response.body), 4854)
 
         l.check()
 

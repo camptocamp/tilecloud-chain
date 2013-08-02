@@ -696,6 +696,7 @@ def _generate_wmts_capabilities(gene, options):
 
     cache = gene.caches[options.cache]
     _validate_generate_wmts_capabilities(gene, cache)
+    serve = 'serve' in gene.config
 
     base_urls = []
     if cache['http_url']:
@@ -713,9 +714,12 @@ def _generate_wmts_capabilities(gene, options):
         wmts_get_capabilities_template,
         layers=gene.layers,
         grids=gene.grids,
-        getcapabilities=base_urls[0] + cache['wmtscapabilities_file'],
-        gettiles=base_urls,
+        getcapabilities=base_urls[0] + (
+            '/1.0.0/WMTSCapabilities.xml' if serve
+            else cache['wmtscapabilities_file']),
+        base_urls=base_urls,
         get_tile_matrix_identifier=get_tile_matrix_identifier,
+        serve=serve,
         enumerate=enumerate, ceil=math.ceil, int=int
     )
 

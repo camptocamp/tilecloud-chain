@@ -50,7 +50,7 @@ class Serve(TileGeneration):
         self.http = httplib2.Http()
 
         self.tilegeneration = TileGeneration(self.settings['tilegeneration_configfile'])
-        if not self.tilegeneration.validate_apache_config():
+        if not self.tilegeneration.validate_apache_config():  # pragma: no cover
             raise "Apache configuration error"
 
         self.expires_hours = self.tilegeneration.config['apache']['expires']
@@ -95,7 +95,7 @@ class Serve(TileGeneration):
 
             # build geoms redirect
             if geoms_redirect:
-                if not self.tilegeneration.validate_mapcache_config():
+                if not self.tilegeneration.validate_mapcache_config():  # pragma: no cover
                     raise "Mapcache configuration error"
 
                 mapcache_base = self.tilegeneration.config['serve']['mapcache_base'] if \
@@ -220,7 +220,7 @@ class Serve(TileGeneration):
 
         if layer['name'] in self.filters:
             layer_filter = self.filters[layer['name']]
-            if not layer_filter(tile):
+            if not layer_filter(tile):  # pragma: no cover
                 self.http.request(
                     self.mapcache_baseurl + '/'.join(['path']),
                     headers=self.mapcache_header
@@ -229,7 +229,7 @@ class Serve(TileGeneration):
         store_ref = '/'.join([params['layer']] + dimensions)
         if store_ref in self.stores:
             store = self.stores[store_ref]  # pragma: no cover
-        else:
+        else:  # pragma: no cover
             raise HTTPBadRequest(
                 "No store found for layer '%s' and dimensions %s" %
                 (layer['name'], ', '.join(dimensions))

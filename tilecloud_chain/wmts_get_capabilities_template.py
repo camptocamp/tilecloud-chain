@@ -15,15 +15,24 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
                 <ows:Value>REST</ows:Value>
               </ows:AllowedValues>
             </ows:Constraint>
-          </ows:Get>
+          </ows:Get>{%
+          if serve %}
+          <ows:Get xlink:href="base_urls[0]?">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>KVP</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>{%
+          endif %}
         </ows:HTTP>
       </ows:DCP>
     </ows:Operation>{%
-      for gettile in gettiles %}
+    for base_url in base_urls %}
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="{{gettile}}">
+          <ows:Get xlink:href="{{base_url}}">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -33,7 +42,24 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
         </ows:HTTP>
       </ows:DCP>
     </ows:Operation>{%
-      endfor %}
+    endfor %}{%
+    if serve %}{%
+    for base_url in base_urls %}
+    <ows:Operation name="GetTile">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="{{base_url}}?">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>KVP</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>{%
+    endfor %}{%
+    endif %}
   </ows:OperationsMetadata>
   <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
@@ -54,9 +80,9 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
             endfor %}
       </Dimension>{%
       endfor %}{%
-      for gettile in gettiles %}
+      for base_url in base_urls %}
       <ResourceURL format="{{layer['mime_type']}}" resourceType="tile"
-                   template="{{gettile}}/1.0.0/{{layername}}/{{layer['wmts_style']}}/{%
+                   template="{{base_url}}/1.0.0/{{layername}}/{{layer['wmts_style']}}/{%
                         for dimension in layer['dimensions']
                             %}{{('{' + dimension['name'] + '}')}}{%
                         endfor
