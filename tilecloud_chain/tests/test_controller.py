@@ -467,12 +467,6 @@ class TestController(CompareCase):
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
-        </ows:HTTP>
-      </ows:DCP>
-    </ows:Operation>
-    <ows:Operation name="GetTile">
-      <ows:DCP>
-        <ows:HTTP>
           <ows:Get xlink:href="http://wmts2/tiles">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
@@ -480,12 +474,6 @@ class TestController(CompareCase):
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
-        </ows:HTTP>
-      </ows:DCP>
-    </ows:Operation>
-    <ows:Operation name="GetTile">
-      <ows:DCP>
-        <ows:HTTP>
           <ows:Get xlink:href="http://wmts3/tiles">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
@@ -1402,7 +1390,6 @@ layer_default:
   meta_size: 8
   mime_type: image/png
   type: wms
-  url: http://localhost/mapserv
   wmts_style: default
 layers:
   all:
@@ -1414,7 +1401,7 @@ layers:
     geoms: []
     grid: swissgrid_5
     grid_ref: *id003
-    layers: point,line,polygon
+    layers: [point, line, polygon]
     meta: false
     meta_buffer: 128
     meta_size: 1
@@ -1435,7 +1422,7 @@ layers:
     - {sql: the_geom AS geom FROM tests.line}
     grid: swissgrid_5
     grid_ref: *id003
-    layers: line
+    layers: [line]
     meta: true
     meta_buffer: 128
     meta_size: 8
@@ -1464,7 +1451,6 @@ layers:
     px_buffer: false
     output_format: png
     type: mapnik
-    url: http://localhost/mapserv
     wmts_style: default
   mapnik_grid:
     connection: user=postgres password=postgres dbname=tests host=localhost
@@ -1491,7 +1477,6 @@ layers:
     output_format: grid
     resolution: 16
     type: mapnik
-    url: http://localhost/mapserv
     wmts_style: default
   mapnik_grid_drop:
     connection: user=postgres password=postgres dbname=tests host=localhost
@@ -1516,7 +1501,6 @@ layers:
     output_format: grid
     resolution: 16
     type: mapnik
-    url: http://localhost/mapserv
     wmts_style: default
   point:
     connection: user=postgres password=postgres dbname=tests host=localhost
@@ -1527,7 +1511,7 @@ layers:
     - {sql: the_geom AS geom FROM tests.point}
     grid: swissgrid_5
     grid_ref: *id003
-    layers: point
+    layers: [point]
     meta: true
     meta_buffer: 128
     meta_size: 8
@@ -1548,7 +1532,7 @@ layers:
     geoms: []
     grid: swissgrid_5
     grid_ref: *id003
-    layers: point
+    layers: [point]
     meta: false
     meta_buffer: 128
     meta_size: 1
@@ -1569,7 +1553,7 @@ layers:
     - {sql: the_geom AS geom FROM tests.point}
     grid: swissgrid_5
     grid_ref: *id003
-    layers: point
+    layers: [point]
     meta: true
     meta_buffer: 128
     meta_size: 8
@@ -1591,7 +1575,7 @@ layers:
     - {sql: the_geom AS geom FROM tests.point}
     grid: swissgrid_5
     grid_ref: *id003
-    layers: point
+    layers: [point]
     meta: true
     meta_buffer: 128
     meta_size: 8
@@ -1612,7 +1596,7 @@ layers:
     - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_5
     grid_ref: *id003
-    layers: polygon
+    layers: [polygon]
     meta: false
     meta_buffer: 128
     meta_size: 1
@@ -1633,7 +1617,7 @@ layers:
     - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_01
     grid_ref: *id004
-    layers: polygon
+    layers: [polygon]
     meta: true
     meta_buffer: 128
     meta_size: 8
@@ -1652,14 +1636,14 @@ sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud
     def test_config(self):
         self.assert_cmd_yaml_equals(
             cmd='./buildout/bin/generate_controller --dump-config -c tilegeneration/test-fix.yaml',
-            main_func=controller.main, result=self.CONFIG)
+            main_func=controller.main, expected=self.CONFIG)
 
     @attr(config_layer=True)
     @attr(general=True)
     def test_config_layer(self):
         self.assert_cmd_yaml_equals(
             cmd='./buildout/bin/generate_controller --dump-config -l line -c tilegeneration/test-fix.yaml',
-            main_func=controller.main, result=self.CONFIG)
+            main_func=controller.main, expected=self.CONFIG)
 
     @attr(openlayers=True)
     @attr(general=True)

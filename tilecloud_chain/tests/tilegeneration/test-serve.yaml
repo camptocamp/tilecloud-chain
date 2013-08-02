@@ -37,6 +37,7 @@ layer_default:
 layers:
     point_hash:
         layers: point
+        query_layers: point
         geoms:
         - sql: the_geom AS geom FROM tests.point
         min_resolution_seed: 10

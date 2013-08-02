@@ -166,6 +166,7 @@ layers:
         output_format: png
         geoms:
         - sql: the_geom AS geom FROM tests.polygon
+        info_formats: text/xml
     mapnik_grid:
         type: mapnik
         mapfile: mapfile/test.mapnik

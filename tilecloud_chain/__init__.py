@@ -187,34 +187,57 @@ class TileGeneration:
                 layer['meta_size'] = 1
             else:
                 error = self.validate(layer, name, 'meta_size', attribute_type=int, default=8) or error
-            if 'type' in layer:
                 error = self.validate(
                     layer, name, 'meta_buffer', attribute_type=int,
                     default=0 if layer['type'] == 'mapnik' else 128
                 ) or error
+            error = self.validate(
+                layer, name, 'query_layers', attribute_type=str, is_array=True
+            ) or error
 
-                if layer['type'] == 'wms':
-                    error = self.validate(layer, name, 'url', attribute_type=str, required=True) or error
-                    error = self.validate(layer, name, 'layers', attribute_type=str, required=True) or error
-                if layer['type'] == 'mapnik':
-                    error = self.validate(layer, name, 'mapfile', attribute_type=str, required=True) or error
+            if not error and layer['type'] == 'wms':
+                error = self.validate(layer, name, 'url', attribute_type=str, required=True) or error
+                error = self.validate(
+                    layer, name, 'layers', attribute_type=str, required=True, is_array=True
+                ) or error
+                if 'query_layers' in layer:
                     error = self.validate(
-                        layer, name, 'output_format', attribute_type=str, default='png',
-                        enumeration=['png', 'png256', 'jpeg', 'grid']
+                        layer, name, 'info_formats', attribute_type=str, is_array=True,
+                        default=['application/vnd.ogc.gml']
                     ) or error
-                    error = self.validate(layer, name, 'data_buffer', attribute_type=int, default=128) or error
-                    if layer['output_format'] == 'grid':
-                        error = self.validate(layer, name, 'resolution', attribute_type=int, default=4) or error
-                        error = self.validate(layer, name, 'layers_fields', attribute_type=dict, default={}) or error
-                        error = self.validate(
-                            layer, name, 'drop_empty_utfgrid', attribute_type=bool, default=False
-                        ) or error
-                        if layer['meta']:
-                            logger.error(
-                                "The layer '%s' is of type Mapnik/Grid, that can't support matatiles." %
-                                (layer['name'])
-                            )
-                            error = True
+            if not error and layer['type'] == 'mapnik':
+                error = self.validate(layer, name, 'mapfile', attribute_type=str, required=True) or error
+                error = self.validate(
+                    layer, name, 'output_format', attribute_type=str, default='png',
+                    enumeration=['png', 'png256', 'jpeg', 'grid']
+                ) or error
+                error = self.validate(layer, name, 'data_buffer', attribute_type=int, default=128) or error
+                if layer['output_format'] == 'grid':
+                    error = self.validate(layer, name, 'resolution', attribute_type=int, default=4) or error
+                    error = self.validate(layer, name, 'layers_fields', attribute_type=dict, default={}) or error
+                    error = self.validate(
+                        layer, name, 'drop_empty_utfgrid', attribute_type=bool, default=False
+                    ) or error
+                    if layer['meta']:
+                        logger.error(
+                            "The layer '%s' is of type Mapnik/Grid, that can't support matatiles." %
+                            (layer['name'])
+                        )
+                        error = True
+                if 'min_resolution_seed' in layer or 'info_formats' in layer or \
+                        'url' in layer or 'query_layers' in layer:
+                    error = self.validate(layer, name, 'url', attribute_type=str, required=True) or error
+                    error = self.validate(
+                        layer, name, 'layers', attribute_type=str, default=['__all__'], is_array=True
+                    ) or error
+                if 'info_formats' in layer or 'query_layers' in layer:
+                    error = self.validate(
+                        layer, name, 'query_layers', attribute_type=str, default=['__all__'], is_array=True
+                    ) or error
+                    error = self.validate(
+                        layer, name, 'info_formats', attribute_type=str, is_array=True,
+                        required=True
+                    ) or error
 
             error = self.validate(layer, name, 'extension', attribute_type=str, required=True) or error
             error = self.validate(layer, name, 'mime_type', attribute_type=str, required=True) or error
@@ -547,6 +570,9 @@ class TileGeneration:
                 return False
 
         if is_array:
+            if type(obj[attribute]) == str:
+                obj[attribute] = [v.strip() for v in obj[attribute].split(',')]
+
             if type(obj[attribute]) == list:
                 for n, v in enumerate(obj[attribute]):
                     result, value, type_error = self._validate_type(v, attribute_type, enumeration, **kargs)

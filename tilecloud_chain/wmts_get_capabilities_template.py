@@ -17,7 +17,7 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
             </ows:Constraint>
           </ows:Get>{%
           if serve %}
-          <ows:Get xlink:href="base_urls[0]?">
+          <ows:Get xlink:href="{{base_urls[0]}}">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>KVP</ows:Value>
@@ -27,39 +27,25 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
           endif %}
         </ows:HTTP>
       </ows:DCP>
-    </ows:Operation>{%
-    for base_url in base_urls %}
+    </ows:Operation>
     <ows:Operation name="GetTile">
       <ows:DCP>
-        <ows:HTTP>
+        <ows:HTTP>{%
+          for base_url in base_urls %}
           <ows:Get xlink:href="{{base_url}}">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
-                <ows:Value>REST</ows:Value>
+                <ows:Value>REST</ows:Value>{%
+                if serve %}
+                <ows:Value>KVP</ows:Value>{%
+                endif %}
               </ows:AllowedValues>
             </ows:Constraint>
-          </ows:Get>
+          </ows:Get>{%
+          endfor %}
         </ows:HTTP>
       </ows:DCP>
-    </ows:Operation>{%
-    endfor %}{%
-    if serve %}{%
-    for base_url in base_urls %}
-    <ows:Operation name="GetTile">
-      <ows:DCP>
-        <ows:HTTP>
-          <ows:Get xlink:href="{{base_url}}?">
-            <ows:Constraint name="GetEncoding">
-              <ows:AllowedValues>
-                <ows:Value>KVP</ows:Value>
-              </ows:AllowedValues>
-            </ows:Constraint>
-          </ows:Get>
-        </ows:HTTP>
-      </ows:DCP>
-    </ows:Operation>{%
-    endfor %}{%
-    endif %}
+    </ows:Operation>
   </ows:OperationsMetadata>
   <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
@@ -71,6 +57,11 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
         <ows:Identifier>{{layer['wmts_style']}}</ows:Identifier>
       </Style>
       <Format>{{layer['mime_type']}}</Format> {%
+      if layer['query_layers'] %}{%
+      for info_format in layer['info_formats'] %}
+      <InfoFormat>{{infoformat}}</InfoFormat>{%
+      endfor %}{%
+      endif %}{%
       for dimension in layer['dimensions'] %}
       <Dimension>
         <ows:Identifier>{{dimension['name']}}</ows:Identifier>

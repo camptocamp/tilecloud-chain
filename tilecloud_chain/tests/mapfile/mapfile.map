@@ -9,7 +9,7 @@ MAP
     METADATA
         "ows_title" "Tests"
         "ows_encoding" "UTF-8"
-        "wms_enable_request" "GetMap"
+        "wms_enable_request" "*"
     END
   END
 
@@ -32,7 +32,13 @@ MAP
     CONNECTIONTYPE postgis
     CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
     DATA "the_geom FROM tests.point"
+    TEMPLATE fooOnlyForWMSGetFeatureInfo # For GetFeatureInfo
     STATUS ON
+    METADATA
+        "gml_include_items" "all" # For GetFeatureInfo
+        "ows_geom_type" "point" # For returning geometries in GetFeatureInfo
+        "ows_geometries" "the_geom" # For returning geometries in GetFeatureInfo
+    END
     CLASS
         COLOR 255 0 0
         SIZE 10

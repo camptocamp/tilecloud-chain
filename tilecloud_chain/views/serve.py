@@ -30,6 +30,7 @@ import logging
 import httplib2
 import types
 import datetime
+from urllib import urlencode
 
 from tilecloud import Tile, TileCoord
 from tilecloud.lib.s3 import S3Connection
@@ -41,7 +42,7 @@ from pyramid.httpexceptions import HTTPBadRequest, HTTPNoContent
 logger = logging.getLogger(__name__)
 
 
-class Serve(TileGeneration):
+class Serve:
 
     def __init__(self, request):
         self.request = request
@@ -142,97 +143,171 @@ class Serve(TileGeneration):
         if 'path' in self.request.matchdict:
             path = self.request.matchdict['path']
             if len(path) == 2 and path[0] == '1.0.0' and path[1].lower() == 'wmtscapabilities.xml':
-                params['service'] = 'WMTS'
-                params['version'] = '1.0.0'
-                params['request'] = 'GetCapabilities'
+                params['SERVICE'] = 'WMTS'
+                params['VERSION'] = '1.0.0'
+                params['REQUEST'] = 'GetCapabilities'
             elif len(path) < 7:
                 raise HTTPBadRequest("Not enough path")
             else:
-                params['service'] = 'WMTS'
-                params['version'] = path[0]
-                params['request'] = 'GetTile'
+                params['SERVICE'] = 'WMTS'
+                params['VERSION'] = path[0]
+
+                params['LAYER'] = path[1]
+                params['STYLE'] = path[2]
+
+                if params['LAYER'] in self.layers:
+                    layer = self.tilegeneration.layers[params['LAYER']]
+                else:
+                    raise HTTPBadRequest("Wrong Layer '%s'" % params['LAYER'])
+
+                index = 3
+                dimensions = path[index:index+len(layer['dimensions'])]
+                for dimension in layer['dimensions']:
+                    params[dimension['name'].upper()] = path[index]
+                    index += 1
 
                 last = path[-1].split('.')
-                params['format'] = last[-1]
-                params['layer'] = path[1]
-                params['style'] = path[2]
-                dimensions = path[3:-4]
-                params['tilematrixset'] = path[-4]
-                params['tilematrix'] = path[-3]
-                params['tilerow'] = path[-2]
-                params['tilecol'] = last[0]
+                if len(path) < index + 4:  # pragma: no cover
+                    raise HTTPBadRequest("Not enough path")
+                params['TILEMATRIXSET'] = path[index]
+                params['TILEMATRIX'] = path[index + 1]
+                params['TILEROW'] = path[index + 2]
+                if len(path) == index + 4:
+                    params['REQUEST'] = 'GetTile'
+                    params['TILECOL'] = last[0]
+                    if last[1] != layer['extension']:  # pragma: no cover
+                        raise HTTPBadRequest("Wrong extention '%s'" % last[1])
+                elif len(path) == index + 6:
+                    params['REQUEST'] = 'GetFeatureInfo'
+                    params['TILECOL'] = path[index + 3]
+                    params['I'] = path[index + 4]
+                    params['J'] = last[0]
+                    params['INFO_FORMAT'] = layer['info_formats'][0]
+                else:  # pragma: no cover
+                    raise HTTPBadRequest("Wrong path length")
+
+                params['FORMAT'] = layer['mime_type']
         else:
             for param, value in self.request.params.items():
-                params[param.lower()] = value
+                params[param.upper()] = value
 
             if \
-                    not 'service' in params or \
-                    not 'request' in params or \
-                    not 'version' in params or \
-                    not 'format' in params or \
-                    not 'layer' in params or \
-                    not 'tilematrixset' in params or \
-                    not 'tilematrix' in params or \
-                    not 'tilerow' in params or \
-                    not 'tilecol' in params:
+                    not 'SERVICE' in params or \
+                    not 'REQUEST' in params or \
+                    not 'VERSION' in params:
                 raise HTTPBadRequest("Not all required parameters are present")
 
-        if params['service'] != 'WMTS':
-            raise HTTPBadRequest("Wrong Service '%s'" % params['service'])
-        if params['version'] != '1.0.0':
-            raise HTTPBadRequest("Wrong Version '%s'" % params['version'])
+        if params['SERVICE'] != 'WMTS':
+            raise HTTPBadRequest("Wrong Service '%s'" % params['SERVICE'])
+        if params['VERSION'] != '1.0.0':
+            raise HTTPBadRequest("Wrong Version '%s'" % params['VERSION'])
 
-        if params['request'] == 'GetCapabilities':
+        if params['REQUEST'] == 'GetCapabilities':
             wmtscapabilities_file = self.cache['wmtscapabilities_file']
             self.request.response.body = self._get(wmtscapabilities_file)
             self.request.response.content_type = "application/xml"
             return self.request.response
 
-        if params['request'] != 'GetTile':
-            raise HTTPBadRequest("Wrong Request '%s'" % params['request'])
-
-        if params['layer'] in self.layers:
-            layer = self.tilegeneration.layers[params['layer']]
-        else:
-            raise HTTPBadRequest("Wrong Layer '%s'" % params['layer'])
+        if \
+                not 'FORMAT' in params or \
+                not 'LAYER' in params or \
+                not 'TILEMATRIXSET' in params or \
+                not 'TILEMATRIX' in params or \
+                not 'TILEROW' in params or \
+                not 'TILECOL' in params:  # pragma: no cover
+            raise HTTPBadRequest("Not all required parameters are present")
 
         if 'path' not in self.request.matchdict:
+            if params['LAYER'] in self.layers:
+                layer = self.tilegeneration.layers[params['LAYER']]
+            else:
+                raise HTTPBadRequest("Wrong Layer '%s'" % params['LAYER'])
+
             for dimension in layer['dimensions']:
                 dimensions.append(
-                    params[dimension['name'].lower()]
+                    params[dimension['name'].upper()]
                     if dimension['name'].lower() in params
                     else dimension['default']
                 )
 
-        if params['format'] != layer['extension']:
-            raise HTTPBadRequest("Wrong Format '%s'" % params['format'])
-        if params['style'] != layer['wmts_style']:
-            raise HTTPBadRequest("Wrong Style '%s'" % params['style'])
-        if params['tilematrixset'] != layer['grid']:
-            raise HTTPBadRequest("Wrong TileMatrixSet '%s'" % params['tilematrixset'])
+        if params['STYLE'] != layer['wmts_style']:
+            raise HTTPBadRequest("Wrong Style '%s'" % params['STYLE'])
+        if params['TILEMATRIXSET'] != layer['grid']:
+            raise HTTPBadRequest("Wrong TileMatrixSet '%s'" % params['TILEMATRIXSET'])
 
         tile = Tile(TileCoord(
             # TODO fix for matrix_identifier = resolution
-            int(params['tilematrix']),
-            int(params['tilerow']),
-            int(params['tilecol']),
+            int(params['TILEMATRIX']),
+            int(params['TILEROW']),
+            int(params['TILECOL']),
         ))
+
+        if params['REQUEST'] == 'GetFeatureInfo':
+            if \
+                    not 'I' in params or \
+                    not 'J' in params or \
+                    not 'INFO_FORMAT' in params:  # pragma: no cover
+                raise HTTPBadRequest("Not all required parameters are present")
+            if 'query_layers' in layer:
+                responce, content = self.http.request(
+                    layer['url'] + '?' + urlencode({
+                        'SERVICE': 'WMS',
+                        'VERSION': '1.1.1',
+                        'REQUEST': 'GetFeatureInfo',
+                        'LAYERS': ','.join(layer['layers']),
+                        'QUERY_LAYERS': ','.join(layer['query_layers']),
+                        'STYLES': params['STYLE'],
+                        'FORMAT': params['FORMAT'],
+                        'INFO_FORMAT': params['INFO_FORMAT'],
+                        'WIDTH': layer['grid_ref']['tile_size'],
+                        'HEIGHT': layer['grid_ref']['tile_size'],
+                        'SRS': layer['grid_ref']['srs'],
+                        'BBOX': layer['grid_ref']['obj'].extent(tile.tilecoord),
+                        'X': params['I'],
+                        'Y': params['J'],
+                    }),
+                )
+                self.request.response.body = content
+                self.request.response.content_type = responce['content-type']
+                self.request.response.status = responce.status
+                if responce.status < 300:
+                    self.request.response.headers['Expires'] = \
+                        datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
+                    self.request.response.headers['Cache-Control'] = "max-age=" + str(3600 * self.expires_hours)
+                return self.request.response
+            else:  # pragma: no cover
+                raise HTTPBadRequest("Layer '%s' not queryable" % layer['name'])
+
+        if params['REQUEST'] != 'GetTile':
+            raise HTTPBadRequest("Wrong Request '%s'" % params['REQUEST'])
+
+        if params['FORMAT'] != layer['mime_type']:
+            raise HTTPBadRequest("Wrong Format '%s'" % params['FORMAT'])
 
         if layer['name'] in self.filters:
             layer_filter = self.filters[layer['name']]
             if not layer_filter(tile):  # pragma: no cover
-                self.http.request(
-                    self.mapcache_baseurl + '/'.join(['path']),
+                responce, content = self.http.request(
+                    self.mapcache_baseurl + '?' + urlencode(params),
                     headers=self.mapcache_header
                 )
+                self.request.response.body = content
+                self.request.response.content_type = responce['content-type']
+                self.request.response.status = responce.status
+                if responce.status < 300:
+                    self.request.response.headers['Expires'] = \
+                        datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
+                    self.request.response.headers['Cache-Control'] = "max-age=" + str(3600 * self.expires_hours)
+                return self.request.response
 
-        store_ref = '/'.join([params['layer']] + dimensions)
-        if store_ref in self.stores:
-            store = self.stores[store_ref]  # pragma: no cover
+        store_ref = '/'.join([params['LAYER']] + dimensions)
+        if store_ref in self.stores:  # pragma: no cover
+            store = self.stores[store_ref]
         else:  # pragma: no cover
             raise HTTPBadRequest(
-                "No store found for layer '%s' and dimensions %s" %
-                (layer['name'], ', '.join(dimensions))
+                "No store found for layer '%s' and dimensions %s" % (
+                    layer['name'], ', '.join(dimensions)
+                )
             )
 
         tile = store.get_one(tile)

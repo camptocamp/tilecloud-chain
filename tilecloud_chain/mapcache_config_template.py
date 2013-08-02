@@ -25,7 +25,7 @@ if layer['type'] != 'mapnik' and (
       <getmap>
          <params>
             <FORMAT>{{layer['mime_type']}}</FORMAT>
-            <LAYERS>{{layer['layers']}}</LAYERS>
+            <LAYERS>{{','.join(layer['layers'])}}</LAYERS>
             <TRANSPARENT>{{'TRUE' if layer['mime_type'] == 'image/png' else 'FALSE'}}</TRANSPARENT>
          </params>
       </getmap>

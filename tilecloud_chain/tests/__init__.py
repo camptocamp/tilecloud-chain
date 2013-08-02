@@ -62,6 +62,10 @@ class CompareCase(TestCase):
             self.assertEquals(e.message, expected)
 
     def assert_main_equals(self, cmd, main_func, expected, **kargs):
+        if expected:
+            for expect in expected:
+                if os.path.exists(expect[0]):
+                    os.remove(expect[0])
         sys.argv = cmd.split(' ')
         try:
             main_func()
@@ -84,18 +88,18 @@ class CompareCase(TestCase):
                 f = open(expect[0], 'r')
                 self.assert_result_equals(f.read(), expect[1], **kargs)
 
-    def assert_yaml_equals(self, result, content):
+    def assert_yaml_equals(self, result, expected):
         import yaml
-        content = yaml.dump(yaml.load(content), width=120)
+        expected = yaml.dump(yaml.load(expected), width=120)
         result = yaml.dump(yaml.load(result), width=120)
-        self.assert_result_equals(result, content)
+        self.assert_result_equals(result=result, expected=expected)
 
-    def assert_cmd_yaml_equals(self, cmd, main_func, result):
+    def assert_cmd_yaml_equals(self, cmd, main_func, expected):
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
         self.assert_main_equals(cmd, main_func, [])
         sys.stdout = old_stdout
-        self.assert_yaml_equals(result, mystdout.getvalue())
+        self.assert_yaml_equals(result=mystdout.getvalue(), expected=expected)
 
     def assert_tiles_generated(self, directory, **kargs):
         if os.path.exists(directory):
