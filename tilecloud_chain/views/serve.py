@@ -106,6 +106,12 @@ class Serve(TileGeneration):
                     grid=layer['grid_ref'],
                     geoms=self.tilegeneration.get_geoms(layer),
                 )
+            elif 'min_resolution_seed' in layer:
+                max_zoom_seed = layer['grid_ref']['resolutions'].index(layer['min_resolution_seed'])
+
+                def seed_filter(tile):
+                    return tile if tile.tilecoord.z <= max_zoom_seed else None
+                self.filters[layer_name] = seed_filter
 
             # build stores
             store_defs = [{
