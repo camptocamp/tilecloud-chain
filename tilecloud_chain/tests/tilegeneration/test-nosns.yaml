@@ -233,5 +233,5 @@ mapcache:
 apache:
     config_file: tiles.conf
 
-serve:
+server:
     cache: local

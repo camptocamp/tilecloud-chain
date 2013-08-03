@@ -225,8 +225,8 @@ class TileGeneration:
                         )
                         error = True
                 if 'min_resolution_seed' in layer or 'info_formats' in layer or \
-                        'url' in layer or 'query_layers' in layer:
-                    error = self.validate(layer, name, 'url', attribute_type=str, required=True) or error
+                        'wms_url' in layer or 'query_layers' in layer:
+                    error = self.validate(layer, name, 'wms_url', attribute_type=str, required=True) or error
                     error = self.validate(
                         layer, name, 'layers', attribute_type=str, default=['__all__'], is_array=True
                     ) or error

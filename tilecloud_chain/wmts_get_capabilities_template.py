@@ -16,7 +16,7 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>{%
-          if serve %}
+          if server %}
           <ows:Get xlink:href="{{base_urls[0]}}">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
@@ -36,7 +36,7 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>{%
-                if serve %}
+                if server %}
                 <ows:Value>KVP</ows:Value>{%
                 endif %}
               </ows:AllowedValues>

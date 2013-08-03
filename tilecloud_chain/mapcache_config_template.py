@@ -18,9 +18,7 @@ mapcache_config_template = """<?xml version="1.0" encoding="UTF-8"?>
    </grid>
 {% endfor %}
 {% for layername, layer in layers.items() %}{%
-if layer['type'] != 'mapnik' and (
-    'min_resolution_seed' not in layer or
-    min(layer['grid_ref']['resolutions']) < layer['min_resolution_seed']) %}
+if layer['type'] == 'wms' or 'wms_url' in layer %}
    <source name="{{layername}}" type="wms">
       <getmap>
          <params>
@@ -30,14 +28,12 @@ if layer['type'] != 'mapnik' and (
          </params>
       </getmap>
       <http>
-         <url>{{layer['url']}}</url>
+         <url>{{layer['wms_url'] if 'wms_url' in layer else layer['url']}}</url>
       </http>
    </source>
 {% endif %}{% endfor %}
 {% for layername, layer in layers.items() %}{%
-if layer['type'] != 'mapnik' and (
-    'min_resolution_seed' not in layer or
-    min(layer['grid_ref']['resolutions']) < layer['min_resolution_seed']) %}
+if layer['type'] == 'wms' or 'wms_url' in layer %}
    <tileset name="{{layername}}">
       <source>{{layername}}</source>
       <cache>default</cache>

@@ -16,7 +16,7 @@ install_requires = [
     'jinja2',
     'pyramid',
     'simplejson',
-    'httplib2',
+    'requests',
 ]
 setup_requires = [
     'nose==1.3.0',
@@ -28,36 +28,39 @@ tests_require = [
 ]
 
 setup(
-        name='tilecloud-chain',
-        version='0.7',
-        description='tilecloud chain',
-        long_description=README,
-        classifiers=[
-            'Development Status :: 4 - Beta',
-            'Environment :: Console',
-            'Intended Audience :: Developers',
-            'License :: OSI Approved :: BSD License',
-            'Programming Language :: Python',
-            'Topic :: Scientific/Engineering :: GIS',
+    name='tilecloud-chain',
+    version='0.7',
+    description='tilecloud chain',
+    long_description=README,
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Environment :: Console',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Programming Language :: Python',
+        'Topic :: Scientific/Engineering :: GIS',
+    ],
+    author='Stéphane Brunner',
+    author_email='stephane.brunner@camptocamp.com',
+    url='http://github.com/sbrunner/tilecloud-chain',
+    license='BSD',
+    keywords='gis tilecloud chain',
+    packages=find_packages(exclude=["*.tests", "*.tests.*"]),
+    include_package_data=True,
+    zip_safe=False,
+    install_requires=install_requires,
+    setup_requires=setup_requires,
+    tests_require=tests_require,
+    entry_points={
+        'console_scripts': [
+            'generate_tiles = tilecloud_chain.generate:main',
+            'generate_controller = tilecloud_chain.controller:main',
         ],
-        author='Stéphane Brunner',
-        author_email='stephane.brunner@camptocamp.com',
-        url='http://github.com/sbrunner/tilecloud-chain',
-        license='BSD',
-        keywords='gis tilecloud chain',
-        packages=find_packages(exclude=["*.tests", "*.tests.*"]),
-        include_package_data=True,
-        zip_safe=False,
-        install_requires=install_requires,
-        setup_requires=setup_requires,
-        tests_require=tests_require,
-        entry_points={
-            'console_scripts': [
-                'generate_tiles = tilecloud_chain.generate:main',
-                'generate_controller = tilecloud_chain.controller:main',
-            ],
-            'pyramid.scaffold': [
-                'tilecloud_chain = tilecloud_chain.scaffolds:Create',
-            ],
-        }
+        'pyramid.scaffold': [
+            'tilecloud_chain = tilecloud_chain.scaffolds:Create',
+        ],
+        'paste.app_factory': [
+            'server = tilecloud_chain.server:app_factory',
+        ],
+    }
 )

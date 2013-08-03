@@ -698,7 +698,7 @@ def _generate_wmts_capabilities(gene, options):
 
     cache = gene.caches[options.cache]
     _validate_generate_wmts_capabilities(gene, cache)
-    serve = 'serve' in gene.config
+    server = 'server' in gene.config
 
     base_urls = []
     if cache['http_url']:
@@ -717,11 +717,11 @@ def _generate_wmts_capabilities(gene, options):
         layers=gene.layers,
         grids=gene.grids,
         getcapabilities=base_urls[0] + (
-            '/1.0.0/WMTSCapabilities.xml' if serve
+            '/1.0.0/WMTSCapabilities.xml' if server
             else cache['wmtscapabilities_file']),
         base_urls=base_urls,
         get_tile_matrix_identifier=get_tile_matrix_identifier,
-        serve=serve,
+        server=server,
         enumerate=enumerate, ceil=math.ceil, int=int
     )
 
@@ -752,11 +752,11 @@ def _generate_apache_config(gene, options):
         exit(1)  # pragma: no cover
 
     cache = gene.caches[options.cache]
-    use_serve = 'serve' in gene.config
+    use_server = 'server' in gene.config
 
     f = open(gene.config['apache']['config_file'], 'w')
 
-    if not use_serve:
+    if not use_server:
         f.write("""<Location %(location)s>
     ExpiresActive on
     ExpiresDefault "now plus %(expires)i hours"
@@ -791,7 +791,7 @@ Alias %(location)s %(files_folder)s
     if use_mapcache:
         if not gene.validate_mapcache_config():
             exit(1)  # pragma: no cover
-    if use_mapcache and not use_serve:
+    if use_mapcache and not use_server:
         f.write("\n")
         for l in gene.config['layers']:
             layer = gene.config['layers'][l]

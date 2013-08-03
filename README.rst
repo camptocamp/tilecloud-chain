@@ -298,39 +298,55 @@ To generate the MapCache configuration we use the command::
     ./buildout/bin/generate_controller --generate-mapcache-config
 
 
-Serve the tiles
----------------
+Distribute the tiles
+--------------------
 
-There two ways to serve the tiles, with Apache configuration, or with a Python wiew.
+There two ways to serve the tiles, with Apache configuration, or with an internal server.
 
-The advantage of the python view are:
+The advantage of the internal server are:
 
- * Can serve Mbtiles or Berkley DB.
- * Return `204 No Content` HTTP code in place of `404 Not Found` (or `403 Forbidden` for s3).
- * Can be used in `KVP` mode.
- * Can have zone per layer where are the tiles, otherwise it redirect on mapcache.
+* Can distribute Mbtiles or Berkley DB.
+* Return ``204 No Content`` HTTP code in place of ``404 Not Found`` (or ``403 Forbidden`` for s3).
+* Can be used in `KVP` mode.
+* Can have zone per layer where are the tiles, otherwise it redirect on mapcache.
 
 To generate the Apache configuration we use the command::
 
     ./buildout/bin/generate_controller --generate-apache-config
 
-To use tue Python view you should used the following:
+The internal server can be used as a python view with:
 
-..code:: python
+.. code:: python
 
     config.get_settings().update({
         'tilegeneration_configfile': '<the configuration file>',
     })
-    config.add_route('serve_tiles', '/tiles/*path')
-    config.add_view('tilecloud_chain.views.serve:Serve', route_name='serve_tiles')
+    config.add_route('tiles', '/tiles/*path')
+    config.add_view('tilecloud_chain.server:PyramidView', route_name='tiles')
 
 ..*
+
+or as a WSGI server with:
+
+.. code:: python
+
+    path = '/path/to/project'
+    sys.path.append(path)
+    from tilecloud_chain.server import Server
+    application = Server('<path to config file>') 
+
+with the apache configuration::
+
+    WSGIScriptAlias /tiles <above python scipt>
+
+To use tue Python view you should used the following:
+
 
 And configure as it:
 
 .. code:: yaml
 
-    serve:
+    server:
         layers: a_layer # Restrict to serve an sertain number of layers [default to all]
         cache: mbtiles # The used cache [default use generation/default_cache]
         # the url without location to MapCache, [default to http://localhost/]
@@ -341,15 +357,15 @@ And configure as it:
         # allowed extension in the static path (default value), not used for s3.
         static_allow_extension: [jpeg, png, xml]
 
-The minimal config is to enhable it:
+The minimal config is to enable it:
 
 .. code:: yaml
 
-    serve:
+    server: {}
 
-You should also configure the `http_url` of the used `cache`, to somthing like
-`https://%(host)s/${instanceid}/tiles` to don't use the `serve` view, and
-`https://%(host)s/${instanceid}/wsgi/tiles/wmts` to use it.
+You should also configure the ``http_url`` of the used `cache`, to somthing like
+``https://%(host)s/${instanceid}/tiles`` to don't use the internal server, and
+``https://%(host)s/${instanceid}/wsgi/tiles/wmts`` to use it.
 
 
 Generate configuration in buildout

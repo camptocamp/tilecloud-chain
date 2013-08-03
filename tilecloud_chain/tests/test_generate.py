@@ -223,7 +223,7 @@ class TestGenerate(CompareCase):
             )
         l.check()
 
-    @attr(empty_bboxp=True)
+    @attr(empty_bbox=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_empty_bbox(self, l):

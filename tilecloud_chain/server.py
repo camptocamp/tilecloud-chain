@@ -28,42 +28,38 @@
 
 import os
 import logging
-import httplib2
+import requests
 import types
 import datetime
 from urllib import urlencode
+from urlparse import parse_qs
 
 from tilecloud import Tile, TileCoord
 from tilecloud.lib.s3 import S3Connection
 from tilecloud_chain import TileGeneration
 
-from pyramid.httpexceptions import HTTPBadRequest, HTTPNoContent, HTTPNotFound, \
-    HTTPForbidden
-
 
 logger = logging.getLogger(__name__)
 
 
-class Serve:
+class Server:
 
-    def __init__(self, request):
-        self.request = request
-        self.settings = request.registry.settings
+    def __init__(self, config_file):
         self.filters = {}
-        self.http = httplib2.Http()
 
-        self.tilegeneration = TileGeneration(self.settings['tilegeneration_configfile'])
+        logger.info("Config file: '%s'" % config_file)
+        self.tilegeneration = TileGeneration(config_file)
         if not self.tilegeneration.validate_apache_config():  # pragma: no cover
             raise "Apache configuration error"
 
         self.expires_hours = self.tilegeneration.config['apache']['expires']
-        self.static_allow_extension = self.tilegeneration.config['serve']['static_allow_extension'] \
-            if 'static_allow_extension' in self.tilegeneration.config['serve'] \
+        self.static_allow_extension = self.tilegeneration.config['server']['static_allow_extension'] \
+            if 'static_allow_extension' in self.tilegeneration.config['server'] \
             else ['jpeg', 'png', 'xml']
 
         self.cache = self.tilegeneration.caches[
-            self.tilegeneration.config['serve']['cache'] if
-            'cache' in self.tilegeneration.config['serve'] else
+            self.tilegeneration.config['server']['cache'] if
+            'cache' in self.tilegeneration.config['server'] else
             self.tilegeneration.config['generation']['default_cache']
         ]
 
@@ -84,20 +80,20 @@ class Serve:
 
             def _get(self, path):
                 if path.split('.')[-1] not in self.static_allow_extension:  # pragma: no cover
-                    raise HTTPForbidden
+                    return self.error(403, path)
                 if not os.path.isfile(folder + path):  # pragma: no cover
-                    raise HTTPNotFound
+                    return self.error(404, path)
                 with open(folder + path, 'rb') as file:
                     data = file.read()
                 return data
         # get capabilities or other static files
         self._get = types.MethodType(_get, self)
 
-        geoms_redirect = bool(self.tilegeneration.config['serve']['geoms_redirect']) if \
-            'geoms_redirect' in self.tilegeneration.config['serve'] else False
+        geoms_redirect = bool(self.tilegeneration.config['server']['geoms_redirect']) if \
+            'geoms_redirect' in self.tilegeneration.config['server'] else False
 
-        self.layers = self.tilegeneration.config['serve']['layers'] if \
-            'layers' in self.tilegeneration.config['serve'] else \
+        self.layers = self.tilegeneration.config['server']['layers'] if \
+            'layers' in self.tilegeneration.config['server'] else \
             self.tilegeneration.layers.keys()
         self.stores = {}
         for layer_name in self.layers:
@@ -108,12 +104,12 @@ class Serve:
                 if not self.tilegeneration.validate_mapcache_config():  # pragma: no cover
                     raise "Mapcache configuration error"
 
-                mapcache_base = self.tilegeneration.config['serve']['mapcache_base'] if \
-                    'mapcache_base' in self.tilegeneration.config['serve'] else \
+                mapcache_base = self.tilegeneration.config['server']['mapcache_base'] if \
+                    'mapcache_base' in self.tilegeneration.config['server'] else \
                     'http://localhost/'
-                self.mapcache_baseurl = mapcache_base + self.tilegeneration.config['apache']['location']
-                self.mapcache_header = self.tilegeneration.config['serve']['mapcache_headers'] if \
-                    'mapcache_headers' in self.tilegeneration.config['serve'] else {}
+                self.mapcache_baseurl = mapcache_base + self.tilegeneration.config['mapcache']['location'] + '/wmts'
+                self.mapcache_header = self.tilegeneration.config['server']['mapcache_headers'] if \
+                    'mapcache_headers' in self.tilegeneration.config['server'] else {}
 
                 self.filters[layer_name] = self.tilegeneration.get_geoms_filter(
                     layer=layer,
@@ -145,16 +141,27 @@ class Serve:
                 self.stores['/'.join(store_def['ref'])] = \
                     self.tilegeneration.get_store(self.cache, layer, store_def['dimensions'])
 
-    def __call__(self):
+    def __call__(self, environ, start_response):
         params = {}
+        for key, value in parse_qs(environ['QUERY_STRING'], True).items():
+            params[key.upper()] = value[0]
+
+        path = None if len(params) > 0 else environ['PATH_INFO'][1:].split('/')
+
+        return self.serve(path, params, start_response=start_response)
+
+    def serve(self, path, params, **kwargs):
         dimensions = []
 
-        if 'path' in self.request.matchdict:
-            path = self.request.matchdict['path']
+        if path is not None:
             if len(path) >= 1 and path[0] == 'static':
                 return self._get('/' + '/'.join(path[1:]))
             elif len(path) >= 1 and path[0] != 'wmts':  # pragma: no cover
-                raise HTTPNotFound("Type '%s' don't exists, allows values: 'wmts' or 'static'")
+                return self.error(
+                    404,
+                    "Type '%s' don't exists, allows values: 'wmts' or 'static'" % path[0],
+                    **kwargs
+                )
             path = path[1:]  # remove type
 
             if len(path) == 2 and path[0] == '1.0.0' and path[1].lower() == 'wmtscapabilities.xml':
@@ -162,7 +169,7 @@ class Serve:
                 params['VERSION'] = '1.0.0'
                 params['REQUEST'] = 'GetCapabilities'
             elif len(path) < 7:
-                raise HTTPBadRequest("Not enough path")
+                return self.error(400, "Not enough path", **kwargs)
             else:
                 params['SERVICE'] = 'WMTS'
                 params['VERSION'] = path[0]
@@ -173,7 +180,7 @@ class Serve:
                 if params['LAYER'] in self.layers:
                     layer = self.tilegeneration.layers[params['LAYER']]
                 else:
-                    raise HTTPBadRequest("Wrong Layer '%s'" % params['LAYER'])
+                    return self.error(400, "Wrong Layer '%s'" % params['LAYER'], **kwargs)
 
                 index = 3
                 dimensions = path[index:index+len(layer['dimensions'])]
@@ -183,7 +190,7 @@ class Serve:
 
                 last = path[-1].split('.')
                 if len(path) < index + 4:  # pragma: no cover
-                    raise HTTPBadRequest("Not enough path")
+                    return self.error(400, "Not enough path", **kwargs)
                 params['TILEMATRIXSET'] = path[index]
                 params['TILEMATRIX'] = path[index + 1]
                 params['TILEROW'] = path[index + 2]
@@ -191,7 +198,7 @@ class Serve:
                     params['REQUEST'] = 'GetTile'
                     params['TILECOL'] = last[0]
                     if last[1] != layer['extension']:  # pragma: no cover
-                        raise HTTPBadRequest("Wrong extention '%s'" % last[1])
+                        return self.error(400, "Wrong extention '%s'" % last[1], **kwargs)
                 elif len(path) == index + 6:
                     params['REQUEST'] = 'GetFeatureInfo'
                     params['TILECOL'] = path[index + 3]
@@ -199,29 +206,26 @@ class Serve:
                     params['J'] = last[0]
                     params['INFO_FORMAT'] = layer['info_formats'][0]
                 else:  # pragma: no cover
-                    raise HTTPBadRequest("Wrong path length")
+                    return self.error(400, "Wrong path length", **kwargs)
 
                 params['FORMAT'] = layer['mime_type']
         else:
-            for param, value in self.request.params.items():
-                params[param.upper()] = value
-
             if \
                     not 'SERVICE' in params or \
                     not 'REQUEST' in params or \
                     not 'VERSION' in params:
-                raise HTTPBadRequest("Not all required parameters are present")
+                return self.error(400, "Not all required parameters are present", **kwargs)
 
         if params['SERVICE'] != 'WMTS':
-            raise HTTPBadRequest("Wrong Service '%s'" % params['SERVICE'])
+            return self.error(400, "Wrong Service '%s'" % params['SERVICE'], **kwargs)
         if params['VERSION'] != '1.0.0':
-            raise HTTPBadRequest("Wrong Version '%s'" % params['VERSION'])
+            return self.error(400, "Wrong Version '%s'" % params['VERSION'], **kwargs)
 
         if params['REQUEST'] == 'GetCapabilities':
             wmtscapabilities_file = self.cache['wmtscapabilities_file']
-            self.request.response.body = self._get(wmtscapabilities_file)
-            self.request.response.content_type = "application/xml"
-            return self.request.response
+            return self.responce(self._get(wmtscapabilities_file), headers={
+                'Content-Type': "application/xml"
+            }, **kwargs)
 
         if \
                 not 'FORMAT' in params or \
@@ -230,13 +234,13 @@ class Serve:
                 not 'TILEMATRIX' in params or \
                 not 'TILEROW' in params or \
                 not 'TILECOL' in params:  # pragma: no cover
-            raise HTTPBadRequest("Not all required parameters are present")
+            return self.error(400, "Not all required parameters are present", **kwargs)
 
-        if 'path' not in self.request.matchdict:
+        if path is None:
             if params['LAYER'] in self.layers:
                 layer = self.tilegeneration.layers[params['LAYER']]
             else:
-                raise HTTPBadRequest("Wrong Layer '%s'" % params['LAYER'])
+                return self.error(400, "Wrong Layer '%s'" % params['LAYER'], **kwargs)
 
             for dimension in layer['dimensions']:
                 dimensions.append(
@@ -246,15 +250,15 @@ class Serve:
                 )
 
         if params['STYLE'] != layer['wmts_style']:
-            raise HTTPBadRequest("Wrong Style '%s'" % params['STYLE'])
+            return self.error(400, "Wrong Style '%s'" % params['STYLE'], **kwargs)
         if params['TILEMATRIXSET'] != layer['grid']:
-            raise HTTPBadRequest("Wrong TileMatrixSet '%s'" % params['TILEMATRIXSET'])
+            return self.error(400, "Wrong TileMatrixSet '%s'" % params['TILEMATRIXSET'], **kwargs)
 
         tile = Tile(TileCoord(
             # TODO fix for matrix_identifier = resolution
             int(params['TILEMATRIX']),
-            int(params['TILEROW']),
             int(params['TILECOL']),
+            int(params['TILEROW']),
         ))
 
         if params['REQUEST'] == 'GetFeatureInfo':
@@ -262,9 +266,9 @@ class Serve:
                     not 'I' in params or \
                     not 'J' in params or \
                     not 'INFO_FORMAT' in params:  # pragma: no cover
-                raise HTTPBadRequest("Not all required parameters are present")
+                return self.error(400, "Not all required parameters are present", **kwargs)
             if 'query_layers' in layer:
-                responce, content = self.http.request(
+                return self.forward(
                     layer['url'] + '?' + urlencode({
                         'SERVICE': 'WMS',
                         'VERSION': '1.1.1',
@@ -280,61 +284,138 @@ class Serve:
                         'BBOX': layer['grid_ref']['obj'].extent(tile.tilecoord),
                         'X': params['I'],
                         'Y': params['J'],
-                    }),
+                    }), no_cache=True, **kwargs
                 )
-                self.request.response.body = content
-                self.request.response.content_type = responce['content-type']
-                self.request.response.status = responce.status
-                if responce.status < 300:
-                    self.request.response.headers['Expires'] = \
-                        datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
-                    self.request.response.headers['Cache-Control'] = "max-age=" + str(3600 * self.expires_hours)
-                return self.request.response
             else:  # pragma: no cover
-                raise HTTPBadRequest("Layer '%s' not queryable" % layer['name'])
+                return self.error(400, "Layer '%s' not queryable" % layer['name'], **kwargs)
 
         if params['REQUEST'] != 'GetTile':
-            raise HTTPBadRequest("Wrong Request '%s'" % params['REQUEST'])
+            return self.error(400, "Wrong Request '%s'" % params['REQUEST'], **kwargs)
 
         if params['FORMAT'] != layer['mime_type']:
-            raise HTTPBadRequest("Wrong Format '%s'" % params['FORMAT'])
+            return self.error(400, "Wrong Format '%s'" % params['FORMAT'], **kwargs)
 
         if layer['name'] in self.filters:
             layer_filter = self.filters[layer['name']]
             if not layer_filter(tile):  # pragma: no cover
-                responce, content = self.http.request(
+                return self.forward(
                     self.mapcache_baseurl + '?' + urlencode(params),
-                    headers=self.mapcache_header
+                    headers=self.mapcache_header,
+                    **kwargs
                 )
-                self.request.response.body = content
-                self.request.response.content_type = responce['content-type']
-                self.request.response.status = responce.status
-                if responce.status < 300:
-                    self.request.response.headers['Expires'] = \
-                        datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
-                    self.request.response.headers['Cache-Control'] = "max-age=" + str(3600 * self.expires_hours)
-                return self.request.response
 
         store_ref = '/'.join([params['LAYER']] + dimensions)
         if store_ref in self.stores:  # pragma: no cover
             store = self.stores[store_ref]
         else:  # pragma: no cover
-            raise HTTPBadRequest(
+            return self.error(
+                400,
                 "No store found for layer '%s' and dimensions %s" % (
                     layer['name'], ', '.join(dimensions)
-                )
+                ),
+                **kwargs
             )
 
         tile = store.get_one(tile)
         if tile:
-            if type(tile.data) == buffer:
-                self.request.response.body_file = tile.data
-            else:
-                self.request.response.body = tile.data
-            self.request.response.content_type = tile.content_type
-            self.request.response.headers['Expires'] = \
-                datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
-            self.request.response.headers['Cache-Control'] = "max-age=" + str(3600 * self.expires_hours)
-            return self.request.response
+            return self.responce(tile.data, headers={
+                'Content-Type': tile.content_type,
+                'Expires': (
+                    datetime.datetime.utcnow() +
+                    datetime.timedelta(hours=self.expires_hours)
+                ).isoformat(),
+                'Cache-Control': "max-age=%i" % (3600 * self.expires_hours)
+            }, **kwargs)
         else:
-            raise HTTPNoContent()
+            return self.error(204, **kwargs)
+
+    def forward(self, url, headers={}, no_cache=False, **kwargs):
+        if no_cache:
+            headers['Cache-Control'] = 'no-cache'
+            headers['Pragma'] = 'no-cache'
+
+        responce = requests.get(url, headers=headers)
+        if responce.status_code == 200:
+            responce_headers = responce.headers.copy()
+            if no_cache:
+                responce_headers['Cache-Control'] = 'no-cache, no-store'
+                responce_headers['Pragma'] = 'no-cache'
+            else:  # pragma: no cover
+                responce_headers['Expires'] = (
+                    datetime.datetime.utcnow() +
+                    datetime.timedelta(hours=self.expires_hours)
+                ).isoformat()
+                responce_headers['Cache-Control'] = "max-age=%i" % (3600 * self.expires_hours)
+            responce_headers
+            return self.responce(responce.content, headers=responce_headers, **kwargs)
+        else:  # pragma: no cover
+            responce_headers = responce.headers.copy()
+            responce_headers['Cache-Control'] = 'no-cache, no-store'
+            responce_headers['Pragma'] = 'no-cache'
+            message = "The URL '%s' return '%i %s', content:\n%s" % (
+                url, responce.status_code, responce.reason, responce.text,
+            )
+            logger.warning(message)
+            return self.error(502, headers=responce_headers, message=message, **kwargs)
+
+    HTTP_MESSAGES = {
+        204: '204 No Content',
+        400: '400 Bad Request',
+        403: '403 Forbidden',
+        404: '404 Not Found',
+        502: '502 Bad Gateway',
+    }
+
+    def error(self, code, message='', start_response=None):
+        start_response(self.HTTP_MESSAGES[code], [])
+        return [message]
+
+    def responce(self, data, headers={}, start_response=None):
+        headers['Content-Length'] = str(len(data))
+        start_response('200 OK', headers.items())
+        return [data]
+
+
+def app_factory(global_config, configfile='tilegeneration/config.yaml', **local_conf):
+    return Server(configfile)
+
+
+class PyramidView(Server):
+
+    from pyramid.httpexceptions import HTTPNoContent, HTTPBadRequest, \
+        HTTPForbidden, HTTPNotFound, HTTPBadGateway
+
+    HTTP_EXCEPTIONS = {
+        204: HTTPNoContent,
+        400: HTTPBadRequest,
+        403: HTTPForbidden,
+        404: HTTPNotFound,
+        502: HTTPBadGateway,
+    }
+
+    def __init__(self, request):
+        self.request = request
+        Server.__init__(self, request.registry.settings['tilegeneration_configfile'])
+
+    def __call__(self):
+        params = {}
+        path = None
+
+        if 'path' in self.request.matchdict:
+            path = self.request.matchdict['path']
+        else:
+            for param, value in self.request.params.items():
+                params[param.upper()] = value
+
+        return self.serve(path, params)
+
+    def error(self, code, message=''):
+        raise self.HTTP_EXCEPTIONS[code](message)
+
+    def responce(self, data, headers={}):
+        self.request.response.headers = headers
+        if type(data) == buffer:
+            self.request.response.body_file = data
+        else:
+            self.request.response.body = data
+        return self.request.response
