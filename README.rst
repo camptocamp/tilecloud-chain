@@ -338,6 +338,8 @@ And configure as it:
         mapcache_headers: # headers, can be used to acces to an other Apache vhost [default to {}]
             Host: localhost
         geoms_redirect: true # use the geoms to redirect to MapCache [defaut to false]
+        # allowed extension in the static path (default value), not used for s3.
+        static_allow_extension: [jpeg, png, xml]
 
 The minimal config is to enhable it:
 
@@ -347,7 +349,7 @@ The minimal config is to enhable it:
 
 You should also configure the `http_url` of the used `cache`, to somthing like
 `https://%(host)s/${instanceid}/tiles` to don't use the `serve` view, and
-`https://%(host)s/${instanceid}/wsgi/tiles` to use it.
+`https://%(host)s/${instanceid}/wsgi/tiles/wmts` to use it.
 
 
 Generate configuration in buildout

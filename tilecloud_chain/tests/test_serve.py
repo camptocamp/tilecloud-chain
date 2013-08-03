@@ -590,48 +590,42 @@ class TestServe(CompareCase):
         }
         request.matchdict = {
             'path': [
-                '1.0.0', 'point_hash', 'default', '2012', 'swissgrid_5', '1', '14', '11.png'
+                'wmts', '1.0.0', 'point_hash', 'default', '2012', 'swissgrid_5', '1', '14', '11.png'
             ]
         }
         serve = Serve(request)
         serve()
         self.assertEquals(request.response.content_type, 'image/png')
 
-        request.matchdict['path'][6] = '15'
+        request.matchdict['path'][7] = '15'
         self.assertRaises(HTTPNoContent, serve)
 
-        request.matchdict['path'][6] = '14'
-        request.matchdict['path'][0] = '0.9'
+        request.matchdict['path'][7] = '14'
+        request.matchdict['path'][1] = '0.9'
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'][0] = '1.0.0'
-        request.matchdict['path'][7] = '14.jpeg'
+        request.matchdict['path'][1] = '1.0.0'
+        request.matchdict['path'][8] = '14.jpeg'
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'][7] = '14.png'
-        request.matchdict['path'][1] = 'test'
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.matchdict['path'][1] = 'point_hash'
+        request.matchdict['path'][8] = '14.png'
         request.matchdict['path'][2] = 'test'
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'][2] = 'default'
-        request.matchdict['path'][4] = 'test'
+        request.matchdict['path'][2] = 'point_hash'
+        request.matchdict['path'][3] = 'test'
+        self.assertRaises(HTTPBadRequest, serve)
+
+        request.matchdict['path'][3] = 'default'
+        request.matchdict['path'][5] = 'test'
         self.assertRaises(HTTPBadRequest, serve)
 
         request.matchdict['path'] = [
-            'point_hash', 'default', 'swissgrid_5', '1', '14', '11.png'
+            'wmts', 'point_hash', 'default', 'swissgrid_5', '1', '14', '11.png'
         ]
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'] = [
-            '1.0.0', 'WMTSCapabilities.xml'
-        ]
-        Serve(request)()
-        self.assertEquals(request.response.content_type, 'application/xml')
-        self.assert_result_equals(
-            request.response.body,
+        CAPABILITIES = (
             """<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
               xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -760,6 +754,19 @@ class TestServe(CompareCase):
 
   </Contents>
 </Capabilities>""")
+        request.matchdict['path'] = [
+            'wmts', '1.0.0', 'WMTSCapabilities.xml'
+        ]
+        Serve(request)()
+        self.assertEquals(request.response.content_type, 'application/xml')
+        self.assert_result_equals(request.response.body, CAPABILITIES)
+
+        request.matchdict['path'] = [
+            'static', '1.0.0', 'WMTSCapabilities.xml'
+        ]
+        Serve(request)()
+        self.assertEquals(request.response.content_type, 'application/xml')
+        self.assert_result_equals(request.response.body, CAPABILITIES)
 
         l.check()
 
@@ -806,7 +813,7 @@ class TestServe(CompareCase):
         }
         request.matchdict = {
             'path': [
-                '1.0.0', 'point_hash', 'default', '2012', 'swissgrid_5', '1', '14', '11', '114', '111.xml'
+                'wmts', '1.0.0', 'point_hash', 'default', '2012', 'swissgrid_5', '1', '14', '11', '114', '111.xml'
             ]
         }
         request.params = {

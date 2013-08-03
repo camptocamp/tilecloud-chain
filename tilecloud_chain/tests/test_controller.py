@@ -1250,13 +1250,7 @@ MapCacheAlias /mapcache "%s"
         self.assert_main_equals(
             cmd='./buildout/bin/generate_controller --apache -c tilegeneration/test-serve.yaml',
             main_func=controller.main,
-            expected=[['tiles.conf', u"""<Location /tiles>
-    ExpiresActive on
-    ExpiresDefault "now plus 8 hours"
-</Location>
-
-Alias /tiles /tmp/tiles/mbtiles
-
+            expected=[['tiles.conf', u"""
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
 

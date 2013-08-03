@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import logging
 import httplib2
 import types
@@ -36,7 +37,8 @@ from tilecloud import Tile, TileCoord
 from tilecloud.lib.s3 import S3Connection
 from tilecloud_chain import TileGeneration
 
-from pyramid.httpexceptions import HTTPBadRequest, HTTPNoContent
+from pyramid.httpexceptions import HTTPBadRequest, HTTPNoContent, HTTPNotFound, \
+    HTTPForbidden
 
 
 logger = logging.getLogger(__name__)
@@ -55,6 +57,9 @@ class Serve:
             raise "Apache configuration error"
 
         self.expires_hours = self.tilegeneration.config['apache']['expires']
+        self.static_allow_extension = self.tilegeneration.config['serve']['static_allow_extension'] \
+            if 'static_allow_extension' in self.tilegeneration.config['serve'] \
+            else ['jpeg', 'png', 'xml']
 
         self.cache = self.tilegeneration.caches[
             self.tilegeneration.config['serve']['cache'] if
@@ -78,6 +83,10 @@ class Serve:
             folder = self.cache['folder'] or ''
 
             def _get(self, path):
+                if path.split('.')[-1] not in self.static_allow_extension:  # pragma: no cover
+                    raise HTTPForbidden
+                if not os.path.isfile(folder + path):  # pragma: no cover
+                    raise HTTPNotFound
                 with open(folder + path, 'rb') as file:
                     data = file.read()
                 return data
@@ -142,6 +151,12 @@ class Serve:
 
         if 'path' in self.request.matchdict:
             path = self.request.matchdict['path']
+            if len(path) >= 1 and path[0] == 'static':
+                return self._get('/' + '/'.join(path[1:]))
+            elif len(path) >= 1 and path[0] != 'wmts':  # pragma: no cover
+                raise HTTPNotFound("Type '%s' don't exists, allows values: 'wmts' or 'static'")
+            path = path[1:]  # remove type
+
             if len(path) == 2 and path[0] == '1.0.0' and path[1].lower() == 'wmtscapabilities.xml':
                 params['SERVICE'] = 'WMTS'
                 params['VERSION'] = '1.0.0'

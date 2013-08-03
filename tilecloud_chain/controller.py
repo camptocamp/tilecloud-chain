@@ -750,18 +750,21 @@ def _generate_apache_config(gene, options):
         exit(1)  # pragma: no cover
 
     cache = gene.caches[options.cache]
+    use_serve = 'serve' in gene.config
 
     f = open(gene.config['apache']['config_file'], 'w')
-    f.write("""<Location %(location)s>
+
+    if not use_serve:
+        f.write("""<Location %(location)s>
     ExpiresActive on
     ExpiresDefault "now plus %(expires)i hours"
 </Location>
 """ % {
-        'location': gene.config['apache']['location'],
-        'expires': gene.config['apache']['expires']
-    })
-    if cache['type'] == 's3':
-        f.write("""
+            'location': gene.config['apache']['location'],
+            'expires': gene.config['apache']['expires']
+        })
+        if cache['type'] == 's3':
+            f.write("""
 <Proxy http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s*>
     Order deny,allow
     Allow from all
@@ -769,20 +772,19 @@ def _generate_apache_config(gene, options):
 ProxyPass %(location)s/ http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s
 ProxyPassReverse %(location)s/ http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s
 """ % {
-            'location': gene.config['apache']['location'],
-            'region': cache['region'],
-            'bucket': cache['bucket'],
-            'folder': cache['folder']
-        })
-    elif 'folder' in cache:
-        f.write("""
+                'location': gene.config['apache']['location'],
+                'region': cache['region'],
+                'bucket': cache['bucket'],
+                'folder': cache['folder']
+            })
+        elif cache['type'] == 'filesystem':
+            f.write("""
 Alias %(location)s %(files_folder)s
 """ % {
-            'location': gene.config['apache']['location'],
-            'files_folder': cache['folder']
-        })
+                'location': gene.config['apache']['location'],
+                'files_folder': cache['folder']
+            })
 
-    use_serve = 'serve' in gene.config
     use_mapcache = 'mapcache' in gene.config
     if use_mapcache:
         if not gene.validate_mapcache_config():
