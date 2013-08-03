@@ -224,8 +224,10 @@ def main():
             run_remote(cmd, host, project_dir, gene)
         if 'apache_content' in gene.config['generation'] and 'apache_config' in gene.config['generation']:
             run_remote(
-                'echo %s > %s' % (gene.config['generation']['apache_content'],
-                gene.config['generation']['apache_config']), host, project_dir, gene
+                'echo %s > %s' % (
+                    gene.config['generation']['apache_content'],
+                    gene.config['generation']['apache_config']
+                ), host, project_dir, gene
             )
         run_remote('sudo apache2ctl graceful', host, project_dir, gene)
 
