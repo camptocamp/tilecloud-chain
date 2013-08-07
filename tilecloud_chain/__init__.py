@@ -40,54 +40,54 @@ logger = logging.getLogger(__name__)
 
 
 def add_comon_options(parser):
-    parser.add_option(
+    parser.add_argument(
         '-c', '--config', default='tilegeneration/config.yaml',
         help='path to the configuration file', metavar="FILE"
     )
-    parser.add_option(
-        '-b', '--bbox',
-        help='restrict to specified bounding box (minx,miny,maxx,maxy)'
+    parser.add_argument(
+        '-b', '--bbox', nargs=4, type=float, metavar=('MINX', 'MINY', 'MAXX', 'MAXY'),
+        help='restrict to specified bounding box'
     )
-    parser.add_option(
+    parser.add_argument(
         '-z', '--zoom', default=None,
         help='restrict to specified zoom level, or a zooms range (2-5), or a zooms list (2,4,5)'
     )
-    parser.add_option(
+    parser.add_argument(
         '-l', '--layer', metavar="NAME",
         help='the layer to generate'
     )
-    parser.add_option(
+    parser.add_argument(
         '--no-geom', default=True, action="store_false", dest="geom",
         help="Don't the geometry available in the SQL"
     )
-    parser.add_option(
-        '-t', '--test', type='int', default=None,
+    parser.add_argument(
+        '-t', '--test', type=int, default=None,
         help='test with generating N tiles, and add log messages', metavar="N"
     )
-    parser.add_option(
+    parser.add_argument(
         '--cache', '--destination-cache',
         default=None, dest='cache', metavar="NAME",
         help='The cache name to use'
     )
-    parser.add_option(
+    parser.add_argument(
         '--time', '--measure-generation-time',
-        default=None, dest='time', metavar="N", type='int',
+        default=None, dest='time', metavar="N", type=int,
         help='Measure the generation time by creating N tiles to warm-up, '
         'N tile to do the measure and N tiles to slow-down'
     )
-    parser.add_option(
+    parser.add_argument(
         '-v', '--verbose', default=False, action="store_true",
         help='Display info message.'
     )
-    parser.add_option(
+    parser.add_argument(
         '-d', '--debug', default=False, action="store_true",
         help='Display debug message, and stop on first error.'
     )
-    parser.add_option(
-        '--near', default=None,
+    parser.add_argument(
+        '--near', default=None, type=float, nargs=2, metavar=('X', 'Y'),
         help='This option is a good replacement of --bbox, to used with '
         '--time or --test and --zoom, implies --no-geom. '
-        'It automatically measure a bbox around the NEAR position that corresponds to the metatiles.'
+        'It automatically measure a bbox around the X Y position that corresponds to the metatiles.'
     )
 
 
@@ -644,7 +644,7 @@ class TileGeneration:
                 exit('Option --near needs the option --zoom with one value.')
             if not (options.time or options.test):  # pragma: no cover
                 exit('Option --near needs the option --time or --test.')
-            position = [float(p) for p in options.near.split(',')] if options.near else [
+            position = options.near if options.near else [
                 (self.layer['bbox'][0] + self.layer['bbox'][2]) / 2,
                 (self.layer['bbox'][1] + self.layer['bbox'][3]) / 2,
             ]
@@ -666,7 +666,7 @@ class TileGeneration:
                 bbox[1] + (mt_origin[1] + nb_sqrt_mt) * mt_to_m,
             ])
         elif options.bbox:
-            self.init_geom([float(c) for c in options.bbox.split(',')])
+            self.init_geom(options.bbox)
         elif 'bbox' in self.layer:
             self.init_geom(self.layer['bbox'])
         else:

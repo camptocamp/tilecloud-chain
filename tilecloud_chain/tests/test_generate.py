@@ -230,7 +230,7 @@ class TestGenerate(CompareCase):
         for d in ('-d', ''):
             self.assert_tiles_generated(
                 cmd='./buildout/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml '
-                    '-l point_hash --bbox 700000,250000,800000,300000',
+                    '-l point_hash --bbox 700000 250000 800000 300000',
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern='1.0.0/%s',
@@ -343,7 +343,7 @@ class TestGenerate(CompareCase):
 
             self.assert_tiles_generated(
                 cmd='./buildout/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml -l polygon -z 0'
-                ' -b 550000,170000,560000,180000' % d,
+                ' -b 550000 170000 560000 180000' % d,
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern='1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png',
@@ -354,7 +354,7 @@ class TestGenerate(CompareCase):
 
             self.assert_tiles_generated(
                 cmd='./buildout/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml -l polygon -z 0'
-                ' -b 550000.0,170000.0,560000.0,180000.0' % d,
+                ' -b 550000.0 170000.0 560000.0 180000.0' % d,
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern='1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png',
@@ -586,7 +586,7 @@ size: 854
 
         self.assert_tiles_generated(
             cmd='./buildout/bin/generate_tiles -d -c tilegeneration/test-nosns.yaml -l point_hash'
-                ' --tiles-file error.list',
+                ' --tiles error.list',
             main_func=generate.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/point_hash/default/2012/swissgrid_5/%i/%i/%i.png',
