@@ -324,20 +324,33 @@ The internal server can be used as a python view with:
     config.add_route('tiles', '/tiles/*path')
     config.add_view('tilecloud_chain.server:PyramidView', route_name='tiles')
 
-..*
+or as a WSGI server with buildout, add in ``buildout.cfg``::
 
-or as a WSGI server with:
+    [buildout]
+        parts = ...
+            modwsgi_tiles
+            ...
 
-.. code:: python
+    [modwsgi_tiles]
+    recipe = collective.recipe.modwsgi
+    eggs = tileswitch
+    config-file = ${buildout:directory}/production.ini
+    app_name = tiles
 
-    path = '/path/to/project'
-    sys.path.append(path)
-    from tilecloud_chain.server import Server
-    application = Server('<path to config file>') 
+in ``production.ini``::
+
+    [app:tiles]
+    use = egg:tilecloud_chain#server
+    configfile = %(here)s/tilegeneration/config.yaml
 
 with the apache configuration::
 
-    WSGIScriptAlias /tiles <above python scipt>
+    WSGIDaemonProcess tiles:${vars:instanceid} display-name=%{GROUP} user=${vars:modwsgi_user}
+    WSGIScriptAlias /${vars:instanceid}/tiles ${buildout:directory/buildout/parts/modwsgi_tiles/wsgi}
+    <Location /${vars:instanceid}/tiles>
+        WSGIProcessGroup tiles:${vars:instanceid}
+        WSGIApplicationGroup %{GLOBAL}
+    </Location>
 
 To use tue Python view you should used the following:
 
@@ -676,7 +689,7 @@ Release 0.6
 7. Add coveralls support (https://coveralls.io/r/sbrunner/tilecloud-chain).
 
 8. Add an config option ``generation:error_file`` and a command option ``--tiles-file``
-   to store and regenerate errored tiles. 
+   to store and regenerate errored tiles.
 
 
 Release 0.5
