@@ -12,7 +12,8 @@ from boto import sns
 from copy import copy
 from datetime import timedelta
 from subprocess import Popen, PIPE
-from optparse import OptionParser
+from argparse import ArgumentParser
+
 from bottle import jinja2_template
 from tilecloud import Tile, TileStore, consume
 from tilecloud.lib.s3 import S3Connection
@@ -24,76 +25,81 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    parser = OptionParser(
-        'Used to generate the tiles from a WMS or Mapnik, to WMTS on filsystem or S3, optionaly use an SQS queue')
+    parser = ArgumentParser(
+        description='Used to generate the tiles from a WMS or Mapnik, '
+        'to WMTS on filsystem or S3, optionaly use an SQS queue',
+        prog='./buildout/bin/generate_controller'
+    )
     add_comon_options(parser)
-    parser.add_option(
-        '--deploy-config', default=None, dest="deploy_config", metavar="FILE",
-        help='path to the deploy configuration file'
-    )
-    parser.add_option(
-        '-s', '--status', default=False, action="store_true",
-        help='display status and exit'
-    )
-    parser.add_option(
-        '--disable-geodata', default=True, action="store_false", dest="geodata",
-        help='disable geodata synchronisation'
-    )
-    parser.add_option(
-        '--disable-code', default=True, action="store_false", dest="deploy_code",
-        help='disable deploy application code'
-    )
-    parser.add_option(
-        '--disable-database', default=True, action="store_false", dest="deploy_database",
-        help='disable deploy database'
-    )
-    parser.add_option(
-        '--disable-fillqueue', default=True, action="store_false", dest="fill_queue",
-        help='disable queue filling'
-    )
-    parser.add_option(
-        '--disable-tilesgen', default=True, action="store_false", dest="tiles_gen",
-        help='disable tile generation'
-    )
-    parser.add_option(
-        '-H', '--host', default=None,
-        help='The host used to generate tiles'
-    )
-    parser.add_option(
-        '--capabilities', '--generate_wmts_capabilities', default=False, action="store_true",
-        help='Generate the WMTS Capabilities and exit'
-    )
-    parser.add_option(
+    parser.add_argument(
         '--cost', '--calculate-cost', default=False, action="store_true",
         help='Calculate the cost to generate and upload the tiles'
     )
-    parser.add_option(
+    parser.add_argument(
         '--cost-algo', '--calculate-cost-algorithm', default='area', dest='cost_algo',
-        metavar="ALGORITHM", help="The ALGORITHM use to calculate the cost default base on the 'area' "
-        "of the genaration geometry, can also be 'count', to be base on number of tiles to generate."
+        choices=('area', 'count'),
+        help="The algorithm use to calculate the cost default base on the 'area' "
+        "of the generation geometry, can also be 'count', to be base on number of tiles to generate."
     )
-    parser.add_option(
-        '--ol', '--openlayers-test', default=False, action="store_true",
+    parser.add_argument(
+        '--capabilities', '--generate_wmts_capabilities', default=False, action="store_true",
+        help='Generate the WMTS Capabilities and exit'
+    )
+    parser.add_argument(
+        '--openlayers', '--generate-openlayers-test-page', default=False,
+        action="store_true", dest='openlayers',
         help='Generate openlayers test page'
     )
-    parser.add_option(
+    parser.add_argument(
         '--mapcache', '--generate-mapcache-config', default=False, action="store_true", dest='mapcache',
         help='Generate MapCache configuration file'
     )
-    parser.add_option(
+    parser.add_argument(
         '--apache', '--generate-apache-config', default=False, action="store_true", dest='apache',
         help='Generate Apache configuration file'
     )
-    parser.add_option(
+    parser.add_argument(
+        '--deploy-config', default=None, dest="deploy_config", metavar="FILE",
+        help='path to the deploy configuration file'
+    )
+    parser.add_argument(
+        '--status', default=False, action="store_true",
+        help='display the SQS queue status and exit'
+    )
+    parser.add_argument(
+        '--disable-geodata', default=True, action="store_false", dest="geodata",
+        help='disable geodata synchronisation'
+    )
+    parser.add_argument(
+        '--disable-code', default=True, action="store_false", dest="deploy_code",
+        help='disable deploy application code'
+    )
+    parser.add_argument(
+        '--disable-database', default=True, action="store_false", dest="deploy_database",
+        help='disable deploy database'
+    )
+    parser.add_argument(
+        '--disable-fillqueue', default=True, action="store_false", dest="fill_queue",
+        help='disable queue filling'
+    )
+    parser.add_argument(
+        '--disable-tilesgen', default=True, action="store_false", dest="tiles_gen",
+        help='disable tile generation'
+    )
+    parser.add_argument(
+        '--host', default=None,
+        help='The host used to generate tiles'
+    )
+    parser.add_argument(
         '--dump-config', default=False, action="store_true",
         help='Dump the used config with default values and exit'
     )
-    parser.add_option(
+    parser.add_argument(
         '--shutdown', default=False, action="store_true",
         help='Shut done the remote host after the task.'
     )
 
-    (options, args) = parser.parse_args()
+    options = parser.parse_args()
     gene = TileGeneration(options.config, options, layer_name=options.layer)
 
     if options.status:  # pragma: no cover
@@ -114,7 +120,7 @@ def main():
         _generate_apache_config(gene, options)
         sys.exit(0)
 
-    if options.ol:
+    if options.openlayers:
         _generate_openlayers(gene, options)
         sys.exit(0)
 
@@ -251,7 +257,7 @@ def main():
             processes.append(
                 run_remote_process(
                     './buildout/bin/generate_tiles ' +
-                    ' '.join(arguments), host, project_dir, gene
+                    ' '.join([str(a) for a in arguments]), host, project_dir, gene
                 )
             )
 
@@ -305,7 +311,7 @@ def main():
         project_dir = gene.config['generation']['code_folder']
         run_remote(
             './buildout/bin/generate_tiles ' +
-            ' '.join(arguments), host, project_dir, gene
+            ' '.join([str(a) for a in arguments]), host, project_dir, gene
         )
 
     if options.tiles_gen:  # pragma: no cover
@@ -321,7 +327,7 @@ def main():
             processes.append(
                 run_remote_process(
                     './buildout/bin/generate_tiles ' +
-                    ' '.join(arguments), host, project_dir, gene)
+                    ' '.join([str(a) for a in arguments]), host, project_dir, gene)
             )
 
         if options.shutdown:
@@ -372,9 +378,11 @@ def _get_arguments(options):
     if options.layer:
         arguments.extend(["--layer", options.layer])
     if options.near:
-        arguments.extend(["--near", str(options.near)])
+        arguments.append("--near")
+        arguments.extend(options.near)
     elif options.bbox:
-        arguments.extend(["--bbox", options.bbox])
+        arguments.append("--bbox")
+        arguments.extend(options.bbox)
     if options.zoom:
         arguments.extend(["--zoom", ','.join([str(z) for z in options.zoom])])
     if options.test:

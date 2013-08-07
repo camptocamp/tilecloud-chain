@@ -1786,7 +1786,7 @@ OpenLayers.Request.GET({
     }
 });"""
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test-fix.yaml',
+            cmd='./buildout/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml',
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],
@@ -1795,7 +1795,7 @@ OpenLayers.Request.GET({
         )
 
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test-fix.yaml --cache multi_host',
+            cmd='./buildout/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml --cache multi_host',
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],
@@ -1804,7 +1804,7 @@ OpenLayers.Request.GET({
         )
 
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test-fix.yaml --cache multi_url',
+            cmd='./buildout/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml --cache multi_url',
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],

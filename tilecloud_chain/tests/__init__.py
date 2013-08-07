@@ -54,7 +54,7 @@ class CompareCase(TestCase):
         self.assert_result_equals(result=out, **kargs)
 
     def assert_cmd_exit_equals(self, cmd, main_func, expected):
-        sys.argv = cmd.split(' ')
+        sys.argv = re.sub(' +', ' ', cmd).split(' ')
         try:
             main_func()
             assert("exit() not called.")
@@ -66,7 +66,7 @@ class CompareCase(TestCase):
             for expect in expected:
                 if os.path.exists(expect[0]):
                     os.remove(expect[0])
-        sys.argv = cmd.split(' ')
+        sys.argv = re.sub(' +', ' ', cmd).split(' ')
         try:
             main_func()
         except SystemExit:

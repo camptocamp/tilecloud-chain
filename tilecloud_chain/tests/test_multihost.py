@@ -107,7 +107,7 @@ config:
         self.assert_cmd_equals(
             cmd='./buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
             '--time 1 -l polygon --host localhost --disable-geodata --disable-database '
-            '--bbox 598000,198000,600000,200000 --zoom 4 --test 3',
+            '--bbox 598000 198000 600000 200000 --zoom 4 --test 3',
             main_func=controller.main,
             expected="""==== Sync and build code ====
 ==== Time results ====
@@ -125,7 +125,7 @@ config:
     def test_time_near(self):
         self.assert_cmd_equals(
             cmd='./buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
-            '-l point --time 50 --near 550000,180000 --zoom 3 --host localhost '
+            '-l point --time 50 --near 550000 180000 --zoom 3 --host localhost '
             '--disable-geodata --disable-database',
             main_func=controller.main,
             expected="""==== Sync and build code ====
@@ -144,7 +144,7 @@ config:
     def test_time_no_geom(self):
         self.assert_cmd_equals(
             cmd='./buildout/bin/generate_controller -c tilecloud_chain/tests/tilegeneration/test.yaml '
-            '-l point --time 1 --no-geom --bbox 550000,180000,555000,185000 --zoom 3 --host localhost '
+            '-l point --time 1 --no-geom --bbox 550000 180000 555000 185000 --zoom 3 --host localhost '
             '--disable-geodata --disable-database',
             main_func=controller.main,
             expected="""==== Sync and build code ====
@@ -164,7 +164,7 @@ config:
         class Opt:
             zoom = '3'
             test = 196
-            near = '600000,200000'
+            near = [600000.0, 200000.0]
             verbose = False
             debug = False
             time = None
