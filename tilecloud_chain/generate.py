@@ -103,7 +103,7 @@ def _gene(options, gene, layer):
             gene.get(URLTileStore(
                 tilelayouts=(WMSTileLayout(
                     url=gene.layer['url'],
-                    layers=gene.layer['layers'],
+                    layers=','.join(gene.layer['layers']),
                     srs=gene.layer['grid_ref']['srs'],
                     format=gene.layer['mime_type'],
                     border=gene.layer['meta_buffer'] if meta else 0,

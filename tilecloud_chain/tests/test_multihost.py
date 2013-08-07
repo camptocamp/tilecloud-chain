@@ -169,4 +169,4 @@ config:
             debug = False
             time = None
         gene = TileGeneration('tilecloud_chain/tests/tilegeneration/test.yaml', Opt(), 'point')
-        self.assertEquals(gene.geom.bounds, (583840.0, 173360.0, 624800.0, 214320.0))
+        self.assertEquals(gene.geoms[3].bounds, (583840.0, 173360.0, 624800.0, 214320.0))

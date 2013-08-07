@@ -88,7 +88,8 @@ layer_default:
 layers:
     point:
         layers: point
-        sql: the_geom AS geom FROM tests.point
+        geoms:
+        - sql: the_geom AS geom FROM tests.point
         min_resolution_seed: 10
         sqs:
             queue: sqs_point
@@ -97,7 +98,8 @@ layers:
     point_px_buffer:
         layers: point
         px_buffer: 100
-        sql: the_geom AS geom FROM tests.point
+        geoms:
+        - sql: the_geom AS geom FROM tests.point
         empty_metatile_detection:
             size: 20743
             hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -106,7 +108,8 @@ layers:
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     point_hash:
         layers: point
-        sql: the_geom AS geom FROM tests.point
+        geoms:
+        - sql: the_geom AS geom FROM tests.point
         min_resolution_seed: 10
         empty_metatile_detection:
             size: 20743
@@ -122,7 +125,8 @@ layers:
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     line:
         layers: line
-        sql: the_geom AS geom FROM tests.line
+        geoms:
+        - sql: the_geom AS geom FROM tests.line
         empty_metatile_detection:
             size: 20743
             hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -132,7 +136,8 @@ layers:
     polygon:
         layers: polygon
         meta: off
-        sql: the_geom AS geom FROM tests.polygon
+        geoms:
+        - sql: the_geom AS geom FROM tests.polygon
         empty_metatile_detection:
             size: 20743
             hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -142,7 +147,8 @@ layers:
     polygon2:
         layers: polygon
         grid: swissgrid_01
-        sql: the_geom AS geom FROM tests.polygon
+        geoms:
+        - sql: the_geom AS geom FROM tests.polygon
         empty_metatile_detection:
             size: 20743
             hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -159,7 +165,8 @@ layers:
         meta: off
         data_buffer: 128
         output_format: png
-        sql: the_geom AS geom FROM tests.polygon
+        geoms:
+        - sql: the_geom AS geom FROM tests.polygon
     mapnik_grid:
         type: mapnik
         mapfile: mapfile/test.mapnik
@@ -169,7 +176,8 @@ layers:
         mime_type: application/utfgrid
         extension: json
         resolution: 16
-        sql: the_geom AS geom FROM tests.polygon
+        geoms:
+        - sql: the_geom AS geom FROM tests.polygon
         layers_fields:
             point:
             - name
@@ -188,7 +196,8 @@ layers:
         extension: json
         drop_empty_utfgrid: on
         resolution: 16
-        sql: the_geom AS geom FROM tests.polygon
+        geoms:
+        - sql: the_geom AS geom FROM tests.polygon
         layers_fields:
             point:
             - name
@@ -223,3 +232,6 @@ mapcache:
 
 apache:
     config_file: tiles.conf
+
+server:
+    cache: local

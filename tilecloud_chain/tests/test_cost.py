@@ -49,7 +49,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_point(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test_fix.yaml -l point',
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test-fix.yaml -l point',
             main_func=controller.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -113,7 +113,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_point_count(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test_fix.yaml -l point --cost-algo count',
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test-fix.yaml -l point --cost-algo count',
             main_func=controller.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -177,7 +177,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_line(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test_fix.yaml -l line',
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test-fix.yaml -l line',
             main_func=controller.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -252,7 +252,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_line_count(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test_fix.yaml -l line --cost-algo count',
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test-fix.yaml -l line --cost-algo count',
             main_func=controller.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -327,7 +327,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_polygon(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test_fix.yaml -l polygon',
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test-fix.yaml -l polygon',
             main_func=controller.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -337,16 +337,16 @@ ESB storage: %(esb)s [$/month]
                 'Calculate zoom 4.',
                 '',
                 self.ZOOM_SUMMARY % {
-                    'tiles': '19',
+                    'tiles': '13',
                     'zoom': '0',
-                    'time': '0 0:00:01',
+                    'time': '0 0:00:00',
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '47',
+                    'tiles': '35',
                     'zoom': '1',
                     'time': '0 0:00:02',
                     's3': '0.00',
@@ -355,35 +355,35 @@ ESB storage: %(esb)s [$/month]
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '193',
+                    'tiles': '167',
                     'zoom': '2',
-                    'time': '0 0:00:11',
+                    'time': '0 0:00:10',
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '649',
+                    'tiles': '601',
                     'zoom': '3',
-                    'time': '0 0:00:38',
+                    'time': '0 0:00:36',
                     's3': '0.01',
                     'ec2': '0.00',
                     'esb': '0.01',
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '2364',
+                    'tiles': '2268',
                     'zoom': '4',
-                    'time': '0 0:02:21',
+                    'time': '0 0:02:16',
                     's3': '0.02',
                     'ec2': '0.01',
                     'esb': '0.02',
                     'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
-                    'tiles': '3272',
-                    'time': '0 0:03:16',
+                    'tiles': '3084',
+                    'time': '0 0:03:05',
                     'cost': '0.07'
                 },
                 self.FINAL_SUMMARY % {
@@ -397,7 +397,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_polygon_count(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test_fix.yaml '
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test-fix.yaml '
                 '-l polygon --cost-algo count',
             main_func=controller.main,
             expected='\n'.join([
@@ -468,7 +468,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_default(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test_fix.yaml',
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test-fix.yaml',
             main_func=controller.main,
             expected='\n'.join([
                 '',
@@ -543,16 +543,16 @@ ESB storage: %(esb)s [$/month]
                 'Calculate zoom 4.',
                 '',
                 self.ZOOM_SUMMARY % {
-                    'tiles': '19',
+                    'tiles': '13',
                     'zoom': '0',
-                    'time': '0 0:00:01',
+                    'time': '0 0:00:00',
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '47',
+                    'tiles': '35',
                     'zoom': '1',
                     'time': '0 0:00:02',
                     's3': '0.00',
@@ -561,40 +561,40 @@ ESB storage: %(esb)s [$/month]
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '193',
+                    'tiles': '167',
                     'zoom': '2',
-                    'time': '0 0:00:11',
+                    'time': '0 0:00:10',
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '649',
+                    'tiles': '601',
                     'zoom': '3',
-                    'time': '0 0:00:38',
+                    'time': '0 0:00:36',
                     's3': '0.01',
                     'ec2': '0.00',
                     'esb': '0.01',
                     'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '2364',
+                    'tiles': '2268',
                     'zoom': '4',
-                    'time': '0 0:02:21',
+                    'time': '0 0:02:16',
                     's3': '0.02',
                     'ec2': '0.01',
                     'esb': '0.02',
                     'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
-                    'tiles': '3272',
-                    'time': '0 0:03:16',
+                    'tiles': '3084',
+                    'time': '0 0:03:05',
                     'cost': '0.07'
                 },
                 self.GLOBAL_SUMMARY % {
-                    'tiles': '3593',
-                    'time': '0 0:03:26',
+                    'tiles': '3405',
+                    'time': '0 0:03:15',
                     'cost': '0.07'
                 },
                 self.FINAL_SUMMARY % {
@@ -606,7 +606,7 @@ ESB storage: %(esb)s [$/month]
 
     def test_cost_polygon2(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test_fix.yaml -l polygon2',
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test-fix.yaml -l polygon2',
             main_func=controller.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -659,7 +659,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_nometa(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test_fix.yaml -l all',
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test-fix.yaml -l all',
             main_func=controller.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -669,28 +669,28 @@ ESB storage: %(esb)s [$/month]
                 'Calculate zoom 4.',
                 '',
                 self.ZOOM_SUMMARY % {
-                    'tiles': '5', 'zoom': '0', 'time': '0 0:00:00', 's3': '0.00',
+                    'tiles': '2', 'zoom': '0', 'time': '0 0:00:00', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '7', 'zoom': '1', 'time': '0 0:00:00', 's3': '0.00',
+                    'tiles': '4', 'zoom': '1', 'time': '0 0:00:00', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '16', 'zoom': '2', 'time': '0 0:00:00', 's3': '0.00',
+                    'tiles': '10', 'zoom': '2', 'time': '0 0:00:00', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '37', 'zoom': '3', 'time': '0 0:00:02', 's3': '0.00',
+                    'tiles': '27', 'zoom': '3', 'time': '0 0:00:01', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
-                    'tiles': '101', 'zoom': '4', 'time': '0 0:00:06', 's3': '0.00',
+                    'tiles': '84', 'zoom': '4', 'time': '0 0:00:05', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00', 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
-                    'tiles': '166',
-                    'time': '0 0:00:09',
+                    'tiles': '127',
+                    'time': '0 0:00:07',
                     'cost': '0.00'
                 },
                 self.FINAL_SUMMARY % {
@@ -704,7 +704,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_layer_bbox(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test_fix.yaml -l all --cost-algo count',
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test-fix.yaml -l all --cost-algo count',
             main_func=controller.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -775,7 +775,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_no_geom(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test_fix.yaml -l point --no-geom',
+            cmd='./buildout/bin/generate_controller --cost -c tilegeneration/test-fix.yaml -l point --no-geom',
             main_func=controller.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
