@@ -465,31 +465,31 @@ Generate all the tiles::
 
 Generate a specific layer::
 
-    ./buildout/bin/generate_tiles --layer=<a_layer>
+    ./buildout/bin/generate_tiles --layer <a_layer>
 
 Generate a specific zoom::
 
-    ./buildout/bin/generate_tiles --zoom=5
+    ./buildout/bin/generate_tiles --zoom 5
 
 Generate a specific zoom range::
 
-    ./buildout/bin/generate_tiles --zoom=2-8
+    ./buildout/bin/generate_tiles --zoom 2-8
 
 Generate a specific some zoom levels::
 
-    ./buildout/bin/generate_tiles --zoom=2,4,7
+    ./buildout/bin/generate_tiles --zoom 2,4,7
 
 Generate tiles on a bbox::
 
-    ./buildout/bin/generate_tiles --bbox=<minx,miny,maxx,maxy>
+    ./buildout/bin/generate_tiles --bbox <MINX> <MINY> <MAXX> <MAXY>
 
 Generate a tiles near a tile coordinate (useful for test)::
 
-    ./buildout/bin/generate_tiles --near=z/x/y
+    ./buildout/bin/generate_tiles --near <X> <Y>
 
 Generate a tiles in a deferent cache than the default one::
 
-    ./buildout/bin/generate_tiles --cache=<a_cache>
+    ./buildout/bin/generate_tiles --cache <a_cache>
 
 And don't forget to generate the WMTS Capabilities::
 
@@ -507,7 +507,7 @@ If we set a file path in config file:
         error_file: <path>
 
 The tiles that in error will be appen to the file, ant the tiles can be regenerated with
-``./buildout/bin/generate_tiles --layer <layer> --tiles-file <path>``.
+``./buildout/bin/generate_tiles --layer <layer> --tiles <path>``.
 
 
 Explain cost
@@ -688,8 +688,8 @@ Release 0.6
 
 7. Add coveralls support (https://coveralls.io/r/sbrunner/tilecloud-chain).
 
-8. Add an config option ``generation:error_file`` and a command option ``--tiles-file``
-   to store and regenerate errored tiles.
+8. Add an config option ``generation:error_file`` and a command option ``--tiles``
+   to store and regenerate errored tiles. 
 
 
 Release 0.5

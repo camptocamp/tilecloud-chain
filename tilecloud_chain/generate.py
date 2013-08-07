@@ -6,7 +6,7 @@ import logging
 import socket
 from datetime import datetime
 from getpass import getuser
-from optparse import OptionParser
+from argparse import ArgumentParser
 
 import boto
 from boto import sns
@@ -58,8 +58,8 @@ def _gene(options, gene, layer):
             exit('Unknown cache type: ' + cache['type'])  # pragma: no cover
 
     meta = gene.layer['meta']
-    if options.tiles_file:
-        gene.set_store(TilesFileStore(options.tiles_file))
+    if options.tiles:
+        gene.set_store(TilesFileStore(options.tiles))
 
     elif options.role in ('local', 'master'):
         # Generate a stream of metatiles
@@ -265,35 +265,39 @@ def daemonize():  # pragma: no cover
 
 
 def main():
-    parser = OptionParser('Used to generate the tiles')
+    parser = ArgumentParser(description='Used to generate the tiles', prog='./buildout/bin/generate_tiles')
     add_comon_options(parser)
-    parser.add_option(
-        '--daemonize', default=False, action="store_true",
-        help='run as a deamon'
-    )
-    parser.add_option(
-        '-r', '--role', default='local',
-        help='local/master/slave, master to file the queue and '
-        'slave to generate the tiles'
-    )
-    parser.add_option(
-        '-H', '--get-hash', metavar="TILE",
+    parser.add_argument(
+        '--get-hash', metavar="TILE",
         help='get the empty tiles hash, use the specified TILE z/x/y'
     )
-    parser.add_option(
+    parser.add_argument(
         '--get-bbox', metavar="TILE",
         help='get the bbox of a tile, use the specified TILE z/x/y, or z/x/y:+n/+n for metatiles'
     )
-    parser.add_option(
-        '--tiles-file', metavar="FILE",
+    parser.add_argument(
+        '--dimensions', nargs='+', metavar='DIMENSION=VALUE',
+        help='overwrite the dimensions values specified in the config file'
+    )
+    parser.add_argument(
+        '--role', default='local', choices=('local', 'master', 'slave'),
+        help='local/master/slave, master to file the queue and '
+        'slave to generate the tiles'
+    )
+    parser.add_argument(
+        '--daemonize', default=False, action="store_true",
+        help='run as a daemon'
+    )
+    parser.add_argument(
+        '--tiles', metavar="FILE",
         help='Generate the tiles from a tiles file, use the format z/x/y, or z/x/y:+n/+n for metatiles'
     )
-    parser.add_option(
+    parser.add_argument(
         '--generated-tiles-file', metavar="FILE",
         help='Store the tiles in a file (unrecommended)'
     )
 
-    (options, args) = parser.parse_args()
+    options = parser.parse_args()
 
     if options.daemonize:
         daemonize()  # pragma: no cover
@@ -308,8 +312,8 @@ def main():
     if options.cache is None:
         options.cache = gene.config['generation']['default_cache']
 
-    if options.tiles_file and options.role not in ['local', 'master']:  # pragma: no cover
-        exit("The --tiles-file option worky only with role local or master")
+    if options.tiles and options.role not in ['local', 'master']:  # pragma: no cover
+        exit("The --tiles option worky only with role local or master")
 
     try:
         if (options.layer):
@@ -318,8 +322,8 @@ def main():
             exit("With --get-bbox option we needs to specify a layer")
         elif options.get_hash:  # pragma: no cover
             exit("With --get-hash option we needs to specify a layer")
-        elif options.tiles_file:  # pragma: no cover
-            exit("With --tiles-file option we needs to specify a layer")
+        elif options.tiles:  # pragma: no cover
+            exit("With --tiles option we needs to specify a layer")
         else:
             for layer in gene.config['generation']['default_layers']:
                 _gene(options, gene, layer)
