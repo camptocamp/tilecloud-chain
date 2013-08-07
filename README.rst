@@ -54,8 +54,8 @@ On raster layer have a look on the maximum resolution of the source files, it's 
 to generate tiles in smaller resolution than the sources, it preferable to use the OpenLayers client zoom.
 Notes that you can add a resolution at the end without regeneration all the tiles.
 
-The ``bbox`` should correspond to the resolution extent, to reduce where the tiles are generated use the
-``bbox`` available on the layer.
+The ``bbox`` should correspond to the resolution extent. **CAREFUL: you will have big issue if you
+use this parameter to generate the tile on a restricted area** use the ``bbox`` on the layer instead.
 
 The ``srs`` specify the code of the projection.
 
