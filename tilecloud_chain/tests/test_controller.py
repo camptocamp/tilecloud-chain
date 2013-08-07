@@ -1105,7 +1105,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2012</dimension>
+        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
       </dimensions>
    </tileset>
 
@@ -1117,7 +1117,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2012</dimension>
+        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
       </dimensions>
    </tileset>
 
@@ -1131,7 +1131,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2012</dimension>
+        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
       </dimensions>
    </tileset>
 
@@ -1143,7 +1143,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2012</dimension>
+        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
       </dimensions>
    </tileset>
 
@@ -1157,7 +1157,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2012</dimension>
+        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
       </dimensions>
    </tileset>
 
@@ -1171,7 +1171,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2012</dimension>
+        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
       </dimensions>
    </tileset>
 
@@ -1185,7 +1185,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2012</dimension>
+        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
       </dimensions>
    </tileset>
 
@@ -1199,7 +1199,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2012</dimension>
+        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
       </dimensions>
    </tileset>
 
@@ -1392,15 +1392,18 @@ layers:
     cost: *id001
     dimensions: *id002
     extension: png
+    generate_salt: false
     geoms: []
     grid: swissgrid_5
     grid_ref: *id003
+    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
     layers: [point, line, polygon]
     meta: false
     meta_buffer: 128
     meta_size: 1
     mime_type: image/png
     name: all
+    params: {}
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1412,16 +1415,19 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    generate_salt: false
     geoms:
     - {sql: the_geom AS geom FROM tests.line}
     grid: swissgrid_5
     grid_ref: *id003
+    headers: {Cache-Control: 'no-cache'}
     layers: [line]
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: line
+    params: {PARAM: value}
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1442,8 +1448,8 @@ layers:
     meta_size: 1
     mime_type: image/png
     name: mapnik
-    px_buffer: false
     output_format: png
+    px_buffer: false
     type: mapnik
     wmts_style: default
   mapnik_grid:
@@ -1467,8 +1473,8 @@ layers:
     meta_size: 1
     mime_type: application/utfgrid
     name: mapnik_grid
-    px_buffer: false
     output_format: grid
+    px_buffer: false
     resolution: 16
     type: mapnik
     wmts_style: default
@@ -1491,8 +1497,8 @@ layers:
     meta_size: 1
     mime_type: application/utfgrid
     name: mapnik_grid_drop
-    px_buffer: false
     output_format: grid
+    px_buffer: false
     resolution: 16
     type: mapnik
     wmts_style: default
@@ -1501,10 +1507,12 @@ layers:
     cost: *id001
     dimensions: *id002
     extension: png
+    generate_salt: false
     geoms:
     - {sql: the_geom AS geom FROM tests.point}
     grid: swissgrid_5
     grid_ref: *id003
+    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
     layers: [point]
     meta: true
     meta_buffer: 128
@@ -1512,6 +1520,7 @@ layers:
     mime_type: image/png
     min_resolution_seed: 10.0
     name: point
+    params: {}
     px_buffer: false
     sqs: {queue: sqs_point, region: eu-west-1}
     type: wms
@@ -1523,15 +1532,18 @@ layers:
     dimensions: *id002
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    generate_salt: false
     geoms: []
     grid: swissgrid_5
     grid_ref: *id003
+    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
     layers: [point]
     meta: false
     meta_buffer: 128
     meta_size: 1
     mime_type: image/png
     name: point_hash_no_meta
+    params: {}
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1543,10 +1555,12 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    generate_salt: false
     geoms:
     - {sql: the_geom AS geom FROM tests.point}
     grid: swissgrid_5
     grid_ref: *id003
+    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
     layers: [point]
     meta: true
     meta_buffer: 128
@@ -1554,6 +1568,7 @@ layers:
     mime_type: image/png
     min_resolution_seed: 10.0
     name: point_hash
+    params: {}
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1565,16 +1580,19 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    generate_salt: false
     geoms:
     - {sql: the_geom AS geom FROM tests.point}
     grid: swissgrid_5
     grid_ref: *id003
+    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
     layers: [point]
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: point_px_buffer
+    params: {}
     px_buffer: 100.0
     type: wms
     url: http://localhost/mapserv
@@ -1586,16 +1604,19 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    generate_salt: false
     geoms:
     - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_5
     grid_ref: *id003
+    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
     layers: [polygon]
     meta: false
     meta_buffer: 128
     meta_size: 1
     mime_type: image/png
     name: polygon
+    params: {}
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1607,16 +1628,19 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    generate_salt: false
     geoms:
     - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_01
     grid_ref: *id004
+    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
     layers: [polygon]
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: polygon2
+    params: {}
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1632,11 +1656,11 @@ sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud
             cmd='./buildout/bin/generate_controller --dump-config -c tilegeneration/test-fix.yaml',
             main_func=controller.main, expected=self.CONFIG)
 
-    @attr(config_layer=True)
+    @attr(config_line=True)
     @attr(general=True)
-    def test_config_layer(self):
+    def test_config_line(self):
         self.assert_cmd_yaml_equals(
-            cmd='./buildout/bin/generate_controller --dump-config -l line -c tilegeneration/test-fix.yaml',
+            cmd='./buildout/bin/generate_controller -l line --dump-config -c tilegeneration/test-fix.yaml',
             main_func=controller.main, expected=self.CONFIG)
 
     @attr(openlayers=True)

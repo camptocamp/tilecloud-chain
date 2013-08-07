@@ -125,6 +125,7 @@ layers:
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     line:
         layers: line
+        generate_salt: true
         geoms:
         - sql: the_geom AS geom FROM tests.line
         empty_metatile_detection:

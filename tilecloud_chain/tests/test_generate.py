@@ -124,6 +124,23 @@ class TestGenerate(CompareCase):
             )
         l.check()
 
+    @attr(test_dimensions=True)
+    @attr(general=True)
+    @log_capture('tilecloud_chain', level=30)
+    def test_test_dimensions(self, l):
+        for d in ('-d', ''):
+            self.assert_tiles_generated(
+                cmd='./buildout/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml -t 1 '
+                '--dimensions DATE=2013' % d,
+                main_func=generate.main,
+                directory="/tmp/tiles/",
+                tiles_pattern='1.0.0/%s/default/2013/swissgrid_5/%i/%i/%i.png',
+                tiles=[
+                    ('line', 0, 7, 4), ('polygon', 0, 5, 4)
+                ]
+            )
+        l.check()
+
     @attr(multigeom=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
