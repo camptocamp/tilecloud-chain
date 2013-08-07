@@ -5,9 +5,9 @@ python:
 
 before_install:
 - echo 'yes' | sudo add-apt-repository ppa:stephane-brunner/precise
-- echo 'yes' | sudo add-apt-repository ppa:mapnik/v2.1.0
+- echo 'yes' | sudo add-apt-repository ppa:mapnik/v2.2.0
 - sudo apt-get update -qq
-- sudo apt-get install -y -q10 libmapnik-dev postgresql-9.1-postgis apache2 cgi-mapserver deploy
+- sudo apt-get install -y -q10 libmapnik-dev python-mapnik postgresql-9.1-postgis apache2 cgi-mapserver deploy
 - sudo -u postgres tilecloud_chain/tests/create_test_data.sh
 - sudo cp tilecloud_chain/tests/apache.conf /etc/apache2/sites-enabled/apache.conf
 - sudo apache2ctl graceful
@@ -25,7 +25,7 @@ before_install:
 - sudo chmod g+s,o+w /tmp/tests
 
 install:
-- pip install -U mapnik2==2.1.0.5 --use-mirrors
+- pip install -U mapnik2==2.2.0 --use-mirrors
 - python bootstrap.py --distribute -v 1.7.1
 - ./buildout/bin/buildout
 

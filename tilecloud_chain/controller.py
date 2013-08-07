@@ -126,8 +126,8 @@ def main():
                 gene.set_layer(layer, options)
                 _validate_calculate_cost(gene)
         _validate_generate_wmts_capabilities(gene, gene.caches[options.cache])
-        _validate_generate_mapcache_config(gene)
-        _validate_generate_apache_config(gene)
+        gene.validate_mapcache_config()
+        gene.validate_apache_config()
         _validate_generate_openlayers(gene)
         for grild in gene.config['grids'].values():
             del grild['obj']
@@ -224,8 +224,10 @@ def main():
             run_remote(cmd, host, project_dir, gene)
         if 'apache_content' in gene.config['generation'] and 'apache_config' in gene.config['generation']:
             run_remote(
-                'echo %s > %s' % (gene.config['generation']['apache_content'],
-                gene.config['generation']['apache_config']), host, project_dir, gene
+                'echo %s > %s' % (
+                    gene.config['generation']['apache_content'],
+                    gene.config['generation']['apache_config']
+                ), host, project_dir, gene
             )
         run_remote('sudo apache2ctl graceful', host, project_dir, gene)
 
@@ -556,20 +558,17 @@ def _calculate_cost(gene, options):
 
             print "Calculate zoom %i." % zoom
 
+            px_buffer = gene.layer['px_buffer'] + \
+                gene.layer['meta_buffer'] if meta else 0
+            m_buffer = px_buffer * resolution
             if meta:
                 size = tile_size * gene.layer['meta_size'] * resolution
-                meta_buffer = size * 0.7 + \
-                    (
-                        gene.layer['meta_buffer'] + gene.layer['px_buffer']
-                    ) * resolution
-                meta_geom = gene.geom.buffer(meta_buffer, 1)
+                meta_buffer = size * 0.7 + m_buffer
+                meta_geom = gene.geoms[zoom].buffer(meta_buffer, 1)
                 nb_metatiles[zoom] = int(round(meta_geom.area / size ** 2))
             size = tile_size * resolution
-            tile_buffer = size * 0.7 + \
-                (
-                    gene.layer['meta_buffer'] + gene.layer['px_buffer']
-                ) * resolution
-            geom = gene.geom.buffer(tile_buffer, 1)
+            tile_buffer = size * 0.7 + m_buffer
+            geom = gene.geoms[zoom].buffer(tile_buffer, 1)
             nb_tiles[zoom] = int(round(geom.area / size ** 2))
 
     elif options.cost_algo == 'count':
@@ -699,6 +698,7 @@ def _generate_wmts_capabilities(gene, options):
 
     cache = gene.caches[options.cache]
     _validate_generate_wmts_capabilities(gene, cache)
+    server = 'server' in gene.config
 
     base_urls = []
     if cache['http_url']:
@@ -716,43 +716,23 @@ def _generate_wmts_capabilities(gene, options):
         wmts_get_capabilities_template,
         layers=gene.layers,
         grids=gene.grids,
-        getcapabilities=base_urls[0] + cache['wmtscapabilities_file'],
-        gettiles=base_urls,
+        getcapabilities=base_urls[0] + (
+            '/1.0.0/WMTSCapabilities.xml' if server
+            else cache['wmtscapabilities_file']),
+        base_urls=base_urls,
         get_tile_matrix_identifier=get_tile_matrix_identifier,
+        server=server,
         enumerate=enumerate, ceil=math.ceil, int=int
     )
 
     _send(capabilities, cache['wmtscapabilities_file'], 'application/xml', cache)
 
 
-def _validate_generate_mapcache_config(gene):
-    error = False
-    error = gene.validate(gene.config, 'config', 'mapcache', attribute_type=dict, default={}) or error
-    error = gene.validate(
-        gene.config['mapcache'], 'mapcache', 'config_file', attribute_type=str,
-        default='apache/mapcache.xml'
-    ) or error
-    error = gene.validate(
-        gene.config['mapcache'], 'mapcache', 'memcache_host', attribute_type=str,
-        default='localhost'
-    ) or error
-    error = gene.validate(
-        gene.config['mapcache'], 'mapcache', 'memcache_port', attribute_type=int,
-        default='11211'
-    ) or error
-    error = gene.validate(
-        gene.config['mapcache'], 'mapcache', 'location', attribute_type=str,
-        default='/mapcache'
-    ) or error
-
-    if error:
-        exit(1)  # pragma: no cover
-
-
 def _generate_mapcache_config(gene):
     from tilecloud_chain.mapcache_config_template import mapcache_config_template
 
-    _validate_generate_mapcache_config(gene)
+    if not gene.validate_mapcache_config():
+        exit(1)  # pragma: no cover
 
     config = jinja2_template(
         mapcache_config_template,
@@ -767,84 +747,70 @@ def _generate_mapcache_config(gene):
     f.close()
 
 
-def _validate_generate_apache_config(gene):
-    error = False
-    error = gene.validate(gene.config, 'config', 'apache', attribute_type=dict, default={}) or error
-    error = gene.validate(
-        gene.config['apache'], 'apache', 'location', attribute_type=str,
-        default='/tiles'
-    ) or error
-    error = gene.validate(
-        gene.config['apache'], 'apache', 'config_file', attribute_type=str,
-        default='apache/tiles.conf'
-    ) or error
-    error = gene.validate(
-        gene.config['apache'], 'apache', 'expires', attribute_type=int,
-        default=8
-    ) or error
-
-    if error:
+def _generate_apache_config(gene, options):
+    if not gene.validate_apache_config():
         exit(1)  # pragma: no cover
 
-
-def _generate_apache_config(gene, options):
-    _validate_generate_apache_config(gene)
     cache = gene.caches[options.cache]
+    use_server = 'server' in gene.config
 
     f = open(gene.config['apache']['config_file'], 'w')
-    f.write("""<Location %(location)s>
+
+    if not use_server:
+        f.write("""<Location %(location)s>
     ExpiresActive on
     ExpiresDefault "now plus %(expires)i hours"
 </Location>
-
-""" % {
-        'location': gene.config['apache']['location'],
-        'expires': gene.config['apache']['expires']
-    })
-    if cache['type'] == 'filesystem':
-        f.write("""Alias %(location)s %(files_folder)s
-
 """ % {
             'location': gene.config['apache']['location'],
-            'files_folder': cache['folder']
+            'expires': gene.config['apache']['expires']
         })
-    elif cache['type'] == 's3':
-        f.write("""<Proxy http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s*>
+        if cache['type'] == 's3':
+            f.write("""
+<Proxy http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s*>
     Order deny,allow
     Allow from all
 </Proxy>
 ProxyPass %(location)s/ http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s
 ProxyPassReverse %(location)s/ http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s
-
 """ % {
-            'location': gene.config['apache']['location'],
-            'region': cache['region'],
-            'bucket': cache['bucket'],
-            'folder': cache['folder']
-        })
-
-    use_mapcache = False
-    for l in gene.config['layers']:
-        layer = gene.config['layers'][l]
-        if 'min_resolution_seed' in layer:
-            res = [r for r in layer['grid_ref']['resolutions'] if r < layer['min_resolution_seed']]
-            dim = len(layer['dimensions'])
-            for r in res:
-                if not use_mapcache:
-                    _validate_generate_mapcache_config(gene)
-                    use_mapcache = True
-                f.write("""RewriteRule ^%(tiles_location)s/1.0.0/%(layer)s/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/"""
-                        """%(dimensions_re)s/%(zoom)s/(.*)$ %(mapcache_location)s/wmts/1.0.0/%(layer)s/$1/$2/"""
-                        """%(dimensions_rep)s/%(zoom)s/%(final)s [PT]
+                'location': gene.config['apache']['location'],
+                'region': cache['region'],
+                'bucket': cache['bucket'],
+                'folder': cache['folder']
+            })
+        elif cache['type'] == 'filesystem':
+            f.write("""
+Alias %(location)s %(files_folder)s
 """ % {
-                    'tiles_location': gene.config['apache']['location'],
-                    'mapcache_location': gene.config['mapcache']['location'],
-                    'layer': layer['name'],
-                    'dimensions_re': '/'.join(['([a-zA-Z0-9_]+)' for e in range(dim)]),
-                    'dimensions_rep': '/'.join(['$%i' % (e + 3) for e in range(dim)]),
-                    'final': '$%i' % (3 + dim),
-                    'zoom': layer['grid_ref']['resolutions'].index(r)
-                })
+                'location': gene.config['apache']['location'],
+                'files_folder': cache['folder']
+            })
+
+    use_mapcache = 'mapcache' in gene.config
+    if use_mapcache:
+        if not gene.validate_mapcache_config():
+            exit(1)  # pragma: no cover
+    if use_mapcache and not use_server:
+        f.write("\n")
+        for l in gene.config['layers']:
+            layer = gene.config['layers'][l]
+            if 'min_resolution_seed' in layer:
+                res = [r for r in layer['grid_ref']['resolutions'] if r < layer['min_resolution_seed']]
+                dim = len(layer['dimensions'])
+                for r in res:
+                    f.write("""RewriteRule ^%(tiles_location)s/1.0.0/%(layer)s/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/"""
+                            """%(dimensions_re)s/%(zoom)s/(.*)$ %(mapcache_location)s/wmts/1.0.0/%(layer)s/$1/$2/"""
+                            """%(dimensions_rep)s/%(zoom)s/%(final)s [PT]
+""" % {
+                        'tiles_location': gene.config['apache']['location'],
+                        'mapcache_location': gene.config['mapcache']['location'],
+                        'layer': layer['name'],
+                        'dimensions_re': '/'.join(['([a-zA-Z0-9_]+)' for e in range(dim)]),
+                        'dimensions_rep': '/'.join(['$%i' % (e + 3) for e in range(dim)]),
+                        'final': '$%i' % (3 + dim),
+                        'zoom': layer['grid_ref']['resolutions'].index(r)
+                    })
 
     if use_mapcache:
         f.write("""

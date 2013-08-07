@@ -27,7 +27,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_capabilities(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test_fix.yaml',
+            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml',
             main_func=controller.main,
             expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
@@ -467,12 +467,6 @@ class TestController(CompareCase):
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
-        </ows:HTTP>
-      </ows:DCP>
-    </ows:Operation>
-    <ows:Operation name="GetTile">
-      <ows:DCP>
-        <ows:HTTP>
           <ows:Get xlink:href="http://wmts2/tiles">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
@@ -480,12 +474,6 @@ class TestController(CompareCase):
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
-        </ows:HTTP>
-      </ows:DCP>
-    </ows:Operation>
-    <ows:Operation name="GetTile">
-      <ows:DCP>
-        <ows:HTTP>
           <ows:Get xlink:href="http://wmts3/tiles">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
@@ -937,7 +925,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_multi_host_capabilities(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test_fix.yaml '
+            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml '
             '--destination-cache multi_host',
             main_func=controller.main,
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
@@ -946,7 +934,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_multi_url_capabilities(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test_fix.yaml '
+            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml '
             '--destination-cache multi_url',
             main_func=controller.main,
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
@@ -955,7 +943,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_mapcache(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --mapcache -c tilegeneration/test_fix.yaml',
+            cmd='./buildout/bin/generate_controller --mapcache -c tilegeneration/test-fix.yaml',
             main_func=controller.main,
             expected=[['mapcache.xml', u"""<?xml version="1.0" encoding="UTF-8"?>
 <mapcache>
@@ -1242,7 +1230,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_apache(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --apache -c tilegeneration/test_fix.yaml',
+            cmd='./buildout/bin/generate_controller --apache -c tilegeneration/test-fix.yaml',
             main_func=controller.main,
             expected=[['tiles.conf', u"""<Location /tiles>
     ExpiresActive on
@@ -1259,11 +1247,18 @@ RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
 
+        self.assert_main_equals(
+            cmd='./buildout/bin/generate_controller --apache -c tilegeneration/test-serve.yaml',
+            main_func=controller.main,
+            expected=[['tiles.conf', u"""
+MapCacheAlias /mapcache "%s"
+""" % (os.path.abspath('mapcache.xml'))]])
+
     @attr(apache_s3=True)
     @attr(general=True)
     def test_apache_s3(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --cache s3 --apache -c tilegeneration/test_fix.yaml',
+            cmd='./buildout/bin/generate_controller --cache s3 --apache -c tilegeneration/test-fix.yaml',
             main_func=controller.main,
             expected=[['tiles.conf', u"""<Location /tiles>
     ExpiresActive on
@@ -1389,7 +1384,6 @@ layer_default:
   meta_size: 8
   mime_type: image/png
   type: wms
-  url: http://localhost/mapserv
   wmts_style: default
 layers:
   all:
@@ -1398,9 +1392,10 @@ layers:
     cost: *id001
     dimensions: *id002
     extension: png
+    geoms: []
     grid: swissgrid_5
     grid_ref: *id003
-    layers: point,line,polygon
+    layers: [point, line, polygon]
     meta: false
     meta_buffer: 128
     meta_size: 1
@@ -1417,16 +1412,17 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.line}
     grid: swissgrid_5
     grid_ref: *id003
-    layers: line
+    layers: [line]
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: line
     px_buffer: false
-    sql: the_geom AS geom FROM tests.line
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1436,6 +1432,8 @@ layers:
     data_buffer: 128
     dimensions: *id002
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_5
     grid_ref: *id003
     mapfile: mapfile/test.mapnik
@@ -1446,9 +1444,7 @@ layers:
     name: mapnik
     px_buffer: false
     output_format: png
-    sql: the_geom AS geom FROM tests.polygon
     type: mapnik
-    url: http://localhost/mapserv
     wmts_style: default
   mapnik_grid:
     connection: user=postgres password=postgres dbname=tests host=localhost
@@ -1456,6 +1452,8 @@ layers:
     data_buffer: 128
     dimensions: *id002
     extension: json
+    geoms:
+    - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_5
     grid_ref: *id003
     drop_empty_utfgrid: false
@@ -1472,9 +1470,7 @@ layers:
     px_buffer: false
     output_format: grid
     resolution: 16
-    sql: the_geom AS geom FROM tests.polygon
     type: mapnik
-    url: http://localhost/mapserv
     wmts_style: default
   mapnik_grid_drop:
     connection: user=postgres password=postgres dbname=tests host=localhost
@@ -1482,6 +1478,8 @@ layers:
     data_buffer: 128
     dimensions: *id002
     extension: json
+    geoms:
+    - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_5
     grid_ref: *id003
     drop_empty_utfgrid: true
@@ -1496,18 +1494,18 @@ layers:
     px_buffer: false
     output_format: grid
     resolution: 16
-    sql: the_geom AS geom FROM tests.polygon
     type: mapnik
-    url: http://localhost/mapserv
     wmts_style: default
   point:
     connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.point}
     grid: swissgrid_5
     grid_ref: *id003
-    layers: point
+    layers: [point]
     meta: true
     meta_buffer: 128
     meta_size: 8
@@ -1515,7 +1513,6 @@ layers:
     min_resolution_seed: 10.0
     name: point
     px_buffer: false
-    sql: the_geom AS geom FROM tests.point
     sqs: {queue: sqs_point, region: eu-west-1}
     type: wms
     url: http://localhost/mapserv
@@ -1526,9 +1523,10 @@ layers:
     dimensions: *id002
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    geoms: []
     grid: swissgrid_5
     grid_ref: *id003
-    layers: point
+    layers: [point]
     meta: false
     meta_buffer: 128
     meta_size: 1
@@ -1545,9 +1543,11 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.point}
     grid: swissgrid_5
     grid_ref: *id003
-    layers: point
+    layers: [point]
     meta: true
     meta_buffer: 128
     meta_size: 8
@@ -1555,7 +1555,6 @@ layers:
     min_resolution_seed: 10.0
     name: point_hash
     px_buffer: false
-    sql: the_geom AS geom FROM tests.point
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1566,16 +1565,17 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.point}
     grid: swissgrid_5
     grid_ref: *id003
-    layers: point
+    layers: [point]
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: point_px_buffer
     px_buffer: 100.0
-    sql: the_geom AS geom FROM tests.point
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1586,16 +1586,17 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_5
     grid_ref: *id003
-    layers: polygon
+    layers: [polygon]
     meta: false
     meta_buffer: 128
     meta_size: 1
     mime_type: image/png
     name: polygon
     px_buffer: false
-    sql: the_geom AS geom FROM tests.polygon
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1606,16 +1607,17 @@ layers:
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
     extension: png
+    geoms:
+    - {sql: the_geom AS geom FROM tests.polygon}
     grid: swissgrid_01
     grid_ref: *id004
-    layers: polygon
+    layers: [polygon]
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: polygon2
     px_buffer: false
-    sql: the_geom AS geom FROM tests.polygon
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1627,15 +1629,15 @@ sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud
     @attr(general=True)
     def test_config(self):
         self.assert_cmd_yaml_equals(
-            cmd='./buildout/bin/generate_controller --dump-config -c tilegeneration/test_fix.yaml',
-            main_func=controller.main, result=self.CONFIG)
+            cmd='./buildout/bin/generate_controller --dump-config -c tilegeneration/test-fix.yaml',
+            main_func=controller.main, expected=self.CONFIG)
 
     @attr(config_layer=True)
     @attr(general=True)
     def test_config_layer(self):
         self.assert_cmd_yaml_equals(
-            cmd='./buildout/bin/generate_controller --dump-config -l line -c tilegeneration/test_fix.yaml',
-            main_func=controller.main, result=self.CONFIG)
+            cmd='./buildout/bin/generate_controller --dump-config -l line -c tilegeneration/test-fix.yaml',
+            main_func=controller.main, expected=self.CONFIG)
 
     @attr(openlayers=True)
     @attr(general=True)
@@ -1784,7 +1786,7 @@ OpenLayers.Request.GET({
     }
 });"""
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test_fix.yaml',
+            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test-fix.yaml',
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],
@@ -1793,7 +1795,7 @@ OpenLayers.Request.GET({
         )
 
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test_fix.yaml --cache multi_host',
+            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test-fix.yaml --cache multi_host',
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],
@@ -1802,7 +1804,7 @@ OpenLayers.Request.GET({
         )
 
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test_fix.yaml --cache multi_url',
+            cmd='./buildout/bin/generate_controller --ol -c tilegeneration/test-fix.yaml --cache multi_url',
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],

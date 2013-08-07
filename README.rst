@@ -75,16 +75,7 @@ Configure caches
 There tree available tiles cache: ``s3``, ``mbtile`` and ``filesystem``.
 
 The best solution to store the tiles is ``s3``, ``mbtiles`` has the advantage to have only one file per
-layer - style  dimensions. To serve the ``mbtile`` there is a view that can be used as following:
-
-..code:: python
-
-    config.get_settings().update({
-        'tilegeneration_configfile': '<the configuration file>',
-        'tilegeneration_cache': '<the cache to use>' # default is generation/default_cache
-    })
-    config.add_route('serve_tiles', '/tiles/*path')
-    config.add_view('tilecloud_chain.views.serve:Serve', route_name='serve_tiles')
+layer - style  dimensions.
 
 ``s3`` need a ``bucket`` an a ``folder`` (default to '').
 
@@ -197,7 +188,21 @@ The configuration is in the layer like this:
 .. code:: yaml
 
     connection: user=www-data password=www-data dbname=<db> host=localhost
-    sql: <column> AS geom FROM <table>
+    geoms:
+    -   sql: <column> AS geom FROM <table>
+        min_resolution: <resolution> # included, optional, last win
+        max_resolution: <resolution> # included, optional, last win
+
+Example:
+
+.. code:: yaml
+
+    connection: user=postgres password=postgres dbname=tests host=localhost
+    geoms:
+    -   sql: the_geom AS geom FROM tests.polygon
+    -   sql: the_geom AS geom FROM tests.point
+        min_resolution: 10
+        max_resolution: 20
 
 It's preferable to use simple geometries, too complex geometries can slow down the generation.
 
@@ -292,9 +297,79 @@ To generate the MapCache configuration we use the command::
 
     ./buildout/bin/generate_controller --generate-mapcache-config
 
+
+Distribute the tiles
+--------------------
+
+There two ways to serve the tiles, with Apache configuration, or with an internal server.
+
+The advantage of the internal server are:
+
+* Can distribute Mbtiles or Berkley DB.
+* Return ``204 No Content`` HTTP code in place of ``404 Not Found`` (or ``403 Forbidden`` for s3).
+* Can be used in `KVP` mode.
+* Can have zone per layer where are the tiles, otherwise it redirect on mapcache.
+
 To generate the Apache configuration we use the command::
 
     ./buildout/bin/generate_controller --generate-apache-config
+
+The internal server can be used as a python view with:
+
+.. code:: python
+
+    config.get_settings().update({
+        'tilegeneration_configfile': '<the configuration file>',
+    })
+    config.add_route('tiles', '/tiles/*path')
+    config.add_view('tilecloud_chain.server:PyramidView', route_name='tiles')
+
+..*
+
+or as a WSGI server with:
+
+.. code:: python
+
+    path = '/path/to/project'
+    sys.path.append(path)
+    from tilecloud_chain.server import Server
+    application = Server('<path to config file>') 
+
+with the apache configuration::
+
+    WSGIScriptAlias /tiles <above python scipt>
+
+To use tue Python view you should used the following:
+
+
+And configure as it:
+
+.. code:: yaml
+
+    server:
+        layers: a_layer # Restrict to serve an sertain number of layers [default to all]
+        cache: mbtiles # The used cache [default use generation/default_cache]
+        # the url without location to MapCache, [default to http://localhost/]
+        mapcache_base: http://localhost/
+        mapcache_headers: # headers, can be used to acces to an other Apache vhost [default to {}]
+            Host: localhost
+        geoms_redirect: true # use the geoms to redirect to MapCache [defaut to false]
+        # allowed extension in the static path (default value), not used for s3.
+        static_allow_extension: [jpeg, png, xml]
+
+The minimal config is to enable it:
+
+.. code:: yaml
+
+    server: {}
+
+You should also configure the ``http_url`` of the used `cache`, to somthing like
+``https://%(host)s/${instanceid}/tiles`` to don't use the internal server, and
+``https://%(host)s/${instanceid}/wsgi/tiles/wmts`` to use it.
+
+
+Generate configuration in buildout
+----------------------------------
 
 We can also use a buildout task to automatise it::
 
@@ -561,6 +636,27 @@ Build it::
 Changes
 -------
 
+Release 0.7
+~~~~~~~~~~~
+
+1. Support of deferent geoms per layers, requires configuration changes, old version:
+
+.. code:: yaml
+
+    connection: user=www-data password=www-data dbname=<db> host=localhost
+    sql: <column> AS geom FROM <table>
+
+to new version:
+
+.. code:: yaml
+
+    connection: user=www-data password=www-data dbname=<db> host=localhost
+    geoms:
+    -   sql: <column> AS geom FROM <table>
+
+For more informations read #Configure geom/sql
+
+
 Release 0.6
 ~~~~~~~~~~~
 
@@ -569,13 +665,13 @@ Release 0.6
 
 2. Windows fixes.
 
-3. Use console revrite (\r) to log generated tiles coordinates.
+3. Use console rewrite (\r) to log generated tiles coordinates.
 
 4. Now if no layers is specified in ``generation:default_layers`` we generate all layers by default.
 
 5. Now bbox to be floats.
 
-6. New ``--get-bbox`` option to get the bboy of a tile.
+6. New ``--get-bbox`` option to get the bbox of a tile.
 
 7. Add coveralls support (https://coveralls.io/r/sbrunner/tilecloud-chain).
 

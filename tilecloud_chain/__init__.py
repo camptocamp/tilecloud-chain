@@ -187,34 +187,57 @@ class TileGeneration:
                 layer['meta_size'] = 1
             else:
                 error = self.validate(layer, name, 'meta_size', attribute_type=int, default=8) or error
-            if 'type' in layer:
                 error = self.validate(
                     layer, name, 'meta_buffer', attribute_type=int,
                     default=0 if layer['type'] == 'mapnik' else 128
                 ) or error
+            error = self.validate(
+                layer, name, 'query_layers', attribute_type=str, is_array=True
+            ) or error
 
-                if layer['type'] == 'wms':
-                    error = self.validate(layer, name, 'url', attribute_type=str, required=True) or error
-                    error = self.validate(layer, name, 'layers', attribute_type=str, required=True) or error
-                if layer['type'] == 'mapnik':
-                    error = self.validate(layer, name, 'mapfile', attribute_type=str, required=True) or error
+            if not error and layer['type'] == 'wms':
+                error = self.validate(layer, name, 'url', attribute_type=str, required=True) or error
+                error = self.validate(
+                    layer, name, 'layers', attribute_type=str, required=True, is_array=True
+                ) or error
+                if 'query_layers' in layer:
                     error = self.validate(
-                        layer, name, 'output_format', attribute_type=str, default='png',
-                        enumeration=['png', 'png256', 'jpeg', 'grid']
+                        layer, name, 'info_formats', attribute_type=str, is_array=True,
+                        default=['application/vnd.ogc.gml']
                     ) or error
-                    error = self.validate(layer, name, 'data_buffer', attribute_type=int, default=128) or error
-                    if layer['output_format'] == 'grid':
-                        error = self.validate(layer, name, 'resolution', attribute_type=int, default=4) or error
-                        error = self.validate(layer, name, 'layers_fields', attribute_type=dict, default={}) or error
-                        error = self.validate(
-                            layer, name, 'drop_empty_utfgrid', attribute_type=bool, default=False
-                        ) or error
-                        if layer['meta']:
-                            logger.error(
-                                "The layer '%s' is of type Mapnik/Grid, that can't support matatiles." %
-                                (layer['name'])
-                            )
-                            error = True
+            if not error and layer['type'] == 'mapnik':
+                error = self.validate(layer, name, 'mapfile', attribute_type=str, required=True) or error
+                error = self.validate(
+                    layer, name, 'output_format', attribute_type=str, default='png',
+                    enumeration=['png', 'png256', 'jpeg', 'grid']
+                ) or error
+                error = self.validate(layer, name, 'data_buffer', attribute_type=int, default=128) or error
+                if layer['output_format'] == 'grid':
+                    error = self.validate(layer, name, 'resolution', attribute_type=int, default=4) or error
+                    error = self.validate(layer, name, 'layers_fields', attribute_type=dict, default={}) or error
+                    error = self.validate(
+                        layer, name, 'drop_empty_utfgrid', attribute_type=bool, default=False
+                    ) or error
+                    if layer['meta']:
+                        logger.error(
+                            "The layer '%s' is of type Mapnik/Grid, that can't support matatiles." %
+                            (layer['name'])
+                        )
+                        error = True
+                if 'min_resolution_seed' in layer or 'info_formats' in layer or \
+                        'wms_url' in layer or 'query_layers' in layer:
+                    error = self.validate(layer, name, 'wms_url', attribute_type=str, required=True) or error
+                    error = self.validate(
+                        layer, name, 'layers', attribute_type=str, default=['__all__'], is_array=True
+                    ) or error
+                if 'info_formats' in layer or 'query_layers' in layer:
+                    error = self.validate(
+                        layer, name, 'query_layers', attribute_type=str, default=['__all__'], is_array=True
+                    ) or error
+                    error = self.validate(
+                        layer, name, 'info_formats', attribute_type=str, is_array=True,
+                        required=True
+                    ) or error
 
             error = self.validate(layer, name, 'extension', attribute_type=str, required=True) or error
             error = self.validate(layer, name, 'mime_type', attribute_type=str, required=True) or error
@@ -236,6 +259,22 @@ class TileGeneration:
                 error = self.validate(
                     d, dname, 'default', attribute_type=str, default=d['value'],
                     regex="^[a-zA-Z0-9_]+$"
+                ) or error
+            error = self.validate(layer, name, 'geoms', is_array=True, default=[]) or error
+            for i, g in enumerate(layer['geoms']):
+                gname = name + ".geoms[%i]" % i
+                # => connection required on the layer.
+                error = self.validate(
+                    layer, name, 'connection', attribute_type=str, required=True
+                ) or error
+                error = self.validate(
+                    g, gname, 'sql', attribute_type=str, required=True
+                ) or error
+                error = self.validate(
+                    g, gname, 'min_resolution', attribute_type=float
+                ) or error
+                error = self.validate(
+                    g, gname, 'max_resolution', attribute_type=float
                 ) or error
 
             if 'empty_tile_detection' in layer:
@@ -465,7 +504,10 @@ class TileGeneration:
             )
         elif cache['type'] == 'filesystem':
             # on filesystem
-            cache_tilestore = FilesystemTileStore(layout)
+            cache_tilestore = FilesystemTileStore(
+                layout,
+                content_type=layer['mime_type'],
+            )
         else:
             exit('unknown cache type: ' + cache['type'])  # pragma: no cover
 
@@ -528,6 +570,9 @@ class TileGeneration:
                 return False
 
         if is_array:
+            if type(obj[attribute]) == str:
+                obj[attribute] = [v.strip() for v in obj[attribute].split(',')]
+
             if type(obj[attribute]) == list:
                 for n, v in enumerate(obj[attribute]):
                     result, value, type_error = self._validate_type(v, attribute_type, enumeration, **kargs)
@@ -551,6 +596,44 @@ class TileGeneration:
                 return True
             obj[attribute] = value
         return False
+
+    def validate_apache_config(self):
+        error = False
+        error = self.validate(self.config, 'config', 'apache', attribute_type=dict, default={}) or error
+        error = self.validate(
+            self.config['apache'], 'apache', 'location', attribute_type=str,
+            default='/tiles'
+        ) or error
+        error = self.validate(
+            self.config['apache'], 'apache', 'config_file', attribute_type=str,
+            default='apache/tiles.conf'
+        ) or error
+        error = self.validate(
+            self.config['apache'], 'apache', 'expires', attribute_type=int,
+            default=8
+        ) or error
+        return not error
+
+    def validate_mapcache_config(self):
+        error = False
+        error = self.validate(self.config, 'config', 'mapcache', attribute_type=dict, default={}) or error
+        error = self.validate(
+            self.config['mapcache'], 'mapcache', 'config_file', attribute_type=str,
+            default='apache/mapcache.xml'
+        ) or error
+        error = self.validate(
+            self.config['mapcache'], 'mapcache', 'memcache_host', attribute_type=str,
+            default='localhost'
+        ) or error
+        error = self.validate(
+            self.config['mapcache'], 'mapcache', 'memcache_port', attribute_type=int,
+            default='11211'
+        ) or error
+        error = self.validate(
+            self.config['mapcache'], 'mapcache', 'location', attribute_type=str,
+            default='/mapcache'
+        ) or error
+        return not error
 
     def set_layer(self, layer, options):
         self.log_tiles_error(message="Start the layer '%s' generation" % layer)
@@ -602,39 +685,67 @@ class TileGeneration:
         return queue
 
     def init_geom(self, extent=None):
-        self.geom = None
-        if not self.options.near and self.options.geom and \
-                'connection' in self.layer and 'sql' in self.layer:
-            conn = psycopg2.connect(self.layer['connection'])
-            cursor = conn.cursor()
-            sql = 'SELECT ST_AsBinary(geom) FROM (SELECT %s) AS g' % self.layer['sql']
-            logger.info('Execute SQL: %s.' % sql)
-            cursor.execute(sql)
-            geoms = [loads_wkb(str(r[0])) for r in cursor.fetchall()]
-            self.geom = cascaded_union(geoms)
-            if extent:
-                self.geom = self.geom.intersection(Polygon((
-                    (extent[0], extent[1]),
-                    (extent[0], extent[3]),
-                    (extent[2], extent[3]),
-                    (extent[2], extent[1]),
-                )))
-        elif extent:
-            self.geom = Polygon((
+        self.geoms = self.get_geoms(self.layer, extent)
+
+    def get_geoms(self, layer,  extent=None):
+        if not hasattr(self, 'layers_geoms'):
+            layers_geoms = {}
+        if layer['name'] in layers_geoms:  # pragma: no cover
+            # already build
+            return layers_geoms[layer['name']]
+
+        layer_geoms = {}
+        layers_geoms[layer['name']] = layer_geoms
+        if extent:
+            geom = Polygon((
                 (extent[0], extent[1]),
                 (extent[0], extent[3]),
                 (extent[2], extent[3]),
                 (extent[2], extent[1]),
             ))
+            for z, r in enumerate(layer['grid_ref']['resolutions']):
+                layer_geoms[z] = geom
+
+        if self.options is None or (not self.options.near and self.options.geom):
+            conn = psycopg2.connect(layer['connection'])
+            cursor = conn.cursor()
+            for g in layer['geoms']:
+                sql = 'SELECT ST_AsBinary(geom) FROM (SELECT %s) AS g' % g['sql']
+                logger.info('Execute SQL: %s.' % sql)
+                cursor.execute(sql)
+                geoms = [loads_wkb(str(r[0])) for r in cursor.fetchall()]
+                geom = cascaded_union(geoms)
+                if extent:
+                    geom = geom.intersection(Polygon((
+                        (extent[0], extent[1]),
+                        (extent[0], extent[3]),
+                        (extent[2], extent[3]),
+                        (extent[2], extent[1]),
+                    )))
+                for z, r in enumerate(layer['grid_ref']['resolutions']):
+                    if ('min_resolution' not in g or g['min_resolution'] <= r) and \
+                            ('max_resolution' not in g or g['max_resolution'] >= r):
+                        layer_geoms[z] = geom
+        return layer_geoms
+
+    def get_geoms_filter(self, layer, grid, geoms, queue_store=None):
+        return IntersectGeometryFilter(
+            grid=grid,
+            geoms=geoms,
+            queue_store=queue_store,
+            px_buffer=(
+                layer['px_buffer'] +
+                layer['meta_buffer'] if layer['meta'] else 0
+            )
+        )
 
     def add_geom_filter(self, queue_store=None):
-        if self.geom:
-            self.ifilter(IntersectGeometryFilter(
-                grid=self.get_grid(),
-                geom=self.geom,
-                queue_store=queue_store,
-                px_buffer=self.layer['px_buffer'] + self.layer['meta_buffer']
-            ), "Intersect with geom")
+        self.ifilter(self.get_geoms_filter(
+            layer=self.layer,
+            grid=self.get_grid(),
+            geoms=self.geoms,
+            queue_store=queue_store,
+        ), "Intersect with geom")
 
     def add_metatile_splitter(self):
         store = MetaTileSplitterTileStore(
@@ -701,14 +812,18 @@ class TileGeneration:
         self.ifilter(DropErrors())
 
     def init_tilecoords(self, options):
-        bounding_pyramid = BoundingPyramid(tilegrid=self.layer['grid_ref']['obj'])
-        bounding_pyramid.fill(None, self.geom.bounds)
+        resolutions = self.layer['grid_ref']['resolutions']
 
         if options.time and options.zoom is None:
-            options.zoom = [max(bounding_pyramid.bounds)]
+            if 'min_resolution_seed' in self.layer:  # pragma: no cover
+                options.zoom = [resolutions.index(
+                    self.layer['min_resolution_seed']
+                )]
+            else:
+                options.zoom = [len(resolutions) - 1]
 
         if options.zoom is not None:
-            zoom_max = len(self.layer['grid_ref']['resolutions']) - 1
+            zoom_max = len(resolutions) - 1
             for zoom in options.zoom:
                 if zoom > zoom_max:
                     logger.warn(
@@ -722,12 +837,12 @@ class TileGeneration:
         if 'min_resolution_seed' in self.layer:
             if options.zoom is None:
                 options.zoom = []
-                for z, resolution in enumerate(self.layer['grid_ref']['resolutions']):
+                for z, resolution in enumerate(resolutions):
                     if resolution >= self.layer['min_resolution_seed']:
                         options.zoom.append(z)
             else:
                 for zoom in options.zoom:
-                    resolution = self.layer['grid_ref']['resolutions'][zoom]
+                    resolution = resolutions[zoom]
                     if resolution < self.layer['min_resolution_seed']:
                         logger.warn(
                             "Warning: zoom %i corresponds to resolution %s is smaller"
@@ -738,32 +853,35 @@ class TileGeneration:
                         )
                 options.zoom = [
                     z for z in options.zoom if
-                    self.layer['grid_ref']['resolutions'][z] >= self.layer['min_resolution_seed']
+                    resolutions[z] >= self.layer['min_resolution_seed']
                 ]
+
+        if options.zoom is None:
+            options.zoom = [z for z, resolution in enumerate(resolutions)]
+
+        # fill the bounding pyramid
+        tilegrid = self.layer['grid_ref']['obj']
+        bounding_pyramid = BoundingPyramid(tilegrid=tilegrid)
+        for zoom in options.zoom:
+            if zoom in self.geoms:
+                extent = self.geoms[zoom].bounds
+
+                if len(extent) == 0:
+                    logger.warn("Warning: bounds empty for zoom %i" % zoom)
+                else:
+                    minx, miny, maxx, maxy = extent
+                    px_buffer = self.layer['px_buffer']
+                    m_buffer = px_buffer * resolutions[zoom]
+                    minx -= m_buffer
+                    miny -= m_buffer
+                    maxx += m_buffer
+                    maxy += m_buffer
+                    bounding_pyramid.add(tilegrid.tilecoord(zoom, minx, miny))
+                    bounding_pyramid.add(tilegrid.tilecoord(zoom, maxx, maxy))
 
         meta = self.layer['meta']
         if meta:
-            if options.zoom is not None:
-                def metatilecoords(n, zoom):
-                    for z in zoom:
-                        xbounds, ybounds = bounding_pyramid.bounds[z]
-                        metatilecoord = TileCoord(z, xbounds.start, ybounds.start).metatilecoord(n)
-                        x = metatilecoord.x
-                        while x < xbounds.stop:
-                            y = metatilecoord.y
-                            while y < ybounds.stop:
-                                yield TileCoord(z, x, y, n)
-                                y += n
-                            x += n
-                self.set_tilecoords(metatilecoords(self.layer['meta_size'], options.zoom))
-            else:
-                self.set_tilecoords(bounding_pyramid.metatilecoords(self.layer['meta_size']))
-        elif options.zoom is not None:
-            def ziter():
-                for z in options.zoom:
-                    for tile in bounding_pyramid.ziter(z):
-                        yield tile
-            self.set_tilecoords(ziter())
+            self.set_tilecoords(bounding_pyramid.metatilecoords(self.layer['meta_size']))
         else:
             self.set_tilecoords(bounding_pyramid)
 
@@ -955,9 +1073,9 @@ class HashLogger:
 
 class IntersectGeometryFilter:
 
-    def __init__(self, grid, geom=None, queue_store=None, px_buffer=0):
+    def __init__(self, grid, geoms=None, queue_store=None, px_buffer=0):
         self.grid = grid
-        self.geom = geom
+        self.geoms = geoms
         self.queue_store = queue_store
         self.px_buffer = px_buffer
 
@@ -967,7 +1085,7 @@ class IntersectGeometryFilter:
                 tile.tilecoord,
                 self.grid['resolutions'][tile.tilecoord.z] * self.px_buffer
             )
-        ).intersects(self.geom)
+        ).intersects(self.geoms[tile.tilecoord.z])
 
         return tile if intersects else None
 

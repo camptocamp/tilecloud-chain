@@ -8,7 +8,7 @@ from testfixtures import log_capture
 from nose.plugins.attrib import attr
 
 from tilecloud_chain.tests import CompareCase
-from tilecloud_chain import generate, controller
+from tilecloud_chain import generate
 
 
 class TestGenerate(CompareCase):
@@ -124,6 +124,71 @@ class TestGenerate(CompareCase):
             )
         l.check()
 
+    @attr(multigeom=True)
+    @attr(general=True)
+    @log_capture('tilecloud_chain', level=30)
+    def test_multigeom(self, l):
+        self.assert_tiles_generated(
+            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-multigeom.yaml',
+            main_func=generate.main,
+            directory="/tmp/tiles/",
+            tiles_pattern='1.0.0/pp/default/2012/swissgrid_5/%i/%i/%i.png',
+            tiles=[
+                (0, 5, 4),
+                (0, 5, 5),
+                (0, 5, 6),
+                (0, 5, 7),
+                (0, 6, 4),
+                (0, 6, 5),
+                (0, 6, 6),
+                (0, 6, 7),
+                (0, 7, 4),
+                (0, 7, 5),
+                (0, 7, 6),
+                (0, 7, 7),
+                (1, 11, 8),
+                (1, 11, 9),
+                (1, 11, 10),
+                (1, 11, 11),
+                (1, 11, 12),
+                (1, 11, 13),
+                (1, 11, 14),
+                (1, 12, 8),
+                (1, 12, 9),
+                (1, 12, 10),
+                (1, 12, 11),
+                (1, 12, 12),
+                (1, 12, 13),
+                (1, 12, 14),
+                (1, 13, 8),
+                (1, 13, 9),
+                (1, 13, 10),
+                (1, 13, 11),
+                (1, 13, 12),
+                (1, 13, 13),
+                (1, 13, 14),
+                (1, 14, 8),
+                (1, 14, 9),
+                (1, 14, 10),
+                (1, 14, 11),
+                (1, 14, 12),
+                (1, 14, 13),
+                (1, 14, 14),
+                (1, 15, 8),
+                (1, 15, 9),
+                (1, 15, 10),
+                (1, 15, 11),
+                (1, 15, 12),
+                (1, 15, 13),
+                (1, 15, 14),
+                (2, 29, 35),
+                (2, 39, 21),
+                (3, 78, 42),
+                (3, 58, 70),
+            ]
+        )
+        l.check()
+
     @attr(zoom_identifier=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
@@ -158,176 +223,20 @@ class TestGenerate(CompareCase):
             )
         l.check()
 
-    @attr(mbtiles_kvp=True)
+    @attr(empty_bbox=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
-    def test_mbtile_kvp(self, l):
-        from pyramid.testing import DummyRequest
-        from pyramid.httpexceptions import HTTPNoContent, HTTPBadRequest
-        from tilecloud_chain.views.serve import Serve
-
-        self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -d -c tilegeneration/test-nosns.yaml '
-                '--cache mbtiles -l point_hash --zoom 1',
-            main_func=generate.main,
-            directory="/tmp/tiles/mbtiles/",
-            tiles_pattern='1.0.0/point_hash/default/2012/swissgrid_5.png.mbtiles',
-            tiles=[()]
-        )
-
-        request = DummyRequest()
-        request.registry.settings = {
-            'tilegeneration': {
-                'configfile': 'tilegeneration/test-nosns.yaml',
-                'cache': 'mbtiles',
-            }
-        }
-        request.params = {
-            'Service': 'WMTS',
-            'Request': 'GetTile',
-            'Version': '1.0.0',
-            'Format': 'png',
-            'Layer': 'point_hash',
-            'Style': 'default',
-            'TileMatrixSet': 'swissgrid_5',
-            'TileMatrix': '1',
-            'TileRow': '11',
-            'TileCol': '14',
-        }
-        serve = Serve(request)
-        serve()
-        self.assertEquals(request.response.content_type, 'image/png')
-
-        request.params['TileRow'] = '15'
-        self.assertRaises(HTTPNoContent, serve)
-
-        request.params['Service'] = 'test'
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.params['Service'] = 'WMTS'
-        request.params['Request'] = 'test'
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.params['Request'] = 'GetTile'
-        request.params['Version'] = '0.9'
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.params['Version'] = '1.0.0'
-        request.params['Format'] = 'jpeg'
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.params['Format'] = 'png'
-        request.params['Layer'] = 'test'
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.params['Layer'] = 'point_hash'
-        request.params['Style'] = 'test'
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.params['Style'] = 'default'
-        request.params['TileMatrixSet'] = 'test'
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.params['TileMatrixSet'] = 'swissgrid_5'
-        del request.params['Service']
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.params['Service'] = 'test'
-        request.registry.settings['tilegeneration']['strict'] = False
-        serve = Serve(request)
-        self.assertRaises(HTTPBadRequest, serve)
-        l.check()
-
-    @attr(mbtiles_rest=True)
-    @attr(general=True)
-    @log_capture('tilecloud_chain', level=30)
-    def test_mbtile_rest(self, l):
-        from pyramid.testing import DummyRequest
-        from pyramid.httpexceptions import HTTPNoContent, HTTPBadRequest
-        from tilecloud_chain.views.serve import Serve
-
-        self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -d -c tilegeneration/test-nosns.yaml --cache mbtiles'
-                ' -l point_hash --zoom 1',
-            main_func=generate.main,
-            directory="/tmp/tiles/mbtiles/",
-            tiles_pattern='1.0.0/%s',
-            tiles=[
-                ('point_hash/default/2012/swissgrid_5.png.mbtiles')
-            ]
-        )
-        # use delete to don't delete the repository
-        self.assert_tiles_generated_deleted(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-nosns.yaml '
-                '--cache mbtiles',
-            main_func=controller.main,
-            directory="/tmp/tiles/mbtiles/",
-            tiles_pattern='1.0.0/%s',
-            tiles=[
-                ('WMTSCapabilities.xml'),
-                ('point_hash/default/2012/swissgrid_5.png.mbtiles')
-            ]
-        )
-
-        request = DummyRequest()
-        request.registry.settings = {
-            'tilegeneration': {
-                'configfile': 'tilegeneration/test.yaml',
-                'cache': 'mbtiles',
-            }
-        }
-        request.matchdict = {
-            'path': [
-                '1.0.0', 'point_hash', 'default', '2012', 'swissgrid_5', '1', '11', '14.png'
-            ]
-        }
-        serve = Serve(request)
-        serve()
-        self.assertEquals(request.response.content_type, 'image/png')
-
-        request.matchdict['path'][6] = '12'
-        self.assertRaises(HTTPNoContent, serve)
-
-        request.matchdict['path'][6] = '11'
-        request.matchdict['path'][0] = '0.9'
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.matchdict['path'][0] = '1.0.0'
-        request.matchdict['path'][7] = '14.jpeg'
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.matchdict['path'][7] = '14.png'
-        request.matchdict['path'][1] = 'test'
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.matchdict['path'][1] = 'point_hash'
-        request.matchdict['path'][2] = 'test'
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.matchdict['path'][2] = 'default'
-        request.matchdict['path'][4] = 'test'
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.matchdict['path'] = [
-            'point_hash', 'default', 'swissgrid_5', '1', '14', '11.png'
-        ]
-        self.assertRaises(HTTPBadRequest, serve)
-
-        request.matchdict['path'] = [
-            '1.0.0', 'layer', 'default', 'swissgrid_5', '1', '14', '11.png'
-        ]
-        request.registry.settings['tilegeneration']['strict'] = False
-        serve = Serve(request)
-        self.assertRaises(HTTPNoContent, serve)
-
-        request.matchdict['path'] = [
-            '1.0.0', 'WMTSCapabilities.xml'
-        ]
-        Serve(request)()
-        self.assertEquals(request.response.content_type, 'application/xml')
-        self.assertEquals(len(request.response.body), 14813)
-
-        l.check()
+    def test_empty_bbox(self, l):
+        for d in ('-d', ''):
+            self.assert_tiles_generated(
+                cmd='./buildout/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml '
+                    '-l point_hash --bbox 700000,250000,800000,300000',
+                main_func=generate.main,
+                directory="/tmp/tiles/",
+                tiles_pattern='1.0.0/%s',
+                tiles=[
+                ]
+            )
 
     @attr(zoom=True)
     @attr(general=True)
