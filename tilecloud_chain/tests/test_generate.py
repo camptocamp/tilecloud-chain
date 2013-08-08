@@ -247,13 +247,24 @@ class TestGenerate(CompareCase):
         for d in ('-d', ''):
             self.assert_tiles_generated(
                 cmd='./buildout/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml '
-                    '-l point_hash --bbox 700000 250000 800000 300000',
+                    '-l point_hash --bbox 700000 250000 800000 300000' % d,
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern='1.0.0/%s',
                 tiles=[
                 ]
             )
+        # second time for the debug mode
+        l.check(
+            ('tilecloud_chain', 'WARNING', "bounds empty for zoom 0"),
+            ('tilecloud_chain', 'WARNING', "bounds empty for zoom 1"),
+            ('tilecloud_chain', 'WARNING', "bounds empty for zoom 2"),
+            ('tilecloud_chain', 'WARNING', "bounds empty for zoom 3"),
+            ('tilecloud_chain', 'WARNING', "bounds empty for zoom 0"),
+            ('tilecloud_chain', 'WARNING', "bounds empty for zoom 1"),
+            ('tilecloud_chain', 'WARNING', "bounds empty for zoom 2"),
+            ('tilecloud_chain', 'WARNING', "bounds empty for zoom 3"),
+        )
 
     @attr(zoom=True)
     @attr(general=True)
