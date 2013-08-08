@@ -197,6 +197,17 @@ class TileGeneration:
 
             if not error and layer['type'] == 'wms':
                 error = self.validate(layer, name, 'url', attribute_type=str, required=True) or error
+                error = self.validate(layer, name, 'generate_salt', attribute_type=bool, default=False) or error
+                error = self.validate(layer, name, 'params', attribute_type=dict, default={
+                }) or error
+                for key in layer['params']:
+                    self.validate(layer['params'], name + '/params', key, attribute_type=str) or error
+                error = self.validate(layer, name, 'headers', attribute_type=dict, default={
+                    'Cache-Control': 'no-cache, no-store',
+                    'Pragma': 'no-cache',
+                }) or error
+                for key in layer['headers']:
+                    self.validate(layer['headers'], name + '/headers', key, attribute_type=str) or error
                 error = self.validate(
                     layer, name, 'layers', attribute_type=str, required=True, is_array=True
                 ) or error
@@ -479,7 +490,7 @@ class TileGeneration:
             style=layer['wmts_style'],
             format='.' + layer['extension'],
             dimensions=dimensions if dimensions is not None else [
-                (str(dimension['name']), str(dimension['default']))
+                (dimension['name'], dimension['value'])
                 for dimension in layer['dimensions']
             ],
             tile_matrix_set=layer['grid'],
@@ -827,7 +838,7 @@ class TileGeneration:
             for zoom in options.zoom:
                 if zoom > zoom_max:
                     logger.warn(
-                        "Warning: zoom %i is greater than the maximum zoom %i"
+                        "zoom %i is greater than the maximum zoom %i"
                         " of grid %s of layer %s, ignored." % (
                             zoom, zoom_max, self.layer['grid'], self.layer['name']
                         )
@@ -845,7 +856,7 @@ class TileGeneration:
                     resolution = resolutions[zoom]
                     if resolution < self.layer['min_resolution_seed']:
                         logger.warn(
-                            "Warning: zoom %i corresponds to resolution %s is smaller"
+                            "zoom %i corresponds to resolution %s is smaller"
                             " than the 'min_resolution_seed' %s of layer %s, ignored." %
                             (
                                 zoom, resolution, self.layer['min_resolution_seed'], self.layer['name']
@@ -867,7 +878,7 @@ class TileGeneration:
                 extent = self.geoms[zoom].bounds
 
                 if len(extent) == 0:
-                    logger.warn("Warning: bounds empty for zoom %i" % zoom)
+                    logger.warn("bounds empty for zoom %i" % zoom)
                 else:
                     minx, miny, maxx, maxy = extent
                     px_buffer = self.layer['px_buffer']

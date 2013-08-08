@@ -1,6 +1,6 @@
 createdb -E UTF8 -T template0 tests
-psql -d tests -f /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql
-psql -d tests -f /usr/share/postgresql/9.1/contrib/postgis-1.5/spatial_ref_sys.sql
+psql -d tests -f /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql > /dev/null
+psql -d tests -f /usr/share/postgresql/9.1/contrib/postgis-1.5/spatial_ref_sys.sql > /dev/null
 #psql -d tests -c "CREATE EXTENSION postgis"
 psql -d tests -c "ALTER USER postgres WITH PASSWORD 'postgres';"
 

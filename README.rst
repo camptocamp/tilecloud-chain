@@ -116,8 +116,10 @@ The ``wmts_style``, default to 'default'.
 
 The ``extension`` is used to end the filename.
 
-The ``dimensions`` (default to  []) is an array of object that have a ``name``, a ``default`` value specified in the capabilities,
-a ``value`` to generate the tiles, and an array of ``values`` that all the possible value available in the capabilities.
+The ``dimensions`` (default to  []) is an array of object that have a ``name``,
+a ``default`` value specified in the capabilities,
+a ``value`` to generate the tiles (it can be overwrite by an argument),
+and an array of ``values`` that all the possible value available in the capabilities.
 
 For example if you generate the tiles and capabilities with the following configuration:
 
@@ -139,7 +141,7 @@ than with the following configuration:
             value: 2013
             values: [2012, 2013]
 
-We will have two set of tiles 2012 and 2013 that booth are accessible by the capabilities, and by default we will see the first set of tiles.
+We will have two set of tiles ``2012`` and ``2013`` that booth are accessible by the capabilities, and by default we will see the first set of tiles.
 
 
 Metatiles
@@ -213,6 +215,12 @@ WMS layers
 The additional value needed by the WMS is the URL of the server and the ``layers``.
 
 The previously defined ``mime_type`` is also used in the WMS requests.
+
+To customise the request you also have the attributes ``params``, ``headers``
+and ``generate_salt``.
+In ``params`` you can specify additional parameter of the WMS request,
+in ``headers`` you can modify the request headers. See the chapter
+'Proxy/cache issue' for additional informations.
 
 
 Mapnik layers
@@ -510,8 +518,36 @@ The tiles that in error will be appen to the file, ant the tiles can be regenera
 ``./buildout/bin/generate_tiles --layer <layer> --tiles <path>``.
 
 
+Proxy/cache issue
+-----------------
+
+In general we shouldn't generate tiles throw a proxy, to do that you
+should configure the layers as this:
+
+.. code:: yaml
+
+    layers_name:
+        url: http://localhost/wms
+        headers:
+        - Host: the_host_name
+
+The idea is to get the wms server on ``localhost`` and use the ``Host`` header
+to select the right Apache VirtualHost.
+
+To don't have cache we use the as default the headers:
+
+.. code:: yaml
+
+    headers:
+    - Cache-Control: no-cache, no-store
+    - Pragma: no-cache
+
+And if you steal have issue you can add a ``SALT`` random argument by setting
+the layer paramater ``generate_salt`` to ``true``.
+
+
 Explain cost
--------------
+------------
 
 Configuration (default values):
 
