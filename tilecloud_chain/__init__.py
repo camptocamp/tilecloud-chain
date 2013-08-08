@@ -760,8 +760,8 @@ class TileGeneration:
         if self.options is None or (
             self.options.near is None and self.options.geom
         ):
-            conn = psycopg2.connect(layer['connection'])
-            cursor = conn.cursor()
+            connection = psycopg2.connect(layer['connection'])
+            cursor = connection.cursor()
             for g in layer['geoms']:
                 sql = 'SELECT ST_AsBinary(geom) FROM (SELECT %s) AS g' % g['sql']
                 logger.info('Execute SQL: %s.' % sql)
@@ -779,6 +779,8 @@ class TileGeneration:
                     if ('min_resolution' not in g or g['min_resolution'] <= r) and \
                             ('max_resolution' not in g or g['max_resolution'] >= r):
                         layer_geoms[z] = geom
+            cursor.close()
+            connection.close()
         return layer_geoms
 
     def get_geoms_filter(self, layer, grid, geoms, queue_store=None):
