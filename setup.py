@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 
 from setuptools import setup, find_packages
 
@@ -18,6 +19,9 @@ install_requires = [
     'simplejson',
     'requests',
 ]
+if sys.version_info < (2, 7):
+    install_requires.append('argparse')
+
 setup_requires = [
     'nose==1.3.0',
 ]
