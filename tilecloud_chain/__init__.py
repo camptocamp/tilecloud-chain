@@ -838,7 +838,7 @@ class TileGeneration:
             for zoom in options.zoom:
                 if zoom > zoom_max:
                     logger.warn(
-                        "Warning: zoom %i is greater than the maximum zoom %i"
+                        "zoom %i is greater than the maximum zoom %i"
                         " of grid %s of layer %s, ignored." % (
                             zoom, zoom_max, self.layer['grid'], self.layer['name']
                         )
@@ -856,7 +856,7 @@ class TileGeneration:
                     resolution = resolutions[zoom]
                     if resolution < self.layer['min_resolution_seed']:
                         logger.warn(
-                            "Warning: zoom %i corresponds to resolution %s is smaller"
+                            "zoom %i corresponds to resolution %s is smaller"
                             " than the 'min_resolution_seed' %s of layer %s, ignored." %
                             (
                                 zoom, resolution, self.layer['min_resolution_seed'], self.layer['name']
@@ -878,7 +878,7 @@ class TileGeneration:
                 extent = self.geoms[zoom].bounds
 
                 if len(extent) == 0:
-                    logger.warn("Warning: bounds empty for zoom %i" % zoom)
+                    logger.warn("bounds empty for zoom %i" % zoom)
                 else:
                     minx, miny, maxx, maxy = extent
                     px_buffer = self.layer['px_buffer']

@@ -104,9 +104,9 @@ class TestError(CompareCase):
         l.check(
             ('tilecloud_chain', 'INFO', 'Execute SQL: SELECT ST_AsBinary(geom) FROM (SELECT the_geom AS geom '
              'FROM tests.point) AS g.'),
-            ('tilecloud_chain', 'WARNING', "Warning: zoom 10 is greater than the maximum "
+            ('tilecloud_chain', 'WARNING', "zoom 10 is greater than the maximum "
              "zoom 4 of grid swissgrid_5 of layer point, ignored."),
-            ('tilecloud_chain', 'WARNING', "Warning: zoom 4 corresponds to resolution 5.0 "
+            ('tilecloud_chain', 'WARNING', "zoom 4 corresponds to resolution 5.0 "
              "is smaller than the 'min_resolution_seed' 10.0 of layer point, ignored."),
         )
 
