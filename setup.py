@@ -6,7 +6,10 @@ import sys
 from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(here, 'README.rst')).read()
+README = (
+    open(os.path.join(here, 'README.rst')).read() + '\n\n' +
+    open(os.path.join(here, 'CHANGES.rst')).read()
+)
 
 install_requires = [
     'tilecloud>=0.2dev-20130808',
@@ -41,7 +44,29 @@ tests_require = [
 setup(
     name='tilecloud-chain',
     version='0.7',
-    description='tilecloud chain',
+    description="""
+The goal of TileCloud Chain is to have tools around tile generation on a chain like:
+
+Source: WMS, Mapnik.
+
+Optionally use an SQS queue, AWS host, SNS topic.
+
+Destination in WMTS layout, on S3, on Berkley DB (``bsddb``), on MBTiles, or on local filesystem.
+
+Feature:
+
+- Generate tiles.
+- Drop empty tiles.
+- Drop tiles outside a geometry or a bbox.
+- Use MetaTiles
+- Generate GetCapabilities.
+- Generate OpenLayers example page.
+- Obtain the hash of an empty tile
+- In future, measure tile generation speed
+- Calculate cost and generation time.
+- In future, manage the AWS hosts that generate tiles.
+- Delete empty tiles.
+""",
     long_description=README,
     classifiers=[
         'Development Status :: 4 - Beta',
