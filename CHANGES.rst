@@ -19,7 +19,7 @@ to new version:
     geoms:
     -   sql: <column> AS geom FROM <table>
 
-More informations in `Configure geom/sql`_
+More informations in `Configure geom/sql <https://github.com/sbrunner/tilecloud-chain/blob/master/README.rst#configure-geomsql>`_
 
 2. Update from ``optparse`` to ``argparse``, and some argument refactoring, use ``--help`` to see the new version.
 
@@ -28,13 +28,13 @@ More informations in `Configure geom/sql`_
 4. The tile ``server`` is completely rewrite, now it support all cache,
    ``REST`` and ``KVP`` interface, ``GetFeatureInfo`` request,
    and it can be used as a pyramid view or as a ``WSGI`` server.
-   More informations in `Distribute the tiles`_.
+   More informations in `Distribute the tiles <https://github.com/sbrunner/tilecloud-chain/blob/master/README.rst#distribute-the-tiles>`_.
 
 5. Add three strategy to bypass the proxy/cache: Use the headers
    ``Cache-Control: no-cache, no-store``, ``Pragma: no-cache`` (default).
    Use localhost in the URL and the header ``Host: <host_name>`` (recommended).
    Add a ``SALT`` random argument (if the above don't work).
-   More informations in `Proxy/cache issue`_.
+   More informations in `Proxy/cache issue <https://github.com/sbrunner/tilecloud-chain/blob/master/README.rst#proxycache-issue>`_.
 
 6. Improve the dimensions usage by adding it ti the WMS requests,
    And add a ``--dimensions`` argument of ``generate_tiles`` to change the dimensions values.
