@@ -14,6 +14,11 @@ from fractions import Fraction
 from datetime import datetime
 
 try:
+    import bsddb3 as bsddb
+except:  # pragma: no cover
+    import bsddb
+
+try:
     from PIL import Image
     Image  # suppress pyflakes warning
 except:  # pragma: no cover
@@ -31,6 +36,7 @@ from tilecloud.grid.free import FreeTileGrid
 from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.mbtiles import MBTilesTileStore
+from tilecloud.store.bsddb import BSDDBTileStore
 from tilecloud.store.filesystem import FilesystemTileStore
 from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors, DropErrors
@@ -327,7 +333,7 @@ class TileGeneration:
             error = self.validate(cache, name, 'name', attribute_type=str, default=cname) or error
             error = self.validate(
                 cache, name, 'type', attribute_type=str, required=True,
-                enumeration=['s3', 'filesystem', 'mbtiles']
+                enumeration=['s3', 'filesystem', 'mbtiles', 'bsddb']
             ) or error
             error = self.validate(
                 cache, 'cache[%s]' % cache['name'], 'wmtscapabilities_file', attribute_type=str,
@@ -335,7 +341,7 @@ class TileGeneration:
             ) or error
             if cache['wmtscapabilities_file'][0] != '/':
                 cache['wmtscapabilities_file'] = '/' + cache['wmtscapabilities_file']
-            if cache['type'] == 'filesystem' or cache['type'] == 'mbtiles':
+            if cache['type'] == 'filesystem' or cache['type'] == 'mbtiles' or cache['type'] == 'bsddb':
                 error = self.validate(cache, name, 'folder', attribute_type=str, required=True) or error
             elif cache['type'] == 's3':
                 error = self.validate(cache, name, 'bucket', attribute_type=str, required=True) or error
@@ -481,7 +487,7 @@ class TileGeneration:
             result *= fact ** nb
         return result
 
-    def get_store(self, cache, layer, dimensions=None):
+    def get_store(self, cache, layer, dimensions=None, read_only=False):
         # build layout
         grid = layer['grid_ref'] if 'grid_ref' in layer else None
         layout = WMTSTileLayout(
@@ -512,6 +518,21 @@ class TileGeneration:
                 sqlite3.connect(filename),
                 content_type=layer['mime_type'],
                 tilecoord_in_topleft=True,
+            )
+        elif cache['type'] == 'bsddb':
+            # on bsddb file
+            filename = layout.filename(TileCoord(0, 0, 0)).replace(
+                '/0/0/0', ''
+            ) + '.bsddb'
+            if not os.path.exists(os.path.dirname(filename)):
+                os.makedirs(os.path.dirname(filename))
+            cache_tilestore = BSDDBTileStore(
+                bsddb.btopen(
+                    filename,
+                    # and os.path.exists(filename) to avoid error on non existing file
+                    'r' if read_only and os.path.exists(filename) else 'c'
+                ),
+                content_type=layer['mime_type'],
             )
         elif cache['type'] == 'filesystem':
             # on filesystem

@@ -7,7 +7,7 @@ Source: WMS, Mapnik.
 
 Optionally use an SQS queue, AWS host, SNS topic.
 
-Destination in WMTS layout, directly on local filesystem, on S3 or MBTiles on local filesystem.
+Destination in WMTS layout, on S3, on Berkley DB (``bsddb``), on MBTiles, or on local filesystem.
 
 Feature:
 
@@ -72,16 +72,16 @@ resolution without regenerate all the tiles, but it don't work with MapCache.
 Configure caches
 ----------------
 
-There tree available tiles cache: ``s3``, ``mbtile`` and ``filesystem``.
+The available tiles cache are: ``s3``, ``bsddb``, ``mbtile`` and ``filesystem``.
 
-The best solution to store the tiles is ``s3``, ``mbtiles`` has the advantage to have only one file per
-layer - style  dimensions.
+The best solution to store the tiles is ``s3``, ``mbtiles`` and ``bsddb`` has the advantage to have only one file per
+layer - style  dimensions. To serve the ``mbtile`` and the ``bsddb`` see `Distribute the tiles`_.
 
-``s3`` need a ``bucket`` an a ``folder`` (default to '').
+``s3`` need a ``bucket`` and a ``folder`` (default to '').
 
-``mbtiles`` and ``filesystem`` just need a ``folder``.
+``mbtiles``, ``bsddb`` and ``filesystem`` just need a ``folder``.
 
-On all the cache we can add some information to generate the url where the tiles are available.
+On all the cache we can add some information to generate the URL where the tiles are available.
 This is needed to generate the capabilities. We can specify:
 
 * ``http_url`` direct url to the tiles root.
@@ -89,6 +89,13 @@ This is needed to generate the capabilities. We can specify:
 * ``http_url`` and ``hosts`` (array), where each value of ``hosts`` is used to replace ``%(host)s`` in ``http_url``.
 
 In all case ``http_url`` or ``http_urls`` can include all attribute of this cache as ``%(attribute)s``.
+
+MBTiles vs Berkley DB (``bsddb``)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Read performance: similar, eventually the MBTiles is 10% faster.
+* Write performance: The Berkley DB is largely faster, about 10 times.
+* List the tiles: the MBTiles is largely faster but we usually don't need it.
 
 
 Configure layers
@@ -219,37 +226,37 @@ The previously defined ``mime_type`` is also used in the WMS requests.
 To customise the request you also have the attributes ``params``, ``headers``
 and ``generate_salt``.
 In ``params`` you can specify additional parameter of the WMS request,
-in ``headers`` you can modify the request headers. See the chapter
-'Proxy/cache issue' for additional informations.
+in ``headers`` you can modify the request headers. See the
+`Proxy/cache issue`_ for additional informations.
 
 
 Mapnik layers
 ~~~~~~~~~~~~~
 
-We ned to specify the ``mapfile`` path.
+We need to specify the ``mapfile`` path.
 
-With mapnik we have the possibility to specify a ``data_buffer`` than we should set the unneeded ``meta_buffer`` to 0.
+With Mapnik we have the possibility to specify a ``data_buffer`` than we should set the unneeded ``meta_buffer`` to 0.
 
-And the ``output_format`` used for the mapnik renderer, can be ``png``, ``png256``, ``jpeg``, ``grid`` (grid_renderer).
+And the ``output_format`` used for the Mapnik renderer, can be ``png``, ``png256``, ``jpeg``, ``grid`` (grid_renderer).
 
 
 ~~~~~~~~~~~~~~~~~~
 Mapnik grid layers
 ~~~~~~~~~~~~~~~~~~
 
-With mapnik we can generate UTFGrid tiles (JSON format that describe the tiles present on a corresponding tile)
+With Mapnik we can generate UTFGrid tiles (JSON format that describe the tiles present on a corresponding tile)
 by using the ``output_format`` 'grid', see also: https://github.com/mapnik/mapnik/wiki/MapnikRenderers#grid_renderer.
 
 Specific configuration:
 
 We have a specific way to ``drop_empty_utfgrid`` by using the ``on`` value.
 
-We should specify the speudo pixel size [px] with the ``resolution``.
+We should specify the pseudo pixel size [px] with the ``resolution``.
 
 And the ``layers_fields`` that we want to get the attributes.
 Object withe the layer name as key and the values in an array as value.
 
-Il fact the Mapnik documentation say that's working only for one layer.
+In fact the Mapnik documentation say that's working only for one layer.
 
 And don't miss the change the ``extension`` to ``json``, and the ``mime_type`` to ``application/utfgrid``
 and the ``meta`` to ``off`` (not supported).
@@ -322,17 +329,49 @@ To generate the Apache configuration we use the command::
 
     ./buildout/bin/generate_controller --generate-apache-config
 
-The internal server can be used as a python view with:
+The server can be configure as it:
+
+.. code:: yaml
+
+    server:
+        layers: a_layer # Restrict to serve an certain number of layers [default to all]
+        cache: mbtiles # The used cache [default use generation/default_cache]
+        # the URL without location to MapCache, [default to http://localhost/]
+        mapcache_base: http://localhost/
+        mapcache_headers: # headers, can be used to access to an other Apache vhost [default to {}]
+            Host: localhost
+        geoms_redirect: true # use the geoms to redirect to MapCache [defaut to false]
+        # allowed extension in the static path (default value), not used for s3.
+        static_allow_extension: [jpeg, png, xml]
+
+The minimal config is to enable it:
+
+.. code:: yaml
+
+    server: {}
+
+You should also configure the ``http_url`` of the used `cache`, to something like
+``https://%(host)s/${instanceid}/tiles`` or like
+``https://%(host)s/${instanceid}/wsgi/tiles/wmts`` if you use the Pyramid view.
+
+Pyramid view
+~~~~~~~~~~~~
+
+To use the pyramid view use the following config:
 
 .. code:: python
 
     config.get_settings().update({
         'tilegeneration_configfile': '<the configuration file>',
     })
-    config.add_route('tiles', '/tiles/*path')
+    config.add_route('tiles', '/tiles/\*path')
     config.add_view('tilecloud_chain.server:PyramidView', route_name='tiles')
 
-or as a WSGI server with buildout, add in ``buildout.cfg``::
+
+Internal WSGI server
+~~~~~~~~~~~~~~~~~~~~
+
+To use the WSGI server with buildout, add in ``buildout.cfg``::
 
     [buildout]
         parts = ...
@@ -359,34 +398,6 @@ with the apache configuration::
         WSGIProcessGroup tiles:${vars:instanceid}
         WSGIApplicationGroup %{GLOBAL}
     </Location>
-
-To use tue Python view you should used the following:
-
-
-And configure as it:
-
-.. code:: yaml
-
-    server:
-        layers: a_layer # Restrict to serve an sertain number of layers [default to all]
-        cache: mbtiles # The used cache [default use generation/default_cache]
-        # the url without location to MapCache, [default to http://localhost/]
-        mapcache_base: http://localhost/
-        mapcache_headers: # headers, can be used to acces to an other Apache vhost [default to {}]
-            Host: localhost
-        geoms_redirect: true # use the geoms to redirect to MapCache [defaut to false]
-        # allowed extension in the static path (default value), not used for s3.
-        static_allow_extension: [jpeg, png, xml]
-
-The minimal config is to enable it:
-
-.. code:: yaml
-
-    server: {}
-
-You should also configure the ``http_url`` of the used `cache`, to somthing like
-``https://%(host)s/${instanceid}/tiles`` to don't use the internal server, and
-``https://%(host)s/${instanceid}/wsgi/tiles/wmts`` to use it.
 
 
 Generate configuration in buildout
@@ -514,7 +525,7 @@ If we set a file path in config file:
     generation:
         error_file: <path>
 
-The tiles that in error will be appen to the file, ant the tiles can be regenerated with
+The tiles that in error will be append to the file, ant the tiles can be regenerated with
 ``./buildout/bin/generate_tiles --layer <layer> --tiles <path>``.
 
 
@@ -543,7 +554,7 @@ To don't have cache we use the as default the headers:
     - Pragma: no-cache
 
 And if you steal have issue you can add a ``SALT`` random argument by setting
-the layer paramater ``generate_salt`` to ``true``.
+the layer parameter ``generate_salt`` to ``true``.
 
 
 Explain cost
@@ -650,7 +661,7 @@ Configure and explain AWS
 The generation can be deported on an external host.
 
 
-Other usefull options
+Other useful options
 ---------------------
 
 ``--verbose`` or ``-v``: used to display info message.

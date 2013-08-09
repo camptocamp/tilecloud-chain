@@ -51,7 +51,10 @@ caches:
         type: mbtiles
         http_url: http://taurus/tiles
         folder: /tmp/tiles/mbtiles
-        wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
+    bsddb:
+        type: bsddb
+        http_url: http://taurus/tiles
+        folder: /tmp/tiles/bsddb
     s3:
         type: s3
         http_url: https://%(host)s/%(bucket)s/%(folder)s
@@ -234,5 +237,4 @@ mapcache:
 apache:
     config_file: tiles.conf
 
-server:
-    cache: local
+server: {}

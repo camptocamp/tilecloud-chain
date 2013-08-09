@@ -51,6 +51,10 @@ caches:
         type: mbtiles
         http_url: http://taurus/tiles
         folder: /tmp/tiles/mbtiles
+    bsddb:
+        type: bsddb
+        http_url: http://taurus/tiles
+        folder: /tmp/tiles/bsddb
     s3:
         type: s3
         http_url: https://%(host)s/%(bucket)s/%(folder)s

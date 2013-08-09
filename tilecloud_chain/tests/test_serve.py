@@ -773,6 +773,91 @@ class TestServe(CompareCase):
 
         l.check()
 
+    @attr(bsddb_rest=True)
+    @attr(serve=True)
+    @attr(general=True)
+    @log_capture('tilecloud_chain', level=30)
+    def test_bsddb_rest(self, l):
+        self.assert_tiles_generated(
+            cmd='./buildout/bin/generate_tiles -d -c tilegeneration/test-bsddb.yaml'
+                ' -l point_hash --zoom 1',
+            main_func=generate.main,
+            directory="/tmp/tiles/bsddb/",
+            tiles_pattern='1.0.0/%s',
+            tiles=[
+                ('point_hash/default/2012/swissgrid_5.png.bsddb')
+            ]
+        )
+        # use delete to don't delete the repository
+        self.assert_tiles_generated_deleted(
+            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-bsddb.yaml',
+            main_func=controller.main,
+            directory="/tmp/tiles/bsddb/",
+            tiles_pattern='1.0.0/%s',
+            tiles=[
+                ('WMTSCapabilities.xml'),
+                ('point_hash/default/2012/swissgrid_5.png.bsddb')
+            ]
+        )
+
+        request = DummyRequest()
+        request.registry.settings = {
+            'tilegeneration_configfile': 'tilegeneration/test-bsddb.yaml',
+        }
+        request.matchdict = {
+            'path': [
+                'wmts', '1.0.0', 'point_hash', 'default', '2012', 'swissgrid_5', '1', '11', '14.png'
+            ]
+        }
+        serve = PyramidView(request)
+        serve()
+        self.assertEquals(request.response.headers['Content-Type'], 'image/png')
+        self.assertEqual(request.response.headers['Cache-Control'], 'max-age=28800')
+
+        request.matchdict['path'][7] = '12'
+        self.assertRaises(HTTPNoContent, serve)
+
+        request.matchdict['path'][7] = '11'
+        request.matchdict['path'][1] = '0.9'
+        self.assertRaises(HTTPBadRequest, serve)
+
+        request.matchdict['path'][1] = '1.0.0'
+        request.matchdict['path'][8] = '14.jpeg'
+        self.assertRaises(HTTPBadRequest, serve)
+
+        request.matchdict['path'][8] = '14.png'
+        request.matchdict['path'][2] = 'test'
+        self.assertRaises(HTTPBadRequest, serve)
+
+        request.matchdict['path'][2] = 'point_hash'
+        request.matchdict['path'][3] = 'test'
+        self.assertRaises(HTTPBadRequest, serve)
+
+        request.matchdict['path'][3] = 'default'
+        request.matchdict['path'][5] = 'test'
+        self.assertRaises(HTTPBadRequest, serve)
+
+        request.matchdict['path'] = [
+            'wmts', 'point_hash', 'default', 'swissgrid_5', '1', '14', '11.png'
+        ]
+        self.assertRaises(HTTPBadRequest, serve)
+
+        request.matchdict['path'] = [
+            'wmts', '1.0.0', 'WMTSCapabilities.xml'
+        ]
+        PyramidView(request)()
+        self.assertEquals(request.response.headers['Content-Type'], 'application/xml')
+        self.assert_result_equals(request.response.body, CAPABILITIES)
+
+        request.matchdict['path'] = [
+            'static', '1.0.0', 'WMTSCapabilities.xml'
+        ]
+        PyramidView(request)()
+        self.assertEquals(request.response.headers['Content-Type'], 'application/xml')
+        self.assert_result_equals(request.response.body, CAPABILITIES)
+
+        l.check()
+
     @attr(serve_gfi=True)
     @attr(serve=True)
     @attr(general=True)

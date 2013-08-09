@@ -20,7 +20,14 @@ install_requires = [
     'requests',
 ]
 if sys.version_info < (2, 7):
-    install_requires.append('argparse')
+    install_requires.extend([
+        'argparse',
+        'bsddb3',
+    ])
+if sys.version_info >= (3, 0):
+    install_requires.extend([
+        'bsddb3',
+    ])
 
 setup_requires = [
     'nose==1.3.0',
