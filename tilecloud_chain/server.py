@@ -139,7 +139,7 @@ class Server:
                 store_defs = new_store_defs
             for store_def in store_defs:
                 self.stores['/'.join(store_def['ref'])] = \
-                    self.tilegeneration.get_store(self.cache, layer, store_def['dimensions'])
+                    self.tilegeneration.get_store(self.cache, layer, store_def['dimensions'], read_only=True)
 
     def __call__(self, environ, start_response):
         params = {}

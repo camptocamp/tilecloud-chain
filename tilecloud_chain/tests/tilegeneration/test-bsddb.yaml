@@ -6,14 +6,10 @@ grids:
         srs: epsg:21781
 
 caches:
-    local:
-        type: filesystem
+    bsddb:
+        type: bsddb
         http_url: http://taurus/tiles
-        folder: /tmp/tiles
-    mbtiles:
-        type: mbtiles
-        http_url: http://taurus/tiles
-        folder: /tmp/tiles/mbtiles
+        folder: /tmp/tiles/bsddb
 
 layer_default:
     grid: swissgrid_5
@@ -45,8 +41,9 @@ layers:
         empty_tile_detection:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+
 generation:
-    default_cache: mbtiles
+    default_cache: bsddb
     maxconsecutive_errors: 2
 
 mapcache:
@@ -55,5 +52,4 @@ mapcache:
 apache:
     config_file: tiles.conf
 
-server:
-    geoms_redirect: true
+server: {}
