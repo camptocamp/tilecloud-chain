@@ -126,6 +126,10 @@ layers:
     line:
         url: http://localhost/mapserv
         layers: line
+        headers:
+            Cache-Control: no-cache
+        params:
+            PARAM: value
         geoms:
         - sql: the_geom AS geom FROM tests.line
         empty_metatile_detection:

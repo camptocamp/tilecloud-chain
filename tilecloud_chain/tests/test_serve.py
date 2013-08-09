@@ -204,8 +204,7 @@ class TestServe(CompareCase):
         }
         serve = PyramidView(request)
         serve()
-# tilecloud bug
-#        self.assertEquals(request.response.headers['Content-Type'], 'image/png')
+        self.assertEquals(request.response.headers['Content-Type'], 'image/png')
         self.assertEqual(request.response.headers['Cache-Control'], 'max-age=28800')
 
         request.params['TileRow'] = '12'

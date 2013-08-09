@@ -4,6 +4,7 @@ import os
 import sys
 import logging
 import socket
+import random
 from datetime import datetime
 from getpass import getuser
 from argparse import ArgumentParser
@@ -53,7 +54,23 @@ def _gene(options, gene, layer):
     cache_tilestore = None
     if options.role in ('local', 'slave'):
         cache = gene.caches[options.cache]
-        cache_tilestore = gene.get_store(cache, gene.layer)
+        dimensions_args = {}
+        for dim in gene.options.dimensions:
+            dim = dim.split('=')
+            if len(dim) != 2:  # pragma: no cover
+                exit(
+                    'the DIMENTIONS option should be like this '
+                    'DATE=2013 VERSION=13.'
+                )
+            dimensions_args[dim[0]] = dim[1]
+        dimensions = []
+        for dim in gene.layer['dimensions']:
+            dimensions.append((
+                dim['name'],
+                dimensions_args[dim['name']] if
+                dim['name'] in dimensions_args else dim['value']
+            ))
+        cache_tilestore = gene.get_store(cache, gene.layer, dimensions=dimensions)
         if cache_tilestore is None:
             exit('Unknown cache type: ' + cache['type'])  # pragma: no cover
 
@@ -99,6 +116,20 @@ def _gene(options, gene, layer):
 
     elif options.role in ('local', 'slave', 'hash'):
         if gene.layer['type'] == 'wms':
+            params = gene.layer['params'].copy()
+            if gene.layer['generate_salt']:
+                params['SALT'] = str(random.randint(0, sys.maxint))
+            for dim in gene.layer['dimensions']:
+                params[dim['name']] = dim['value']
+            for dim in gene.options.dimensions:
+                dim = dim.split('=')
+                if len(dim) != 2:  # pragma: no cover
+                    exit(
+                        'the DIMENTIONS option should be like this '
+                        'DATE=2013 VERSION=13.'
+                    )
+                params[dim[0]] = dim[1]
+
             # Get the metatile image from the WMS server
             gene.get(URLTileStore(
                 tilelayouts=(WMSTileLayout(
@@ -107,8 +138,10 @@ def _gene(options, gene, layer):
                     srs=gene.layer['grid_ref']['srs'],
                     format=gene.layer['mime_type'],
                     border=gene.layer['meta_buffer'] if meta else 0,
-                    tilegrid=gene.get_grid()['obj']
-                ),)
+                    tilegrid=gene.get_grid()['obj'],
+                    params=params,
+                ),),
+                headers=gene.layer['headers'],
             ), "Get tile from WMS")
         elif gene.layer['type'] == 'mapnik':
             from tilecloud.store.mapnik_ import MapnikTileStore
@@ -276,7 +309,7 @@ def main():
         help='get the bbox of a tile, use the specified TILE z/x/y, or z/x/y:+n/+n for metatiles'
     )
     parser.add_argument(
-        '--dimensions', nargs='+', metavar='DIMENSION=VALUE',
+        '--dimensions', nargs='+', metavar='DIMENSION=VALUE', default=[],
         help='overwrite the dimensions values specified in the config file'
     )
     parser.add_argument(

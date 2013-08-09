@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 
 from setuptools import setup, find_packages
 
@@ -8,7 +9,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 
 install_requires = [
-    'tilecloud>=0.2dev-20130516',
+    'tilecloud>=0.2dev-20130808',
     'psycopg2',
     'Shapely',
     'boto>=2.0',
@@ -18,6 +19,9 @@ install_requires = [
     'simplejson',
     'requests',
 ]
+if sys.version_info < (2, 7):
+    install_requires.append('argparse')
+
 setup_requires = [
     'nose==1.3.0',
 ]
