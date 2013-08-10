@@ -91,6 +91,8 @@ Feature:
         'console_scripts': [
             'generate_tiles = tilecloud_chain.generate:main',
             'generate_controller = tilecloud_chain.controller:main',
+            'generate_amazon = tilecloud_chain.amazon:main',
+            'generate_cost = tilecloud_chain.cost:main',
         ],
         'pyramid.scaffold': [
             'tilecloud_chain = tilecloud_chain.scaffolds:Create',

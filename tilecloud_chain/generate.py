@@ -80,7 +80,7 @@ def _gene(options, gene, layer):
 
     elif options.role in ('local', 'master'):
         # Generate a stream of metatiles
-        gene.init_tilecoords(options)
+        gene.init_tilecoords()
         gene.add_geom_filter()
 
     elif options.role == 'slave':
@@ -337,7 +337,7 @@ def main():
 
     gene = TileGeneration(options.config, options)
 
-    if not options.get_hash and not options.get_bbox and \
+    if options.get_hash is None and options.get_bbox is None and \
             'authorised_user' in gene.config['generation'] and \
             gene.config['generation']['authorised_user'] != getuser():
         exit('not authorised, authorised user is: %s.' % gene.config['generation']['authorised_user'])
@@ -345,7 +345,7 @@ def main():
     if options.cache is None:
         options.cache = gene.config['generation']['default_cache']
 
-    if options.tiles and options.role not in ['local', 'master']:  # pragma: no cover
+    if options.tiles is not None and options.role not in ['local', 'master']:  # pragma: no cover
         exit("The --tiles option worky only with role local or master")
 
     try:

@@ -45,41 +45,49 @@ from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors, DropErro
 logger = logging.getLogger(__name__)
 
 
-def add_comon_options(parser):
+def add_comon_options(parser, tile_pyramid=True, no_geom=True):
     parser.add_argument(
         '-c', '--config', default='tilegeneration/config.yaml',
         help='path to the configuration file', metavar="FILE"
     )
     parser.add_argument(
-        '-b', '--bbox', nargs=4, type=float, metavar=('MINX', 'MINY', 'MAXX', 'MAXY'),
-        help='restrict to specified bounding box'
-    )
-    parser.add_argument(
-        '-z', '--zoom', default=None,
-        help='restrict to specified zoom level, or a zooms range (2-5), or a zooms list (2,4,5)'
-    )
-    parser.add_argument(
         '-l', '--layer', metavar="NAME",
         help='the layer to generate'
     )
-    parser.add_argument(
-        '--no-geom', default=True, action="store_false", dest="geom",
-        help="Don't the geometry available in the SQL"
-    )
-    parser.add_argument(
-        '-t', '--test', type=int, default=None,
-        help='test with generating N tiles, and add log messages', metavar="N"
-    )
+    if tile_pyramid:
+        parser.add_argument(
+            '-b', '--bbox', nargs=4, type=float, metavar=('MINX', 'MINY', 'MAXX', 'MAXY'),
+            help='restrict to specified bounding box'
+        )
+        parser.add_argument(
+            '-z', '--zoom',
+            help='restrict to specified zoom level, or a zooms range (2-5), or a zooms list (2,4,5)'
+        )
+        parser.add_argument(
+            '-t', '--test', type=int,
+            help='test with generating N tiles, and add log messages', metavar="N"
+        )
+        parser.add_argument(
+            '--near', type=float, nargs=2, metavar=('X', 'Y'),
+            help='This option is a good replacement of --bbox, to used with '
+            '--time or --test and --zoom, implies --no-geom. '
+            'It automatically measure a bbox around the X Y position that corresponds to the metatiles.'
+        )
+        parser.add_argument(
+            '--time', '--measure-generation-time',
+            dest='time', metavar="N", type=int,
+            help='Measure the generation time by creating N tiles to warm-up, '
+            'N tile to do the measure and N tiles to slow-down'
+        )
+    if no_geom:
+        parser.add_argument(
+            '--no-geom', default=True, action="store_false", dest="geom",
+            help="Don't the geometry available in the SQL"
+        )
     parser.add_argument(
         '--cache', '--destination-cache',
-        default=None, dest='cache', metavar="NAME",
+        dest='cache', metavar="NAME",
         help='The cache name to use'
-    )
-    parser.add_argument(
-        '--time', '--measure-generation-time',
-        default=None, dest='time', metavar="N", type=int,
-        help='Measure the generation time by creating N tiles to warm-up, '
-        'N tile to do the measure and N tiles to slow-down'
     )
     parser.add_argument(
         '-v', '--verbose', default=False, action="store_true",
@@ -88,12 +96,6 @@ def add_comon_options(parser):
     parser.add_argument(
         '-d', '--debug', default=False, action="store_true",
         help='Display debug message, and stop on first error.'
-    )
-    parser.add_argument(
-        '--near', default=None, type=float, nargs=2, metavar=('X', 'Y'),
-        help='This option is a good replacement of --bbox, to used with '
-        '--time or --test and --zoom, implies --no-geom. '
-        'It automatically measure a bbox around the X Y position that corresponds to the metatiles.'
     )
 
 
@@ -114,6 +116,21 @@ class TileGeneration:
 
     def __init__(self, config_file, options=None, layer_name=None):
         level = logging.WARNING
+
+        if options is not None:
+            if not hasattr(options, 'bbox'):
+                options.bbox = None
+            if not hasattr(options, 'zoom'):
+                options.zoom = None
+            if not hasattr(options, 'test'):
+                options.test = None
+            if not hasattr(options, 'near'):
+                options.near = None
+            if not hasattr(options, 'time'):
+                options.time = None
+            if not hasattr(options, 'geom'):
+                options.geom = True
+
         if options and options.verbose and options.debug:  # pragma: no cover
             exit("Debug and verbose options can't be used together")
         if options and options.verbose:
@@ -425,7 +442,7 @@ class TileGeneration:
         if error:
             exit(1)
 
-        if options and options.zoom:
+        if options and options.zoom is not None:
             error_message = (
                 "The zoom argument '%s' has incorect format, "
                 "it can be a single value, a range (3-9), a list of values (2,5,7)."
@@ -671,12 +688,14 @@ class TileGeneration:
         self.log_tiles_error(message="Start the layer '%s' generation" % layer)
         self.layer = self.layers[layer]
 
-        if options.near or (options.time and 'bbox' in self.layer and options.zoom):
-            if not options.zoom or len(options.zoom) != 1:  # pragma: no cover
+        if options.near is not None or (
+                options.time is not None and 'bbox' in self.layer and options.zoom is not None
+        ):
+            if options.zoom is None or len(options.zoom) != 1:  # pragma: no cover
                 exit('Option --near needs the option --zoom with one value.')
-            if not (options.time or options.test):  # pragma: no cover
+            if not (options.time is not None or options.test is not None):  # pragma: no cover
                 exit('Option --near needs the option --time or --test.')
-            position = options.near if options.near else [
+            position = options.near if options.near is not None else [
                 (self.layer['bbox'][0] + self.layer['bbox'][2]) / 2,
                 (self.layer['bbox'][1] + self.layer['bbox'][3]) / 2,
             ]
@@ -686,7 +705,7 @@ class TileGeneration:
             mt_to_m = self.layer['meta_size'] * self.layer['grid_ref']['tile_size'] * resolution
             mt = [float(d) / mt_to_m for d in diff]
 
-            nb_tile = options.time * 3 if options.time else options.test
+            nb_tile = options.time * 3 if options.time is not None else options.test
             nb_mt = nb_tile / (self.layer['meta_size'] ** 2)
             nb_sqrt_mt = ceil(sqrt(nb_mt))
 
@@ -697,7 +716,7 @@ class TileGeneration:
                 bbox[0] + (mt_origin[0] + nb_sqrt_mt) * mt_to_m,
                 bbox[1] + (mt_origin[1] + nb_sqrt_mt) * mt_to_m,
             ])
-        elif options.bbox:
+        elif options.bbox is not None:
             self.init_geom(options.bbox)
         elif 'bbox' in self.layer:
             self.init_geom(self.layer['bbox'])
@@ -738,7 +757,9 @@ class TileGeneration:
             for z, r in enumerate(layer['grid_ref']['resolutions']):
                 layer_geoms[z] = geom
 
-        if self.options is None or (not self.options.near and self.options.geom):
+        if self.options is None or (
+            self.options.near is None and self.options.geom
+        ):
             conn = psycopg2.connect(layer['connection'])
             cursor = conn.cursor()
             for g in layer['geoms']:
@@ -843,20 +864,20 @@ class TileGeneration:
                 self.config['generation']['maxconsecutive_errors']), self.tilestream)
         self.ifilter(DropErrors())
 
-    def init_tilecoords(self, options):
+    def init_tilecoords(self):
         resolutions = self.layer['grid_ref']['resolutions']
 
-        if options.time and options.zoom is None:
+        if self.options.time is not None and self.options.zoom is None:
             if 'min_resolution_seed' in self.layer:  # pragma: no cover
-                options.zoom = [resolutions.index(
+                self.options.zoom = [resolutions.index(
                     self.layer['min_resolution_seed']
                 )]
             else:
-                options.zoom = [len(resolutions) - 1]
+                self.options.zoom = [len(resolutions) - 1]
 
-        if options.zoom is not None:
+        if self.options.zoom is not None:
             zoom_max = len(resolutions) - 1
-            for zoom in options.zoom:
+            for zoom in self.options.zoom:
                 if zoom > zoom_max:
                     logger.warn(
                         "zoom %i is greater than the maximum zoom %i"
@@ -864,16 +885,16 @@ class TileGeneration:
                             zoom, zoom_max, self.layer['grid'], self.layer['name']
                         )
                     )
-            options.zoom = [z for z in options.zoom if z <= zoom_max]
+            self.options.zoom = [z for z in self.options.zoom if z <= zoom_max]
 
         if 'min_resolution_seed' in self.layer:
-            if options.zoom is None:
-                options.zoom = []
+            if self.options.zoom is None:
+                self.options.zoom = []
                 for z, resolution in enumerate(resolutions):
                     if resolution >= self.layer['min_resolution_seed']:
-                        options.zoom.append(z)
+                        self.options.zoom.append(z)
             else:
-                for zoom in options.zoom:
+                for zoom in self.options.zoom:
                     resolution = resolutions[zoom]
                     if resolution < self.layer['min_resolution_seed']:
                         logger.warn(
@@ -883,18 +904,18 @@ class TileGeneration:
                                 zoom, resolution, self.layer['min_resolution_seed'], self.layer['name']
                             )
                         )
-                options.zoom = [
-                    z for z in options.zoom if
+                self.options.zoom = [
+                    z for z in self.options.zoom if
                     resolutions[z] >= self.layer['min_resolution_seed']
                 ]
 
-        if options.zoom is None:
-            options.zoom = [z for z, resolution in enumerate(resolutions)]
+        if self.options.zoom is None:
+            self.options.zoom = [z for z, resolution in enumerate(resolutions)]
 
         # fill the bounding pyramid
         tilegrid = self.layer['grid_ref']['obj']
         bounding_pyramid = BoundingPyramid(tilegrid=tilegrid)
-        for zoom in options.zoom:
+        for zoom in self.options.zoom:
             if zoom in self.geoms:
                 extent = self.geoms[zoom].bounds
 
