@@ -39,6 +39,8 @@ More informations in `Configure geom/sql <https://github.com/sbrunner/tilecloud-
 6. Improve the dimensions usage by adding it ti the WMS requests,
    And add a ``--dimensions`` argument of ``generate_tiles`` to change the dimensions values.
 
+7. Extract generate_cost and generate_amazon from generate_controler.
+
 
 Release 0.6
 -----------
