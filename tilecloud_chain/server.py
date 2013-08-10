@@ -81,9 +81,10 @@ class Server:
             def _get(self, path):
                 if path.split('.')[-1] not in self.static_allow_extension:  # pragma: no cover
                     return self.error(403, path)
-                if not os.path.isfile(folder + path):  # pragma: no cover
+                p = folder + path
+                if not os.path.isfile(p):  # pragma: no cover
                     return self.error(404, path)
-                with open(folder + path, 'rb') as file:
+                with open(p, 'rb') as file:
                     data = file.read()
                 return data
         # get capabilities or other static files

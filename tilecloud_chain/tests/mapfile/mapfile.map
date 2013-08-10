@@ -40,6 +40,7 @@ MAP
         "ows_geometries" "the_geom" # For returning geometries in GetFeatureInfo
     END
     CLASS
+        NAME "Point"
         COLOR 255 0 0
         SIZE 10
         SYMBOL "circle"
@@ -54,10 +55,20 @@ MAP
     DATA "the_geom FROM tests.line"
     STATUS ON
     CLASS
+        NAME "Line 1"
         COLOR 0 0 255
         STYLE
             WIDTH 5
         END
+        MINSCALE 100000
+    END
+    CLASS
+        NAME "Line 2"
+        COLOR 0 0 255
+        STYLE
+            WIDTH 5
+        END
+        MAXSCALE 100000
     END
   END
 
@@ -69,6 +80,7 @@ MAP
     DATA "the_geom FROM tests.polygon"
     STATUS ON
     CLASS
+        NAME "Polygon"
         OUTLINECOLOR 0 255 0
         COLOR 255 255 0
     END

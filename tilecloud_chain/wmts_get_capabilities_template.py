@@ -17,7 +17,7 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
             </ows:Constraint>
           </ows:Get>{%
           if server %}
-          <ows:Get xlink:href="{{base_urls[0]}}">
+          <ows:Get xlink:href="{{base_urls[0]}}{{base_url_postfix}}">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>KVP</ows:Value>
@@ -32,7 +32,7 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
       <ows:DCP>
         <ows:HTTP>{%
           for base_url in base_urls %}
-          <ows:Get xlink:href="{{base_url}}">
+          <ows:Get xlink:href="{{base_url}}{{base_url_postfix}}">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>{%
@@ -54,7 +54,18 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
       <ows:Title>{{layername}}</ows:Title>
       <ows:Identifier>{{layername}}</ows:Identifier>
       <Style isDefault="true">
-        <ows:Identifier>{{layer['wmts_style']}}</ows:Identifier>
+        <ows:Identifier>{{layer['wmts_style']}}</ows:Identifier>{%
+        for legend in layer['legends'] %}
+        <LegendURL format="{{legend['format']}}" xlink:href="{{legend['href']}}" {%
+        if 'width' in legend %}width="{{legend['width']}}" {% endif %}{%
+        if 'height' in legend %}height="{{legend['height']}}" {% endif %}{%
+        if 'max_scale' in legend %}maxScaleDenominator="{{legend['max_scale']}}" {% else %}{%
+        if 'max_resolution' in legend %}maxScaleDenominator="{{legend['max_resolution'] / 0.00028}}" {%
+        endif %}{% endif %}{%
+        if 'min_scale' in legend %}minScaleDenominator="{{legend['min_scale']}}" {% else %}{%
+        if 'min_resolution' in legend %}minScaleDenominator="{{legend['min_resolution'] / 0.00028}}" {%
+        endif %}{% endif %}/>{%
+        endfor %}
       </Style>
       <Format>{{layer['mime_type']}}</Format> {%
       if layer['query_layers'] %}{%
@@ -73,7 +84,7 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
       endfor %}{%
       for base_url in base_urls %}
       <ResourceURL format="{{layer['mime_type']}}" resourceType="tile"
-                   template="{{base_url}}/1.0.0/{{layername}}/{{layer['wmts_style']}}/{%
+                   template="{{base_url}}{{base_url_postfix}}/1.0.0/{{layername}}/{{layer['wmts_style']}}/{%
                         for dimension in layer['dimensions']
                             %}{{('{' + dimension['name'] + '}')}}{%
                         endfor

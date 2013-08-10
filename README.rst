@@ -352,7 +352,7 @@ The minimal config is to enable it:
 
 You should also configure the ``http_url`` of the used `cache`, to something like
 ``https://%(host)s/${instanceid}/tiles`` or like
-``https://%(host)s/${instanceid}/wsgi/tiles/wmts`` if you use the Pyramid view.
+``https://%(host)s/${instanceid}/wsgi/tiles`` if you use the Pyramid view.
 
 Pyramid view
 ~~~~~~~~~~~~
