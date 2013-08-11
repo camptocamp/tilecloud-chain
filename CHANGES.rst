@@ -41,6 +41,8 @@ More informations in `Configure geom/sql <https://github.com/sbrunner/tilecloud-
 
 7. Extract generate_cost and generate_amazon from generate_controler.
 
+8. Now we can creates legends, see `Legends <https://github.com/sbrunner/tilecloud-chain/blob/master/README.rst#legends>`_
+
 
 Release 0.6
 -----------

@@ -174,7 +174,7 @@ def _generate_wmts_capabilities(gene):
                 img = _get(path, cache)
                 if img is not None:
                     new_legend = {
-                        'format': layer['legend_mime'],
+                        'mime_type': layer['legend_mime'],
                         'href': base_urls[0] + ('/static' if server else '') + path,
                     }
                     layer['legends'].append(new_legend)

@@ -56,7 +56,7 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
       <Style isDefault="true">
         <ows:Identifier>{{layer['wmts_style']}}</ows:Identifier>{%
         for legend in layer['legends'] %}
-        <LegendURL format="{{legend['format']}}" xlink:href="{{legend['href']}}" {%
+        <LegendURL format="{{legend['mime_type']}}" xlink:href="{{legend['href']}}" {%
         if 'width' in legend %}width="{{legend['width']}}" {% endif %}{%
         if 'height' in legend %}height="{{legend['height']}}" {% endif %}{%
         if 'max_scale' in legend %}maxScaleDenominator="{{legend['max_scale']}}" {% else %}{%

@@ -215,6 +215,39 @@ Example:
 
 It's preferable to use simple geometries, too complex geometries can slow down the generation.
 
+Legends
+~~~~~~~
+
+To be able to generate legends with ``./buildout/bin/generate_controler --generate_legend_images``
+you should have ``legend_mime`` and ``legend_extention`` in the layer config.
+
+for example:
+
+.. code:: yaml
+
+   legend_mime: image/png
+   legend_extention: png
+
+Then it will create a legend image per layer and per zoom level named 
+``.../1.0.0/{{layer}}/{{wmts_style}}/legend{{zoom}}.{{legend_extention}}``
+only if she is deferent than the previous zoom level. Than if we have only one legend image
+it sill store in the file named ``legend0.{{legend_extention}}``.
+
+When we do ``./buildout/bin/generate_controler --generate_wmts-capabilities`` we will at first
+parse the legend images to generate a layer config like this:
+
+.. code:: yaml
+
+    legends:
+    -   mime_type: image/png
+        href: http://host/tiles/layer/style/legend0.png
+        min_resolution: 500 # optional, [m/px]
+        max_resolution: 2000 # optional, [m/px]
+        min_scale: # if define overwrite the min_resolution [m/m]
+        max_scale: # if define overwrite the max_resolution [m/m]
+
+If you define a legends array in the layer configuration it is directly used to generate the capabilities.
+
 
 WMS layers
 ~~~~~~~~~~
