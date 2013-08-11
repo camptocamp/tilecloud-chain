@@ -1,0 +1,85 @@
+grids:
+    swissgrid:
+        resolutions: [100, 50, 20, 10, 5]
+        bbox: [420000, 30000, 900000, 350000]
+        tile_size: 256
+        srs: epsg:21781
+
+caches:
+    local:
+        type: filesystem
+        http_url: http://taurus/tiles
+        folder: /tmp/tiles
+        wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
+
+layer_default:
+    grid: swissgrid
+    type: wms
+    legend_mime: image/png
+    legend_extention: png
+    wmts_style: default
+    mime_type: image/png
+    extension: png
+    dimensions:
+    -   name: DATE
+        default: 2012
+        value: 2012
+        values: [2005, 2010, 2012]
+    meta: on
+    meta_size: 8
+    meta_buffer: 128
+    connection: user=postgres password=postgres dbname=tests host=localhost
+    cost:
+        # [ms]
+        tileonly_generation_time: 60
+        # [ms]
+        tile_generation_time: 30
+        # [ms]
+        metatile_generation_time: 30
+        # [ko]
+        tile_size: 20
+
+layers:
+    point:
+        url: http://localhost/mapserv
+        layers: point
+        geoms:
+        - sql: the_geom AS geom FROM tests.point
+        min_resolution_seed: 10
+        sqs:
+            queue: sqs_point
+    line:
+        url: http://localhost/mapserv
+        layers: line
+        headers:
+            Cache-Control: no-cache
+        params:
+            PARAM: value
+        geoms:
+        - sql: the_geom AS geom FROM tests.line
+        empty_metatile_detection:
+            size: 20743
+            hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+        empty_tile_detection:
+            size: 334
+            hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+    polygon:
+        url: http://localhost/mapserv
+        layers: polygon
+        meta: off
+        geoms:
+        - sql: the_geom AS geom FROM tests.polygon
+        empty_metatile_detection:
+            size: 20743
+            hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+        empty_tile_detection:
+            size: 334
+            hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+    all:
+        url: http://localhost/mapserv
+        layers: point,line,polygon
+        meta: off
+        bbox: [550000.0, 170000.0, 560000.0, 180000.0]
+
+generation:
+    default_cache: local

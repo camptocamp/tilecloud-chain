@@ -117,6 +117,8 @@ def _gene(options, gene, layer):
     elif options.role in ('local', 'slave', 'hash'):
         if gene.layer['type'] == 'wms':
             params = gene.layer['params'].copy()
+            if 'STYLES' not in params:
+                params['STYLES'] = ','.join(gene.layer['wmts_style'] for l in gene.layer['layers'])
             if gene.layer['generate_salt']:
                 params['SALT'] = str(random.randint(0, sys.maxint))
             for dim in gene.layer['dimensions']:

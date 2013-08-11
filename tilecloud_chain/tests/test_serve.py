@@ -24,14 +24,14 @@ CAPABILITIES = """<?xml version="1.0" encoding="UTF-8"?>
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles/1.0.0/WMTSCapabilities.xml">
+          <ows:Get xlink:href="http://taurus/tiles/wmts/1.0.0/WMTSCapabilities.xml">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
-          <ows:Get xlink:href="http://taurus/tiles">
+          <ows:Get xlink:href="http://taurus/tiles/wmts">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>KVP</ows:Value>
@@ -44,7 +44,7 @@ CAPABILITIES = """<?xml version="1.0" encoding="UTF-8"?>
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles">
+          <ows:Get xlink:href="http://taurus/tiles/wmts">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -75,7 +75,7 @@ CAPABILITIES = """<?xml version="1.0" encoding="UTF-8"?>
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/point_hash/default/{DATE}/""" \
+                   template="http://taurus/tiles/wmts/1.0.0/point_hash/default/{DATE}/""" \
     """{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -261,14 +261,14 @@ class TestServe(CompareCase):
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles/1.0.0/WMTSCapabilities.xml">
+          <ows:Get xlink:href="http://taurus/tiles/wmts/1.0.0/WMTSCapabilities.xml">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
-          <ows:Get xlink:href="http://taurus/tiles">
+          <ows:Get xlink:href="http://taurus/tiles/wmts">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>KVP</ows:Value>
@@ -281,7 +281,7 @@ class TestServe(CompareCase):
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles">
+          <ows:Get xlink:href="http://taurus/tiles/wmts">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -311,7 +311,7 @@ class TestServe(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/point_hash_no_meta/default/"""
+                   template="http://taurus/tiles/wmts/1.0.0/point_hash_no_meta/default/"""
             """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -333,7 +333,7 @@ class TestServe(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/all/default/"""
+                   template="http://taurus/tiles/wmts/1.0.0/all/default/"""
             """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -355,7 +355,7 @@ class TestServe(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/point_hash/default/"""
+                   template="http://taurus/tiles/wmts/1.0.0/point_hash/default/"""
             """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -377,7 +377,7 @@ class TestServe(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/polygon/default/"""
+                   template="http://taurus/tiles/wmts/1.0.0/polygon/default/"""
             """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -399,7 +399,7 @@ class TestServe(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/point/default/"""
+                   template="http://taurus/tiles/wmts/1.0.0/point/default/"""
             """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -421,7 +421,7 @@ class TestServe(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/point_px_buffer/default/"""
+                   template="http://taurus/tiles/wmts/1.0.0/point_px_buffer/default/"""
             """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -443,7 +443,7 @@ class TestServe(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="application/utfgrid" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/mapnik_grid/default/"""
+                   template="http://taurus/tiles/wmts/1.0.0/mapnik_grid/default/"""
             """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -465,7 +465,7 @@ class TestServe(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="application/utfgrid" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/mapnik_grid_drop/default/"""
+                   template="http://taurus/tiles/wmts/1.0.0/mapnik_grid_drop/default/"""
             """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -487,7 +487,7 @@ class TestServe(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/line/default/"""
+                   template="http://taurus/tiles/wmts/1.0.0/line/default/"""
             """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -509,7 +509,7 @@ class TestServe(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/polygon2/default/"""
+                   template="http://taurus/tiles/wmts/1.0.0/polygon2/default/"""
             """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_01</TileMatrixSet>
@@ -531,7 +531,7 @@ class TestServe(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/point_error/default/"""
+                   template="http://taurus/tiles/wmts/1.0.0/point_error/default/"""
             """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -553,7 +553,7 @@ class TestServe(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/mapnik/default/"""
+                   template="http://taurus/tiles/wmts/1.0.0/mapnik/default/"""
             """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
