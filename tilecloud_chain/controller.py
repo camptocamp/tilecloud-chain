@@ -270,6 +270,14 @@ def _generate_mapcache_config(gene):
     if not gene.validate_mapcache_config():
         exit(1)  # pragma: no cover
 
+    for layer in gene.layers.values():
+        if layer['type'] == 'wms' or 'wms_url' in layer:
+            if 'FORMAT' not in layer['params']:
+                layer['params']['FORMAT'] = layer['mime_type']
+            if 'LAYERS' not in layer['params']:
+                layer['params']['LAYERS'] = ','.join(layer['layers'])
+            if 'TRANSPARENT' not in layer['params']:
+                layer['params']['TRANSPARENT'] = 'TRUE' if layer['mime_type'] == 'image/png' else 'FALSE'
     config = jinja2_template(
         mapcache_config_template,
         layers=gene.layers,
