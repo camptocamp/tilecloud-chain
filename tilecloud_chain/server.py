@@ -368,14 +368,11 @@ class Server:
             responce_headers
             return self.responce(responce.content, headers=responce_headers, **kwargs)
         else:  # pragma: no cover
-            responce_headers = responce.headers.copy()
-            responce_headers['Cache-Control'] = 'no-cache, no-store'
-            responce_headers['Pragma'] = 'no-cache'
             message = "The URL '%s' return '%i %s', content:\n%s" % (
                 url, responce.status_code, responce.reason, responce.text,
             )
             logger.warning(message)
-            return self.error(502, headers=responce_headers, message=message, **kwargs)
+            return self.error(502, message=message, **kwargs)
 
     HTTP_MESSAGES = {
         204: '204 No Content',
