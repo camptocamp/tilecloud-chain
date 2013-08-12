@@ -573,7 +573,7 @@ should configure the layers as this:
     layers_name:
         url: http://localhost/wms
         headers:
-        - Host: the_host_name
+            Host: the_host_name
 
 The idea is to get the wms server on ``localhost`` and use the ``Host`` header
 to select the right Apache VirtualHost.
@@ -583,8 +583,8 @@ To don't have cache we use the as default the headers:
 .. code:: yaml
 
     headers:
-    - Cache-Control: no-cache, no-store
-    - Pragma: no-cache
+        Cache-Control: no-cache, no-store
+        Pragma: no-cache
 
 And if you steal have issue you can add a ``SALT`` random argument by setting
 the layer parameter ``generate_salt`` to ``true``.
