@@ -66,7 +66,10 @@ class CompareCase(TestCase):
             for expect in expected:
                 if os.path.exists(expect[0]):
                     os.remove(expect[0])
-        sys.argv = re.sub(' +', ' ', cmd).split(' ')
+        if type(cmd) == list:
+            sys.argv = cmd
+        else:
+            sys.argv = re.sub(' +', ' ', cmd).split(' ')
         try:
             main_func()
         except SystemExit:
