@@ -31,6 +31,7 @@ import logging
 import requests
 import types
 import datetime
+import mimetypes
 from urllib import urlencode
 from urlparse import parse_qs
 
@@ -70,11 +71,13 @@ class Server:
                 global s3bucket
                 try:
                     s3key = s3bucket.key(('%(folder)s' % self.cache) + path)
-                    return s3key.get().body
+                    responce = s3key.get()
+                    return responce.body, responce.headers['Content-Type']
                 except:
                     s3bucket = S3Connection().bucket(self.cache['bucket'])
                     s3key = s3bucket.key(('%(folder)s' % self.cache) + path)
-                    return s3key.get().body
+                    responce = s3key.get()
+                    return responce.body, responce.headers['Content-Type']
         else:
             folder = self.cache['folder'] or ''
 
@@ -86,7 +89,8 @@ class Server:
                     return self.error(404, path)
                 with open(p, 'rb') as file:
                     data = file.read()
-                return data
+                mime = mimetypes.guess_type(p)
+                return data, mime[0]
         # get capabilities or other static files
         self._get = types.MethodType(_get, self)
 
@@ -156,7 +160,15 @@ class Server:
 
         if path is not None:
             if len(path) >= 1 and path[0] == 'static':
-                return self._get('/' + '/'.join(path[1:]))
+                body, mime = self._get('/' + '/'.join(path[1:]))
+                return self.responce(body, {
+                    'Content-Type': mime,
+                    'Expires': (
+                        datetime.datetime.utcnow() +
+                        datetime.timedelta(hours=self.expires_hours)
+                    ).isoformat(),
+                    'Cache-Control': "max-age=%i" % (3600 * self.expires_hours),
+                }, **kwargs)
             elif len(path) >= 1 and path[0] != 'wmts':  # pragma: no cover
                 return self.error(
                     404,
@@ -224,8 +236,14 @@ class Server:
 
         if params['REQUEST'] == 'GetCapabilities':
             wmtscapabilities_file = self.cache['wmtscapabilities_file']
-            return self.responce(self._get(wmtscapabilities_file), headers={
-                'Content-Type': "application/xml"
+            body, mime = self._get(wmtscapabilities_file)
+            return self.responce(body, headers={
+                'Content-Type': "application/xml",
+                'Expires': (
+                    datetime.datetime.utcnow() +
+                    datetime.timedelta(hours=self.expires_hours)
+                ).isoformat(),
+                'Cache-Control': "max-age=%i" % (3600 * self.expires_hours),
             }, **kwargs)
 
         if \
@@ -325,7 +343,7 @@ class Server:
                     datetime.datetime.utcnow() +
                     datetime.timedelta(hours=self.expires_hours)
                 ).isoformat(),
-                'Cache-Control': "max-age=%i" % (3600 * self.expires_hours)
+                'Cache-Control': "max-age=%i" % (3600 * self.expires_hours),
             }, **kwargs)
         else:
             return self.error(204, **kwargs)
@@ -350,14 +368,11 @@ class Server:
             responce_headers
             return self.responce(responce.content, headers=responce_headers, **kwargs)
         else:  # pragma: no cover
-            responce_headers = responce.headers.copy()
-            responce_headers['Cache-Control'] = 'no-cache, no-store'
-            responce_headers['Pragma'] = 'no-cache'
             message = "The URL '%s' return '%i %s', content:\n%s" % (
                 url, responce.status_code, responce.reason, responce.text,
             )
             logger.warning(message)
-            return self.error(502, headers=responce_headers, message=message, **kwargs)
+            return self.error(502, message=message, **kwargs)
 
     HTTP_MESSAGES = {
         204: '204 No Content',

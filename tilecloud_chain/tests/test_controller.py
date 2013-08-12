@@ -995,104 +995,136 @@ class TestController(CompareCase):
    <source name="point_hash_no_meta" type="wms">
       <getmap>
          <params>
-            <FORMAT>image/png</FORMAT>
             <LAYERS>point</LAYERS>
             <TRANSPARENT>TRUE</TRANSPARENT>
+            <FORMAT>image/png</FORMAT>
          </params>
       </getmap>
       <http>
          <url>http://localhost/mapserv</url>
+         <headers>
+            <Pragma>no-cache</Pragma>
+            <Cache-Control>no-cache, no-store</Cache-Control>
+         </headers>
       </http>
    </source>
 
    <source name="all" type="wms">
       <getmap>
          <params>
-            <FORMAT>image/png</FORMAT>
             <LAYERS>point,line,polygon</LAYERS>
             <TRANSPARENT>TRUE</TRANSPARENT>
+            <FORMAT>image/png</FORMAT>
          </params>
       </getmap>
       <http>
          <url>http://localhost/mapserv</url>
+         <headers>
+            <Pragma>no-cache</Pragma>
+            <Cache-Control>no-cache, no-store</Cache-Control>
+         </headers>
       </http>
    </source>
 
    <source name="point_hash" type="wms">
       <getmap>
          <params>
-            <FORMAT>image/png</FORMAT>
             <LAYERS>point</LAYERS>
             <TRANSPARENT>TRUE</TRANSPARENT>
+            <FORMAT>image/png</FORMAT>
          </params>
       </getmap>
       <http>
          <url>http://localhost/mapserv</url>
+         <headers>
+            <Pragma>no-cache</Pragma>
+            <Cache-Control>no-cache, no-store</Cache-Control>
+         </headers>
       </http>
    </source>
 
    <source name="polygon" type="wms">
       <getmap>
          <params>
-            <FORMAT>image/png</FORMAT>
             <LAYERS>polygon</LAYERS>
             <TRANSPARENT>TRUE</TRANSPARENT>
+            <FORMAT>image/png</FORMAT>
          </params>
       </getmap>
       <http>
          <url>http://localhost/mapserv</url>
+         <headers>
+            <Pragma>no-cache</Pragma>
+            <Cache-Control>no-cache, no-store</Cache-Control>
+         </headers>
       </http>
    </source>
 
    <source name="point" type="wms">
       <getmap>
          <params>
-            <FORMAT>image/png</FORMAT>
             <LAYERS>point</LAYERS>
             <TRANSPARENT>TRUE</TRANSPARENT>
+            <FORMAT>image/png</FORMAT>
          </params>
       </getmap>
       <http>
          <url>http://localhost/mapserv</url>
+         <headers>
+            <Pragma>no-cache</Pragma>
+            <Cache-Control>no-cache, no-store</Cache-Control>
+         </headers>
       </http>
    </source>
 
    <source name="line" type="wms">
       <getmap>
          <params>
-            <FORMAT>image/png</FORMAT>
             <LAYERS>line</LAYERS>
             <TRANSPARENT>TRUE</TRANSPARENT>
+            <PARAM>value</PARAM>
+            <FORMAT>image/png</FORMAT>
          </params>
       </getmap>
       <http>
          <url>http://localhost/mapserv</url>
+         <headers>
+            <Cache-Control>no-cache</Cache-Control>
+         </headers>
       </http>
    </source>
 
    <source name="polygon2" type="wms">
       <getmap>
          <params>
-            <FORMAT>image/png</FORMAT>
             <LAYERS>polygon</LAYERS>
             <TRANSPARENT>TRUE</TRANSPARENT>
+            <FORMAT>image/png</FORMAT>
          </params>
       </getmap>
       <http>
          <url>http://localhost/mapserv</url>
+         <headers>
+            <Pragma>no-cache</Pragma>
+            <Cache-Control>no-cache, no-store</Cache-Control>
+         </headers>
       </http>
    </source>
 
    <source name="point_px_buffer" type="wms">
       <getmap>
          <params>
-            <FORMAT>image/png</FORMAT>
             <LAYERS>point</LAYERS>
             <TRANSPARENT>TRUE</TRANSPARENT>
+            <FORMAT>image/png</FORMAT>
          </params>
       </getmap>
       <http>
          <url>http://localhost/mapserv</url>
+         <headers>
+            <Pragma>no-cache</Pragma>
+            <Cache-Control>no-cache, no-store</Cache-Control>
+         </headers>
       </http>
    </source>
 

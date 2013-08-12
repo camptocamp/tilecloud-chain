@@ -21,14 +21,19 @@ mapcache_config_template = """<?xml version="1.0" encoding="UTF-8"?>
 if layer['type'] == 'wms' or 'wms_url' in layer %}
    <source name="{{layername}}" type="wms">
       <getmap>
-         <params>
-            <FORMAT>{{layer['mime_type']}}</FORMAT>
-            <LAYERS>{{','.join(layer['layers'])}}</LAYERS>
-            <TRANSPARENT>{{'TRUE' if layer['mime_type'] == 'image/png' else 'FALSE'}}</TRANSPARENT>
+         <params>{%
+         for key, value in layer['params'].items() %}
+            <{{key}}>{{value}}</{{key}}>{%
+         endfor %}
          </params>
       </getmap>
       <http>
          <url>{{layer['wms_url'] if 'wms_url' in layer else layer['url']}}</url>
+         <headers>{%
+         for key, value in layer['headers'].items() %}
+            <{{key}}>{{value}}</{{key}}>{%
+         endfor %}
+         </headers>
       </http>
    </source>
 {% endif %}{% endfor %}
