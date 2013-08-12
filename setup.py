@@ -45,27 +45,7 @@ setup(
     name='tilecloud-chain',
     version='0.7',
     description="""
-The goal of TileCloud Chain is to have tools around tile generation on a chain like:
-
-Source: WMS, Mapnik.
-
-Optionally use an SQS queue, AWS host, SNS topic.
-
-Destination in WMTS layout, on S3, on Berkley DB (``bsddb``), on MBTiles, or on local filesystem.
-
-Feature:
-
-- Generate tiles.
-- Drop empty tiles.
-- Drop tiles outside a geometry or a bbox.
-- Use MetaTiles
-- Generate GetCapabilities.
-- Generate OpenLayers example page.
-- Obtain the hash of an empty tile
-- In future, measure tile generation speed
-- Calculate cost and generation time.
-- In future, manage the AWS hosts that generate tiles.
-- Delete empty tiles.
+Tools to generates tiles from WMS or Mapnik, to S3, Berkley DB, MBTiles, or local filesystem in WMTS layout using Amazon cloud services.
 """,
     long_description=README,
     classifiers=[
