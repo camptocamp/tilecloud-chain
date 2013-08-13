@@ -119,7 +119,10 @@ class Server:
                 self.filters[layer_name] = self.tilegeneration.get_geoms_filter(
                     layer=layer,
                     grid=layer['grid_ref'],
-                    geoms=self.tilegeneration.get_geoms(layer),
+                    geoms=self.tilegeneration.get_geoms(
+                        layer,
+                        extent=layer['bbox'] if 'bbox' in layer else layer['grid_ref']['bbox'],
+                    ),
                 )
             elif 'min_resolution_seed' in layer:
                 max_zoom_seed = layer['grid_ref']['resolutions'].index(layer['min_resolution_seed'])
