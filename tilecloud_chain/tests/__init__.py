@@ -61,7 +61,7 @@ class CompareCase(TestCase):
         except SystemExit as e:
             self.assertEquals(e.message, expected)
 
-    def assert_main_equals(self, cmd, main_func, expected, **kargs):
+    def assert_main_equals(self, cmd, main_func, expected=None, **kargs):
         if expected:
             for expect in expected:
                 if os.path.exists(expect[0]):
