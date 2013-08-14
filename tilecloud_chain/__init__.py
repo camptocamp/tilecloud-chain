@@ -739,7 +739,7 @@ class TileGeneration:
     def init_geom(self, extent=None):
         self.geoms = self.get_geoms(self.layer, extent)
 
-    def get_geoms(self, layer,  extent=None):
+    def get_geoms(self, layer, extent=None):
         if not hasattr(self, 'layers_geoms'):
             layers_geoms = {}
         if layer['name'] in layers_geoms:  # pragma: no cover
@@ -1135,15 +1135,16 @@ class IntersectGeometryFilter:
         self.queue_store = queue_store
         self.px_buffer = px_buffer
 
-    def __call__(self, tile):
-        intersects = self.bbox_polygon(
+    def filter_tilecoord(self, tilecoord):
+        return self.bbox_polygon(
             self.grid['obj'].extent(
-                tile.tilecoord,
-                self.grid['resolutions'][tile.tilecoord.z] * self.px_buffer
+                tilecoord,
+                self.grid['resolutions'][tilecoord.z] * self.px_buffer
             )
-        ).intersects(self.geoms[tile.tilecoord.z])
+        ).intersects(self.geoms[tilecoord.z])
 
-        return tile if intersects else None
+    def __call__(self, tile):
+        return tile if self.filter_tilecoord(tile.tilecoord) else None
 
     def bbox_polygon(self, bbox):
         return Polygon((

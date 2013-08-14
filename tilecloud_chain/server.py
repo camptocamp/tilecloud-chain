@@ -27,6 +27,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
+import sys
 import logging
 import requests
 import types
@@ -47,6 +48,7 @@ class Server:
 
     def __init__(self, config_file):
         self.filters = {}
+        self.max_zoom_seed = {}
 
         logger.info("Config file: '%s'" % config_file)
         self.tilegeneration = TileGeneration(config_file)
@@ -94,6 +96,15 @@ class Server:
         # get capabilities or other static files
         self._get = types.MethodType(_get, self)
 
+        if not self.tilegeneration.validate_mapcache_config():  # pragma: no cover
+            raise "Mapcache configuration error"
+        mapcache_base = self.tilegeneration.config['server']['mapcache_base'] if \
+            'mapcache_base' in self.tilegeneration.config['server'] else \
+            'http://localhost/'
+        self.mapcache_baseurl = mapcache_base + self.tilegeneration.config['mapcache']['location'] + '/wmts'
+        self.mapcache_header = self.tilegeneration.config['server']['mapcache_headers'] if \
+            'mapcache_headers' in self.tilegeneration.config['server'] else {}
+
         geoms_redirect = bool(self.tilegeneration.config['server']['geoms_redirect']) if \
             'geoms_redirect' in self.tilegeneration.config['server'] else False
 
@@ -106,27 +117,23 @@ class Server:
 
             # build geoms redirect
             if geoms_redirect:
-                if not self.tilegeneration.validate_mapcache_config():  # pragma: no cover
-                    raise "Mapcache configuration error"
-
-                mapcache_base = self.tilegeneration.config['server']['mapcache_base'] if \
-                    'mapcache_base' in self.tilegeneration.config['server'] else \
-                    'http://localhost/'
-                self.mapcache_baseurl = mapcache_base + self.tilegeneration.config['mapcache']['location'] + '/wmts'
-                self.mapcache_header = self.tilegeneration.config['server']['mapcache_headers'] if \
-                    'mapcache_headers' in self.tilegeneration.config['server'] else {}
-
                 self.filters[layer_name] = self.tilegeneration.get_geoms_filter(
                     layer=layer,
                     grid=layer['grid_ref'],
-                    geoms=self.tilegeneration.get_geoms(layer),
+                    geoms=self.tilegeneration.get_geoms(
+                        layer,
+                        extent=layer['bbox'] if 'bbox' in layer else layer['grid_ref']['bbox'],
+                    ),
                 )
-            elif 'min_resolution_seed' in layer:
-                max_zoom_seed = layer['grid_ref']['resolutions'].index(layer['min_resolution_seed'])
 
-                def seed_filter(tile):
-                    return tile if tile.tilecoord.z <= max_zoom_seed else None
-                self.filters[layer_name] = seed_filter
+            if 'min_resolution_seed' in layer:
+                max_zoom_seed = -1
+                for zoom, resolution in enumerate(layer['grid_ref']['resolutions']):
+                    if resolution > layer['min_resolution_seed']:
+                        max_zoom_seed = zoom
+                self.max_zoom_seed[layer_name] = max_zoom_seed
+            else:
+                self.max_zoom_seed[layer_name] = sys.maxint
 
             # build stores
             store_defs = [{
@@ -314,9 +321,24 @@ class Server:
         if params['FORMAT'] != layer['mime_type']:
             return self.error(400, "Wrong Format '%s'" % params['FORMAT'], **kwargs)
 
+        if tile.tilecoord.z > self.max_zoom_seed[layer['name']]:  # pragma: no cover
+            return self.forward(
+                self.mapcache_baseurl + '?' + urlencode(params),
+                headers=self.mapcache_header,
+                **kwargs
+            )
+
         if layer['name'] in self.filters:
             layer_filter = self.filters[layer['name']]
-            if not layer_filter(tile):  # pragma: no cover
+            meta_size = layer['meta_size']
+            meta_tilecoord = TileCoord(
+                # TODO fix for matrix_identifier = resolution
+                tile.tilecoord.z,
+                tile.tilecoord.x / meta_size * meta_size,
+                tile.tilecoord.y / meta_size * meta_size,
+                meta_size,
+            ) if meta_size != 1 else tile.tilecoord
+            if not layer_filter.filter_tilecoord(meta_tilecoord):  # pragma: no cover
                 return self.forward(
                     self.mapcache_baseurl + '?' + urlencode(params),
                     headers=self.mapcache_header,

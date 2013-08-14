@@ -214,6 +214,7 @@ generation:
     geodata_folder: tilecloud_chain
     deploy_config: tests/deploy.cfg
     build_cmds:
+    - rm .installed.cfg
     - python bootstrap.py --distribute -v 1.7.1
     - ./buildout/bin/buildout
     deploy_user: deploy
