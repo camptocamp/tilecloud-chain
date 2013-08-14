@@ -61,12 +61,15 @@ class CompareCase(TestCase):
         except SystemExit as e:
             self.assertEquals(e.message, expected)
 
-    def assert_main_equals(self, cmd, main_func, expected, **kargs):
+    def assert_main_equals(self, cmd, main_func, expected=None, **kargs):
         if expected:
             for expect in expected:
                 if os.path.exists(expect[0]):
                     os.remove(expect[0])
-        sys.argv = re.sub(' +', ' ', cmd).split(' ')
+        if type(cmd) == list:
+            sys.argv = cmd
+        else:
+            sys.argv = re.sub(' +', ' ', cmd).split(' ')
         try:
             main_func()
         except SystemExit:

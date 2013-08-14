@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def main():
     parser = ArgumentParser(
         description='Used to generate the tiles from Amazon AWS, '
-        'and getthe SQS queue status',
+        'and get the SQS queue status',
         prog='./buildout/bin/generate_amazon'
     )
     add_comon_options(parser)
