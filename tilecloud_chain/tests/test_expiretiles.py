@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import shutil
 
 import psycopg2
 from testfixtures import log_capture
@@ -22,13 +21,15 @@ class TestExpireTiles(CompareCase):
         f.write('18/135901/92721\n')
         f.write('18/135901/92722\n')
         f.write('18/135902/92722\n')
-        if os.path.exists('/tmp/tiles'):
-            shutil.rmtree('/tmp/tiles')
+        f.close()
+
+        f = open('/tmp/expired-empty', 'w')
         f.close()
 
     @classmethod
     def tearDownClass(self):
         os.remove('/tmp/expired')
+        os.remove('/tmp/expired-empty')
 
     @log_capture('tilecloud_chain', level=30)
     @attr(expire_tiles=True)
@@ -125,3 +126,26 @@ class TestExpireTiles(CompareCase):
         )
 
         l.check()
+
+    @log_capture('tilecloud_chain', level=30)
+    @attr(expire_tiles=True)
+    @attr(expire_tiles_empty=True)
+    @attr(general=True)
+    def test_expire_tiles_empty(self, l):
+        self.assert_cmd_equals(
+            cmd=[
+                './buildout/bin/import_expiretiles',
+                '--create', '--delete', '--srid', '21781',
+                '/tmp/expired-empty',
+                'user=postgres password=postgres dbname=tests host=localhost',
+                'expired', 'the_geom',
+            ],
+            main_func=expiretiles.main,
+            expected='''No coords found
+'''
+        )
+        connection = psycopg2.connect('user=postgres password=postgres dbname=tests host=localhost')
+        cursor = connection.cursor()
+        cursor.execute('SELECT the_geom FROM expired')
+        geoms = cursor.fetchall()
+        self.assertEqual(len(geoms), 0)
