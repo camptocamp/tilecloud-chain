@@ -545,7 +545,7 @@ class TileGeneration:
             if not os.path.exists(os.path.dirname(filename)):
                 os.makedirs(os.path.dirname(filename))
             cache_tilestore = BSDDBTileStore(
-                bsddb.btopen(
+                bsddb.hashopen(
                     filename,
                     # and os.path.exists(filename) to avoid error on non existing file
                     'r' if read_only and os.path.exists(filename) else 'c'
