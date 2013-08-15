@@ -75,26 +75,6 @@ def main():
     )
     options = parser.parse_args()
 
-    geoms = []
-    f = file(options.file, 'r')
-    grid = QuadTileGrid(
-        max_extent=(-20037508.34, -20037508.34, 20037508.34, 20037508.34),
-    )
-    for coord in f:
-        extent = grid.extent(parse_tilecoord(coord), options.buffer)
-        geoms.append(Polygon((
-            (extent[0], extent[1]),
-            (extent[0], extent[3]),
-            (extent[2], extent[3]),
-            (extent[2], extent[1])
-        )))
-    geom = cascaded_union(geoms)
-    if geom.geom_type == 'Polygon':
-        geom = MultiPolygon((geom,))
-
-    if options.simplify > 0:
-        geom.simplify(options.simplify)
-
     connection = psycopg2.connect(options.connection)
     cursor = connection.cursor()
 
@@ -115,6 +95,33 @@ def main():
     if options.delete:
         cursor.execute('DELETE FROM "%s"' % (options.table))
 
+    geoms = []
+    f = file(options.file, 'r')
+    grid = QuadTileGrid(
+        max_extent=(-20037508.34, -20037508.34, 20037508.34, 20037508.34),
+    )
+    for coord in f:
+        extent = grid.extent(parse_tilecoord(coord), options.buffer)
+        geoms.append(Polygon((
+            (extent[0], extent[1]),
+            (extent[0], extent[3]),
+            (extent[2], extent[3]),
+            (extent[2], extent[1])
+        )))
+    f.close()
+    if len(geoms) == 0:
+        print "No coords found"
+        connection.commit()
+        cursor.close()
+        connection.close()
+        exit(0)
+    geom = cascaded_union(geoms)
+    if geom.geom_type == 'Polygon':
+        geom = MultiPolygon((geom,))
+
+    if options.simplify > 0:
+        geom.simplify(options.simplify)
+
     sql_geom = "ST_GeomFromText('%s', 3857)" % geom.wkt
     if options.srid <= 0:
         sql_geom = "ST_GeomFromText('%s')" % geom.wkt  # pragma: no cover
@@ -127,5 +134,4 @@ def main():
     connection.commit()
     cursor.close()
     connection.close()
-    f.close()
     print 'Import successful'
