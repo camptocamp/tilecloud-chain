@@ -43,6 +43,8 @@ More informations in `Configure geom/sql <https://github.com/sbrunner/tilecloud-
 
 8. Now we can creates legends, see `Legends <https://github.com/sbrunner/tilecloud-chain/blob/master/README.rst#legends>`_
 
+9. Now the tiles generation display generation statistics at the ends.
+
 
 Release 0.6
 -----------

@@ -171,7 +171,20 @@ class TestServe(CompareCase):
             tiles=[
                 ('point_hash/default/2012/swissgrid_5/1/11/14.png'),
                 ('point_hash/default/2012/swissgrid_5/1/15/8.png'),
-            ]
+            ],
+            regex=True,
+            expected="""The tile generation of layer 'point_hash' is finish
+Nb generated metatiles: 1
+Nb metatiles dropped: 0
+Nb generated tiles: 64
+Nb tiles dropped: 62
+Nb tiles stored: 2
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: [89][0-9][0-9] o
+Time per tiles: [0-9]+ ms
+Size per tile: 4[0-9][0-9] o
+
+""",
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
@@ -183,7 +196,7 @@ class TestServe(CompareCase):
                 ('WMTSCapabilities.xml'),
                 ('point_hash/default/2012/swissgrid_5/1/11/14.png'),
                 ('point_hash/default/2012/swissgrid_5/1/15/8.png'),
-            ]
+            ],
         )
 
         request = DummyRequest()
@@ -701,7 +714,20 @@ class TestServe(CompareCase):
             tiles_pattern='1.0.0/%s',
             tiles=[
                 ('point_hash/default/2012/swissgrid_5.png.mbtiles')
-            ]
+            ],
+            regex=True,
+            expected="""The tile generation of layer 'point_hash' is finish
+Nb generated metatiles: 1
+Nb metatiles dropped: 0
+Nb generated tiles: 64
+Nb tiles dropped: 62
+Nb tiles stored: 2
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: [89][0-9][0-9] o
+Time per tiles: [0-9]+ ms
+Size per tile: 4[0-9][0-9] o
+
+""",
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
@@ -712,7 +738,7 @@ class TestServe(CompareCase):
             tiles=[
                 ('WMTSCapabilities.xml'),
                 ('point_hash/default/2012/swissgrid_5.png.mbtiles')
-            ]
+            ],
         )
 
         request = DummyRequest()
@@ -786,7 +812,20 @@ class TestServe(CompareCase):
             tiles_pattern='1.0.0/%s',
             tiles=[
                 ('point_hash/default/2012/swissgrid_5.png.bsddb')
-            ]
+            ],
+            regex=True,
+            expected="""The tile generation of layer 'point_hash' is finish
+Nb generated metatiles: 1
+Nb metatiles dropped: 0
+Nb generated tiles: 64
+Nb tiles dropped: 62
+Nb tiles stored: 2
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: [89][0-9][0-9] o
+Time per tiles: [0-9]+ ms
+Size per tile: 4[0-9][0-9] o
+
+""",
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
@@ -797,7 +836,7 @@ class TestServe(CompareCase):
             tiles=[
                 ('WMTSCapabilities.xml'),
                 ('point_hash/default/2012/swissgrid_5.png.bsddb')
-            ]
+            ],
         )
 
         request = DummyRequest()
@@ -945,7 +984,20 @@ class TestServe(CompareCase):
             tiles_pattern='1.0.0/%s',
             tiles=[
                 ('point_hash/default/2012/swissgrid_5.png.mbtiles')
-            ]
+            ],
+            regex=True,
+            expected="""The tile generation of layer 'point_hash' is finish
+Nb generated metatiles: 1
+Nb metatiles dropped: 0
+Nb generated tiles: 64
+Nb tiles dropped: 62
+Nb tiles stored: 2
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: [89][0-9][0-9] o
+Time per tiles: [0-9]+ ms
+Size per tile: 4[0-9][0-9] o
+
+""",
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
@@ -956,7 +1008,7 @@ class TestServe(CompareCase):
             tiles=[
                 ('WMTSCapabilities.xml'),
                 ('point_hash/default/2012/swissgrid_5.png.mbtiles')
-            ]
+            ],
         )
 
         serve = app_factory({}, configfile='tilegeneration/test-serve.yaml')
