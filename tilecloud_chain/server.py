@@ -175,6 +175,8 @@ class Server:
                         datetime.timedelta(hours=self.expires_hours)
                     ).isoformat(),
                     'Cache-Control': "max-age=%i" % (3600 * self.expires_hours),
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET',
                 }, **kwargs)
             elif len(path) >= 1 and path[0] != 'wmts':  # pragma: no cover
                 return self.error(
@@ -251,6 +253,8 @@ class Server:
                     datetime.timedelta(hours=self.expires_hours)
                 ).isoformat(),
                 'Cache-Control': "max-age=%i" % (3600 * self.expires_hours),
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET',
             }, **kwargs)
 
         if \
@@ -366,6 +370,8 @@ class Server:
                     datetime.timedelta(hours=self.expires_hours)
                 ).isoformat(),
                 'Cache-Control': "max-age=%i" % (3600 * self.expires_hours),
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET',
             }, **kwargs)
         else:
             return self.error(204, **kwargs)
@@ -387,6 +393,8 @@ class Server:
                     datetime.timedelta(hours=self.expires_hours)
                 ).isoformat()
                 responce_headers['Cache-Control'] = "max-age=%i" % (3600 * self.expires_hours)
+                responce_headers['Access-Control-Allow-Origin'] = '*'
+                responce_headers['Access-Control-Allow-Methods'] = 'GET'
             responce_headers
             return self.responce(responce.content, headers=responce_headers, **kwargs)
         else:  # pragma: no cover
