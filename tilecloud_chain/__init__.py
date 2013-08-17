@@ -42,7 +42,7 @@ from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors, DropErrors
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('tilecloud_chain')
 
 
 def add_comon_options(parser, tile_pyramid=True, no_geom=True):
@@ -138,7 +138,7 @@ class TileGeneration:
         elif options and options.debug:  # pragma: no cover
             level = logging.DEBUG
         logging.basicConfig(
-            format='%(asctime)s:%(levelname)s:%(module)s:%(message)s',
+            format='%(levelname)s:%(name)s:%(funcName)s:%(message)s',
             level=level)
 
         self.config = yaml.load(file(config_file))
@@ -376,6 +376,10 @@ class TileGeneration:
             self.config['generation'], 'generation', 'default_layers',
             is_array=True, attribute_type=str, default=self.layers.keys()
         ) or error
+        error = self.validate(
+            self.config['generation'], 'generation', 'log_format', attribute_type=str,
+            default='%(levelname)s:%(name)s:%(funcName)s:%(message)s',
+        ) or error
         error = self.validate(self.config['generation'], 'generation', 'authorised_user', attribute_type=str) or error
         error = self.validate(
             self.config['generation'], 'generation', 'number_process',
@@ -442,6 +446,10 @@ class TileGeneration:
 
         if error:
             exit(1)
+
+        logging.basicConfig(
+            format=self.config['generation']['log_format'],
+            level=level)
 
         if options and options.zoom is not None:
             error_message = (

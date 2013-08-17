@@ -704,6 +704,8 @@ With the debug mode we don't catch exceptions, and we don't log time messages.
 
 ``--test <n>`` or ``-t <n>``: used to generate only ``<n>`` tiles, useful for test.
 
+The logging format is configurable in the``config.yaml`` - ``generation/log_format``,
+`See <http://docs.python.org/2/library/logging.html#logrecord-attributes>`_.
 
 Important remarks
 -------------------
