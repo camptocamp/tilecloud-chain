@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     parser = ArgumentParser(
-        description='Used to generate the tiles from Amazon AWS, '
+        description='Used to generate the tiles from Amazon EC2, '
         'and get the SQS queue status',
         prog='./buildout/bin/generate_amazon'
     )
@@ -68,60 +68,64 @@ def main():
         status(options, gene)
         sys.exit(0)
 
+    if 'ec2' not in gene.config:  # pragma: no cover
+        print "EC2 not configured"
+        sys.exit(1)
+
     if options.deploy_config is None:
-        options.deploy_config = gene.config['generation']['deploy_config']
+        options.deploy_config = gene.config['ec2']['deploy_config']
     if options.geodata:
-        options.geodata = not gene.config['generation']['disable_geodata']
+        options.geodata = not gene.config['ec2']['disable_geodata']
     if options.deploy_code:
-        options.deploy_code = not gene.config['generation']['disable_code']
+        options.deploy_code = not gene.config['ec2']['disable_code']
     if options.deploy_database:
-        options.deploy_database = not gene.config['generation']['disable_database']
+        options.deploy_database = not gene.config['ec2']['disable_database']
     if options.fill_queue:  # pragma: no cover
-        options.fill_queue = not gene.config['generation']['disable_fillqueue']
+        options.fill_queue = not gene.config['ec2']['disable_fillqueue']
     if options.tiles_gen:  # pragma: no cover
-        options.tiles_gen = not gene.config['generation']['disable_tilesgen']
+        options.tiles_gen = not gene.config['ec2']['disable_tilesgen']
 
     # start aws
     if not options.host:
         # TODO not imlpemented yet
-        host = aws_start(gene.config['generation']['ec2_host_type'])  # pragma: no cover
+        host = aws_start(gene.config['ec2']['host_type'])  # pragma: no cover
     else:
         host = options.host
 
-    if options.geodata and 'geodata_folder' in gene.config['generation']:
+    if options.geodata and 'geodata_folder' in gene.config['ec2']:
         print "==== Sync geodata ===="
         ssh_options = ''
-        if 'ssh_options' in gene.config['generation']:  # pragma: no cover
-            ssh_options = gene.config['generation']['ssh_options']
+        if 'ssh_options' in gene.config['ec2']:  # pragma: no cover
+            ssh_options = gene.config['ec2']['ssh_options']
         # sync geodata
         run_local([
             'rsync', '--delete', '-e', 'ssh ' + ssh_options,
-            '-r', gene.config['generation']['geodata_folder'],
-            host + ':' + gene.config['generation']['geodata_folder']
+            '-r', gene.config['ec2']['geodata_folder'],
+            host + ':' + gene.config['ec2']['geodata_folder']
         ])
 
     if options.deploy_code:
         print "==== Sync and build code ===="
-        error = gene.validate(gene.config['generation'], 'generation', 'code_folder', required=True)
+        error = gene.validate(gene.config['ec2'], 'ec2', 'code_folder', required=True)
         if error:
             exit(1)  # pragma: no cover
 
         cmd = ['rsync', '--delete', ]
-        if 'ssh_options' in gene.config['generation']:  # pragma: no cover
-            cmd += ['-e', 'ssh ' + gene.config['generation']['ssh_options']]
-            ssh_options = gene.config['generation']['ssh_options']
+        if 'ssh_options' in gene.config['ec2']:  # pragma: no cover
+            cmd += ['-e', 'ssh ' + gene.config['ec2']['ssh_options']]
+            ssh_options = gene.config['ec2']['ssh_options']
 
-        project_dir = gene.config['generation']['code_folder']
+        project_dir = gene.config['ec2']['code_folder']
         cmd += ['-r', '.', host + ':' + project_dir]
         run_local(cmd)
 
-        for cmd in gene.config['generation']['build_cmds']:
+        for cmd in gene.config['ec2']['build_cmds']:
             run_remote(cmd, host, project_dir, gene)
-        if 'apache_content' in gene.config['generation'] and 'apache_config' in gene.config['generation']:
+        if 'apache_content' in gene.config['ec2'] and 'apache_config' in gene.config['ec2']:
             run_remote(
                 'echo %s > %s' % (
-                    gene.config['generation']['apache_content'],
-                    gene.config['generation']['apache_config']
+                    gene.config['ec2']['apache_content'],
+                    gene.config['ec2']['apache_config']
                 ), host, project_dir, gene
             )
         run_remote('sudo apache2ctl graceful', host, project_dir, gene)
@@ -140,9 +144,9 @@ def main():
         arguments.extend(['--role', 'local'])
         arguments.extend(['--time', str(options.time)])
 
-        project_dir = gene.config['generation']['code_folder']
+        project_dir = gene.config['ec2']['code_folder']
         processes = []
-        for i in range(gene.config['generation']['number_process']):
+        for i in range(gene.config['ec2']['number_process']):
             processes.append(
                 run_remote_process(
                     './buildout/bin/generate_tiles ' +
@@ -197,7 +201,7 @@ def main():
         arguments = _get_arguments(options)
         arguments.extend(['--role', 'master'])
 
-        project_dir = gene.config['generation']['code_folder']
+        project_dir = gene.config['ec2']['code_folder']
         run_remote(
             './buildout/bin/generate_tiles ' +
             ' '.join([str(a) for a in arguments]), host, project_dir, gene
@@ -210,9 +214,9 @@ def main():
         arguments.extend(['--role', 'slave'])
         arguments.append("--daemonize")
 
-        project_dir = gene.config['generation']['code_folder']
+        project_dir = gene.config['ec2']['code_folder']
         processes = []
-        for i in range(gene.config['generation']['number_process']):
+        for i in range(gene.config['ec2']['number_process']):
             processes.append(
                 run_remote_process(
                     './buildout/bin/generate_tiles ' +
@@ -248,8 +252,8 @@ Command: %(cmd)s""" %
 def _deploy(gene, host):
     print "==== Deploy database ===="
     deploy_cmd = 'deploy'
-    if 'deploy_user' in gene.config['generation']:
-        deploy_cmd = 'sudo -u %s deploy' % gene.config['generation']['deploy_user']
+    if 'deploy_user' in gene.config['ec2']:
+        deploy_cmd = 'sudo -u %s deploy' % gene.config['ec2']['deploy_user']
         index = host.find('@')
         if index >= 0:  # pragma: no cover
             host = host[index + 1:]
@@ -303,8 +307,8 @@ def run_local(cmd):
 
 def run_remote_process(remote_cmd, host, project_dir, gene):
     cmd = ['ssh']
-    if 'ssh_options' in gene.config['generation']:  # pragma: no cover
-        cmd.extend(gene.config['generation']['ssh_options'].split(' '))
+    if 'ssh_options' in gene.config['ec2']:  # pragma: no cover
+        cmd.extend(gene.config['ec2']['ssh_options'].split(' '))
     if host is None:  # pragma: no cover
         exit('host option is required.')
     cmd.append(host)

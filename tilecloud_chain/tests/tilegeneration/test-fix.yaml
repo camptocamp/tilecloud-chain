@@ -214,6 +214,8 @@ generation:
     default_layers: [line, polygon]
     maxconsecutive_errors: 2
     error_file: error.list
+
+ec2:
     geodata_folder: tilecloud_chain
     deploy_config: tests/deploy.cfg
     build_cmds:

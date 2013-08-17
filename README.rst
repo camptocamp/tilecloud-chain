@@ -635,7 +635,7 @@ The following commands can be used to know the time and cost to do generation::
 
     ./buildout/bin/generate_controller --cost
 
-This suppose that you use a separate AWS host to generate the tiles.
+This suppose that you use a separate EC2 host to generate the tiles.
 
 
 Configure SNS
@@ -688,10 +688,34 @@ To generate a test page use::
     ./buildout/bin/generate_controller --openlayers-test
 
 
-Configure and explain AWS
+Configure and explain EC2
 -------------------------
 
 The generation can be deported on an external host.
+
+This will deploy the code the database and the geodata to an external host,
+configure or build the application, configure apache, and run the tile generation.
+
+This work only with S3 and needs SQS.
+
+In a future version it will start the new EC2 host, join an ESB, run the tile generation,
+and do snapshot on the ESB.
+
+The configuration is like this:
+
+.. code:: yaml
+
+    ec2:
+        geodata_folder: /var/sig
+        deploy_config: tilegeneration/deploy.cfg
+        build_cmds:
+        - rm .installed.cfg
+        - python bootstrap.py --distribute -v 1.7.1
+        - ./buildout/bin/buildout -c buildout_tilegeneration.cfg install template
+        deploy_user: deploy
+        code_folder: /var/www/vhost/project/private/project
+        apache_config: /var/www/vhost/project/conf/tilegeneration.conf
+        apache_content: Include /var/www/vhost/project/private/project/apache/\*.conf
 
 
 Other useful options
