@@ -1342,15 +1342,13 @@ cost:
   request_per_layers: 10000000
   s3: {download: 0.12, get: 0.01, put: 0.01, storage: 0.125}
   sqs: {request: 0.01}
-generation:
+ec2:
   apache_config: /tmp/tests/test.conf
   apache_content: test file
   build_cmds:
   - python bootstrap.py --distribute -v 1.7.1
   - ./buildout/bin/buildout
   code_folder: /tmp/tests/test/
-  default_cache: local
-  default_layers: [line, polygon]
   deploy_config: tests/deploy.cfg
   deploy_user: deploy
   disable_code: false
@@ -1358,12 +1356,15 @@ generation:
   disable_fillqueue: false
   disable_geodata: false
   disable_tilesgen: false
-  ec2_host_type: m1.medium
-  error_file: error.list
+  host_type: m1.medium
   geodata_folder: tilecloud_chain/
+  number_process: 1
+generation:
+  default_cache: local
+  default_layers: [line, polygon]
+  error_file: error.list
   log_format: '%(levelname)s:%(name)s:%(funcName)s:%(message)s'
   maxconsecutive_errors: 2
-  number_process: 1
 grids:
   swissgrid_01: &id004
     bbox: [420000.0, 30000.0, 900000.0, 350000.0]
