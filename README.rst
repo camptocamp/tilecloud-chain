@@ -697,7 +697,9 @@ The generation can be deported on an external host.
 Other useful options
 ---------------------
 
-``--verbose`` or ``-v``: used to display info message.
+``--quiet`` or ``-q``: used to display only errors.
+
+``--verbose`` or ``-v``: used to display info messages.
 
 ``--debug`` or ``-d``: used to display debug message, pleas use this option to report issue.
 With the debug mode we don't catch exceptions, and we don't log time messages.

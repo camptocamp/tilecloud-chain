@@ -27,6 +27,7 @@ class TestGenerate(CompareCase):
 
     @log_capture('tilecloud_chain', level=30)
     @attr(get_hash=True)
+    @attr(generate=True)
     @attr(general=True)
     def test_get_hash(self, l):
         for d in ('-d', ''):
@@ -46,10 +47,11 @@ class TestGenerate(CompareCase):
         l.check()
 
     @attr(get_wrong_hash=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_get_wrong_hash(self, l):
-        for d in ('-d', ''):
+        for d in ('-d', '-q'):
             self.assert_cmd_exit_equals(
                 cmd='./buildout/bin/generate_tiles %s --get-hash 0/7/5 -c tilegeneration/test.yaml -l all' % d,
                 main_func=generate.main,
@@ -57,6 +59,7 @@ class TestGenerate(CompareCase):
         l.check()
 
     @attr(get_bbox=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_get_bbox(self, l):
@@ -79,6 +82,7 @@ class TestGenerate(CompareCase):
         l.check()
 
     @attr(hash_mapnik=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_hash_mapnik(self, l):
@@ -94,6 +98,7 @@ class TestGenerate(CompareCase):
         l.check()
 
     @attr(hash_mapnik_grid=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_hash_mapnik_grid(self, l):
@@ -109,6 +114,7 @@ class TestGenerate(CompareCase):
         l.check()
 
     @attr(test_all=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_test_all(self, l):
@@ -120,11 +126,34 @@ class TestGenerate(CompareCase):
                 tiles_pattern='1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png',
                 tiles=[
                     ('line', 0, 7, 4), ('polygon', 0, 5, 4)
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'line' is finish
+Nb generated metatiles: 1
+Nb metatiles dropped: 0
+Nb generated tiles: 40
+Nb tiles dropped: 39
+Nb tiles stored: 1
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 733 o
+Time per tiles: [0-9]+ ms
+Size per tile: 733 o
+
+The tile generation of layer 'polygon' is finish
+Nb generated tiles: 1
+Nb tiles dropped: 0
+Nb tiles stored: 1
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: [45][0-9][0-9] o
+Time per tiles: [0-9]+ ms
+Size per tile: [45][0-9][0-9] o
+
+""",
             )
         l.check()
 
     @attr(test_dimensions=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_test_dimensions(self, l):
@@ -137,11 +166,34 @@ class TestGenerate(CompareCase):
                 tiles_pattern='1.0.0/%s/default/2013/swissgrid_5/%i/%i/%i.png',
                 tiles=[
                     ('line', 0, 7, 4), ('polygon', 0, 5, 4)
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'line' is finish
+Nb generated metatiles: 1
+Nb metatiles dropped: 0
+Nb generated tiles: 40
+Nb tiles dropped: 39
+Nb tiles stored: 1
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 733 o
+Time per tiles: [0-9]+ ms
+Size per tile: 733 o
+
+The tile generation of layer 'polygon' is finish
+Nb generated tiles: 1
+Nb tiles dropped: 0
+Nb tiles stored: 1
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: [45][0-9][0-9] o
+Time per tiles: [0-9]+ ms
+Size per tile: [45][0-9][0-9] o
+
+""",
             )
         l.check()
 
     @attr(multigeom=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_multigeom(self, l):
@@ -202,11 +254,23 @@ class TestGenerate(CompareCase):
                 (2, 39, 21),
                 (3, 78, 42),
                 (3, 58, 70),
-            ]
+            ],
+            regex=True,
+            expected="""The tile generation of layer 'pp' is finish
+Nb generated tiles: 51
+Nb tiles dropped: 0
+Nb tiles stored: 51
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: [34][0-9] Kio
+Time per tiles: [0-9]+ ms
+Size per tile: [79][0-9][0-9] o
+
+""",
         )
         l.check()
 
     @attr(zoom_identifier=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_zoom_identifier(self, l):
@@ -218,7 +282,20 @@ class TestGenerate(CompareCase):
                 tiles_pattern='1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png',
                 tiles=[
                     ('polygon2', '1', 585, 429)
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'polygon2' is finish
+Nb generated metatiles: 1
+Nb metatiles dropped: 0
+Nb generated tiles: 42
+Nb tiles dropped: 41
+Nb tiles stored: 1
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 389 o
+Time per tiles: [0-9]+ ms
+Size per tile: 389 o
+
+""",
             )
             self.assert_tiles_generated(
                 cmd='./buildout/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 1' % d,
@@ -227,7 +304,20 @@ class TestGenerate(CompareCase):
                 tiles_pattern='1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png',
                 tiles=[
                     ('polygon2', '0_2', 2929, 2148)
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'polygon2' is finish
+Nb generated metatiles: 1
+Nb metatiles dropped: 0
+Nb generated tiles: 34
+Nb tiles dropped: 33
+Nb tiles stored: 1
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 517 o
+Time per tiles: [0-9]+ ms
+Size per tile: 517 o
+
+""",
             )
             self.assert_tiles_generated(
                 cmd='./buildout/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 2' % d,
@@ -236,11 +326,25 @@ class TestGenerate(CompareCase):
                 tiles_pattern='1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png',
                 tiles=[
                     ('polygon2', '0_1', 5859, 4296)
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'polygon2' is finish
+Nb generated metatiles: 1
+Nb metatiles dropped: 0
+Nb generated tiles: 4
+Nb tiles dropped: 3
+Nb tiles stored: 1
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 676 o
+Time per tiles: [0-9]+ ms
+Size per tile: 676 o
+
+""",
             )
         l.check()
 
     @attr(empty_bbox=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_empty_bbox(self, l):
@@ -252,7 +356,20 @@ class TestGenerate(CompareCase):
                 directory="/tmp/tiles/",
                 tiles_pattern='1.0.0/%s',
                 tiles=[
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'point_hash' is finish
+Nb generated metatiles: 0
+Nb metatiles dropped: 0
+Nb generated tiles: 0
+Nb tiles dropped: 0
+Nb tiles stored: 0
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 0.0 o
+Time per tiles: [0-9]+ ms
+Size per tile: -1 o
+
+""",
             )
         # second time for the debug mode
         l.check(
@@ -267,6 +384,7 @@ class TestGenerate(CompareCase):
         )
 
     @attr(zoom=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_zoom(self, l):
@@ -278,11 +396,25 @@ class TestGenerate(CompareCase):
                 tiles_pattern='1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png',
                 tiles=[
                     ('point_hash', 1, 11, 14), ('point_hash', 1, 15, 8)
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'point_hash' is finish
+Nb generated metatiles: 1
+Nb metatiles dropped: 0
+Nb generated tiles: 64
+Nb tiles dropped: 62
+Nb tiles stored: 2
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: [89][0-9][0-9] o
+Time per tiles: [0-9]+ ms
+Size per tile: 4[0-9][0-9] o
+
+""",
             )
         l.check()
 
     @attr(zoom_range=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_zoom_range(self, l):
@@ -296,11 +428,25 @@ class TestGenerate(CompareCase):
                     ('point_hash', 1, 11, 14), ('point_hash', 1, 15, 8),
                     ('point_hash', 2, 29, 35), ('point_hash', 2, 39, 21),
                     ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42),
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'point_hash' is finish
+Nb generated metatiles: 9
+Nb metatiles dropped: 4
+Nb generated tiles: 320
+Nb tiles dropped: 314
+Nb tiles stored: 6
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 2.7 Kio
+Time per tiles: [0-9]+ ms
+Size per tile: 4[0-9][0-9] o
+
+""",
             )
         l.check()
 
     @attr(no_zoom=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_no_zoom(self, l):
@@ -315,11 +461,25 @@ class TestGenerate(CompareCase):
                     ('point_hash', 1, 11, 14), ('point_hash', 1, 15, 8),
                     ('point_hash', 2, 29, 35), ('point_hash', 2, 39, 21),
                     ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42),
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'point_hash' is finish
+Nb generated metatiles: 10
+Nb metatiles dropped: 4
+Nb generated tiles: 384
+Nb tiles dropped: 376
+Nb tiles stored: 8
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 3.6 Kio
+Time per tiles: [0-9]+ ms
+Size per tile: 4[0-9][0-9] o
+
+""",
             )
         l.check()
 
     @attr(py_buffer=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_py_buffer(self, l):
@@ -334,11 +494,25 @@ class TestGenerate(CompareCase):
                     (0, 5, 7), (0, 7, 4),
                     (1, 11, 14), (1, 15, 8),
                     (2, 29, 35), (2, 39, 21),
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'point_px_buffer' is finish
+Nb generated metatiles: 10
+Nb metatiles dropped: 4
+Nb generated tiles: 384
+Nb tiles dropped: 378
+Nb tiles stored: 6
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 2.7 Kio
+Time per tiles: [0-9]+ ms
+Size per tile: 4[0-9][0-9] o
+
+""",
             )
         l.check()
 
     @attr(zoom_list=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_zoom_list(self, l):
@@ -352,11 +526,25 @@ class TestGenerate(CompareCase):
                     ('point_hash', 0, 5, 7), ('point_hash', 0, 7, 4),
                     ('point_hash', 2, 29, 35), ('point_hash', 2, 39, 21),
                     ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42),
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'point_hash' is finish
+Nb generated metatiles: 9
+Nb metatiles dropped: 4
+Nb generated tiles: 320
+Nb tiles dropped: 314
+Nb tiles stored: 6
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 2.7 Kio
+Time per tiles: [0-9]+ ms
+Size per tile: 455 o
+
+""",
             )
         l.check()
 
     @attr(layer_bbox=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_layer_bbox(self, l):
@@ -366,7 +554,18 @@ class TestGenerate(CompareCase):
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern='1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png',
-                tiles=list(product((5, 6, 7), (4, 5, 6, 7)))
+                tiles=list(product((5, 6, 7), (4, 5, 6, 7))),
+                regex=True,
+                expected="""The tile generation of layer 'polygon' is finish
+Nb generated tiles: 12
+Nb tiles dropped: 0
+Nb tiles stored: 12
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: [0-9.]+ Kio
+Time per tiles: [0-9.]+ ms
+Size per tile: [69][0-9][0-9] o
+
+""",
             )
 
             self.assert_tiles_generated(
@@ -377,7 +576,18 @@ class TestGenerate(CompareCase):
                 tiles_pattern='1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png',
                 tiles=[
                     (6, 5), (7, 5)
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'polygon' is finish
+Nb generated tiles: 2
+Nb tiles dropped: 0
+Nb tiles stored: 2
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 1.[6-9] Kio
+Time per tiles: [0-9]+ ms
+Size per tile: [89][0-9][0-9] o
+
+""",
             )
 
             self.assert_tiles_generated(
@@ -388,7 +598,18 @@ class TestGenerate(CompareCase):
                 tiles_pattern='1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png',
                 tiles=[
                     (6, 5), (7, 5)
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'polygon' is finish
+Nb generated tiles: 2
+Nb tiles dropped: 0
+Nb tiles stored: 2
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 1.[6-9] Kio
+Time per tiles: [0-9]+ ms
+Size per tile: [89][0-9][0-9] o
+
+""",
             )
 
             self.assert_tiles_generated(
@@ -398,11 +619,23 @@ class TestGenerate(CompareCase):
                 tiles_pattern='1.0.0/all/default/2012/swissgrid_5/0/%i/%i.png',
                 tiles=[
                     (6, 5), (7, 5)
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'all' is finish
+Nb generated tiles: 2
+Nb tiles dropped: 0
+Nb tiles stored: 2
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 1.[6-9] Kio
+Time per tiles: [0-9]+ ms
+Size per tile: [89][0-9][0-9] o
+
+""",
             )
         l.check()
 
     @attr(hash_generation=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_hash_generation(self, l):
@@ -414,11 +647,25 @@ class TestGenerate(CompareCase):
                 tiles_pattern='1.0.0/point_hash/default/2012/swissgrid_5/0/%i/%i.png',
                 tiles=[
                     (5, 7), (7, 4)
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'point_hash' is finish
+Nb generated metatiles: 1
+Nb metatiles dropped: 0
+Nb generated tiles: 64
+Nb tiles dropped: 62
+Nb tiles stored: 2
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 910 o
+Time per tiles: [0-9]+ ms
+Size per tile: 4[0-9][0-9] o
+
+""",
             )
         l.check()
 
     @attr(mapnik=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_mapnik(self, l):
@@ -428,11 +675,23 @@ class TestGenerate(CompareCase):
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern='1.0.0/mapnik/default/2012/swissgrid_5/0/%i/%i.png',
-                tiles=list(product((5, 6, 7), (4, 5, 6, 7)))
+                tiles=list(product((5, 6, 7), (4, 5, 6, 7))),
+                regex=True,
+                expected="""The tile generation of layer 'mapnik' is finish
+Nb generated tiles: 12
+Nb tiles dropped: 0
+Nb tiles stored: 12
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 9.7 Kio
+Time per tiles: [0-9]+ ms
+Size per tile: 824 o
+
+""",
             )
         l.check()
 
     @attr(mapnik_grid=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_mapnik_grid(self, l):
@@ -442,7 +701,18 @@ class TestGenerate(CompareCase):
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern='1.0.0/mapnik_grid/default/2012/swissgrid_5/0/%i/%i.json',
-                tiles=list(product((5, 6, 7), (4, 5, 6, 7)))
+                tiles=list(product((5, 6, 7), (4, 5, 6, 7))),
+                regex=True,
+                expected="""The tile generation of layer 'mapnik_grid' is finish
+Nb generated tiles: 12
+Nb tiles dropped: 0
+Nb tiles stored: 12
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 4.5 Kio
+Time per tiles: [0-9]+ ms
+Size per tile: 385 o
+
+""",
             )
             f = open('/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/5/5.json', 'r')
             self.assert_result_equals(
@@ -461,6 +731,7 @@ class TestGenerate(CompareCase):
         l.check()
 
     @attr(mapnik_grid_drop=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_mapnik_grid_drop(self, l):
@@ -470,15 +741,27 @@ class TestGenerate(CompareCase):
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern='1.0.0/mapnik_grid_drop/default/2012/swissgrid_5/0/%i/%i.json',
-                tiles=((5, 7), (7, 4))
+                tiles=((5, 7), (7, 4)),
+                regex=True,
+                expected="""The tile generation of layer 'mapnik_grid_drop' is finish
+Nb generated tiles: 12
+Nb tiles dropped: 10
+Nb tiles stored: 2
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 768 o
+Time per tiles: [0-9]+ ms
+Size per tile: 384 o
+
+""",
             )
         l.check()
 
     @attr(not_authorised_user=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_not_authorised_user(self, l):
-        for d in ('-d', ''):
+        for d in ('-d', '-q'):
             self.assert_cmd_exit_equals(
                 cmd='./buildout/bin/generate_tiles %s -c tilegeneration/test-authorised.yaml' % d,
                 main_func=generate.main,
@@ -486,6 +769,7 @@ class TestGenerate(CompareCase):
         l.check()
 
     @attr(verbose=True)
+    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_verbose(self, l):
@@ -535,6 +819,7 @@ size: 854
         l.check()
 
 #    @attr(daemonize=True)
+#    @attr(generate=True)
 #    @attr(general=True)
 #    @log_capture('tilecloud_chain', level=30)
 #    def test_daemonize(self, l):
@@ -555,6 +840,7 @@ size: 854
             f.close()
 
     @attr(delete_meta=True)
+    @attr(generate=True)
     @attr(general=True)
     def test_delete_meta(self):
         for d in ('-d', ''):
@@ -571,10 +857,22 @@ size: 854
                 tiles_pattern='1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png',
                 tiles=[
                     (5, 7), (7, 4)
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'point_hash_no_meta' is finish
+Nb generated tiles: 247
+Nb tiles dropped: 0
+Nb tiles stored: 2
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: [89][0-9][0-9] o
+Time per tiles: [0-9]+ ms
+Size per tile: 4[0-9][0-9] o
+
+""",
             )
 
     @attr(delete_no_meta=True)
+    @attr(generate=True)
     @attr(general=True)
     def test_delete_no_meta(self):
         for d in ('-d', ''):
@@ -591,17 +889,30 @@ size: 854
                 tiles_pattern='1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png',
                 tiles=[
                     (5, 7), (7, 4)
-                ]
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'point_hash_no_meta' is finish
+Nb generated tiles: 247
+Nb tiles dropped: 0
+Nb tiles stored: 2
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: [89][0-9][0-9] o
+Time per tiles: [0-9]+ ms
+Size per tile: 4[0-9][0-9] o
+
+""",
             )
 
     @attr(error_file=True)
+    @attr(generate=True)
     @attr(general=True)
     def test_error_file(self):
         if os.path.exists('error.list'):
             os.remove('error.list')
         self.assert_main_except_equals(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point_error',
+            cmd='./buildout/bin/generate_tiles -q -c tilegeneration/test-nosns.yaml -l point_error',
             main_func=generate.main,
+            regex=True,
             expected=[[
                 'error.list',
                 u"""# \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] Start generation
@@ -610,7 +921,7 @@ size: 854
 0/0/8:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'cannot identify image file - .*
 0/8/0:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'cannot identify image file - .*
 """]],
-            regex=True)
+        )
 
         self.assert_tiles_generated(
             cmd='./buildout/bin/generate_tiles -d -c tilegeneration/test-nosns.yaml -l point_hash'
@@ -620,5 +931,18 @@ size: 854
             tiles_pattern='1.0.0/point_hash/default/2012/swissgrid_5/%i/%i/%i.png',
             tiles=[
                 (0, 5, 7), (0, 7, 4)
-            ]
+            ],
+            regex=True,
+            expected="""The tile generation of layer 'point_hash' is finish
+Nb generated metatiles: 3
+Nb metatiles dropped: 1
+Nb generated tiles: 128
+Nb tiles dropped: 126
+Nb tiles stored: 2
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: [89][0-9][0-9] o
+Time per tiles: [0-9]+ ms
+Size per tile: 4[0-9][0-9] o
+
+""",
         )

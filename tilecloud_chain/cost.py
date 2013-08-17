@@ -8,6 +8,7 @@ from argparse import ArgumentParser
 from tilecloud import Tile, TileStore, consume
 
 from tilecloud_chain import TileGeneration, add_comon_options
+from tilecloud_chain.format import duration_format
 
 
 logger = logging.getLogger(__name__)
@@ -52,8 +53,7 @@ def main():
         print
         print "===== GLOBAL ====="
         print "Total number of tiles: %i" % all_tiles
-        print 'Total generation time: %d %d:%02d:%02d [d h:mm:ss]' % \
-            (all_time.days, all_time.seconds / 3600, all_time.seconds % 3600 / 60, all_time.seconds % 60)
+        print 'Total generation time: %s [d h:mm:ss]' % (duration_format(all_time))
         print 'Total generation cost: %0.2f [$]' % all_price
     print
     print 'S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))
@@ -248,8 +248,7 @@ def _calculate_cost(gene, options):
 
         all_time += time
         td = timedelta(milliseconds=time)
-        print "Time to generate: %d %d:%02d:%02d [d h:mm:ss]" % \
-            (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
+        print "Time to generate: %s [d h:mm:ss]" % (duration_format(td))
         c = gene.config['cost']['s3']['put'] * nb_tiles[z] / 1000.0
         price += c
         print 'S3 PUT: %0.2f [$]' % c
@@ -270,8 +269,7 @@ def _calculate_cost(gene, options):
     print
     td = timedelta(milliseconds=all_time)
     print "Number of tiles: %i" % all_tiles
-    print 'Generation time: %d %d:%02d:%02d [d h:mm:ss]' % \
-        (td.days, td.seconds / 3600, td.seconds % 3600 / 60, td.seconds % 60)
+    print 'Generation time: %s [d h:mm:ss]' % (duration_format(td))
     print 'Generation cost: %0.2f [$]' % price
 
     return (all_size, td, price, all_tiles)

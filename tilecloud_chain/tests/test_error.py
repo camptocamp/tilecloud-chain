@@ -114,6 +114,7 @@ class TestError(CompareCase):
     @attr(general=True)
     def test_validate_type(self):
         class Opt:
+            quiet = False
             verbose = False
             debug = False
             test = 0
