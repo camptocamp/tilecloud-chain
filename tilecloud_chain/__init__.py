@@ -385,63 +385,66 @@ class TileGeneration:
         ) or error
         error = self.validate(self.config['generation'], 'generation', 'authorised_user', attribute_type=str) or error
         error = self.validate(
-            self.config['generation'], 'generation', 'number_process',
-            attribute_type=int, default=1
-        ) or error
-        error = self.validate(
-            self.config['generation'], 'generation', 'ec2_host_type', attribute_type=str,
-            default='m1.medium', enumeration=[
-                't1.micro', 'm1.small', 'm1.medium', 'm1.large', 'm1.xlarge',
-                'm2.xlarge', 'm2.2xlarge', 'm2.4xlarge', 'c1.medium', 'c1.xlarge', 'cc1.4xlarge', 'cc2.8xlarge',
-                'cg1.4xlarge', 'hi1.4xlarge'
-            ]
-        ) or error
-        error = self.validate(
             self.config['generation'], 'generation', 'maxconsecutive_errors',
             attribute_type=int, default=10
         ) or error
-        error = self.validate(
-            self.config['generation'], 'generation', 'ssh_options',
-            attribute_type=str
-        ) or error
-        error = self.validate(self.config['generation'], 'generation', 'geodata_folder', attribute_type=str) or error
-        if 'geodata_folder' in self.config['generation'] and self.config['generation']['geodata_folder'][-1] != '/':
-            self.config['generation']['geodata_folder'] += '/'
-        error = self.validate(self.config['generation'], 'generation', 'code_folder', attribute_type=str) or error
-        if 'code_folder' in self.config['generation'] and self.config['generation']['code_folder'][-1] != '/':
-            self.config['generation']['code_folder'] += '/'
-        error = self.validate(
-            self.config['generation'], 'generation', 'deploy_config',
-            attribute_type=str, default="tilegeneration/deploy.cfg") or error
-        error = self.validate(
-            self.config['generation'], 'generation', 'build_cmds',
-            attribute_type=str, is_array=True, default=[
-                "python bootstrap.py --distribute -v 1.7.1",
-                "./buildout/bin/buildout -c buildout_tilegeneration.cfg"
-            ]
-        ) or error
-        error = self.validate(self.config['generation'], 'generation', 'apache_config', attribute_type=str) or error
-        error = self.validate(self.config['generation'], 'generation', 'apache_content', attribute_type=str) or error
-        error = self.validate(
-            self.config['generation'], 'generation', 'disable_geodata',
-            attribute_type=bool, default=False
-        ) or error
-        error = self.validate(
-            self.config['generation'], 'generation', 'disable_code',
-            attribute_type=bool, default=False
-        ) or error
-        error = self.validate(
-            self.config['generation'], 'generation', 'disable_database',
-            attribute_type=bool, default=False
-        ) or error
-        error = self.validate(
-            self.config['generation'], 'generation', 'disable_fillqueue',
-            attribute_type=bool, default=False
-        ) or error
-        error = self.validate(
-            self.config['generation'], 'generation', 'disable_tilesgen',
-            attribute_type=bool, default=False
-        ) or error
+
+        error = self.validate(self.config, 'config', 'ec2', attribute_type=dict) or error
+        if 'ec2' in self.config:
+            error = self.validate(
+                self.config['ec2'], 'ec2', 'number_process',
+                attribute_type=int, default=1
+            ) or error
+            error = self.validate(
+                self.config['ec2'], 'ec2', 'host_type', attribute_type=str,
+                default='m1.medium', enumeration=[
+                    't1.micro', 'm1.small', 'm1.medium', 'm1.large', 'm1.xlarge',
+                    'm2.xlarge', 'm2.2xlarge', 'm2.4xlarge', 'c1.medium', 'c1.xlarge', 'cc1.4xlarge', 'cc2.8xlarge',
+                    'cg1.4xlarge', 'hi1.4xlarge'
+                ]
+            ) or error
+            error = self.validate(
+                self.config['ec2'], 'ec2', 'ssh_options',
+                attribute_type=str
+            ) or error
+            error = self.validate(self.config['ec2'], 'ec2', 'geodata_folder', attribute_type=str) or error
+            if 'geodata_folder' in self.config['ec2'] and self.config['ec2']['geodata_folder'][-1] != '/':
+                self.config['ec2']['geodata_folder'] += '/'
+            error = self.validate(self.config['ec2'], 'ec2', 'code_folder', attribute_type=str) or error
+            if 'code_folder' in self.config['ec2'] and self.config['ec2']['code_folder'][-1] != '/':
+                self.config['ec2']['code_folder'] += '/'
+            error = self.validate(
+                self.config['ec2'], 'ec2', 'deploy_config',
+                attribute_type=str, default="tilegeneration/deploy.cfg") or error
+            error = self.validate(
+                self.config['ec2'], 'ec2', 'build_cmds',
+                attribute_type=str, is_array=True, default=[
+                    "python bootstrap.py --distribute -v 1.7.1",
+                    "./buildout/bin/buildout -c buildout_tilegeneration.cfg"
+                ]
+            ) or error
+            error = self.validate(self.config['ec2'], 'ec2', 'apache_config', attribute_type=str) or error
+            error = self.validate(self.config['ec2'], 'ec2', 'apache_content', attribute_type=str) or error
+            error = self.validate(
+                self.config['ec2'], 'ec2', 'disable_geodata',
+                attribute_type=bool, default=False
+            ) or error
+            error = self.validate(
+                self.config['ec2'], 'ec2', 'disable_code',
+                attribute_type=bool, default=False
+            ) or error
+            error = self.validate(
+                self.config['ec2'], 'ec2', 'disable_database',
+                attribute_type=bool, default=False
+            ) or error
+            error = self.validate(
+                self.config['ec2'], 'ec2', 'disable_fillqueue',
+                attribute_type=bool, default=False
+            ) or error
+            error = self.validate(
+                self.config['ec2'], 'ec2', 'disable_tilesgen',
+                attribute_type=bool, default=False
+            ) or error
 
         if 'sns' in self.config:  # pragma: no cover
             error = self.validate(self.config['sns'], 'sns', 'topic', attribute_type=str, required=True) or error

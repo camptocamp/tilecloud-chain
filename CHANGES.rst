@@ -45,6 +45,8 @@ More informations in `Configure geom/sql <https://github.com/sbrunner/tilecloud-
 
 9. Now the tiles generation display generation statistics at the ends.
 
+10. The EC2 configuration is moved in a separate structure, see README for more informations.
+
 
 Release 0.6
 -----------

@@ -60,11 +60,12 @@ def main():
     print 'S3 get: %0.2f [$/month]' % (
         gene.config['cost']['s3']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
         gene.config['cost']['s3']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
-    if 'cloudfront' in gene.config['cost']:
-        print 'CloudFront: %0.2f [$/month]' % (
-            gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
-            gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
-    print 'ESB storage: %0.2f [$/month]' % (gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
+#    if 'cloudfront' in gene.config['cost']:
+#        print 'CloudFront: %0.2f [$/month]' % (
+#            gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
+#            gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
+    if 'ec2' in gene.config:
+        print 'ESB storage: %0.2f [$/month]' % (gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
     sys.exit(0)
 
 
@@ -138,7 +139,7 @@ def validate_calculate_cost(gene):
     }
     error = gene.validate(
         gene.config['cost']['ec2'], 'cost.ec2', 'usage', attribute_type=float,
-        default=ec2cost[gene.config['generation']['ec2_host_type']]
+        default=ec2cost[gene.config['ec2']['host_type']] if 'ec2' in gene.config else -1,
     ) or error
     # http://aws.amazon.com/ebs/
     error = gene.validate(gene.config['cost'], 'cost', 'esb', attribute_type=dict, default={}) or error
@@ -252,19 +253,24 @@ def _calculate_cost(gene, options):
         c = gene.config['cost']['s3']['put'] * nb_tiles[z] / 1000.0
         price += c
         print 'S3 PUT: %0.2f [$]' % c
-        c = time * gene.config['cost']['ec2']['usage'] / (1000.0 * 3600)
-        price += c
-        print 'EC2 usage: %0.2f [$]' % c
-        c = gene.config['cost']['esb']['io'] * time / (1000.0 * 2600 * 24 * 30)
-        price += c
-        print 'ESB usage: %0.2f [$]' % c
-        if meta:
-            nb_sqs = nb_metatiles[z] * 3
-        else:
-            nb_sqs = nb_tiles[z] * 3
-        c = nb_sqs * gene.config['cost']['sqs']['request'] / 1000000.0
-        price += c
-        print 'SQS usage: %0.2f [$]' % c
+
+        if 'ec2' in gene.config:
+            c = time * gene.config['cost']['ec2']['usage'] / (1000.0 * 3600)
+            price += c
+            print 'EC2 usage: %0.2f [$]' % c
+
+            c = gene.config['cost']['esb']['io'] * time / (1000.0 * 2600 * 24 * 30)
+            price += c
+            print 'ESB usage: %0.2f [$]' % c
+
+        if 'sqs' in gene.layer:
+            if meta:
+                nb_sqs = nb_metatiles[z] * 3
+            else:
+                nb_sqs = nb_tiles[z] * 3
+            c = nb_sqs * gene.config['cost']['sqs']['request'] / 1000000.0
+            price += c
+            print 'SQS usage: %0.2f [$]' % c
 
     print
     td = timedelta(milliseconds=all_time)
