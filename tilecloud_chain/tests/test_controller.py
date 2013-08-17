@@ -1361,6 +1361,7 @@ generation:
   ec2_host_type: m1.medium
   error_file: error.list
   geodata_folder: tilecloud_chain/
+  log_format: '%(levelname)s:%(name)s:%(funcName)s:%(message)s'
   maxconsecutive_errors: 2
   number_process: 1
 grids:
