@@ -3,7 +3,7 @@ from pyramid.scaffolds.template import Template  # pragma: no cover
 
 class Create(Template):  # pragma: no cover
     _template_dir = 'create'
-    summary = 'Template used to create a tilecloud chain project'
+    summary = 'Template used to create a standalone TileCloud-chain project'
 
     def post(self, *args, **kargs):
         super(Create, self).post(*args, **kargs)
@@ -30,3 +30,8 @@ instanceid = main
 
 [facts]
 recipe = c2c.recipe.facts"""
+
+
+class Ec2(Template):  # pragma: no cover
+    _template_dir = 'ec2'
+    summary = 'Template used to complete TileCloud-chain project with ec2 support'

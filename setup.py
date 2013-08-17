@@ -77,6 +77,7 @@ Tools to generates tiles from WMS or Mapnik, to S3, Berkley DB, MBTiles, or loca
         ],
         'pyramid.scaffold': [
             'tilecloud_chain = tilecloud_chain.scaffolds:Create',
+            'tilecloud_chain_ec2 = tilecloud_chain.scaffolds:Ec2',
         ],
         'paste.app_factory': [
             'server = tilecloud_chain.server:app_factory',
