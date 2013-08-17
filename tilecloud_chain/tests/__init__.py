@@ -97,12 +97,12 @@ class CompareCase(TestCase):
         result = yaml.dump(yaml.load(result), width=120)
         self.assert_result_equals(result=result, expected=expected)
 
-    def assert_cmd_yaml_equals(self, cmd, main_func, expected):
+    def assert_cmd_yaml_equals(self, cmd, main_func, **kargs):
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
         self.assert_main_equals(cmd, main_func, [])
         sys.stdout = old_stdout
-        self.assert_yaml_equals(result=mystdout.getvalue(), expected=expected)
+        self.assert_yaml_equals(result=mystdout.getvalue(), **kargs)
 
     def assert_tiles_generated(self, directory, **kargs):
         if os.path.exists(directory):

@@ -172,6 +172,7 @@ config:
             zoom = '3'
             test = 196
             near = [600000.0, 200000.0]
+            quiet = False
             verbose = False
             debug = False
             time = None

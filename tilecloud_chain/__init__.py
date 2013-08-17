@@ -90,6 +90,10 @@ def add_comon_options(parser, tile_pyramid=True, no_geom=True):
         help='The cache name to use'
     )
     parser.add_argument(
+        '-q', '--quiet', default=False, action="store_true",
+        help='Display only errors.'
+    )
+    parser.add_argument(
         '-v', '--verbose', default=False, action="store_true",
         help='Display info message.'
     )
@@ -115,8 +119,6 @@ class TileGeneration:
     geom = None
 
     def __init__(self, config_file, options=None, layer_name=None):
-        level = logging.WARNING
-
         if options is not None:
             if not hasattr(options, 'bbox'):
                 options.bbox = None
@@ -131,11 +133,12 @@ class TileGeneration:
             if not hasattr(options, 'geom'):
                 options.geom = True
 
-        if options and options.verbose and options.debug:  # pragma: no cover
-            exit("Debug and verbose options can't be used together")
-        if options and options.verbose:
+        level = logging.WARNING
+        if options and options.quiet:
+            level = logging.ERROR
+        elif options and options.verbose:
             level = logging.INFO
-        elif options and options.debug:  # pragma: no cover
+        elif options and options.debug:
             level = logging.DEBUG
         logging.basicConfig(
             format='%(levelname)s:%(name)s:%(funcName)s:%(message)s',
@@ -1087,11 +1090,12 @@ class HashDropper:
     The ``store`` is used to delete the empty tiles.
     """
 
-    def __init__(self, size, sha1code, store=None, queue_store=None):
+    def __init__(self, size, sha1code, store=None, queue_store=None, count=None):
         self.size = size
         self.sha1code = sha1code
         self.store = store
         self.queue_store = queue_store
+        self.count = count
 
     def __call__(self, tile):
         if len(tile.data) != self.size or \
@@ -1111,6 +1115,9 @@ class HashDropper:
                     self.queue_store.delete_one(tile.metatile)  # pragma: no cover
             elif self.queue_store is not None:  # pragma: no cover
                 self.queue_store.delete_one(tile)
+
+            if self.count:
+                self.count()
 
             return None
 
@@ -1177,8 +1184,11 @@ class DropEmpty:
     """
 
     def __call__(self, tile):
-        if not tile or not tile.data:
-            return None  # pragma: no cover
+        if not tile or not tile.data:  # pragma: no cover
+            logger.error("The tile: %(tilecoord)s is empty")
+            if 'error_file' in self.config['generation']:
+                self.log_tiles_error(tilecoord=tile.tilecoord, error='The tile is empty')
+            return None
         else:
             return tile
 
