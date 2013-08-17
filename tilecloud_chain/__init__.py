@@ -932,8 +932,16 @@ class TileGeneration:
                     miny -= m_buffer
                     maxx += m_buffer
                     maxy += m_buffer
-                    bounding_pyramid.add(tilegrid.tilecoord(zoom, minx, miny))
-                    bounding_pyramid.add(tilegrid.tilecoord(zoom, maxx, maxy))
+                    bounding_pyramid.add(tilegrid.tilecoord(
+                        zoom,
+                        max(minx, tilegrid.max_extent[0]),
+                        max(miny, tilegrid.max_extent[1]),
+                    ))
+                    bounding_pyramid.add(tilegrid.tilecoord(
+                        zoom,
+                        min(maxx, tilegrid.max_extent[2]),
+                        min(maxy, tilegrid.max_extent[3]),
+                    ))
 
         meta = self.layer['meta']
         if meta:
