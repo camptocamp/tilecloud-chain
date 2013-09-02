@@ -745,6 +745,8 @@ class TileGeneration:
         return self.grids[name]
 
     def get_sqs_queue(self):  # pragma: no cover
+        if 'sqs' not in self.layer:
+            exit("The layer '%s' hasn't any configured queue" % self.layer['name'])
         connection = boto.sqs.connect_to_region(self.layer['sqs']['region'])
         queue = connection.get_queue(self.layer['sqs']['queue'])
         queue.set_message_class(JSONMessage)
