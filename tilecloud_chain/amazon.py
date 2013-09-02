@@ -87,7 +87,7 @@ def main():
 
     # start aws
     if not options.host:
-        # TODO not imlpemented yet
+        # TODO not implemented yet
         host = aws_start(gene.config['ec2']['host_type'])  # pragma: no cover
     else:
         host = options.host
