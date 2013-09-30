@@ -439,7 +439,7 @@ Generate configuration in buildout
 We can also use a buildout task to automatise it::
 
     [buildout]
-    parts: += mapcache
+    parts += mapcache
 
     [mapcache]
     recipe = collective.recipe.cmd
@@ -450,7 +450,7 @@ We can also use a buildout task to automatise it::
       ./buildout/bin/generate_controller --generate-apache-config
     uninstall_cmds =
       rm apache/mapcache.xml
-      rm apache/tiles.conf.in
+      rm apache/tiles.conf
 
 
 Configure S3
