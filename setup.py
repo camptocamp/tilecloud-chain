@@ -17,7 +17,7 @@ install_requires = [
     'Shapely',
     'boto>=2.0',
     'PyYAML',
-    'jinja2',
+    'Jinja2',
     'pyramid',
     'simplejson',
     'requests',
