@@ -72,8 +72,9 @@ def main():
         gene.validate_mapcache_config()
         gene.validate_apache_config()
         _validate_generate_openlayers(gene)
-        for grild in gene.config['grids'].values():
-            del grild['obj']
+        for grid in gene.config['grids'].values():
+            if 'obj' in grid:
+                del grid['obj']
         print yaml.dump(gene.config)
         sys.exit(0)
 

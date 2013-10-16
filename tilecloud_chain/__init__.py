@@ -151,6 +151,9 @@ class TileGeneration:
         self.grids = self.config['grids']
         error = False
         for gname, grid in self.config['grids'].items():
+            if type(gname) != str:
+                gname = str(gname)
+                self.config['grids'][gname] = grid
             name = "grid[%s]" % gname
             error = self.validate(
                 grid, name, 'name', attribute_type=str, default=gname, regex="^[a-zA-Z0-9_]+$"
