@@ -178,6 +178,41 @@ class TileGeneration:
 
             error = self.validate(grid, name, 'bbox', attribute_type=float, is_array=True, required=True) or error
             error = self.validate(grid, name, 'srs', attribute_type=str, required=True) or error
+            if not error:
+                srs = grid['srs'].split(':')
+                if len(srs) == 2:
+                    if srs[0].lower() == 'epsg':
+                        try:
+                            srs[1] = int(srs[1])
+                        except ValueError:
+                            logger.error("The grid '%s' srs should have an int ref_id but it is %s." % (gname, srs[1]))
+                    else:
+                        logger.error("The grid '%s' srs should have the authority 'EPSG' but it is %s." % (
+                            gname, srs[0])
+                        )
+                        error = True
+                else:
+                    logger.error("The grid '%s' srs should have the syntax <autority>:<ref_id> but is %s." % (
+                        gname, grid['srs']
+                    ))
+                    error = True
+            error = self.validate(grid, name, 'proj4_literal', attribute_type=str) or error
+            if not error and 'proj4_literal' not in grid:
+                if srs[1] == 3857:  # pragma: no cover
+                    grid['proj4_literal'] = '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 ' \
+                        '+x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over'
+                elif srs[1] == 21781:
+                    grid['proj4_literal'] = '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 ' \
+                        '+x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m ' \
+                        '+no_defs'
+                elif srs[1] == 2056:  # pragma: no cover
+                    grid['proj4_literal'] = '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 ' \
+                        '+x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m ' \
+                        '+no_defs'
+                else:
+                    grid['proj4_literal'] = '+init=epsg:%i' + srs[1]
+            elif not error and grid['proj4_literal'] == '':  # pragma: no cover
+                grid['proj4_literal'] = None
             error = self.validate(grid, name, 'unit', attribute_type=str, default='m') or error
             error = self.validate(grid, name, 'tile_size', attribute_type=int, default=256) or error
             error = self.validate(

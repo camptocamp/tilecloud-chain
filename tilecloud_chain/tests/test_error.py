@@ -168,3 +168,37 @@ class TestError(CompareCase):
 
         obj = {'value': []}
         self.assertEquals(gene.validate(obj, 'object', 'value', float), True)
+
+    @log_capture('tilecloud_chain')
+    @attr(wrong_srs_auth=True)
+    @attr(general=True)
+    def test_wrong_srs_auth(self, l):
+        self.run_cmd(
+            cmd='./buildout/bin/generate_controller -c tilegeneration/wrong_srs_auth.yaml',
+            main_func=controller.main)
+        l.check(
+            ('tilecloud_chain', 'ERROR', "The grid 'swissgrid_01' srs should have the authority 'EPSG' but it is toto.")
+        )
+
+    @log_capture('tilecloud_chain')
+    @attr(wrong_srs_id=True)
+    @attr(general=True)
+    def test_wrong_srs_id(self, l):
+        self.run_cmd(
+            cmd='./buildout/bin/generate_controller -c tilegeneration/wrong_srs_id.yaml',
+            main_func=controller.main)
+        l.check(
+            ('tilecloud_chain', 'ERROR', "The grid 'swissgrid_01' srs should have an int ref_id but it is 21781a.")
+        )
+
+    @log_capture('tilecloud_chain')
+    @attr(wrong_srs=True)
+    @attr(general=True)
+    def test_wrong_srs(self, l):
+        self.run_cmd(
+            cmd='./buildout/bin/generate_controller -c tilegeneration/wrong_srs.yaml',
+            main_func=controller.main)
+        l.check((
+            'tilecloud_chain', 'ERROR', "The grid 'swissgrid_01' srs should have the syntax "
+            "<autority>:<ref_id> but is epsg21781."
+        ))
