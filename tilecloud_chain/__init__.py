@@ -151,6 +151,9 @@ class TileGeneration:
         self.grids = self.config['grids']
         error = False
         for gname, grid in self.config['grids'].items():
+            if type(gname) != str:
+                gname = str(gname)
+                self.config['grids'][gname] = grid
             name = "grid[%s]" % gname
             error = self.validate(
                 grid, name, 'name', attribute_type=str, default=gname, regex="^[a-zA-Z0-9_]+$"
@@ -777,27 +780,28 @@ class TileGeneration:
         if self.options is None or (
             self.options.near is None and self.options.geom
         ):
-            connection = psycopg2.connect(layer['connection'])
-            cursor = connection.cursor()
-            for g in layer['geoms']:
-                sql = 'SELECT ST_AsBinary(geom) FROM (SELECT %s) AS g' % g['sql']
-                logger.info('Execute SQL: %s.' % sql)
-                cursor.execute(sql)
-                geoms = [loads_wkb(str(r[0])) for r in cursor.fetchall()]
-                geom = cascaded_union(geoms)
-                if extent:
-                    geom = geom.intersection(Polygon((
-                        (extent[0], extent[1]),
-                        (extent[0], extent[3]),
-                        (extent[2], extent[3]),
-                        (extent[2], extent[1]),
-                    )))
-                for z, r in enumerate(layer['grid_ref']['resolutions']):
-                    if ('min_resolution' not in g or g['min_resolution'] <= r) and \
-                            ('max_resolution' not in g or g['max_resolution'] >= r):
-                        layer_geoms[z] = geom
-            cursor.close()
-            connection.close()
+            if 'connection' in layer:
+                connection = psycopg2.connect(layer['connection'])
+                cursor = connection.cursor()
+                for g in layer['geoms']:
+                    sql = 'SELECT ST_AsBinary(geom) FROM (SELECT %s) AS g' % g['sql']
+                    logger.info('Execute SQL: %s.' % sql)
+                    cursor.execute(sql)
+                    geoms = [loads_wkb(str(r[0])) for r in cursor.fetchall()]
+                    geom = cascaded_union(geoms)
+                    if extent:
+                        geom = geom.intersection(Polygon((
+                            (extent[0], extent[1]),
+                            (extent[0], extent[3]),
+                            (extent[2], extent[3]),
+                            (extent[2], extent[1]),
+                        )))
+                    for z, r in enumerate(layer['grid_ref']['resolutions']):
+                        if ('min_resolution' not in g or g['min_resolution'] <= r) and \
+                                ('max_resolution' not in g or g['max_resolution'] >= r):
+                            layer_geoms[z] = geom
+                cursor.close()
+                connection.close()
         return layer_geoms
 
     def get_geoms_filter(self, layer, grid, geoms, queue_store=None):
