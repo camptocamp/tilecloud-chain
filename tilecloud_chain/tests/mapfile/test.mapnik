@@ -15,7 +15,7 @@
             <PointSymbolizer file="circle.svg" transform="scale(10)" />
         </Rule>
     </Style>
-    <Layer name="polygon">
+    <Layer name="polygon" srs="+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs">
         <StyleName>polygon</StyleName>
         <Datasource>
             <Parameter name="table">tests.polygon</Parameter>
@@ -31,7 +31,7 @@
             <Parameter name="extent">420000, 30000, 900000, 350000</Parameter>
         </Datasource>
     </Layer>
-    <Layer name="line">
+    <Layer name="line" srs="+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs">
         <StyleName>line</StyleName>
         <Datasource>
             <Parameter name="table">tests.line</Parameter>
@@ -47,7 +47,7 @@
             <Parameter name="extent">420000, 30000, 900000, 350000</Parameter>
         </Datasource>
     </Layer>
-    <Layer name="point">
+    <Layer name="point" srs="+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs">
         <StyleName>point</StyleName>
         <Datasource>
             <Parameter name="table">tests.point</Parameter>

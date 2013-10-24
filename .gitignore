@@ -1,4 +1,6 @@
 *.py[co]
+.*.swp
+.*.swp.!sync
 
 # Packages
 *.egg

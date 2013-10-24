@@ -181,9 +181,10 @@ class Generate:
                 from tilecloud.store.mapnik_ import MapnikTileStore
                 from tilecloud_chain.mapnik_ import MapnikDropActionTileStore
 
+                grid = gene.get_grid()
                 if gene.layer['output_format'] == 'grid':
                     gene.get(MapnikDropActionTileStore(
-                        tilegrid=gene.get_grid()['obj'],
+                        tilegrid=grid['obj'],
                         mapfile=gene.layer['mapfile'],
                         image_buffer=gene.layer['meta_buffer'] if meta else 0,
                         data_buffer=gene.layer['data_buffer'],
@@ -194,14 +195,16 @@ class Generate:
                         store=cache_tilestore,
                         queue_store=sqs_tilestore,
                         count=self.count_metatiles_dropped,
+                        proj4_literal=grid['proj4_literal'],
                     ), "Create Mapnik grid tile")
                 else:
                     gene.get(MapnikTileStore(
-                        tilegrid=gene.get_grid()['obj'],
+                        tilegrid=grid['obj'],
                         mapfile=gene.layer['mapfile'],
                         image_buffer=gene.layer['meta_buffer'] if meta else 0,
                         data_buffer=gene.layer['data_buffer'],
                         output_format=gene.layer['output_format'],
+                        proj4_literal=grid['proj4_literal'],
                     ), "Create Mapnik tile")
 
             if meta:

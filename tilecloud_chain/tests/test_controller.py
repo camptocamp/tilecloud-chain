@@ -1370,6 +1370,8 @@ grids:
     bbox: [420000.0, 30000.0, 900000.0, 350000.0]
     matrix_identifier: resolution
     name: swissgrid_01
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000""" \
+    u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 10
     resolutions: [1.0, 0.2, 0.1]
     srs: epsg:21781
@@ -1379,6 +1381,8 @@ grids:
     bbox: [420000.0, 30000.0, 900000.0, 350000.0]
     matrix_identifier: resolution
     name: swissgrid_025
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000""" \
+        u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 4
     resolutions: [0.25]
     srs: epsg:21781
@@ -1388,6 +1392,8 @@ grids:
     bbox: [420000.0, 30000.0, 900000.0, 350000.0]
     matrix_identifier: resolution
     name: swissgrid_2_5
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000""" \
+        u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 2
     resolutions: [2.5]
     srs: epsg:21781
@@ -1397,6 +1403,8 @@ grids:
     bbox: [420000.0, 30000.0, 900000.0, 350000.0]
     matrix_identifier: zoom
     name: swissgrid_5
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000""" \
+        u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 1
     resolutions: [100.0, 50.0, 20.0, 10.0, 5.0]
     srs: epsg:21781
