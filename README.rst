@@ -375,7 +375,7 @@ The server can be configure as it:
             Host: localhost
         geoms_redirect: true # use the geoms to redirect to MapCache [defaut to false]
         # allowed extension in the static path (default value), not used for s3.
-        static_allow_extension: [jpeg, png, xml]
+        static_allow_extension: [jpeg, png, xml, js, html, css]
 
 The minimal config is to enable it:
 
