@@ -419,7 +419,7 @@ def _generate_openlayers(gene):
         srs=gene.config['openlayers']['srs'],
         center_x=gene.config['openlayers']['center_x'],
         center_y=gene.config['openlayers']['center_y'],
-        http_url=http_url,
+        http_url=http_url + ('/wmts' if 'server' in gene.config else ''),
         layers=[
             {
                 'name': name,
