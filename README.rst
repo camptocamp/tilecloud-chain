@@ -426,7 +426,7 @@ in ``production.ini``::
 with the apache configuration::
 
     WSGIDaemonProcess tiles:${vars:instanceid} display-name=%{GROUP} user=${vars:modwsgi_user}
-    WSGIScriptAlias /${vars:instanceid}/tiles ${buildout:directory/buildout/parts/modwsgi_tiles/wsgi}
+    WSGIScriptAlias /${vars:instanceid}/tiles ${buildout:directory}/buildout/parts/modwsgi_tiles/wsgi
     <Location /${vars:instanceid}/tiles>
         WSGIProcessGroup tiles:${vars:instanceid}
         WSGIApplicationGroup %{GLOBAL}
