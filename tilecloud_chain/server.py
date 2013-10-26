@@ -58,7 +58,7 @@ class Server:
         self.expires_hours = self.tilegeneration.config['apache']['expires']
         self.static_allow_extension = self.tilegeneration.config['server']['static_allow_extension'] \
             if 'static_allow_extension' in self.tilegeneration.config['server'] \
-            else ['jpeg', 'png', 'xml']
+            else ['jpeg', 'png', 'xml', 'js', 'html', 'css']
 
         self.cache = self.tilegeneration.caches[
             self.tilegeneration.config['server']['cache'] if
@@ -69,7 +69,7 @@ class Server:
         if self.cache['type'] == 's3':  # pragma: no cover
             s3bucket = S3Connection().bucket(self.cache['bucket'])
 
-            def _get(self, path):
+            def _get(self, path, **kwargs):
                 global s3bucket
                 try:
                     s3key = s3bucket.key(('%(folder)s' % self.cache) + path)
@@ -83,12 +83,12 @@ class Server:
         else:
             folder = self.cache['folder'] or ''
 
-            def _get(self, path):
+            def _get(self, path, **kwargs):
                 if path.split('.')[-1] not in self.static_allow_extension:  # pragma: no cover
-                    return self.error(403, path)
+                    return self.error(403, "Extension not allowed", **kwargs), None
                 p = folder + path
                 if not os.path.isfile(p):  # pragma: no cover
-                    return self.error(404, path)
+                    return self.error(404, path + " not found", **kwargs), None
                 with open(p, 'rb') as file:
                     data = file.read()
                 mime = mimetypes.guess_type(p)
@@ -167,17 +167,20 @@ class Server:
 
         if path is not None:
             if len(path) >= 1 and path[0] == 'static':
-                body, mime = self._get('/' + '/'.join(path[1:]))
-                return self.responce(body, {
-                    'Content-Type': mime,
-                    'Expires': (
-                        datetime.datetime.utcnow() +
-                        datetime.timedelta(hours=self.expires_hours)
-                    ).isoformat(),
-                    'Cache-Control': "max-age=%i" % (3600 * self.expires_hours),
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'GET',
-                }, **kwargs)
+                body, mime = self._get('/' + '/'.join(path[1:]), **kwargs)
+                if mime is not None:
+                    return self.responce(body, {
+                        'Content-Type': mime,
+                        'Expires': (
+                            datetime.datetime.utcnow() +
+                            datetime.timedelta(hours=self.expires_hours)
+                        ).isoformat(),
+                        'Cache-Control': "max-age=%i" % (3600 * self.expires_hours),
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'GET',
+                    }, **kwargs)
+                else:  # pragma: no cover
+                    return body
             elif len(path) >= 1 and path[0] != 'wmts':  # pragma: no cover
                 return self.error(
                     404,
@@ -245,17 +248,20 @@ class Server:
 
         if params['REQUEST'] == 'GetCapabilities':
             wmtscapabilities_file = self.cache['wmtscapabilities_file']
-            body, mime = self._get(wmtscapabilities_file)
-            return self.responce(body, headers={
-                'Content-Type': "application/xml",
-                'Expires': (
-                    datetime.datetime.utcnow() +
-                    datetime.timedelta(hours=self.expires_hours)
-                ).isoformat(),
-                'Cache-Control': "max-age=%i" % (3600 * self.expires_hours),
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET',
-            }, **kwargs)
+            body, mime = self._get(wmtscapabilities_file, **kwargs)
+            if mime is not None:
+                return self.responce(body, headers={
+                    'Content-Type': "application/xml",
+                    'Expires': (
+                        datetime.datetime.utcnow() +
+                        datetime.timedelta(hours=self.expires_hours)
+                    ).isoformat(),
+                    'Cache-Control': "max-age=%i" % (3600 * self.expires_hours),
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET',
+                }, **kwargs)
+            else:  # pragma: no cover
+                return body
 
         if \
                 not 'FORMAT' in params or \
