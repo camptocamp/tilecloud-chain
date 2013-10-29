@@ -11,7 +11,7 @@ from argparse import ArgumentParser
 
 import boto
 from boto import sns
-from tilecloud import TileCoord, consume
+from tilecloud import TileCoord
 from tilecloud.store.url import URLTileStore
 from tilecloud.store.sqs import SQSTileStore
 from tilecloud.layout.wms import WMSTileLayout
@@ -82,26 +82,7 @@ class Generate:
 
         cache_tilestore = None
         if options.role in ('local', 'slave'):
-            cache = gene.caches[options.cache]
-            dimensions_args = {}
-            for dim in gene.options.dimensions:
-                dim = dim.split('=')
-                if len(dim) != 2:  # pragma: no cover
-                    exit(
-                        'the DIMENTIONS option should be like this '
-                        'DATE=2013 VERSION=13.'
-                    )
-                dimensions_args[dim[0]] = dim[1]
-            dimensions = []
-            for dim in gene.layer['dimensions']:
-                dimensions.append((
-                    dim['name'],
-                    dimensions_args[dim['name']] if
-                    dim['name'] in dimensions_args else dim['value']
-                ))
-            cache_tilestore = gene.get_store(cache, gene.layer, dimensions=dimensions)
-            if cache_tilestore is None:
-                exit('Unknown cache type: ' + cache['type'])  # pragma: no cover
+            cache_tilestore = gene.get_tilesstore(options.cache)
 
         meta = gene.layer['meta']
         if options.tiles:
@@ -130,15 +111,7 @@ class Generate:
                 )
 
         # At this stage, the tilestream contains metatiles that intersect geometry
-        if not options.quiet and not options.verbose and not options.debug:
-            def logTile(tile):
-                variables = dict()
-                variables.update(tile.__dict__)
-                variables.update(tile.tilecoord.__dict__)
-                sys.stdout.write("%(tilecoord)s          \r" % variables)
-                sys.stdout.flush()
-                return tile
-            gene.imap(logTile)
+        gene.add_logger()
 
         gene.imap(self.count_metatiles)
 
@@ -212,7 +185,7 @@ class Generate:
                     gene.imap(HashLogger('empty_metatile_detection'))
                 elif not options.near:
                     # Handle errors
-                    gene.add_error_filters(logger)
+                    gene.add_error_filters()
 
                     # Discard tiles with certain content
                     if 'empty_metatile_detection' in gene.layer:
@@ -241,7 +214,7 @@ class Generate:
                 gene.imap(HashLogger('empty_tile_detection'))
             elif not options.near:
                 # Handle errors
-                gene.add_error_filters(logger)
+                gene.add_error_filters()
 
                 # Discard tiles with certain content
                 if 'empty_tile_detection' in gene.layer:
@@ -254,7 +227,7 @@ class Generate:
                     ))
 
         if options.role in ('local', 'slave'):
-            gene.add_error_filters(logger)
+            gene.add_error_filters()
             gene.ifilter(DropEmpty(gene))
             gene.imap(self.inc_tiles_size)
 
@@ -266,7 +239,7 @@ class Generate:
 
             gene.put(cache_tilestore, "Store the tile")
 
-        gene.add_error_filters(logger)
+        gene.add_error_filters()
         if options.generated_tiles_file:  # pragma: no cover
             generated_tiles_file = open(options.generated_tiles_file, 'a')
 
@@ -302,11 +275,9 @@ class Generate:
                     return tile
             gene.imap(log_time())
 
-            consume(gene.tilestream, options.time * 3)
+            gene.consume(options.time * 3)
         else:
-            start = datetime.now()
-            consume(gene.tilestream, options.test)
-            self.duration = datetime.now() - start
+            gene.consume()
 
             if not options.quiet and options.role in ('local', 'slave'):
                 print """The tile generation of layer '%s' is finish
@@ -329,14 +300,11 @@ Nb metatiles dropped: %i
                         self.nb_tiles if meta else self.nb_metatiles,
                         self.nb_tiles_dropped if meta else self.nb_metatiles_dropped,
                         self.nb_tiles_stored,
-                        duration_format(self.duration),
+                        duration_format(gene.duration),
                         size_format(self.tiles_size),
-                        (self.duration / self.nb_tiles * 1000).seconds if self.nb_tiles != 0 else 0,
+                        (gene.duration / self.nb_tiles * 1000).seconds if self.nb_tiles != 0 else 0,
                         self.tiles_size / self.nb_tiles_stored if self.nb_tiles_stored != 0 else -1
                     )
-
-        for ca in gene.close_actions:
-            ca()
 
         if cache_tilestore is not None and hasattr(cache_tilestore, 'connection'):
             cache_tilestore.connection.close()
@@ -396,7 +364,7 @@ def daemonize():  # pragma: no cover
 
 def main():
     parser = ArgumentParser(description='Used to generate the tiles', prog='./buildout/bin/generate_tiles')
-    add_comon_options(parser)
+    add_comon_options(parser, dimensions=True)
     parser.add_argument(
         '--get-hash', metavar="TILE",
         help='get the empty tiles hash, use the specified TILE z/x/y'
@@ -404,10 +372,6 @@ def main():
     parser.add_argument(
         '--get-bbox', metavar="TILE",
         help='get the bbox of a tile, use the specified TILE z/x/y, or z/x/y:+n/+n for metatiles'
-    )
-    parser.add_argument(
-        '--dimensions', nargs='+', metavar='DIMENSION=VALUE', default=[],
-        help='overwrite the dimensions values specified in the config file'
     )
     parser.add_argument(
         '--role', default='local', choices=('local', 'master', 'slave'),

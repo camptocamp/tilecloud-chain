@@ -75,6 +75,7 @@ Tools to generates tiles from WMS or Mapnik, to S3, Berkley DB, MBTiles, """
             'generate_controller = tilecloud_chain.controller:main',
             'generate_amazon = tilecloud_chain.amazon:main',
             'generate_cost = tilecloud_chain.cost:main',
+            'generate_copy = tilecloud_chain.copy_:main',
             'import_expiretiles = tilecloud_chain.expiretiles:main',
         ],
         'pyramid.scaffold': [

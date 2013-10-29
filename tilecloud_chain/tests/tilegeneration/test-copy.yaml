@@ -1,0 +1,29 @@
+grids:
+    21781:
+        resolutions: [1000]
+        bbox: [420000, 30000, 900000, 350000]
+        tile_size: 256
+        srs: epsg:21781
+
+caches:
+    src:
+        type: filesystem
+        folder: /tmp/tiles/src
+    dst:
+        type: filesystem
+        folder: /tmp/tiles/dst
+
+layer_default:
+    grid: 21781
+    type: wms
+    url: http://localhost/mapserv
+    wmts_style: default
+    mime_type: image/png
+    extension: png
+    meta: on
+    meta_size: 8
+    meta_buffer: 128
+
+layers:
+    point_hash:
+        layers: point
