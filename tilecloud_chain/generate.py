@@ -255,7 +255,7 @@ class Generate:
 
         if options.role in ('local', 'slave'):
             gene.add_error_filters(logger)
-            gene.ifilter(DropEmpty())
+            gene.ifilter(DropEmpty(gene))
             gene.imap(self.inc_tiles_size)
 
             if options.time:

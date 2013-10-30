@@ -1227,11 +1227,16 @@ class DropEmpty:
     Create a filter for dropping all tiles with errors.
     """
 
+    def __init__(self, gene):
+        self.gene = gene
+
     def __call__(self, tile):
         if not tile or not tile.data:  # pragma: no cover
-            logger.error("The tile: %(tilecoord)s is empty")
-            if 'error_file' in self.config['generation']:
-                self.log_tiles_error(tilecoord=tile.tilecoord, error='The tile is empty')
+            logger.error("The tile: %(tilecoord)s is empty" % {
+                'tilecoord': tile.tilecoord if tile else 'not defined'
+            })
+            if 'error_file' in self.gene.config['generation'] and tile:
+                self.gene.log_tiles_error(tilecoord=tile.tilecoord, error='The tile is empty')
             return None
         else:
             return tile
