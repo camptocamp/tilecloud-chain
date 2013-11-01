@@ -119,6 +119,8 @@ class TileGeneration:
     geom = None
 
     def __init__(self, config_file, options=None, layer_name=None):
+        self.close_actions = []
+
         if options is not None:
             if not hasattr(options, 'bbox'):
                 options.bbox = None
@@ -596,13 +598,22 @@ class TileGeneration:
             ) + '.bsddb'
             if not os.path.exists(os.path.dirname(filename)):
                 os.makedirs(os.path.dirname(filename))
+            db = bsddb.hashopen(
+                filename,
+                # and os.path.exists(filename) to avoid error on non existing file
+                'r' if read_only and os.path.exists(filename) else 'c'
+            )
+
+            class Close:
+                def __call__(self):
+                    self.db.close()
+
+            ca = Close()
+            ca.db = db
+            self.close_actions.append(ca)
+
             cache_tilestore = BSDDBTileStore(
-                bsddb.hashopen(
-                    filename,
-                    # and os.path.exists(filename) to avoid error on non existing file
-                    'r' if read_only and os.path.exists(filename) else 'c'
-                ),
-                content_type=layer['mime_type'],
+                db, content_type=layer['mime_type'],
             )
         elif cache['type'] == 'filesystem':
             # on filesystem
@@ -1227,11 +1238,16 @@ class DropEmpty:
     Create a filter for dropping all tiles with errors.
     """
 
+    def __init__(self, gene):
+        self.gene = gene
+
     def __call__(self, tile):
         if not tile or not tile.data:  # pragma: no cover
-            logger.error("The tile: %(tilecoord)s is empty")
-            if 'error_file' in self.config['generation']:
-                self.log_tiles_error(tilecoord=tile.tilecoord, error='The tile is empty')
+            logger.error("The tile: %(tilecoord)s is empty" % {
+                'tilecoord': tile.tilecoord if tile else 'not defined'
+            })
+            if 'error_file' in self.gene.config['generation'] and tile:
+                self.gene.log_tiles_error(tilecoord=tile.tilecoord, error='The tile is empty')
             return None
         else:
             return tile
