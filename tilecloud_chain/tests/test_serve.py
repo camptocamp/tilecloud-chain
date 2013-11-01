@@ -731,7 +731,7 @@ Size per tile: 4[0-9][0-9] o
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-serve.yaml',
+            cmd='./buildout/bin/generate_controller -d --capabilities -c tilegeneration/test-serve.yaml',
             main_func=controller.main,
             directory="/tmp/tiles/mbtiles/",
             tiles_pattern='1.0.0/%s',

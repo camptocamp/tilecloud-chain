@@ -255,7 +255,7 @@ class Generate:
 
         if options.role in ('local', 'slave'):
             gene.add_error_filters(logger)
-            gene.ifilter(DropEmpty())
+            gene.ifilter(DropEmpty(gene))
             gene.imap(self.inc_tiles_size)
 
             if options.time:
@@ -334,6 +334,9 @@ Nb metatiles dropped: %i
                         (self.duration / self.nb_tiles * 1000).seconds if self.nb_tiles != 0 else 0,
                         self.tiles_size / self.nb_tiles_stored if self.nb_tiles_stored != 0 else -1
                     )
+
+        for ca in gene.close_actions:
+            ca()
 
         if cache_tilestore is not None and hasattr(cache_tilestore, 'connection'):
             cache_tilestore.connection.close()
