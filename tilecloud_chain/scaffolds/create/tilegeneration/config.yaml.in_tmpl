@@ -85,7 +85,7 @@ layers:
         empty_metatile_detection:
             size: 66163
             hash: a9d16a1794586ef92129a2fb41a739451ed09914
-        empty_metatile_detection:
+        empty_tile_detection:
             size: 1651
             hash: 2892fea0a474228f5d66a534b0b5231d923696da
 
