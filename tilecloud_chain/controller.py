@@ -404,14 +404,14 @@ def _generate_openlayers(gene):
     cache = gene.caches[gene.options.cache]
 
     http_url = ''
-    if 'http_url' in cache:
-        if 'hosts' in cache:
+    if 'http_url' in cache and cache['http_url']:
+        if 'hosts' in cache and cache['hosts']:
             cc = copy(cache)
             cc['host'] = cache['hosts'][0]
             http_url = cache['http_url'] % cc
         else:
             http_url = cache['http_url'] % cache
-    if 'http_urls' in cache:
+    if 'http_urls' in cache and cache['http_urls']:
         http_url = cache['http_urls'][0] % cache
 
     js = jinja2_template(
