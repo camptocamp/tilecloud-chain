@@ -10,13 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class Copy:
-    nb_tiles = 0
-    tiles_size = 0
-
-    def count_tiles(self, tile):
-        self.nb_tiles += 1
-        self.tiles_size += len(tile.data)
-        return tile
+    count = None
 
     def copy(self, options, gene, layer):
         # desable metatiles
@@ -30,7 +24,7 @@ class Copy:
         gene.add_logger()
         gene.get(source_tilestore, "Get the tiles")
         gene.ifilter(DropEmpty(gene))
-        gene.imap(self.count_tiles)
+        self.count = gene.counter(size=True)
         gene.put(dest_tilestore, "Store the tiles")
         gene.add_error_filters()
         gene.consume()
@@ -44,11 +38,11 @@ Size per tile: %i o
 """ % \
                 (
                     gene.layer['name'],
-                    self.nb_tiles,
+                    self.count.nb,
                     duration_format(gene.duration),
-                    size_format(self.tiles_size),
-                    (gene.duration / self.nb_tiles * 1000).seconds if self.nb_tiles != 0 else 0,
-                    self.tiles_size / self.nb_tiles if self.nb_tiles != 0 else -1
+                    size_format(self.count.size),
+                    (gene.duration / self.count.nb * 1000).seconds if self.count.nb != 0 else 0,
+                    self.count.size / self.count.nb if self.count.nb != 0 else -1
                 )
 
 

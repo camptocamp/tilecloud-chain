@@ -51,6 +51,6 @@ Size per tile: 10 o
             ('tilecloud_chain', 'ERROR', 'The tile: not defined is empty'),
             ('tilecloud_chain', 'ERROR', 'The tile: not defined is empty')
         )
-        f = open('/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png')
+        f = open('/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png', 'r')
         self.assertEquals(f.read(), 'test image')
         f.close()

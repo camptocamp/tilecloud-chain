@@ -1073,6 +1073,11 @@ class TileGeneration:
     def set_store(self, store):  # pragma: no cover
         self.tilestream = store.list()
 
+    def counter(self, size=False):
+        count = CountSize() if size else Count()
+        self.imap(count)
+        return count
+
     def get(self, store, time_message=None):
         if self.options.debug:
             self.tilestream = store.get(self.tilestream)  # pragma: no cover
@@ -1192,6 +1197,29 @@ class TileGeneration:
         self.duration = datetime.now() - start
         for ca in self.close_actions:
             ca()
+
+
+class Count:
+
+    def __init__(self):
+        self.nb = 0
+
+    def __call__(self, tile=None):
+        self.nb += 1
+        return tile
+
+
+class CountSize:
+
+    def __init__(self):
+        self.nb = 0
+        self.size = 0
+
+    def __call__(self, tile=None):
+        if tile and tile.data:
+            self.nb += 1
+            self.size += len(tile.data)
+        return tile
 
 
 class HashDropper:

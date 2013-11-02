@@ -18,41 +18,19 @@ from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.filter.logger import Logger
 
 from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty, TilesFileStore, \
-    add_comon_options, parse_tilecoord, quote
+    add_comon_options, parse_tilecoord, quote, Count
 from tilecloud_chain.format import size_format, duration_format
 
 logger = logging.getLogger(__name__)
 
 
 class Generate:
-    nb_metatiles = 0
-    nb_metatiles_dropped = 0
-    nb_tiles = 0
-    nb_tiles_dropped = 0
-    nb_tiles_stored = 0
-    tiles_size = 0
-    duration = -1
-
-    def count_metatiles(self, tile):
-        self.nb_metatiles += 1
-        return tile
-
-    def count_metatiles_dropped(self):
-        self.nb_metatiles_dropped += 1
-
-    def count_tiles(self, tile):
-        self.nb_tiles += 1
-        return tile
-
-    def count_tiles_dropped(self):
-        self.nb_tiles_dropped += 1
-
-    def inc_tiles_size(self, tile):
-        self.nb_tiles_stored += 1
-        self.tiles_size += len(tile.data)
-        return tile
-
     def gene(self, options, gene, layer):
+        count_metatiles = None
+        count_metatiles_dropped = Count()
+        count_tiles = None
+        count_tiles_dropped = Count()
+
         if options.role == 'slave' or options.get_hash or options.get_bbox:
             gene.layer = gene.layers[layer]
         else:
@@ -113,7 +91,7 @@ class Generate:
         # At this stage, the tilestream contains metatiles that intersect geometry
         gene.add_logger()
 
-        gene.imap(self.count_metatiles)
+        count_metatiles = gene.counter()
 
         if options.role == 'master':  # pragma: no cover
             # Put the metatiles into the SQS queue
@@ -167,7 +145,7 @@ class Generate:
                         drop_empty_utfgrid=gene.layer['drop_empty_utfgrid'],
                         store=cache_tilestore,
                         queue_store=sqs_tilestore,
-                        count=self.count_metatiles_dropped,
+                        count=count_tiles_dropped,
                         proj4_literal=grid['proj4_literal'],
                     ), "Create Mapnik grid tile")
                 else:
@@ -194,7 +172,7 @@ class Generate:
                         gene.imap(HashDropper(
                             empty_tile['size'], empty_tile['hash'], store=cache_tilestore,
                             queue_store=sqs_tilestore,
-                            count=self.count_metatiles_dropped,
+                            count=count_metatiles_dropped,
                         ))
 
                 def add_elapsed_togenerate(metatile):
@@ -207,8 +185,6 @@ class Generate:
                 # Split the metatile image into individual tiles
                 gene.add_metatile_splitter()
                 gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
-
-            gene.imap(self.count_tiles)
 
             if options.role == 'hash':
                 gene.imap(HashLogger('empty_tile_detection'))
@@ -223,13 +199,13 @@ class Generate:
                     gene.imap(HashDropper(
                         empty_tile['size'], empty_tile['hash'], store=cache_tilestore,
                         queue_store=sqs_tilestore,
-                        count=self.count_tiles_dropped,
+                        count=count_tiles_dropped,
                     ))
 
         if options.role in ('local', 'slave'):
             gene.add_error_filters()
             gene.ifilter(DropEmpty(gene))
-            gene.imap(self.inc_tiles_size)
+            count_tiles = gene.counter(size=True)
 
             if options.time:
                 def log_size(tile):
@@ -238,6 +214,8 @@ class Generate:
                 gene.imap(log_size)
 
             gene.put(cache_tilestore, "Store the tile")
+        else:
+            count_tiles = gene.counter(size=True)
 
         gene.add_error_filters()
         if options.generated_tiles_file:  # pragma: no cover
@@ -280,6 +258,7 @@ class Generate:
             gene.consume()
 
             if not options.quiet and options.role in ('local', 'slave'):
+                nb_tiles = count_tiles.nb + count_tiles_dropped.nb
                 print """The tile generation of layer '%s' is finish
 %sNb generated tiles: %i
 Nb tiles dropped: %i
@@ -295,15 +274,15 @@ Size per tile: %i o
 Nb metatiles dropped: %i
 """ %
                         (
-                            self.nb_metatiles, self.nb_metatiles_dropped
+                            count_metatiles.nb, count_metatiles_dropped.nb
                         ) if meta else '',
-                        self.nb_tiles if meta else self.nb_metatiles,
-                        self.nb_tiles_dropped if meta else self.nb_metatiles_dropped,
-                        self.nb_tiles_stored,
+                        nb_tiles,
+                        count_tiles_dropped.nb,
+                        count_tiles.nb,
                         duration_format(gene.duration),
-                        size_format(self.tiles_size),
-                        (gene.duration / self.nb_tiles * 1000).seconds if self.nb_tiles != 0 else 0,
-                        self.tiles_size / self.nb_tiles_stored if self.nb_tiles_stored != 0 else -1
+                        size_format(count_tiles.size),
+                        (gene.duration / nb_tiles * 1000).seconds if nb_tiles != 0 else 0,
+                        count_tiles.size / count_tiles.nb if count_tiles.nb != 0 else -1
                     )
 
         if cache_tilestore is not None and hasattr(cache_tilestore, 'connection'):
@@ -335,13 +314,13 @@ Time per tiles: %(tile_duration)i [ms]""" %
 Nb metatiles dropped: %(nb_metatiles_dropped)i
 """ %
                     {
-                        'nb_metatiles': self.nb_metatiles,
-                        'nb_metatiles_dropped': self.nb_metatiles_dropped,
+                        'nb_metatiles': count_metatiles.nb,
+                        'nb_metatiles_dropped': count_metatiles_dropped.nb,
                     } if meta else '',
-                    'nb_tiles': self.nb_tiles if meta else self.nb_metatiles,
-                    'nb_tiles_dropped': self.nb_tiles_dropped if meta else self.nb_metatiles_dropped,
+                    'nb_tiles': nb_tiles if meta else count_metatiles.nb,
+                    'nb_tiles_dropped': count_tiles_dropped.nb if meta else count_metatiles_dropped.nb,
                     'duration': duration_format(self.duration),
-                    'tile_duration': (self.duration / self.nb_tiles * 1000).seconds if self.nb_tiles != 0 else 0,
+                    'tile_duration': (self.duration / nb_tiles * 1000).seconds if nb_tiles != 0 else 0,
                 },
                 "Tile generation (%(layer)s - %(role)s)" % {
                     'role': options.role,

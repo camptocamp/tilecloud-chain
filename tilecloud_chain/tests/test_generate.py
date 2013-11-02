@@ -861,7 +861,7 @@ size: 854
                 regex=True,
                 expected="""The tile generation of layer 'point_hash_no_meta' is finish
 Nb generated tiles: 247
-Nb tiles dropped: 0
+Nb tiles dropped: 245
 Nb tiles stored: 2
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [89][0-9][0-9] o
@@ -893,7 +893,7 @@ Size per tile: 4[0-9][0-9] o
                 regex=True,
                 expected="""The tile generation of layer 'point_hash_no_meta' is finish
 Nb generated tiles: 247
-Nb tiles dropped: 0
+Nb tiles dropped: 245
 Nb tiles stored: 2
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [89][0-9][0-9] o
