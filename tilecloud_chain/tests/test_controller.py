@@ -1446,6 +1446,7 @@ layers:
     mime_type: image/png
     name: all
     params: {}
+    post_process: false
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1470,6 +1471,7 @@ layers:
     mime_type: image/png
     name: line
     params: {PARAM: value}
+    post_process: false
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1491,6 +1493,7 @@ layers:
     mime_type: image/png
     name: mapnik
     output_format: png
+    post_process: false
     px_buffer: false
     type: mapnik
     wmts_style: default
@@ -1516,6 +1519,7 @@ layers:
     mime_type: application/utfgrid
     name: mapnik_grid
     output_format: grid
+    post_process: false
     px_buffer: false
     resolution: 16
     type: mapnik
@@ -1540,6 +1544,7 @@ layers:
     mime_type: application/utfgrid
     name: mapnik_grid_drop
     output_format: grid
+    post_process: false
     px_buffer: false
     resolution: 16
     type: mapnik
@@ -1563,6 +1568,7 @@ layers:
     min_resolution_seed: 10.0
     name: point
     params: {}
+    post_process: false
     px_buffer: false
     sqs: {queue: sqs_point, region: eu-west-1}
     type: wms
@@ -1586,6 +1592,7 @@ layers:
     mime_type: image/png
     name: point_hash_no_meta
     params: {}
+    post_process: false
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1611,6 +1618,7 @@ layers:
     min_resolution_seed: 10.0
     name: point_hash
     params: {}
+    post_process: false
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1635,6 +1643,7 @@ layers:
     mime_type: image/png
     name: point_px_buffer
     params: {}
+    post_process: false
     px_buffer: 100.0
     type: wms
     url: http://localhost/mapserv
@@ -1659,6 +1668,7 @@ layers:
     mime_type: image/png
     name: polygon
     params: {}
+    post_process: false
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1683,12 +1693,14 @@ layers:
     mime_type: image/png
     name: polygon2
     params: {}
+    post_process: false
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
 mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 11211, location: /mapcache}
 openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}
+process: {}
 sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}"""
 
     @attr(config=True)

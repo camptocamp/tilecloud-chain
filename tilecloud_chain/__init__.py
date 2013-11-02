@@ -6,6 +6,8 @@ import re
 import logging
 import yaml
 import sqlite3
+import tempfile
+import subprocess
 from math import ceil, sqrt
 from itertools import imap, ifilter
 from hashlib import sha1
@@ -351,6 +353,11 @@ class TileGeneration:
                     d, dname, 'default', attribute_type=str, default=d['value'],
                     regex="^[a-zA-Z0-9_]+$"
                 ) or error
+
+            error = self.validate(
+                layer, name, 'post_process', attribute_type=str, default=False
+            ) or error
+
             error = self.validate(layer, name, 'geoms', is_array=True, default=[]) or error
             for i, g in enumerate(layer['geoms']):
                 gname = name + ".geoms[%i]" % i
@@ -441,6 +448,41 @@ class TileGeneration:
             self.config['generation'], 'generation', 'maxconsecutive_errors',
             attribute_type=int, default=10
         ) or error
+
+        error = self.validate(
+            self.config, 'config',
+            'process', attribute_type=dict, default={}
+        ) or error
+        for cmd_name, cmds in self.config['process'].items():
+            for i, cmd in enumerate(cmds):
+                error = self.validate(
+                    cmd, 'process[%s][%i]' % (cmd_name, i),
+                    'cmd', attribute_type=str, required=True
+                ) or error
+                error = self.validate(
+                    cmd, 'process[%s][%i]' % (cmd_name, i),
+                    'need_out', attribute_type=bool, default=False
+                ) or error
+                error = self.validate(
+                    cmd, 'process[%s][%i]' % (cmd_name, i),
+                    'arg', attribute_type=dict, default={}
+                ) or error
+                error = self.validate(
+                    cmd['arg'], 'process[%s][%i].arg' % (cmd_name, i),
+                    'default', attribute_type=str
+                ) or error
+                error = self.validate(
+                    cmd['arg'], 'process[%s][%i].arg' % (cmd_name, i),
+                    'verbose', attribute_type=str
+                ) or error
+                error = self.validate(
+                    cmd['arg'], 'process[%s][%i].arg' % (cmd_name, i),
+                    'debug', attribute_type=str
+                ) or error
+                error = self.validate(
+                    cmd['arg'], 'process[%s][%i].arg' % (cmd_name, i),
+                    'quiet', attribute_type=str
+                ) or error
 
         error = self.validate(self.config, 'config', 'ec2', attribute_type=dict) or error
         if 'ec2' in self.config:
@@ -1086,6 +1128,12 @@ class TileGeneration:
         self.imap(count)
         return count
 
+    def process(self, name=None):
+        if name is None:
+            name = self.layer['post_process']
+        if name:
+            self.imap(Process(self.config['process'][name], self.options))
+
     def get(self, store, time_message=None):
         if self.options.debug:
             self.tilestream = store.get(self.tilestream)  # pragma: no cover
@@ -1379,6 +1427,67 @@ def parse_tilecoord(string_representation):
     else:  # pragma: no cover
         raise ValueError("More than on ':' in the tilecoord")
     return tilecoord
+
+
+class Process:
+    def __init__(self, config, options):
+        self.config = config
+        self.options = options
+
+    def __call__(self, tile):
+        if tile and tile.data:
+            name_in = tempfile.mkstemp()[1]
+            file_in = open(name_in, 'wb')
+            file_in.write(tile.data)
+            file_in.close()
+
+            for cmd in self.config:
+                args = []
+                if not self.options.verbose and \
+                        not self.options.debug and \
+                        not self.options.quiet and \
+                        'default' in cmd['arg']:
+                    args.append(cmd['arg']['default'])
+                if self.options.verbose and 'verbose' in cmd['arg']:
+                    args.append(cmd['arg']['verbose'])
+                if self.options.debug and 'debug' in cmd['arg']:
+                    args.append(cmd['arg']['debug'])
+                if self.options.quiet and 'quiet' in cmd['arg']:
+                    args.append(cmd['arg']['quiet'])
+
+                if cmd['need_out']:
+                    name_out = tempfile.mkstemp()[1]
+                    os.unlink(name_out)
+                else:  # pragma: no cover
+                    name_out = name_in
+
+                command = cmd['cmd'] % {
+                    'in': name_in,
+                    'out': name_out,
+                    'args': ' '.join(args),
+                    'x': tile.tilecoord.x,
+                    'y': tile.tilecoord.y,
+                    'z': tile.tilecoord.z
+                }
+                logger.info('process: %s' % command)
+                code = subprocess.call(command, shell=True)
+                if code != 0:  # pragma: no cover
+                    tile.error = "Command '%s' on tile %s " \
+                        "return error code %i" % \
+                        (command, tile.tilecoord, code)
+                    tile.data = None
+                    return tile
+
+                if cmd['need_out']:
+                    os.unlink(name_in)
+                    name_in = name_out
+
+            file_out = open(name_out, 'rb')
+            tile.data = file_out.read()
+            file_out.close()
+            os.unlink(name_out)
+
+        return tile
 
 
 class TilesFileStore:
