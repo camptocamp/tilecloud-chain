@@ -23,7 +23,20 @@ layer_default:
     meta: on
     meta_size: 8
     meta_buffer: 128
+    empty_tile_detection:
+        size: 334
+        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
 
 layers:
     point_hash:
         layers: point
+
+process:
+    optipng:
+    -   cmd: optipng %(args)s -zc9 -zm8 -zs3 -f5 -out %(out)s %(in)s
+        need_out: true
+        arg:
+            default: '-q'
+            quiet: '-q'
+            debug: ''
+            verbose: ''
