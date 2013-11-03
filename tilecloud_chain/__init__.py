@@ -12,6 +12,7 @@ from hashlib import sha1
 from cStringIO import StringIO
 from fractions import Fraction
 from datetime import datetime
+from tilecloud import consume
 
 try:
     import bsddb3 as bsddb
@@ -39,13 +40,16 @@ from tilecloud.store.mbtiles import MBTilesTileStore
 from tilecloud.store.bsddb import BSDDBTileStore
 from tilecloud.store.filesystem import FilesystemTileStore
 from tilecloud.layout.wmts import WMTSTileLayout
-from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors, DropErrors
+from tilecloud.filter.logger import Logger
+from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
 
 
 logger = logging.getLogger('tilecloud_chain')
 
 
-def add_comon_options(parser, tile_pyramid=True, no_geom=True):
+def add_comon_options(
+        parser, tile_pyramid=True, no_geom=True,
+        near=True, time=True, dimensions=False, cache=True):
     parser.add_argument(
         '-c', '--config', default='tilegeneration/config.yaml',
         help='path to the configuration file', metavar="FILE"
@@ -67,28 +71,36 @@ def add_comon_options(parser, tile_pyramid=True, no_geom=True):
             '-t', '--test', type=int,
             help='test with generating N tiles, and add log messages', metavar="N"
         )
-        parser.add_argument(
-            '--near', type=float, nargs=2, metavar=('X', 'Y'),
-            help='This option is a good replacement of --bbox, to used with '
-            '--time or --test and --zoom, implies --no-geom. '
-            'It automatically measure a bbox around the X Y position that corresponds to the metatiles.'
-        )
-        parser.add_argument(
-            '--time', '--measure-generation-time',
-            dest='time', metavar="N", type=int,
-            help='Measure the generation time by creating N tiles to warm-up, '
-            'N tile to do the measure and N tiles to slow-down'
-        )
+        if near:
+            parser.add_argument(
+                '--near', type=float, nargs=2, metavar=('X', 'Y'),
+                help='This option is a good replacement of --bbox, to used with '
+                '--time or --test and --zoom, implies --no-geom. '
+                'It automatically measure a bbox around the X Y position that corresponds to the metatiles.'
+            )
+        if time:
+            parser.add_argument(
+                '--time', '--measure-generation-time',
+                dest='time', metavar="N", type=int,
+                help='Measure the generation time by creating N tiles to warm-up, '
+                'N tile to do the measure and N tiles to slow-down'
+            )
     if no_geom:
         parser.add_argument(
             '--no-geom', default=True, action="store_false", dest="geom",
             help="Don't the geometry available in the SQL"
         )
-    parser.add_argument(
-        '--cache', '--destination-cache',
-        dest='cache', metavar="NAME",
-        help='The cache name to use'
-    )
+    if dimensions:
+        parser.add_argument(
+            '--dimensions', nargs='+', metavar='DIMENSION=VALUE', default=[],
+            help='overwrite the dimensions values specified in the config file'
+        )
+    if cache:
+        parser.add_argument(
+            '--cache', '--destination-cache',
+            dest='cache', metavar="NAME",
+            help='The cache name to use'
+        )
     parser.add_argument(
         '-q', '--quiet', default=False, action="store_true",
         help='Display only errors.'
@@ -116,10 +128,11 @@ def get_tile_matrix_identifier(grid, resolution=None, zoom=None):
 
 
 class TileGeneration:
-    geom = None
 
     def __init__(self, config_file, options=None, layer_name=None):
         self.close_actions = []
+        self.geom = None
+        self.error = 0
 
         if options is not None:
             if not hasattr(options, 'bbox'):
@@ -793,6 +806,29 @@ class TileGeneration:
 
         return self.grids[name]
 
+    def get_tilesstore(self, cache_name):
+        cache = self.caches[cache_name]
+        dimensions_args = {}
+        for dim in self.options.dimensions:
+            dim = dim.split('=')
+            if len(dim) != 2:  # pragma: no cover
+                exit(
+                    'the DIMENTIONS option should be like this '
+                    'DATE=2013 VERSION=13.'
+                )
+            dimensions_args[dim[0]] = dim[1]
+        dimensions = []
+        for dim in self.layer['dimensions']:
+            dimensions.append((
+                dim['name'],
+                dimensions_args[dim['name']] if
+                dim['name'] in dimensions_args else dim['value']
+            ))
+        cache_tilestore = self.get_store(cache, self.layer, dimensions=dimensions)
+        if cache_tilestore is None:
+            exit('Unknown cache type: ' + cache['type'])  # pragma: no cover
+        return cache_tilestore
+
     def get_sqs_queue(self):  # pragma: no cover
         if 'sqs' not in self.layer:
             exit("The layer '%s' hasn't any configured queue" % self.layer['name'])
@@ -869,6 +905,21 @@ class TileGeneration:
             queue_store=queue_store,
         ), "Intersect with geom")
 
+    def add_logger(self):
+        if not self.options.quiet and \
+                not self.options.verbose and \
+                not self.options.debug:
+            def logTile(tile):
+                variables = dict()
+                variables.update(tile.__dict__)
+                variables.update(tile.tilecoord.__dict__)
+                sys.stdout.write("%(tilecoord)s          \r" % variables)
+                sys.stdout.flush()
+                return tile
+            self.imap(logTile)
+        elif self.options.verbose:
+            self.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
+
     def add_metatile_splitter(self):
         store = MetaTileSplitterTileStore(
             self.layer['mime_type'],
@@ -916,11 +967,12 @@ class TileGeneration:
             if tilecoord is not None and message is not None:
                 self.error_file.write('%s # [%s] %s\n' % (tilecoord, time, message.replace('\n', ' ')))
 
-    def add_error_filters(self, logger):
+    def add_error_filters(self):
         self.imap(LogErrors(
             logger, logging.ERROR,
             "Error in tile: %(tilecoord)s, %(error)r"
         ))
+
         if 'error_file' in self.config['generation']:
 
             def do(tile):
@@ -931,7 +983,13 @@ class TileGeneration:
         if 'maxconsecutive_errors' in self.config['generation']:
             self.tilestream = imap(MaximumConsecutiveErrors(
                 self.config['generation']['maxconsecutive_errors']), self.tilestream)
-        self.ifilter(DropErrors())
+
+        def drop_count(tile):
+            if tile and tile.error:
+                self.error += 1
+                return None
+            return tile
+        self.ifilter(drop_count)
 
     def init_tilecoords(self):
         resolutions = self.layer['grid_ref']['resolutions']
@@ -1022,6 +1080,11 @@ class TileGeneration:
 
     def set_store(self, store):  # pragma: no cover
         self.tilestream = store.list()
+
+    def counter(self, size=False):
+        count = CountSize() if size else Count()
+        self.imap(count)
+        return count
 
     def get(self, store, time_message=None):
         if self.options.debug:
@@ -1133,6 +1196,38 @@ class TileGeneration:
                         tile.error = sys.exc_info()[1]
                         return tile
             self.tilestream = ifilter(safe_filter, self.tilestream)
+
+    def consume(self, test=None):
+        if test is None:
+            test = self.options.test
+        start = datetime.now()
+        consume(self.tilestream, test)
+        self.duration = datetime.now() - start
+        for ca in self.close_actions:
+            ca()
+
+
+class Count:
+
+    def __init__(self):
+        self.nb = 0
+
+    def __call__(self, tile=None):
+        self.nb += 1
+        return tile
+
+
+class CountSize:
+
+    def __init__(self):
+        self.nb = 0
+        self.size = 0
+
+    def __call__(self, tile=None):
+        if tile and tile.data:
+            self.nb += 1
+            self.size += len(tile.data)
+        return tile
 
 
 class HashDropper:
@@ -1247,7 +1342,7 @@ class DropEmpty:
                 'tilecoord': tile.tilecoord if tile else 'not defined'
             })
             if 'error_file' in self.gene.config['generation'] and tile:
-                self.gene.log_tiles_error(tilecoord=tile.tilecoord, error='The tile is empty')
+                self.gene.log_tiles_error(tilecoord=tile.tilecoord, message='The tile is empty')
             return None
         else:
             return tile
