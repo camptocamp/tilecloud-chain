@@ -179,6 +179,7 @@ Nb metatiles dropped: 0
 Nb generated tiles: 64
 Nb tiles dropped: 62
 Nb tiles stored: 2
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [89][0-9][0-9] o
 Time per tiles: [0-9]+ ms
@@ -722,6 +723,7 @@ Nb metatiles dropped: 0
 Nb generated tiles: 64
 Nb tiles dropped: 62
 Nb tiles stored: 2
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [89][0-9][0-9] o
 Time per tiles: [0-9]+ ms
@@ -820,6 +822,7 @@ Nb metatiles dropped: 0
 Nb generated tiles: 64
 Nb tiles dropped: 62
 Nb tiles stored: 2
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [89][0-9][0-9] o
 Time per tiles: [0-9]+ ms
@@ -992,6 +995,7 @@ Nb metatiles dropped: 0
 Nb generated tiles: 64
 Nb tiles dropped: 62
 Nb tiles stored: 2
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [89][0-9][0-9] o
 Time per tiles: [0-9]+ ms

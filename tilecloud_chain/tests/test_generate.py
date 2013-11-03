@@ -134,6 +134,7 @@ Nb metatiles dropped: 0
 Nb generated tiles: 40
 Nb tiles dropped: 39
 Nb tiles stored: 1
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 733 o
 Time per tiles: [0-9]+ ms
@@ -143,6 +144,7 @@ The tile generation of layer 'polygon' is finish
 Nb generated tiles: 1
 Nb tiles dropped: 0
 Nb tiles stored: 1
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [45][0-9][0-9] o
 Time per tiles: [0-9]+ ms
@@ -174,6 +176,7 @@ Nb metatiles dropped: 0
 Nb generated tiles: 40
 Nb tiles dropped: 39
 Nb tiles stored: 1
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 733 o
 Time per tiles: [0-9]+ ms
@@ -183,6 +186,7 @@ The tile generation of layer 'polygon' is finish
 Nb generated tiles: 1
 Nb tiles dropped: 0
 Nb tiles stored: 1
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [45][0-9][0-9] o
 Time per tiles: [0-9]+ ms
@@ -260,6 +264,7 @@ Size per tile: [45][0-9][0-9] o
 Nb generated tiles: 51
 Nb tiles dropped: 0
 Nb tiles stored: 51
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [34][0-9] Kio
 Time per tiles: [0-9]+ ms
@@ -290,6 +295,7 @@ Nb metatiles dropped: 0
 Nb generated tiles: 42
 Nb tiles dropped: 41
 Nb tiles stored: 1
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 389 o
 Time per tiles: [0-9]+ ms
@@ -312,6 +318,7 @@ Nb metatiles dropped: 0
 Nb generated tiles: 34
 Nb tiles dropped: 33
 Nb tiles stored: 1
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 517 o
 Time per tiles: [0-9]+ ms
@@ -334,6 +341,7 @@ Nb metatiles dropped: 0
 Nb generated tiles: 4
 Nb tiles dropped: 3
 Nb tiles stored: 1
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 676 o
 Time per tiles: [0-9]+ ms
@@ -364,6 +372,7 @@ Nb metatiles dropped: 0
 Nb generated tiles: 0
 Nb tiles dropped: 0
 Nb tiles stored: 0
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 0.0 o
 Time per tiles: [0-9]+ ms
@@ -404,6 +413,7 @@ Nb metatiles dropped: 0
 Nb generated tiles: 64
 Nb tiles dropped: 62
 Nb tiles stored: 2
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [89][0-9][0-9] o
 Time per tiles: [0-9]+ ms
@@ -436,6 +446,7 @@ Nb metatiles dropped: 4
 Nb generated tiles: 320
 Nb tiles dropped: 314
 Nb tiles stored: 6
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 2.7 Kio
 Time per tiles: [0-9]+ ms
@@ -469,6 +480,7 @@ Nb metatiles dropped: 4
 Nb generated tiles: 384
 Nb tiles dropped: 376
 Nb tiles stored: 8
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 3.6 Kio
 Time per tiles: [0-9]+ ms
@@ -502,6 +514,7 @@ Nb metatiles dropped: 4
 Nb generated tiles: 384
 Nb tiles dropped: 378
 Nb tiles stored: 6
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 2.7 Kio
 Time per tiles: [0-9]+ ms
@@ -534,6 +547,7 @@ Nb metatiles dropped: 4
 Nb generated tiles: 320
 Nb tiles dropped: 314
 Nb tiles stored: 6
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 2.7 Kio
 Time per tiles: [0-9]+ ms
@@ -560,6 +574,7 @@ Size per tile: 455 o
 Nb generated tiles: 12
 Nb tiles dropped: 0
 Nb tiles stored: 12
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [0-9.]+ Kio
 Time per tiles: [0-9.]+ ms
@@ -582,6 +597,7 @@ Size per tile: [69][0-9][0-9] o
 Nb generated tiles: 2
 Nb tiles dropped: 0
 Nb tiles stored: 2
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 1.[6-9] Kio
 Time per tiles: [0-9]+ ms
@@ -604,6 +620,7 @@ Size per tile: [89][0-9][0-9] o
 Nb generated tiles: 2
 Nb tiles dropped: 0
 Nb tiles stored: 2
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 1.[6-9] Kio
 Time per tiles: [0-9]+ ms
@@ -625,6 +642,7 @@ Size per tile: [89][0-9][0-9] o
 Nb generated tiles: 2
 Nb tiles dropped: 0
 Nb tiles stored: 2
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 1.[6-9] Kio
 Time per tiles: [0-9]+ ms
@@ -655,6 +673,7 @@ Nb metatiles dropped: 0
 Nb generated tiles: 64
 Nb tiles dropped: 62
 Nb tiles stored: 2
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 910 o
 Time per tiles: [0-9]+ ms
@@ -681,6 +700,7 @@ Size per tile: 4[0-9][0-9] o
 Nb generated tiles: 12
 Nb tiles dropped: 0
 Nb tiles stored: 12
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 9.7 Kio
 Time per tiles: [0-9]+ ms
@@ -707,6 +727,7 @@ Size per tile: 824 o
 Nb generated tiles: 12
 Nb tiles dropped: 0
 Nb tiles stored: 12
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 4.5 Kio
 Time per tiles: [0-9]+ ms
@@ -747,6 +768,7 @@ Size per tile: 385 o
 Nb generated tiles: 12
 Nb tiles dropped: 10
 Nb tiles stored: 2
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 768 o
 Time per tiles: [0-9]+ ms
@@ -863,6 +885,7 @@ size: 854
 Nb generated tiles: 247
 Nb tiles dropped: 245
 Nb tiles stored: 2
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [89][0-9][0-9] o
 Time per tiles: [0-9]+ ms
@@ -895,6 +918,7 @@ Size per tile: 4[0-9][0-9] o
 Nb generated tiles: 247
 Nb tiles dropped: 245
 Nb tiles stored: 2
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [89][0-9][0-9] o
 Time per tiles: [0-9]+ ms
@@ -939,6 +963,7 @@ Nb metatiles dropped: 1
 Nb generated tiles: 128
 Nb tiles dropped: 126
 Nb tiles stored: 2
+Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: [89][0-9][0-9] o
 Time per tiles: [0-9]+ ms

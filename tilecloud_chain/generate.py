@@ -263,6 +263,7 @@ class Generate:
 %sNb generated tiles: %i
 Nb tiles dropped: %i
 Nb tiles stored: %i
+Nb error: %i
 Total time: %s
 Total size: %s
 Time per tiles: %i ms
@@ -279,6 +280,7 @@ Nb metatiles dropped: %i
                         nb_tiles,
                         count_tiles_dropped.nb,
                         count_tiles.nb,
+                        gene.error,
                         duration_format(gene.duration),
                         size_format(count_tiles.size),
                         (gene.duration / nb_tiles * 1000).seconds if nb_tiles != 0 else 0,

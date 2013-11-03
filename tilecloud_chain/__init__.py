@@ -41,7 +41,7 @@ from tilecloud.store.bsddb import BSDDBTileStore
 from tilecloud.store.filesystem import FilesystemTileStore
 from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.logger import Logger
-from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors, DropErrors
+from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
 
 
 logger = logging.getLogger('tilecloud_chain')
@@ -128,10 +128,11 @@ def get_tile_matrix_identifier(grid, resolution=None, zoom=None):
 
 
 class TileGeneration:
-    geom = None
 
     def __init__(self, config_file, options=None, layer_name=None):
         self.close_actions = []
+        self.geom = None
+        self.error = 0
 
         if options is not None:
             if not hasattr(options, 'bbox'):
@@ -971,6 +972,7 @@ class TileGeneration:
             logger, logging.ERROR,
             "Error in tile: %(tilecoord)s, %(error)r"
         ))
+
         if 'error_file' in self.config['generation']:
 
             def do(tile):
@@ -981,7 +983,13 @@ class TileGeneration:
         if 'maxconsecutive_errors' in self.config['generation']:
             self.tilestream = imap(MaximumConsecutiveErrors(
                 self.config['generation']['maxconsecutive_errors']), self.tilestream)
-        self.ifilter(DropErrors())
+
+        def drop_count(tile):
+            if tile and tile.error:
+                self.error += 1
+                return None
+            return tile
+        self.ifilter(drop_count)
 
     def init_tilecoords(self):
         resolutions = self.layer['grid_ref']['resolutions']
