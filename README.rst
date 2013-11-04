@@ -315,6 +315,34 @@ Configuration example:
         layers_fields:
             buildings: [name, street]
 
+
+Process
+-------
+
+We can configure some tile commands to process the tiles.
+They can be automatically be called in the tile generation it we set the property ``post_process`` in the layer configuration.
+
+The process is a set of names processes, and each one has a list of commands declared like this:
+
+.. code: yaml
+
+    process:  # root process config
+        optipng:  # the process command
+        -   cmd: optipng %(args)s -q -zc9 -zm8 -zs3 -f5 -o %(out)s %(in)s  # the command line
+            need_out: true  # if false the command rewrite the input file, default to false
+            arg:  # argument used with the defferant log switches, all default to ''
+                default: '-q' # the argument used by default
+                quiet: '-q' # the arbument used in quiet mode
+                verbose: '-v' # the argument used in verbose mode
+                debug: '-log /tmp/optipng.log' # the argument user in debug mode
+
+The ``cmd`` can have the following optional argument:
+
+* ``args`` the argument configured in the `arg` section.
+* ``in``, ``out`` the input and output files.
+* ``x``, ``y``, ``z`` the tile coordinates.
+
+
 Configure MapCache
 ------------------
 
