@@ -626,6 +626,20 @@ with the apache configuration::
 Commands
 --------
 
+Available commands
+------------------
+
+* ``./buildout/bin/generate_controller`` generate the annexe files like capabilities, legend, OpenLayers test page, MapCacke config, Apache config.
+* ``./buildout/bin/generate_tiles`` generate the tiles.
+* ``./buildout/bin/generate_copy`` copy the tiles from a cache to an other.
+* ``./buildout/bin/generate_process`` prosses the tiles using a configured prosess.
+* ``./buildout/bin/generate_cost`` estimate the cost.
+* ``./buildout/bin/generate_amazon`` generate the tiles using EC2.
+* ``./buildout/bin/import_expiretiles`` import the osm2pgsql expire-tiles file as geoms in the database.
+
+Each commands have a ``--help`` option to give a full arguments help.
+
+
 Generate tiles
 --------------
 
@@ -648,6 +662,10 @@ Generate a specific zoom range::
 Generate a specific some zoom levels::
 
     ./buildout/bin/generate_tiles --zoom 2,4,7
+
+Generate tiles from an (error) tiles file::
+
+    ./buildout/bin/generate_tiles --layer <a_layer> --tiles <a_file.tiles>
 
 Generate tiles on a bbox::
 
