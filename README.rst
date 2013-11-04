@@ -27,6 +27,7 @@ Feature:
 .. contents:: Table of contents
 
 
+------
 Get it
 ------
 
@@ -40,6 +41,9 @@ Edit your layers configuration in ``./tilegeneration/config.yaml``.
 
 `Default configuration file <https://github.com/sbrunner/tilecloud-chain/blob/master/tilecloud_chain/scaffolds/create/tilegeneration/config.yaml.in_tmpl>`_.
 
+---------
+Configure
+---------
 
 Configure grids
 ---------------
@@ -345,7 +349,192 @@ To generate the MapCache configuration we use the command::
 
     ./buildout/bin/generate_controller --generate-mapcache-config
 
+Tiles error file
+----------------
 
+If we set a file path in config file:
+
+.. code:: yaml
+
+    generation:
+        error_file: <path>
+
+The tiles that in error will be append to the file, ant the tiles can be regenerated with
+``./buildout/bin/generate_tiles --layer <layer> --tiles <path>``.
+
+Proxy/cache issue
+-----------------
+
+In general we shouldn't generate tiles throw a proxy, to do that you
+should configure the layers as this:
+
+.. code:: yaml
+
+    layers_name:
+        url: http://localhost/wms
+        headers:
+            Host: the_host_name
+
+The idea is to get the wms server on ``localhost`` and use the ``Host`` header
+to select the right Apache VirtualHost.
+
+To don't have cache we use the as default the headers:
+
+.. code:: yaml
+
+    headers:
+        Cache-Control: no-cache, no-store
+        Pragma: no-cache
+
+And if you steal have issue you can add a ``SALT`` random argument by setting
+the layer parameter ``generate_salt`` to ``true``.
+
+
+----------------
+Amazon services
+----------------
+
+Authentication
+-------------
+
+To be authenticated by Amazon you should set those environment variable before running a command::
+
+    export AWS_ACCESS_KEY_ID=...
+    export AWS_SECRET_ACCESS_KEY=...
+
+Configure S3
+------------
+
+The cache configuration is like this:
+
+.. code:: yaml
+
+    s3:
+        type: s3
+        # the s3 bucket name
+        bucket: tiles
+        # the used folder in the bucket [default to '']
+        folder: ''
+        # for GetCapabilities
+        http_url: https://%(host)s/%(bucket)s/%(folder)s
+        hosts:
+        - wmts0.<host>
+
+The bucket should already exists.
+
+Configure SQS
+-------------
+
+The configuration in layer is like this:
+
+.. code:: yaml
+
+    sqs:
+        # The region where the SQS queue is
+        region: eu-west-1
+        # The SQS queue name, it should already exists
+        queue: the_name
+
+The queue should be used only by one layer.
+
+To use the SQS queue we should first fill the queue::
+
+    ./buildout/bin/generate_tiles --role master --layer <a_layer>
+
+And then generate the tiles present in the SQS queue::
+
+    ./buildout/bin/generate_tiles --role slave --layer <a_layer>
+
+Configure SNS
+-------------
+
+SNS can be used to send a message when the generation ends.
+
+The configuration is like this:
+
+.. code:: yaml
+
+    sns:
+        topic: arn:aws:sns:eu-west-1:your-account-id:tilecloud
+        region: eu-west-1
+
+The topic should already exists.
+
+Configure and explain EC2
+-------------------------
+
+The generation can be deported on an external host.
+
+This will deploy the code the database and the geodata to an external host,
+configure or build the application, configure apache, and run the tile generation.
+
+This work only with S3 and needs SQS.
+
+In a future version it will start the new EC2 host, join an ESB, run the tile generation,
+and do snapshot on the ESB.
+
+The configuration is like this:
+
+.. code:: yaml
+
+    ec2:
+        geodata_folder: /var/sig
+        deploy_config: tilegeneration/deploy.cfg
+        build_cmds:
+        - rm .installed.cfg
+        - python bootstrap.py --distribute -v 1.7.1
+        - ./buildout/bin/buildout -c buildout_tilegeneration.cfg install template
+        deploy_user: deploy
+        code_folder: /var/www/vhost/project/private/project
+        apache_config: /var/www/vhost/project/conf/tilegeneration.conf
+        apache_content: Include /var/www/vhost/project/private/project/apache/\*.conf
+
+
+---------------------------
+Other related configuration
+---------------------------
+
+Generate configuration in buildout
+----------------------------------
+
+We can also use a buildout task to automatise it::
+
+    [buildout]
+    parts += mapcache
+
+    [mapcache]
+    recipe = collective.recipe.cmd
+    on_install = true
+    on_update = true
+    cmds =
+      ./buildout/bin/generate_controller --generate-mapcache-config
+      ./buildout/bin/generate_controller --generate-apache-config
+    uninstall_cmds =
+      rm apache/mapcache.xml
+      rm apache/tiles.conf
+
+Openlayers pink tiles
+---------------------
+
+To avoid the OpenLayers red tiles on missing empty tiles we can add the following CSS rule:
+
+.. code:: css
+
+    .olImageLoadError {
+        display: none;
+    }
+
+To completely hide the missing tiles, useful for a transparent layer,
+or for an opaque layer:
+
+.. code:: css
+
+    .olImageLoadError {
+        background-color: white;
+    }
+
+
+--------------------
 Distribute the tiles
 --------------------
 
@@ -388,7 +577,7 @@ You should also configure the ``http_url`` of the used `cache`, to something lik
 ``https://%(host)s/${instanceid}/wsgi/tiles`` if you use the Pyramid view.
 
 Pyramid view
-~~~~~~~~~~~~
+------------
 
 To use the pyramid view use the following config:
 
@@ -402,7 +591,7 @@ To use the pyramid view use the following config:
 
 
 Internal WSGI server
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 To use the WSGI server with buildout, add in ``buildout.cfg``::
 
@@ -433,80 +622,9 @@ with the apache configuration::
     </Location>
 
 
-Generate configuration in buildout
-----------------------------------
-
-We can also use a buildout task to automatise it::
-
-    [buildout]
-    parts += mapcache
-
-    [mapcache]
-    recipe = collective.recipe.cmd
-    on_install = true
-    on_update = true
-    cmds =
-      ./buildout/bin/generate_controller --generate-mapcache-config
-      ./buildout/bin/generate_controller --generate-apache-config
-    uninstall_cmds =
-      rm apache/mapcache.xml
-      rm apache/tiles.conf
-
-
-Configure S3
-------------
-
-The cache configuration is like this:
-
-.. code:: yaml
-
-    s3:
-        type: s3
-        # the s3 bucket name
-        bucket: tiles
-        # the used folder in the bucket [default to '']
-        folder: ''
-        # for GetCapabilities
-        http_url: https://%(host)s/%(bucket)s/%(folder)s
-        hosts:
-        - wmts0.<host>
-
-The bucket should already exists.
-
-Before running an operation on S3 don't miss to set the following variable::
-
-    export AWS_ACCESS_KEY_ID=...
-    export AWS_SECRET_ACCESS_KEY=...
-
-
-Configure SQS
--------------
-
-The configuration in layer is like this:
-
-.. code:: yaml
-
-    sqs:
-        # The region where the SQS queue is
-        region: eu-west-1
-        # The SQS queue name, it should already exists
-        queue: the_name
-
-The queue should be used only by one layer.
-
-Before running the generation miss to set the following variable::
-
-    export AWS_ACCESS_KEY_ID=...
-    export AWS_SECRET_ACCESS_KEY=...
-
-To use the SQS queue we should first fill the queue::
-
-    ./buildout/bin/generate_tiles --role master --layer <a_layer>
-
-And then generate the tiles present in the SQS queue::
-
-    ./buildout/bin/generate_tiles --role slave --layer <a_layer>
-
+--------
+Commands
+--------
 
 Generate tiles
 --------------
@@ -548,48 +666,15 @@ And don't forget to generate the WMTS Capabilities::
     ./buildout/bin/generate_controller --capabilities
 
 
-Tiles error file
-----------------
+OpenLayers test page
+--------------------
 
-If we set a file path in config file:
+To generate a test page use::
 
-.. code:: yaml
-
-    generation:
-        error_file: <path>
-
-The tiles that in error will be append to the file, ant the tiles can be regenerated with
-``./buildout/bin/generate_tiles --layer <layer> --tiles <path>``.
+    ./buildout/bin/generate_controller --openlayers-test
 
 
-Proxy/cache issue
------------------
-
-In general we shouldn't generate tiles throw a proxy, to do that you
-should configure the layers as this:
-
-.. code:: yaml
-
-    layers_name:
-        url: http://localhost/wms
-        headers:
-            Host: the_host_name
-
-The idea is to get the wms server on ``localhost`` and use the ``Host`` header
-to select the right Apache VirtualHost.
-
-To don't have cache we use the as default the headers:
-
-.. code:: yaml
-
-    headers:
-        Cache-Control: no-cache, no-store
-        Pragma: no-cache
-
-And if you steal have issue you can add a ``SALT`` random argument by setting
-the layer parameter ``generate_salt`` to ``true``.
-
-
+------------
 Explain cost
 ------------
 
@@ -637,89 +722,8 @@ The following commands can be used to know the time and cost to do generation::
 
 This suppose that you use a separate EC2 host to generate the tiles.
 
-
-Configure SNS
--------------
-
-SNS can be used to send a message when the generation ends.
-
-The configuration is like this:
-
-.. code:: yaml
-
-    sns:
-        topic: arn:aws:sns:eu-west-1:your-account-id:tilecloud
-        region: eu-west-1
-
-The topic should already exists.
-
-Before running the generation miss to set the following variable::
-
-    export AWS_ACCESS_KEY_ID=...
-    export AWS_SECRET_ACCESS_KEY=...
-
-
-Openlayers pink tiles
----------------------
-
-To avoid the OpenLayers red tiles on missing empty tiles we can add the following CSS rule:
-
-.. code:: css
-
-    .olImageLoadError {
-        display: none;
-    }
-
-To completely hide the missing tiles, useful for a transparent layer,
-or for an opaque layer:
-
-.. code:: css
-
-    .olImageLoadError {
-        background-color: white;
-    }
-
-
-OpenLayers test page
---------------------
-
-To generate a test page use::
-
-    ./buildout/bin/generate_controller --openlayers-test
-
-
-Configure and explain EC2
--------------------------
-
-The generation can be deported on an external host.
-
-This will deploy the code the database and the geodata to an external host,
-configure or build the application, configure apache, and run the tile generation.
-
-This work only with S3 and needs SQS.
-
-In a future version it will start the new EC2 host, join an ESB, run the tile generation,
-and do snapshot on the ESB.
-
-The configuration is like this:
-
-.. code:: yaml
-
-    ec2:
-        geodata_folder: /var/sig
-        deploy_config: tilegeneration/deploy.cfg
-        build_cmds:
-        - rm .installed.cfg
-        - python bootstrap.py --distribute -v 1.7.1
-        - ./buildout/bin/buildout -c buildout_tilegeneration.cfg install template
-        deploy_user: deploy
-        code_folder: /var/www/vhost/project/private/project
-        apache_config: /var/www/vhost/project/conf/tilegeneration.conf
-        apache_content: Include /var/www/vhost/project/private/project/apache/\*.conf
-
-
-Other useful options
----------------------
+Useful options
+--------------
 
 ``--quiet`` or ``-q``: used to display only errors.
 
@@ -733,8 +737,10 @@ With the debug mode we don't catch exceptions, and we don't log time messages.
 The logging format is configurable in the``config.yaml`` - ``generation/log_format``,
 `See <http://docs.python.org/2/library/logging.html#logrecord-attributes>`_.
 
+
+-----------------
 Important remarks
--------------------
+-----------------
 
 Especially on S3 the grid name, the layer name, the dimensions, can't be changed
 (understand if we want to change them we should regenerate all the tiles).
@@ -745,6 +751,7 @@ set the grid property ``matrix_identifier: resolution``, bit it don't work with 
 Please use the ``--debug`` to report issue.
 
 
+-----------
 From source
 -----------
 
