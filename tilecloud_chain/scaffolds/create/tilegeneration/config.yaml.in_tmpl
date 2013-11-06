@@ -11,7 +11,7 @@ grids:
 caches:
     local:
         type: filesystem
-        folder: /var/sig/tilecache
+        folder: /var/sig/tiles
         # for GetCapabilities
         http_url: https://%(host)s/%(folder)s
         hosts:
