@@ -186,6 +186,9 @@ class Generate:
                 gene.add_metatile_splitter()
                 gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
+            self.count_tiles = gene.counter()
+            gene.process()
+
             if options.role == 'hash':
                 gene.imap(HashLogger('empty_tile_detection'))
             elif not options.near:

@@ -97,6 +97,20 @@ generation:
     # maximum allowed consecutive errors, after it exit [default to 10]
     maxconsecutive_errors: 10
 
+process:
+    optipng_test:
+    -   cmd: optipng -o7 -simulate %(in)s
+    optipng:
+    -   cmd: optipng %(args)s -q -zc9 -zm8 -zs3 -f5 %(in)s
+        arg:
+            default: '-q'
+            quiet: '-q'
+    jpegoptim:
+    -   cmd: jpegoptim %(args)s --strip-all --all-normal -m 90 %(in)s
+        arg:
+            default: '-q'
+            quiet: '-q'
+
 openlayers:
     # srs, center_x, center_y [required]
     srs: epsg:21781
