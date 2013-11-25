@@ -116,13 +116,13 @@ config:
             expected="""==== Sync and build code ====
 ==== Time results ====
 A tile is generated in: [0-9\.]* \[ms\]
-Then mean generated tile size: 0.780 \[kb\]
+Then mean generated tile size: 1.144 \[kb\]
 config:
     cost:
         tileonly_generation_time: [0-9\.]*
         tile_generation_time: [0-9\.]*
         metatile_generation_time: 0
-        tile_size: 0.780
+        tile_size: 1.144
 """, regex=True)
 
     @attr(time_near=True)
