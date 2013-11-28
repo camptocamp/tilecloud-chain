@@ -987,7 +987,20 @@ class TileGeneration:
                     except GeneratorExit as e:
                         raise e
                     except:  # pragma: no cover
-                        metatile.error = str(sys.exc_info()[1]) + " - " + metatile.data
+                        data = repr(metatile.data)
+                        if len(data) < 2000:
+                            metatile.error = str(sys.exc_info()[1]) + " - " + metatile.data
+                        else:
+                            class norepr:
+                                def __init__(self, value):
+                                    self.value = value
+
+                                def __repr__(self):
+                                    return self.value
+
+                            metatile.error = norepr(
+                                repr(str(sys.exc_info()[1])) + " - " + data[0:2000] + '...'
+                            )
                         yield metatile
             self.tilestream = safe_get(self.tilestream)
 

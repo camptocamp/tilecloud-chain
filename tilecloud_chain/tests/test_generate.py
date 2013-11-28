@@ -809,13 +809,13 @@ Size per tile: 384 o
             self.assert_cmd_equals(
                 cmd='./buildout/bin/generate_tiles %s -c tilegeneration/test.yaml --time 2 -l polygon' % d,
                 main_func=generate.main,
-                expected="""size: 776
-size: 860
-size: 860
-size: 860
+                expected="""size: 770
+size: 862
+size: 862
+size: 862
 time: [0-9]*
-size: 860
-size: 860
+size: 862
+size: 862
 """,
                 regex=True,
                 empty_err=True)
@@ -828,13 +828,13 @@ size: 860
             self.assert_cmd_equals(
                 cmd='./buildout/bin/generate_tiles %s -c tilegeneration/test.yaml --time 2 -l all' % d,
                 main_func=generate.main,
-                expected="""size: 854
-size: 854
-size: 854
-size: 854
+                expected="""size: 1010
+size: 1010
+size: 1010
+size: 1010
 time: [0-9]*
-size: 854
-size: 854
+size: 1010
+size: 1010
 """,
                 regex=True,
                 empty_err=True)
