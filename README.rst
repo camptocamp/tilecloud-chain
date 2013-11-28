@@ -324,7 +324,7 @@ They can be automatically be called in the tile generation it we set the propert
 
 The process is a set of names processes, and each one has a list of commands declared like this:
 
-.. code: yaml
+.. code:: yaml
 
     process:  # root process config
         optipng:  # the process command
