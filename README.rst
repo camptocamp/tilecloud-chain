@@ -517,6 +517,33 @@ The configuration is like this:
         apache_config: /var/www/vhost/project/conf/tilegeneration.conf
         apache_content: Include /var/www/vhost/project/private/project/apache/\*.conf
 
+Amazon tool
+-----------
+
+Amazon has a command line tool (`homepage <http://aws.amazon.com/fr/cli/>`_).
+
+To use it, add in the ``setup.py``:
+
+* ``awscli`` as an ``install_requires``, 
+* ``'aws = awscli.clidriver:main',`` in the ``console_scripts``.
+
+Than install it: 
+
+.. code:: bash
+
+    ./buildout/bin/buildout install eggs
+
+And use it:
+
+.. code:: bash
+
+    ./buildout/bin/aws help
+
+For example to delete many tiles do:
+
+.. code:: bash
+
+    ./buildout/bin/aws s3 rm --recursive s3://your_bucket_name/folder
 
 ---------------------------
 Other related configuration
