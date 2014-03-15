@@ -75,7 +75,7 @@ image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
             statinfo = os.stat(
                 '/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png',
             )
-            self.assertEquals(statinfo.st_size, 758)
+            self.assertEquals(statinfo.st_size, 755)
 
             self.assert_cmd_equals(
                 cmd='./buildout/bin/generate_process %s -c tilegeneration/test-copy.yaml --cache src optipng' % d,
