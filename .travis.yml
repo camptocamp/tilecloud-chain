@@ -7,8 +7,22 @@ python:
 env:
   global:
   - BERKELEYDB_LIBDIR=/usr/lib/x86_64-linux-gnu BERKELEYDB_INCDIR=/usr/include
+  - BUNDLE_ARCHIVE="tilecloud_chain"
+  - AWS_S3_REGION="eu-west-1"
+  - AWS_S3_BUCKET="sbrunner-travis"
+  - secure: eweCyRupGDD0En9a3aXxO5QY8WO2xxMmUr42DdSUndOtbLk4GAo6ieZT77Pl91gwhh27WRMVoQQzByrNuQy/jEM+EA9Xoxy+KYqasfi7mbF7kWZ1HNEaAdqTi6RosihXmIoaaeMrjy+/gULSDgtOPDhompU4qaWfPnz1MjCRg7k=
 
 before_install:
+- ssh-keygen -t rsa -C your_email@youremail.com -P '' -f ~/.ssh/id_rsa
+- cat /home/travis/.ssh/id_rsa.pub >> /home/travis/.ssh/authorized_keys
+- ln -s /home/travis/.ssh/authorized_keys /home/travis/.ssh/authorized_keys2
+- echo "Host localhost" >> /home/travis/.ssh/config
+- echo "    StrictHostKeyChecking no" >> /home/travis/.ssh/config
+- chmod g-rw,o-rw  ~/.ssh/*
+
+- chmod 644 ~/.bashrc
+- echo "PATH=${PATH}" > ~/.bashrc
+
 - echo 'yes' | sudo add-apt-repository ppa:stephane-brunner/precise
 - echo 'yes' | sudo add-apt-repository ppa:mapnik/v2.2.0
 - sudo apt-get update
@@ -17,12 +31,14 @@ before_install:
 - sudo cp tilecloud_chain/tests/apache.conf /etc/apache2/sites-enabled/apache.conf
 - sudo apache2ctl graceful
 
-- ssh-keygen -t rsa -C your_email@youremail.com -P '' -f ~/.ssh/id_rsa
-- cat /home/travis/.ssh/id_rsa.pub >> /home/travis/.ssh/authorized_keys
-- ln -s /home/travis/.ssh/authorized_keys /home/travis/.ssh/authorized_keys2
-- echo "Host localhost" >> /home/travis/.ssh/config
-- echo "    StrictHostKeyChecking no" >> /home/travis/.ssh/config
-- chmod g-rw,o-rw /home/travis/.ssh/*
+- mkdir ~/.aws
+- echo [default] > ~/.aws/config
+- echo aws_access_key_id=${AWS_S3_KEY} >> ~/.aws/config
+- echo aws_secret_access_key=${AWS_S3_SECRET} >> ~/.aws/config
+- sudo pip install awscli
+- aws s3 sync s3://${AWS_S3_BUCKET}/${BUNDLE_ARCHIVE}/buildout-${TRAVIS_PYTHON_VERSION}/ buildout/
+- chmod +x ./buildout/bin/*
+- aws s3 sync s3://${AWS_S3_BUCKET}/${BUNDLE_ARCHIVE}/mapnik-${TRAVIS_PYTHON_VERSION}/ ${HOME}/virtualenv/python${TRAVIS_PYTHON_VERSION}/
 
 - sudo tilecloud_chain/tests/create-deploy.sh
 
@@ -30,13 +46,17 @@ before_install:
 - sudo chmod g+s,o+w /tmp/tests
 
 install:
-- pip install -U mapnik2==2.2.0 --use-mirrors
+- pip install -U mapnik2==2.2.0
 - python bootstrap.py -v 1.7.1
-- ./buildout/bin/buildout 
+- ./buildout/bin/buildout -c buildout_travis.cfg
 
 script:
 - find tilecloud_chain -name \*.py | xargs ./buildout/bin/flake8 --max-line-length=120
 - ./buildout/bin/python setup.py nosetests
+
+after_script:
+- aws s3 sync --delete --exclude *.pyc buildout/ s3://${AWS_S3_BUCKET}/${BUNDLE_ARCHIVE}/buildout-${TRAVIS_PYTHON_VERSION}/
+- aws s3 sync --delete --exclude *.pyc --exclude lib/python${TRAVIS_PYTHON_VERSION}/site-packages/mapnik/demo ${HOME}/virtualenv/python${TRAVIS_PYTHON_VERSION}/ s3://${AWS_S3_BUCKET}/${BUNDLE_ARCHIVE}/mapnik-${TRAVIS_PYTHON_VERSION}/
 
 after_success:
 # Report coverage results to coveralls.io
