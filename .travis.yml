@@ -33,6 +33,8 @@ before_install:
 
 - mkdir ~/.aws
 - echo [default] > ~/.aws/config
+- echo AWS_S3_KEY=${AWS_S3_KEY}
+- echo AWS_S3_SECRET=${AWS_S3_SECRET}
 - echo aws_access_key_id=${AWS_S3_KEY} >> ~/.aws/config
 - echo aws_secret_access_key=${AWS_S3_SECRET} >> ~/.aws/config
 - sudo pip install awscli
