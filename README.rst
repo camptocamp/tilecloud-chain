@@ -403,7 +403,7 @@ should configure the layers as this:
         headers:
             Host: the_host_name
 
-The idea is to get the wms server on ``localhost`` and use the ``Host`` header
+The idea is to get the WMS server on ``localhost`` and use the ``Host`` header
 to select the right Apache VirtualHost.
 
 To don't have cache we use the as default the headers:
