@@ -1090,7 +1090,7 @@ class TileGeneration:
                 ]
 
         if self.options.zoom is None:
-            self.options.zoom = [z for z, resolution in enumerate(resolutions)]
+            self.options.zoom = [z for z, r in enumerate(resolutions)]
 
         # fill the bounding pyramid
         tilegrid = self.layer['grid_ref']['obj']
