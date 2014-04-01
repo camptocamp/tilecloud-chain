@@ -41,7 +41,7 @@ map = new OpenLayers.Map({
 
 var format = new OpenLayers.Format.WMTSCapabilities();
 OpenLayers.Request.GET({
-    url: "{{http_url}}/1.0.0/WMTSCapabilities.xml",
+    url: "{{http_url}}1.0.0/WMTSCapabilities.xml",
     success: function(request) {
         var doc = request.responseXML;
         if (!doc || !doc.documentElement) {

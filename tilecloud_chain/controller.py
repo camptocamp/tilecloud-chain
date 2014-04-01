@@ -166,7 +166,7 @@ def _generate_wmts_capabilities(gene):
         if 'legend_mime' in layer and 'legend_extention' in layer and 'legends' not in layer:
             layer['legends'] = []
             for zoom, resolution in enumerate(layer['grid_ref']['resolutions']):
-                path = '/1.0.0/%s/%s/legend%s.%s' % (
+                path = '1.0.0/%s/%s/legend%s.%s' % (
                     layer['name'],
                     layer['wmts_style'],
                     zoom,
@@ -176,7 +176,7 @@ def _generate_wmts_capabilities(gene):
                 if img is not None:
                     new_legend = {
                         'mime_type': layer['legend_mime'],
-                        'href': base_urls[0] + ('/static' if server else '') + path,
+                        'href': base_urls[0] + ('static/' if server else '') + path,
                     }
                     layer['legends'].append(new_legend)
                     if previous_legend is not None:
@@ -197,10 +197,10 @@ def _generate_wmts_capabilities(gene):
         layers=gene.layers,
         grids=gene.grids,
         getcapabilities=base_urls[0] + (
-            '/wmts/1.0.0/WMTSCapabilities.xml' if server
+            'wmts/1.0.0/WMTSCapabilities.xml' if server
             else cache['wmtscapabilities_file']),
         base_urls=base_urls,
-        base_url_postfix='/wmts' if server else '',
+        base_url_postfix='wmts/' if server else '',
         get_tile_matrix_identifier=get_tile_matrix_identifier,
         server=server,
         enumerate=enumerate, ceil=math.ceil, int=int
@@ -419,7 +419,7 @@ def _generate_openlayers(gene):
         srs=gene.config['openlayers']['srs'],
         center_x=gene.config['openlayers']['center_x'],
         center_y=gene.config['openlayers']['center_y'],
-        http_url=http_url + ('/wmts' if 'server' in gene.config else ''),
+        http_url=http_url + ('wmts/' if 'server' in gene.config else ''),
         layers=[
             {
                 'name': name,

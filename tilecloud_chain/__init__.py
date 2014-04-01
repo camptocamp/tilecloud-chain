@@ -428,6 +428,12 @@ class TileGeneration:
                 error = self.validate(cache, name, 'folder', attribute_type=str, default='') or error
             if len(cache['folder']) > 0 and cache['folder'][-1] != '/':
                 cache['folder'] += '/'
+            if 'http_url' in cache and cache['http_url'][-1] != '/':
+                cache['http_url'] += '/'
+            if 'http_urls' in cache:
+                cache['http_urls'] = [
+                    url + '/' if url[-1] != '/' else url for url in cache['http_urls']
+                ]
         error = self.validate(self.config, 'config', 'generation', attribute_type=dict, default={}) or error
         error = self.validate(
             self.config['generation'], 'generation', 'default_cache',

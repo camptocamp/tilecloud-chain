@@ -1325,21 +1325,21 @@ caches:
   mbtiles: {folder: /tmp/tiles/mbtiles/, http_url: 'http://taurus/tiles/', name: mbtiles, type: """ \
                 """mbtiles, wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml}
   multi_host:
-    folder: /tmp/tiles
+    folder: /tmp/tiles/
     hosts: [wmts1, wmts2, wmts3]
-    http_url: http://%(host)s/tiles
+    http_url: http://%(host)s/tiles/
     name: multi_host
     type: filesystem
-    wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml
+    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   multi_url:
-    folder: /tmp/tiles
-    http_urls: ['http://wmts1/tiles', 'http://wmts2/tiles', 'http://wmts3/tiles']
+    folder: /tmp/tiles/
+    http_urls: ['http://wmts1/tiles/', 'http://wmts2/tiles/', 'http://wmts3/tiles/']
     name: multi_url
     type: filesystem
-    wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml
+    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   s3: {bucket: tiles, folder: tiles/, host: s3-eu-west-1.amazonaws.com, """ \
-        """http_url: 'https://%(host)s/%(bucket)s/%(folder)s',
-    name: s3, region: eu-west-1, type: s3, wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml}
+        """http_url: 'https://%(host)s/%(bucket)s/%(folder)s/',
+    name: s3, region: eu-west-1, type: s3, wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml}
 cost:
   cloudfront: {download: 0.12, get: 0.009}
   ec2: {usage: 0.17}
