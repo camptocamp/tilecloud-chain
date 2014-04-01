@@ -24,6 +24,7 @@ class TestController(CompareCase):
             shutil.rmtree('/tmp/tiles')
 
     @attr(capabilities=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_capabilities(self):
         self.assert_main_equals(
@@ -922,6 +923,7 @@ class TestController(CompareCase):
 </Capabilities>"""
 
     @attr(multi_host_capabilities=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_multi_host_capabilities(self):
         self.assert_main_equals(
@@ -931,6 +933,7 @@ class TestController(CompareCase):
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     @attr(multi_url_capabilities=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_multi_url_capabilities(self):
         self.assert_main_equals(
@@ -940,6 +943,7 @@ class TestController(CompareCase):
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     @attr(mapcache=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_mapcache(self):
         self.assert_main_equals(
@@ -1259,6 +1263,7 @@ class TestController(CompareCase):
 </mapcache>"""]])
 
     @attr(apache=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_apache(self):
         self.assert_main_equals(
@@ -1287,6 +1292,7 @@ MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
 
     @attr(apache_s3=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_apache_s3(self):
         self.assert_main_equals(
@@ -1704,6 +1710,7 @@ process: {}
 sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}"""
 
     @attr(config=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_config(self):
         self.assert_cmd_yaml_equals(
@@ -1711,6 +1718,7 @@ sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud
             main_func=controller.main, expected=self.CONFIG)
 
     @attr(config_line=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_config_line(self):
         self.assert_cmd_yaml_equals(
@@ -1718,6 +1726,7 @@ sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud
             main_func=controller.main, expected=self.CONFIG)
 
     @attr(openlayers=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_openlayers(self):
         html = u"""<!DOCTYPE html>
@@ -1891,6 +1900,7 @@ OpenLayers.Request.GET({
         )
 
     @attr(quote=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_quote(self):
         from tilecloud_chain import quote
@@ -1902,6 +1912,7 @@ OpenLayers.Request.GET({
         self.assertEquals(quote(""), "''")
 
     @attr(legends=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_legends(self):
         self.assert_tiles_generated(
