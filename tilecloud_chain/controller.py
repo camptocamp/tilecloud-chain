@@ -104,11 +104,11 @@ def _send(data, path, mime_type, cache):
         s3key.put()
     else:
         folder = cache['folder'] or ''
-        filename = folder + path
+        filename = os.path.join(folder, path)
         directory = os.path.dirname(filename)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        f = open(folder + path, 'wb')
+        f = open(filename, 'wb')
         f.write(data)
         f.close()
 
@@ -254,7 +254,7 @@ def _generate_legend_images(gene):
                         previous_hash = new_hash
                         _send(
                             result,
-                            '/1.0.0/%s/%s/legend%s.%s' % (
+                            '1.0.0/%s/%s/legend%s.%s' % (
                                 layer['name'],
                                 layer['wmts_style'],
                                 zoom,
@@ -431,9 +431,9 @@ def _generate_openlayers(gene):
         ]
     )
 
-    _send(openlayers_html, '/index.html', 'text/html', cache)
+    _send(openlayers_html, 'index.html', 'text/html', cache)
     _send(js, '/wmts.js', 'application/javascript', cache)
-    _send(_get_resource('OpenLayers.js'), '/OpenLayers.js', 'application/javascript', cache)
-    _send(_get_resource('OpenLayers-style.css'), '/theme/default/style.css', 'text/css', cache)
-    _send(_get_resource('layer-switcher-maximize.png'), '/img/layer-switcher-maximize.png', 'image/png', cache)
-    _send(_get_resource('layer-switcher-minimize.png'), '/img/layer-switcher-minimize.png', 'image/png', cache)
+    _send(_get_resource('OpenLayers.js'), 'OpenLayers.js', 'application/javascript', cache)
+    _send(_get_resource('OpenLayers-style.css'), 'theme/default/style.css', 'text/css', cache)
+    _send(_get_resource('layer-switcher-maximize.png'), 'img/layer-switcher-maximize.png', 'image/png', cache)
+    _send(_get_resource('layer-switcher-minimize.png'), 'img/layer-switcher-minimize.png', 'image/png', cache)
