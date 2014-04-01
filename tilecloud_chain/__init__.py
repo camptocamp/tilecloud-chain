@@ -418,10 +418,8 @@ class TileGeneration:
             ) or error
             error = self.validate(
                 cache, 'cache[%s]' % cache['name'], 'wmtscapabilities_file', attribute_type=str,
-                default='/1.0.0/WMTSCapabilities.xml'
+                default='1.0.0/WMTSCapabilities.xml'
             ) or error
-            if cache['wmtscapabilities_file'][0] != '/':
-                cache['wmtscapabilities_file'] = '/' + cache['wmtscapabilities_file']
             if cache['type'] == 'filesystem' or cache['type'] == 'mbtiles' or cache['type'] == 'bsddb':
                 error = self.validate(cache, name, 'folder', attribute_type=str, required=True) or error
             elif cache['type'] == 's3':
