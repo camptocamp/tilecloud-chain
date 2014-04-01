@@ -55,7 +55,7 @@ class TestController(CompareCase):
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles">
+          <ows:Get xlink:href="http://taurus/tiles/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -460,21 +460,21 @@ class TestController(CompareCase):
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://wmts1/tiles">
+          <ows:Get xlink:href="http://wmts1/tiles/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
-          <ows:Get xlink:href="http://wmts2/tiles">
+          <ows:Get xlink:href="http://wmts2/tiles/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
-          <ows:Get xlink:href="http://wmts3/tiles">
+          <ows:Get xlink:href="http://wmts3/tiles/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -1269,7 +1269,7 @@ class TestController(CompareCase):
     ExpiresDefault "now plus 8 hours"
 </Location>
 
-Alias /tiles /tmp/tiles
+Alias /tiles /tmp/tiles/
 
 RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
@@ -1314,10 +1314,10 @@ MapCacheAlias /mapcache "%s"
 
     CONFIG = u"""apache: {config_file: tiles.conf, expires: 8, location: /tiles}
 caches:
-  local: {folder: /tmp/tiles, hosts: false, http_url: 'http://taurus/tiles', http_urls: false,
-    name: local, type: filesystem, wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml}
-  mbtiles: {folder: /tmp/tiles/mbtiles, http_url: 'http://taurus/tiles', name: mbtiles, type: """ \
-                """mbtiles, wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml}
+  local: {folder: /tmp/tiles/, hosts: false, http_url: 'http://taurus/tiles/', http_urls: false,
+    name: local, type: filesystem, wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml}
+  mbtiles: {folder: /tmp/tiles/mbtiles/, http_url: 'http://taurus/tiles/', name: mbtiles, type: """ \
+                """mbtiles, wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml}
   multi_host:
     folder: /tmp/tiles
     hosts: [wmts1, wmts2, wmts3]
@@ -1943,7 +1943,7 @@ OpenLayers.Request.GET({
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles">
+          <ows:Get xlink:href="http://taurus/tiles/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>

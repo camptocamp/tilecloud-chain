@@ -432,7 +432,7 @@ def _generate_openlayers(gene):
     )
 
     _send(openlayers_html, 'index.html', 'text/html', cache)
-    _send(js, '/wmts.js', 'application/javascript', cache)
+    _send(js, 'wmts.js', 'application/javascript', cache)
     _send(_get_resource('OpenLayers.js'), 'OpenLayers.js', 'application/javascript', cache)
     _send(_get_resource('OpenLayers-style.css'), 'theme/default/style.css', 'text/css', cache)
     _send(_get_resource('layer-switcher-maximize.png'), 'img/layer-switcher-maximize.png', 'image/png', cache)
