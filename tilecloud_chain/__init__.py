@@ -418,18 +418,22 @@ class TileGeneration:
             ) or error
             error = self.validate(
                 cache, 'cache[%s]' % cache['name'], 'wmtscapabilities_file', attribute_type=str,
-                default='/1.0.0/WMTSCapabilities.xml'
+                default='1.0.0/WMTSCapabilities.xml'
             ) or error
-            if cache['wmtscapabilities_file'][0] != '/':
-                cache['wmtscapabilities_file'] = '/' + cache['wmtscapabilities_file']
             if cache['type'] == 'filesystem' or cache['type'] == 'mbtiles' or cache['type'] == 'bsddb':
                 error = self.validate(cache, name, 'folder', attribute_type=str, required=True) or error
             elif cache['type'] == 's3':
                 error = self.validate(cache, name, 'bucket', attribute_type=str, required=True) or error
                 error = self.validate(cache, name, 'region', attribute_type=str, default='eu-west-1') or error
                 error = self.validate(cache, name, 'folder', attribute_type=str, default='') or error
-                if len(cache['folder']) > 0 and cache['folder'][-1] != '/':
-                    cache['folder'] += '/'
+            if len(cache['folder']) > 0 and cache['folder'][-1] != '/':
+                cache['folder'] += '/'
+            if 'http_url' in cache and cache['http_url'][-1] != '/':
+                cache['http_url'] += '/'
+            if 'http_urls' in cache:
+                cache['http_urls'] = [
+                    url + '/' if url[-1] != '/' else url for url in cache['http_urls']
+                ]
         error = self.validate(self.config, 'config', 'generation', attribute_type=dict, default={}) or error
         error = self.validate(
             self.config['generation'], 'generation', 'default_cache',
@@ -1092,7 +1096,7 @@ class TileGeneration:
                 ]
 
         if self.options.zoom is None:
-            self.options.zoom = [z for z, resolution in enumerate(resolutions)]
+            self.options.zoom = [z for z, r in enumerate(resolutions)]
 
         # fill the bounding pyramid
         tilegrid = self.layer['grid_ref']['obj']

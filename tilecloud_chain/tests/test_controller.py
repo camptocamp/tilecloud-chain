@@ -24,6 +24,7 @@ class TestController(CompareCase):
             shutil.rmtree('/tmp/tiles')
 
     @attr(capabilities=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_capabilities(self):
         self.assert_main_equals(
@@ -55,7 +56,7 @@ class TestController(CompareCase):
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles">
+          <ows:Get xlink:href="http://taurus/tiles/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -460,21 +461,21 @@ class TestController(CompareCase):
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://wmts1/tiles">
+          <ows:Get xlink:href="http://wmts1/tiles/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
-          <ows:Get xlink:href="http://wmts2/tiles">
+          <ows:Get xlink:href="http://wmts2/tiles/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
-          <ows:Get xlink:href="http://wmts3/tiles">
+          <ows:Get xlink:href="http://wmts3/tiles/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -922,6 +923,7 @@ class TestController(CompareCase):
 </Capabilities>"""
 
     @attr(multi_host_capabilities=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_multi_host_capabilities(self):
         self.assert_main_equals(
@@ -931,6 +933,7 @@ class TestController(CompareCase):
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     @attr(multi_url_capabilities=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_multi_url_capabilities(self):
         self.assert_main_equals(
@@ -940,6 +943,7 @@ class TestController(CompareCase):
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     @attr(mapcache=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_mapcache(self):
         self.assert_main_equals(
@@ -1259,6 +1263,7 @@ class TestController(CompareCase):
 </mapcache>"""]])
 
     @attr(apache=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_apache(self):
         self.assert_main_equals(
@@ -1269,7 +1274,7 @@ class TestController(CompareCase):
     ExpiresDefault "now plus 8 hours"
 </Location>
 
-Alias /tiles /tmp/tiles
+Alias /tiles /tmp/tiles/
 
 RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
@@ -1287,6 +1292,7 @@ MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
 
     @attr(apache_s3=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_apache_s3(self):
         self.assert_main_equals(
@@ -1314,26 +1320,26 @@ MapCacheAlias /mapcache "%s"
 
     CONFIG = u"""apache: {config_file: tiles.conf, expires: 8, location: /tiles}
 caches:
-  local: {folder: /tmp/tiles, hosts: false, http_url: 'http://taurus/tiles', http_urls: false,
-    name: local, type: filesystem, wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml}
-  mbtiles: {folder: /tmp/tiles/mbtiles, http_url: 'http://taurus/tiles', name: mbtiles, type: """ \
-                """mbtiles, wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml}
+  local: {folder: /tmp/tiles/, hosts: false, http_url: 'http://taurus/tiles/', http_urls: false,
+    name: local, type: filesystem, wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml}
+  mbtiles: {folder: /tmp/tiles/mbtiles/, http_url: 'http://taurus/tiles/', name: mbtiles, type: """ \
+                """mbtiles, wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml}
   multi_host:
-    folder: /tmp/tiles
+    folder: /tmp/tiles/
     hosts: [wmts1, wmts2, wmts3]
-    http_url: http://%(host)s/tiles
+    http_url: http://%(host)s/tiles/
     name: multi_host
     type: filesystem
-    wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml
+    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   multi_url:
-    folder: /tmp/tiles
-    http_urls: ['http://wmts1/tiles', 'http://wmts2/tiles', 'http://wmts3/tiles']
+    folder: /tmp/tiles/
+    http_urls: ['http://wmts1/tiles/', 'http://wmts2/tiles/', 'http://wmts3/tiles/']
     name: multi_url
     type: filesystem
-    wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml
+    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   s3: {bucket: tiles, folder: tiles/, host: s3-eu-west-1.amazonaws.com, """ \
-        """http_url: 'https://%(host)s/%(bucket)s/%(folder)s',
-    name: s3, region: eu-west-1, type: s3, wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml}
+        """http_url: 'https://%(host)s/%(bucket)s/%(folder)s/',
+    name: s3, region: eu-west-1, type: s3, wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml}
 cost:
   cloudfront: {download: 0.12, get: 0.009}
   ec2: {usage: 0.17}
@@ -1704,6 +1710,7 @@ process: {}
 sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}"""
 
     @attr(config=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_config(self):
         self.assert_cmd_yaml_equals(
@@ -1711,6 +1718,7 @@ sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud
             main_func=controller.main, expected=self.CONFIG)
 
     @attr(config_line=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_config_line(self):
         self.assert_cmd_yaml_equals(
@@ -1718,6 +1726,7 @@ sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud
             main_func=controller.main, expected=self.CONFIG)
 
     @attr(openlayers=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_openlayers(self):
         html = u"""<!DOCTYPE html>
@@ -1891,6 +1900,7 @@ OpenLayers.Request.GET({
         )
 
     @attr(quote=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_quote(self):
         from tilecloud_chain import quote
@@ -1902,6 +1912,7 @@ OpenLayers.Request.GET({
         self.assertEquals(quote(""), "''")
 
     @attr(legends=True)
+    @attr(controller=True)
     @attr(general=True)
     def test_legends(self):
         self.assert_tiles_generated(
@@ -1943,7 +1954,7 @@ OpenLayers.Request.GET({
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles">
+          <ows:Get xlink:href="http://taurus/tiles/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>

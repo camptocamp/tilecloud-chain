@@ -104,11 +104,11 @@ def _send(data, path, mime_type, cache):
         s3key.put()
     else:
         folder = cache['folder'] or ''
-        filename = folder + path
+        filename = os.path.join(folder, path)
         directory = os.path.dirname(filename)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        f = open(folder + path, 'wb')
+        f = open(filename, 'wb')
         f.write(data)
         f.close()
 
@@ -166,7 +166,7 @@ def _generate_wmts_capabilities(gene):
         if 'legend_mime' in layer and 'legend_extention' in layer and 'legends' not in layer:
             layer['legends'] = []
             for zoom, resolution in enumerate(layer['grid_ref']['resolutions']):
-                path = '/1.0.0/%s/%s/legend%s.%s' % (
+                path = '1.0.0/%s/%s/legend%s.%s' % (
                     layer['name'],
                     layer['wmts_style'],
                     zoom,
@@ -176,7 +176,7 @@ def _generate_wmts_capabilities(gene):
                 if img is not None:
                     new_legend = {
                         'mime_type': layer['legend_mime'],
-                        'href': base_urls[0] + ('/static' if server else '') + path,
+                        'href': base_urls[0] + ('static/' if server else '') + path,
                     }
                     layer['legends'].append(new_legend)
                     if previous_legend is not None:
@@ -197,10 +197,10 @@ def _generate_wmts_capabilities(gene):
         layers=gene.layers,
         grids=gene.grids,
         getcapabilities=base_urls[0] + (
-            '/wmts/1.0.0/WMTSCapabilities.xml' if server
+            'wmts/1.0.0/WMTSCapabilities.xml' if server
             else cache['wmtscapabilities_file']),
         base_urls=base_urls,
-        base_url_postfix='/wmts' if server else '',
+        base_url_postfix='wmts/' if server else '',
         get_tile_matrix_identifier=get_tile_matrix_identifier,
         server=server,
         enumerate=enumerate, ceil=math.ceil, int=int
@@ -254,7 +254,7 @@ def _generate_legend_images(gene):
                         previous_hash = new_hash
                         _send(
                             result,
-                            '/1.0.0/%s/%s/legend%s.%s' % (
+                            '1.0.0/%s/%s/legend%s.%s' % (
                                 layer['name'],
                                 layer['wmts_style'],
                                 zoom,
@@ -419,7 +419,7 @@ def _generate_openlayers(gene):
         srs=gene.config['openlayers']['srs'],
         center_x=gene.config['openlayers']['center_x'],
         center_y=gene.config['openlayers']['center_y'],
-        http_url=http_url + ('/wmts' if 'server' in gene.config else ''),
+        http_url=http_url + ('wmts/' if 'server' in gene.config else ''),
         layers=[
             {
                 'name': name,
@@ -431,9 +431,9 @@ def _generate_openlayers(gene):
         ]
     )
 
-    _send(openlayers_html, '/index.html', 'text/html', cache)
-    _send(js, '/wmts.js', 'application/javascript', cache)
-    _send(_get_resource('OpenLayers.js'), '/OpenLayers.js', 'application/javascript', cache)
-    _send(_get_resource('OpenLayers-style.css'), '/theme/default/style.css', 'text/css', cache)
-    _send(_get_resource('layer-switcher-maximize.png'), '/img/layer-switcher-maximize.png', 'image/png', cache)
-    _send(_get_resource('layer-switcher-minimize.png'), '/img/layer-switcher-minimize.png', 'image/png', cache)
+    _send(openlayers_html, 'index.html', 'text/html', cache)
+    _send(js, 'wmts.js', 'application/javascript', cache)
+    _send(_get_resource('OpenLayers.js'), 'OpenLayers.js', 'application/javascript', cache)
+    _send(_get_resource('OpenLayers-style.css'), 'theme/default/style.css', 'text/css', cache)
+    _send(_get_resource('layer-switcher-maximize.png'), 'img/layer-switcher-maximize.png', 'image/png', cache)
+    _send(_get_resource('layer-switcher-minimize.png'), 'img/layer-switcher-minimize.png', 'image/png', cache)

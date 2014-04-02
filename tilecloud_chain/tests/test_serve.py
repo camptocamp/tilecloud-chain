@@ -31,7 +31,7 @@ CAPABILITIES = """<?xml version="1.0" encoding="UTF-8"?>
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
-          <ows:Get xlink:href="http://taurus/tiles/wmts">
+          <ows:Get xlink:href="http://taurus/tiles/wmts/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>KVP</ows:Value>
@@ -44,7 +44,7 @@ CAPABILITIES = """<?xml version="1.0" encoding="UTF-8"?>
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles/wmts">
+          <ows:Get xlink:href="http://taurus/tiles/wmts/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -282,7 +282,7 @@ Size per tile: 4[0-9][0-9] o
               </ows:AllowedValues>
             </ows:Constraint>
           </ows:Get>
-          <ows:Get xlink:href="http://taurus/tiles/wmts">
+          <ows:Get xlink:href="http://taurus/tiles/wmts/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>KVP</ows:Value>
@@ -295,7 +295,7 @@ Size per tile: 4[0-9][0-9] o
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles/wmts">
+          <ows:Get xlink:href="http://taurus/tiles/wmts/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
