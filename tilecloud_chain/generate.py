@@ -187,7 +187,9 @@ class Generate:
                 gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
             self.count_tiles = gene.counter()
-            gene.process()
+
+            if 'pre_hash_post_process' in gene.layer:
+                gene.process(gene.layer['pre_hash_post_process'])
 
             if options.role == 'hash':
                 gene.imap(HashLogger('empty_tile_detection'))
@@ -204,6 +206,8 @@ class Generate:
                         queue_store=sqs_tilestore,
                         count=count_tiles_dropped,
                     ))
+
+            gene.process()
 
         if options.role in ('local', 'slave'):
             gene.add_error_filters()

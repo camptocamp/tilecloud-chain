@@ -355,6 +355,9 @@ class TileGeneration:
                 ) or error
 
             error = self.validate(
+                layer, name, 'pre_hash_post_process', attribute_type=str, default=False
+            ) or error
+            error = self.validate(
                 layer, name, 'post_process', attribute_type=str, default=False
             ) or error
 

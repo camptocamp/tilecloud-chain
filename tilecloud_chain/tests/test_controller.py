@@ -1453,6 +1453,7 @@ layers:
     name: all
     params: {}
     post_process: false
+    pre_hash_post_process: false
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1478,6 +1479,7 @@ layers:
     name: line
     params: {PARAM: value}
     post_process: false
+    pre_hash_post_process: false
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1500,6 +1502,7 @@ layers:
     name: mapnik
     output_format: png
     post_process: false
+    pre_hash_post_process: false
     px_buffer: false
     type: mapnik
     wmts_style: default
@@ -1526,6 +1529,7 @@ layers:
     name: mapnik_grid
     output_format: grid
     post_process: false
+    pre_hash_post_process: false
     px_buffer: false
     resolution: 16
     type: mapnik
@@ -1551,6 +1555,7 @@ layers:
     name: mapnik_grid_drop
     output_format: grid
     post_process: false
+    pre_hash_post_process: false
     px_buffer: false
     resolution: 16
     type: mapnik
@@ -1575,6 +1580,7 @@ layers:
     name: point
     params: {}
     post_process: false
+    pre_hash_post_process: false
     px_buffer: false
     sqs: {queue: sqs_point, region: eu-west-1}
     type: wms
@@ -1599,6 +1605,7 @@ layers:
     name: point_hash_no_meta
     params: {}
     post_process: false
+    pre_hash_post_process: false
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1625,6 +1632,7 @@ layers:
     name: point_hash
     params: {}
     post_process: false
+    pre_hash_post_process: false
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1650,6 +1658,7 @@ layers:
     name: point_px_buffer
     params: {}
     post_process: false
+    pre_hash_post_process: false
     px_buffer: 100.0
     type: wms
     url: http://localhost/mapserv
@@ -1675,6 +1684,7 @@ layers:
     name: polygon
     params: {}
     post_process: false
+    pre_hash_post_process: false
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
@@ -1700,6 +1710,7 @@ layers:
     name: polygon2
     params: {}
     post_process: false
+    pre_hash_post_process: false
     px_buffer: false
     type: wms
     url: http://localhost/mapserv
