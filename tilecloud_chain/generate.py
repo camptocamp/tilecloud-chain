@@ -328,8 +328,8 @@ Nb metatiles dropped: %(nb_metatiles_dropped)i
                     } if meta else '',
                     'nb_tiles': nb_tiles if meta else count_metatiles.nb,
                     'nb_tiles_dropped': count_tiles_dropped.nb if meta else count_metatiles_dropped.nb,
-                    'duration': duration_format(self.duration),
-                    'tile_duration': (self.duration / nb_tiles * 1000).seconds if nb_tiles != 0 else 0,
+                    'duration': duration_format(gene.duration),
+                    'tile_duration': (gene.duration / nb_tiles * 1000).seconds if nb_tiles != 0 else 0,
                 },
                 "Tile generation (%(layer)s - %(role)s)" % {
                     'role': options.role,
