@@ -320,7 +320,8 @@ Process
 -------
 
 We can configure some tile commands to process the tiles.
-They can be automatically be called in the tile generation it we set the property ``post_process`` in the layer configuration.
+They can be automatically be called in the tile generation it we set the property
+``post_process`` or ``pre_hash_post_process`` in the layer configuration.
 
 The process is a set of names processes, and each one has a list of commands declared like this:
 

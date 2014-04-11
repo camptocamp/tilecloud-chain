@@ -355,6 +355,9 @@ class TileGeneration:
                 ) or error
 
             error = self.validate(
+                layer, name, 'pre_hash_post_process', attribute_type=str, default=False
+            ) or error
+            error = self.validate(
                 layer, name, 'post_process', attribute_type=str, default=False
             ) or error
 
@@ -1453,7 +1456,7 @@ class Process:
 
     def __call__(self, tile):
         if tile and tile.data:
-            name_in = tempfile.mkstemp()[1]
+            fd_in, name_in = tempfile.mkstemp()
             file_in = open(name_in, 'wb')
             file_in.write(tile.data)
             file_in.close()
@@ -1473,7 +1476,7 @@ class Process:
                     args.append(cmd['arg']['quiet'])
 
                 if cmd['need_out']:
-                    name_out = tempfile.mkstemp()[1]
+                    fd_out, name_out = tempfile.mkstemp()
                     os.unlink(name_out)
                 else:  # pragma: no cover
                     name_out = name_in
@@ -1496,13 +1499,14 @@ class Process:
                     return tile
 
                 if cmd['need_out']:
-                    os.unlink(name_in)
+                    os.close(fd_in)
                     name_in = name_out
+                    fd_in = fd_out
 
-            file_out = open(name_out, 'rb')
+            file_out = open(name_in, 'rb')
             tile.data = file_out.read()
             file_out.close()
-            os.unlink(name_out)
+            os.close(fd_in)
 
         return tile
 

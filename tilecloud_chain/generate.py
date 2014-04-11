@@ -187,7 +187,9 @@ class Generate:
                 gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
             self.count_tiles = gene.counter()
-            gene.process()
+
+            if 'pre_hash_post_process' in gene.layer:
+                gene.process(gene.layer['pre_hash_post_process'])
 
             if options.role == 'hash':
                 gene.imap(HashLogger('empty_tile_detection'))
@@ -204,6 +206,8 @@ class Generate:
                         queue_store=sqs_tilestore,
                         count=count_tiles_dropped,
                     ))
+
+            gene.process()
 
         if options.role in ('local', 'slave'):
             gene.add_error_filters()
@@ -324,8 +328,8 @@ Nb metatiles dropped: %(nb_metatiles_dropped)i
                     } if meta else '',
                     'nb_tiles': nb_tiles if meta else count_metatiles.nb,
                     'nb_tiles_dropped': count_tiles_dropped.nb if meta else count_metatiles_dropped.nb,
-                    'duration': duration_format(self.duration),
-                    'tile_duration': (self.duration / nb_tiles * 1000).seconds if nb_tiles != 0 else 0,
+                    'duration': duration_format(gene.duration),
+                    'tile_duration': (gene.duration / nb_tiles * 1000).seconds if nb_tiles != 0 else 0,
                 },
                 "Tile generation (%(layer)s - %(role)s)" % {
                     'role': options.role,
