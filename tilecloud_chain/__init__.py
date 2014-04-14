@@ -879,6 +879,8 @@ class TileGeneration:
         return cache_tilestore
 
     def get_sqs_queue(self):  # pragma: no cover
+        if self.layer is None:
+            exit("A layer must be specified.")
         if 'sqs' not in self.layer:
             exit("The layer '%s' hasn't any configured queue" % self.layer['name'])
         connection = boto.sqs.connect_to_region(self.layer['sqs']['region'])
