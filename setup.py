@@ -21,6 +21,7 @@ install_requires = [
     'pyramid',
     'simplejson',
     'requests',
+    'nose==1.3.0',
 ]
 if sys.version_info < (2, 7):
     install_requires.extend([
@@ -34,7 +35,6 @@ if sys.version_info >= (3, 0) or (
     ])
 
 setup_requires = [
-    'nose==1.3.0',
 ]
 tests_require = [
     'coverage',
