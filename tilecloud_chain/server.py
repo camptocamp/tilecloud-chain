@@ -72,12 +72,12 @@ class Server:
             def _get(self, path, **kwargs):
                 global s3bucket
                 try:
-                    s3key = s3bucket.key(('%(folder)s' % self.cache) + path)
+                    s3key = s3bucket.key(os.path.join('%(folder)s' % self.cache, path))
                     responce = s3key.get()
                     return responce.body, responce.headers['Content-Type']
                 except:
                     s3bucket = S3Connection().bucket(self.cache['bucket'])
-                    s3key = s3bucket.key(('%(folder)s' % self.cache) + path)
+                    s3key = s3bucket.key(os.path.join('%(folder)s' % self.cache, path))
                     responce = s3key.get()
                     return responce.body, responce.headers['Content-Type']
         else:
@@ -86,7 +86,7 @@ class Server:
             def _get(self, path, **kwargs):
                 if path.split('.')[-1] not in self.static_allow_extension:  # pragma: no cover
                     return self.error(403, "Extension not allowed", **kwargs), None
-                p = folder + path
+                p = os.path.join(folder, path)
                 if not os.path.isfile(p):  # pragma: no cover
                     return self.error(404, path + " not found", **kwargs), None
                 with open(p, 'rb') as file:
@@ -167,7 +167,7 @@ class Server:
 
         if path is not None:
             if len(path) >= 1 and path[0] == 'static':
-                body, mime = self._get('/' + '/'.join(path[1:]), **kwargs)
+                body, mime = self._get('/'.join(path[1:]), **kwargs)
                 if mime is not None:
                     return self.responce(body, {
                         'Content-Type': mime,
