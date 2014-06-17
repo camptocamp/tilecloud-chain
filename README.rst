@@ -1,15 +1,15 @@
 TileCloud Chain
 ===============
 
-The goal of TileCloud Chain is to have tools around tile generation on a chain like:
+The goal of TileCloud Chain is to provide tools around tile generation on a chain like:
 
 Source: WMS, Mapnik.
 
-Optionally use an SQS queue, AWS host, SNS topic.
+Optionally using an SQS queue, AWS host, SNS topic.
 
 Destination in WMTS layout, on S3, on Berkley DB (``bsddb``), on MBTiles, or on local filesystem.
 
-Feature:
+Features:
 
 - Generate tiles.
 - Drop empty tiles.
@@ -30,6 +30,8 @@ Feature:
 ------
 Get it
 ------
+Requirements::
+    pg_config and a build environment.
 
 Install::
 
@@ -48,51 +50,51 @@ Configure
 Configure grids
 ---------------
 
-The ``grid`` describe hos the tiles are arranged.
+The ``grid`` describes how the tiles are arranged.
 
-Especially on ``s3`` be careful to choice every theres before generating the tiles.
-It possible that to change one of them you should regenerate all the tiles.
+Especially on ``s3`` be careful to choose every ??????theres?????? before generating the tiles.
+It is possible that to change one of them you must regenerate all the tiles.
 
-The ``resolutions`` in [px/m] describe all the resolution available for this layer.
-On raster layer have a look on the maximum resolution of the source files, it's not needed
-to generate tiles in smaller resolution than the sources, it preferable to use the OpenLayers client zoom.
-Notes that you can add a resolution at the end without regeneration all the tiles.
+The ``resolutions`` in [px/m] describes all the resolutions available for this layer.
+For a raster layer, have a look to the maximum resolution of the source files. It is not needed
+to generate tiles at smaller resolutions than the sources, it is preferable to use the OpenLayers client zoom.
+Note that you can add a resolution in the end without regenerating all the tiles.
 
-The ``bbox`` should correspond to the resolution extent. **CAREFUL: you will have big issue if you
-use this parameter to generate the tile on a restricted area** use the ``bbox`` on the layer instead.
+The ``bbox`` should match the resolution of the extent. **CAREFUL: you will have big issue if you
+use this parameter to generate the tile on a restricted area**: use the ``bbox`` on the layer instead.
 
-The ``srs`` specify the code of the projection.
+The ``srs`` specifies the code of the projection.
 
-The ``unit`` unit used by the projection.
+The ``unit`` is the unit used by the projection.
 
-The ``tile_size`` in [px] default to 256.
+The ``tile_size`` is the tile size in [px], defaults to 256.
 
-The ``matrix_identifier`` default to ``zoom`` can also be ``resolution`` is how the z index is build to store
-the tiles, for example, for the resolutions ``[2, 1, 0.5]`` the used value are ``[0, 1, 2]`` it it's based on the zoom
-and ``[2, 1, 0_5]`` if it's based on the resolution. The second has the advantage to allows to add a new
-resolution without regenerate all the tiles, but it don't work with MapCache.
+The ``matrix_identifier`` is ``zoom`` by default and can also be set to ``resolution``. It specifies how the z index is build to store
+the tiles, for example, for the resolutions ``[2, 1, 0.5]`` the used values are ``[0, 1, 2]`` based on the zoom
+and ``[2, 1, 0_5]`` based on the resolution. The second has the advantage of allowing to add a new
+resolution without regenerating all the tiles, but it does not work with MapCache.
 
 
 Configure caches
 ----------------
 
-The available tiles cache are: ``s3``, ``bsddb``, ``mbtile`` and ``filesystem``.
+The available tile caches are: ``s3``, ``bsddb``, ``mbtile`` and ``filesystem``.
 
-The best solution to store the tiles is ``s3``, ``mbtiles`` and ``bsddb`` has the advantage to have only one file per
+The best solution to store the tiles, ``s3``, ``mbtiles`` and ``bsddb``, have the advantage of using only one file per
 layer - style  dimensions. To serve the ``mbtile`` and the ``bsddb`` see `Distribute the tiles`_.
 
-``s3`` need a ``bucket`` and a ``folder`` (default to '').
+``s3`` needs a ``bucket`` and a ``folder`` (defaults to '').
 
 ``mbtiles``, ``bsddb`` and ``filesystem`` just need a ``folder``.
 
-On all the cache we can add some information to generate the URL where the tiles are available.
+On all the caches we can add some information to generate the URL where the tiles are available.
 This is needed to generate the capabilities. We can specify:
 
 * ``http_url`` direct url to the tiles root.
-* ``http_urls`` (array) urls ti the tiles root.
+* ``http_urls`` (array) urls to the tiles root.
 * ``http_url`` and ``hosts`` (array), where each value of ``hosts`` is used to replace ``%(host)s`` in ``http_url``.
 
-In all case ``http_url`` or ``http_urls`` can include all attribute of this cache as ``%(attribute)s``.
+In all case ``http_url`` or ``http_urls`` can include all attributes of this cache as ``%(attribute)s``.
 
 MBTiles vs Berkley DB (``bsddb``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -111,26 +113,26 @@ We have two ``type`` of layer: ``wms`` or ``mapnik``.
 
 To start the common attributes are:
 
-The ``min_resolution_seed`` included minimum resolution that is seeded, other resolutions are served by MapCache.
+``min_resolution_seed`` the minimum resolution that is seeded, other resolutions are served by MapCache.
 
-The ``bbox`` is used to limit the tiles generation.
+``bbox`` used to limit the tiles generation.
 
 
 WMTS layout
 ~~~~~~~~~~~
 
-To generate the files path sand the WMTS capabilities we need some additional informations:
+To generate the file paths and the WMTS capabilities we need additional information:
 
-The ``mime_type`` of the tiles, it's also used by the WMS GetMap ant to upload the tile.
+The ``mime_type`` of the tiles, it's also used by the WMS GetMap and to upload the tiles.
 
-The ``wmts_style``, default to 'default'.
+The ``wmts_style`` defaults to 'default'.
 
 The ``extension`` is used to end the filename.
 
-The ``dimensions`` (default to  []) is an array of object that have a ``name``,
+The ``dimensions`` (defaults to  []) is an array of objects that have a ``name``,
 a ``default`` value specified in the capabilities,
-a ``value`` to generate the tiles (it can be overwrite by an argument),
-and an array of ``values`` that all the possible value available in the capabilities.
+a ``value`` to generate the tiles (it can be overwritten by an argument),
+and an array of ``values`` that contains all the possible values available in the capabilities.
 
 For example if you generate the tiles and capabilities with the following configuration:
 
@@ -142,7 +144,7 @@ For example if you generate the tiles and capabilities with the following config
             value: 2012
             values: [2012]
 
-than with the following configuration:
+then with the following configuration:
 
 .. code:: yaml
 
@@ -152,7 +154,7 @@ than with the following configuration:
             value: 2013
             values: [2012, 2013]
 
-We will have two set of tiles ``2012`` and ``2013`` that booth are accessible by the capabilities, and by default we will see the first set of tiles.
+We will have two set of tiles ``2012`` and ``2013``, both accessible by the capabilities, and by default we will see the first set of tiles.
 
 
 Metatiles
@@ -160,11 +162,11 @@ Metatiles
 
 The metatiles are activated by setting ``meta`` to ``on`` (by default it's ``off``).
 
-The metatiles are used for two thing first to generate multiple tiles with only one WMS query
-by setting ``meta_size`` to 8 we will generate a square of 8 by 8 tiles in one shot.
+The metatiles are used for two things: first to generate multiple tiles with only one WMS query.
+By setting ``meta_size`` to 8 we will generate a square of 8 by 8 tiles in one shot.
 
-The second usage of metatiles is to don't have cutted label name, this is solved by getting a bigger image
-and cutting the borders. The ``meta_buffer`` should be set to a bigger value to the half size of the longest label.
+The second usage of metatiles is prevent cut label names: this is solved by getting a bigger image
+and cutting the borders. The ``meta_buffer`` should be set to a bigger value than half the size of the longest label.
 
 
 Configure hash
@@ -187,7 +189,7 @@ To easily generate this configuration we can use the following command::
 
     ./buildout/bin/generate_tiles --get-hash <z/x/y> -l <layer_name>
 
-Where ``<z/x/y>`` should refers en empty tile/metatile. Generally it's a good
+Where ``<z/x/y>`` should refer to an empty tile/metatile. Generally it's a good
 idea to use z as the maximum zoom, x and y as 0.
 
 
@@ -234,8 +236,8 @@ for example:
 
 Then it will create a legend image per layer and per zoom level named
 ``.../1.0.0/{{layer}}/{{wmts_style}}/legend{{zoom}}.{{legend_extention}}``
-only if she is deferent than the previous zoom level. Than if we have only one legend image
-it sill store in the file named ``legend0.{{legend_extention}}``.
+only if she is deferent than the previous zoom level. If we have only one legend image
+it still stores in the file named ``legend0.{{legend_extention}}``.
 
 When we do ``./buildout/bin/generate_controler --generate_wmts-capabilities`` we will at first
 parse the legend images to generate a layer config like this:
@@ -272,7 +274,7 @@ Mapnik layers
 
 We need to specify the ``mapfile`` path.
 
-With Mapnik we have the possibility to specify a ``data_buffer`` than we should set the unneeded ``meta_buffer`` to 0.
+With Mapnik we have the possibility to specify a ``data_buffer`` then we should set the unneeded ``meta_buffer`` to 0.
 
 And the ``output_format`` used for the Mapnik renderer, can be ``png``, ``png256``, ``jpeg``, ``grid`` (grid_renderer).
 
@@ -281,7 +283,7 @@ And the ``output_format`` used for the Mapnik renderer, can be ``png``, ``png256
 Mapnik grid layers
 ~~~~~~~~~~~~~~~~~~
 
-With Mapnik we can generate UTFGrid tiles (JSON format that describe the tiles present on a corresponding tile)
+With Mapnik we can generate UTFGrid tiles (JSON format that describes the tiles present on a corresponding tile)
 by using the ``output_format`` 'grid', see also: https://github.com/mapnik/mapnik/wiki/MapnikRenderers#grid_renderer.
 
 Specific configuration:
@@ -291,11 +293,11 @@ We have a specific way to ``drop_empty_utfgrid`` by using the ``on`` value.
 We should specify the pseudo pixel size [px] with the ``resolution``.
 
 And the ``layers_fields`` that we want to get the attributes.
-Object withe the layer name as key and the values in an array as value.
+Object with the layer name as key and the values in an array as value.
 
-In fact the Mapnik documentation say that's working only for one layer.
+In fact the Mapnik documentation says that's working only for one layer.
 
-And don't miss the change the ``extension`` to ``json``, and the ``mime_type`` to ``application/utfgrid``
+And don't forget to change the ``extension`` to ``json``, and the ``mime_type`` to ``application/utfgrid``
 and the ``meta`` to ``off`` (not supported).
 
 Configuration example:
