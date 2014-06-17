@@ -1,3 +1,5 @@
+#!/bin/bash -e
+
 createdb -E UTF8 -T template0 tests
 psql -q -d tests -c "CREATE EXTENSION postgis"
 psql -q -d tests -c "ALTER USER postgres WITH PASSWORD 'postgres';"
