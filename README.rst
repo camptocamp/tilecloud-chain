@@ -842,10 +842,10 @@ Please use the ``--debug`` to report issue.
 
 
 -----------
-From source
+From sources
 -----------
 
 Build it::
-
+    git submodule update --recursive
     python bootstrap.py --distribute -v 1.7.1
     ./buildout/bin/buildout
