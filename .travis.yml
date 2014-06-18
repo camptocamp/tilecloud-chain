@@ -1,9 +1,3 @@
-language: python
-
-python:
-- 2.6
-- 2.7
-
 env:
   global:
   - BERKELEYDB_LIBDIR=/usr/lib/x86_64-linux-gnu BERKELEYDB_INCDIR=/usr/include
@@ -19,10 +13,13 @@ before_install:
 - chmod 644 ~/.bashrc
 - echo "PATH=${PATH}" > ~/.bashrc
 
+- sudo rm -f /etc/apt/sources.list.d/pgdg-source.list
+- sudo rm -rf /usr/local
 - echo 'yes' | sudo add-apt-repository ppa:stephane-brunner/precise
 - echo 'yes' | sudo add-apt-repository ppa:mapnik/v2.2.0
 - sudo apt-get update
-- sudo apt-get install -y libmapnik-dev python-mapnik apache2 cgi-mapserver deploy libdb-dev optipng
+- sudo apt-get install -y --force-yes libmapnik-dev python-mapnik apache2 cgi-mapserver deploy libdb-dev optipng postgresql-9.1-postgis-2.0=2.0.3-2~precise4 postgis=2.0.3-2~precise4 python python-pip
+
 - sudo -u postgres tilecloud_chain/tests/create_test_data.sh
 - sudo cp tilecloud_chain/tests/apache.conf /etc/apache2/sites-enabled/apache.conf
 - sudo apache2ctl graceful
@@ -33,7 +30,7 @@ before_install:
 - sudo chmod g+s,o+w /tmp/tests
 
 install:
-- pip install -U mapnik2==2.2.0
+- sudo pip install -U mapnik2==2.2.0
 - python bootstrap.py -v 1.7.1
 - ./buildout/bin/buildout 
 
@@ -43,7 +40,7 @@ script:
 
 after_success:
 # Report coverage results to coveralls.io
-- pip install coveralls
+- sudo pip install coveralls
 - coveralls
 
 notifications:
