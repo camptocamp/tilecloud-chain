@@ -11,17 +11,8 @@ README = (
     open(os.path.join(here, 'CHANGES.rst')).read()
 )
 
-install_requires = [
-    'tilecloud>=0.2dev-20130808',
-    'psycopg2',
-    'Shapely',
-    'boto>=2.0',
-    'PyYAML',
-    'Jinja2',
-    'pyramid',
-    'simplejson',
-    'requests',
-]
+install_requires = open(os.path.join(here, 'requirements.txt')).read().splitlines()
+
 if sys.version_info < (2, 7):
     install_requires.extend([
         'argparse',

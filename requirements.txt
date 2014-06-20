@@ -1,0 +1,9 @@
+tilecloud>=0.2dev-20130808
+psycopg2
+Shapely
+boto>=2.0
+PyYAML
+Jinja2
+pyramid
+simplejson
+requests
