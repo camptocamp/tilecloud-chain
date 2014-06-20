@@ -25,7 +25,7 @@ Time to generate: %(time)s [d h:mm:ss]
 S3 PUT: %(s3)s [$]
 EC2 usage: %(ec2)s [$]
 ESB usage: %(esb)s [$]"""
-#SQS usage: %(sqs)s [$]"""
+# SQS usage: %(sqs)s [$]"""
 
     LAYER_SUMMARY = """
 Number of tiles: %(tiles)s
@@ -43,7 +43,7 @@ S3 Storage: %(storage)s [$/month]
 S3 get: %(get)s [$/month]
 ESB storage: %(esb)s [$/month]
 """
-#CloudFront: %(cloudfront)s [$/month]
+# CloudFront: %(cloudfront)s [$/month]
 
     @attr(cost_point=True)
     @attr(cost=True)
@@ -69,7 +69,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 'SQS usage: 0.00 [$]',
                 self.ZOOM_SUMMARY % {
@@ -79,7 +79,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 'SQS usage: 0.00 [$]',
                 self.ZOOM_SUMMARY % {
@@ -89,7 +89,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 'SQS usage: 0.00 [$]',
                 self.ZOOM_SUMMARY % {
@@ -99,7 +99,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 'SQS usage: 0.00 [$]',
                 self.LAYER_SUMMARY % {
@@ -110,7 +110,7 @@ ESB storage: %(esb)s [$/month]
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',
                     'get': '32.89',
-                    #'cloudfront': '31.89',
+                    # 'cloudfront': '31.89',
                     'esb': '11.00',
                 }]))
 
@@ -138,7 +138,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 'SQS usage: 0.00 [$]',
                 self.ZOOM_SUMMARY % {
@@ -148,7 +148,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 'SQS usage: 0.00 [$]',
                 self.ZOOM_SUMMARY % {
@@ -158,7 +158,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 'SQS usage: 0.00 [$]',
                 self.ZOOM_SUMMARY % {
@@ -168,7 +168,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 'SQS usage: 0.00 [$]',
                 self.LAYER_SUMMARY % {
@@ -179,7 +179,7 @@ ESB storage: %(esb)s [$/month]
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',
                     'get': '32.89',
-                    #'cloudfront': '31.89',
+                    # 'cloudfront': '31.89',
                     'esb': '11.00',
                 }]))
 
@@ -209,7 +209,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '19',
@@ -218,7 +218,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '43',
@@ -227,7 +227,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '84',
@@ -236,7 +236,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '164',
@@ -245,7 +245,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
                     'tiles': '321',
@@ -255,7 +255,7 @@ ESB storage: %(esb)s [$/month]
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',
                     'get': '32.89',
-                    #'cloudfront': '31.89',
+                    # 'cloudfront': '31.89',
                     'esb': '11.00',
                 }]))
 
@@ -285,7 +285,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '64',
@@ -294,7 +294,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '383',
@@ -303,7 +303,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '493',
@@ -312,7 +312,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '600',
@@ -321,7 +321,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.01',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
                     'tiles': '1604',
@@ -331,7 +331,7 @@ ESB storage: %(esb)s [$/month]
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',
                     'get': '32.89',
-                    #'cloudfront': '31.89',
+                    # 'cloudfront': '31.89',
                     'esb': '11.00',
                 }]))
 
@@ -356,7 +356,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '35',
@@ -365,7 +365,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '167',
@@ -374,7 +374,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '601',
@@ -383,7 +383,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.01',
                     'ec2': '0.00',
                     'esb': '0.01',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '2268',
@@ -392,7 +392,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.02',
                     'ec2': '0.01',
                     'esb': '0.02',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
                     'tiles': '3084',
@@ -402,7 +402,7 @@ ESB storage: %(esb)s [$/month]
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',
                     'get': '32.89',
-                    #'cloudfront': '31.89',
+                    # 'cloudfront': '31.89',
                     'esb': '11.00',
                 }]))
 
@@ -428,7 +428,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '35',
@@ -437,7 +437,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '165',
@@ -446,7 +446,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '609',
@@ -455,7 +455,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.01',
                     'ec2': '0.00',
                     'esb': '0.01',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '2240',
@@ -464,7 +464,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.02',
                     'ec2': '0.01',
                     'esb': '0.02',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
                     'tiles': '3061',
@@ -474,7 +474,7 @@ ESB storage: %(esb)s [$/month]
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',
                     'get': '32.89',
-                    #'cloudfront': '31.89',
+                    # 'cloudfront': '31.89',
                     'esb': '11.00',
                 }]))
 
@@ -506,7 +506,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '19',
@@ -515,7 +515,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '43',
@@ -524,7 +524,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '84',
@@ -533,7 +533,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '164',
@@ -542,7 +542,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
                     'tiles': '321',
@@ -564,7 +564,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '35',
@@ -573,7 +573,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '167',
@@ -582,7 +582,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '601',
@@ -591,7 +591,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.01',
                     'ec2': '0.00',
                     'esb': '0.01',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '2268',
@@ -600,7 +600,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.02',
                     'ec2': '0.01',
                     'esb': '0.02',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
                     'tiles': '3084',
@@ -615,7 +615,7 @@ ESB storage: %(esb)s [$/month]
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',
                     'get': '55.78',
-                    #'cloudfront': '54.78',
+                    # 'cloudfront': '54.78',
                     'esb': '11.00',
                 }]))
 
@@ -641,7 +641,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.55',
                     'ec2': '0.08',
                     'esb': '0.23',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '1340772',
@@ -650,7 +650,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '13.41',
                     'ec2': '1.93',
                     'esb': '5.68',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '5351829',
@@ -659,7 +659,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '53.52',
                     'ec2': '7.70',
                     'esb': '22.65',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
                     'tiles': '6747135',
@@ -669,7 +669,7 @@ ESB storage: %(esb)s [$/month]
                 self.FINAL_SUMMARY % {
                     'storage': '0.02',
                     'get': '32.89',
-                    #'cloudfront': '31.89',
+                    # 'cloudfront': '31.89',
                     'esb': '11.00',
                 }]))
 
@@ -690,27 +690,27 @@ ESB storage: %(esb)s [$/month]
                 self.ZOOM_SUMMARY % {
                     'tiles': '2', 'zoom': '0', 'time': '0:00:00', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '4', 'zoom': '1', 'time': '0:00:00', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '10', 'zoom': '2', 'time': '0:00:00', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '27', 'zoom': '3', 'time': '0:00:01', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '84', 'zoom': '4', 'time': '0:00:05', 's3': '0.00',
                     'ec2': '0.00', 'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
                     'tiles': '127',
@@ -720,7 +720,7 @@ ESB storage: %(esb)s [$/month]
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',
                     'get': '32.89',
-                    #'cloudfront': '31.89',
+                    # 'cloudfront': '31.89',
                     'esb': '11.00',
                 }]))
 
@@ -745,7 +745,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '2',
@@ -754,7 +754,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '9',
@@ -763,7 +763,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '25',
@@ -772,7 +772,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.ZOOM_SUMMARY % {
                     'tiles': '81',
@@ -782,7 +782,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
                     'tiles': '119',
@@ -792,7 +792,7 @@ ESB storage: %(esb)s [$/month]
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',
                     'get': '32.89',
-                    #'cloudfront': '31.89',
+                    # 'cloudfront': '31.89',
                     'esb': '11.00',
                 }]))
 
@@ -820,7 +820,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.00',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 'SQS usage: 0.00 [$]',
                 self.ZOOM_SUMMARY % {
@@ -830,7 +830,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.01',
                     'ec2': '0.00',
                     'esb': '0.00',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 'SQS usage: 0.00 [$]',
                 self.ZOOM_SUMMARY % {
@@ -840,7 +840,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.06',
                     'ec2': '0.01',
                     'esb': '0.03',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 'SQS usage: 0.00 [$]',
                 self.ZOOM_SUMMARY % {
@@ -850,7 +850,7 @@ ESB storage: %(esb)s [$/month]
                     's3': '0.24',
                     'ec2': '0.03',
                     'esb': '0.10',
-                    #'sqs': '0.00'
+                    # 'sqs': '0.00'
                 },
                 'SQS usage: 0.00 [$]',
                 self.LAYER_SUMMARY % {
@@ -861,7 +861,7 @@ ESB storage: %(esb)s [$/month]
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',
                     'get': '32.89',
-                    #'cloudfront': '31.89',
+                    # 'cloudfront': '31.89',
                     'esb': '11.00',
                 }]))
 
