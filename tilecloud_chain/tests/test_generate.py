@@ -448,7 +448,7 @@ Nb tiles dropped: 314
 Nb tiles stored: 6
 Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: 2.7 Kio
+Total size: 2.[0-9] Kio
 Time per tiles: [0-9]+ ms
 Size per tile: 4[0-9][0-9] o
 
@@ -482,7 +482,7 @@ Nb tiles dropped: 376
 Nb tiles stored: 8
 Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: 3.6 Kio
+Total size: 3.[0-9] Kio
 Time per tiles: [0-9]+ ms
 Size per tile: 4[0-9][0-9] o
 
@@ -516,7 +516,7 @@ Nb tiles dropped: 378
 Nb tiles stored: 6
 Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: 2.7 Kio
+Total size: 2.[0-9] Kio
 Time per tiles: [0-9]+ ms
 Size per tile: 4[0-9][0-9] o
 
@@ -549,9 +549,9 @@ Nb tiles dropped: 314
 Nb tiles stored: 6
 Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: 2.7 Kio
+Total size: 2.[0-9] Kio
 Time per tiles: [0-9]+ ms
-Size per tile: 455 o
+Size per tile: 4[0-9][0-9] o
 
 """,
             )
@@ -675,7 +675,7 @@ Nb tiles dropped: 62
 Nb tiles stored: 2
 Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: 910 o
+Total size: 9[0-9][0-9] o
 Time per tiles: [0-9]+ ms
 Size per tile: 4[0-9][0-9] o
 
@@ -941,9 +941,9 @@ Size per tile: 4[0-9][0-9] o
                 'error.list',
                 u"""# \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] Start generation
 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] Start the layer 'point_error' generation
-0/0/0:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'cannot identify image file - .*
-0/0/8:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'cannot identify image file - .*
-0/8/0:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'cannot identify image file - .*
+0/0/0:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'cannot identify image file .*
+0/0/8:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'cannot identify image file .*
+0/8/0:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'cannot identify image file .*
 """]],
         )
 

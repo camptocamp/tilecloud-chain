@@ -236,9 +236,9 @@ class Server:
                 params['FORMAT'] = layer['mime_type']
         else:
             if \
-                    not 'SERVICE' in params or \
-                    not 'REQUEST' in params or \
-                    not 'VERSION' in params:
+                    'SERVICE' not in params or \
+                    'REQUEST' not in params or \
+                    'VERSION' not in params:
                 return self.error(400, "Not all required parameters are present", **kwargs)
 
         if params['SERVICE'] != 'WMTS':
@@ -264,12 +264,12 @@ class Server:
                 return body
 
         if \
-                not 'FORMAT' in params or \
-                not 'LAYER' in params or \
-                not 'TILEMATRIXSET' in params or \
-                not 'TILEMATRIX' in params or \
-                not 'TILEROW' in params or \
-                not 'TILECOL' in params:  # pragma: no cover
+                'FORMAT' not in params or \
+                'LAYER' not in params or \
+                'TILEMATRIXSET' not in params or \
+                'TILEMATRIX' not in params or \
+                'TILEROW' not in params or \
+                'TILECOL' not in params:  # pragma: no cover
             return self.error(400, "Not all required parameters are present", **kwargs)
 
         if path is None:
@@ -299,9 +299,9 @@ class Server:
 
         if params['REQUEST'] == 'GetFeatureInfo':
             if \
-                    not 'I' in params or \
-                    not 'J' in params or \
-                    not 'INFO_FORMAT' in params:  # pragma: no cover
+                    'I' not in params or \
+                    'J' not in params or \
+                    'INFO_FORMAT' not in params:  # pragma: no cover
                 return self.error(400, "Not all required parameters are present", **kwargs)
             if 'query_layers' in layer:
                 return self.forward(
