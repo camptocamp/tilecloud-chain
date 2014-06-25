@@ -97,7 +97,7 @@ def main():
 def _send(data, path, mime_type, cache):
     if cache['type'] == 's3':  # pragma: no cover
         s3bucket = S3Connection().bucket(cache['bucket'])
-        s3key = s3bucket.key(('%(folder)s' % cache) + path)
+        s3key = s3bucket.key(os.path.join('%(folder)s' % cache, path))
         s3key.body = data
         s3key['Content-Encoding'] = 'utf-8'
         s3key['Content-Type'] = mime_type
@@ -116,10 +116,10 @@ def _send(data, path, mime_type, cache):
 def _get(path, cache):
     if cache['type'] == 's3':  # pragma: no cover
         s3bucket = S3Connection().bucket(cache['bucket'])
-        s3key = s3bucket.key(('%(folder)s' % cache) + path)
+        s3key = s3bucket.key(os.path.join('%(folder)s' % cache, path))
         return s3key.get().body
     else:
-        p = cache['folder'] + path
+        p = os.path.join(cache['folder'], path)
         if not os.path.isfile(p):  # pragma: no cover
             return None
         with open(p, 'rb') as file:
@@ -160,6 +160,8 @@ def _generate_wmts_capabilities(gene):
     if cache['http_urls']:
         base_urls = [url % cache for url in cache['http_urls']]
 
+    base_urls = [url + '/' if url[-1] != '/' else url for url in base_urls]
+
     for layer in gene.layers.values():
         previous_legend = None
         previous_resolution = None
@@ -176,7 +178,7 @@ def _generate_wmts_capabilities(gene):
                 if img is not None:
                     new_legend = {
                         'mime_type': layer['legend_mime'],
-                        'href': base_urls[0] + ('static/' if server else '') + path,
+                        'href': os.path.join(base_urls[0], 'static/' if server else '', path),
                     }
                     layer['legends'].append(new_legend)
                     if previous_legend is not None:
@@ -301,6 +303,10 @@ def _generate_apache_config(gene):
 
     f = open(gene.config['apache']['config_file'], 'w')
 
+    folder = cache['folder']
+    if folder and folder[-1] != '/':
+        folder += '/'
+
     if not use_server:
         f.write("""<Location %(location)s>
     ExpiresActive on
@@ -322,14 +328,14 @@ ProxyPassReverse %(location)s/ http://s3-%(region)s.amazonaws.com/%(bucket)s/%(f
                 'location': gene.config['apache']['location'],
                 'region': cache['region'],
                 'bucket': cache['bucket'],
-                'folder': cache['folder']
+                'folder': folder
             })
         elif cache['type'] == 'filesystem':
             f.write("""
 Alias %(location)s %(files_folder)s
 """ % {
                 'location': gene.config['apache']['location'],
-                'files_folder': cache['folder']
+                'files_folder': folder
             })
 
     use_mapcache = 'mapcache' in gene.config
@@ -414,6 +420,9 @@ def _generate_openlayers(gene):
             http_url = cache['http_url'] % cache
     if 'http_urls' in cache and cache['http_urls']:
         http_url = cache['http_urls'][0] % cache
+
+    if http_url and http_url[-1] != '/':
+        http_url += '/'
 
     js = jinja2_template(
         openlayers_js,

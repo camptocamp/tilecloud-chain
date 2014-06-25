@@ -1,3 +1,5 @@
+#! /bin/bash -e
+
 yes ""|adduser --ingroup travis deploy --disabled-password
 mkdir /home/deploy/.ssh
 ssh-keygen -t rsa -C your_email@youremail.com -P '' -f /home/deploy/.ssh/id_rsa
