@@ -35,7 +35,7 @@ tests_require = [
 
 setup(
     name='tilecloud-chain',
-    version='0.8',
+    version='0.9.0',
     description="""
 Tools to generates tiles from WMS or Mapnik, to S3, Berkley DB, MBTiles, """
     """or local filesystem in WMTS layout using Amazon cloud services.
