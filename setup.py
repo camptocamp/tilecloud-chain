@@ -25,7 +25,7 @@ if sys.version_info >= (3, 0) or (
     ])
 
 setup_requires = [
-    'nose==1.3.0',
+    'nose',
 ]
 tests_require = [
     'coverage',
