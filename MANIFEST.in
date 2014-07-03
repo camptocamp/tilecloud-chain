@@ -1,5 +1,6 @@
 include README.rst
 include CHANGES.rst
+include requirements.txt
 recursive-include tilecloud_chain/scaffolds/create *
 include tilecloud_chain/OpenLayers.js
 include tilecloud_chain/OpenLayers-style.css
