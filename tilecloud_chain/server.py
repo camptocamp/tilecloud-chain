@@ -367,7 +367,13 @@ class Server:
                 **kwargs
             )
 
-        tile = store.get_one(tile)
+        tile = None
+        try:
+            tile = store.get_one(tile)
+        except:
+            # Consider all error as no tile
+            pass
+
         if tile:
             return self.responce(tile.data, headers={
                 'Content-Type': tile.content_type,
