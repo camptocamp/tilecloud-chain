@@ -395,7 +395,7 @@ def main():
         options.cache = gene.config['generation']['default_cache']
 
     if options.tiles is not None and options.role not in ['local', 'master']:  # pragma: no cover
-        exit("The --tiles option worky only with role local or master")
+        exit("The --tiles option work only with role local or master")
 
     try:
         if (options.layer):
