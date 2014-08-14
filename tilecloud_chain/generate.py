@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import sys
 import logging
 import socket
@@ -25,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 
 class Generate:
+    _re_rm_xml_tag = re.compile('(<[^>]*>|\n)')
+
     def gene(self, options, gene, layer):
         count_metatiles = None
         count_metatiles_dropped = Count()
@@ -158,13 +161,28 @@ class Generate:
                         proj4_literal=grid['proj4_literal'],
                     ), "Create Mapnik tile")
 
+            def wrong_content_type_to_error(tile):
+                if tile is not None and tile.content_type is not None \
+                        and tile.content_type.find("image/") != 0:
+                    if tile.content_type.find("application/vnd.ogc.se_xml") == 0:
+                        tile.error = "WMS server error: %s" % (
+                            self._re_rm_xml_tag.sub('', tile.data)
+                        )
+                    else:  # pragma: no cover
+                        tile.error = "%s is not an image format, error: %s" % (
+                            tile.content_type,
+                            tile.data
+                        )
+                return tile
+            gene.imap(wrong_content_type_to_error)
+
+            # Handle errors
+            gene.add_error_filters()
+
             if meta:
                 if options.role == 'hash':
                     gene.imap(HashLogger('empty_metatile_detection'))
                 elif not options.near:
-                    # Handle errors
-                    gene.add_error_filters()
-
                     # Discard tiles with certain content
                     if 'empty_metatile_detection' in gene.layer:
                         empty_tile = gene.layer['empty_metatile_detection']
@@ -186,6 +204,9 @@ class Generate:
                 gene.add_metatile_splitter()
                 gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
+                # Handle errors
+                gene.add_error_filters()
+
             self.count_tiles = gene.counter()
 
             if 'pre_hash_post_process' in gene.layer:
@@ -194,9 +215,6 @@ class Generate:
             if options.role == 'hash':
                 gene.imap(HashLogger('empty_tile_detection'))
             elif not options.near:
-                # Handle errors
-                gene.add_error_filters()
-
                 # Discard tiles with certain content
                 if 'empty_tile_detection' in gene.layer:
                     empty_tile = gene.layer['empty_tile_detection']

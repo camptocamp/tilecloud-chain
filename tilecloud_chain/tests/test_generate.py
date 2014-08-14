@@ -940,9 +940,15 @@ Size per tile: 4[0-9][0-9] o
             expected=[[
                 'error.list',
                 u"""# \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] Start the layer 'point_error' generation
-0/0/0:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'cannot identify image file .*
-0/0/8:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'cannot identify image file .*
-0/8/0:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'cannot identify image file .*
+0/0/0:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: """
+                """msWMSLoadGetMapParams\(\): WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
+                """A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'
+0/0/8:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: """
+                """msWMSLoadGetMapParams\(\): WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
+                """A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'
+0/8/0:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: """
+                """msWMSLoadGetMapParams\(\): WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
+                """A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'
 """]],
         )
 
