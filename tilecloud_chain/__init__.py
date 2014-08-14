@@ -804,7 +804,7 @@ class TileGeneration:
         return not error
 
     def set_layer(self, layer, options):
-        self.log_tiles_error(message="Start the layer '%s' generation" % layer)
+        self.create_log_tiles_error(layer)
         self.layer = self.layers[layer]
 
         if options.near is not None or (
@@ -1008,21 +1008,28 @@ class TileGeneration:
 
     error_file = None
 
+    def create_log_tiles_error(self, layer):
+        if 'error_file' in self.config['generation']:
+            now = datetime.now()
+            time = now.strftime('%d-%m-%Y %H:%M:%S')
+            self.error_file = open(
+                self.config['generation']['error_file'].format(
+                    layer=layer, datetime=now
+                ),
+                'a'
+            )
+            self.error_file.write("# [%s] Start the layer '%s' generation\n" % (time, layer))
+
     def log_tiles_error(self, tilecoord=None, message=None):
         if 'error_file' in self.config['generation']:
             time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
-            if self.error_file is None:
-                self.error_file = open(self.config['generation']['error_file'], 'a')
-                self.error_file.write('# [%s] Start generation\n' % time)
+            if self.error_file is None:  # pragma: no cover
+                raise "Missing error file"
 
-            if tilecoord is None:
-                self.error_file.write('# [%s] %s\n' % (time, message.replace('\n', ' ')))
+            tilecoord = "" if tilecoord is None else "%s " % tilecoord
+            message = "" if message is None else " %s" % message
 
-            if message is None:  # pragma: no cover
-                self.error_file.write('%s # [%s]\n' % (tilecoord, time))
-
-            if tilecoord is not None and message is not None:
-                self.error_file.write('%s # [%s] %s\n' % (tilecoord, time, message.replace('\n', ' ')))
+            self.error_file.write('%s# [%s]%s\n' % (tilecoord, time, message.replace('\n', ' ')))
 
     def add_error_filters(self):
         self.imap(LogErrors(
