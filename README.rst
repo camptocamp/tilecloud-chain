@@ -232,7 +232,7 @@ for example:
    legend_mime: image/png
    legend_extention: png
 
-Then it will create a legend image per layer and per zoom level named 
+Then it will create a legend image per layer and per zoom level named
 ``.../1.0.0/{{layer}}/{{wmts_style}}/legend{{zoom}}.{{legend_extention}}``
 only if she is deferent than the previous zoom level. Than if we have only one legend image
 it sill store in the file named ``legend0.{{legend_extention}}``.
@@ -394,6 +394,17 @@ The tiles that in error will be append to the file, ant the tiles can be regener
 The ``<path>`` can be ``/tmp/error_{layer}_{datetime:%Y-%m-%d_%H:%M:%S}``
 to have one file per layer and per run.
 
+The tiles file looks like:
+
+.. code::
+
+    # [time] some comments
+    z/x/y # [time] the error
+    z/x/y:+m/+m # [time] the error
+
+The first line is just a comment, the second, is for an error on a tile,
+and the third is for an error on a metatile.
+
 Proxy/cache issue
 -----------------
 
@@ -528,10 +539,10 @@ Amazon has a command line tool (`homepage <http://aws.amazon.com/fr/cli/>`_).
 
 To use it, add in the ``setup.py``:
 
-* ``awscli`` as an ``install_requires``, 
+* ``awscli`` as an ``install_requires``,
 * ``'aws = awscli.clidriver:main',`` in the ``console_scripts``.
 
-Than install it: 
+Than install it:
 
 .. code:: bash
 
