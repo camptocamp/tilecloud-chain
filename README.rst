@@ -391,6 +391,9 @@ If we set a file path in config file:
 The tiles that in error will be append to the file, ant the tiles can be regenerated with
 ``./buildout/bin/generate_tiles --layer <layer> --tiles <path>``.
 
+The ``<path>`` can be ``/tmp/error_{layer}_{datetime:%Y-%m-%d_%H:%M:%S}``
+to have one file per layer and per run.
+
 Proxy/cache issue
 -----------------
 
