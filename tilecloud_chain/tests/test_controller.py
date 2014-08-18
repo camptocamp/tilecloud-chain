@@ -932,6 +932,145 @@ class TestController(CompareCase):
             main_func=controller.main,
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
+    @attr(capabilities_slash=True)
+    @attr(capabilities=True)
+    @attr(controller=True)
+    @attr(general=True)
+    def test_capabilities_slash(self):
+        self.assert_main_equals(
+            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-capabilities.yaml',
+            main_func=controller.main,
+            expected=[[
+                '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
+                u"""<?xml version="1.0" encoding="UTF-8"?>
+<Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
+              xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:gml="http://www.opengis.net/gml"
+              xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
+  <ows:ServiceIdentification> </ows:ServiceIdentification>
+  <ows:ServiceProvider> </ows:ServiceProvider>
+  <ows:OperationsMetadata>
+    <ows:Operation name="GetCapabilities">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="http://taurus/tiles/1.0.0/WMTSCapabilities.xml">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>REST</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="GetTile">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="http://taurus/tiles/">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>REST</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+  </ows:OperationsMetadata>
+  <!-- <ServiceMetadataURL xlink:href="" /> -->
+  <Contents>
+
+    <Layer>
+      <ows:Title>no_dim</ows:Title>
+      <ows:Identifier>no_dim</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://taurus/tiles/1.0.0/no_dim/default/"""
+                """{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>two</ows:Title>
+      <ows:Identifier>two</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2012</Value>
+      </Dimension>
+      <Dimension>
+        <ows:Identifier>LEVEL</ows:Identifier>
+        <Default>1</Default>
+        <Value>1</Value>
+        <Value>2</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://taurus/tiles/1.0.0/two/default/"""
+                """{DATE}/{LEVEL}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>one</ows:Title>
+      <ows:Identifier>one</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://taurus/tiles/1.0.0/one/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+
+
+    <TileMatrixSet>
+      <ows:Identifier>swissgrid</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>357142.857143</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>19</MatrixWidth>
+        <MatrixHeight>13</MatrixHeight>
+      </TileMatrix>
+
+      <TileMatrix>
+        <ows:Identifier>1</ows:Identifier>
+        <ScaleDenominator>35714.2857143</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>188</MatrixWidth>
+        <MatrixHeight>125</MatrixHeight>
+      </TileMatrix>
+
+    </TileMatrixSet>
+
+  </Contents>
+</Capabilities>"""]])
+
     @attr(multi_url_capabilities=True)
     @attr(controller=True)
     @attr(general=True)

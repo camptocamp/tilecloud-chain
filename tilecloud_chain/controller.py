@@ -168,12 +168,10 @@ def _generate_wmts_capabilities(gene):
         if 'legend_mime' in layer and 'legend_extention' in layer and 'legends' not in layer:
             layer['legends'] = []
             for zoom, resolution in enumerate(layer['grid_ref']['resolutions']):
-                path = '1.0.0/%s/%s/legend%s.%s' % (
-                    layer['name'],
-                    layer['wmts_style'],
+                path = '/'.join(['1.0.0', layer['name'], layer['wmts_style'], 'legend%s.%s' % (
                     zoom,
                     layer['legend_extention']
-                )
+                )])
                 img = _get(path, cache)
                 if img is not None:
                     new_legend = {
