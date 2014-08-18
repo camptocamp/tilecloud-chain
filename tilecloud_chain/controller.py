@@ -131,14 +131,30 @@ def _validate_generate_wmts_capabilities(gene, cache):
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_url', attribute_type=str, default=False) or error
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_urls', attribute_type=list, default=False) or error
     error = gene.validate(cache, 'cache[%s]' % cache['name'], 'hosts', attribute_type=list, default=False) or error
-    if not cache['http_url'] and not cache['http_urls']:
+    if not cache['http_url'] and not cache['http_urls']:  # pragma: no cover
         logger.error(
             "The attribute 'http_url' or 'http_urls' is required in the object %s." %
             ('cache[%s]' % cache['name'])
-        )  # pragma: no cover
-        error = True  # pragma: no cover
-    if error:
-        exit(1)  # pragma: no cover
+        )
+        error = True
+    if cache['http_url'] and cache['http_url'][-1] == '/':  # pragma: no cover
+        logger.error(
+            "The attribute 'http_url' shouldn't ends with a '/' in the object %s." %
+            ('cache[%s]' % cache['name'])
+        )
+        error = True
+    elif cache['http_urls']:
+        for url in cache['http_urls']:
+            if url[-1] == '/':  # pragma: no cover
+                logger.error(
+                    "The element '%s' of the attribute 'http_urls' shouldn't ends"
+                    " with a '/' in the object %s." %
+                    ('cache[%s]' % cache['name'])
+                )
+                error = True
+
+    if error:  # pragma: no cover
+        exit(1)
 
 
 def _generate_wmts_capabilities(gene):
