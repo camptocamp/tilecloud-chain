@@ -1,0 +1,44 @@
+grids:
+    swissgrid:
+        resolutions: [100, 10]
+        bbox: [420000, 30000, 900000, 350000]
+        tile_size: 256
+        srs: epsg:21781
+
+caches:
+    local:
+        type: filesystem
+        http_url: http://taurus/tiles
+        folder: /tmp/tiles
+        wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
+
+layer_default:
+    url: http://localhost/mapserv
+    layers: point
+    grid: swissgrid
+    type: wms
+    wmts_style: default
+    mime_type: image/png
+    extension: png
+
+layers:
+    no_dim: {}
+    one:
+        dimensions:
+        -   name: DATE
+            default: 2012
+            value: 2012
+            values: [2012]
+    two:
+        dimensions:
+        -   name: DATE
+            default: 2012
+            value: 2012
+            values: [2012]
+        -   name: LEVEL
+            default: 1
+            value: 1
+            values: [1, 2]
+
+generation:
+    default_cache: local

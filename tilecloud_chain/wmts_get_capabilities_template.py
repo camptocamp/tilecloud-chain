@@ -84,9 +84,9 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
       endfor %}{%
       for base_url in base_urls %}
       <ResourceURL format="{{layer['mime_type']}}" resourceType="tile"
-                   template="{{base_url}}{{base_url_postfix}}1.0.0/{{layername}}/{{layer['wmts_style']}}/{%
+                   template="{{base_url}}{{base_url_postfix}}1.0.0/{{layername}}/{{layer['wmts_style']}}{%
                         for dimension in layer['dimensions']
-                            %}{{('{' + dimension['name'] + '}')}}{%
+                            %}/{{('{' + dimension['name'] + '}')}}{%
                         endfor
                    %}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.{{layer['extension']}}" />{%
       endfor %}
