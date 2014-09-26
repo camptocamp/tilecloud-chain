@@ -12,11 +12,11 @@ from tilecloud_chain import controller
 
 class TestConfig(CompareCase):
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls):  # noqa
         os.chdir(os.path.dirname(__file__))
 
     @classmethod
-    def tearDownClass(self):
+    def tearDownClass(cls):  # noqa
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
     @log_capture('tilecloud_chain')

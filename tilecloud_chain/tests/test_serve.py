@@ -146,13 +146,13 @@ CAPABILITIES = """<?xml version="1.0" encoding="UTF-8"?>
 class TestServe(CompareCase):
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls):  # noqa
         os.chdir(os.path.dirname(__file__))
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')
 
     @classmethod
-    def tearDownClass(self):
+    def tearDownClass(cls):  # noqa
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')

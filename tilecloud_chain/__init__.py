@@ -953,14 +953,14 @@ class TileGeneration:
         if not self.options.quiet and \
                 not self.options.verbose and \
                 not self.options.debug:
-            def logTile(tile):
+            def log_tiles(tile):
                 variables = dict()
                 variables.update(tile.__dict__)
                 variables.update(tile.tilecoord.__dict__)
                 sys.stdout.write("%(tilecoord)s          \r" % variables)
                 sys.stdout.flush()
                 return tile
-            self.imap(logTile)
+            self.imap(log_tiles)
         elif self.options.verbose:
             self.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
@@ -993,14 +993,14 @@ class TileGeneration:
                         if len(data) < 2000:
                             metatile.error = str(sys.exc_info()[1]) + " - " + metatile.data
                         else:
-                            class norepr:
+                            class NoRepr:
                                 def __init__(self, value):
                                     self.value = value
 
                                 def __repr__(self):
                                     return self.value
 
-                            metatile.error = norepr(
+                            metatile.error = NoRepr(
                                 repr(str(sys.exc_info()[1])) + " - " + data[0:2000] + '...'
                             )
                         yield metatile
