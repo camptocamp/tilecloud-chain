@@ -1461,6 +1461,35 @@ RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
 
+    @attr(apache_s3=True)
+    @attr(apache_s3_tilesurl=True)
+    @attr(controller=True)
+    @attr(general=True)
+    def test_apache_s3_tilesurl(self):
+        self.assert_main_equals(
+            cmd='./buildout/bin/generate_controller --apache '
+                '-c tilegeneration/test-apache-s3-tilesurl.yaml',
+            main_func=controller.main,
+            expected=[[
+                'tiles.conf',
+                u"""<Location /tiles>
+    ExpiresActive on
+    ExpiresDefault "now plus 8 hours"
+</Location>
+
+<Proxy http://tiles.example.com/*>
+    Order deny,allow
+    Allow from all
+</Proxy>
+ProxyPass /tiles/ http://tiles.example.com/
+ProxyPassReverse /tiles/ http://tiles.example.com/
+
+RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
+                """/mapcache/wmts/1.0.0/point/$1/$2/4/$3 [PT]
+
+MapCacheAlias /mapcache "%s"
+""" % (os.path.abspath('mapcache.xml'))]])
+
     CONFIG = u"""apache: {config_file: tiles.conf, expires: 8, location: /tiles}
 caches:
   local: {folder: /tmp/tiles, hosts: false, http_url: 'http://taurus/tiles', http_urls: false,

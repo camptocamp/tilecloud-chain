@@ -1,0 +1,37 @@
+grids:
+    swissgrid_5:
+        resolutions: [100, 50, 20, 10, 5]
+        bbox: [420000, 30000, 900000, 350000]
+        tile_size: 256
+        srs: epsg:21781
+
+caches:
+    s3-tilesurl:
+        type: s3
+        http_url: https://%(host)s/%(bucket)s/%(folder)s
+        tiles_url: http://tiles.example.com/
+        host: s3-eu-west-1.amazonaws.com
+        bucket: tiles
+        folder: tiles
+
+layers:
+    point:
+        url: http://localhost/mapserv
+        layers: point
+        min_resolution_seed: 10
+        grid: swissgrid_5
+        type: wms
+        wmts_style: default
+        mime_type: image/png
+        extension: png
+        connection: user=postgres password=postgres dbname=tests host=localhost
+
+generation:
+    default_cache: s3-tilesurl
+    default_layers: [point]
+
+mapcache:
+    config_file: mapcache.xml
+
+apache:
+    config_file: tiles.conf
