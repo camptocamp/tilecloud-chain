@@ -31,7 +31,7 @@ before_install:
 
 install:
 - sudo pip install -r requirements.txt
-- sudo pip install nose==1.3.0 coverage unittest2 testfixtures flake8
+- sudo pip install nose==1.3.0 coverage unittest2 testfixtures flake8 pep8-naming
 - touch tilecloud_chain/OpenLayers.js
 
 script:

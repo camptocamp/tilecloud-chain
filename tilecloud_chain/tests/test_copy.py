@@ -13,14 +13,14 @@ from tilecloud_chain import copy_
 class TestGenerate(CompareCase):
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls):  # noqa
         os.chdir(os.path.dirname(__file__))
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')
         os.makedirs('/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/')
 
     @classmethod
-    def tearDownClass(self):
+    def tearDownClass(cls):  # noqa
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')

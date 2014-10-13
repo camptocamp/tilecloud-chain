@@ -263,7 +263,7 @@ class Generate:
                 gene.delete(sqs_tilestore)
 
         if options.time is not None:
-            class log_time:
+            class LogTime:
                 n = 0
                 t1 = None
 
@@ -276,7 +276,7 @@ class Generate:
                         d = (t2 - self.t1) / options.time
                         sys.stdout.write('time: %i\n' % ((d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds))
                     return tile
-            gene.imap(log_time())
+            gene.imap(LogTime())
 
             gene.consume(options.time * 3)
         else:

@@ -13,7 +13,7 @@ from tilecloud_chain import expiretiles
 class TestExpireTiles(CompareCase):
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls):  # noqa
         f = open('/tmp/expired', 'w')
         f.write('18/135900/92720\n')
         f.write('18/135900/92721\n')
@@ -27,7 +27,7 @@ class TestExpireTiles(CompareCase):
         f.close()
 
     @classmethod
-    def tearDownClass(self):
+    def tearDownClass(cls):  # noqa
         os.remove('/tmp/expired')
         os.remove('/tmp/expired-empty')
 
@@ -35,7 +35,7 @@ class TestExpireTiles(CompareCase):
     @attr(expire_tiles=True)
     @attr(general=True)
     def test_expire_tiles(self, l):
-        GEOM = (
+        geom = (
             'MULTIPOLYGON((('
             '537956.702147466 151362.192371583,'
             '537957.786689681 151467.251130455,'
@@ -69,7 +69,7 @@ class TestExpireTiles(CompareCase):
         cursor.execute('SELECT ST_AsText(the_geom) FROM expired')
         geoms = [str(r[0]) for r in cursor.fetchall()]
         self.assertEqual(len(geoms), 1)
-        self.assertEqual(geoms[0], GEOM)
+        self.assertEqual(geoms[0], geom)
 
         self.assert_cmd_equals(
             cmd=[
@@ -88,7 +88,7 @@ class TestExpireTiles(CompareCase):
         cursor.execute('SELECT ST_AsText(the_geom) FROM expired')
         geoms = [str(r[0]) for r in cursor.fetchall()]
         self.assertEqual(len(geoms), 1)
-        self.assertEqual(geoms[0], GEOM)
+        self.assertEqual(geoms[0], geom)
 
         self.assert_cmd_equals(
             cmd=[

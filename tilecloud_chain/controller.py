@@ -331,18 +331,22 @@ def _generate_apache_config(gene):
             'expires': gene.config['apache']['expires']
         })
         if cache['type'] == 's3':
+            tiles_url = cache['tiles_url'] if 'tiles_url' in cache else \
+                "http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s" % {
+                    'region': cache['region'],
+                    'bucket': cache['bucket'],
+                    'folder': folder
+                }
             f.write("""
-<Proxy http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s*>
+<Proxy %(tiles_url)s*>
     Order deny,allow
     Allow from all
 </Proxy>
-ProxyPass %(location)s/ http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s
-ProxyPassReverse %(location)s/ http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s
+ProxyPass %(location)s/ %(tiles_url)s
+ProxyPassReverse %(location)s/ %(tiles_url)s
 """ % {
                 'location': gene.config['apache']['location'],
-                'region': cache['region'],
-                'bucket': cache['bucket'],
-                'folder': folder
+                'tiles_url': tiles_url
             })
         elif cache['type'] == 'filesystem':
             f.write("""
@@ -366,13 +370,13 @@ Alias %(location)s %(files_folder)s
                 for r in res:
                     f.write(
                         """RewriteRule ^%(tiles_location)s/1.0.0/%(layer)s/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/"""
-                        """%(dimensions_re)s/%(zoom)s/(.*)$ %(mapcache_location)s/wmts/1.0.0/%(layer)s/$1/$2/"""
-                        """%(dimensions_rep)s/%(zoom)s/%(final)s [PT]\n""" % {
+                        """%(dimensions_re)s%(zoom)s/(.*)$ %(mapcache_location)s/wmts/1.0.0/%(layer)s/$1/$2/"""
+                        """%(dimensions_rep)s%(zoom)s/%(final)s [PT]\n""" % {
                             'tiles_location': gene.config['apache']['location'],
                             'mapcache_location': gene.config['mapcache']['location'],
                             'layer': layer['name'],
-                            'dimensions_re': '/'.join(['([a-zA-Z0-9_]+)' for e in range(dim)]),
-                            'dimensions_rep': '/'.join(['$%i' % (e + 3) for e in range(dim)]),
+                            'dimensions_re': ''.join(['([a-zA-Z0-9_]+)/' for e in range(dim)]),
+                            'dimensions_rep': ''.join(['$%i/' % (e + 3) for e in range(dim)]),
                             'final': '$%i' % (3 + dim),
                             'zoom': layer['grid_ref']['resolutions'].index(r)
                         }

@@ -13,7 +13,7 @@ from tilecloud_chain import amazon, TileGeneration
 class TestMultihost(CompareCase):
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls):  # noqa
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
     @attr(geodata=True)
