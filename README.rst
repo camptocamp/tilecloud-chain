@@ -346,6 +346,28 @@ The ``cmd`` can have the following optional argument:
 * ``x``, ``y``, ``z`` the tile coordinates.
 
 
+Configure Apache
+----------------
+
+To generate the Apache configuration we use the command::
+
+    ./buildout/bin/generate_controller --generate-apache-config
+
+The Apache configuration look like this (default values):
+
+.. code:: yaml
+
+    apache:
+        # Generated file
+        config_file: apache/tiles.conf
+        # Serve tiles location, default is /tiles
+        location: /${vars:instanceid}/tiles
+        # Expires header in hours
+        expires: 8
+
+If we use a proxy to acces to the tiles we can specify a dererant url to acces
+to the tiles by adding the parameter ``tiles_url`` in the cache.
+
 Configure MapCache
 ------------------
 
@@ -368,13 +390,6 @@ The MapCache configuration look like this (default values):
         # The mapcache location, default is /mapcache
         location: /${vars:instanceid}/mapcache
 
-    apache:
-        # Generated file
-        config_file: apache/tiles.conf
-        # Serve tiles location, default is /tiles
-        location: /${vars:instanceid}/tiles
-        # Expires header in hours
-        expires: 8
 
 To generate the MapCache configuration we use the command::
 
