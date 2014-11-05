@@ -38,6 +38,8 @@ script:
 - find tilecloud_chain -name \*.py | xargs flake8 --max-line-length=120
 - vvv-validate-rst README.rst
 - vvv-validate-rst CHANGES.rst
+- python setup.py --long-description > PYPI.rst
+- vvv-validate-rst PYPI.rst
 - python setup.py nosetests
 
 after_success:
