@@ -30,7 +30,9 @@ Features:
 ------
 Get it
 ------
+
 Requirements::
+
     pg_config and a build environment.
 
 Install::
@@ -455,7 +457,7 @@ Amazon services
 ----------------
 
 Authentication
--------------
+--------------
 
 To be authenticated by Amazon you should set those environment variable before running a command::
 
@@ -856,9 +858,9 @@ set the grid property ``matrix_identifier: resolution``, bit it don't work with 
 Please use the ``--debug`` to report issue.
 
 
------------
+------------
 From sources
------------
+------------
 
 Build it::
     git submodule update --recursive

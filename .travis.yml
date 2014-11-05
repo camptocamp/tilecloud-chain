@@ -31,11 +31,13 @@ before_install:
 
 install:
 - sudo pip install -r requirements.txt
-- sudo pip install nose==1.3.0 coverage unittest2 testfixtures flake8 pep8-naming
+- sudo pip install nose==1.3.0 coverage unittest2 testfixtures flake8 pep8-naming vvv
 - touch tilecloud_chain/OpenLayers.js
 
 script:
 - find tilecloud_chain -name \*.py | xargs flake8 --max-line-length=120
+- vvv-validate-rst README.rst
+- vvv-validate-rst CHANGES.rst
 - python setup.py nosetests
 
 after_success:
