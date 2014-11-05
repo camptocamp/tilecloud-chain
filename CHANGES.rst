@@ -1,25 +1,46 @@
 Changelog
 =========
 
+-----------
+Release 0.9
+-----------
+
+1. Correct some error with slash.
+
+2. Better error handling.
+
+3. Be able to have one error file per layer.
+
+-----------
+Release 0.8
+-----------
+
+1. Correct some error with slash.
+
+2. Add ``pre_hash_post_process`` and ``post_process``.
+
+3. Add copy command.
+
+-----------
 Release 0.7
 -----------
 
 1. Support of deferent geoms per layers, requires configuration changes, old version:
 
-.. code:: yaml
+    .. code:: yaml
 
-    connection: user=www-data password=www-data dbname=<db> host=localhost
-    sql: <column> AS geom FROM <table>
+        connection: user=www-data password=www-data dbname=<db> host=localhost
+        sql: <column> AS geom FROM <table>
 
-to new version:
+    to new version:
 
-.. code:: yaml
+    .. code:: yaml
 
-    connection: user=www-data password=www-data dbname=<db> host=localhost
-    geoms:
-    -   sql: <column> AS geom FROM <table>
+        connection: user=www-data password=www-data dbname=<db> host=localhost
+        geoms:
+        -   sql: <column> AS geom FROM <table>
 
-More informations in `Configure geom/sql <https://github.com/sbrunner/tilecloud-chain/blob/master/README.rst#configure-geomsql>`_
+    More informations in the **Configure geom/sql** chapter.
 
 2. Update from ``optparse`` to ``argparse``, and some argument refactoring, use ``--help`` to see the new version.
 
@@ -28,26 +49,27 @@ More informations in `Configure geom/sql <https://github.com/sbrunner/tilecloud-
 4. The tile ``server`` is completely rewrite, now it support all cache,
    ``REST`` and ``KVP`` interface, ``GetFeatureInfo`` request,
    and it can be used as a pyramid view or as a ``WSGI`` server.
-   More informations in `Distribute the tiles <https://github.com/sbrunner/tilecloud-chain/blob/master/README.rst#distribute-the-tiles>`_.
+   More informations in the **istribute the tiles** chapter.
 
 5. Add three strategy to bypass the proxy/cache: Use the headers
    ``Cache-Control: no-cache, no-store``, ``Pragma: no-cache`` (default).
    Use localhost in the URL and the header ``Host: <host_name>`` (recommended).
    Add a ``SALT`` random argument (if the above don't work).
-   More informations in `Proxy/cache issue <https://github.com/sbrunner/tilecloud-chain/blob/master/README.rst#proxycache-issue>`_.
+   More informations in the **Proxy/cache issue** chapter.
 
 6. Improve the dimensions usage by adding it ti the WMS requests,
    And add a ``--dimensions`` argument of ``generate_tiles`` to change the dimensions values.
 
 7. Extract generate_cost and generate_amazon from generate_controler.
 
-8. Now we can creates legends, see `Legends <https://github.com/sbrunner/tilecloud-chain/blob/master/README.rst#legends>`_
+8. Now we can creates legends, see the **Legends** chapter.
 
 9. Now the tiles generation display generation statistics at the ends.
 
 10. The EC2 configuration is moved in a separate structure, see README for more informations.
 
 
+-----------
 Release 0.6
 -----------
 
@@ -70,6 +92,7 @@ Release 0.6
    to store and regenerate errored tiles.
 
 
+-----------
 Release 0.5
 -----------
 
