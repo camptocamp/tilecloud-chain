@@ -2,6 +2,26 @@ Changelog
 =========
 
 -----------
+Release 0.9
+-----------
+
+1. Correct some error with slash.
+
+2. Better error handling.
+
+3. Be able to have one error file per layer.
+
+-----------
+Release 0.8
+-----------
+
+1. Correct some error with slash.
+
+2. Add ``pre_hash_post_process`` and ``post_process``.
+
+3. Add copy command.
+
+-----------
 Release 0.7
 -----------
 
