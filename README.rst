@@ -1,6 +1,9 @@
 TileCloud Chain
 ===============
 
+.. image:: https://secure.travis-ci.org/sbrunner/tilecloud-chain.svg?branch=master
+.. image:: https://coveralls.io/repos/sbrunner/tilecloud-chain/badge.png?branch=master
+
 The goal of TileCloud Chain is to provide tools around tile generation on a chain like:
 
 Source: WMS, Mapnik.
