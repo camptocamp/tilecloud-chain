@@ -173,7 +173,7 @@ class TileGeneration:
                 self.config['grids'][gname] = grid
             name = "grid[%s]" % gname
             error = self.validate(
-                grid, name, 'name', attribute_type=str, default=gname, regex="^[a-zA-Z0-9_]+$"
+                grid, name, 'name', attribute_type=str, default=gname, regex="^[a-zA-Z0-9_-~\.]+$"
             ) or error
             error = self.validate(
                 grid, name, 'resolution_scale',
@@ -227,7 +227,7 @@ class TileGeneration:
                         '+x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m ' \
                         '+no_defs'
                 else:
-                    grid['proj4_literal'] = '+init=epsg:%i' + srs[1]
+                    grid['proj4_literal'] = '+init=%s' % grid['srs']
             elif not error and grid['proj4_literal'] == '':  # pragma: no cover
                 grid['proj4_literal'] = None
             error = self.validate(grid, name, 'unit', attribute_type=str, default='m') or error
@@ -253,7 +253,7 @@ class TileGeneration:
                     layer[k] = v
 
             error = self.validate(
-                layer, name, 'name', attribute_type=str, default=lname, regex="^[a-zA-Z0-9_]+$"
+                layer, name, 'name', attribute_type=str, default=lname, regex="^[a-zA-Z0-9_-~\.]+$"
             ) or error
             error = self.validate(layer, name, 'grid', attribute_type=str, required=True) or error
             error = self.validate(layer, name, 'min_resolution_seed', attribute_type=float) or error
@@ -335,23 +335,23 @@ class TileGeneration:
             error = self.validate(layer, name, 'extension', attribute_type=str, required=True) or error
             error = self.validate(layer, name, 'mime_type', attribute_type=str, required=True) or error
             error = self.validate(
-                layer, name, 'wmts_style', attribute_type=str, required=True, regex="^[a-zA-Z0-9_]+$"
+                layer, name, 'wmts_style', attribute_type=str, required=True, regex="^[a-zA-Z0-9_-~\.]+$"
             ) or error
             error = self.validate(layer, name, 'dimensions', is_array=True, default=[]) or error
             for d in layer['dimensions']:
                 dname = name + ".dimensions[%s]" % d.get('name', '')
                 error = self.validate(
-                    d, dname, 'name', attribute_type=str, required=True, regex="^[A-Z0-9_]+$"
+                    d, dname, 'name', attribute_type=str, required=True, regex="^[a-zA-Z0-9_-~\.]+$"
                 ) or error
                 error = self.validate(
-                    d, dname, 'value', attribute_type=str, required=True, regex="^[a-zA-Z0-9_]+$"
+                    d, dname, 'value', attribute_type=str, required=True, regex="^[a-zA-Z0-9_-~\.]+$"
                 ) or error
                 error = self.validate(
                     d, dname, 'values', attribute_type=str, is_array=True, default=[d['value']]
                 ) or error
                 error = self.validate(
                     d, dname, 'default', attribute_type=str, default=d['value'],
-                    regex="^[a-zA-Z0-9_]+$"
+                    regex="^[a-zA-Z0-9_-~\.]+$"
                 ) or error
 
             error = self.validate(

@@ -369,13 +369,13 @@ Alias %(location)s %(files_folder)s
                 dim = len(layer['dimensions'])
                 for r in res:
                     f.write(
-                        """RewriteRule ^%(tiles_location)s/1.0.0/%(layer)s/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/"""
+                        """RewriteRule ^%(tiles_location)s/1.0.0/%(layer)s/([a-zA-Z0-9_-~\.]+)/([a-zA-Z0-9_-~\.]+)/"""
                         """%(dimensions_re)s%(zoom)s/(.*)$ %(mapcache_location)s/wmts/1.0.0/%(layer)s/$1/$2/"""
                         """%(dimensions_rep)s%(zoom)s/%(final)s [PT]\n""" % {
                             'tiles_location': gene.config['apache']['location'],
                             'mapcache_location': gene.config['mapcache']['location'],
                             'layer': layer['name'],
-                            'dimensions_re': ''.join(['([a-zA-Z0-9_]+)/' for e in range(dim)]),
+                            'dimensions_re': ''.join(['([a-zA-Z0-9_-~\.]+)/' for e in range(dim)]),
                             'dimensions_rep': ''.join(['$%i/' % (e + 3) for e in range(dim)]),
                             'final': '$%i' % (3 + dim),
                             'zoom': layer['grid_ref']['resolutions'].index(r)

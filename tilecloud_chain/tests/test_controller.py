@@ -1417,9 +1417,9 @@ class TestController(CompareCase):
 
 Alias /tiles /tmp/tiles/
 
-RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
+RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_-~\.]+)/([a-zA-Z0-9_-~\.]+)/([a-zA-Z0-9_-~\.]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
-RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
+RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_-~\.]+)/([a-zA-Z0-9_-~\.]+)/([a-zA-Z0-9_-~\.]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
 
 MapCacheAlias /mapcache "%s"
@@ -1453,9 +1453,9 @@ MapCacheAlias /mapcache "%s"
 ProxyPass /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
 ProxyPassReverse /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
 
-RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
+RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_-~\.]+)/([a-zA-Z0-9_-~\.]+)/([a-zA-Z0-9_-~\.]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
-RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
+RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_-~\.]+)/([a-zA-Z0-9_-~\.]+)/([a-zA-Z0-9_-~\.]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
 
 MapCacheAlias /mapcache "%s"
@@ -1484,7 +1484,7 @@ MapCacheAlias /mapcache "%s"
 ProxyPass /tiles/ http://tiles.example.com/
 ProxyPassReverse /tiles/ http://tiles.example.com/
 
-RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+)/4/(.*)$ """
+RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_-~\.]+)/([a-zA-Z0-9_-~\.]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point/$1/$2/4/$3 [PT]
 
 MapCacheAlias /mapcache "%s"
@@ -2111,9 +2111,10 @@ OpenLayers.Request.GET({
         self.assert_main_equals(
             cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-legends.yaml',
             main_func=controller.main,
+            regex=True,
             expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
-                u"""<?xml version="1.0" encoding="UTF-8"?>
+                u"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
               xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xmlns:gml="http://www.opengis.net/gml"
@@ -2157,9 +2158,9 @@ OpenLayers.Request.GET({
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         <LegendURL format="image/png" xlink:href="http://taurus/tiles/1.0.0/line/default/legend0.png" """
-                """width="71" height="21" minScaleDenominator="112938.487863" />
+                """width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.487863" />
         <LegendURL format="image/png" xlink:href="http://taurus/tiles/1.0.0/line/default/legend2.png" """
-                """width="71" height="21" maxScaleDenominator="112938.487863" />
+                """width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.487863" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -2183,7 +2184,7 @@ OpenLayers.Request.GET({
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         <LegendURL format="image/png" xlink:href="http://taurus/tiles/1.0.0/polygon/default/legend0.png" """
-                """width="77" height="21" />
+                """width="[0-9]*" height="[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -2207,9 +2208,9 @@ OpenLayers.Request.GET({
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         <LegendURL format="image/png" xlink:href="http://taurus/tiles/1.0.0/all/default/legend0.png" """
-                """width="77" height="63" minScaleDenominator="112938.487863" />
+                """width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.487863" />
         <LegendURL format="image/png" xlink:href="http://taurus/tiles/1.0.0/all/default/legend2.png" """
-                """width="77" height="63" maxScaleDenominator="112938.487863" />
+                """width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.487863" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -2233,7 +2234,7 @@ OpenLayers.Request.GET({
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         <LegendURL format="image/png" xlink:href="http://taurus/tiles/1.0.0/point/default/legend0.png" """
-                """width="65" height="21" />
+                """width="[0-9]*" height="[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
