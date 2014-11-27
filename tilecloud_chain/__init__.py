@@ -227,7 +227,7 @@ class TileGeneration:
                         '+x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m ' \
                         '+no_defs'
                 else:
-                    grid['proj4_literal'] = '+init=epsg:%i' + srs[1]
+                    grid['proj4_literal'] = '+init=epsg:%i' % srs[1]
             elif not error and grid['proj4_literal'] == '':  # pragma: no cover
                 grid['proj4_literal'] = None
             error = self.validate(grid, name, 'unit', attribute_type=str, default='m') or error
