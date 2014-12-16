@@ -24,22 +24,12 @@ if sys.version_info >= (3, 0) or (
         'bsddb3',
     ])
 
-setup_requires = [
-    'nose',
-]
-tests_require = [
-    'coverage',
-    'unittest2',
-    'testfixtures',
-]
-
 setup(
     name='tilecloud-chain',
     version='0.9.0',
-    description="""
-Tools to generates tiles from WMS or Mapnik, to S3, Berkley DB, MBTiles, """
-    """or local filesystem in WMTS layout using Amazon cloud services.
-""",
+    description="Tools to generates tiles from WMS or Mapnik, to S3, "
+        "Berkley DB, MBTiles, or local filesystem in WMTS layout using "
+        "Amazon cloud services.",
     long_description=README,
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -58,8 +48,6 @@ Tools to generates tiles from WMS or Mapnik, to S3, Berkley DB, MBTiles, """
     include_package_data=True,
     zip_safe=False,
     install_requires=install_requires,
-    setup_requires=setup_requires,
-    tests_require=tests_require,
     entry_points={
         'console_scripts': [
             'generate_tiles = tilecloud_chain.generate:main',

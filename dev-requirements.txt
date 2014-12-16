@@ -1,0 +1,7 @@
+nose
+coverage
+unittest2
+testfixtures
+flake8
+pep8-naming
+vvv

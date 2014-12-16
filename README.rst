@@ -57,8 +57,8 @@ Configure grids
 
 The ``grid`` describes how the tiles are arranged.
 
-Especially on ``s3`` be careful to choose every ??????theres?????? before generating the tiles.
-It is possible that to change one of them you must regenerate all the tiles.
+Especially on ``s3`` be careful to choose every of the grid settings before generating the tiles.
+If you change one of them you must regenerate all the tiles.
 
 The ``resolutions`` in [px/m] describes all the resolutions available for this layer.
 For a raster layer, have a look to the maximum resolution of the source files. It is not needed
