@@ -40,6 +40,9 @@ script:
 - vvv-validate-rst CHANGES.rst
 - python setup.py --long-description > PYPI.rst
 - vvv-validate-rst PYPI.rst
+- python setup.py nosetests --stop
+
+after_failure:
 - python setup.py nosetests
 
 after_success:
