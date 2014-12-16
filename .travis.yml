@@ -49,8 +49,3 @@ after_success:
 # Report coverage results to coveralls.io
 - sudo pip install coveralls
 - coveralls
-
-notifications:
-  email:
-    recipients:
-    - stephane.brunner@gmail.com
