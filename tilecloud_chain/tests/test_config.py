@@ -35,3 +35,11 @@ class TestConfig(CompareCase):
                 '(SELECT the_geom AS geom FROM tests.point) AS g.'
             ),
         )
+
+    def test_format_by_content_type(self):
+        from tilecloud_chain import TileGeneration
+
+        TileGeneration("tilegeneration/test_mime_pil.yaml")
+
+        from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
+        self.assertEquals("PNG", FORMAT_BY_CONTENT_TYPE["image/png;mode=8bit,grayscale"])
