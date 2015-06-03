@@ -1254,7 +1254,7 @@ class TileGeneration:
                         n = datetime.now()
                         t = tile_filter(tile)
                         if time_message:
-                            logger.info("%s in %s" % (time_message, str(datetime.now() - n)))
+                            logger.debug("%s in %s" % (time_message, str(datetime.now() - n)))
                         return t
                     except GeneratorExit as e:  # pragma: no cover
                         raise e
