@@ -15,7 +15,7 @@ class Copy:
     count = None
 
     def copy(self, options, gene, layer, source, dest, task_name):
-        # desable metatiles
+        # disable metatiles
         gene.layers[layer]['meta'] = False
         count_tiles_dropped = Count()
 
