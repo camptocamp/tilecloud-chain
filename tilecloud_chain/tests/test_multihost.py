@@ -24,7 +24,7 @@ class TestMultihost(CompareCase):
         os.makedirs(directory)
 
         self.assert_files_generated(
-            cmd='./buildout/bin/generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml --disable-code '
+            cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml --disable-code '
             '--disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             main_func=amazon.main,
             directory=directory,
@@ -37,7 +37,7 @@ class TestMultihost(CompareCase):
     @attr(multihost=True)
     def test_none(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
+            cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
             '--disable-geodata --disable-code --disable-database --disable-fillqueue --disable-tilesgen '
             '--host localhost',
             main_func=amazon.main,
@@ -55,7 +55,7 @@ class TestMultihost(CompareCase):
             )
 
         out, err = self.run_cmd(
-            cmd='./buildout/bin/generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
+            cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
             '--disable-geodata --disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             main_func=amazon.main)
         self.assertEqual(out, '==== Sync and build code ====\n')
@@ -75,7 +75,7 @@ class TestMultihost(CompareCase):
     @attr(multihost=True)
     def test_database(self):
         out, err = self.run_cmd(
-            cmd='./buildout/bin/generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
+            cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
             '--disable-geodata --disable-code --disable-fillqueue --disable-tilesgen --host localhost',
             main_func=amazon.main)
         self.assertEqual(out, '==== Deploy database ====\n')
@@ -93,7 +93,7 @@ class TestMultihost(CompareCase):
     @attr(multihost=True)
     def test_time_multihost(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
+            cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
             '--time 2 -l polygon --host localhost --disable-geodata --disable-database --cache local',
             main_func=amazon.main,
             expected="""==== Sync and build code ====
@@ -109,7 +109,7 @@ config:
 """, regex=True)
 
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
+            cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
             '--time 1 -l polygon --host localhost --disable-geodata --disable-database '
             '--bbox 598000 198000 600000 200000 --zoom 4 --test 3',
             main_func=amazon.main,
@@ -129,7 +129,7 @@ config:
     @attr(multihost=True)
     def test_time_near(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
+            cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
             '-l point --time 50 --near 550000 180000 --zoom 3 --host localhost '
             '--disable-geodata --disable-database',
             main_func=amazon.main,
@@ -149,7 +149,7 @@ config:
     @attr(multihost=True)
     def test_time_no_geom(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
+            cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
             '-l point --time 1 --no-geom --bbox 550000 180000 555000 185000 --zoom 3 --host localhost '
             '--disable-geodata --disable-database',
             main_func=amazon.main,
