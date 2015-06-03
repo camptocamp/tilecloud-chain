@@ -459,6 +459,12 @@ And if you steal have issue you can add a ``SALT`` random argument by setting
 the layer parameter ``generate_salt`` to ``true``.
 
 
+Alternate mime type
+-------------------
+
+By default TileCloud support only the ``image/jpeg`` and ``image/png`` mime type.
+
+
 ----------------
 Amazon services
 ----------------
