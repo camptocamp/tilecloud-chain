@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import logging
 from argparse import ArgumentParser
 
@@ -69,7 +70,7 @@ Size per tile: %i o
 
 def main():
     parser = ArgumentParser(
-        description='Used to copy the tiles from a cache to an other', prog='./buildout/bin/generate_copy'
+        description='Used to copy the tiles from a cache to an other', prog=sys.argv[0]
     )
     add_comon_options(parser, near=False, time=False, dimensions=True, cache=False)
     parser.add_argument(
@@ -102,7 +103,7 @@ def main():
 
 def process():
     parser = ArgumentParser(
-        description='Used to copy the tiles from a cache to an other', prog='./buildout/bin/generate_copy'
+        description='Used to copy the tiles from a cache to an other', prog=sys.argv[0]
     )
     add_comon_options(parser, near=False, time=False, dimensions=True)
     parser.add_argument(

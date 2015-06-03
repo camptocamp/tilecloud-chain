@@ -21,7 +21,7 @@ def main():
     parser = ArgumentParser(
         description='Used to generate the tiles from Amazon EC2, '
         'and get the SQS queue status',
-        prog='./buildout/bin/generate_amazon'
+        prog=sys.argv[0]
     )
     add_comon_options(parser)
     parser.add_argument(

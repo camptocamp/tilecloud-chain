@@ -2,6 +2,7 @@
 
 from argparse import ArgumentParser
 
+import sys
 import psycopg2
 from shapely.geometry import Polygon, MultiPolygon
 from shapely.ops import cascaded_union
@@ -13,7 +14,7 @@ from tilecloud_chain import parse_tilecoord
 def main():
     parser = ArgumentParser(
         description='Used to import the osm2pgsql expire-tiles file to Postgres',
-        prog='./buildout/bin/import_expire_tiles',
+        prog=sys.argv[0]
     )
     parser.add_argument(
         '--buffer',

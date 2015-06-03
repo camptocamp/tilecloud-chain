@@ -369,7 +369,7 @@ def daemonize():  # pragma: no cover
 
 
 def main():
-    parser = ArgumentParser(description='Used to generate the tiles', prog='./buildout/bin/generate_tiles')
+    parser = ArgumentParser(description='Used to generate the tiles', prog=sys.argv[0])
     add_comon_options(parser, dimensions=True)
     parser.add_argument(
         '--get-hash', metavar="TILE",
