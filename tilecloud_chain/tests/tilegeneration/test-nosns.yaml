@@ -222,6 +222,7 @@ ec2:
     code_folder: /tmp/tests/test
     apache_config: /tmp/tests/test.conf
     apache_content: test file
+    number_process: 2
 
 openlayers:
     srs: epsg:21781

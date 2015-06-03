@@ -41,7 +41,7 @@ from tilecloud.lib.s3 import S3Connection
 from tilecloud_chain import TileGeneration
 
 if sys.version_info.major >= 3:
-    buffer = memoryview
+    buffer = memoryview  # pragma: no cover
 else:
     memoryview = buffer
 

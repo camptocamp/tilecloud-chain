@@ -8,7 +8,7 @@ from testfixtures import log_capture
 from nose.plugins.attrib import attr
 
 from tilecloud_chain.tests import CompareCase
-from tilecloud_chain import generate
+from tilecloud_chain import generate, amazon
 
 
 class TestGenerate(CompareCase):
@@ -789,6 +789,29 @@ Size per tile: 384 o
 
 """,
             )
+        l.check()
+
+    @attr(local=True)
+    @attr(generate=True)
+    @attr(general=True)
+    @log_capture('tilecloud_chain', level=30)
+    def test_local(self, l):
+        self.assert_tiles_generated(
+            cmd='generate_amazon --wait --local -c tilegeneration/test-nosns.yaml -l point_hash',
+            main_func=amazon.main,
+            directory="/tmp/tiles/",
+            tiles_pattern='1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png',
+            tiles=[
+                ('point_hash', 0, 5, 7), ('point_hash', 0, 7, 4),
+                ('point_hash', 1, 11, 14), ('point_hash', 1, 15, 8),
+                ('point_hash', 2, 29, 35), ('point_hash', 2, 39, 21),
+                ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42),
+            ],
+            regex=True,
+            expected="""==== Generate tiles ====
+Tile generation started
+""",
+        )
         l.check()
 
     @attr(not_authorised_user=True)

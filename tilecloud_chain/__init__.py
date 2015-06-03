@@ -931,6 +931,12 @@ class TileGeneration:
                 connection.close()
         return layer_geoms
 
+    def add_local_process_filter(self):  # pragma: no cover
+        self.ifilter(LocalProcessFilter(
+            self.config["ec2"]["number_process"],
+            self.options.local_process_number
+        ))
+
     def get_geoms_filter(self, layer, grid, geoms, queue_store=None):
         return IntersectGeometryFilter(
             grid=grid,
@@ -1369,6 +1375,20 @@ class HashLogger:
         size: %i
         hash: %s""" % (str(tile.tilecoord), self.block, len(tile.data), sha1(tile.data).hexdigest()))
         return tile
+
+
+class LocalProcessFilter:  # pragma: no cover
+
+    def __init__(self, nb_process, process_nb):
+        self.nb_process = nb_process
+        self.process_nb = int(process_nb)
+
+    def filter(self, tilecoord):
+        nb = tilecoord.z + tilecoord.x / tilecoord.n + tilecoord.y / tilecoord.n
+        return nb % self.nb_process == self.process_nb
+
+    def __call__(self, tile):
+        return tile if self.filter(tile.tilecoord) else None
 
 
 class IntersectGeometryFilter:
