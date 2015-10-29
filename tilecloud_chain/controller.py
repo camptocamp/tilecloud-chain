@@ -325,10 +325,17 @@ def _generate_apache_config(gene):
         f.write("""<Location %(location)s>
     ExpiresActive on
     ExpiresDefault "now plus %(expires)i hours"
+%(headers)s
 </Location>
 """ % {
             'location': gene.config['apache']['location'],
-            'expires': gene.config['apache']['expires']
+            'expires': gene.config['apache']['expires'],
+            'headers': ''.join([
+                "    Header set %s '%s'" % h
+                for h in gene.config['apache'].get('headers', {
+                    'Cache-Control': 'max-age=864000, public'
+                }).items()
+            ]),
         })
         if cache['type'] == 's3':
             tiles_url = cache['tiles_url'] if 'tiles_url' in cache else \
@@ -352,9 +359,16 @@ ProxyPassReverse %(location)s/ %(tiles_url)s
             f.write("""
 Alias %(location)s %(files_folder)s
 """ % {
-                'location': gene.config['apache']['location'],
-                'files_folder': folder
-            })
+                    'location': gene.config['apache']['location'],
+                    'files_folder': folder,
+                    'headers': ''.join([
+                        "    Header set %s '%s'" % h
+                        for h in gene.config['apache'].get('headers', {
+                            'Cache-Control': 'max-age=864000, public'
+                        }).items()
+                    ]),
+                }
+            )
 
     use_mapcache = 'mapcache' in gene.config
     if use_mapcache:
