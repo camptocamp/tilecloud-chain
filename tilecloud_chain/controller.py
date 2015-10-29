@@ -75,7 +75,7 @@ def main():
         for grid in gene.config['grids'].values():
             if 'obj' in grid:
                 del grid['obj']
-        print yaml.dump(gene.config)
+        print(yaml.dump(gene.config))
         sys.exit(0)
 
     if options.legends:
@@ -344,7 +344,8 @@ def _generate_apache_config(gene):
                     'bucket': cache['bucket'],
                     'folder': folder
                 }
-            f.write("""
+            f.write(
+                """
 <Proxy %(tiles_url)s*>
     Order deny,allow
     Allow from all
@@ -352,11 +353,13 @@ def _generate_apache_config(gene):
 ProxyPass %(location)s/ %(tiles_url)s
 ProxyPassReverse %(location)s/ %(tiles_url)s
 """ % {
-                'location': gene.config['apache']['location'],
-                'tiles_url': tiles_url
-            })
+                    'location': gene.config['apache']['location'],
+                    'tiles_url': tiles_url,
+                }
+            )
         elif cache['type'] == 'filesystem':
-            f.write("""
+            f.write(
+                """
 Alias %(location)s %(files_folder)s
 """ % {
                     'location': gene.config['apache']['location'],
