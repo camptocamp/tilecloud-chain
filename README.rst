@@ -229,7 +229,7 @@ It's preferable to use simple geometries, too complex geometries can slow down t
 Legends
 ~~~~~~~
 
-To be able to generate legends with ``./buildout/bin/generate_controler --generate_legend_images``
+To be able to generate legends with ``./buildout/bin/generate_controler --generate-legend-images``
 you should have ``legend_mime`` and ``legend_extention`` in the layer config.
 
 for example:
@@ -244,7 +244,7 @@ Then it will create a legend image per layer and per zoom level named
 only if she is deferent than the previous zoom level. If we have only one legend image
 it still stores in the file named ``legend0.{{legend_extention}}``.
 
-When we do ``./buildout/bin/generate_controler --generate_wmts-capabilities`` we will at first
+When we do ``./buildout/bin/generate_controler --generate-wmts-capabilities`` we will at first
 parse the legend images to generate a layer config like this:
 
 .. code:: yaml
