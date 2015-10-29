@@ -33,11 +33,11 @@ def main():
     )
     add_comon_options(parser, tile_pyramid=False, no_geom=False)
     parser.add_argument(
-        '--capabilities', '--generate_wmts_capabilities', default=False, action="store_true",
+        '--capabilities', '--generate-wmts-capabilities', default=False, action="store_true",
         help='Generate the WMTS Capabilities'
     )
     parser.add_argument(
-        '--legends', '--generate_legend_images', default=False, action="store_true", dest='legends',
+        '--legends', '--generate-legend-images', default=False, action="store_true", dest='legends',
         help='Generate the legend images'
     )
     parser.add_argument(
