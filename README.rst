@@ -370,7 +370,11 @@ The Apache configuration look like this (default values):
         # Expires header in hours
         expires: 8
 
-If we use a proxy to acces to the tiles we can specify a dererant url to acces
+        # Headers added to the ressponces
+        headers:
+            Cache-Control: max-age=864000, public
+
+If we use a proxy to access to the tiles we can specify a deferent URL to access
 to the tiles by adding the parameter ``tiles_url`` in the cache.
 
 Configure MapCache

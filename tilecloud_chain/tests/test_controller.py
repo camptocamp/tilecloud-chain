@@ -1413,6 +1413,7 @@ class TestController(CompareCase):
                 u"""<Location /tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
+    Header set Cache-Control "max-age=864000, public"
 </Location>
 
 Alias /tiles /tmp/tiles/
@@ -1444,6 +1445,7 @@ MapCacheAlias /mapcache "%s"
                 u"""<Location /tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
+    Header set Cache-Control "max-age=864000, public"
 </Location>
 
 <Proxy http://s3-eu-west-1.amazonaws.com/tiles/tiles/*>
@@ -1475,6 +1477,7 @@ MapCacheAlias /mapcache "%s"
                 u"""<Location /tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
+    Header set Cache-Control "max-age=864000, public"
 </Location>
 
 <Proxy http://tiles.example.com/*>

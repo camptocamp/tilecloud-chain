@@ -33,28 +33,28 @@ def main():
     )
     add_comon_options(parser, tile_pyramid=False, no_geom=False)
     parser.add_argument(
-        '--capabilities', '--generate-wmts-capabilities', default=False, action="store_true",
+        '--capabilities', '--generate-wmts-capabilities', default=False, action='store_true',
         help='Generate the WMTS Capabilities'
     )
     parser.add_argument(
-        '--legends', '--generate-legend-images', default=False, action="store_true", dest='legends',
+        '--legends', '--generate-legend-images', default=False, action='store_true', dest='legends',
         help='Generate the legend images'
     )
     parser.add_argument(
         '--openlayers', '--generate-openlayers-test-page', default=False,
-        action="store_true", dest='openlayers',
+        action='store_true', dest='openlayers',
         help='Generate openlayers test page'
     )
     parser.add_argument(
-        '--mapcache', '--generate-mapcache-config', default=False, action="store_true", dest='mapcache',
+        '--mapcache', '--generate-mapcache-config', default=False, action='store_true', dest='mapcache',
         help='Generate MapCache configuration file'
     )
     parser.add_argument(
-        '--apache', '--generate-apache-config', default=False, action="store_true", dest='apache',
+        '--apache', '--generate-apache-config', default=False, action='store_true', dest='apache',
         help='Generate Apache configuration file'
     )
     parser.add_argument(
-        '--dump-config', default=False, action="store_true",
+        '--dump-config', default=False, action='store_true',
         help='Dump the used config with default values and exit'
     )
 
@@ -75,7 +75,7 @@ def main():
         for grid in gene.config['grids'].values():
             if 'obj' in grid:
                 del grid['obj']
-        print yaml.dump(gene.config)
+        print(yaml.dump(gene.config))
         sys.exit(0)
 
     if options.legends:
@@ -257,7 +257,7 @@ def _generate_legend_images(gene):
                             )
                     width = max(i.size[0] for i in legends)
                     height = sum(i.size[1] for i in legends)
-                    image = Image.new("RGBA", (width, height))
+                    image = Image.new('RGBA', (width, height))
                     y = 0
                     for i in legends:
                         image.paste(i, (0, y))
@@ -325,19 +325,27 @@ def _generate_apache_config(gene):
         f.write("""<Location %(location)s>
     ExpiresActive on
     ExpiresDefault "now plus %(expires)i hours"
+%(headers)s
 </Location>
 """ % {
             'location': gene.config['apache']['location'],
-            'expires': gene.config['apache']['expires']
+            'expires': gene.config['apache']['expires'],
+            'headers': ''.join([
+                '    Header set %s "%s"' % h
+                for h in gene.config['apache'].get('headers', {
+                    'Cache-Control': 'max-age=864000, public'
+                }).items()
+            ]),
         })
         if cache['type'] == 's3':
             tiles_url = cache['tiles_url'] if 'tiles_url' in cache else \
-                "http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s" % {
+                'http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s' % {
                     'region': cache['region'],
                     'bucket': cache['bucket'],
                     'folder': folder
                 }
-            f.write("""
+            f.write(
+                """
 <Proxy %(tiles_url)s*>
     Order deny,allow
     Allow from all
@@ -345,23 +353,32 @@ def _generate_apache_config(gene):
 ProxyPass %(location)s/ %(tiles_url)s
 ProxyPassReverse %(location)s/ %(tiles_url)s
 """ % {
-                'location': gene.config['apache']['location'],
-                'tiles_url': tiles_url
-            })
+                    'location': gene.config['apache']['location'],
+                    'tiles_url': tiles_url,
+                }
+            )
         elif cache['type'] == 'filesystem':
-            f.write("""
+            f.write(
+                """
 Alias %(location)s %(files_folder)s
 """ % {
-                'location': gene.config['apache']['location'],
-                'files_folder': folder
-            })
+                    'location': gene.config['apache']['location'],
+                    'files_folder': folder,
+                    'headers': ''.join([
+                        "    Header set %s '%s'" % h
+                        for h in gene.config['apache'].get('headers', {
+                            'Cache-Control': 'max-age=864000, public'
+                        }).items()
+                    ]),
+                }
+            )
 
     use_mapcache = 'mapcache' in gene.config
     if use_mapcache:
         if not gene.validate_mapcache_config():
             exit(1)  # pragma: no cover
     if use_mapcache and not use_server:
-        f.write("\n")
+        f.write('\n')
         for l in gene.config['layers']:
             layer = gene.config['layers'][l]
             if 'min_resolution_seed' in layer:
@@ -369,9 +386,9 @@ Alias %(location)s %(files_folder)s
                 dim = len(layer['dimensions'])
                 for r in res:
                     f.write(
-                        """RewriteRule ^%(tiles_location)s/1.0.0/%(layer)s/([a-zA-Z0-9_\-~\.]+)/([a-zA-Z0-9_\-~\.]+)/"""
-                        """%(dimensions_re)s%(zoom)s/(.*)$ %(mapcache_location)s/wmts/1.0.0/%(layer)s/$1/$2/"""
-                        """%(dimensions_rep)s%(zoom)s/%(final)s [PT]\n""" % {
+                        'RewriteRule ^%(tiles_location)s/1.0.0/%(layer)s/([a-zA-Z0-9_\-~\.]+)/([a-zA-Z0-9_\-~\.]+)/'
+                        '%(dimensions_re)s%(zoom)s/(.*)$ %(mapcache_location)s/wmts/1.0.0/%(layer)s/$1/$2/'
+                        '%(dimensions_rep)s%(zoom)s/%(final)s [PT]\n' % {
                             'tiles_location': gene.config['apache']['location'],
                             'mapcache_location': gene.config['mapcache']['location'],
                             'layer': layer['name'],
