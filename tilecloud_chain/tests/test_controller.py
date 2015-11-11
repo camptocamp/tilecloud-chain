@@ -1401,6 +1401,86 @@ class TestController(CompareCase):
    <lock_dir>/tmp</lock_dir>
 </mapcache>"""]])
 
+    @attr(mapcache=True)
+    @attr(controller=True)
+    @attr(general=True)
+    def test_mapcache2(self):
+        self.assert_main_equals(
+            cmd='./buildout/bin/generate_controller --mapcache -c tilegeneration/test-nodim.yaml',
+            main_func=controller.main,
+            expected=[['mapcache.xml', u"""<?xml version="1.0" encoding="UTF-8"?>
+<mapcache>
+    <cache name="default" type="memcache">
+       <server>
+          <host>localhost</host>
+          <port>11211</port>
+       </server>
+    </cache>
+
+
+   <grid name="swissgrid_5">
+      <size>256 256</size>
+      <extent>420000.0 30000.0 900000.0 350000.0</extent>
+      <srs>epsg:21781</srs>
+      <units>m</units>
+      <resolutions>100.0 50.0 20.0 10.0 5.0 </resolutions>
+      <origin>top-left</origin>
+   </grid>
+
+
+   <source name="nodim" type="wms">
+      <getmap>
+         <params>
+            <LAYERS>default</LAYERS>
+            <TRANSPARENT>TRUE</TRANSPARENT>
+            <FORMAT>image/png</FORMAT>
+         </params>
+      </getmap>
+      <http>
+         <url>http://localhost/mapserv</url>
+         <headers>
+            <Host>example.com</Host>
+            <Pragma>no-cache</Pragma>
+            <Cache-Control>no-cache, no-store</Cache-Control>
+         </headers>
+      </http>
+   </source>
+
+
+   <tileset name="nodim">
+      <source>nodim</source>
+      <cache>default</cache>
+      <grid>swissgrid_5</grid>
+      <metatile>8 8</metatile>
+      <metabuffer>128</metabuffer>
+      <format>image/png</format>
+      <expires>3600</expires> <!-- 1 hour -->
+      <auto_expire>13800</auto_expire> <!-- 4 hours -->
+   </tileset>
+
+
+   <format name="image/png" type="PNG">
+      <compression>fast</compression>
+      <colors>256</colors>
+   </format>
+   <format name="image/jpeg" type="JPEG">
+      <quality>90</quality>
+      <photometric>rgb</photometric>
+   </format>
+
+   <service type="wms" enabled="false"/>
+   <service type="wmts" enabled="true"/>
+   <service type="tms" enabled="false"/>
+   <service type="kml" enabled="false"/>
+   <service type="gmaps" enabled="false"/>
+   <service type="ve" enabled="false"/>
+   <service type="demo" enabled="false"/>
+
+   <default_format>image/jpeg</default_format>
+   <errors>report</errors>
+   <lock_dir>/tmp</lock_dir>
+</mapcache>"""]])
+
     @attr(apache=True)
     @attr(controller=True)
     @attr(general=True)
