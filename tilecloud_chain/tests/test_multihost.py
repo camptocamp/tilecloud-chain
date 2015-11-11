@@ -58,8 +58,8 @@ class TestMultihost(CompareCase):
             cmd='./buildout/bin/generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
             '--disable-geodata --disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             main_func=amazon.main)
-        self.assertEquals(out, '==== Sync and build code ====\n')
-        self.assertEquals(err, '')
+        self.assertEqual(out, '==== Sync and build code ====\n')
+        self.assertEqual(err, '')
         f = open('/tmp/tests/test/tilecloud_chain/tests/tilegeneration/hooks/post-restore-database', 'r')
         self.assert_result_equals(f.read(), "echo SUCCESS\n")
         f = open('/tmp/tests/test.conf', 'r')
@@ -78,8 +78,8 @@ class TestMultihost(CompareCase):
             cmd='./buildout/bin/generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
             '--disable-geodata --disable-code --disable-fillqueue --disable-tilesgen --host localhost',
             main_func=amazon.main)
-        self.assertEquals(out, '==== Deploy database ====\n')
-        self.assertEquals(err, '')
+        self.assertEqual(out, '==== Deploy database ====\n')
+        self.assertEqual(err, '')
         self.assert_result_equals(Popen([
             'sudo', '-u', 'postgres', 'psql', '-d', 'tests-deploy', '-c', 'SELECT * FROM test'
         ], stdout=PIPE).communicate()[0], """   name
@@ -177,4 +177,4 @@ config:
             debug = False
             time = None
         gene = TileGeneration('tilecloud_chain/tests/tilegeneration/test.yaml', Opt(), 'point')
-        self.assertEquals(gene.geoms[3].bounds, (583840.0, 173360.0, 624800.0, 214320.0))
+        self.assertEqual(gene.geoms[3].bounds, (583840.0, 173360.0, 624800.0, 214320.0))

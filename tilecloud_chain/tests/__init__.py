@@ -25,7 +25,7 @@ class CompareCase(TestCase):
                     if regex:
                         self.assertRegexpMatches(test[1].strip(), '^%s$' % test[0].strip())
                     else:
-                        self.assertEquals(test[0].strip(), test[1].strip())
+                        self.assertEqual(test[0].strip(), test[1].strip())
                 except AssertionError as e:
                     for i in range(max(0, n - 10), min(len(result), n + 11)):
                         if i == n:
@@ -33,7 +33,7 @@ class CompareCase(TestCase):
                         else:
                             log.info("  %i %s" % (i, result[i]))
                     raise e
-        self.assertEquals(len(expected), len(result))
+        self.assertEqual(len(expected), len(result))
 
     def run_cmd(self, cmd, main_func):
         old_stdout = sys.stdout
@@ -50,7 +50,7 @@ class CompareCase(TestCase):
     def assert_cmd_equals(self, cmd, main_func, empty_err=False, **kargs):
         out, err = self.run_cmd(cmd, main_func)
         if empty_err:
-            self.assertEquals(err, '')
+            self.assertEqual(err, '')
         self.assert_result_equals(result=out, **kargs)
 
     def assert_cmd_exit_equals(self, cmd, main_func, expected):
@@ -59,7 +59,7 @@ class CompareCase(TestCase):
             main_func()
             assert("exit() not called.")
         except SystemExit as e:
-            self.assertEquals(e.message, expected)
+            self.assertEqual(e.message, expected)
 
     def assert_main_equals(self, cmd, main_func, expected=None, **kargs):
         if expected:
@@ -118,7 +118,7 @@ class CompareCase(TestCase):
                 log.info((path, files))
                 count += len(files)
 
-        self.assertEquals(count, len(tiles))
+        self.assertEqual(count, len(tiles))
         for tile in tiles:
             log.info(directory + tiles_pattern % tile)
             self.assertTrue(os.path.exists(directory + tiles_pattern % tile))

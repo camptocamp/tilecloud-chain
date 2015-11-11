@@ -218,7 +218,7 @@ Size per tile: 4[0-9][0-9] o
         }
         serve = PyramidView(request)
         serve()
-        self.assertEquals(request.response.headers['Content-Type'], 'image/png')
+        self.assertEqual(request.response.headers['Content-Type'], 'image/png')
         self.assertEqual(request.response.headers['Cache-Control'], 'max-age=28800')
 
         request.params['TileRow'] = '12'
@@ -262,7 +262,7 @@ Size per tile: 4[0-9][0-9] o
             'Request': 'GetCapabilities',
         }
         PyramidView(request)()
-        self.assertEquals(request.response.headers['Content-Type'], 'application/xml')
+        self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
         self.assert_result_equals(
             request.response.body, u"""<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -754,7 +754,7 @@ Size per tile: 4[0-9][0-9] o
         }
         serve = PyramidView(request)
         serve()
-        self.assertEquals(request.response.headers['Content-Type'], 'image/png')
+        self.assertEqual(request.response.headers['Content-Type'], 'image/png')
         self.assertEqual(request.response.headers['Cache-Control'], 'max-age=28800')
 
         request.matchdict['path'][7] = '12'
@@ -789,14 +789,14 @@ Size per tile: 4[0-9][0-9] o
             'wmts', '1.0.0', 'WMTSCapabilities.xml'
         ]
         PyramidView(request)()
-        self.assertEquals(request.response.headers['Content-Type'], 'application/xml')
+        self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
         self.assert_result_equals(request.response.body, CAPABILITIES)
 
         request.matchdict['path'] = [
             'static', '1.0.0', 'WMTSCapabilities.xml'
         ]
         PyramidView(request)()
-        self.assertEquals(request.response.headers['Content-Type'], 'application/xml')
+        self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
         self.assert_result_equals(request.response.body, CAPABILITIES)
 
         l.check()
@@ -853,7 +853,7 @@ Size per tile: 4[0-9][0-9] o
         }
         serve = PyramidView(request)
         serve()
-        self.assertEquals(request.response.headers['Content-Type'], 'image/png')
+        self.assertEqual(request.response.headers['Content-Type'], 'image/png')
         self.assertEqual(request.response.headers['Cache-Control'], 'max-age=28800')
 
         request.matchdict['path'][7] = '12'
@@ -888,14 +888,14 @@ Size per tile: 4[0-9][0-9] o
             'wmts', '1.0.0', 'WMTSCapabilities.xml'
         ]
         PyramidView(request)()
-        self.assertEquals(request.response.headers['Content-Type'], 'application/xml')
+        self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
         self.assert_result_equals(request.response.body, CAPABILITIES)
 
         request.matchdict['path'] = [
             'static', '1.0.0', 'WMTSCapabilities.xml'
         ]
         PyramidView(request)()
-        self.assertEquals(request.response.headers['Content-Type'], 'application/xml')
+        self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
         self.assert_result_equals(request.response.body, CAPABILITIES)
 
         l.check()

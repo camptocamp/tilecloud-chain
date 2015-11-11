@@ -2090,12 +2090,12 @@ OpenLayers.Request.GET({
     @attr(general=True)
     def test_quote(self):
         from tilecloud_chain import quote
-        self.assertEquals(quote("abc"), "abc")
-        self.assertEquals(quote("a b c"), "'a b c'")
-        self.assertEquals(quote("'a b c'"), "\"'a b c'\"")
-        self.assertEquals(quote('"a b c"'), '\'"a b c"\'')
-        self.assertEquals(quote("a\" b' c"), "'a\" b\\' c'")
-        self.assertEquals(quote(""), "''")
+        self.assertEqual(quote("abc"), "abc")
+        self.assertEqual(quote("a b c"), "'a b c'")
+        self.assertEqual(quote("'a b c'"), "\"'a b c'\"")
+        self.assertEqual(quote('"a b c"'), '\'"a b c"\'')
+        self.assertEqual(quote("a\" b' c"), "'a\" b\\' c'")
+        self.assertEqual(quote(""), "''")
 
     @attr(legends=True)
     @attr(controller=True)

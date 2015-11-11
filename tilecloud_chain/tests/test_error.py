@@ -119,53 +119,53 @@ class TestError(CompareCase):
             zoom = None
         gene = TileGeneration('tilegeneration/test.yaml', Opt())
         obj = {'value': 1}
-        self.assertEquals(gene.validate(obj, 'object', 'value', int), False)
-        self.assertEquals(obj['value'], 1)
+        self.assertEqual(gene.validate(obj, 'object', 'value', int), False)
+        self.assertEqual(obj['value'], 1)
 
         obj = {'value': 1.0}
-        self.assertEquals(gene.validate(obj, 'object', 'value', int), True)
+        self.assertEqual(gene.validate(obj, 'object', 'value', int), True)
 
         obj = {'value': '1 + 1'}
-        self.assertEquals(gene.validate(obj, 'object', 'value', int), False)
-        self.assertEquals(obj['value'], 2)
+        self.assertEqual(gene.validate(obj, 'object', 'value', int), False)
+        self.assertEqual(obj['value'], 2)
 
         obj = {'value': '1 * 1.5'}
-        self.assertEquals(gene.validate(obj, 'object', 'value', int), False)
-        self.assertEquals(obj['value'], 2)
+        self.assertEqual(gene.validate(obj, 'object', 'value', int), False)
+        self.assertEqual(obj['value'], 2)
 
         obj = {'value': 'a'}
-        self.assertEquals(gene.validate(obj, 'object', 'value', int), True)
+        self.assertEqual(gene.validate(obj, 'object', 'value', int), True)
 
         obj = {'value': {}}
-        self.assertEquals(gene.validate(obj, 'object', 'value', int), True)
+        self.assertEqual(gene.validate(obj, 'object', 'value', int), True)
 
         obj = {'value': []}
-        self.assertEquals(gene.validate(obj, 'object', 'value', int), True)
+        self.assertEqual(gene.validate(obj, 'object', 'value', int), True)
 
         obj = {'value': 1}
-        self.assertEquals(gene.validate(obj, 'object', 'value', float), False)
-        self.assertEquals(obj['value'], 1.0)
+        self.assertEqual(gene.validate(obj, 'object', 'value', float), False)
+        self.assertEqual(obj['value'], 1.0)
 
         obj = {'value': 1.0}
-        self.assertEquals(gene.validate(obj, 'object', 'value', float), False)
-        self.assertEquals(obj['value'], 1.0)
+        self.assertEqual(gene.validate(obj, 'object', 'value', float), False)
+        self.assertEqual(obj['value'], 1.0)
 
         obj = {'value': '1 + 1'}
-        self.assertEquals(gene.validate(obj, 'object', 'value', float), False)
-        self.assertEquals(obj['value'], 2.0)
+        self.assertEqual(gene.validate(obj, 'object', 'value', float), False)
+        self.assertEqual(obj['value'], 2.0)
 
         obj = {'value': '1 * 1.5'}
-        self.assertEquals(gene.validate(obj, 'object', 'value', float), False)
-        self.assertEquals(obj['value'], 1.5)
+        self.assertEqual(gene.validate(obj, 'object', 'value', float), False)
+        self.assertEqual(obj['value'], 1.5)
 
         obj = {'value': 'a'}
-        self.assertEquals(gene.validate(obj, 'object', 'value', float), True)
+        self.assertEqual(gene.validate(obj, 'object', 'value', float), True)
 
         obj = {'value': {}}
-        self.assertEquals(gene.validate(obj, 'object', 'value', float), True)
+        self.assertEqual(gene.validate(obj, 'object', 'value', float), True)
 
         obj = {'value': []}
-        self.assertEquals(gene.validate(obj, 'object', 'value', float), True)
+        self.assertEqual(gene.validate(obj, 'object', 'value', float), True)
 
     @log_capture('tilecloud_chain')
     @attr(wrong_srs_auth=True)
