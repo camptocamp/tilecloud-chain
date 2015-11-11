@@ -51,14 +51,14 @@ layer_default:
     mime_type: image/png
     wmts_style: default
     # the WMTS dimensions definition [default to []]
-    dimensions:
-        -   name: DATE
-            # the default value for the WMTS capabilities
-            default: 2012
-            # the generated value
-            value: 2012
-            # all the available values in the WMTS capabilities
-            values: [2012]
+    #dimensions:
+    #    -   name: DATE
+    #        # the default value for the WMTS capabilities
+    #        default: 2012
+    #        # the generated value
+    #        value: 2012
+    #        # all the available values in the WMTS capabilities
+    #        values: [2012]
     # the meta tiles definition [default to off]
     meta: on
     # the meta tiles size [default to 8]
@@ -101,6 +101,14 @@ generation:
 
     # maximum allowed consecutive errors, after it exit [default to 10]
     maxconsecutive_errors: 10
+
+apache:
+    location: /${instanceid}/tiles
+
+mapcache:
+    config_file: apache/mapcache.xml
+    memcache_host: localhost
+    memcache_port: 11211
 
 process:
     optipng_test:
