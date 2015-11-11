@@ -120,18 +120,18 @@ class TestError(CompareCase):
         gene = TileGeneration('tilegeneration/test.yaml', Opt())
         obj = {'value': 1}
         self.assertEquals(gene.validate(obj, 'object', 'value', int), False)
-        self.assertEquals(obj['value'],  1)
+        self.assertEquals(obj['value'], 1)
 
         obj = {'value': 1.0}
         self.assertEquals(gene.validate(obj, 'object', 'value', int), True)
 
         obj = {'value': '1 + 1'}
         self.assertEquals(gene.validate(obj, 'object', 'value', int), False)
-        self.assertEquals(obj['value'],  2)
+        self.assertEquals(obj['value'], 2)
 
         obj = {'value': '1 * 1.5'}
         self.assertEquals(gene.validate(obj, 'object', 'value', int), False)
-        self.assertEquals(obj['value'],  2)
+        self.assertEquals(obj['value'], 2)
 
         obj = {'value': 'a'}
         self.assertEquals(gene.validate(obj, 'object', 'value', int), True)
@@ -144,19 +144,19 @@ class TestError(CompareCase):
 
         obj = {'value': 1}
         self.assertEquals(gene.validate(obj, 'object', 'value', float), False)
-        self.assertEquals(obj['value'],  1.0)
+        self.assertEquals(obj['value'], 1.0)
 
         obj = {'value': 1.0}
         self.assertEquals(gene.validate(obj, 'object', 'value', float), False)
-        self.assertEquals(obj['value'],  1.0)
+        self.assertEquals(obj['value'], 1.0)
 
         obj = {'value': '1 + 1'}
         self.assertEquals(gene.validate(obj, 'object', 'value', float), False)
-        self.assertEquals(obj['value'],  2.0)
+        self.assertEquals(obj['value'], 2.0)
 
         obj = {'value': '1 * 1.5'}
         self.assertEquals(gene.validate(obj, 'object', 'value', float), False)
-        self.assertEquals(obj['value'],  1.5)
+        self.assertEquals(obj['value'], 1.5)
 
         obj = {'value': 'a'}
         self.assertEquals(gene.validate(obj, 'object', 'value', float), True)

@@ -343,7 +343,7 @@ def _generate_apache_config(gene):
                     'region': cache['region'],
                     'bucket': cache['bucket'],
                     'folder': folder
-                }
+            }
             f.write(
                 """
 <Proxy %(tiles_url)s*>
