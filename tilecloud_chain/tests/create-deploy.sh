@@ -1,4 +1,4 @@
-#! /bin/bash -e
+#! /bin/bash -ex
 
 yes ""|adduser --ingroup travis deploy --disabled-password
 mkdir /home/deploy/.ssh
@@ -14,9 +14,5 @@ echo "   StrictHostKeyChecking no" >> /home/deploy/.ssh/config
 chmod -R g-rw,o-rw /home/deploy/.ssh
 chown deploy:travis -R /home/deploy/.ssh
 chown deploy /var/cache/deploy/
-PY_MAG_VERSION=`python --version 2>&1|sed 's/Python //'|sed 's/.[0-9]$//'`
-echo "source ~/virtualenv/python${PY_MAG_VERSION}/bin/activate" >> /home/deploy/.bashrc
-
-#echo "deploy ALL=(postgres) NOPASSWD: ALL" >> /etc/sudoers
 echo "deploy ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 echo "travis ALL=(deploy) NOPASSWD: ALL" >> /etc/sudoers

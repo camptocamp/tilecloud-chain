@@ -6,6 +6,7 @@ import logging
 import boto
 import re
 import socket
+from os import environ
 from boto import sns
 from datetime import timedelta
 from subprocess import Popen, PIPE
@@ -120,7 +121,7 @@ def main():
         run_local(cmd)
 
         for cmd in gene.config['ec2']['build_cmds']:
-            run_remote(cmd, host, project_dir, gene)
+            run_remote(cmd % environ, host, project_dir, gene)
         if 'apache_content' in gene.config['ec2'] and 'apache_config' in gene.config['ec2']:
             run_remote(
                 'echo %s > %s' % (
@@ -149,7 +150,7 @@ def main():
         for i in range(gene.config['ec2']['number_process']):
             processes.append(
                 run_remote_process(
-                    './buildout/bin/generate_tiles ' +
+                    '.build/venv/bin/generate_tiles ' +
                     ' '.join([str(a) for a in arguments]), host, project_dir, gene
                 )
             )
@@ -203,7 +204,7 @@ def main():
 
         project_dir = gene.config['ec2']['code_folder']
         run_remote(
-            './buildout/bin/generate_tiles ' +
+            '.build/venv/bin/generate_tiles ' +
             ' '.join([str(a) for a in arguments]), host, project_dir, gene
         )
 
@@ -219,7 +220,7 @@ def main():
         for i in range(gene.config['ec2']['number_process']):
             processes.append(
                 run_remote_process(
-                    './buildout/bin/generate_tiles ' +
+                    '.build/venv/bin/generate_tiles ' +
                     ' '.join([str(a) for a in arguments]), host, project_dir, gene)
             )
 
