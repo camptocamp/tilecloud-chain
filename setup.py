@@ -26,7 +26,7 @@ if sys.version_info >= (3, 0) or (
 
 setup(
     name='tilecloud-chain',
-    version='1.0.0',
+    version='1.1.0',
     description=(
         "Tools to generates tiles from WMS or Mapnik, to S3, "
         "Berkley DB, MBTiles, or local filesystem in WMTS layout using "
