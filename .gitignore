@@ -3,10 +3,8 @@
 .*.swp.!sync
 
 # Packages
-/*.egg
-/*.egg-info
-/.installed.cfg
 /dist
+/.build
 
 # Installer logs
 /pip-log.txt

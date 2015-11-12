@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def main():
     parser = ArgumentParser(
         description='Used to calculate the generation cost',
-        prog='./buildout/bin/generate_cost'
+        prog=sys.argv[0]
     )
     add_comon_options(parser, tile_pyramid=False)
     parser.add_argument(

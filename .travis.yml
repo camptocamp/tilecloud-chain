@@ -30,6 +30,7 @@ before_install:
 - sudo chmod g+s,o+w /tmp/tests
 
 install:
+- sudo pip install wheel
 - sudo pip install -r requirements.txt
 - sudo pip install -r dev-requirements.txt
 - touch tilecloud_chain/OpenLayers.js

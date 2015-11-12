@@ -29,7 +29,7 @@ def main():
     parser = ArgumentParser(
         description='Used to generate the contextual file like the capabilities, the legends, '
         'the Apache and MapCache configuration',
-        prog='./buildout/bin/generate_controller'
+        prog=sys.argv[0]
     )
     add_comon_options(parser, tile_pyramid=False, no_geom=False)
     parser.add_argument(
