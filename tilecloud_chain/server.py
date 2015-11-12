@@ -208,7 +208,7 @@ class Server:
                     return self.error(400, "Wrong Layer '%s'" % params['LAYER'], **kwargs)
 
                 index = 3
-                dimensions = path[index:index+len(layer['dimensions'])]
+                dimensions = path[index:index + len(layer['dimensions'])]
                 for dimension in layer['dimensions']:
                     params[dimension['name'].upper()] = path[index]
                     index += 1

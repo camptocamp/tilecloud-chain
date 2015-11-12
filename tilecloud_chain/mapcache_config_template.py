@@ -47,14 +47,15 @@ if layer['type'] == 'wms' or 'wms_url' in layer %}
       <metabuffer>{{layer['meta_buffer']}}</metabuffer>{% endif %}
       <format>{{layer['mime_type']}}</format>
       <expires>3600</expires> <!-- 1 hour -->
-      <auto_expire>13800</auto_expire> <!-- 4 hours -->
+      <auto_expire>13800</auto_expire> <!-- 4 hours -->{%
+if len(layer['dimensions']) > 0 %}
       <dimensions>{%
 for dim in layer['dimensions'] %}
         <dimension type="values" name="{{dim['name']}}" default="{{dim['default']}}">{{
             ','.join(dim['values'])
         }}</dimension>{%
 endfor %}
-      </dimensions>
+      </dimensions>{% endif %}
    </tileset>
 {% endif %}{% endfor %}
 

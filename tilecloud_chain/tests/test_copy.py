@@ -55,7 +55,7 @@ Size per tile: 10 o
             ('tilecloud_chain', 'ERROR', 'The tile: not defined is empty')
         )
         f = open('/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png', 'r')
-        self.assertEquals(f.read(), 'test image')
+        self.assertEqual(f.read(), 'test image')
         f.close()
 
     @attr(process=True)
@@ -75,7 +75,7 @@ image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
             statinfo = os.stat(
                 '/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png',
             )
-            self.assertEquals(statinfo.st_size, 755)
+            self.assertEqual(statinfo.st_size, 755)
 
             self.assert_cmd_equals(
                 cmd='./buildout/bin/generate_process %s -c tilegeneration/test-copy.yaml --cache src optipng' % d,
@@ -95,7 +95,7 @@ Size per tile: 103 o
             statinfo = os.stat(
                 '/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png',
             )
-            self.assertEquals(statinfo.st_size, 103)
+            self.assertEqual(statinfo.st_size, 103)
         l.check(
             ('tilecloud_chain', 'ERROR', 'The tile: not defined is empty'),
             ('tilecloud_chain', 'ERROR', 'The tile: not defined is empty'),

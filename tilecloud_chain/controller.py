@@ -300,7 +300,8 @@ def _generate_mapcache_config(gene):
         layers=gene.layers,
         grids=gene.grids,
         mapcache=gene.config['mapcache'],
-        min=min
+        min=min,
+        len=len
     )
 
     f = open(gene.config['mapcache']['config_file'], 'w')
@@ -343,7 +344,7 @@ def _generate_apache_config(gene):
                     'region': cache['region'],
                     'bucket': cache['bucket'],
                     'folder': folder
-                }
+            }
             f.write(
                 """
 <Proxy %(tiles_url)s*>
