@@ -42,9 +42,10 @@ class Generate:
         if options.get_bbox:
             try:
                 tilecoord = parse_tilecoord(options.get_bbox)
-                print \
-                    "Tile bounds: [%i,%i,%i,%i]" % \
+                print(
+                    "Tile bounds: [%i,%i,%i,%i]" %
                     gene.layer['grid_ref']['obj'].extent(tilecoord)
+                )
                 exit()
             except ValueError as e:  # pragma: no cover
                 exit(
@@ -284,7 +285,8 @@ class Generate:
 
             if not options.quiet and options.role in ('local', 'slave'):
                 nb_tiles = count_tiles.nb + count_tiles_dropped.nb
-                print """The tile generation of layer '%s' is finish
+                print(
+                    """The tile generation of layer '%s' is finish
 %sNb generated tiles: %i
 Nb tiles dropped: %i
 Nb tiles stored: %i
@@ -293,8 +295,7 @@ Total time: %s
 Total size: %s
 Time per tiles: %i ms
 Size per tile: %i o
-""" % \
-                    (
+""" % (
                         gene.layer['name'],
                         """Nb generated metatiles: %i
 Nb metatiles dropped: %i
@@ -311,6 +312,7 @@ Nb metatiles dropped: %i
                         (gene.duration / nb_tiles * 1000).seconds if nb_tiles != 0 else 0,
                         count_tiles.size / count_tiles.nb if count_tiles.nb != 0 else -1
                     )
+                )
 
         if cache_tilestore is not None and hasattr(cache_tilestore, 'connection'):
             cache_tilestore.connection.close()
@@ -360,11 +362,11 @@ def daemonize():  # pragma: no cover
     try:
         pid = os.fork()
         if pid > 0:
-            print "Daemonize with pid %i." % pid
+            print("Daemonize with pid %i." % pid)
             sys.stderr.write(str(pid))
             # exit parent
             sys.exit(0)
-    except OSError, e:
+    except OSError as e:
         exit("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
 
 

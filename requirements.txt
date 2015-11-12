@@ -7,3 +7,4 @@ Jinja2
 pyramid
 simplejson
 requests
+six

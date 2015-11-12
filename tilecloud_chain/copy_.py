@@ -45,7 +45,8 @@ class Copy:
         gene.add_error_filters()
         gene.consume()
         if not options.quiet:
-            print """The tile %s of layer '%s' is finish
+            print(
+                """The tile %s of layer '%s' is finish
 Nb %s tiles: %i
 Nb errored tiles: %i
 Nb dropped tiles: %i
@@ -53,8 +54,7 @@ Total time: %s
 Total size: %s
 Time per tiles: %i ms
 Size per tile: %i o
-""" % \
-                (
+""" % (
                     task_name,
                     gene.layer['name'],
                     task_name,
@@ -66,6 +66,7 @@ Size per tile: %i o
                     (gene.duration / self.count.nb * 1000).seconds if self.count.nb != 0 else 0,
                     self.count.size / self.count.nb if self.count.nb != 0 else -1
                 )
+            )
 
 
 def main():
