@@ -25,7 +25,7 @@ class TestError(CompareCase):
     @attr(general=True)
     def test_resolution(self, l):
         self.run_cmd(
-            cmd='./buildout/bin/generate_controller -c tilegeneration/wrong_resolutions.yaml',
+            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_resolutions.yaml',
             main_func=controller.main)
         l.check(
             ('tilecloud_chain', 'ERROR', "The resolution 0.1 * resolution_scale 5 is not an integer."),
@@ -36,7 +36,7 @@ class TestError(CompareCase):
     @attr(general=True)
     def test_mapnik_grid_meta(self, l):
         self.run_cmd(
-            cmd='./buildout/bin/generate_controller -c tilegeneration/wrong_mapnik_grid_meta.yaml',
+            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_mapnik_grid_meta.yaml',
             main_func=controller.main)
         l.check(
             ('tilecloud_chain', 'ERROR', "The layer 'b' is of type Mapnik/Grid, that can't support matatiles."),
@@ -47,7 +47,7 @@ class TestError(CompareCase):
     @attr(general=True)
     def test_exists(self, l):
         self.run_cmd(
-            cmd='./buildout/bin/generate_controller -c tilegeneration/wrong_exists.yaml',
+            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_exists.yaml',
             main_func=controller.main)
         l.check(
             ('tilecloud_chain', 'ERROR', "The attribute 'grids' is required in the object config."),
@@ -58,7 +58,7 @@ class TestError(CompareCase):
     @attr(general=True)
     def test_type(self, l):
         self.run_cmd(
-            cmd='./buildout/bin/generate_controller -v -c tilegeneration/wrong_type.yaml',
+            cmd='.build/venv/bin/generate_controller -v -c tilegeneration/wrong_type.yaml',
             main_func=controller.main)
         l.check(
             ('tilecloud_chain', 'ERROR', "The attribute 'name' of the object grid[swissgrid!] is not a "
@@ -97,7 +97,7 @@ class TestError(CompareCase):
     @attr(general=True)
     def test_zoom_errors(self, l):
         self.run_cmd(
-            cmd='./buildout/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10',
+            cmd='.build/venv/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10',
             main_func=generate.main)
         l.check(
             ('tilecloud_chain', 'INFO', 'Execute SQL: SELECT ST_AsBinary(geom) FROM (SELECT the_geom AS geom '
@@ -172,7 +172,7 @@ class TestError(CompareCase):
     @attr(general=True)
     def test_wrong_srs_auth(self, l):
         self.run_cmd(
-            cmd='./buildout/bin/generate_controller -c tilegeneration/wrong_srs_auth.yaml',
+            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_srs_auth.yaml',
             main_func=controller.main)
         l.check(
             ('tilecloud_chain', 'ERROR', "The grid 'swissgrid_01' srs should have the authority 'EPSG' but it is toto.")
@@ -183,7 +183,7 @@ class TestError(CompareCase):
     @attr(general=True)
     def test_wrong_srs_id(self, l):
         self.run_cmd(
-            cmd='./buildout/bin/generate_controller -c tilegeneration/wrong_srs_id.yaml',
+            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_srs_id.yaml',
             main_func=controller.main)
         l.check(
             ('tilecloud_chain', 'ERROR', "The grid 'swissgrid_01' srs should have an int ref_id but it is 21781a.")
@@ -194,7 +194,7 @@ class TestError(CompareCase):
     @attr(general=True)
     def test_wrong_srs(self, l):
         self.run_cmd(
-            cmd='./buildout/bin/generate_controller -c tilegeneration/wrong_srs.yaml',
+            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_srs.yaml',
             main_func=controller.main)
         l.check((
             'tilecloud_chain', 'ERROR', "The grid 'swissgrid_01' srs should have the syntax "

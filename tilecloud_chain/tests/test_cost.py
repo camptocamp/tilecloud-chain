@@ -50,7 +50,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_point(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_cost -c tilegeneration/test-fix.yaml -l point',
+            cmd='.build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l point',
             main_func=cost.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -119,7 +119,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_point_count(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_cost -c tilegeneration/test-fix.yaml -l point --cost-algo count',
+            cmd='.build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l point --cost-algo count',
             main_func=cost.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -188,7 +188,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_line(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_cost -c tilegeneration/test-fix.yaml -l line',
+            cmd='.build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l line',
             main_func=cost.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -264,7 +264,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_line_count(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_cost -c tilegeneration/test-fix.yaml -l line --cost-algo count',
+            cmd='.build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l line --cost-algo count',
             main_func=cost.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -340,7 +340,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_polygon(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_cost -c tilegeneration/test-fix.yaml -l polygon',
+            cmd='.build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l polygon',
             main_func=cost.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -411,7 +411,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_polygon_count(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_cost -c tilegeneration/test-fix.yaml '
+            cmd='.build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml '
                 '-l polygon --cost-algo count',
             main_func=cost.main,
             expected='\n'.join([
@@ -483,7 +483,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_default(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_cost -c tilegeneration/test-fix.yaml',
+            cmd='.build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml',
             main_func=cost.main,
             expected='\n'.join([
                 '',
@@ -624,7 +624,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_polygon2(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_cost -c tilegeneration/test-fix.yaml -l polygon2',
+            cmd='.build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l polygon2',
             main_func=cost.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -678,7 +678,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_nometa(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_cost -c tilegeneration/test-fix.yaml -l all',
+            cmd='.build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l all',
             main_func=cost.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -729,7 +729,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_layer_bbox(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_cost -c tilegeneration/test-fix.yaml -l all --cost-algo count',
+            cmd='.build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l all --cost-algo count',
             main_func=cost.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -801,7 +801,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_no_geom(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_cost -c tilegeneration/test-fix.yaml -l point --no-geom',
+            cmd='.build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l point --no-geom',
             main_func=cost.main,
             expected='\n'.join([
                 'Calculate zoom 0.',
@@ -870,7 +870,7 @@ ESB storage: %(esb)s [$/month]
     @attr(general=True)
     def test_cost_sqs_nometa(self):
         self.assert_cmd_equals(
-            cmd='./buildout/bin/generate_cost -c tilegeneration/test.yaml -l point_hash_no_meta',
+            cmd='.build/venv/bin/generate_cost -c tilegeneration/test.yaml -l point_hash_no_meta',
             main_func=cost.main,
             expected='\n'.join([
                 'Calculate zoom 0.',

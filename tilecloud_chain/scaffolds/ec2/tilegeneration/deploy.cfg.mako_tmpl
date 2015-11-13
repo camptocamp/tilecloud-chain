@@ -8,7 +8,7 @@ hookdir = %(here)s/hooks/
 active = false
 
 [databases]
-names = $${vars:db}
+names = $${db}
 
 [code]
 active = false

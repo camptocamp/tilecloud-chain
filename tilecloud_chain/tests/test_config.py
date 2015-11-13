@@ -24,7 +24,7 @@ class TestConfig(CompareCase):
     @attr(general=True)
     def test_int_grid(self, l):
         self.run_cmd(
-            cmd='./buildout/bin/generate_controller -c tilegeneration/test-int-grid.yaml --dump-config',
+            cmd='.build/venv/bin/generate_controller -c tilegeneration/test-int-grid.yaml --dump-config',
             main_func=controller.main)
         l.check(
             (

@@ -163,7 +163,7 @@ class TestServe(CompareCase):
     @log_capture('tilecloud_chain', level=30)
     def test_serve_kvp(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -d -c tilegeneration/test-nosns.yaml '
+            cmd='.build/venv/bin/generate_tiles -d -c tilegeneration/test-nosns.yaml '
                 '-l point_hash --zoom 1',
             main_func=generate.main,
             directory="/tmp/tiles/",
@@ -189,7 +189,7 @@ Size per tile: 4[0-9][0-9] o
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-nosns.yaml',
+            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-nosns.yaml',
             main_func=controller.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/%s',
@@ -708,7 +708,7 @@ Size per tile: 4[0-9][0-9] o
     @log_capture('tilecloud_chain', level=30)
     def test_mbtiles_rest(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -d -c tilegeneration/test-serve.yaml'
+            cmd='.build/venv/bin/generate_tiles -d -c tilegeneration/test-serve.yaml'
                 ' -l point_hash --zoom 1',
             main_func=generate.main,
             directory="/tmp/tiles/mbtiles/",
@@ -733,7 +733,7 @@ Size per tile: 4[0-9][0-9] o
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
-            cmd='./buildout/bin/generate_controller -d --capabilities -c tilegeneration/test-serve.yaml',
+            cmd='.build/venv/bin/generate_controller -d --capabilities -c tilegeneration/test-serve.yaml',
             main_func=controller.main,
             directory="/tmp/tiles/mbtiles/",
             tiles_pattern='1.0.0/%s',
@@ -807,7 +807,7 @@ Size per tile: 4[0-9][0-9] o
     @log_capture('tilecloud_chain', level=30)
     def test_bsddb_rest(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -d -c tilegeneration/test-bsddb.yaml'
+            cmd='.build/venv/bin/generate_tiles -d -c tilegeneration/test-bsddb.yaml'
                 ' -l point_hash --zoom 1',
             main_func=generate.main,
             directory="/tmp/tiles/bsddb/",
@@ -832,7 +832,7 @@ Size per tile: 4[0-9][0-9] o
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-bsddb.yaml',
+            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-bsddb.yaml',
             main_func=controller.main,
             directory="/tmp/tiles/bsddb/",
             tiles_pattern='1.0.0/%s',
@@ -980,7 +980,7 @@ Size per tile: 4[0-9][0-9] o
     @log_capture('tilecloud_chain', level=30)
     def test_wsgi(self, l):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_tiles -d -c tilegeneration/test-serve.yaml '
+            cmd='.build/venv/bin/generate_tiles -d -c tilegeneration/test-serve.yaml '
                 '-l point_hash --zoom 1',
             main_func=generate.main,
             directory="/tmp/tiles/mbtiles/",
@@ -1005,7 +1005,7 @@ Size per tile: 4[0-9][0-9] o
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-serve.yaml',
+            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-serve.yaml',
             main_func=controller.main,
             directory="/tmp/tiles/mbtiles/",
             tiles_pattern='1.0.0/%s',

@@ -367,7 +367,7 @@ The Apache configuration look like this (default values):
         # Generated file
         config_file: apache/tiles.conf
         # Serve tiles location, default is /tiles
-        location: /${vars:instanceid}/tiles
+        location: /${instanceid}/tiles
         # Expires header in hours
         expires: 8
 
@@ -398,7 +398,7 @@ The MapCache configuration look like this (default values):
         # The memcache port
         memcache_port: 11211
         # The mapcache location, default is /mapcache
-        location: /${vars:instanceid}/mapcache
+        location: /${instanceid}/mapcache
 
 
 To generate the MapCache configuration we use the command::
@@ -556,10 +556,6 @@ The configuration is like this:
     ec2:
         geodata_folder: /var/sig
         deploy_config: tilegeneration/deploy.cfg
-        build_cmds:
-        - rm .installed.cfg
-        - python bootstrap.py --distribute -v 1.7.1
-        - .build/venv/bin/buildout -c buildout_tilegeneration.cfg install template
         deploy_user: deploy
         code_folder: /var/www/vhost/project/private/project
         apache_config: /var/www/vhost/project/conf/tilegeneration.conf
@@ -677,19 +673,6 @@ To use the pyramid view use the following config:
 Internal WSGI server
 --------------------
 
-To use the WSGI server with buildout, add in ``buildout.cfg``::
-
-    [buildout]
-        parts = ...
-            modwsgi_tiles
-            ...
-
-    [modwsgi_tiles]
-    recipe = collective.recipe.modwsgi
-    eggs = tileswitch
-    config-file = ${buildout:directory}/production.ini
-    app_name = tiles
-
 in ``production.ini``::
 
     [app:tiles]
@@ -698,10 +681,10 @@ in ``production.ini``::
 
 with the apache configuration::
 
-    WSGIDaemonProcess tiles:${vars:instanceid} display-name=%{GROUP} user=${vars:modwsgi_user}
-    WSGIScriptAlias /${vars:instanceid}/tiles ${buildout:directory}/buildout/parts/modwsgi_tiles/wsgi
-    <Location /${vars:instanceid}/tiles>
-        WSGIProcessGroup tiles:${vars:instanceid}
+    WSGIDaemonProcess tiles:${instanceid} display-name=%{GROUP} user=${modwsgi_user}
+    WSGIScriptAlias /${instanceid}/tiles ${directory}/apache/wmts.wsgi
+    <Location /${instanceid}/tiles>
+        WSGIProcessGroup tiles:${instanceid}
         WSGIApplicationGroup %{GLOBAL}
     </Location>
 
