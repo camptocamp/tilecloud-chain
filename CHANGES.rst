@@ -73,7 +73,7 @@ Release 0.7
 Release 0.6
 -----------
 
-1. Now the apache configuration can be generated with ``./buildout/bin/generate_controller --generate-apache-config``,
+1. Now the apache configuration can be generated with ``.build/venv/bin/generate_controller --generate-apache-config``,
    it support ``filesystem`` ``cache`` and ``MapCache``.
 
 2. Windows fixes.

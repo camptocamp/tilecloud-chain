@@ -704,7 +704,7 @@ Nb error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 Total size: 9.7 Kio
 Time per tiles: [0-9]+ ms
-Size per tile: 824 o
+Size per tile: 823 o
 
 """,
             )

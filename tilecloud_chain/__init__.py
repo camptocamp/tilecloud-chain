@@ -514,8 +514,9 @@ class TileGeneration:
             error = self.validate(
                 self.config['ec2'], 'ec2', 'build_cmds',
                 attribute_type=str, is_array=True, default=[
-                    "python bootstrap.py --distribute -v 1.7.1",
-                    "./buildout/bin/buildout -c buildout_tilegeneration.cfg"
+                    "mkdir .build",
+                    "virtualenv .build/venv",
+                    ".build/venv/bin/pip install ."
                 ]
             ) or error
             error = self.validate(self.config['ec2'], 'ec2', 'apache_config', attribute_type=str) or error

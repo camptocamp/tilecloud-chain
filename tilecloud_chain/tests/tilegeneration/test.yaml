@@ -218,8 +218,9 @@ ec2:
     geodata_folder: tilecloud_chain
     deploy_config: tests/deploy.cfg
     build_cmds:
-    - virtualenv buildout
-    - ./buildout/bin/pip install .
+    - mkdir -p .build/venv
+    - ln -s /home/travis/virtualenv/python%(TRAVIS_PYTHON_VERSION)s/bin .build/venv/
+    - pip install .
     deploy_user: deploy
     code_folder: /tmp/tests/test
     apache_config: /tmp/tests/test.conf
