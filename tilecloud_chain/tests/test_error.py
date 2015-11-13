@@ -33,6 +33,8 @@ class TestError(CompareCase):
 
     @log_capture('tilecloud_chain')
     @attr(mapnik_grid_meta=True)
+    @attr(nopy35=True)
+    @attr(nopynightly=True)
     @attr(general=True)
     def test_mapnik_grid_meta(self, l):
         self.run_cmd(

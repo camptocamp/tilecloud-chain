@@ -97,21 +97,20 @@ def main():
         cursor.execute('DELETE FROM "%s"' % (options.table))
 
     geoms = []
-    f = file(options.file, 'r')
     grid = QuadTileGrid(
         max_extent=(-20037508.34, -20037508.34, 20037508.34, 20037508.34),
     )
-    for coord in f:
-        extent = grid.extent(parse_tilecoord(coord), options.buffer)
-        geoms.append(Polygon((
-            (extent[0], extent[1]),
-            (extent[0], extent[3]),
-            (extent[2], extent[3]),
-            (extent[2], extent[1])
-        )))
-    f.close()
+    with open(options.file, "r") as f:
+        for coord in f:
+            extent = grid.extent(parse_tilecoord(coord), options.buffer)
+            geoms.append(Polygon((
+                (extent[0], extent[1]),
+                (extent[0], extent[3]),
+                (extent[2], extent[3]),
+                (extent[2], extent[1])
+            )))
     if len(geoms) == 0:
-        print "No coords found"
+        print("No coords found")
         connection.commit()
         cursor.close()
         connection.close()
@@ -135,4 +134,4 @@ def main():
     connection.commit()
     cursor.close()
     connection.close()
-    print 'Import successful'
+    print('Import successful')

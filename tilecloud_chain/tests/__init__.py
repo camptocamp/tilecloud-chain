@@ -5,7 +5,8 @@ import sys
 import os
 import re
 import shutil
-from cStringIO import StringIO
+from six.moves import cStringIO
+from six import text_type as unicode
 from unittest2 import TestCase
 
 log = logging.getLogger("tests")
@@ -37,9 +38,9 @@ class CompareCase(TestCase):
 
     def run_cmd(self, cmd, main_func):
         old_stdout = sys.stdout
-        sys.stdout = mystdout = StringIO()
+        sys.stdout = mystdout = cStringIO()
         old_stderr = sys.stderr
-        sys.stderr = mystderr = StringIO()
+        sys.stderr = mystderr = cStringIO()
         self.assert_main_equals(cmd, main_func, [])
         sys.stdout = old_stdout
         sys.stderr = old_stderr
@@ -99,7 +100,7 @@ class CompareCase(TestCase):
 
     def assert_cmd_yaml_equals(self, cmd, main_func, **kargs):
         old_stdout = sys.stdout
-        sys.stdout = mystdout = StringIO()
+        sys.stdout = mystdout = cStringIO()
         self.assert_main_equals(cmd, main_func, [])
         sys.stdout = old_stdout
         self.assert_yaml_equals(result=mystdout.getvalue(), **kargs)

@@ -8,10 +8,9 @@ import yaml
 import sqlite3
 import tempfile
 import subprocess
+from six.moves import cStringIO, map, filter
 from math import ceil, sqrt
-from itertools import imap, ifilter
 from hashlib import sha1
-from cStringIO import StringIO
 from fractions import Fraction
 from datetime import datetime
 from tilecloud import consume
@@ -161,7 +160,8 @@ class TileGeneration:
             format='%(levelname)s:%(name)s:%(funcName)s:%(message)s',
             level=level)
 
-        self.config = yaml.load(file(config_file))
+        with open(config_file) as f:
+            self.config = yaml.load(f)
         self.options = options
 
         self.validate_exists(self.config, 'config', 'grids')
@@ -1046,7 +1046,7 @@ class TileGeneration:
                 return tile
             self.imap(do)
         if 'maxconsecutive_errors' in self.config['generation']:
-            self.tilestream = imap(MaximumConsecutiveErrors(
+            self.tilestream = map(MaximumConsecutiveErrors(
                 self.config['generation']['maxconsecutive_errors']), self.tilestream)
 
         def drop_count(tile):
@@ -1177,7 +1177,7 @@ class TileGeneration:
                 except:  # pragma: no cover
                     tile.error = sys.exc_info()[1]
                     return tile
-            self.tilestream = imap(safe_get, ifilter(None, self.tilestream))
+            self.tilestream = map(safe_get, filter(None, self.tilestream))
 
     def put(self, store, time_message=None):
         if self.options.debug:
@@ -1199,7 +1199,7 @@ class TileGeneration:
                 except:  # pragma: no cover
                     tile.error = sys.exc_info()[1]
                     return tile
-            self.tilestream = imap(safe_put, ifilter(None, self.tilestream))
+            self.tilestream = map(safe_put, filter(None, self.tilestream))
 
     def delete(self, store, time_message=None):  # pragma: no cover
         if self.options.debug:
@@ -1221,11 +1221,11 @@ class TileGeneration:
                 except:  # pragma: no cover
                     tile.error = sys.exc_info()[1]
                     return tile
-            self.tilestream = imap(safe_delete, ifilter(None, self.tilestream))
+            self.tilestream = map(safe_delete, filter(None, self.tilestream))
 
     def imap(self, tile_filter, time_message=None):
         if self.options.debug:
-            self.tilestream = imap(tile_filter, self.tilestream)  # pragma: no cover
+            self.tilestream = map(tile_filter, self.tilestream)  # pragma: no cover
         else:
             def safe_imap(tile):
                 try:
@@ -1243,11 +1243,11 @@ class TileGeneration:
                 except:  # pragma: no cover
                     tile.error = sys.exc_info()[1]
                     return tile
-            self.tilestream = imap(safe_imap, ifilter(None, self.tilestream))
+            self.tilestream = map(safe_imap, filter(None, self.tilestream))
 
     def ifilter(self, tile_filter, time_message=None):
         if self.options.debug:
-            self.tilestream = ifilter(tile_filter, self.tilestream)  # pragma: no cover
+            self.tilestream = filter(tile_filter, self.tilestream)  # pragma: no cover
         else:
             def safe_filter(tile):
                 if tile:
@@ -1266,7 +1266,7 @@ class TileGeneration:
                     except:  # pragma: no cover
                         tile.error = sys.exc_info()[1]
                         return tile
-            self.tilestream = ifilter(safe_filter, self.tilestream)
+            self.tilestream = filter(safe_filter, self.tilestream)
 
     def consume(self, test=None):
         if test is None:
@@ -1354,7 +1354,7 @@ class HashLogger:
     def __call__(self, tile):
         ref = None
         try:
-            image = Image.open(StringIO(tile.data))
+            image = Image.open(cStringIO(tile.data))
         except IOError as e:  # pragma: no cover
             logger.error(tile.data)
             raise e

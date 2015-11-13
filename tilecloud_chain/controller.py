@@ -5,12 +5,12 @@ import sys
 import math
 import logging
 import yaml
+from six.moves import cStringIO
 from math import exp, log
 from copy import copy
 from argparse import ArgumentParser
 from hashlib import sha1
 from urllib import urlencode
-from cStringIO import StringIO
 
 import requests
 from bottle import jinja2_template
@@ -200,7 +200,7 @@ def _generate_wmts_capabilities(gene):
                         previous_legend['min_resolution'] = middle_res
                         new_legend['max_resolution'] = middle_res
                     try:
-                        pil_img = Image.open(StringIO(img))
+                        pil_img = Image.open(cStringIO(img))
                         new_legend['width'] = pil_img.size[0]
                         new_legend['height'] = pil_img.size[1]
                     except:  # pragma: nocover
@@ -248,7 +248,7 @@ def _generate_legend_images(gene):
                             'SCALE': resolution / 0.00028
                         }))
                         try:
-                            legends.append(Image.open(StringIO(response.content)))
+                            legends.append(Image.open(cStringIO(response.content)))
                         except:  # pragma: nocover
                             logger.warn(
                                 "Unable to read legend image for layer '%s', resolution '%i': %r" % (
@@ -262,7 +262,7 @@ def _generate_legend_images(gene):
                     for i in legends:
                         image.paste(i, (0, y))
                         y += i.size[1]
-                    string_io = StringIO()
+                    string_io = cStringIO()
                     image.save(string_io, FORMAT_BY_CONTENT_TYPE[layer['legend_mime']])
                     result = string_io.getvalue()
                     new_hash = sha1(result).hexdigest()

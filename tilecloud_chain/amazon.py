@@ -11,6 +11,7 @@ from boto import sns
 from datetime import timedelta
 from subprocess import Popen, PIPE
 from argparse import ArgumentParser
+from six.moves import reduce
 
 from tilecloud_chain import TileGeneration, add_comon_options, quote
 
@@ -70,7 +71,7 @@ def main():
         sys.exit(0)
 
     if 'ec2' not in gene.config:  # pragma: no cover
-        print "EC2 not configured"
+        print("EC2 not configured")
         sys.exit(1)
 
     if options.deploy_config is None:
@@ -94,7 +95,7 @@ def main():
         host = options.host
 
     if options.geodata and 'geodata_folder' in gene.config['ec2']:
-        print "==== Sync geodata ===="
+        print("==== Sync geodata ====")
         ssh_options = ''
         if 'ssh_options' in gene.config['ec2']:  # pragma: no cover
             ssh_options = gene.config['ec2']['ssh_options']
@@ -106,7 +107,7 @@ def main():
         ])
 
     if options.deploy_code:
-        print "==== Sync and build code ===="
+        print("==== Sync and build code ====")
         error = gene.validate(gene.config['ec2'], 'ec2', 'code_folder', required=True)
         if error:
             exit(1)  # pragma: no cover
@@ -182,22 +183,22 @@ def main():
         mean_size = reduce(lambda x, y: x + y, [int(r) for r in tiles_size], 0) / len(tiles_size)
         mean_size_kb = mean_size / 1024.0
 
-        print '==== Time results ===='
-        print 'A tile is generated in: %0.3f [ms]' % mean_time_ms
-        print 'Then mean generated tile size: %0.3f [kb]' % (mean_size_kb)
-        print '''config:
+        print('==== Time results ====')
+        print('A tile is generated in: %0.3f [ms]' % mean_time_ms)
+        print('Then mean generated tile size: %0.3f [kb]' % (mean_size_kb))
+        print('''config:
     cost:
         tileonly_generation_time: %0.3f
         tile_generation_time: %0.3f
         metatile_generation_time: 0
-        tile_size: %0.3f''' % (mean_time_ms, mean_time_ms, mean_size_kb)
+        tile_size: %0.3f''' % (mean_time_ms, mean_time_ms, mean_size_kb))
 
         if options.shutdown:  # pragma: no cover
             run_remote('sudo shutdown 0', host, project_dir, gene)
         sys.exit(0)
 
     if options.fill_queue:  # pragma: no cover
-        print "==== Till queue ===="
+        print("==== Till queue ====")
         # TODO test
         arguments = _get_arguments(options)
         arguments.extend(['--role', 'master'])
@@ -209,7 +210,7 @@ def main():
         )
 
     if options.tiles_gen:  # pragma: no cover
-        print "==== Generate tiles ===="
+        print("==== Generate tiles ====")
         # TODO test
         arguments = _get_arguments(options)
         arguments.extend(['--role', 'slave'])
@@ -228,7 +229,7 @@ def main():
             for p in processes:
                 p.communicate()  # wait process end
         else:
-            print 'Tile generation started in background'
+            print('Tile generation started in background')
 
         if options.shutdown:
             run_remote('sudo shutdown 0')
@@ -247,11 +248,12 @@ Command: %(cmd)s""" %
                     'host': socket.getfqdn(),
                     'cmd': ' '.join([quote(arg) for arg in sys.argv])
                 },
-                "Tile generation controller")
+                "Tile generation controller"
+            )
 
 
 def _deploy(gene, host):
-    print "==== Deploy database ===="
+    print("==== Deploy database ====")
     deploy_cmd = 'deploy'
     if 'deploy_user' in gene.config['ec2']:
         deploy_cmd = 'sudo -u %s deploy' % gene.config['ec2']['deploy_user']
@@ -344,10 +346,12 @@ def status(options, gene):  # pragma: no cover
     # get SQS status
     attributes = gene.get_sqs_queue().get_attributes()
 
-    print """Approximate number of tiles to generate: %s
-    Approximate number of generating tiles: %s
-    Last modification in tile queue: %s""" % (
-        attributes['ApproximateNumberOfMessages'],
-        attributes['ApproximateNumberOfMessagesNotVisible'],
-        attributes['LastModifiedTimestamp']
+    print(
+        """Approximate number of tiles to generate: %s
+        Approximate number of generating tiles: %s
+        Last modification in tile queue: %s""" % (
+            attributes['ApproximateNumberOfMessages'],
+            attributes['ApproximateNumberOfMessagesNotVisible'],
+            attributes['LastModifiedTimestamp']
+        )
     )

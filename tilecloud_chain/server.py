@@ -40,6 +40,10 @@ from tilecloud import Tile, TileCoord
 from tilecloud.lib.s3 import S3Connection
 from tilecloud_chain import TileGeneration
 
+if sys.version_info.major >= 3:
+    buffer = memoryview
+else:
+    memoryview = buffer
 
 logger = logging.getLogger(__name__)
 
@@ -466,7 +470,7 @@ class PyramidView(Server):
 
     def responce(self, data, headers={}):
         self.request.response.headers = headers
-        if type(data) == buffer:
+        if type(data) == memoryview:
             self.request.response.body_file = data
         else:
             self.request.response.body = data

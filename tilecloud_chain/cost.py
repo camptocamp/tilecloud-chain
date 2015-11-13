@@ -40,8 +40,8 @@ def main():
         all_time = timedelta()
         all_price = 0
         for layer in gene.config['generation']['default_layers']:
-            print
-            print "===== %s =====" % layer
+            print("")
+            print("===== %s =====" % layer)
             gene.set_layer(layer, options)
             (size, time, price, tiles) = _calculate_cost(gene, options)
             tile_size += gene.layer['cost']['tile_size'] / (1024.0 * 1024)
@@ -50,22 +50,25 @@ def main():
             all_size += size
             all_tiles += tiles
 
-        print
-        print "===== GLOBAL ====="
-        print "Total number of tiles: %i" % all_tiles
-        print 'Total generation time: %s [d h:mm:ss]' % (duration_format(all_time))
-        print 'Total generation cost: %0.2f [$]' % all_price
-    print
-    print 'S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))
-    print 'S3 get: %0.2f [$/month]' % (
+        print("")
+        print("===== GLOBAL =====")
+        print("Total number of tiles: %i" % all_tiles)
+        print('Total generation time: %s [d h:mm:ss]' % (duration_format(all_time)))
+        print('Total generation cost: %0.2f [$]' % all_price)
+    print("")
+    print('S3 Storage: %0.2f [$/month]' % (all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024)))
+    print('S3 get: %0.2f [$/month]' % (
         gene.config['cost']['s3']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
         gene.config['cost']['s3']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
+    )
 #    if 'cloudfront' in gene.config['cost']:
-#        print 'CloudFront: %0.2f [$/month]' % (
+#        print('CloudFront: %0.2f [$/month]' % ()
 #            gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
 #            gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
     if 'ec2' in gene.config:
-        print 'ESB storage: %0.2f [$/month]' % (gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
+        print('ESB storage: %0.2f [$/month]' % (
+            gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
+        )
     sys.exit(0)
 
 
@@ -175,7 +178,7 @@ def _calculate_cost(gene, options):
             if 'min_resolution_seed' in gene.layer and resolution < gene.layer['min_resolution_seed']:
                 continue
 
-            print "Calculate zoom %i." % zoom
+            print("Calculate zoom %i." % zoom)
 
             px_buffer = gene.layer['px_buffer'] + \
                 gene.layer['meta_buffer'] if meta else 0
@@ -219,7 +222,7 @@ def _calculate_cost(gene, options):
                 if tile.tilecoord.z in nb_tiles:
                     nb_tiles[tile.tilecoord.z] += 1
                 else:
-                    print "Calculate zoom %i." % tile.tilecoord.z
+                    print("Calculate zoom %i." % tile.tilecoord.z)
                     nb_tiles[tile.tilecoord.z] = 1
             return tile
         gene.imap(count_tile)
@@ -229,7 +232,7 @@ def _calculate_cost(gene, options):
     times = {}
     print
     for z in nb_metatiles:
-        print "%i meta tiles in zoom %i." % (nb_metatiles[z], z)
+        print("%i meta tiles in zoom %i." % (nb_metatiles[z], z))
         times[z] = gene.layer['cost']['metatile_generation_time'] * nb_metatiles[z]
 
     price = 0
@@ -238,7 +241,7 @@ def _calculate_cost(gene, options):
     all_tiles = 0
     for z in nb_tiles:
         print
-        print "%i tiles in zoom %i." % (nb_tiles[z], z)
+        print("%i tiles in zoom %i." % (nb_tiles[z], z))
         all_tiles += nb_tiles[z]
         if meta:
             time = times[z] + gene.layer['cost']['tile_generation_time'] * nb_tiles[z]
@@ -249,19 +252,19 @@ def _calculate_cost(gene, options):
 
         all_time += time
         td = timedelta(milliseconds=time)
-        print "Time to generate: %s [d h:mm:ss]" % (duration_format(td))
+        print("Time to generate: %s [d h:mm:ss]" % (duration_format(td)))
         c = gene.config['cost']['s3']['put'] * nb_tiles[z] / 1000.0
         price += c
-        print 'S3 PUT: %0.2f [$]' % c
+        print('S3 PUT: %0.2f [$]' % c)
 
         if 'ec2' in gene.config:
             c = time * gene.config['cost']['ec2']['usage'] / (1000.0 * 3600)
             price += c
-            print 'EC2 usage: %0.2f [$]' % c
+            print('EC2 usage: %0.2f [$]' % c)
 
             c = gene.config['cost']['esb']['io'] * time / (1000.0 * 2600 * 24 * 30)
             price += c
-            print 'ESB usage: %0.2f [$]' % c
+            print('ESB usage: %0.2f [$]' % c)
 
         if 'sqs' in gene.layer:
             if meta:
@@ -270,12 +273,12 @@ def _calculate_cost(gene, options):
                 nb_sqs = nb_tiles[z] * 3
             c = nb_sqs * gene.config['cost']['sqs']['request'] / 1000000.0
             price += c
-            print 'SQS usage: %0.2f [$]' % c
+            print('SQS usage: %0.2f [$]' % c)
 
-    print
+    print("")
     td = timedelta(milliseconds=all_time)
-    print "Number of tiles: %i" % all_tiles
-    print 'Generation time: %s [d h:mm:ss]' % (duration_format(td))
-    print 'Generation cost: %0.2f [$]' % price
+    print("Number of tiles: %i" % all_tiles)
+    print('Generation time: %s [d h:mm:ss]' % (duration_format(td)))
+    print('Generation cost: %0.2f [$]' % price)
 
     return (all_size, td, price, all_tiles)
