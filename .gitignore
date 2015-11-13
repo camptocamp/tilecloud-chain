@@ -1,16 +1,6 @@
 *.py[co]
 .*.swp
 .*.swp.!sync
-
-# Packages
 /dist
 /.build
-
-# Installer logs
-/pip-log.txt
-
-# Unit test / coverage reports
-/.coverage
-/.tox
-
 /tilecloud_chain/OpenLayers.js

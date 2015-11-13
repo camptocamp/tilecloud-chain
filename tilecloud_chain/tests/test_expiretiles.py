@@ -54,7 +54,7 @@ class TestExpireTiles(CompareCase):
 
         self.assert_cmd_equals(
             cmd=[
-                './buildout/bin/import_expiretiles',
+                '.build/venv/bin/import_expiretiles',
                 '--create', '--delete', '--srid', '21781',
                 '/tmp/expired',
                 'user=postgres password=postgres dbname=tests host=localhost',
@@ -73,7 +73,7 @@ class TestExpireTiles(CompareCase):
 
         self.assert_cmd_equals(
             cmd=[
-                './buildout/bin/import_expiretiles',
+                '.build/venv/bin/import_expiretiles',
                 '--create', '--delete', '--srid', '21781',
                 '/tmp/expired',
                 'user=postgres password=postgres dbname=tests host=localhost',
@@ -92,7 +92,7 @@ class TestExpireTiles(CompareCase):
 
         self.assert_cmd_equals(
             cmd=[
-                './buildout/bin/import_expiretiles',
+                '.build/venv/bin/import_expiretiles',
                 '--simplify', '1000', '--create', '--delete',
                 '/tmp/expired',
                 'user=postgres password=postgres dbname=tests host=localhost',
@@ -134,7 +134,7 @@ class TestExpireTiles(CompareCase):
     def test_expire_tiles_empty(self, l):
         self.assert_cmd_equals(
             cmd=[
-                './buildout/bin/import_expiretiles',
+                '.build/venv/bin/import_expiretiles',
                 '--create', '--delete', '--srid', '21781',
                 '/tmp/expired-empty',
                 'user=postgres password=postgres dbname=tests host=localhost',

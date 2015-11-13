@@ -28,7 +28,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_capabilities(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml',
+            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml',
             main_func=controller.main,
             expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
@@ -927,7 +927,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_multi_host_capabilities(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml '
+            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml '
             '--destination-cache multi_host',
             main_func=controller.main,
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
@@ -938,7 +938,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_capabilities_slash(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-capabilities.yaml',
+            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-capabilities.yaml',
             main_func=controller.main,
             expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
@@ -1076,7 +1076,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_multi_url_capabilities(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml '
+            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml '
             '--destination-cache multi_url',
             main_func=controller.main,
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
@@ -1086,7 +1086,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_mapcache(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --mapcache -c tilegeneration/test-fix.yaml',
+            cmd='.build/venv/bin/generate_controller --mapcache -c tilegeneration/test-fix.yaml',
             main_func=controller.main,
             expected=[['mapcache.xml', u"""<?xml version="1.0" encoding="UTF-8"?>
 <mapcache>
@@ -1406,7 +1406,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_mapcache2(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --mapcache -c tilegeneration/test-nodim.yaml',
+            cmd='.build/venv/bin/generate_controller --mapcache -c tilegeneration/test-nodim.yaml',
             main_func=controller.main,
             expected=[['mapcache.xml', u"""<?xml version="1.0" encoding="UTF-8"?>
 <mapcache>
@@ -1486,7 +1486,7 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_apache(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --apache -c tilegeneration/test-fix.yaml',
+            cmd='.build/venv/bin/generate_controller --apache -c tilegeneration/test-fix.yaml',
             main_func=controller.main,
             expected=[[
                 'tiles.conf',
@@ -1507,7 +1507,7 @@ MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
 
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --apache -c tilegeneration/test-serve.yaml',
+            cmd='.build/venv/bin/generate_controller --apache -c tilegeneration/test-serve.yaml',
             main_func=controller.main,
             expected=[['tiles.conf', u"""
 MapCacheAlias /mapcache "%s"
@@ -1518,7 +1518,7 @@ MapCacheAlias /mapcache "%s"
     @attr(general=True)
     def test_apache_s3(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --cache s3 --apache -c tilegeneration/test-fix.yaml',
+            cmd='.build/venv/bin/generate_controller --cache s3 --apache -c tilegeneration/test-fix.yaml',
             main_func=controller.main,
             expected=[[
                 'tiles.conf',
@@ -1549,7 +1549,7 @@ MapCacheAlias /mapcache "%s"
     @attr(general=True)
     def test_apache_s3_tilesurl(self):
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --apache '
+            cmd='.build/venv/bin/generate_controller --apache '
                 '-c tilegeneration/test-apache-s3-tilesurl.yaml',
             main_func=controller.main,
             expected=[[
@@ -1606,9 +1606,7 @@ cost:
 ec2:
   apache_config: /tmp/tests/test.conf
   apache_content: test file
-  build_cmds:
-  - python bootstrap.py --distribute -v 1.7.1
-  - ./buildout/bin/buildout
+  build_cmds: [mkdir .build, virtualenv .build/venv, .build/venv/bin/pip install .]
   code_folder: /tmp/tests/test/
   deploy_config: tests/deploy.cfg
   deploy_user: deploy
@@ -1980,7 +1978,7 @@ sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud
     @attr(general=True)
     def test_config(self):
         self.assert_cmd_yaml_equals(
-            cmd='./buildout/bin/generate_controller --dump-config -c tilegeneration/test-fix.yaml',
+            cmd='.build/venv/bin/generate_controller --dump-config -c tilegeneration/test-fix.yaml',
             main_func=controller.main, expected=self.CONFIG)
 
     @attr(config_line=True)
@@ -1988,7 +1986,7 @@ sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud
     @attr(general=True)
     def test_config_line(self):
         self.assert_cmd_yaml_equals(
-            cmd='./buildout/bin/generate_controller -l line --dump-config -c tilegeneration/test-fix.yaml',
+            cmd='.build/venv/bin/generate_controller -l line --dump-config -c tilegeneration/test-fix.yaml',
             main_func=controller.main, expected=self.CONFIG)
 
     @attr(openlayers=True)
@@ -2139,7 +2137,7 @@ OpenLayers.Request.GET({
     }
 });"""
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml',
+            cmd='.build/venv/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml',
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],
@@ -2148,7 +2146,7 @@ OpenLayers.Request.GET({
         )
 
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml --cache multi_host',
+            cmd='.build/venv/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml --cache multi_host',
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],
@@ -2157,7 +2155,7 @@ OpenLayers.Request.GET({
         )
 
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml --cache multi_url',
+            cmd='.build/venv/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml --cache multi_url',
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],
@@ -2182,7 +2180,7 @@ OpenLayers.Request.GET({
     @attr(general=True)
     def test_legends(self):
         self.assert_tiles_generated(
-            cmd='./buildout/bin/generate_controler -c tilegeneration/test-legends.yaml --legends',
+            cmd='.build/venv/bin/generate_controler -c tilegeneration/test-legends.yaml --legends',
             main_func=controller.main,
             directory="/tmp/tiles/",
             tiles_pattern='1.0.0/%s/default/legend%i.png',
@@ -2192,7 +2190,7 @@ OpenLayers.Request.GET({
         )
 
         self.assert_main_equals(
-            cmd='./buildout/bin/generate_controller --capabilities -c tilegeneration/test-legends.yaml',
+            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-legends.yaml',
             main_func=controller.main,
             regex=True,
             expected=[[
