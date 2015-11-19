@@ -75,6 +75,9 @@ class Generate:
             gene.init_tilecoords()
             gene.add_geom_filter()
 
+        if options.local_process_number is not None:  # pragma: no cover
+            gene.add_local_process_filter()
+
         elif options.role == 'slave':
             # Get the metatiles from the SQS queue
             gene.set_store(sqs_tilestore)  # pragma: no cover
@@ -385,6 +388,10 @@ def main():
         '--role', default='local', choices=('local', 'master', 'slave'),
         help='local/master/slave, master to file the queue and '
         'slave to generate the tiles'
+    )
+    parser.add_argument(
+        "--local-process-number", default=None,
+        help="The number of process that we run in parallel"
     )
     parser.add_argument(
         '--daemonize', default=False, action="store_true",
