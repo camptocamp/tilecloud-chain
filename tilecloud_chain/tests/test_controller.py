@@ -1498,9 +1498,9 @@ class TestController(CompareCase):
 
 Alias /tiles /tmp/tiles/
 
-RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-~\.]+)/([a-zA-Z0-9_\-~\.]+)/([a-zA-Z0-9_\-~\.]+)/4/(.*)$ """
+RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
-RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-~\.]+)/([a-zA-Z0-9_\-~\.]+)/([a-zA-Z0-9_\-~\.]+)/4/(.*)$ """
+RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
 
 MapCacheAlias /mapcache "%s"
@@ -1535,9 +1535,9 @@ MapCacheAlias /mapcache "%s"
 ProxyPass /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
 ProxyPassReverse /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
 
-RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-~\.]+)/([a-zA-Z0-9_\-~\.]+)/([a-zA-Z0-9_\-~\.]+)/4/(.*)$ """
+RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
-RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-~\.]+)/([a-zA-Z0-9_\-~\.]+)/([a-zA-Z0-9_\-~\.]+)/4/(.*)$ """
+RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
 
 MapCacheAlias /mapcache "%s"
@@ -1567,7 +1567,7 @@ MapCacheAlias /mapcache "%s"
 ProxyPass /tiles/ http://tiles.example.com/
 ProxyPassReverse /tiles/ http://tiles.example.com/
 
-RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-~\.]+)/([a-zA-Z0-9_\-~\.]+)/4/(.*)$ """
+RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point/$1/$2/4/$3 [PT]
 
 MapCacheAlias /mapcache "%s"
