@@ -7,13 +7,13 @@ psql -q -d tests -c "ALTER USER postgres WITH PASSWORD 'postgres';"
 psql -q -d tests -c "CREATE SCHEMA tests;"
 
 psql -q -d tests -c "CREATE TABLE tests.point (gid serial Primary KEY, name varchar(10));"
-psql -q -d tests -c "SELECT AddGeometryColumn('tests', 'point','the_geom',21781,'POINT',2);"
+psql -q -d tests -c "SELECT AddGeometryColumn('tests', 'point','the_geom',21781,'POINT',2);" &
 
 psql -q -d tests -c "CREATE TABLE tests.line (gid serial Primary KEY, name varchar(10));"
-psql -q -d tests -c "SELECT AddGeometryColumn('tests', 'line','the_geom',21781,'LINESTRING',2);"
+psql -q -d tests -c "SELECT AddGeometryColumn('tests', 'line','the_geom',21781,'LINESTRING',2);" &
 
 psql -q -d tests -c "CREATE TABLE tests.polygon (gid serial Primary KEY, name varchar(10));"
-psql -q -d tests -c "SELECT AddGeometryColumn('tests', 'polygon','the_geom',21781,'POLYGON',2);"
+psql -q -d tests -c "SELECT AddGeometryColumn('tests', 'polygon','the_geom',21781,'POLYGON',2);" &
 
 
 psql -q -d tests -c "INSERT INTO tests.point VALUES (0, 'point1', ST_GeomFromText('POINT (600000 200000)', 21781));"
