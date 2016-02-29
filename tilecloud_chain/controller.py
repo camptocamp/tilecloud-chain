@@ -379,6 +379,7 @@ Alias %(location)s %(files_folder)s
         if not gene.validate_mapcache_config():
             exit(1)  # pragma: no cover
     if use_mapcache and not use_server:
+        token_regex = '([a-zA-Z0-9_\-\+~\.]+)'
         f.write('\n')
         for l in gene.config['layers']:
             layer = gene.config['layers'][l]
@@ -387,15 +388,25 @@ Alias %(location)s %(files_folder)s
                 dim = len(layer['dimensions'])
                 for r in res:
                     f.write(
-                        'RewriteRule ^%(tiles_location)s/1.0.0/%(layer)s/([a-zA-Z0-9_\-~\.]+)/([a-zA-Z0-9_\-~\.]+)/'
-                        '%(dimensions_re)s%(zoom)s/(.*)$ %(mapcache_location)s/wmts/1.0.0/%(layer)s/$1/$2/'
-                        '%(dimensions_rep)s%(zoom)s/%(final)s [PT]\n' % {
+                        'RewriteRule'
+                        ' '
+                        '^%(tiles_location)s/1.0.0/%(layer)s/%(token_regex)s'  # Baseurl/layer/Style
+                        '%(dimensions_re)s'  # Dimensions : variable number of values
+                        '/%(token_regex)s/%(zoom)s/(.*)$'  # TileMatrixSet/TileMatrix/TileRow/TileCol.extension
+                        ' '
+                        '%(mapcache_location)s/wmts/1.0.0/%(layer)s/$1'
+                        '%(dimensions_rep)s'
+                        '/$%(tilematrixset)s/%(zoom)s/$%(final)s'
+                        ' '
+                        '[PT]\n' % {
                             'tiles_location': gene.config['apache']['location'],
                             'mapcache_location': gene.config['mapcache']['location'],
                             'layer': layer['name'],
-                            'dimensions_re': ''.join(['([a-zA-Z0-9_\-~\.]+)/' for e in range(dim)]),
-                            'dimensions_rep': ''.join(['$%i/' % (e + 3) for e in range(dim)]),
-                            'final': '$%i' % (3 + dim),
+                            'token_regex': token_regex,
+                            'dimensions_re': ''.join(['/' + token_regex for e in range(dim)]),
+                            'dimensions_rep': ''.join(['/$%i' % (e + 2) for e in range(dim)]),
+                            'tilematrixset': dim + 2,
+                            'final': dim + 3,
                             'zoom': layer['grid_ref']['resolutions'].index(r)
                         }
                     )
