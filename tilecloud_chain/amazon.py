@@ -428,7 +428,7 @@ def run(options, cmd, host, project_dir, gene):
         result = run_remote_process(cmd, host, project_dir, gene).communicate()
         if len(result[0]) != 0:
             logger.info(result[0])
-        if len(result[1]) != 0:
+        if len(result[1]) != 0:  # pragma: no cover
             logger.error(result[1])
 
 
