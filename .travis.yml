@@ -1,8 +1,8 @@
 language: python
 
 python:
-    - "2.7"
-#    - "3.5"
+    - 2.7
+#    - 3.5
 #    - "nightly"
 
 env:
@@ -61,3 +61,15 @@ after_success:
 # Report coverage results to coveralls.io
 - pip install coveralls
 - coveralls
+
+deploy:
+- provider: pypi
+  user: sbrunner
+  password:
+    secure: "ZDpDuMznPwMQlZHQCUvWhnsVIdZdhZPVVuFCi+89Cvv1nh78LVe+DKxNohUIUsPNyF+MDI7uL3bH2mIH4oKSTxoxATZZM+bUgSznpbO0HE+sF4GoauFzxbTrYjDCMKE3JJNz+vKnuuO71oTl5+j6+sYjYzJIHk3OC2o/WLNl964="
+  skip_cleanup: true
+  distributions: sdist bdist_wheel
+  on:
+    tags: true
+    python: 2.7
+    condition: "${TRAVIS_TAG}" == "`python setup.py --version`"
