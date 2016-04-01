@@ -72,4 +72,4 @@ deploy:
   on:
     tags: true
     python: 2.7
-    condition: "${TRAVIS_TAG}" == "`python setup.py --version`"
+    condition: '"${TRAVIS_TAG}" == "`python setup.py --version`"'
