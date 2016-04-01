@@ -6,10 +6,9 @@ import sys
 from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = (
-    open(os.path.join(here, 'README.rst')).read() + '\n\n' +
-    open(os.path.join(here, 'CHANGES.rst')).read()
-)
+with open(os.path.join(here, 'README.rst')) as r:
+    with open(os.path.join(here, 'CHANGES.rst')) as c:
+        README = r.read() + '\n\n' + c.read()
 
 install_requires = open(os.path.join(here, 'requirements.txt')).read().splitlines()
 

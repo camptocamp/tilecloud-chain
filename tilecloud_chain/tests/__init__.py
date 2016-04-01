@@ -5,8 +5,8 @@ import sys
 import os
 import re
 import shutil
-from six.moves import cStringIO
-from six import text_type as unicode
+from six import StringIO
+from six import text_type as str, PY3
 from unittest2 import TestCase
 
 log = logging.getLogger("tests")
@@ -16,7 +16,6 @@ class CompareCase(TestCase):
 
     def assert_result_equals(self, result, expected, regex=False):
         expected = expected.split('\n')
-        result = unicode(result.decode('utf-8'))
         result = re.sub(u'\n[^\n]*\r', u'\n', result)
         result = re.sub(u'^[^\n]*\r', u'', result)
         result = result.split('\n')
@@ -38,9 +37,9 @@ class CompareCase(TestCase):
 
     def run_cmd(self, cmd, main_func):
         old_stdout = sys.stdout
-        sys.stdout = mystdout = cStringIO()
+        sys.stdout = mystdout = StringIO()
         old_stderr = sys.stderr
-        sys.stderr = mystderr = cStringIO()
+        sys.stderr = mystderr = StringIO()
         self.assert_main_equals(cmd, main_func, [])
         sys.stdout = old_stdout
         sys.stderr = old_stderr
@@ -52,6 +51,11 @@ class CompareCase(TestCase):
         out, err = self.run_cmd(cmd, main_func)
         if empty_err:
             self.assertEqual(err, '')
+        if PY3:
+            if isinstance(out, bytes):
+                out = out.decode('utf-8')
+        else:
+            out = str(out)
         self.assert_result_equals(result=out, **kargs)
 
     def assert_cmd_exit_equals(self, cmd, main_func, expected):
@@ -60,7 +64,7 @@ class CompareCase(TestCase):
             main_func()
             assert("exit() not called.")
         except SystemExit as e:
-            self.assertEqual(e.message, expected)
+            self.assertEqual(str(e), expected)
 
     def assert_main_equals(self, cmd, main_func, expected=None, **kargs):
         if expected:
@@ -77,8 +81,8 @@ class CompareCase(TestCase):
             pass
         if expected:
             for expect in expected:
-                f = open(expect[0], 'r')
-                self.assert_result_equals(f.read(), expect[1], **kargs)
+                with open(expect[0], 'r') as f:
+                    self.assert_result_equals(f.read(), expect[1], **kargs)
 
     def assert_main_except_equals(self, cmd, main_func, expected, **kargs):
         sys.argv = cmd.split(' ')
@@ -89,8 +93,8 @@ class CompareCase(TestCase):
             pass
         if expected:
             for expect in expected:
-                f = open(expect[0], 'r')
-                self.assert_result_equals(f.read(), expect[1], **kargs)
+                with open(expect[0], 'r') as f:
+                    self.assert_result_equals(f.read(), expect[1], **kargs)
 
     def assert_yaml_equals(self, result, expected):
         import yaml
@@ -100,7 +104,7 @@ class CompareCase(TestCase):
 
     def assert_cmd_yaml_equals(self, cmd, main_func, **kargs):
         old_stdout = sys.stdout
-        sys.stdout = mystdout = cStringIO()
+        sys.stdout = mystdout = StringIO()
         self.assert_main_equals(cmd, main_func, [])
         sys.stdout = old_stdout
         self.assert_yaml_equals(result=mystdout.getvalue(), **kargs)

@@ -29,9 +29,8 @@ class TestGenerate(CompareCase):
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_copy(self, l):
-        f = open('/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png', 'w')
-        f.write('test image')
-        f.close()
+        with open('/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png', 'w') as f:
+            f.write('test image')
 
         for d in ('-d', '-q', '-v'):
             self.assert_cmd_equals(
@@ -54,9 +53,8 @@ Size per tile: 10 o
             ('tilecloud_chain', 'ERROR', 'The tile: not defined is empty'),
             ('tilecloud_chain', 'ERROR', 'The tile: not defined is empty')
         )
-        f = open('/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png', 'r')
-        self.assertEqual(f.read(), 'test image')
-        f.close()
+        with open('/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png', 'r') as f:
+            self.assertEqual(f.read(), 'test image')
 
     @attr(process=True)
     @attr(general=True)

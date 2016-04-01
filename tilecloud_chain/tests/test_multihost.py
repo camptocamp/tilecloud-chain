@@ -5,6 +5,7 @@ import shutil
 from subprocess import Popen, PIPE
 
 from nose.plugins.attrib import attr
+from six import PY3
 
 from tilecloud_chain.tests import CompareCase
 from tilecloud_chain import amazon, TileGeneration
@@ -60,10 +61,10 @@ class TestMultihost(CompareCase):
             main_func=amazon.main)
         self.assertEqual(out, '==== Sync and build code ====\n')
         self.assertEqual(err, '')
-        f = open('/tmp/tests/test/tilecloud_chain/tests/tilegeneration/hooks/post-restore-database', 'r')
-        self.assert_result_equals(f.read(), "echo SUCCESS\n")
-        f = open('/tmp/tests/test.conf', 'r')
-        self.assert_result_equals(f.read(), 'test file\n')
+        with open('/tmp/tests/test/tilecloud_chain/tests/tilegeneration/hooks/post-restore-database', 'r') as f:
+            self.assert_result_equals(f.read(), "echo SUCCESS\n")
+        with open('/tmp/tests/test.conf', 'r') as f:
+            self.assert_result_equals(f.read(), 'test file\n')
 
         os.remove('/tmp/tests/test.conf')
         try:
@@ -80,9 +81,12 @@ class TestMultihost(CompareCase):
             main_func=amazon.main)
         self.assertEqual(out, '==== Deploy database ====\n')
         self.assertEqual(err, '')
-        self.assert_result_equals(Popen([
+        out2 = Popen([
             'sudo', '-u', 'postgres', 'psql', '-d', 'tests-deploy', '-c', 'SELECT * FROM test'
-        ], stdout=PIPE).communicate()[0], """   name
+        ], stdout=PIPE).communicate()[0]
+        self.assert_result_equals(
+            out2.decode('utf-8') if PY3 else out2,
+            """   name
 -----------
  referance
 (1 row)
@@ -99,13 +103,13 @@ class TestMultihost(CompareCase):
             expected="""==== Sync and build code ====
 ==== Time results ====
 A tile is generated in: [0-9\.]* \[ms\]
-Then mean generated tile size: 0.826 \[kb\]
+Then mean generated tile size: 0.82[67] \[kb\]
 config:
     cost:
         tileonly_generation_time: [0-9\.]*
         tile_generation_time: [0-9\.]*
         metatile_generation_time: 0
-        tile_size: 0.826
+        tile_size: 0.82[67]
 """, regex=True)
 
         self.assert_cmd_equals(

@@ -49,7 +49,7 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
   </ows:OperationsMetadata>
   <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
-    {% for layername, layer in layers.items() %}
+    {% for layername, layer in sorted(layers.items()) %}
     <Layer>
       <ows:Title>{{layername}}</ows:Title>
       <ows:Identifier>{{layername}}</ows:Identifier>
@@ -96,7 +96,7 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
     </Layer>
     {% endfor %}
 
-    {% for gridname, grid in grids.items() %}
+    {% for gridname, grid in sorted(grids.items()) %}
     <TileMatrixSet>
       <ows:Identifier>{{gridname}}</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:{{

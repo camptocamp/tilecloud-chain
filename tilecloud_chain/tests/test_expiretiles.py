@@ -14,17 +14,16 @@ class TestExpireTiles(CompareCase):
 
     @classmethod
     def setUpClass(cls):  # noqa
-        f = open('/tmp/expired', 'w')
-        f.write('18/135900/92720\n')
-        f.write('18/135900/92721\n')
-        f.write('18/135900/92722\n')
-        f.write('18/135901/92721\n')
-        f.write('18/135901/92722\n')
-        f.write('18/135902/92722\n')
-        f.close()
+        with open('/tmp/expired', 'w') as f:
+            f.write('18/135900/92720\n')
+            f.write('18/135900/92721\n')
+            f.write('18/135900/92722\n')
+            f.write('18/135901/92721\n')
+            f.write('18/135901/92722\n')
+            f.write('18/135902/92722\n')
 
-        f = open('/tmp/expired-empty', 'w')
-        f.close()
+        with open('/tmp/expired-empty', 'w'):
+            pass
 
     @classmethod
     def tearDownClass(cls):  # noqa

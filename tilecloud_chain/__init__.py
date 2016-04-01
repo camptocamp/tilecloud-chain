@@ -8,7 +8,9 @@ import yaml
 import sqlite3
 import tempfile
 import subprocess
-from six.moves import cStringIO, map, filter
+from six.moves import map, filter
+from six import binary_type
+from six import BytesIO as StringIO
 from math import ceil, sqrt
 from hashlib import sha1
 from fractions import Fraction
@@ -159,12 +161,10 @@ class TileGeneration:
         self.options = options
 
         self.validate_exists(self.config, 'config', 'grids')
-        self.grids = self.config['grids']
         error = False
-        for gname, grid in self.config['grids'].items():
-            if type(gname) != str:
-                gname = str(gname)
-                self.config['grids'][gname] = grid
+        self.config['grids'] = dict([(str(k), v) for k, v in self.config['grids'].items()])
+        self.grids = self.config['grids']
+        for gname, grid in sorted(self.config['grids'].items()):
             name = "grid[%s]" % gname
             error = self.validate(
                 grid, name, 'name', attribute_type=str, default=gname, regex="^[a-zA-Z0-9_\-~\.]+$"
@@ -240,7 +240,7 @@ class TileGeneration:
         default = self.config.get('layer_default', {})
         self.layers = {}
         self.validate_exists(self.config, 'config', 'layers')
-        for lname, layer in self.config['layers'].items():
+        for lname, layer in sorted(self.config['layers'].items()):
             name = "layer[%s]" % lname
             for k, v in default.items():
                 if k not in layer:
@@ -406,7 +406,7 @@ class TileGeneration:
 
         self.validate_exists(self.config, 'config', 'caches')
         self.caches = self.config['caches']
-        for cname, cache in self.caches.items():
+        for cname, cache in sorted(self.caches.items()):
             name = "caches[%s]" % cname
             error = self.validate(cache, name, 'name', attribute_type=str, default=cname) or error
             error = self.validate(
@@ -431,7 +431,7 @@ class TileGeneration:
         ) or error
         error = self.validate(
             self.config['generation'], 'generation', 'default_layers',
-            is_array=True, attribute_type=str, default=self.layers.keys()
+            is_array=True, attribute_type=str, default=[k for k in self.layers.keys()]
         ) or error
         error = self.validate(
             self.config['generation'], 'generation', 'log_format', attribute_type=str,
@@ -447,7 +447,7 @@ class TileGeneration:
             self.config, 'config',
             'process', attribute_type=dict, default={}
         ) or error
-        for cmd_name, cmds in self.config['process'].items():
+        for cmd_name, cmds in sorted(self.config['process'].items()):
             for i, cmd in enumerate(cmds):
                 error = self.validate(
                     cmd, 'process[%s][%i]' % (cmd_name, i),
@@ -914,7 +914,7 @@ class TileGeneration:
                     sql = 'SELECT ST_AsBinary(geom) FROM (SELECT %s) AS g' % g['sql']
                     logger.info('Execute SQL: %s.' % sql)
                     cursor.execute(sql)
-                    geoms = [loads_wkb(str(r[0])) for r in cursor.fetchall()]
+                    geoms = [loads_wkb(binary_type(r[0])) for r in cursor.fetchall()]
                     geom = cascaded_union(geoms)
                     if extent:
                         geom = geom.intersection(Polygon((
@@ -1360,7 +1360,7 @@ class HashLogger:
     def __call__(self, tile):
         ref = None
         try:
-            image = Image.open(cStringIO(tile.data))
+            image = Image.open(StringIO(tile.data))
         except IOError as e:  # pragma: no cover
             logger.error(tile.data)
             raise e
@@ -1480,9 +1480,8 @@ class Process:
     def __call__(self, tile):
         if tile and tile.data:
             fd_in, name_in = tempfile.mkstemp()
-            file_in = open(name_in, 'wb')
-            file_in.write(tile.data)
-            file_in.close()
+            with open(name_in, 'wb') as file_in:
+                file_in.write(tile.data)
 
             for cmd in self.config:
                 args = []
@@ -1526,9 +1525,8 @@ class Process:
                     name_in = name_out
                     fd_in = fd_out
 
-            file_out = open(name_in, 'rb')
-            tile.data = file_out.read()
-            file_out.close()
+            with open(name_in, 'rb') as file_out:
+                tile.data = file_out.read()
             os.close(fd_in)
 
         return tile

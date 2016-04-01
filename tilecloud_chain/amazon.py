@@ -7,6 +7,7 @@ import boto
 import re
 import socket
 import subprocess
+from six import PY3
 from os import path, environ
 from time import sleep
 from threading import Thread
@@ -183,6 +184,8 @@ def main():
             results = p.communicate()
             if results[1] != '':  # pragma: no cover
                 logger.debug('ERROR: %s' % results[1])
+            if PY3:
+                results = [r.decode('utf-8') for r in results]
             results = (re.sub(u'\n[^\n]*\r', u'\n', results[0]), )
             results = (re.sub(u'^[^\n]*\r', u'', results[0]), )
             for r in results[0].split('\n'):
@@ -365,6 +368,9 @@ def run_local(cmd):
 
     logger.debug('Run: %s.' % ' '.join([quote(c) for c in cmd]))
     result = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
+    if PY3:
+        result = [r.decode('utf-8') for r in result]
+
     if len(result[0]) != 0:   # pragma: no cover
         logger.info(result[0])
     if len(result[1]) != 0:

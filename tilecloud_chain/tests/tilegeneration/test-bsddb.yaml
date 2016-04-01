@@ -8,7 +8,7 @@ grids:
 caches:
     bsddb:
         type: bsddb
-        http_url: http://taurus/tiles
+        http_url: http://wmts1/tiles
         folder: /tmp/tiles/bsddb
 
 layer_default:

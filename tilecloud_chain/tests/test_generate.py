@@ -84,8 +84,7 @@ class TestGenerate(CompareCase):
     @attr(hash_mapnik=True)
     @attr(generate=True)
     @attr(general=True)
-    @attr(nopy35=True)
-    @attr(nopynightly=True)
+    @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
     def test_hash_mapnik(self, l):
         for d in ('-d', ''):
@@ -102,8 +101,7 @@ class TestGenerate(CompareCase):
     @attr(hash_mapnik_grid=True)
     @attr(generate=True)
     @attr(general=True)
-    @attr(nopy35=True)
-    @attr(nopynightly=True)
+    @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
     def test_hash_mapnik_grid(self, l):
         for d in ('-d', ''):
@@ -693,8 +691,7 @@ Size per tile: 4[0-9][0-9] o
     @attr(mapnik=True)
     @attr(generate=True)
     @attr(general=True)
-    @attr(nopy35=True)
-    @attr(nopynightly=True)
+    @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
     def test_mapnik(self, l):
         for d in ('-d', ''):
@@ -722,8 +719,7 @@ Size per tile: 823 o
     @attr(mapnik_grid=True)
     @attr(generate=True)
     @attr(general=True)
-    @attr(nopy35=True)
-    @attr(nopynightly=True)
+    @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
     def test_mapnik_grid(self, l):
         for d in ('-d', ''):
@@ -746,27 +742,30 @@ Size per tile: 385 o
 
 """,
             )
-            f = open('/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/5/5.json', 'r')
-            self.assert_result_equals(
-                f.read(), '{"keys": ["", "1"], "data": {"1": {"name": "polygon1"}}, "grid": '
-                '["                ", "                ", "                ", "                ", "                "'
-                ', "                ", "                ", "                ", "                ", "                "'
-                ', "                ", "                ", "                ", "                ", "!!!!!!!!!!!!!!!!", '
-                '"!!!!!!!!!!!!!!!!"]}')
-            f = open('/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/6/5.json', 'r')
-            self.assert_result_equals(
-                f.read(), '{"keys": ["1"], "data": {"1": {"name": "polygon1"}}, "grid": '
-                '["                ", "                ", "                ", "                ", "                ", '
-                '"                ", "                ", "                ", "                ", "                ", '
-                '"                ", "                ", "                ", "                ", "                ", '
-                '"                "]}')
+            with open('/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/5/5.json', 'r') as f:
+                self.assert_result_equals(
+                    f.read(),
+                    '{"keys": ["", "1"], "data": {"1": {"name": "polygon1"}}, "grid": ["                "'
+                    ', "                ", "                ", "                ", "                "'
+                    ', "                ", "                ", "                ", "                "'
+                    ', "                ", "                ", "                ", "                "'
+                    ', "                ", "!!!!!!!!!!!!!!!!", "!!!!!!!!!!!!!!!!"]}'
+                )
+            with open('/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/6/5.json', 'r') as f:
+                self.assert_result_equals(
+                    f.read(),
+                    '{"keys": ["1"], "data": {"1": {"name": "polygon1"}}, "grid": ["                "'
+                    ', "                ", "                ", "                ", "                "'
+                    ', "                ", "                ", "                ", "                "'
+                    ', "                ", "                ", "                ", "                "'
+                    ', "                ", "                ", "                "]}'
+                )
         l.check()
 
     @attr(mapnik_grid_drop=True)
     @attr(generate=True)
     @attr(general=True)
-    @attr(nopy35=True)
-    @attr(nopynightly=True)
+    @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
     def test_mapnik_grid_drop(self, l):
         for d in ('-d', ''):
@@ -894,8 +893,8 @@ size: 1010
             directory = os.path.dirname(path)
             if not os.path.exists(directory):
                 os.makedirs(directory)
-            f = open(path, 'w')
-            f.close()
+            with open(path, 'w'):
+                pass
 
     @attr(delete_meta=True)
     @attr(generate=True)

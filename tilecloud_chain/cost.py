@@ -230,7 +230,7 @@ def _calculate_cost(gene, options):
         consume(gene.tilestream, None)
 
     times = {}
-    print
+    print('')
     for z in nb_metatiles:
         print("%i meta tiles in zoom %i." % (nb_metatiles[z], z))
         times[z] = gene.layer['cost']['metatile_generation_time'] * nb_metatiles[z]
@@ -240,7 +240,7 @@ def _calculate_cost(gene, options):
     all_time = 0
     all_tiles = 0
     for z in nb_tiles:
-        print
+        print('')
         print("%i tiles in zoom %i." % (nb_tiles[z], z))
         all_tiles += nb_tiles[z]
         if meta:

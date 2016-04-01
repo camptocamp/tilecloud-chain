@@ -9,6 +9,7 @@ import random
 from datetime import datetime
 from getpass import getuser
 from argparse import ArgumentParser
+from six import PY3
 
 import boto
 from boto import sns
@@ -110,7 +111,7 @@ class Generate:
                 if 'STYLES' not in params:
                     params['STYLES'] = ','.join(gene.layer['wmts_style'] for l in gene.layer['layers'])
                 if gene.layer['generate_salt']:
-                    params['SALT'] = str(random.randint(0, sys.maxint))
+                    params['SALT'] = str(random.randint(0, 999999))
                 for dim in gene.layer['dimensions']:
                     params[dim['name']] = dim['value']
                 for dim in gene.options.dimensions:
@@ -170,7 +171,9 @@ class Generate:
                         and tile.content_type.find("image/") != 0:
                     if tile.content_type.find("application/vnd.ogc.se_xml") == 0:
                         tile.error = "WMS server error: %s" % (
-                            self._re_rm_xml_tag.sub('', tile.data)
+                            self._re_rm_xml_tag.sub(
+                                '', tile.data.decode('utf-8') if PY3 else tile.data
+                            )
                         )
                     else:  # pragma: no cover
                         tile.error = "%s is not an image format, error: %s" % (
