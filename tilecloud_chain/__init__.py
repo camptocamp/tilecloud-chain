@@ -16,11 +16,6 @@ from datetime import datetime
 from tilecloud import consume
 
 try:
-    import bsddb3 as bsddb
-except:  # pragma: no cover
-    import bsddb
-
-try:
     from PIL import Image
     Image  # suppress pyflakes warning
 except:  # pragma: no cover
@@ -38,7 +33,6 @@ from tilecloud.grid.free import FreeTileGrid
 from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.mbtiles import MBTilesTileStore
-from tilecloud.store.bsddb import BSDDBTileStore
 from tilecloud.store.filesystem import FilesystemTileStore
 from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.logger import Logger
@@ -648,6 +642,12 @@ class TileGeneration:
                 tilecoord_in_topleft=True,
             )
         elif cache['type'] == 'bsddb':
+            try:
+                import bsddb3 as bsddb
+            except:  # pragma: no cover
+                import bsddb
+            from tilecloud.store.bsddb import BSDDBTileStore
+
             # on bsddb file
             filename = layout.filename(TileCoord(0, 0, 0)).replace(
                 '/0/0/0', ''

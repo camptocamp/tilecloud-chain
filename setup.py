@@ -17,12 +17,6 @@ if sys.version_info < (2, 7):
     install_requires.extend([
         'argparse',
     ])
-if sys.version_info >= (3, 0) or (
-    'BERKELEYDB_LIBDIR' in os.environ and 'BERKELEYDB_INCDIR' in os.environ
-):
-    install_requires.extend([
-        'bsddb3',
-    ])
 
 setup(
     name='tilecloud-chain',
