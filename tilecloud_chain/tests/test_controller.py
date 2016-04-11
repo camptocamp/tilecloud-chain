@@ -30,9 +30,10 @@ class TestController(CompareCase):
         self.assert_main_equals(
             cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml',
             main_func=controller.main,
+            regex=True,
             expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
-                u"""<?xml version="1.0" encoding="UTF-8"?>
+                u"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
               xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xmlns:gml="http://www.opengis.net/gml"
@@ -43,7 +44,7 @@ class TestController(CompareCase):
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles/1.0.0/WMTSCapabilities.xml">
+          <ows:Get xlink:href="http://wmts1/tiles/1.0.0/WMTSCapabilities.xml">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -56,7 +57,7 @@ class TestController(CompareCase):
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles/">
+          <ows:Get xlink:href="http://wmts1/tiles/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -69,28 +70,6 @@ class TestController(CompareCase):
   </ows:OperationsMetadata>
   <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
-
-    <Layer>
-      <ows:Title>point_hash_no_meta</ows:Title>
-      <ows:Identifier>point_hash_no_meta</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-      </Style>
-      <Format>image/png</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/point_hash_no_meta/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid_5</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
 
     <Layer>
       <ows:Title>all</ows:Title>
@@ -107,118 +86,8 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/all/default/"""
+                   template="http://wmts1/tiles/1.0.0/all/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid_5</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
-    <Layer>
-      <ows:Title>point_hash</ows:Title>
-      <ows:Identifier>point_hash</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-      </Style>
-      <Format>image/png</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/point_hash/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid_5</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
-    <Layer>
-      <ows:Title>polygon</ows:Title>
-      <ows:Identifier>polygon</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-      </Style>
-      <Format>image/png</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/polygon/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid_5</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
-    <Layer>
-      <ows:Title>point</ows:Title>
-      <ows:Identifier>point</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-      </Style>
-      <Format>image/png</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/point/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid_5</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
-    <Layer>
-      <ows:Title>mapnik_grid</ows:Title>
-      <ows:Identifier>mapnik_grid</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-      </Style>
-      <Format>application/utfgrid</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="application/utfgrid" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/mapnik_grid/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid_5</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
-    <Layer>
-      <ows:Title>mapnik_grid_drop</ows:Title>
-      <ows:Identifier>mapnik_grid_drop</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-      </Style>
-      <Format>application/utfgrid</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="application/utfgrid" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/mapnik_grid_drop/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -239,51 +108,7 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/line/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid_5</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
-    <Layer>
-      <ows:Title>polygon2</ows:Title>
-      <ows:Identifier>polygon2</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-      </Style>
-      <Format>image/png</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/polygon2/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid_01</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
-    <Layer>
-      <ows:Title>point_px_buffer</ows:Title>
-      <ows:Identifier>point_px_buffer</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-      </Style>
-      <Format>image/png</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/point_px_buffer/default/"""
+                   template="http://wmts1/tiles/1.0.0/line/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -305,10 +130,186 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/mapnik/default/"""
+                   template="http://wmts1/tiles/1.0.0/mapnik/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>mapnik_grid</ows:Title>
+      <ows:Identifier>mapnik_grid</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>application/utfgrid</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="application/utfgrid" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/mapnik_grid/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>mapnik_grid_drop</ows:Title>
+      <ows:Identifier>mapnik_grid_drop</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>application/utfgrid</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="application/utfgrid" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/mapnik_grid_drop/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>point</ows:Title>
+      <ows:Identifier>point</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/point/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>point_hash</ows:Title>
+      <ows:Identifier>point_hash</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/point_hash/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>point_hash_no_meta</ows:Title>
+      <ows:Identifier>point_hash_no_meta</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/point_hash_no_meta/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>point_px_buffer</ows:Title>
+      <ows:Identifier>point_px_buffer</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/point_px_buffer/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>polygon</ows:Title>
+      <ows:Identifier>polygon</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/polygon/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>polygon2</ows:Title>
+      <ows:Identifier>polygon2</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/polygon2/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_01</TileMatrixSet>
       </TileMatrixSetLink>
     </Layer>
 
@@ -319,7 +320,7 @@ class TestController(CompareCase):
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
-        <ScaleDenominator>3571.42857143</ScaleDenominator>
+        <ScaleDenominator>3571.4285714[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -329,7 +330,7 @@ class TestController(CompareCase):
 
       <TileMatrix>
         <ows:Identifier>0_2</ows:Identifier>
-        <ScaleDenominator>714.285714286</ScaleDenominator>
+        <ScaleDenominator>714.28571428[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -339,7 +340,7 @@ class TestController(CompareCase):
 
       <TileMatrix>
         <ows:Identifier>0_1</ows:Identifier>
-        <ScaleDenominator>357.142857143</ScaleDenominator>
+        <ScaleDenominator>357.14285714[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -350,66 +351,11 @@ class TestController(CompareCase):
     </TileMatrixSet>
 
     <TileMatrixSet>
-      <ows:Identifier>swissgrid_5</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
-      <TileMatrix>
-        <ows:Identifier>0</ows:Identifier>
-        <ScaleDenominator>357142.857143</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
-        <TileWidth>256</TileWidth>
-        <TileHeight>256</TileHeight>
-        <MatrixWidth>19</MatrixWidth>
-        <MatrixHeight>13</MatrixHeight>
-      </TileMatrix>
-
-      <TileMatrix>
-        <ows:Identifier>1</ows:Identifier>
-        <ScaleDenominator>178571.428571</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
-        <TileWidth>256</TileWidth>
-        <TileHeight>256</TileHeight>
-        <MatrixWidth>38</MatrixWidth>
-        <MatrixHeight>25</MatrixHeight>
-      </TileMatrix>
-
-      <TileMatrix>
-        <ows:Identifier>2</ows:Identifier>
-        <ScaleDenominator>71428.5714286</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
-        <TileWidth>256</TileWidth>
-        <TileHeight>256</TileHeight>
-        <MatrixWidth>94</MatrixWidth>
-        <MatrixHeight>63</MatrixHeight>
-      </TileMatrix>
-
-      <TileMatrix>
-        <ows:Identifier>3</ows:Identifier>
-        <ScaleDenominator>35714.2857143</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
-        <TileWidth>256</TileWidth>
-        <TileHeight>256</TileHeight>
-        <MatrixWidth>188</MatrixWidth>
-        <MatrixHeight>125</MatrixHeight>
-      </TileMatrix>
-
-      <TileMatrix>
-        <ows:Identifier>4</ows:Identifier>
-        <ScaleDenominator>17857.1428571</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
-        <TileWidth>256</TileWidth>
-        <TileHeight>256</TileHeight>
-        <MatrixWidth>375</MatrixWidth>
-        <MatrixHeight>250</MatrixHeight>
-      </TileMatrix>
-
-    </TileMatrixSet>
-
-    <TileMatrixSet>
       <ows:Identifier>swissgrid_025</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0_25</ows:Identifier>
-        <ScaleDenominator>892.857142857</ScaleDenominator>
+        <ScaleDenominator>892.85714285[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -424,7 +370,7 @@ class TestController(CompareCase):
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>2_5</ows:Identifier>
-        <ScaleDenominator>8928.57142857</ScaleDenominator>
+        <ScaleDenominator>8928.5714285[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -434,10 +380,65 @@ class TestController(CompareCase):
 
     </TileMatrixSet>
 
+    <TileMatrixSet>
+      <ows:Identifier>swissgrid_5</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>19</MatrixWidth>
+        <MatrixHeight>13</MatrixHeight>
+      </TileMatrix>
+
+      <TileMatrix>
+        <ows:Identifier>1</ows:Identifier>
+        <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>38</MatrixWidth>
+        <MatrixHeight>25</MatrixHeight>
+      </TileMatrix>
+
+      <TileMatrix>
+        <ows:Identifier>2</ows:Identifier>
+        <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>94</MatrixWidth>
+        <MatrixHeight>63</MatrixHeight>
+      </TileMatrix>
+
+      <TileMatrix>
+        <ows:Identifier>3</ows:Identifier>
+        <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>188</MatrixWidth>
+        <MatrixHeight>125</MatrixHeight>
+      </TileMatrix>
+
+      <TileMatrix>
+        <ows:Identifier>4</ows:Identifier>
+        <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>375</MatrixWidth>
+        <MatrixHeight>250</MatrixHeight>
+      </TileMatrix>
+
+    </TileMatrixSet>
+
   </Contents>
 </Capabilities>"""]])
 
-    MULTIHOST_CAPABILITIES = u"""<?xml version="1.0" encoding="UTF-8"?>
+    MULTIHOST_CAPABILITIES = u"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
               xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xmlns:gml="http://www.opengis.net/gml"
@@ -490,34 +491,6 @@ class TestController(CompareCase):
   <Contents>
 
     <Layer>
-      <ows:Title>point_hash_no_meta</ows:Title>
-      <ows:Identifier>point_hash_no_meta</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-      </Style>
-      <Format>image/png</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/point_hash_no_meta/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/point_hash_no_meta/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/point_hash_no_meta/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid_5</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
-    <Layer>
       <ows:Title>all</ows:Title>
       <ows:Identifier>all</ows:Identifier>
       <Style isDefault="true">
@@ -546,8 +519,8 @@ class TestController(CompareCase):
     </Layer>
 
     <Layer>
-      <ows:Title>point_hash</ows:Title>
-      <ows:Identifier>point_hash</ows:Identifier>
+      <ows:Title>line</ows:Title>
+      <ows:Identifier>line</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
       </Style>
@@ -560,13 +533,13 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/point_hash/default/""" \
+                   template="http://wmts1/tiles/1.0.0/line/default/""" \
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/point_hash/default/""" \
+                   template="http://wmts2/tiles/1.0.0/line/default/""" \
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/point_hash/default/""" \
+                   template="http://wmts3/tiles/1.0.0/line/default/""" \
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -574,8 +547,8 @@ class TestController(CompareCase):
     </Layer>
 
     <Layer>
-      <ows:Title>polygon</ows:Title>
-      <ows:Identifier>polygon</ows:Identifier>
+      <ows:Title>mapnik</ows:Title>
+      <ows:Identifier>mapnik</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
       </Style>
@@ -588,41 +561,13 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/polygon/default/""" \
+                   template="http://wmts1/tiles/1.0.0/mapnik/default/""" \
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/polygon/default/""" \
+                   template="http://wmts2/tiles/1.0.0/mapnik/default/""" \
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/polygon/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid_5</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
-    <Layer>
-      <ows:Title>point</ows:Title>
-      <ows:Identifier>point</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-      </Style>
-      <Format>image/png</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/point/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/point/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/point/default/""" \
+                   template="http://wmts3/tiles/1.0.0/mapnik/default/""" \
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -686,8 +631,8 @@ class TestController(CompareCase):
     </Layer>
 
     <Layer>
-      <ows:Title>line</ows:Title>
-      <ows:Identifier>line</ows:Identifier>
+      <ows:Title>point</ows:Title>
+      <ows:Identifier>point</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
       </Style>
@@ -700,13 +645,125 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/line/default/""" \
+                   template="http://wmts1/tiles/1.0.0/point/default/""" \
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/line/default/""" \
+                   template="http://wmts2/tiles/1.0.0/point/default/""" \
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/line/default/""" \
+                   template="http://wmts3/tiles/1.0.0/point/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>point_hash</ows:Title>
+      <ows:Identifier>point_hash</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/point_hash/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts2/tiles/1.0.0/point_hash/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts3/tiles/1.0.0/point_hash/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>point_hash_no_meta</ows:Title>
+      <ows:Identifier>point_hash_no_meta</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/point_hash_no_meta/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts2/tiles/1.0.0/point_hash_no_meta/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts3/tiles/1.0.0/point_hash_no_meta/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>point_px_buffer</ows:Title>
+      <ows:Identifier>point_px_buffer</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/point_px_buffer/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts2/tiles/1.0.0/point_px_buffer/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts3/tiles/1.0.0/point_px_buffer/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>polygon</ows:Title>
+      <ows:Identifier>polygon</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/polygon/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts2/tiles/1.0.0/polygon/default/""" \
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts3/tiles/1.0.0/polygon/default/""" \
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -741,62 +798,6 @@ class TestController(CompareCase):
       </TileMatrixSetLink>
     </Layer>
 
-    <Layer>
-      <ows:Title>point_px_buffer</ows:Title>
-      <ows:Identifier>point_px_buffer</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-      </Style>
-      <Format>image/png</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/point_px_buffer/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/point_px_buffer/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/point_px_buffer/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid_5</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
-    <Layer>
-      <ows:Title>mapnik</ows:Title>
-      <ows:Identifier>mapnik</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-      </Style>
-      <Format>image/png</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/mapnik/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/mapnik/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/mapnik/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid_5</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
 
 
     <TileMatrixSet>
@@ -804,7 +805,7 @@ class TestController(CompareCase):
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
-        <ScaleDenominator>3571.42857143</ScaleDenominator>
+        <ScaleDenominator>3571.4285714[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -814,7 +815,7 @@ class TestController(CompareCase):
 
       <TileMatrix>
         <ows:Identifier>0_2</ows:Identifier>
-        <ScaleDenominator>714.285714286</ScaleDenominator>
+        <ScaleDenominator>714.28571428[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -824,7 +825,7 @@ class TestController(CompareCase):
 
       <TileMatrix>
         <ows:Identifier>0_1</ows:Identifier>
-        <ScaleDenominator>357.142857143</ScaleDenominator>
+        <ScaleDenominator>357.14285714[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -835,66 +836,11 @@ class TestController(CompareCase):
     </TileMatrixSet>
 
     <TileMatrixSet>
-      <ows:Identifier>swissgrid_5</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
-      <TileMatrix>
-        <ows:Identifier>0</ows:Identifier>
-        <ScaleDenominator>357142.857143</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
-        <TileWidth>256</TileWidth>
-        <TileHeight>256</TileHeight>
-        <MatrixWidth>19</MatrixWidth>
-        <MatrixHeight>13</MatrixHeight>
-      </TileMatrix>
-
-      <TileMatrix>
-        <ows:Identifier>1</ows:Identifier>
-        <ScaleDenominator>178571.428571</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
-        <TileWidth>256</TileWidth>
-        <TileHeight>256</TileHeight>
-        <MatrixWidth>38</MatrixWidth>
-        <MatrixHeight>25</MatrixHeight>
-      </TileMatrix>
-
-      <TileMatrix>
-        <ows:Identifier>2</ows:Identifier>
-        <ScaleDenominator>71428.5714286</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
-        <TileWidth>256</TileWidth>
-        <TileHeight>256</TileHeight>
-        <MatrixWidth>94</MatrixWidth>
-        <MatrixHeight>63</MatrixHeight>
-      </TileMatrix>
-
-      <TileMatrix>
-        <ows:Identifier>3</ows:Identifier>
-        <ScaleDenominator>35714.2857143</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
-        <TileWidth>256</TileWidth>
-        <TileHeight>256</TileHeight>
-        <MatrixWidth>188</MatrixWidth>
-        <MatrixHeight>125</MatrixHeight>
-      </TileMatrix>
-
-      <TileMatrix>
-        <ows:Identifier>4</ows:Identifier>
-        <ScaleDenominator>17857.1428571</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
-        <TileWidth>256</TileWidth>
-        <TileHeight>256</TileHeight>
-        <MatrixWidth>375</MatrixWidth>
-        <MatrixHeight>250</MatrixHeight>
-      </TileMatrix>
-
-    </TileMatrixSet>
-
-    <TileMatrixSet>
       <ows:Identifier>swissgrid_025</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0_25</ows:Identifier>
-        <ScaleDenominator>892.857142857</ScaleDenominator>
+        <ScaleDenominator>892.85714285[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -909,12 +855,67 @@ class TestController(CompareCase):
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>2_5</ows:Identifier>
-        <ScaleDenominator>8928.57142857</ScaleDenominator>
+        <ScaleDenominator>8928.5714285[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>750</MatrixWidth>
         <MatrixHeight>500</MatrixHeight>
+      </TileMatrix>
+
+    </TileMatrixSet>
+
+    <TileMatrixSet>
+      <ows:Identifier>swissgrid_5</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>19</MatrixWidth>
+        <MatrixHeight>13</MatrixHeight>
+      </TileMatrix>
+
+      <TileMatrix>
+        <ows:Identifier>1</ows:Identifier>
+        <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>38</MatrixWidth>
+        <MatrixHeight>25</MatrixHeight>
+      </TileMatrix>
+
+      <TileMatrix>
+        <ows:Identifier>2</ows:Identifier>
+        <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>94</MatrixWidth>
+        <MatrixHeight>63</MatrixHeight>
+      </TileMatrix>
+
+      <TileMatrix>
+        <ows:Identifier>3</ows:Identifier>
+        <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>188</MatrixWidth>
+        <MatrixHeight>125</MatrixHeight>
+      </TileMatrix>
+
+      <TileMatrix>
+        <ows:Identifier>4</ows:Identifier>
+        <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>375</MatrixWidth>
+        <MatrixHeight>250</MatrixHeight>
       </TileMatrix>
 
     </TileMatrixSet>
@@ -930,6 +931,7 @@ class TestController(CompareCase):
             cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml '
             '--destination-cache multi_host',
             main_func=controller.main,
+            regex=True,
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     @attr(capabilities_slash=True)
@@ -940,9 +942,10 @@ class TestController(CompareCase):
         self.assert_main_equals(
             cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-capabilities.yaml',
             main_func=controller.main,
+            regex=True,
             expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
-                u"""<?xml version="1.0" encoding="UTF-8"?>
+                u"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
               xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xmlns:gml="http://www.opengis.net/gml"
@@ -953,7 +956,7 @@ class TestController(CompareCase):
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles/1.0.0/WMTSCapabilities.xml">
+          <ows:Get xlink:href="http://wmts1/tiles/1.0.0/WMTSCapabilities.xml">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -966,7 +969,7 @@ class TestController(CompareCase):
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles/">
+          <ows:Get xlink:href="http://wmts1/tiles/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -988,8 +991,28 @@ class TestController(CompareCase):
       </Style>
       <Format>image/png</Format>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/no_dim/default/"""
+                   template="http://wmts1/tiles/1.0.0/no_dim/default/"""
                 """{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>one</ows:Title>
+      <ows:Identifier>one</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/one/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -1014,28 +1037,8 @@ class TestController(CompareCase):
         <Value>2</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/two/default/"""
+                   template="http://wmts1/tiles/1.0.0/two/default/"""
                 """{DATE}/{LEVEL}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
-    <Layer>
-      <ows:Title>one</ows:Title>
-      <ows:Identifier>one</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-      </Style>
-      <Format>image/png</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/one/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -1048,7 +1051,7 @@ class TestController(CompareCase):
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
-        <ScaleDenominator>357142.857143</ScaleDenominator>
+        <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -1058,7 +1061,7 @@ class TestController(CompareCase):
 
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
-        <ScaleDenominator>35714.2857143</ScaleDenominator>
+        <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -1079,6 +1082,7 @@ class TestController(CompareCase):
             cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml '
             '--destination-cache multi_url',
             main_func=controller.main,
+            regex=True,
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
     @attr(mapcache=True)
@@ -1107,15 +1111,6 @@ class TestController(CompareCase):
       <origin>top-left</origin>
    </grid>
 
-   <grid name="swissgrid_5">
-      <size>256 256</size>
-      <extent>420000.0 30000.0 900000.0 350000.0</extent>
-      <srs>epsg:21781</srs>
-      <units>m</units>
-      <resolutions>100.0 50.0 20.0 10.0 5.0 </resolutions>
-      <origin>top-left</origin>
-   </grid>
-
    <grid name="swissgrid_025">
       <size>256 256</size>
       <extent>420000.0 30000.0 900000.0 350000.0</extent>
@@ -1134,88 +1129,29 @@ class TestController(CompareCase):
       <origin>top-left</origin>
    </grid>
 
+   <grid name="swissgrid_5">
+      <size>256 256</size>
+      <extent>420000.0 30000.0 900000.0 350000.0</extent>
+      <srs>epsg:21781</srs>
+      <units>m</units>
+      <resolutions>100.0 50.0 20.0 10.0 5.0 </resolutions>
+      <origin>top-left</origin>
+   </grid>
 
-   <source name="point_hash_no_meta" type="wms">
-      <getmap>
-         <params>
-            <LAYERS>point</LAYERS>
-            <TRANSPARENT>TRUE</TRANSPARENT>
-            <FORMAT>image/png</FORMAT>
-         </params>
-      </getmap>
-      <http>
-         <url>http://localhost/mapserv</url>
-         <headers>
-            <Pragma>no-cache</Pragma>
-            <Cache-Control>no-cache, no-store</Cache-Control>
-         </headers>
-      </http>
-   </source>
 
    <source name="all" type="wms">
       <getmap>
          <params>
+            <FORMAT>image/png</FORMAT>
             <LAYERS>point,line,polygon</LAYERS>
             <TRANSPARENT>TRUE</TRANSPARENT>
-            <FORMAT>image/png</FORMAT>
          </params>
       </getmap>
       <http>
          <url>http://localhost/mapserv</url>
          <headers>
-            <Pragma>no-cache</Pragma>
             <Cache-Control>no-cache, no-store</Cache-Control>
-         </headers>
-      </http>
-   </source>
-
-   <source name="point_hash" type="wms">
-      <getmap>
-         <params>
-            <LAYERS>point</LAYERS>
-            <TRANSPARENT>TRUE</TRANSPARENT>
-            <FORMAT>image/png</FORMAT>
-         </params>
-      </getmap>
-      <http>
-         <url>http://localhost/mapserv</url>
-         <headers>
             <Pragma>no-cache</Pragma>
-            <Cache-Control>no-cache, no-store</Cache-Control>
-         </headers>
-      </http>
-   </source>
-
-   <source name="polygon" type="wms">
-      <getmap>
-         <params>
-            <LAYERS>polygon</LAYERS>
-            <TRANSPARENT>TRUE</TRANSPARENT>
-            <FORMAT>image/png</FORMAT>
-         </params>
-      </getmap>
-      <http>
-         <url>http://localhost/mapserv</url>
-         <headers>
-            <Pragma>no-cache</Pragma>
-            <Cache-Control>no-cache, no-store</Cache-Control>
-         </headers>
-      </http>
-   </source>
-
-   <source name="point" type="wms">
-      <getmap>
-         <params>
-            <LAYERS>point</LAYERS>
-            <TRANSPARENT>TRUE</TRANSPARENT>
-            <FORMAT>image/png</FORMAT>
-         </params>
-      </getmap>
-      <http>
-         <url>http://localhost/mapserv</url>
-         <headers>
-            <Pragma>no-cache</Pragma>
-            <Cache-Control>no-cache, no-store</Cache-Control>
          </headers>
       </http>
    </source>
@@ -1223,10 +1159,10 @@ class TestController(CompareCase):
    <source name="line" type="wms">
       <getmap>
          <params>
-            <LAYERS>line</LAYERS>
-            <TRANSPARENT>TRUE</TRANSPARENT>
-            <PARAM>value</PARAM>
             <FORMAT>image/png</FORMAT>
+            <LAYERS>line</LAYERS>
+            <PARAM>value</PARAM>
+            <TRANSPARENT>TRUE</TRANSPARENT>
          </params>
       </getmap>
       <http>
@@ -1237,19 +1173,53 @@ class TestController(CompareCase):
       </http>
    </source>
 
-   <source name="polygon2" type="wms">
+   <source name="point" type="wms">
       <getmap>
          <params>
-            <LAYERS>polygon</LAYERS>
-            <TRANSPARENT>TRUE</TRANSPARENT>
             <FORMAT>image/png</FORMAT>
+            <LAYERS>point</LAYERS>
+            <TRANSPARENT>TRUE</TRANSPARENT>
          </params>
       </getmap>
       <http>
          <url>http://localhost/mapserv</url>
          <headers>
-            <Pragma>no-cache</Pragma>
             <Cache-Control>no-cache, no-store</Cache-Control>
+            <Pragma>no-cache</Pragma>
+         </headers>
+      </http>
+   </source>
+
+   <source name="point_hash" type="wms">
+      <getmap>
+         <params>
+            <FORMAT>image/png</FORMAT>
+            <LAYERS>point</LAYERS>
+            <TRANSPARENT>TRUE</TRANSPARENT>
+         </params>
+      </getmap>
+      <http>
+         <url>http://localhost/mapserv</url>
+         <headers>
+            <Cache-Control>no-cache, no-store</Cache-Control>
+            <Pragma>no-cache</Pragma>
+         </headers>
+      </http>
+   </source>
+
+   <source name="point_hash_no_meta" type="wms">
+      <getmap>
+         <params>
+            <FORMAT>image/png</FORMAT>
+            <LAYERS>point</LAYERS>
+            <TRANSPARENT>TRUE</TRANSPARENT>
+         </params>
+      </getmap>
+      <http>
+         <url>http://localhost/mapserv</url>
+         <headers>
+            <Cache-Control>no-cache, no-store</Cache-Control>
+            <Pragma>no-cache</Pragma>
          </headers>
       </http>
    </source>
@@ -1257,32 +1227,54 @@ class TestController(CompareCase):
    <source name="point_px_buffer" type="wms">
       <getmap>
          <params>
+            <FORMAT>image/png</FORMAT>
             <LAYERS>point</LAYERS>
             <TRANSPARENT>TRUE</TRANSPARENT>
-            <FORMAT>image/png</FORMAT>
          </params>
       </getmap>
       <http>
          <url>http://localhost/mapserv</url>
          <headers>
-            <Pragma>no-cache</Pragma>
             <Cache-Control>no-cache, no-store</Cache-Control>
+            <Pragma>no-cache</Pragma>
          </headers>
       </http>
    </source>
 
+   <source name="polygon" type="wms">
+      <getmap>
+         <params>
+            <FORMAT>image/png</FORMAT>
+            <LAYERS>polygon</LAYERS>
+            <TRANSPARENT>TRUE</TRANSPARENT>
+         </params>
+      </getmap>
+      <http>
+         <url>http://localhost/mapserv</url>
+         <headers>
+            <Cache-Control>no-cache, no-store</Cache-Control>
+            <Pragma>no-cache</Pragma>
+         </headers>
+      </http>
+   </source>
 
-   <tileset name="point_hash_no_meta">
-      <source>point_hash_no_meta</source>
-      <cache>default</cache>
-      <grid>swissgrid_5</grid>
-      <format>image/png</format>
-      <expires>3600</expires> <!-- 1 hour -->
-      <auto_expire>13800</auto_expire> <!-- 4 hours -->
-      <dimensions>
-        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
-      </dimensions>
-   </tileset>
+   <source name="polygon2" type="wms">
+      <getmap>
+         <params>
+            <FORMAT>image/png</FORMAT>
+            <LAYERS>polygon</LAYERS>
+            <TRANSPARENT>TRUE</TRANSPARENT>
+         </params>
+      </getmap>
+      <http>
+         <url>http://localhost/mapserv</url>
+         <headers>
+            <Cache-Control>no-cache, no-store</Cache-Control>
+            <Pragma>no-cache</Pragma>
+         </headers>
+      </http>
+   </source>
+
 
    <tileset name="all">
       <source>all</source>
@@ -1296,8 +1288,62 @@ class TestController(CompareCase):
       </dimensions>
    </tileset>
 
+   <tileset name="line">
+      <source>line</source>
+      <cache>default</cache>
+      <grid>swissgrid_5</grid>
+      <metatile>8 8</metatile>
+      <metabuffer>128</metabuffer>
+      <format>image/png</format>
+      <expires>3600</expires> <!-- 1 hour -->
+      <auto_expire>13800</auto_expire> <!-- 4 hours -->
+      <dimensions>
+        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
+      </dimensions>
+   </tileset>
+
+   <tileset name="point">
+      <source>point</source>
+      <cache>default</cache>
+      <grid>swissgrid_5</grid>
+      <metatile>8 8</metatile>
+      <metabuffer>128</metabuffer>
+      <format>image/png</format>
+      <expires>3600</expires> <!-- 1 hour -->
+      <auto_expire>13800</auto_expire> <!-- 4 hours -->
+      <dimensions>
+        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
+      </dimensions>
+   </tileset>
+
    <tileset name="point_hash">
       <source>point_hash</source>
+      <cache>default</cache>
+      <grid>swissgrid_5</grid>
+      <metatile>8 8</metatile>
+      <metabuffer>128</metabuffer>
+      <format>image/png</format>
+      <expires>3600</expires> <!-- 1 hour -->
+      <auto_expire>13800</auto_expire> <!-- 4 hours -->
+      <dimensions>
+        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
+      </dimensions>
+   </tileset>
+
+   <tileset name="point_hash_no_meta">
+      <source>point_hash_no_meta</source>
+      <cache>default</cache>
+      <grid>swissgrid_5</grid>
+      <format>image/png</format>
+      <expires>3600</expires> <!-- 1 hour -->
+      <auto_expire>13800</auto_expire> <!-- 4 hours -->
+      <dimensions>
+        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
+      </dimensions>
+   </tileset>
+
+   <tileset name="point_px_buffer">
+      <source>point_px_buffer</source>
       <cache>default</cache>
       <grid>swissgrid_5</grid>
       <metatile>8 8</metatile>
@@ -1322,52 +1368,10 @@ class TestController(CompareCase):
       </dimensions>
    </tileset>
 
-   <tileset name="point">
-      <source>point</source>
-      <cache>default</cache>
-      <grid>swissgrid_5</grid>
-      <metatile>8 8</metatile>
-      <metabuffer>128</metabuffer>
-      <format>image/png</format>
-      <expires>3600</expires> <!-- 1 hour -->
-      <auto_expire>13800</auto_expire> <!-- 4 hours -->
-      <dimensions>
-        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
-      </dimensions>
-   </tileset>
-
-   <tileset name="line">
-      <source>line</source>
-      <cache>default</cache>
-      <grid>swissgrid_5</grid>
-      <metatile>8 8</metatile>
-      <metabuffer>128</metabuffer>
-      <format>image/png</format>
-      <expires>3600</expires> <!-- 1 hour -->
-      <auto_expire>13800</auto_expire> <!-- 4 hours -->
-      <dimensions>
-        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
-      </dimensions>
-   </tileset>
-
    <tileset name="polygon2">
       <source>polygon2</source>
       <cache>default</cache>
       <grid>swissgrid_01</grid>
-      <metatile>8 8</metatile>
-      <metabuffer>128</metabuffer>
-      <format>image/png</format>
-      <expires>3600</expires> <!-- 1 hour -->
-      <auto_expire>13800</auto_expire> <!-- 4 hours -->
-      <dimensions>
-        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
-      </dimensions>
-   </tileset>
-
-   <tileset name="point_px_buffer">
-      <source>point_px_buffer</source>
-      <cache>default</cache>
-      <grid>swissgrid_5</grid>
       <metatile>8 8</metatile>
       <metabuffer>128</metabuffer>
       <format>image/png</format>
@@ -1431,17 +1435,17 @@ class TestController(CompareCase):
    <source name="nodim" type="wms">
       <getmap>
          <params>
+            <FORMAT>image/png</FORMAT>
             <LAYERS>default</LAYERS>
             <TRANSPARENT>TRUE</TRANSPARENT>
-            <FORMAT>image/png</FORMAT>
          </params>
       </getmap>
       <http>
          <url>http://localhost/mapserv</url>
          <headers>
+            <Cache-Control>no-cache, no-store</Cache-Control>
             <Host>example.com</Host>
             <Pragma>no-cache</Pragma>
-            <Cache-Control>no-cache, no-store</Cache-Control>
          </headers>
       </http>
    </source>
@@ -1498,10 +1502,10 @@ class TestController(CompareCase):
 
 Alias /tiles /tmp/tiles/
 
-RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
-                """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
 RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
+RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
+                """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
 
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
@@ -1535,10 +1539,10 @@ MapCacheAlias /mapcache "%s"
 ProxyPass /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
 ProxyPassReverse /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
 
-RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
-                """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
 RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
                 """/mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
+RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
+                """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
 
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
@@ -1575,9 +1579,9 @@ MapCacheAlias /mapcache "%s"
 
     CONFIG = u"""apache: {config_file: tiles.conf, expires: 8, location: /tiles}
 caches:
-  local: {folder: /tmp/tiles, hosts: false, http_url: 'http://taurus/tiles', http_urls: false,
+  local: {folder: /tmp/tiles, hosts: false, http_url: 'http://wmts1/tiles', http_urls: false,
     name: local, type: filesystem, wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml}
-  mbtiles: {folder: /tmp/tiles/mbtiles, http_url: 'http://taurus/tiles', name: mbtiles, type: """ \
+  mbtiles: {folder: /tmp/tiles/mbtiles, http_url: 'http://wmts1/tiles', name: mbtiles, type: """ \
                 """mbtiles, wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml}
   multi_host:
     folder: /tmp/tiles
@@ -2074,27 +2078,17 @@ OpenLayers.Request.GET({
         var capabilities = format.read(doc);
 
         map.addLayer(format.createLayer(capabilities, {
-            layer: "point_hash_no_meta",
-            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
-            isBaseLayer: true
-        }));
-        map.addLayer(format.createLayer(capabilities, {
             layer: "all",
             maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
-            layer: "point_hash",
+            layer: "line",
             maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
-            layer: "polygon",
-            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
-            isBaseLayer: true
-        }));
-        map.addLayer(format.createLayer(capabilities, {
-            layer: "point",
+            layer: "mapnik",
             maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
@@ -2111,12 +2105,17 @@ OpenLayers.Request.GET({
             utfgridResolution: 16
         }));
         map.addLayer(format.createLayer(capabilities, {
-            layer: "line",
+            layer: "point",
             maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
-            layer: "polygon2",
+            layer: "point_hash",
+            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
+            isBaseLayer: true
+        }));
+        map.addLayer(format.createLayer(capabilities, {
+            layer: "point_hash_no_meta",
             maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
@@ -2126,7 +2125,12 @@ OpenLayers.Request.GET({
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
-            layer: "mapnik",
+            layer: "polygon",
+            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
+            isBaseLayer: true
+        }));
+        map.addLayer(format.createLayer(capabilities, {
+            layer: "polygon2",
             maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
             isBaseLayer: true
         }));
@@ -2141,7 +2145,7 @@ OpenLayers.Request.GET({
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],
-                ['/tmp/tiles/wmts.js', js % 'http://taurus/tiles/1.0.0/WMTSCapabilities.xml']
+                ['/tmp/tiles/wmts.js', js % 'http://wmts1/tiles/1.0.0/WMTSCapabilities.xml']
             ]
         )
 
@@ -2206,7 +2210,7 @@ OpenLayers.Request.GET({
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles/1.0.0/WMTSCapabilities.xml">
+          <ows:Get xlink:href="http://wmts1/tiles/1.0.0/WMTSCapabilities.xml">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -2219,7 +2223,7 @@ OpenLayers.Request.GET({
     <ows:Operation name="GetTile">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="http://taurus/tiles/">
+          <ows:Get xlink:href="http://wmts1/tiles/">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -2234,64 +2238,14 @@ OpenLayers.Request.GET({
   <Contents>
 
     <Layer>
-      <ows:Title>line</ows:Title>
-      <ows:Identifier>line</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://taurus/tiles/1.0.0/line/default/legend0.png" """
-                """width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.487863" />
-        <LegendURL format="image/png" xlink:href="http://taurus/tiles/1.0.0/line/default/legend2.png" """
-                """width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.487863" />
-      </Style>
-      <Format>image/png</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/line/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
-    <Layer>
-      <ows:Title>polygon</ows:Title>
-      <ows:Identifier>polygon</ows:Identifier>
-      <Style isDefault="true">
-        <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://taurus/tiles/1.0.0/polygon/default/legend0.png" """
-                """width="[0-9]*" height="[0-9]*" />
-      </Style>
-      <Format>image/png</Format>
-      <Dimension>
-        <ows:Identifier>DATE</ows:Identifier>
-        <Default>2012</Default>
-        <Value>2005</Value>
-        <Value>2010</Value>
-        <Value>2012</Value>
-      </Dimension>
-      <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/polygon/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
-      <TileMatrixSetLink>
-        <TileMatrixSet>swissgrid</TileMatrixSet>
-      </TileMatrixSetLink>
-    </Layer>
-
-    <Layer>
       <ows:Title>all</ows:Title>
       <ows:Identifier>all</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://taurus/tiles/1.0.0/all/default/legend0.png" """
-                """width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.487863" />
-        <LegendURL format="image/png" xlink:href="http://taurus/tiles/1.0.0/all/default/legend2.png" """
-                """width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.487863" />
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/all/default/legend0.png" """
+                """width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/all/default/legend2.png" """
+                """width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -2302,7 +2256,33 @@ OpenLayers.Request.GET({
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/all/default/"""
+                   template="http://wmts1/tiles/1.0.0/all/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>line</ows:Title>
+      <ows:Identifier>line</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend0.png" """
+                """width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend2.png" """
+                """width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/line/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
@@ -2314,7 +2294,7 @@ OpenLayers.Request.GET({
       <ows:Identifier>point</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://taurus/tiles/1.0.0/point/default/legend0.png" """
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/point/default/legend0.png" """
                 """width="[0-9]*" height="[0-9]*" />
       </Style>
       <Format>image/png</Format>
@@ -2326,7 +2306,31 @@ OpenLayers.Request.GET({
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://taurus/tiles/1.0.0/point/default/"""
+                   template="http://wmts1/tiles/1.0.0/point/default/"""
+                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>polygon</ows:Title>
+      <ows:Identifier>polygon</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/polygon/default/legend0.png" """
+                """width="[0-9]*" height="[0-9]*" />
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/polygon/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
@@ -2340,7 +2344,7 @@ OpenLayers.Request.GET({
       <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
-        <ScaleDenominator>357142.857143</ScaleDenominator>
+        <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -2350,7 +2354,7 @@ OpenLayers.Request.GET({
 
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
-        <ScaleDenominator>178571.428571</ScaleDenominator>
+        <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -2360,7 +2364,7 @@ OpenLayers.Request.GET({
 
       <TileMatrix>
         <ows:Identifier>2</ows:Identifier>
-        <ScaleDenominator>71428.5714286</ScaleDenominator>
+        <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -2370,7 +2374,7 @@ OpenLayers.Request.GET({
 
       <TileMatrix>
         <ows:Identifier>3</ows:Identifier>
-        <ScaleDenominator>35714.2857143</ScaleDenominator>
+        <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
@@ -2380,7 +2384,7 @@ OpenLayers.Request.GET({
 
       <TileMatrix>
         <ows:Identifier>4</ows:Identifier>
-        <ScaleDenominator>17857.1428571</ScaleDenominator>
+        <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
         <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>

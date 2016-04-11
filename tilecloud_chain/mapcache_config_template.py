@@ -7,7 +7,7 @@ mapcache_config_template = """<?xml version="1.0" encoding="UTF-8"?>
        </server>
     </cache>
 
-{% for gridname, grid in grids.items() %}
+{% for gridname, grid in sorted(grids.items()) %}
    <grid name="{{gridname}}">
       <size>{{grid['tile_size']}} {{grid['tile_size']}}</size>
       <extent>{{grid['bbox'][0]}} {{grid['bbox'][1]}} {{grid['bbox'][2]}} {{grid['bbox'][3]}}</extent>
@@ -17,12 +17,12 @@ mapcache_config_template = """<?xml version="1.0" encoding="UTF-8"?>
       <origin>top-left</origin>
    </grid>
 {% endfor %}
-{% for layername, layer in layers.items() %}{%
+{% for layername, layer in sorted(layers.items()) %}{%
 if layer['type'] == 'wms' or 'wms_url' in layer %}
    <source name="{{layername}}" type="wms">
       <getmap>
          <params>{%
-         for key, value in layer['params'].items() %}
+         for key, value in sorted(layer['params'].items()) %}
             <{{key}}>{{value}}</{{key}}>{%
          endfor %}
          </params>
@@ -30,14 +30,14 @@ if layer['type'] == 'wms' or 'wms_url' in layer %}
       <http>
          <url>{{layer['wms_url'] if 'wms_url' in layer else layer['url']}}</url>
          <headers>{%
-         for key, value in layer['headers'].items() %}
+         for key, value in sorted(layer['headers'].items()) %}
             <{{key}}>{{value}}</{{key}}>{%
          endfor %}
          </headers>
       </http>
    </source>
 {% endif %}{% endfor %}
-{% for layername, layer in layers.items() %}{%
+{% for layername, layer in sorted(layers.items()) %}{%
 if layer['type'] == 'wms' or 'wms_url' in layer %}
    <tileset name="{{layername}}">
       <source>{{layername}}</source>

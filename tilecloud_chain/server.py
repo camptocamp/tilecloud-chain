@@ -33,8 +33,7 @@ import requests
 import types
 import datetime
 import mimetypes
-from urllib import urlencode
-from urlparse import parse_qs
+from six.moves.urllib.parse import urlencode, parse_qs
 
 from tilecloud import Tile, TileCoord
 from tilecloud.lib.s3 import S3Connection
@@ -137,7 +136,7 @@ class Server:
                         max_zoom_seed = zoom
                 self.max_zoom_seed[layer_name] = max_zoom_seed
             else:
-                self.max_zoom_seed[layer_name] = sys.maxint
+                self.max_zoom_seed[layer_name] = 999999
 
             # build stores
             store_defs = [{

@@ -5,12 +5,13 @@ import sys
 import math
 import logging
 import yaml
-from six.moves import cStringIO
+from six import PY3
+from six import BytesIO as StringIO
 from math import exp, log
 from copy import copy
 from argparse import ArgumentParser
 from hashlib import sha1
-from urllib import urlencode
+from six.moves.urllib.parse import urlencode
 
 import requests
 from bottle import jinja2_template
@@ -103,14 +104,16 @@ def _send(data, path, mime_type, cache):
         s3key['Content-Type'] = mime_type
         s3key.put()
     else:
+        if PY3 and isinstance(data, str):
+            data = data.encode('utf-8')
+
         folder = cache['folder'] or ''
         filename = os.path.join(folder, path)
         directory = os.path.dirname(filename)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        f = open(filename, 'wb')
-        f.write(data)
-        f.close()
+        with open(filename, 'wb') as f:
+            f.write(data)
 
 
 def _get(path, cache):
@@ -200,7 +203,7 @@ def _generate_wmts_capabilities(gene):
                         previous_legend['min_resolution'] = middle_res
                         new_legend['max_resolution'] = middle_res
                     try:
-                        pil_img = Image.open(cStringIO(img))
+                        pil_img = Image.open(StringIO(img))
                         new_legend['width'] = pil_img.size[0]
                         new_legend['height'] = pil_img.size[1]
                     except:  # pragma: nocover
@@ -219,9 +222,8 @@ def _generate_wmts_capabilities(gene):
         base_url_postfix='wmts/' if server else '',
         get_tile_matrix_identifier=get_tile_matrix_identifier,
         server=server,
-        enumerate=enumerate, ceil=math.ceil, int=int
+        enumerate=enumerate, ceil=math.ceil, int=int, sorted=sorted,
     )
-
     _send(capabilities, cache['wmtscapabilities_file'], 'application/xml', cache)
 
 
@@ -248,7 +250,7 @@ def _generate_legend_images(gene):
                             'SCALE': resolution / 0.00028
                         }))
                         try:
-                            legends.append(Image.open(cStringIO(response.content)))
+                            legends.append(Image.open(StringIO(response.content)))
                         except:  # pragma: nocover
                             logger.warn(
                                 "Unable to read legend image for layer '%s', resolution '%i': %r" % (
@@ -262,7 +264,7 @@ def _generate_legend_images(gene):
                     for i in legends:
                         image.paste(i, (0, y))
                         y += i.size[1]
-                    string_io = cStringIO()
+                    string_io = StringIO()
                     image.save(string_io, FORMAT_BY_CONTENT_TYPE[layer['legend_mime']])
                     result = string_io.getvalue()
                     new_hash = sha1(result).hexdigest()
@@ -301,12 +303,12 @@ def _generate_mapcache_config(gene):
         grids=gene.grids,
         mapcache=gene.config['mapcache'],
         min=min,
-        len=len
+        len=len,
+        sorted=sorted,
     )
 
-    f = open(gene.config['mapcache']['config_file'], 'w')
-    f.write(config)
-    f.close()
+    with open(gene.config['mapcache']['config_file'], 'w') as f:
+        f.write(config)
 
 
 def _generate_apache_config(gene):
@@ -316,110 +318,108 @@ def _generate_apache_config(gene):
     cache = gene.caches[gene.options.cache]
     use_server = 'server' in gene.config
 
-    f = open(gene.config['apache']['config_file'], 'w')
+    with open(gene.config['apache']['config_file'], 'w') as f:
 
-    folder = cache['folder']
-    if folder and folder[-1] != '/':
-        folder += '/'
+        folder = cache['folder']
+        if folder and folder[-1] != '/':
+            folder += '/'
 
-    if not use_server:
-        f.write("""<Location %(location)s>
-    ExpiresActive on
-    ExpiresDefault "now plus %(expires)i hours"
-%(headers)s
-</Location>
-""" % {
-            'location': gene.config['apache']['location'],
-            'expires': gene.config['apache']['expires'],
-            'headers': ''.join([
-                '    Header set %s "%s"' % h
-                for h in gene.config['apache'].get('headers', {
-                    'Cache-Control': 'max-age=864000, public'
-                }).items()
-            ]),
-        })
-        if cache['type'] == 's3':
-            tiles_url = cache['tiles_url'] if 'tiles_url' in cache else \
-                'http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s' % {
-                    'region': cache['region'],
-                    'bucket': cache['bucket'],
-                    'folder': folder
-            }
-            f.write(
-                """
-<Proxy %(tiles_url)s*>
-    Order deny,allow
-    Allow from all
-</Proxy>
-ProxyPass %(location)s/ %(tiles_url)s
-ProxyPassReverse %(location)s/ %(tiles_url)s
-""" % {
-                    'location': gene.config['apache']['location'],
-                    'tiles_url': tiles_url,
+        if not use_server:
+            f.write("""<Location %(location)s>
+        ExpiresActive on
+        ExpiresDefault "now plus %(expires)i hours"
+    %(headers)s
+    </Location>
+    """ % {
+                'location': gene.config['apache']['location'],
+                'expires': gene.config['apache']['expires'],
+                'headers': ''.join([
+                    '    Header set %s "%s"' % h
+                    for h in gene.config['apache'].get('headers', {
+                        'Cache-Control': 'max-age=864000, public'
+                    }).items()
+                ]),
+            })
+            if cache['type'] == 's3':
+                tiles_url = cache['tiles_url'] if 'tiles_url' in cache else \
+                    'http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s' % {
+                        'region': cache['region'],
+                        'bucket': cache['bucket'],
+                        'folder': folder
                 }
-            )
-        elif cache['type'] == 'filesystem':
-            f.write(
-                """
-Alias %(location)s %(files_folder)s
-""" % {
-                    'location': gene.config['apache']['location'],
-                    'files_folder': folder,
-                    'headers': ''.join([
-                        "    Header set %s '%s'" % h
-                        for h in gene.config['apache'].get('headers', {
-                            'Cache-Control': 'max-age=864000, public'
-                        }).items()
-                    ]),
-                }
-            )
+                f.write(
+                    """
+    <Proxy %(tiles_url)s*>
+        Order deny,allow
+        Allow from all
+    </Proxy>
+    ProxyPass %(location)s/ %(tiles_url)s
+    ProxyPassReverse %(location)s/ %(tiles_url)s
+    """ % {
+                        'location': gene.config['apache']['location'],
+                        'tiles_url': tiles_url,
+                    }
+                )
+            elif cache['type'] == 'filesystem':
+                f.write(
+                    """
+    Alias %(location)s %(files_folder)s
+    """ % {
+                        'location': gene.config['apache']['location'],
+                        'files_folder': folder,
+                        'headers': ''.join([
+                            "    Header set %s '%s'" % h
+                            for h in gene.config['apache'].get('headers', {
+                                'Cache-Control': 'max-age=864000, public'
+                            }).items()
+                        ]),
+                    }
+                )
 
-    use_mapcache = 'mapcache' in gene.config
-    if use_mapcache:
-        if not gene.validate_mapcache_config():
-            exit(1)  # pragma: no cover
-    if use_mapcache and not use_server:
-        token_regex = '([a-zA-Z0-9_\-\+~\.]+)'
-        f.write('\n')
-        for l in gene.config['layers']:
-            layer = gene.config['layers'][l]
-            if 'min_resolution_seed' in layer:
-                res = [r for r in layer['grid_ref']['resolutions'] if r < layer['min_resolution_seed']]
-                dim = len(layer['dimensions'])
-                for r in res:
-                    f.write(
-                        'RewriteRule'
-                        ' '
-                        '^%(tiles_location)s/1.0.0/%(layer)s/%(token_regex)s'  # Baseurl/layer/Style
-                        '%(dimensions_re)s'  # Dimensions : variable number of values
-                        '/%(token_regex)s/%(zoom)s/(.*)$'  # TileMatrixSet/TileMatrix/TileRow/TileCol.extension
-                        ' '
-                        '%(mapcache_location)s/wmts/1.0.0/%(layer)s/$1'
-                        '%(dimensions_rep)s'
-                        '/$%(tilematrixset)s/%(zoom)s/$%(final)s'
-                        ' '
-                        '[PT]\n' % {
-                            'tiles_location': gene.config['apache']['location'],
-                            'mapcache_location': gene.config['mapcache']['location'],
-                            'layer': layer['name'],
-                            'token_regex': token_regex,
-                            'dimensions_re': ''.join(['/' + token_regex for e in range(dim)]),
-                            'dimensions_rep': ''.join(['/$%i' % (e + 2) for e in range(dim)]),
-                            'tilematrixset': dim + 2,
-                            'final': dim + 3,
-                            'zoom': layer['grid_ref']['resolutions'].index(r)
-                        }
-                    )
+        use_mapcache = 'mapcache' in gene.config
+        if use_mapcache:
+            if not gene.validate_mapcache_config():
+                exit(1)  # pragma: no cover
+        if use_mapcache and not use_server:
+            token_regex = '([a-zA-Z0-9_\-\+~\.]+)'
+            f.write('\n')
 
-    if use_mapcache:
-        f.write("""
-MapCacheAlias %(mapcache_location)s "%(mapcache_config)s"
-""" % {
-            'mapcache_location': gene.config['mapcache']['location'],
-            'mapcache_config': os.path.abspath(gene.config['mapcache']['config_file'])
-        })
+            for l, layer in sorted(gene.config['layers'].items()):
+                if 'min_resolution_seed' in layer:
+                    res = [r for r in layer['grid_ref']['resolutions'] if r < layer['min_resolution_seed']]
+                    dim = len(layer['dimensions'])
+                    for r in res:
+                        f.write(
+                            'RewriteRule'
+                            ' '
+                            '^%(tiles_location)s/1.0.0/%(layer)s/%(token_regex)s'  # Baseurl/layer/Style
+                            '%(dimensions_re)s'  # Dimensions : variable number of values
+                            '/%(token_regex)s/%(zoom)s/(.*)$'  # TileMatrixSet/TileMatrix/TileRow/TileCol.extension
+                            ' '
+                            '%(mapcache_location)s/wmts/1.0.0/%(layer)s/$1'
+                            '%(dimensions_rep)s'
+                            '/$%(tilematrixset)s/%(zoom)s/$%(final)s'
+                            ' '
+                            '[PT]\n' % {
+                                'tiles_location': gene.config['apache']['location'],
+                                'mapcache_location': gene.config['mapcache']['location'],
+                                'layer': layer['name'],
+                                'token_regex': token_regex,
+                                'dimensions_re': ''.join(['/' + token_regex for e in range(dim)]),
+                                'dimensions_rep': ''.join(['/$%i' % (e + 2) for e in range(dim)]),
+                                'tilematrixset': dim + 2,
+                                'final': dim + 3,
+                                'zoom': layer['grid_ref']['resolutions'].index(r)
+                            }
+                        )
 
-    f.close()
+        if use_mapcache:
+            f.write("""
+    MapCacheAlias %(mapcache_location)s "%(mapcache_config)s"
+    """ % {
+                'mapcache_location': gene.config['mapcache']['location'],
+                'mapcache_config': os.path.abspath(gene.config['mapcache']['config_file'])
+            })
 
 
 def _validate_generate_openlayers(gene):
@@ -443,10 +443,8 @@ def _validate_generate_openlayers(gene):
 
 def _get_resource(ressource):
     path = os.path.join(os.path.dirname(__file__), ressource)
-    f = open(path)
-    data = f.read()
-    f.close()
-    return data
+    with open(path, 'rb') as f:
+        return f.read()
 
 
 def _generate_openlayers(gene):
@@ -484,8 +482,10 @@ def _generate_openlayers(gene):
                 'maxExtent': layer['grid_ref']['bbox'],
                 'resolution': layer['resolution'] if
                 layer['type'] == 'mapnik' and layer['output_format'] == 'grid' else None,
-            } for name, layer in gene.layers.items() if layer['grid_ref']['srs'] == gene.config['openlayers']['srs']
-        ]
+            } for name, layer in sorted(gene.layers.items())
+            if layer['grid_ref']['srs'] == gene.config['openlayers']['srs']
+        ],
+        sorted=sorted,
     )
 
     _send(openlayers_html, 'index.html', 'text/html', cache)

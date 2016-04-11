@@ -29,7 +29,7 @@ grids:
 caches:
     local:
         type: filesystem
-        http_url: http://taurus/tiles
+        http_url: http://wmts1/tiles
         folder: /tmp/tiles
         wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
     multi_host:
@@ -49,11 +49,11 @@ caches:
         folder: /tmp/tiles
     mbtiles:
         type: mbtiles
-        http_url: http://taurus/tiles
+        http_url: http://wmts1/tiles
         folder: /tmp/tiles/mbtiles
     bsddb:
         type: bsddb
-        http_url: http://taurus/tiles
+        http_url: http://wmts1/tiles
         folder: /tmp/tiles/bsddb
     s3:
         type: s3

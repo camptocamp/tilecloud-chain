@@ -8,7 +8,7 @@ grids:
 caches:
     local:
         type: filesystem
-        http_url: http://taurus/tiles
+        http_url: http://wmts1/tiles
         folder: /tmp/tiles
         wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
 

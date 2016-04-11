@@ -1,15 +1,16 @@
 language: python
 
 python:
-    - 2.7
-#    - 3.5
-#    - "nightly"
+- 2.7
+- 3.3
+- 3.4
 
 env:
   global:
   - BERKELEYDB_LIBDIR=/usr/lib/x86_64-linux-gnu BERKELEYDB_INCDIR=/usr/include
 
 before_install:
+- sudo sed -i '/plugin_directory/d' /etc/boto.cfg
 - ssh-keygen -t rsa -C your_email@youremail.com -P '' -f ~/.ssh/id_rsa
 - cat /home/travis/.ssh/id_rsa.pub >> /home/travis/.ssh/authorized_keys
 - ln -s /home/travis/.ssh/authorized_keys /home/travis/.ssh/authorized_keys2
@@ -39,6 +40,7 @@ before_install:
 
 install:
 - pip install --upgrade pip
+- pip install https://github.com/sbrunner/tilecloud/archive/python3.zip
 - if [[ ${TRAVIS_PYTHON_VERSION} == 2.7 ]] ; then pip install mapnik ; fi
 - pip install bsddb3
 - pip install -r requirements.txt
@@ -47,15 +49,15 @@ install:
 - touch tilecloud_chain/OpenLayers.js
 
 script:
-- find tilecloud_chain -name \*.py | xargs flake8 --max-line-length=120
+- flake8 --max-line-length=120 tilecloud_chain
 - vvv-validate-rst README.rst
 - vvv-validate-rst CHANGES.rst
 - python setup.py --long-description > PYPI.rst
 - vvv-validate-rst PYPI.rst
-- python setup.py nosetests --stop -a '!'nopy${TRAVIS_PYTHON_VERSION/./}
+- python setup.py nosetests --stop -a '!'nopy${TRAVIS_PYTHON_VERSION/./} -a '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
 
 after_failure:
-- python setup.py nosetests -a '!'nopy${TRAVIS_PYTHON_VERSION/./}
+- python setup.py nosetests -a '!'nopy${TRAVIS_PYTHON_VERSION/./} -a '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
 
 after_success:
 # Report coverage results to coveralls.io
