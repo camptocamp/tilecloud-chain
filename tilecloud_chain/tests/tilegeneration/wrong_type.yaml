@@ -10,7 +10,7 @@ grids:
         srs: {}
     swissgrid_3: {}
     swissgrid!: {}
-        
+
 caches: {}
 
 layers:

@@ -4,7 +4,7 @@ grids:
         resolution_scale: 5
         bbox: [420000, 30000, 900000, 350000]
         srs: epsg:21781
-        
+
 caches: {}
 
 layers: {}
