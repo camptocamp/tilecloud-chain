@@ -54,6 +54,7 @@ script:
 - python setup.py --long-description > PYPI.rst
 - vvv-validate-rst PYPI.rst
 - python setup.py nosetests --stop -a '!'nopy${TRAVIS_PYTHON_VERSION/./} -a '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
+- if [ ${TRAVIS_PULL_REQUEST} != "false" ] ; then git diff --check ${TRAVIS_BRANCH} -- ; fi
 
 after_failure:
 - python setup.py nosetests -a '!'nopy${TRAVIS_PYTHON_VERSION/./} -a '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
