@@ -3,7 +3,7 @@ grids:
         resolutions: [1]
         bbox: [420000, 30000, 900000, 350000]
         srs: epsg21781
-        
+
 caches: {}
 
 layers: {}
