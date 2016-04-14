@@ -136,7 +136,7 @@ class Generate:
                     ),),
                     headers=gene.layer['headers'],
                 ), "Get tile from WMS")
-            elif gene.layer['type'] == 'mapnik':
+            elif gene.layer['type'] == 'mapnik':  # pragma: no cover
                 from tilecloud.store.mapnik_ import MapnikTileStore
                 from tilecloud_chain.mapnik_ import MapnikDropActionTileStore
 

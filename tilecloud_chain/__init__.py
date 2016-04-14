@@ -291,7 +291,7 @@ class TileGeneration:
                     error = self.validate(
                         layer, name, 'drop_empty_utfgrid', attribute_type=bool, default=False
                     ) or error
-                    if layer['meta']:
+                    if layer['meta']:  # pragma: no cover
                         logger.error(
                             "The layer '%s' is of type Mapnik/Grid, that can't support matatiles." %
                             (layer['name'])
