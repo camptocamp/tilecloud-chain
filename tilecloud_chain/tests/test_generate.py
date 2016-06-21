@@ -130,7 +130,7 @@ class TestGenerate(CompareCase):
                     ('line', 0, 7, 4), ('polygon', 0, 5, 4)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'line' is finish
+                expected="""The tile generation of layer 'line \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 40
@@ -142,7 +142,7 @@ Total size: 733 o
 Time per tiles: [0-9]+ ms
 Size per tile: 733 o
 
-The tile generation of layer 'polygon' is finish
+The tile generation of layer 'polygon \(DATE=2012\)' is finish
 Nb generated tiles: 1
 Nb tiles dropped: 0
 Nb tiles stored: 1
@@ -170,7 +170,7 @@ Size per tile: [45][0-9][0-9] o
                     ('line', 0, 7, 4), ('polygon', 0, 5, 4)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'line' is finish
+                expected="""The tile generation of layer 'line \(DATE=2013\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 40
@@ -182,7 +182,7 @@ Total size: 733 o
 Time per tiles: [0-9]+ ms
 Size per tile: 733 o
 
-The tile generation of layer 'polygon' is finish
+The tile generation of layer 'polygon \(DATE=2013\)' is finish
 Nb generated tiles: 1
 Nb tiles dropped: 0
 Nb tiles stored: 1
@@ -260,7 +260,7 @@ Size per tile: [45][0-9][0-9] o
                 (3, 58, 70),
             ],
             regex=True,
-            expected="""The tile generation of layer 'pp' is finish
+            expected="""The tile generation of layer 'pp \(DATE=2012\)' is finish
 Nb generated tiles: 51
 Nb tiles dropped: 0
 Nb tiles stored: 51
@@ -289,7 +289,7 @@ Size per tile: [79][0-9][0-9] o
                     ('polygon2', '1', 585, 429)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'polygon2' is finish
+                expected="""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 42
@@ -312,7 +312,7 @@ Size per tile: 389 o
                     ('polygon2', '0_2', 2929, 2148)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'polygon2' is finish
+                expected="""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 34
@@ -335,7 +335,7 @@ Size per tile: 517 o
                     ('polygon2', '0_1', 5859, 4296)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'polygon2' is finish
+                expected="""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 4
@@ -366,7 +366,7 @@ Size per tile: 676 o
                 tiles=[
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash' is finish
+                expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 0
 Nb metatiles dropped: 0
 Nb generated tiles: 0
@@ -407,7 +407,7 @@ Size per tile: -1 o
                     ('point_hash', 1, 11, 14), ('point_hash', 1, 15, 8)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash' is finish
+                expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -440,7 +440,7 @@ Size per tile: 4[0-9][0-9] o
                     ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42),
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash' is finish
+                expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 9
 Nb metatiles dropped: 4
 Nb generated tiles: 320
@@ -474,7 +474,7 @@ Size per tile: 4[0-9][0-9] o
                     ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42),
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash' is finish
+                expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 10
 Nb metatiles dropped: 4
 Nb generated tiles: 384
@@ -508,7 +508,7 @@ Size per tile: 4[0-9][0-9] o
                     (2, 29, 35), (2, 39, 21),
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_px_buffer' is finish
+                expected="""The tile generation of layer 'point_px_buffer \(DATE=2012\)' is finish
 Nb generated metatiles: 10
 Nb metatiles dropped: 4
 Nb generated tiles: 384
@@ -544,7 +544,7 @@ Size per tile: 4[0-9][0-9] o
                     ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42),
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash' is finish
+                expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 9
 Nb metatiles dropped: 4
 Nb generated tiles: 320
@@ -573,7 +573,7 @@ Size per tile: 4[0-9][0-9] o
                 tiles_pattern='1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png',
                 tiles=list(product((5, 6, 7), (4, 5, 6, 7))),
                 regex=True,
-                expected="""The tile generation of layer 'polygon' is finish
+                expected="""The tile generation of layer 'polygon \(DATE=2012\)' is finish
 Nb generated tiles: 12
 Nb tiles dropped: 0
 Nb tiles stored: 12
@@ -596,7 +596,7 @@ Size per tile: [69][0-9][0-9] o
                     (6, 5), (7, 5)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'polygon' is finish
+                expected="""The tile generation of layer 'polygon \(DATE=2012\)' is finish
 Nb generated tiles: 2
 Nb tiles dropped: 0
 Nb tiles stored: 2
@@ -619,7 +619,7 @@ Size per tile: [89][0-9][0-9] o
                     (6, 5), (7, 5)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'polygon' is finish
+                expected="""The tile generation of layer 'polygon \(DATE=2012\)' is finish
 Nb generated tiles: 2
 Nb tiles dropped: 0
 Nb tiles stored: 2
@@ -641,7 +641,7 @@ Size per tile: [89][0-9][0-9] o
                     (6, 5), (7, 5)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'all' is finish
+                expected="""The tile generation of layer 'all \(DATE=2012\)' is finish
 Nb generated tiles: 2
 Nb tiles dropped: 0
 Nb tiles stored: 2
@@ -670,7 +670,7 @@ Size per tile: [89][0-9][0-9] o
                     (5, 7), (7, 4)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash' is finish
+                expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -913,7 +913,7 @@ size: 1010
                     (5, 7), (7, 4)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash_no_meta' is finish
+                expected="""The tile generation of layer 'point_hash_no_meta \(DATE=2012\)' is finish
 Nb generated tiles: 247
 Nb tiles dropped: 245
 Nb tiles stored: 2
@@ -947,7 +947,7 @@ Size per tile: 4[0-9][0-9] o
                     (5, 7), (7, 4)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash_no_meta' is finish
+                expected="""The tile generation of layer 'point_hash_no_meta \(DATE=2012\)' is finish
 Nb generated tiles: 247
 Nb tiles dropped: 245
 Nb tiles stored: 2
@@ -995,7 +995,7 @@ Size per tile: 4[0-9][0-9] o
                 (0, 5, 7), (0, 7, 4)
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash' is finish
+            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 3
 Nb metatiles dropped: 1
 Nb generated tiles: 128
@@ -1009,3 +1009,47 @@ Size per tile: 4[0-9][0-9] o
 
 """,
         )
+
+    @attr(general=True)
+    def test_multy(self):
+        for d in ('-v', ''):
+            self.assert_tiles_generated(
+                cmd='.build/venv/bin/generate_tiles %s -c tilegeneration/test-multidim.yaml' % d,
+                main_func=generate.main,
+                directory="/tmp/tiles/",
+                tiles_pattern='1.0.0/multi/default/%s/swissgrid/%i/%i/%i.png',
+                tiles=[
+                    ('point1', 0, 5, 7),
+                    ('point1', 1, 11, 14),
+                    ('point1', 2, 29, 35),
+                    ('point2', 0, 7, 4),
+                    ('point2', 1, 15, 8),
+                    ('point2', 2, 39, 21),
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'multi \(POINT_NAME=point1\)' is finish
+Nb generated metatiles: 8
+Nb metatiles dropped: 5
+Nb generated tiles: 192
+Nb tiles dropped: 189
+Nb tiles stored: 3
+Nb error: 0
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 1.5 Kio
+Time per tiles: [0-9]+ ms
+Size per tile: 496 o
+
+The tile generation of layer 'multi \(POINT_NAME=point2\)' is finish
+Nb generated metatiles: 8
+Nb metatiles dropped: 5
+Nb generated tiles: 192
+Nb tiles dropped: 189
+Nb tiles stored: 3
+Nb error: 0
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 1.5 Kio
+Time per tiles: [0-9]+ ms
+Size per tile: 500 o
+
+""",
+            )

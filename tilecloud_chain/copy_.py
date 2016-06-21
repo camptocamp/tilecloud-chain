@@ -15,13 +15,25 @@ class Copy:
     count = None
 
     def copy(self, options, gene, layer, source, dest, task_name):
+        if gene.layers[layer]['type'] == 'wms':
+            all_dimensions = gene.get_all_dimensions(gene.layers[layer])
+
+            if len(all_dimensions) == 0:
+                self._copy(options, gene, layer, source, dest, task_name)
+            else:  # pragma: no cover
+                for dimensions in all_dimensions:
+                    self._copy(options, gene, layer, source, dest, task_name, dimensions)
+        else:  # pragma: no cover
+            self._copy(options, gene, layer, source, dest, task_name)
+
+    def _copy(self, options, gene, layer, source, dest, task_name, dimensions={}):
         # disable metatiles
         del gene.layers[layer]['meta']
         count_tiles_dropped = Count()
 
         gene.set_layer(layer, options)
-        source_tilestore = gene.get_tilesstore(source)
-        dest_tilestore = gene.get_tilesstore(dest)
+        source_tilestore = gene.get_tilesstore(source, dimensions)
+        dest_tilestore = gene.get_tilesstore(dest, dimensions)
         gene.init_tilecoords()
         gene.add_geom_filter()
         gene.add_logger()

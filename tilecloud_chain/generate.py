@@ -30,15 +30,27 @@ class Generate:
     _re_rm_xml_tag = re.compile('(<[^>]*>|\n)')
 
     def gene(self, options, gene, layer):
-        count_metatiles = None
-        count_metatiles_dropped = Count()
-        count_tiles = None
-        count_tiles_dropped = Count()
-
         if options.role == 'slave' or options.get_hash or options.get_bbox:
             gene.layer = gene.layers[layer]
         else:
             gene.set_layer(layer, options)
+
+        if options.role in ('local', 'slave', 'hash'):
+            all_dimensions = gene.get_all_dimensions()
+
+            if len(all_dimensions) == 0:  # pragma: no cover
+                self._gene(options, gene, layer)
+            else:
+                for dimensions in all_dimensions:
+                    self._gene(options, gene, layer, dimensions)
+        else:  # pragma: no cover
+            self._gene(options, gene, layer)
+
+    def _gene(self, options, gene, layer, dimensions={}):
+        count_metatiles = None
+        count_metatiles_dropped = Count()
+        count_tiles = None
+        count_tiles_dropped = Count()
 
         if options.get_bbox:
             try:
@@ -65,7 +77,7 @@ class Generate:
 
         cache_tilestore = None
         if options.role in ('local', 'slave'):
-            cache_tilestore = gene.get_tilesstore(options.cache)
+            cache_tilestore = gene.get_tilesstore(options.cache, dimensions)
 
         meta = gene.layer['meta']
         if options.tiles:
@@ -112,16 +124,7 @@ class Generate:
                     params['STYLES'] = ','.join(gene.layer['wmts_style'] for l in gene.layer['layers'].split(','))
                 if gene.layer['generate_salt']:
                     params['SALT'] = str(random.randint(0, 999999))
-                for dim in gene.layer['dimensions']:
-                    params[dim['name']] = dim['generate']  # TODO
-                for dim in gene.options.dimensions:
-                    dim = dim.split('=')
-                    if len(dim) != 2:  # pragma: no cover
-                        exit(
-                            'the DIMENTIONS option should be like this '
-                            'DATE=2013 VERSION=13.'
-                        )
-                    params[dim[0]] = dim[1]
+                params.update(dimensions)
 
                 # Get the metatile image from the WMS server
                 gene.get(URLTileStore(
@@ -292,7 +295,7 @@ class Generate:
             if not options.quiet and options.role in ('local', 'slave'):
                 nb_tiles = count_tiles.nb + count_tiles_dropped.nb
                 print(
-                    """The tile generation of layer '%s' is finish
+                    """The tile generation of layer '%s%s' is finish
 %sNb generated tiles: %i
 Nb tiles dropped: %i
 Nb tiles stored: %i
@@ -303,6 +306,8 @@ Time per tiles: %i ms
 Size per tile: %i o
 """ % (
                         gene.layer['name'],
+                        "" if len(dimensions) == 0 or gene.layer['type'] != 'wms'
+                        else " (%s)" % ", ".join(["=".join(d) for d in dimensions.items()]),
                         """Nb generated metatiles: %i
 Nb metatiles dropped: %i
 """ %

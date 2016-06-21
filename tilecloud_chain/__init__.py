@@ -407,6 +407,31 @@ class TileGeneration:
                 },
             })
 
+    def get_all_dimensions(self, layer=None):
+        if layer is None:
+            layer = self.layer
+        options_dimensions = {}
+        for opt_dim in self.options.dimensions:
+            opt_dim = opt_dim.split('=')
+            if len(opt_dim) != 2:  # pragma: no cover
+                exit(
+                    'the DIMENSIONS option should be like this '
+                    'DATE=2013 VERSION=13.'
+                )
+            options_dimensions[opt_dim[0]] = opt_dim[1]
+
+        all_dimensions = [
+            [
+                (dim['name'], d)
+                for d in dim['generate']
+            ]
+            for dim in layer['dimensions']
+            if dim['name'] not in options_dimensions
+        ]
+        all_dimensions += [[p] for p in options_dimensions.items()]
+        all_dimensions = zip(*all_dimensions)
+        return [dict(d) for d in all_dimensions]
+
     def get_store(self, cache, layer, dimensions=None, read_only=False):
         # build layout
         grid = layer['grid_ref'] if 'grid_ref' in layer else None
@@ -415,8 +440,8 @@ class TileGeneration:
             url=cache['folder'],
             style=layer['wmts_style'],
             format='.' + layer['extension'],
-            dimensions=dimensions if dimensions is not None else [
-                (dimension['name'], dimension['generate'])
+            dimensions=[
+                (dimension['name'], dimensions[dimension['name']])
                 for dimension in layer['dimensions']
             ],
             tile_matrix_set=layer['grid'],
@@ -525,24 +550,8 @@ class TileGeneration:
 
         return self.grids[name]
 
-    def get_tilesstore(self, cache_name):
+    def get_tilesstore(self, cache_name, dimensions):
         cache = self.caches[cache_name]
-        dimensions_args = {}
-        for dim in self.options.dimensions:
-            dim = dim.split('=')
-            if len(dim) != 2:  # pragma: no cover
-                exit(
-                    'the DIMENTIONS option should be like this '
-                    'DATE=2013 VERSION=13.'
-                )
-            dimensions_args[dim[0]] = dim[1]
-        dimensions = []
-        for dim in self.layer['dimensions']:
-            dimensions.append((
-                dim['name'],
-                dimensions_args[dim['name']] if
-                dim['name'] in dimensions_args else dim['generate']
-            ))
         cache_tilestore = self.get_store(cache, self.layer, dimensions=dimensions)
         if cache_tilestore is None:
             exit('Unknown cache type: ' + cache['type'])  # pragma: no cover

@@ -137,15 +137,18 @@ class Server:
             # build stores
             store_defs = [{
                 'ref': [layer_name],
-                'dimensions': [],
+                'dimensions': {},
             }]
             for dimension in layer['dimensions']:
                 new_store_defs = []
                 for store_def in store_defs:
                     for value in dimension['values']:
+                        dimensions = {}
+                        dimensions.update(store_def['dimensions'])
+                        dimensions[dimension['name']] = value
                         new_store_defs.append({
                             'ref': store_def['ref'] + [value],
-                            'dimensions': store_def['dimensions'] + [(dimension['name'], value)],
+                            'dimensions': dimensions,
                         })
                 store_defs = new_store_defs
             for store_def in store_defs:

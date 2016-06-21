@@ -174,7 +174,7 @@ class TestServe(CompareCase):
                 ('point_hash/default/2012/swissgrid_5/1/15/8.png'),
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash' is finish
+            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -720,7 +720,7 @@ Size per tile: 4[0-9][0-9] o
                 ('point_hash/default/2012/swissgrid_5.png.mbtiles')
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash' is finish
+            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -827,7 +827,7 @@ Size per tile: 4[0-9][0-9] o
                 ('point_hash/default/2012/swissgrid_5.png.bsddb')
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash' is finish
+            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -1010,7 +1010,7 @@ Size per tile: 4[0-9][0-9] o
                 ('point_hash/default/2012/swissgrid_5.png.mbtiles')
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash' is finish
+            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
