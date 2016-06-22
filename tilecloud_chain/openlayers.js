@@ -1,4 +1,4 @@
-openlayers_js = """var callback = function(infoLookup) {
+var callback = function(infoLookup) {
     var msg = "";
     if (infoLookup) {
         var info;
@@ -65,4 +65,4 @@ endfor %}
         alert("Trouble getting capabilities doc");
         OpenLayers.Console.error.apply(OpenLayers.Console, arguments);
     }
-});"""
+});

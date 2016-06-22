@@ -6,6 +6,7 @@ import math
 import logging
 import yaml
 import urlparse
+import pkgutil
 from six import PY3
 from six import BytesIO as StringIO
 from math import exp, log
@@ -135,8 +136,6 @@ def _validate_generate_wmts_capabilities(gene, cache):
 
 
 def _generate_wmts_capabilities(gene):
-    from tilecloud_chain.wmts_get_capabilities_template import wmts_get_capabilities_template
-
     cache = gene.caches[gene.options.cache]
     _validate_generate_wmts_capabilities(gene, cache)
     server = 'server' in gene.config
@@ -186,7 +185,7 @@ def _generate_wmts_capabilities(gene):
                 previous_resolution = resolution
 
     capabilities = jinja2_template(
-        wmts_get_capabilities_template,
+        pkgutil.get_data("tilecloud_chain", "wmts_get_capabilities.jinja").decode('utf-8'),
         layers=gene.layers,
         grids=gene.grids,
         getcapabilities=urlparse.urljoin(base_urls[0], (
@@ -259,8 +258,6 @@ def _generate_legend_images(gene):
 
 
 def _generate_mapcache_config(gene):
-    from tilecloud_chain.mapcache_config_template import mapcache_config_template
-
     for layer in gene.layers.values():
         if layer['type'] == 'wms' or 'wms_url' in layer:
             if 'FORMAT' not in layer.get('params', {}):
@@ -270,7 +267,7 @@ def _generate_mapcache_config(gene):
             if 'TRANSPARENT' not in layer.get('params', {}):
                 layer.get('params', {})['TRANSPARENT'] = 'TRUE' if layer['mime_type'] == 'image/png' else 'FALSE'
     config = jinja2_template(
-        mapcache_config_template,
+        pkgutil.get_data("tilecloud_chain", "mapcache_config.jinja").decode('utf-8'),
         layers=gene.layers,
         grids=gene.grids,
         mapcache=gene.config['mapcache'],
@@ -396,9 +393,6 @@ def _get_resource(ressource):
 
 
 def _generate_openlayers(gene):
-    from tilecloud_chain.openlayers_html import openlayers_html
-    from tilecloud_chain.openlayers_js import openlayers_js
-
     cache = gene.caches[gene.options.cache]
 
     http_url = ''
@@ -416,7 +410,7 @@ def _generate_openlayers(gene):
         http_url += '/'
 
     js = jinja2_template(
-        openlayers_js,
+        pkgutil.get_data("tilecloud_chain", "openlayers.js").decode('utf-8'),
         srs=gene.config['openlayers']['srs'],
         center_x=gene.config['openlayers']['center_x'],
         center_y=gene.config['openlayers']['center_y'],
@@ -434,7 +428,10 @@ def _generate_openlayers(gene):
         sorted=sorted,
     )
 
-    _send(openlayers_html, 'index.html', 'text/html', cache)
+    _send(
+        pkgutil.get_data("tilecloud_chain", "openlayers.html"),
+        'index.html', 'text/html', cache
+    )
     _send(js, 'wmts.js', 'application/javascript', cache)
     _send(_get_resource('OpenLayers.js'), 'OpenLayers.js', 'application/javascript', cache)
     _send(_get_resource('OpenLayers-style.css'), 'theme/default/style.css', 'text/css', cache)

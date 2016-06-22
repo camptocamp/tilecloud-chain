@@ -8,6 +8,7 @@ import yaml
 import sqlite3
 import tempfile
 import subprocess
+import pkgutil
 from six.moves import map, filter
 from six import binary_type
 from six import BytesIO as StringIO
@@ -41,7 +42,6 @@ from tilecloud.store.filesystem import FilesystemTileStore
 from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.logger import Logger
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
-from tilecloud_chain.schema import schema
 
 
 logger = logging.getLogger('tilecloud_chain')
@@ -189,7 +189,7 @@ class TileGeneration:
 
         c = Core(
             source_data=self.config,
-            schema_data=yaml.load(schema),
+            schema_data=yaml.load(pkgutil.get_data("tilecloud_chain", "schema.yaml")),
         )
         path_ = ''
         try:

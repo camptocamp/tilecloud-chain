@@ -2012,7 +2012,8 @@ sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud
     <script src="OpenLayers.js"></script>
     <script src="wmts.js"></script>
 </body>
-</html>"""
+</html>
+"""
         js = u"""var callback = function(infoLookup) {
     var msg = "";
     if (infoLookup) {

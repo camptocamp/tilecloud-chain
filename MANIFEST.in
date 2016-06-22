@@ -6,4 +6,7 @@ include tilecloud_chain/OpenLayers.js
 include tilecloud_chain/OpenLayers-style.css
 include tilecloud_chain/layer-switcher-maximize.png
 include tilecloud_chain/layer-switcher-minimize.png
+include tilecloud_chain/openlayer.js
+include tilecloud_chain/openlayer.html
+include tilecloud_chain/*.jinja
 include tilecloud_chain/schema*.yaml

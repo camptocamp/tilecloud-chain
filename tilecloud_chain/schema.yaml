@@ -1,4 +1,3 @@
-schema = """
 type: map
 mapping:
     grids:
@@ -420,4 +419,3 @@ mapping:
                     request:
                         type: float
                         default: .01
-"""
