@@ -68,8 +68,8 @@ wmts_get_capabilities_template = """<?xml version="1.0" encoding="UTF-8"?>
         endfor %}
       </Style>
       <Format>{{layer['mime_type']}}</Format> {%
-      if layer['query_layers'] %}{%
-      for info_format in layer['info_formats'] %}
+      if 'query_layers' in layer %}{%
+      for info_format in layer.get('info_formats', ['application/vnd.ogc.gml']) %}
       <InfoFormat>{{infoformat}}</InfoFormat>{%
       endfor %}{%
       endif %}{%

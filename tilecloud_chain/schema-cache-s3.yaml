@@ -1,0 +1,20 @@
+type: map
+mapping:
+    type:
+        type: str
+        enum:
+        - s3
+    tiles_url:
+        type: str
+        pattern: https?://.+/
+    host:
+        type: str
+        default: s3-eu-west-1.amazonaws.com
+    bucket:
+        type: str
+    region:
+        type: str
+        default: eu-west-1
+        pattern: (eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]
+    regex;.+:
+        type: any

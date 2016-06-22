@@ -24,7 +24,6 @@ layers:
         wmts_style: default
         mime_type: image/png
         extension: png
-        connection: user=postgres password=postgres dbname=tests host=localhost
 
 generation:
     default_cache: s3-tilesurl

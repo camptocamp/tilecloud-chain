@@ -5,6 +5,7 @@ import sys
 import math
 import logging
 import yaml
+import urlparse
 from six import PY3
 from six import BytesIO as StringIO
 from math import exp, log
@@ -20,7 +21,6 @@ from tilecloud.lib.s3 import S3Connection
 from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
 
 from tilecloud_chain import TileGeneration, add_comon_options, get_tile_matrix_identifier
-from tilecloud_chain.cost import validate_calculate_cost
 
 
 logger = logging.getLogger(__name__)
@@ -68,11 +68,7 @@ def main():
     if options.dump_config:
         for layer in gene.config['layers'].keys():
             gene.set_layer(layer, options)
-            validate_calculate_cost(gene)
         _validate_generate_wmts_capabilities(gene, gene.caches[options.cache])
-        gene.validate_mapcache_config()
-        gene.validate_apache_config()
-        _validate_generate_openlayers(gene)
         for grid in gene.config['grids'].values():
             if 'obj' in grid:
                 del grid['obj']
@@ -130,33 +126,11 @@ def _get(path, cache):
 
 
 def _validate_generate_wmts_capabilities(gene, cache):
-    error = False
-    error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_url', attribute_type=str, default=False) or error
-    error = gene.validate(cache, 'cache[%s]' % cache['name'], 'http_urls', attribute_type=list, default=False) or error
-    error = gene.validate(cache, 'cache[%s]' % cache['name'], 'hosts', attribute_type=list, default=False) or error
-    if not cache['http_url'] and not cache['http_urls']:  # pragma: no cover
+    if 'http_url' not in cache and 'http_urls' not in cache:  # pragma: no cover
         logger.error(
             "The attribute 'http_url' or 'http_urls' is required in the object %s." %
             ('cache[%s]' % cache['name'])
         )
-        error = True
-    if cache['http_url'] and cache['http_url'][-1] == '/':  # pragma: no cover
-        logger.error(
-            "The attribute 'http_url' shouldn't ends with a '/' in the object %s." %
-            ('cache[%s]' % cache['name'])
-        )
-        error = True
-    elif cache['http_urls']:
-        for url in cache['http_urls']:
-            if url[-1] == '/':  # pragma: no cover
-                logger.error(
-                    "The element '%s' of the attribute 'http_urls' shouldn't ends"
-                    " with a '/' in the object %s." %
-                    ('cache[%s]' % cache['name'])
-                )
-                error = True
-
-    if error:  # pragma: no cover
         exit(1)
 
 
@@ -168,15 +142,15 @@ def _generate_wmts_capabilities(gene):
     server = 'server' in gene.config
 
     base_urls = []
-    if cache['http_url']:
-        if cache['hosts']:
+    if 'http_url' in cache:
+        if 'hosts' in cache:
             cc = copy(cache)
             for host in cache['hosts']:
                 cc['host'] = host
                 base_urls.append(cache['http_url'] % cc)
         else:
             base_urls = [cache['http_url'] % cache]
-    if cache['http_urls']:
+    if 'http_urls' in cache:
         base_urls = [url % cache for url in cache['http_urls']]
 
     base_urls = [url + '/' if url[-1] != '/' else url for url in base_urls]
@@ -215,9 +189,10 @@ def _generate_wmts_capabilities(gene):
         wmts_get_capabilities_template,
         layers=gene.layers,
         grids=gene.grids,
-        getcapabilities=base_urls[0] + (
+        getcapabilities=urlparse.urljoin(base_urls[0], (
             'wmts/1.0.0/WMTSCapabilities.xml' if server
-            else cache['wmtscapabilities_file']),
+            else cache['wmtscapabilities_file']
+        )),
         base_urls=base_urls,
         base_url_postfix='wmts/' if server else '',
         get_tile_matrix_identifier=get_tile_matrix_identifier,
@@ -238,7 +213,7 @@ def _generate_legend_images(gene):
                 previous_hash = None
                 for zoom, resolution in enumerate(layer['grid_ref']['resolutions']):
                     legends = []
-                    for l in layer['layers']:
+                    for l in layer['layers'].split(','):
                         response = session.get(layer['url'] + '?' + urlencode({
                             'SERVICE': 'WMS',
                             'VERSION': '1.1.1',
@@ -286,17 +261,14 @@ def _generate_legend_images(gene):
 def _generate_mapcache_config(gene):
     from tilecloud_chain.mapcache_config_template import mapcache_config_template
 
-    if not gene.validate_mapcache_config():
-        exit(1)  # pragma: no cover
-
     for layer in gene.layers.values():
         if layer['type'] == 'wms' or 'wms_url' in layer:
-            if 'FORMAT' not in layer['params']:
-                layer['params']['FORMAT'] = layer['mime_type']
-            if 'LAYERS' not in layer['params']:
-                layer['params']['LAYERS'] = ','.join(layer['layers'])
-            if 'TRANSPARENT' not in layer['params']:
-                layer['params']['TRANSPARENT'] = 'TRUE' if layer['mime_type'] == 'image/png' else 'FALSE'
+            if 'FORMAT' not in layer.get('params', {}):
+                layer.get('params', {})['FORMAT'] = layer['mime_type']
+            if 'LAYERS' not in layer.get('params', {}):
+                layer.get('params', {})['LAYERS'] = layer['layers']
+            if 'TRANSPARENT' not in layer.get('params', {}):
+                layer.get('params', {})['TRANSPARENT'] = 'TRUE' if layer['mime_type'] == 'image/png' else 'FALSE'
     config = jinja2_template(
         mapcache_config_template,
         layers=gene.layers,
@@ -312,9 +284,6 @@ def _generate_mapcache_config(gene):
 
 
 def _generate_apache_config(gene):
-    if not gene.validate_apache_config():
-        exit(1)  # pragma: no cover
-
     cache = gene.caches[gene.options.cache]
     use_server = 'server' in gene.config
 
@@ -325,7 +294,8 @@ def _generate_apache_config(gene):
             folder += '/'
 
         if not use_server:
-            f.write("""<Location %(location)s>
+            f.write("""
+    <Location %(location)s>
         ExpiresActive on
         ExpiresDefault "now plus %(expires)i hours"
     %(headers)s
@@ -377,9 +347,6 @@ def _generate_apache_config(gene):
                 )
 
         use_mapcache = 'mapcache' in gene.config
-        if use_mapcache:
-            if not gene.validate_mapcache_config():
-                exit(1)  # pragma: no cover
         if use_mapcache and not use_server:
             token_regex = '([a-zA-Z0-9_\-\+~\.]+)'
             f.write('\n')
@@ -422,25 +389,6 @@ def _generate_apache_config(gene):
             })
 
 
-def _validate_generate_openlayers(gene):
-    error = False
-    error = gene.validate(gene.config, 'config', 'openlayers', attribute_type=dict, default={}) or error
-    error = gene.validate(
-        gene.config['openlayers'], 'openlayers', 'srs',
-        attribute_type=str, default='EPSG:21781'
-    ) or error
-    error = gene.validate(
-        gene.config['openlayers'], 'openlayers', 'center_x',
-        attribute_type=float, default=600000
-    ) or error
-    error = gene.validate(
-        gene.config['openlayers'], 'openlayers', 'center_y',
-        attribute_type=float, default=200000
-    ) or error
-    if error:
-        exit(1)  # pragma: no cover
-
-
 def _get_resource(ressource):
     path = os.path.join(os.path.dirname(__file__), ressource)
     with open(path, 'rb') as f:
@@ -450,8 +398,6 @@ def _get_resource(ressource):
 def _generate_openlayers(gene):
     from tilecloud_chain.openlayers_html import openlayers_html
     from tilecloud_chain.openlayers_js import openlayers_js
-
-    _validate_generate_openlayers(gene)
 
     cache = gene.caches[gene.options.cache]
 

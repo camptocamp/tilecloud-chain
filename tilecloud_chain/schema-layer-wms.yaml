@@ -1,0 +1,42 @@
+type: map
+mapping:
+    type:
+        type: str
+        default: wms
+        enum:
+        - wms
+    # WMS
+    layers:
+        type: str
+        required: true
+    url:
+        type: str
+        pattern: https?://.+
+        required: true
+    generate_salt:
+        type: bool
+        default: false
+    query_layers:
+        type: str
+    info_formats:
+        type: seq
+        sequence:
+        - type: str
+    params:
+        type: map
+        mapping:
+            regex;.+:
+                type: str
+    headers:
+        type: map
+        mapping:
+            regex;.+:
+                type: str
+    meta_size:
+        type: int
+        default: 5
+    meta_buffer:
+        type: int
+        default: 128
+    regex;.+:
+        type: any

@@ -109,11 +109,11 @@ class Generate:
             if gene.layer['type'] == 'wms':
                 params = gene.layer['params'].copy()
                 if 'STYLES' not in params:
-                    params['STYLES'] = ','.join(gene.layer['wmts_style'] for l in gene.layer['layers'])
+                    params['STYLES'] = ','.join(gene.layer['wmts_style'] for l in gene.layer['layers'].split(','))
                 if gene.layer['generate_salt']:
                     params['SALT'] = str(random.randint(0, 999999))
                 for dim in gene.layer['dimensions']:
-                    params[dim['name']] = dim['value']
+                    params[dim['name']] = dim['generate']  # TODO
                 for dim in gene.options.dimensions:
                     dim = dim.split('=')
                     if len(dim) != 2:  # pragma: no cover
@@ -127,7 +127,7 @@ class Generate:
                 gene.get(URLTileStore(
                     tilelayouts=(WMSTileLayout(
                         url=gene.layer['url'],
-                        layers=','.join(gene.layer['layers']),
+                        layers=gene.layer['layers'],
                         srs=gene.layer['grid_ref']['srs'],
                         format=gene.layer['mime_type'],
                         border=gene.layer['meta_buffer'] if meta else 0,
@@ -438,7 +438,7 @@ def main():
         elif options.tiles:  # pragma: no cover
             exit("With --tiles option we needs to specify a layer")
         else:
-            for layer in gene.config['generation']['default_layers']:
+            for layer in gene.config['generation'].get('default_layers', gene.layers.keys()):
                 generate = Generate()
                 generate.gene(options, gene, layer)
     finally:

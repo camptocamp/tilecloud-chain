@@ -5,6 +5,7 @@ boto>=2.0
 PyYAML
 Jinja2
 pyramid
+pykwalify
 simplejson
 requests
 six

@@ -321,7 +321,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>3571.4285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>1875</MatrixWidth>
@@ -331,7 +331,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>0_2</ows:Identifier>
         <ScaleDenominator>714.28571428[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>9375</MatrixWidth>
@@ -341,7 +341,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>0_1</ows:Identifier>
         <ScaleDenominator>357.14285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>18750</MatrixWidth>
@@ -356,7 +356,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>0_25</ows:Identifier>
         <ScaleDenominator>892.85714285[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>7500</MatrixWidth>
@@ -371,7 +371,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>2_5</ows:Identifier>
         <ScaleDenominator>8928.5714285[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>750</MatrixWidth>
@@ -386,7 +386,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>19</MatrixWidth>
@@ -396,7 +396,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>38</MatrixWidth>
@@ -406,7 +406,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>2</ows:Identifier>
         <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>94</MatrixWidth>
@@ -416,7 +416,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>3</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>188</MatrixWidth>
@@ -426,7 +426,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>4</ows:Identifier>
         <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>375</MatrixWidth>
@@ -806,7 +806,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>3571.4285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>1875</MatrixWidth>
@@ -816,7 +816,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>0_2</ows:Identifier>
         <ScaleDenominator>714.28571428[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>9375</MatrixWidth>
@@ -826,7 +826,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>0_1</ows:Identifier>
         <ScaleDenominator>357.14285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>18750</MatrixWidth>
@@ -841,7 +841,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>0_25</ows:Identifier>
         <ScaleDenominator>892.85714285[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>7500</MatrixWidth>
@@ -856,7 +856,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>2_5</ows:Identifier>
         <ScaleDenominator>8928.5714285[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>750</MatrixWidth>
@@ -871,7 +871,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>19</MatrixWidth>
@@ -881,7 +881,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>38</MatrixWidth>
@@ -891,7 +891,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>2</ows:Identifier>
         <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>94</MatrixWidth>
@@ -901,7 +901,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>3</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>188</MatrixWidth>
@@ -911,7 +911,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>4</ows:Identifier>
         <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>375</MatrixWidth>
@@ -1052,7 +1052,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>19</MatrixWidth>
@@ -1062,7 +1062,7 @@ class TestController(CompareCase):
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>188</MatrixWidth>
@@ -1104,16 +1104,16 @@ class TestController(CompareCase):
 
    <grid name="swissgrid_01">
       <size>256 256</size>
-      <extent>420000.0 30000.0 900000.0 350000.0</extent>
+      <extent>420000 30000 900000 350000</extent>
       <srs>epsg:21781</srs>
       <units>m</units>
-      <resolutions>1.0 0.2 0.1 </resolutions>
+      <resolutions>1 0.2 0.1 </resolutions>
       <origin>top-left</origin>
    </grid>
 
    <grid name="swissgrid_025">
       <size>256 256</size>
-      <extent>420000.0 30000.0 900000.0 350000.0</extent>
+      <extent>420000 30000 900000 350000</extent>
       <srs>epsg:21781</srs>
       <units>m</units>
       <resolutions>0.25 </resolutions>
@@ -1122,7 +1122,7 @@ class TestController(CompareCase):
 
    <grid name="swissgrid_2_5">
       <size>256 256</size>
-      <extent>420000.0 30000.0 900000.0 350000.0</extent>
+      <extent>420000 30000 900000 350000</extent>
       <srs>epsg:21781</srs>
       <units>m</units>
       <resolutions>2.5 </resolutions>
@@ -1131,10 +1131,10 @@ class TestController(CompareCase):
 
    <grid name="swissgrid_5">
       <size>256 256</size>
-      <extent>420000.0 30000.0 900000.0 350000.0</extent>
+      <extent>420000 30000 900000 350000</extent>
       <srs>epsg:21781</srs>
       <units>m</units>
-      <resolutions>100.0 50.0 20.0 10.0 5.0 </resolutions>
+      <resolutions>100 50 20 10 5 </resolutions>
       <origin>top-left</origin>
    </grid>
 
@@ -1424,10 +1424,10 @@ class TestController(CompareCase):
 
    <grid name="swissgrid_5">
       <size>256 256</size>
-      <extent>420000.0 30000.0 900000.0 350000.0</extent>
+      <extent>420000 30000 900000 350000</extent>
       <srs>epsg:21781</srs>
       <units>m</units>
-      <resolutions>100.0 50.0 20.0 10.0 5.0 </resolutions>
+      <resolutions>100 50 20 10 5 </resolutions>
       <origin>top-left</origin>
    </grid>
 
@@ -1494,7 +1494,8 @@ class TestController(CompareCase):
             main_func=controller.main,
             expected=[[
                 'tiles.conf',
-                u"""<Location /tiles>
+                u"""
+<Location /tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
     Header set Cache-Control "max-age=864000, public"
@@ -1526,7 +1527,8 @@ MapCacheAlias /mapcache "%s"
             main_func=controller.main,
             expected=[[
                 'tiles.conf',
-                u"""<Location /tiles>
+                u"""
+<Location /tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
     Header set Cache-Control "max-age=864000, public"
@@ -1558,7 +1560,8 @@ MapCacheAlias /mapcache "%s"
             main_func=controller.main,
             expected=[[
                 'tiles.conf',
-                u"""<Location /tiles>
+                u"""
+<Location /tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
     Header set Cache-Control "max-age=864000, public"
@@ -1577,12 +1580,21 @@ RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
 
-    CONFIG = u"""apache: {config_file: tiles.conf, expires: 8, location: /tiles}
+    CONFIG = u"""
+apache: {config_file: tiles.conf, expires: 8, location: /tiles}
 caches:
-  local: {folder: /tmp/tiles, hosts: false, http_url: 'http://wmts1/tiles', http_urls: false,
-    name: local, type: filesystem, wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml}
-  mbtiles: {folder: /tmp/tiles/mbtiles, http_url: 'http://wmts1/tiles', name: mbtiles, type: """ \
-                """mbtiles, wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml}
+  local:
+    folder: /tmp/tiles
+    http_url: 'http://wmts1/tiles'
+    name: local
+    type: filesystem
+    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
+  mbtiles:
+    folder: /tmp/tiles/mbtiles
+    http_url: 'http://wmts1/tiles'
+    name: mbtiles
+    type: mbtiles
+    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   multi_host:
     folder: /tmp/tiles
     hosts: [wmts1, wmts2, wmts3]
@@ -1596,12 +1608,18 @@ caches:
     name: multi_url
     type: filesystem
     wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
-  s3: {bucket: tiles, folder: tiles, host: s3-eu-west-1.amazonaws.com, """ \
-        """http_url: 'https://%(host)s/%(bucket)s/%(folder)s',
-    name: s3, region: eu-west-1, type: s3, wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml}
+  s3:
+    bucket: tiles
+    folder: tiles
+    host: s3-eu-west-1.amazonaws.com
+    http_url: 'https://%(host)s/%(bucket)s/%(folder)s'
+    name: s3
+    region: eu-west-1
+    type: s3
+    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
 cost:
   cloudfront: {download: 0.12, get: 0.009}
-  ec2: {usage: 0.17}
+  ec2: {usage: 0.12}
   esb: {io: 260.0, storage: 0.11}
   esb_size: 100
   request_per_layers: 10000000
@@ -1610,8 +1628,7 @@ cost:
 ec2:
   apache_config: /tmp/tests/test.conf
   apache_content: test file
-  build_cmds: [mkdir .build, virtualenv .build/venv, .build/venv/bin/pip install .]
-  code_folder: /tmp/tests/test/
+  code_folder: /tmp/tests/test
   deploy_config: tests/deploy.cfg
   deploy_user: deploy
   disable_code: false
@@ -1619,8 +1636,8 @@ ec2:
   disable_fillqueue: false
   disable_geodata: false
   disable_tilesgen: false
-  host_type: m1.medium
-  geodata_folder: tilecloud_chain/
+  host_type: m4.large
+  geodata_folder: tilecloud_chain
   number_process: 1
 generation:
   default_cache: local
@@ -1630,18 +1647,18 @@ generation:
   maxconsecutive_errors: 2
 grids:
   swissgrid_01: &id004
-    bbox: [420000.0, 30000.0, 900000.0, 350000.0]
+    bbox: [420000, 30000, 900000, 350000]
     matrix_identifier: resolution
     name: swissgrid_01
     proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000""" \
     u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 10
-    resolutions: [1.0, 0.2, 0.1]
+    resolutions: [1, 0.2, 0.1]
     srs: epsg:21781
     tile_size: 256
     unit: m
   swissgrid_025:
-    bbox: [420000.0, 30000.0, 900000.0, 350000.0]
+    bbox: [420000, 30000, 900000, 350000]
     matrix_identifier: resolution
     name: swissgrid_025
     proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000""" \
@@ -1652,7 +1669,7 @@ grids:
     tile_size: 256
     unit: m
   swissgrid_2_5:
-    bbox: [420000.0, 30000.0, 900000.0, 350000.0]
+    bbox: [420000, 30000, 900000, 350000]
     matrix_identifier: resolution
     name: swissgrid_2_5
     proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000""" \
@@ -1663,60 +1680,44 @@ grids:
     tile_size: 256
     unit: m
   swissgrid_5: &id003
-    bbox: [420000.0, 30000.0, 900000.0, 350000.0]
+    bbox: [420000, 30000, 900000, 350000]
     matrix_identifier: zoom
     name: swissgrid_5
     proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000""" \
         u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 1
-    resolutions: [100.0, 50.0, 20.0, 10.0, 5.0]
+    resolutions: [100, 50, 20, 10, 5]
     srs: epsg:21781
     tile_size: 256
     unit: m
-layer_default:
-  connection: user=postgres password=postgres dbname=tests host=localhost
-  cost: &id001 {metatile_generation_time: 30.0, tile_generation_time: 30.0, tile_size: 20.0,
-    tileonly_generation_time: 60.0}
-  dimensions: &id002
-  - default: '2012'
-    name: DATE
-    value: '2012'
-    values: ['2005', '2010', '2012']
-  extension: png
-  grid: swissgrid_5
-  meta: true
-  meta_buffer: 128
-  meta_size: 8
-  mime_type: image/png
-  type: wms
-  wmts_style: default
 layers:
   all:
     bbox: [550000.0, 170000.0, 560000.0, 180000.0]
-    connection: user=postgres password=postgres dbname=tests host=localhost
-    cost: *id001
-    dimensions: *id002
+    cost: &id001 {metatile_generation_time: 30, tile_generation_time: 30, tile_size: 20,
+    tileonly_generation_time: 60}
+    dimensions: &id002
+    - default: '2012'
+      name: DATE
+      generate: ['2012']
+      values: ['2005', '2010', '2012']
     extension: png
     generate_salt: false
     geoms: []
     grid: swissgrid_5
     grid_ref: *id003
     headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
-    layers: [point, line, polygon]
+    layers: point,line,polygon
     meta: false
     meta_buffer: 128
-    meta_size: 1
+    meta_size: 8
     mime_type: image/png
     name: all
     params: {}
-    post_process: false
-    pre_hash_post_process: false
-    px_buffer: false
+    px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
   line:
-    connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
@@ -1724,55 +1725,57 @@ layers:
     extension: png
     generate_salt: false
     geoms:
-    - {sql: the_geom AS geom FROM tests.line}
+    - sql: the_geom AS geom FROM tests.line
+      connection: user=postgres password=postgres dbname=tests host=localhost
     grid: swissgrid_5
     grid_ref: *id003
     headers: {Cache-Control: 'no-cache'}
-    layers: [line]
+    layers: line
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: line
     params: {PARAM: value}
-    post_process: false
-    pre_hash_post_process: false
-    px_buffer: false
+    px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
   mapnik:
-    connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     data_buffer: 128
     dimensions: *id002
+    drop_empty_utfgrid: false
     extension: png
     geoms:
-    - {sql: the_geom AS geom FROM tests.polygon}
+    - connection: user=postgres password=postgres dbname=tests host=localhost
+      sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
     grid_ref: *id003
+    layers: __all__
     mapfile: mapfile/test.mapnik
     meta: false
     meta_buffer: 128
-    meta_size: 1
+    meta_size: 8
     mime_type: image/png
     name: mapnik
     output_format: png
-    post_process: false
-    pre_hash_post_process: false
-    px_buffer: false
+    px_buffer: 0.0
+    resolution: 4
     type: mapnik
     wmts_style: default
   mapnik_grid:
-    connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     data_buffer: 128
     dimensions: *id002
+    drop_empty_utfgrid: false
     extension: json
     geoms:
-    - {sql: the_geom AS geom FROM tests.polygon}
+    - sql: the_geom AS geom FROM tests.polygon
+      connection: user=postgres password=postgres dbname=tests host=localhost
     grid: swissgrid_5
     grid_ref: *id003
+    layers: __all__
     drop_empty_utfgrid: false
     layers_fields:
       line: [name]
@@ -1781,70 +1784,65 @@ layers:
     mapfile: mapfile/test.mapnik
     meta: false
     meta_buffer: 128
-    meta_size: 1
+    meta_size: 8
     mime_type: application/utfgrid
     name: mapnik_grid
     output_format: grid
-    post_process: false
-    pre_hash_post_process: false
-    px_buffer: false
+    px_buffer: 0.0
     resolution: 16
     type: mapnik
     wmts_style: default
   mapnik_grid_drop:
-    connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     data_buffer: 128
     dimensions: *id002
+    drop_empty_utfgrid: false
     extension: json
     geoms:
-    - {sql: the_geom AS geom FROM tests.polygon}
+    - sql: the_geom AS geom FROM tests.polygon
+      connection: user=postgres password=postgres dbname=tests host=localhost
     grid: swissgrid_5
     grid_ref: *id003
+    layers: __all__
     drop_empty_utfgrid: true
     layers_fields:
       point: [name]
     mapfile: mapfile/test.mapnik
     meta: false
     meta_buffer: 0
-    meta_size: 1
+    meta_size: 8
     mime_type: application/utfgrid
     name: mapnik_grid_drop
     output_format: grid
-    post_process: false
-    pre_hash_post_process: false
-    px_buffer: false
+    px_buffer: 0.0
     resolution: 16
     type: mapnik
     wmts_style: default
   point:
-    connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002
     extension: png
     generate_salt: false
     geoms:
-    - {sql: the_geom AS geom FROM tests.point}
+    - sql: the_geom AS geom FROM tests.point
+      connection: user=postgres password=postgres dbname=tests host=localhost
     grid: swissgrid_5
     grid_ref: *id003
     headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
-    layers: [point]
+    layers: point
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    min_resolution_seed: 10.0
+    min_resolution_seed: 10
     name: point
+    px_buffer: 0.0
     params: {}
-    post_process: false
-    pre_hash_post_process: false
-    px_buffer: false
-    sqs: {queue: sqs_point, region: eu-west-1}
+    sqs: {queue: sqs_point}
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
   point_hash_no_meta:
-    connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002
     empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
@@ -1854,21 +1852,18 @@ layers:
     grid: swissgrid_5
     grid_ref: *id003
     headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
-    layers: [point]
+    layers: point
     meta: false
     meta_buffer: 128
-    meta_size: 1
+    meta_size: 8
     mime_type: image/png
     name: point_hash_no_meta
     params: {}
-    post_process: false
-    pre_hash_post_process: false
-    px_buffer: false
+    px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
   point_hash:
-    connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
@@ -1876,26 +1871,24 @@ layers:
     extension: png
     generate_salt: false
     geoms:
-    - {sql: the_geom AS geom FROM tests.point}
+    - sql: the_geom AS geom FROM tests.point
+      connection: user=postgres password=postgres dbname=tests host=localhost
     grid: swissgrid_5
     grid_ref: *id003
     headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
-    layers: [point]
+    layers: point
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    min_resolution_seed: 10.0
+    min_resolution_seed: 10
     name: point_hash
     params: {}
-    post_process: false
-    pre_hash_post_process: false
-    px_buffer: false
+    px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
   point_px_buffer:
-    connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
@@ -1903,25 +1896,23 @@ layers:
     extension: png
     generate_salt: false
     geoms:
-    - {sql: the_geom AS geom FROM tests.point}
+    - sql: the_geom AS geom FROM tests.point
+      connection: user=postgres password=postgres dbname=tests host=localhost
     grid: swissgrid_5
     grid_ref: *id003
     headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
-    layers: [point]
+    layers: point
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: point_px_buffer
     params: {}
-    post_process: false
-    pre_hash_post_process: false
-    px_buffer: 100.0
+    px_buffer: 100
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
   polygon:
-    connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
@@ -1929,25 +1920,23 @@ layers:
     extension: png
     generate_salt: false
     geoms:
-    - {sql: the_geom AS geom FROM tests.polygon}
+    - sql: the_geom AS geom FROM tests.polygon
+      connection: user=postgres password=postgres dbname=tests host=localhost
     grid: swissgrid_5
     grid_ref: *id003
     headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
-    layers: [polygon]
+    layers: polygon
     meta: false
     meta_buffer: 128
-    meta_size: 1
+    meta_size: 8
     mime_type: image/png
     name: polygon
     params: {}
-    post_process: false
-    pre_hash_post_process: false
-    px_buffer: false
+    px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
   polygon2:
-    connection: user=postgres password=postgres dbname=tests host=localhost
     cost: *id001
     dimensions: *id002
     empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
@@ -1955,26 +1944,24 @@ layers:
     extension: png
     generate_salt: false
     geoms:
-    - {sql: the_geom AS geom FROM tests.polygon}
+    - sql: the_geom AS geom FROM tests.polygon
+      connection: user=postgres password=postgres dbname=tests host=localhost
     grid: swissgrid_01
     grid_ref: *id004
     headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
-    layers: [polygon]
+    layers: polygon
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: polygon2
     params: {}
-    post_process: false
-    pre_hash_post_process: false
-    px_buffer: false
+    px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
 mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 11211, location: /mapcache}
-openlayers: {center_x: 600000.0, center_y: 200000.0, srs: 'epsg:21781'}
-process: {}
+openlayers: {center_x: 600000, center_y: 200000, srs: 'epsg:21781'}
 sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}"""
 
     @attr(config=True)
@@ -2063,7 +2050,7 @@ map = new OpenLayers.Map({
             reset: function() {}
         })
     ],
-    center: [600000.0, 200000.0],
+    center: [600000, 200000],
     zoom: 0
 });
 
@@ -2079,59 +2066,59 @@ OpenLayers.Request.GET({
 
         map.addLayer(format.createLayer(capabilities, {
             layer: "all",
-            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
+            maxExtent: [420000, 30000, 900000, 350000],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "line",
-            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
+            maxExtent: [420000, 30000, 900000, 350000],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "mapnik",
-            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
+            maxExtent: [420000, 30000, 900000, 350000],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "mapnik_grid",
-            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
+            maxExtent: [420000, 30000, 900000, 350000],
             isBaseLayer: false,
             utfgridResolution: 16
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "mapnik_grid_drop",
-            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
+            maxExtent: [420000, 30000, 900000, 350000],
             isBaseLayer: false,
             utfgridResolution: 16
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "point",
-            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
+            maxExtent: [420000, 30000, 900000, 350000],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "point_hash",
-            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
+            maxExtent: [420000, 30000, 900000, 350000],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "point_hash_no_meta",
-            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
+            maxExtent: [420000, 30000, 900000, 350000],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "point_px_buffer",
-            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
+            maxExtent: [420000, 30000, 900000, 350000],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "polygon",
-            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
+            maxExtent: [420000, 30000, 900000, 350000],
             isBaseLayer: true
         }));
         map.addLayer(format.createLayer(capabilities, {
             layer: "polygon2",
-            maxExtent: [420000.0, 30000.0, 900000.0, 350000.0],
+            maxExtent: [420000, 30000, 900000, 350000],
             isBaseLayer: true
         }));
     },
@@ -2345,7 +2332,7 @@ OpenLayers.Request.GET({
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>19</MatrixWidth>
@@ -2355,7 +2342,7 @@ OpenLayers.Request.GET({
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>38</MatrixWidth>
@@ -2365,7 +2352,7 @@ OpenLayers.Request.GET({
       <TileMatrix>
         <ows:Identifier>2</ows:Identifier>
         <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>94</MatrixWidth>
@@ -2375,7 +2362,7 @@ OpenLayers.Request.GET({
       <TileMatrix>
         <ows:Identifier>3</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>188</MatrixWidth>
@@ -2385,7 +2372,7 @@ OpenLayers.Request.GET({
       <TileMatrix>
         <ows:Identifier>4</ows:Identifier>
         <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>375</MatrixWidth>

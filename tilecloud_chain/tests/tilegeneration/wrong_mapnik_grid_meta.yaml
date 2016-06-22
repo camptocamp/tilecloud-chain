@@ -6,19 +6,22 @@ grids:
 
 caches: {}
 
-layer_default:
-    grid: swissgrid_1
-    type: mapnik
-    meta: on
-    mapfile: test.mapnik
-    wmts_style: default
+defaults:
+    layer: &layer
+        grid: swissgrid_1
+        type: mapnik
+        meta: on
+        mapfile: test.mapnik
+        wmts_style: default
 
 layers:
     a:
+        <<: *layer
         output_format: png
         extension: png
         mime_type: image/png
     b:
+        <<: *layer
         output_format: grid
         extension: json
         mime_type: application/json

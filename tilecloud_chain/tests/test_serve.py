@@ -91,7 +91,7 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>19</MatrixWidth>
@@ -101,7 +101,7 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>38</MatrixWidth>
@@ -111,7 +111,7 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
       <TileMatrix>
         <ows:Identifier>2</ows:Identifier>
         <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>94</MatrixWidth>
@@ -121,7 +121,7 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
       <TileMatrix>
         <ows:Identifier>3</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>188</MatrixWidth>
@@ -131,7 +131,7 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
       <TileMatrix>
         <ows:Identifier>4</ows:Identifier>
         <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>375</MatrixWidth>
@@ -585,7 +585,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>3571.4285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>1875</MatrixWidth>
@@ -595,7 +595,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>0_2</ows:Identifier>
         <ScaleDenominator>714.28571428[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>9375</MatrixWidth>
@@ -605,7 +605,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>0_1</ows:Identifier>
         <ScaleDenominator>357.14285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>18750</MatrixWidth>
@@ -620,7 +620,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>0_25</ows:Identifier>
         <ScaleDenominator>892.85714285[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>7500</MatrixWidth>
@@ -635,7 +635,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>2_5</ows:Identifier>
         <ScaleDenominator>8928.5714285[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>750</MatrixWidth>
@@ -650,7 +650,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>19</MatrixWidth>
@@ -660,7 +660,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>38</MatrixWidth>
@@ -670,7 +670,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>2</ows:Identifier>
         <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>94</MatrixWidth>
@@ -680,7 +680,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>3</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>188</MatrixWidth>
@@ -690,7 +690,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>4</ows:Identifier>
         <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>375</MatrixWidth>

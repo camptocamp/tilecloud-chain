@@ -16,7 +16,7 @@ class Copy:
 
     def copy(self, options, gene, layer, source, dest, task_name):
         # disable metatiles
-        gene.layers[layer]['meta'] = False
+        del gene.layers[layer]['meta']
         count_tiles_dropped = Count()
 
         gene.set_layer(layer, options)
@@ -97,7 +97,10 @@ def main():
         copy = Copy()
         copy.copy(options, gene, options.layer, options.source, options.dest, 'copy')
     else:
-        for layer in gene.config['generation']['default_layers']:
+        layers = gene.config['generation']['default_layers'] \
+            if 'default_layers' in gene.config['generation'] \
+            else gene.config['layers'].keys()
+        for layer in layers:
             copy = Copy()
             copy.copy(options, gene, layer, options.source, options.dest, 'copy')
 
@@ -116,10 +119,12 @@ def process():
 
     gene = TileGeneration(options.config, options)
 
+    copy = Copy()
     if (options.layer):  # pragma: no cover
-        copy = Copy()
         copy.copy(options, gene, options.layer, options.cache, options.cache, 'process')
     else:
-        for layer in gene.config['generation']['default_layers']:
-            copy = Copy()
+        layers_name = gene.config['generation']['default_layers'] \
+            if 'default_layers' in gene.config.get('generation', {}) \
+            else gene.layers.keys()
+        for layer in layers_name:
             copy.copy(options, gene, layer, options.cache, options.cache, 'process')

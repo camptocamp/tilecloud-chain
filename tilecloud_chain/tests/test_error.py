@@ -8,7 +8,7 @@ from nose.plugins.attrib import attr
 from six import PY3
 
 from tilecloud_chain.tests import CompareCase
-from tilecloud_chain import controller, generate, TileGeneration
+from tilecloud_chain import controller, generate
 
 
 class TestError(CompareCase):
@@ -52,7 +52,10 @@ class TestError(CompareCase):
             cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_exists.yaml',
             main_func=controller.main)
         l.check(
-            ('tilecloud_chain', 'ERROR', "The attribute 'grids' is required in the object config."),
+            ('tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_exists.yaml' in invalid.
+ - /: Cannot find required key 'caches'.
+ - /: Cannot find required key 'grids'.
+ - /: Cannot find required key 'layers'."""),
         )
 
     @log_capture('tilecloud_chain')
@@ -62,53 +65,29 @@ class TestError(CompareCase):
         self.run_cmd(
             cmd='.build/venv/bin/generate_controller -v -c tilegeneration/wrong_type.yaml',
             main_func=controller.main)
-        l.check(
-            ('tilecloud_chain', 'ERROR', "The attribute 'name' of the object grid[swissgrid!] is not a "
-                "value 'swissgrid!' don't respect regex '^[a-zA-Z0-9_\-~\.]+$'."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'resolutions' is required in the object grid[swissgrid!]."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'bbox' is required in the object grid[swissgrid!]."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'srs' is required in the object grid[swissgrid!]."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'bbox' of the object grid[swissgrid_1] is not an array."),
-            (
-                'tilecloud_chain', 'ERROR',
-                "The attribute 'srs' of the object grid[swissgrid_1] is not a <{} 'str'>.".format(
-                    'class' if PY3 else 'type'
-                )),
-            (
-                'tilecloud_chain', 'ERROR', "The attribute 'resolution_scale' of the object grid[swissgrid_2] "
-                "is not a <{} 'int'>.".format(
-                    'class' if PY3 else 'type'
-                )
-            ),
-            ('tilecloud_chain', 'ERROR', "The attribute 'bbox' of the object grid[swissgrid_2] "
-                "has an element who is not a right float expression: a."),
-            (
-                'tilecloud_chain', 'ERROR',
-                "The attribute 'srs' of the object grid[swissgrid_2] is not a <{} 'str'>.".format(
-                    'class' if PY3 else 'type'
-                )),
-            ('tilecloud_chain', 'ERROR', "The attribute 'resolutions' is required in the object grid[swissgrid_3]."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'bbox' is required in the object grid[swissgrid_3]."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'srs' is required in the object grid[swissgrid_3]."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'name' of the object layer[hi!] is not a "
-                "value 'hi!' don't respect regex '^[a-zA-Z0-9_\-~\.]+$'."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'grid' is required in the object layer[hi!]."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'type' is required in the object layer[hi!]."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'extension' is required in the object layer[hi!]."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'mime_type' is required in the object layer[hi!]."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'wmts_style' of the object layer[hi!] "
-                "is not a value 'yo!' don't respect regex '^[a-zA-Z0-9_\-~\.]+$'."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'name' of the object layer[hi!].dimensions[DATE!] "
-                "is not a value 'DATE!' don't respect regex '^[a-zA-Z0-9_\-~\.]+$'."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'value' of the object layer[hi!].dimensions[DATE!] "
-                "is not a value '2012!' don't respect regex '^[a-zA-Z0-9_\-~\.]+$'."),
-            ('tilecloud_chain', 'ERROR', "The attribute 'default' of the object layer[hi!].dimensions[DATE!] is not a "
-                "value '2010!' don't respect regex '^[a-zA-Z0-9_\-~\.]+$'."),
-        )
+        l.check((
+            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_type.yaml' in invalid.
+ - /grids/swissgrid!/name: Value 'swissgrid!' does not match pattern '^[a-zA-Z0-9_\\-~\\.]+$'.
+ - /grids/swissgrid!: Cannot find required key 'bbox'.
+ - /grids/swissgrid!: Cannot find required key 'resolutions'.
+ - /grids/swissgrid!: Cannot find required key 'srs'.
+ - /grids/swissgrid_1/srs: Value '{}' does not match pattern '^(?i)epsg:[0-9]+$'.
+ - /grids/swissgrid_1/srs: Value '{}' is not of type 'str'.
+ - /grids/swissgrid_2/bbox/0: Value 'a' is not of type 'number'.
+ - /grids/swissgrid_2/bbox/1: Value 'b' is not of type 'number'.
+ - /grids/swissgrid_2/bbox/2: Value 'c' is not of type 'number'.
+ - /grids/swissgrid_2/resolution_scale: Value '5.5' is not of type 'int'.
+ - /grids/swissgrid_2/srs: Value '['epsg21781']' does not match pattern '^(?i)epsg:[0-9]+$'.
+ - /grids/swissgrid_2/srs: Value '['epsg21781']' is not of type 'str'.
+ - /grids/swissgrid_3: Cannot find required key 'bbox'.
+ - /grids/swissgrid_3: Cannot find required key 'resolutions'.
+ - /grids/swissgrid_3: Cannot find required key 'srs'.
+ - /layers/hi!: Cannot find required key 'extension'.
+ - /layers/hi!: Cannot find required key 'grid'.
+ - /layers/hi!: Cannot find required key 'mime_type'."""
+        ))
 
     @log_capture('tilecloud_chain')
-    @attr(zoom_errors=True)
-    @attr(general=True)
     def test_zoom_errors(self, l):
         self.run_cmd(
             cmd='.build/venv/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10',
@@ -118,68 +97,9 @@ class TestError(CompareCase):
              'FROM tests.point) AS g.'),
             ('tilecloud_chain', 'WARNING', "zoom 10 is greater than the maximum "
              "zoom 4 of grid swissgrid_5 of layer point, ignored."),
-            ('tilecloud_chain', 'WARNING', "zoom 4 corresponds to resolution 5.0 "
-             "is smaller than the 'min_resolution_seed' 10.0 of layer point, ignored."),
+            ('tilecloud_chain', 'WARNING', "zoom 4 corresponds to resolution 5 "
+             "is smaller than the 'min_resolution_seed' 10 of layer point, ignored."),
         )
-
-    @attr(validate_type=True)
-    @attr(general=True)
-    def test_validate_type(self):
-        class Opt:
-            quiet = False
-            verbose = False
-            debug = False
-            test = 0
-            zoom = None
-        gene = TileGeneration('tilegeneration/test.yaml', Opt())
-        obj = {'value': 1}
-        self.assertEqual(gene.validate(obj, 'object', 'value', int), False)
-        self.assertEqual(obj['value'], 1)
-
-        obj = {'value': 1.0}
-        self.assertEqual(gene.validate(obj, 'object', 'value', int), True)
-
-        obj = {'value': '1 + 1'}
-        self.assertEqual(gene.validate(obj, 'object', 'value', int), False)
-        self.assertEqual(obj['value'], 2)
-
-        obj = {'value': '1 * 1.5'}
-        self.assertEqual(gene.validate(obj, 'object', 'value', int), False)
-        self.assertEqual(obj['value'], 2)
-
-        obj = {'value': 'a'}
-        self.assertEqual(gene.validate(obj, 'object', 'value', int), True)
-
-        obj = {'value': {}}
-        self.assertEqual(gene.validate(obj, 'object', 'value', int), True)
-
-        obj = {'value': []}
-        self.assertEqual(gene.validate(obj, 'object', 'value', int), True)
-
-        obj = {'value': 1}
-        self.assertEqual(gene.validate(obj, 'object', 'value', float), False)
-        self.assertEqual(obj['value'], 1.0)
-
-        obj = {'value': 1.0}
-        self.assertEqual(gene.validate(obj, 'object', 'value', float), False)
-        self.assertEqual(obj['value'], 1.0)
-
-        obj = {'value': '1 + 1'}
-        self.assertEqual(gene.validate(obj, 'object', 'value', float), False)
-        self.assertEqual(obj['value'], 2.0)
-
-        obj = {'value': '1 * 1.5'}
-        self.assertEqual(gene.validate(obj, 'object', 'value', float), False)
-        self.assertEqual(obj['value'], 1.5)
-
-        obj = {'value': 'a'}
-        self.assertEqual(gene.validate(obj, 'object', 'value', float), True)
-
-        obj = {'value': {}}
-        self.assertEqual(gene.validate(obj, 'object', 'value', float), True)
-
-        obj = {'value': []}
-        self.assertEqual(gene.validate(obj, 'object', 'value', float), True)
 
     @log_capture('tilecloud_chain')
     @attr(wrong_srs_auth=True)
@@ -188,20 +108,21 @@ class TestError(CompareCase):
         self.run_cmd(
             cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_srs_auth.yaml',
             main_func=controller.main)
-        l.check(
-            ('tilecloud_chain', 'ERROR', "The grid 'swissgrid_01' srs should have the authority 'EPSG' but it is toto.")
-        )
+        l.check((
+            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs_auth.yaml' in invalid.
+ - /grids/swissgrid_01/srs: Value 'toto:21781' does not match pattern '^(?i)epsg:[0-9]+$'."""  # noqa
+        ))
 
     @log_capture('tilecloud_chain')
-    @attr(wrong_srs_id=True)
     @attr(general=True)
     def test_wrong_srs_id(self, l):
         self.run_cmd(
             cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_srs_id.yaml',
             main_func=controller.main)
-        l.check(
-            ('tilecloud_chain', 'ERROR', "The grid 'swissgrid_01' srs should have an int ref_id but it is 21781a.")
-        )
+        l.check((
+            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs_id.yaml' in invalid.
+ - /grids/swissgrid_01/srs: Value 'epsg:21781a' does not match pattern '^(?i)epsg:[0-9]+$'."""  # noqa
+        ))
 
     @log_capture('tilecloud_chain')
     @attr(wrong_srs=True)
@@ -211,6 +132,31 @@ class TestError(CompareCase):
             cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_srs.yaml',
             main_func=controller.main)
         l.check((
-            'tilecloud_chain', 'ERROR', "The grid 'swissgrid_01' srs should have the syntax "
-            "<autority>:<ref_id> but is epsg21781."
+            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs.yaml' in invalid.
+ - /grids/swissgrid_01/srs: Value 'epsg21781' does not match pattern '^(?i)epsg:[0-9]+$'."""
+        ))
+
+    @log_capture('tilecloud_chain')
+    @attr(general=True)
+    @attr(nopy2=True)
+    @attr(nopy3=True)
+    def test_wrong_map(self, l):
+        self.run_cmd(
+            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_map.yaml',
+            main_func=controller.main)
+        l.check((
+            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_map.yaml' in invalid.
+ - Value: test is not of a mapping type"""
+        ))
+
+    @log_capture('tilecloud_chain')
+    @attr(general=True)
+    @attr(nopy3=True)
+    def test_wrong_sequence(self, l):
+        self.run_cmd(
+            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_sequence.yaml',
+            main_func=controller.main)
+        l.check((
+            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_sequence.yaml' in invalid.
+ - Value: test is not of a sequence type"""
         ))

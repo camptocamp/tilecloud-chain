@@ -127,9 +127,6 @@ def main():
 
     if options.deploy_code and not options.local:
         print("==== Sync and build code ====")
-        error = gene.validate(gene.config['ec2'], 'ec2', 'code_folder', required=True)
-        if error:
-            exit(1)  # pragma: no cover
 
         cmd = ['rsync', '--delete', ]
         if 'ssh_options' in gene.config['ec2']:  # pragma: no cover

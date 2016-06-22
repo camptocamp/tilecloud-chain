@@ -156,8 +156,6 @@ Size per tile: [45][0-9][0-9] o
             )
         l.check()
 
-    @attr(test_dimensions=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_test_dimensions(self, l):
@@ -790,8 +788,6 @@ Size per tile: 384 o
             )
         l.check()
 
-    @attr(local=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_local(self, l):
@@ -896,8 +892,6 @@ size: 1010
             with open(path, 'w'):
                 pass
 
-    @attr(delete_meta=True)
-    @attr(generate=True)
     @attr(general=True)
     def test_delete_meta(self):
         for d in ('-d', ''):
@@ -932,8 +926,6 @@ Size per tile: 4[0-9][0-9] o
 """,
             )
 
-    @attr(delete_no_meta=True)
-    @attr(generate=True)
     @attr(general=True)
     def test_delete_no_meta(self):
         for d in ('-d', ''):

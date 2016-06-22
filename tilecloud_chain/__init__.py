@@ -29,6 +29,8 @@ from shapely.geometry import Polygon
 from shapely.ops import cascaded_union
 import boto.sqs
 from boto.sqs.jsonmessage import JSONMessage
+from pykwalify.core import Core
+from pykwalify.errors import SchemaError, NotSequenceError, NotMappingError
 
 from tilecloud import Tile, BoundingPyramid, TileCoord
 from tilecloud.grid.free import FreeTileGrid
@@ -39,6 +41,7 @@ from tilecloud.store.filesystem import FilesystemTileStore
 from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.logger import Logger
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
+from tilecloud_chain.schema import schema
 
 
 logger = logging.getLogger('tilecloud_chain')
@@ -126,7 +129,7 @@ def get_tile_matrix_identifier(grid, resolution=None, zoom=None):
 
 class TileGeneration:
 
-    def __init__(self, config_file, options=None, layer_name=None):
+    def __init__(self, config_file, options=None, layer_name=None, base_config={}):
         self.close_actions = []
         self.geom = None
         self.error = 0
@@ -157,388 +160,144 @@ class TileGeneration:
             level=level)
 
         with open(config_file) as f:
-            self.config = yaml.load(f)
+            self.config = {}
+            self.config.update(base_config)
+            self.config.update(yaml.load(f))
         self.options = options
+        if 'defaults' in self.config:
+            del self.config['defaults']
+        # generate base structure
+        if 'cost' in self.config:
+            if 's3' not in self.config['cost']:
+                self.config['cost']['s3'] = {}
+            if 'cloudfront' not in self.config['cost']:
+                self.config['cost']['cloudfront'] = {}
+            if 'ec2' not in self.config['cost']:
+                self.config['cost']['ec2'] = {}
+            if 'esb' not in self.config['cost']:
+                self.config['cost']['esb'] = {}
+            if 'sqs' not in self.config['cost']:
+                self.config['cost']['sqs'] = {}
+        if 'generation' not in self.config:
+            self.config['generation'] = {}
+        for gname, grid in sorted(self.config.get('grids', {}).items()):
+            grid["name"] = gname
+        for cname, cache in sorted(self.config.get('caches', {}).items()):
+            cache["name"] = cname
+        for lname, layer in sorted(self.config.get('layers', {}).items()):
+            layer["name"] = lname
 
-        self.validate_exists(self.config, 'config', 'grids')
+        c = Core(
+            source_data=self.config,
+            schema_data=yaml.load(schema),
+        )
+        path_ = ''
+        try:
+            self.config = c.validate()
+
+            for name, cache in self.config['caches'].items():
+                if cache['type'] == 's3':
+                    c = Core(
+                        source_data=cache,
+                        schema_data=yaml.load(pkgutil.get_data("tilecloud_chain", "schema-cache-s3.yaml")),
+                    )
+                    path_ = 'caches/{}'.format(name)
+                    self.config['caches'][name] = c.validate()
+            for name, layer in self.config['layers'].items():
+                c = Core(
+                    source_data=layer,
+                    schema_data=yaml.load(pkgutil.get_data(
+                        "tilecloud_chain",
+                        "schema-layer-{}.yaml".format(layer['type'])
+                    )),
+                )
+                path_ = 'layers/{}'.format(name)
+                self.config['layers'][name] = c.validate()
+
+        except SchemaError:
+            logger.error("The config file '{}' in invalid.\n{}".format(
+                config_file,
+                "\n".join(sorted([
+                    " - {}: {}".format(
+                        os.path.join('/', path_, re.sub('^/', '', error.path)),
+                        re.sub(" Path: '{path}'", '', error.msg).format(**error.__dict__)
+                    )
+                    for error in c.errors
+                ]))
+            ))
+            exit(1)
+        except NotSequenceError as e:
+            logger.error("The config file '{}' in invalid.\n - {}".format(
+                config_file, e.msg
+            ))
+            exit(1)
+        except NotMappingError as e:  # pragma: no cover
+            logger.error("The config file '{}' in invalid.\n - {}".format(
+                config_file, e.msg
+            ))
+            exit(1)
+
         error = False
-        self.config['grids'] = dict([(str(k), v) for k, v in self.config['grids'].items()])
         self.grids = self.config['grids']
-        for gname, grid in sorted(self.config['grids'].items()):
-            name = "grid[%s]" % gname
-            error = self.validate(
-                grid, name, 'name', attribute_type=str, default=gname, regex="^[a-zA-Z0-9_\-~\.]+$"
-            ) or error
-            error = self.validate(
-                grid, name, 'resolution_scale',
-                attribute_type=int
-            ) or error
-            error = self.validate(
-                grid, name, 'resolutions',
-                attribute_type=float, is_array=True, required=True
-            ) or error
-            if not error and 'resolution_scale' not in grid:
-                scale = self._resolution_scale(grid['resolutions'])
-                grid['resolution_scale'] = scale
-            elif not error:
+        for gname, grid in sorted(self.grids.items()):
+            if 'resolution_scale' in grid:
                 scale = grid['resolution_scale']
                 for r in grid['resolutions']:
                     if r * scale % 1 != 0.0:
                         logger.error("The resolution %s * resolution_scale %i is not an integer." % (r, scale))
                         error = True
+            else:
+                grid['resolution_scale'] = self._resolution_scale(grid['resolutions'])
 
-            error = self.validate(grid, name, 'bbox', attribute_type=float, is_array=True, required=True) or error
-            error = self.validate(grid, name, 'srs', attribute_type=str, required=True) or error
-            if not error:
-                srs = grid['srs'].split(':')
-                if len(srs) == 2:
-                    if srs[0].lower() == 'epsg':
-                        try:
-                            srs[1] = int(srs[1])
-                        except ValueError:
-                            logger.error("The grid '%s' srs should have an int ref_id but it is %s." % (gname, srs[1]))
-                    else:
-                        logger.error("The grid '%s' srs should have the authority 'EPSG' but it is %s." % (
-                            gname, srs[0])
-                        )
-                        error = True
-                else:
-                    logger.error("The grid '%s' srs should have the syntax <autority>:<ref_id> but is %s." % (
-                        gname, grid['srs']
-                    ))
-                    error = True
-            error = self.validate(grid, name, 'proj4_literal', attribute_type=str) or error
-            if not error and 'proj4_literal' not in grid:
-                if srs[1] == 3857:  # pragma: no cover
+            srs = int(grid["srs"].split(":")[1])
+            if 'proj4_literal' not in grid:
+                if srs == 3857:  # pragma: no cover
                     grid['proj4_literal'] = '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 ' \
                         '+x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over'
-                elif srs[1] == 21781:
-                    grid['proj4_literal'] = '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 ' \
-                        '+x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m ' \
-                        '+no_defs'
-                elif srs[1] == 2056:  # pragma: no cover
-                    grid['proj4_literal'] = '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 ' \
-                        '+x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m ' \
-                        '+no_defs'
+                elif srs == 21781:
+                    grid['proj4_literal'] = \
+                        '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 ' \
+                        '+x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 ' \
+                        '+units=m +no_defs'
+                elif srs == 2056:  # pragma: no cover
+                    grid['proj4_literal'] = \
+                        '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 ' \
+                        '+x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 ' \
+                        '+units=m +no_defs'
                 else:
                     grid['proj4_literal'] = '+init=%s' % grid['srs']
-            elif not error and grid['proj4_literal'] == '':  # pragma: no cover
-                grid['proj4_literal'] = None
-            error = self.validate(grid, name, 'unit', attribute_type=str, default='m') or error
-            error = self.validate(grid, name, 'tile_size', attribute_type=int, default=256) or error
-            error = self.validate(
-                grid, name, 'matrix_identifier', attribute_type=str, default='zoom',
-                enumeration=['zoom', 'resolution']
-            ) or error
 
+            scale = grid['resolution_scale']
             grid['obj'] = FreeTileGrid(
                 resolutions=[int(r * scale) for r in grid['resolutions']],
                 scale=scale,
                 max_extent=grid['bbox'],
                 tile_size=grid['tile_size']) if not error else None
 
-        default = self.config.get('layer_default', {})
-        self.layers = {}
-        self.validate_exists(self.config, 'config', 'layers')
-        for lname, layer in sorted(self.config['layers'].items()):
-            name = "layer[%s]" % lname
-            for k, v in default.items():
-                if k not in layer:
-                    layer[k] = v
-
-            error = self.validate(
-                layer, name, 'name', attribute_type=str, default=lname, regex="^[a-zA-Z0-9_\-~\.]+$"
-            ) or error
-            error = self.validate(layer, name, 'grid', attribute_type=str, required=True) or error
-            error = self.validate(layer, name, 'min_resolution_seed', attribute_type=float) or error
-            error = self.validate(layer, name, 'px_buffer', attribute_type=float, default=False) or error
-            error = self.validate(
-                layer, name, 'type', attribute_type=str, required=True,
-                enumeration=['wms', 'mapnik']
-            ) or error
-
-            error = self.validate(layer, name, 'meta', attribute_type=bool, default=False) or error
-            if not layer['meta']:
-                layer['meta_size'] = 1
-            else:
-                error = self.validate(layer, name, 'meta_size', attribute_type=int, default=8) or error
-                error = self.validate(
-                    layer, name, 'meta_buffer', attribute_type=int,
-                    default=0 if layer['type'] == 'mapnik' else 128
-                ) or error
-            error = self.validate(
-                layer, name, 'query_layers', attribute_type=str, is_array=True
-            ) or error
-
-            if not error and layer['type'] == 'wms':
-                error = self.validate(layer, name, 'url', attribute_type=str, required=True) or error
-                error = self.validate(layer, name, 'generate_salt', attribute_type=bool, default=False) or error
-                if 'query_layers' in layer:
-                    error = self.validate(
-                        layer, name, 'info_formats', attribute_type=str, is_array=True,
-                        default=['application/vnd.ogc.gml']
-                    ) or error
-            if not error and layer['type'] == 'mapnik':
-                error = self.validate(layer, name, 'mapfile', attribute_type=str, required=True) or error
-                error = self.validate(
-                    layer, name, 'output_format', attribute_type=str, default='png',
-                    enumeration=['png', 'png256', 'jpeg', 'grid']
-                ) or error
-                error = self.validate(layer, name, 'data_buffer', attribute_type=int, default=128) or error
-                if layer['output_format'] == 'grid':
-                    error = self.validate(layer, name, 'resolution', attribute_type=int, default=4) or error
-                    error = self.validate(layer, name, 'layers_fields', attribute_type=dict, default={}) or error
-                    error = self.validate(
-                        layer, name, 'drop_empty_utfgrid', attribute_type=bool, default=False
-                    ) or error
-                    if layer['meta']:  # pragma: no cover
-                        logger.error(
-                            "The layer '%s' is of type Mapnik/Grid, that can't support matatiles." %
-                            (layer['name'])
-                        )
-                        error = True
-                if 'min_resolution_seed' in layer or 'info_formats' in layer or \
-                        'wms_url' in layer or 'query_layers' in layer:
-                    error = self.validate(layer, name, 'wms_url', attribute_type=str, required=True) or error
-                    error = self.validate(
-                        layer, name, 'layers', attribute_type=str, default=['__all__'], is_array=True
-                    ) or error
-                if 'info_formats' in layer or 'query_layers' in layer:
-                    error = self.validate(
-                        layer, name, 'query_layers', attribute_type=str, default=['__all__'], is_array=True
-                    ) or error
-                    error = self.validate(
-                        layer, name, 'info_formats', attribute_type=str, is_array=True,
-                        required=True
-                    ) or error
-            if not error and (layer['type'] == 'wms' or 'wms_url' in layer):
-                error = self.validate(layer, name, 'params', attribute_type=dict, default={
-                }) or error
-                for key in layer['params']:
-                    self.validate(layer['params'], name + '/params', key, attribute_type=str) or error
-                error = self.validate(layer, name, 'headers', attribute_type=dict, default={
+        self.layers = self.config['layers']
+        for lname, layer in sorted(self.layers.items()):
+            layer['grid_ref'] = self.grids[layer['grid']] if not error else None
+            self.layers[lname] = layer
+            if 'geoms' not in layer:
+                layer['geoms'] = []
+            if 'params' not in layer and layer['type'] == 'wms':
+                layer['params'] = {}
+            if 'headers' not in layer and layer['type'] == 'wms':
+                layer['headers'] = {
                     'Cache-Control': 'no-cache, no-store',
                     'Pragma': 'no-cache',
-                }) or error
-                for key in layer['headers']:
-                    self.validate(layer['headers'], name + '/headers', key, attribute_type=str) or error
-                error = self.validate(
-                    layer, name, 'layers', attribute_type=str, required=True, is_array=True
-                ) or error
+                }
+            if 'dimensions' not in layer:
+                layer['dimensions'] = []
+            if layer['type'] == 'mapnik' and \
+                    layer['output_format'] == 'grid' and \
+                    layer.get('meta', False):
+                logger.error("The layer '{}' is of type Mapnik/Grid, that can't support matatiles.".format(
+                    lname
+                ))
+                error = True
 
-            error = self.validate(layer, name, 'extension', attribute_type=str, required=True) or error
-            error = self.validate(layer, name, 'mime_type', attribute_type=str, required=True) or error
-            error = self.validate(
-                layer, name, 'wmts_style', attribute_type=str, required=True, regex="^[a-zA-Z0-9_\-~\.]+$"
-            ) or error
-            error = self.validate(layer, name, 'dimensions', is_array=True, default=[]) or error
-            for d in layer['dimensions']:
-                dname = name + ".dimensions[%s]" % d.get('name', '')
-                error = self.validate(
-                    d, dname, 'name', attribute_type=str, required=True, regex="^[a-zA-Z0-9_\-~\.]+$"
-                ) or error
-                error = self.validate(
-                    d, dname, 'value', attribute_type=str, required=True, regex="^[a-zA-Z0-9_\-~\.]+$"
-                ) or error
-                error = self.validate(
-                    d, dname, 'values', attribute_type=str, is_array=True, default=[d['value']]
-                ) or error
-                error = self.validate(
-                    d, dname, 'default', attribute_type=str, default=d['value'],
-                    regex="^[a-zA-Z0-9_\-~\.]+$"
-                ) or error
-
-            error = self.validate(
-                layer, name, 'pre_hash_post_process', attribute_type=str, default=False
-            ) or error
-            error = self.validate(
-                layer, name, 'post_process', attribute_type=str, default=False
-            ) or error
-
-            error = self.validate(layer, name, 'geoms', is_array=True, default=[]) or error
-            for i, g in enumerate(layer['geoms']):
-                gname = name + ".geoms[%i]" % i
-                # => connection required on the layer.
-                error = self.validate(
-                    layer, name, 'connection', attribute_type=str, required=True
-                ) or error
-                error = self.validate(
-                    g, gname, 'sql', attribute_type=str, required=True
-                ) or error
-                error = self.validate(
-                    g, gname, 'min_resolution', attribute_type=float
-                ) or error
-                error = self.validate(
-                    g, gname, 'max_resolution', attribute_type=float
-                ) or error
-
-            if 'empty_tile_detection' in layer:
-                error = self.validate(
-                    layer['empty_tile_detection'], name + '.empty_tile_detection',
-                    'size', attribute_type=int, required=True
-                ) or error
-                error = self.validate(
-                    layer['empty_tile_detection'], name + '.empty_tile_detection',
-                    'hash', attribute_type=str, required=True
-                ) or error
-            if 'empty_metatile_detection' in layer:
-                error = self.validate(
-                    layer['empty_metatile_detection'], name + '.empty_metatile_detection',
-                    'size', attribute_type=int, required=True
-                ) or error
-                error = self.validate(
-                    layer['empty_metatile_detection'], name + '.empty_metatile_detection',
-                    'hash', attribute_type=str, required=True
-                ) or error
-            if 'sqs' in layer:
-                error = self.validate(
-                    layer['sqs'], name + '.sqs', 'queue',
-                    attribute_type=str, required=True
-                ) or error
-                error = self.validate(
-                    layer['sqs'], name + '.sqs', 'region',
-                    attribute_type=str, default='eu-west-1'
-                ) or error
-
-            layer['grid_ref'] = self.grids[layer['grid']] if not error else None
-
-            self.layers[lname] = layer
-
-        self.validate_exists(self.config, 'config', 'caches')
         self.caches = self.config['caches']
-        for cname, cache in sorted(self.caches.items()):
-            name = "caches[%s]" % cname
-            error = self.validate(cache, name, 'name', attribute_type=str, default=cname) or error
-            error = self.validate(
-                cache, name, 'type', attribute_type=str, required=True,
-                enumeration=['s3', 'filesystem', 'mbtiles', 'bsddb']
-            ) or error
-            error = self.validate(
-                cache, 'cache[%s]' % cache['name'], 'wmtscapabilities_file', attribute_type=str,
-                default='1.0.0/WMTSCapabilities.xml'
-            ) or error
-            if cache['type'] == 'filesystem' or cache['type'] == 'mbtiles' or cache['type'] == 'bsddb':
-                error = self.validate(cache, name, 'folder', attribute_type=str, required=True) or error
-            elif cache['type'] == 's3':
-                error = self.validate(cache, name, 'bucket', attribute_type=str, required=True) or error
-                error = self.validate(cache, name, 'region', attribute_type=str, default='eu-west-1') or error
-                error = self.validate(cache, name, 'folder', attribute_type=str, default='') or error
-
-        error = self.validate(self.config, 'config', 'generation', attribute_type=dict, default={}) or error
-        error = self.validate(
-            self.config['generation'], 'generation', 'default_cache',
-            attribute_type=str, default='default'
-        ) or error
-        error = self.validate(
-            self.config['generation'], 'generation', 'default_layers',
-            is_array=True, attribute_type=str, default=[k for k in self.layers.keys()]
-        ) or error
-        error = self.validate(
-            self.config['generation'], 'generation', 'log_format', attribute_type=str,
-            default='%(levelname)s:%(name)s:%(funcName)s:%(message)s',
-        ) or error
-        error = self.validate(self.config['generation'], 'generation', 'authorised_user', attribute_type=str) or error
-        error = self.validate(
-            self.config['generation'], 'generation', 'maxconsecutive_errors',
-            attribute_type=int, default=10
-        ) or error
-
-        error = self.validate(
-            self.config, 'config',
-            'process', attribute_type=dict, default={}
-        ) or error
-        for cmd_name, cmds in sorted(self.config['process'].items()):
-            for i, cmd in enumerate(cmds):
-                error = self.validate(
-                    cmd, 'process[%s][%i]' % (cmd_name, i),
-                    'cmd', attribute_type=str, required=True
-                ) or error
-                error = self.validate(
-                    cmd, 'process[%s][%i]' % (cmd_name, i),
-                    'need_out', attribute_type=bool, default=False
-                ) or error
-                error = self.validate(
-                    cmd, 'process[%s][%i]' % (cmd_name, i),
-                    'arg', attribute_type=dict, default={}
-                ) or error
-                error = self.validate(
-                    cmd['arg'], 'process[%s][%i].arg' % (cmd_name, i),
-                    'default', attribute_type=str
-                ) or error
-                error = self.validate(
-                    cmd['arg'], 'process[%s][%i].arg' % (cmd_name, i),
-                    'verbose', attribute_type=str
-                ) or error
-                error = self.validate(
-                    cmd['arg'], 'process[%s][%i].arg' % (cmd_name, i),
-                    'debug', attribute_type=str
-                ) or error
-                error = self.validate(
-                    cmd['arg'], 'process[%s][%i].arg' % (cmd_name, i),
-                    'quiet', attribute_type=str
-                ) or error
-
-        error = self.validate(self.config, 'config', 'ec2', attribute_type=dict) or error
-        if 'ec2' in self.config:
-            error = self.validate(
-                self.config['ec2'], 'ec2', 'number_process',
-                attribute_type=int, default=1
-            ) or error
-            error = self.validate(
-                self.config['ec2'], 'ec2', 'host_type', attribute_type=str,
-                default='m1.medium', enumeration=[
-                    't1.micro', 'm1.small', 'm1.medium', 'm1.large', 'm1.xlarge',
-                    'm2.xlarge', 'm2.2xlarge', 'm2.4xlarge', 'c1.medium', 'c1.xlarge', 'cc1.4xlarge', 'cc2.8xlarge',
-                    'cg1.4xlarge', 'hi1.4xlarge'
-                ]
-            ) or error
-            error = self.validate(
-                self.config['ec2'], 'ec2', 'ssh_options',
-                attribute_type=str
-            ) or error
-            error = self.validate(self.config['ec2'], 'ec2', 'geodata_folder', attribute_type=str) or error
-            if 'geodata_folder' in self.config['ec2'] and self.config['ec2']['geodata_folder'][-1] != '/':
-                self.config['ec2']['geodata_folder'] += '/'
-            error = self.validate(self.config['ec2'], 'ec2', 'code_folder', attribute_type=str) or error
-            if 'code_folder' in self.config['ec2'] and self.config['ec2']['code_folder'][-1] != '/':
-                self.config['ec2']['code_folder'] += '/'
-            error = self.validate(
-                self.config['ec2'], 'ec2', 'deploy_config',
-                attribute_type=str, default="tilegeneration/deploy.cfg") or error
-            error = self.validate(
-                self.config['ec2'], 'ec2', 'build_cmds',
-                attribute_type=str, is_array=True, default=[
-                    "mkdir .build",
-                    "virtualenv .build/venv",
-                    ".build/venv/bin/pip install ."
-                ]
-            ) or error
-            error = self.validate(self.config['ec2'], 'ec2', 'apache_config', attribute_type=str) or error
-            error = self.validate(self.config['ec2'], 'ec2', 'apache_content', attribute_type=str) or error
-            error = self.validate(
-                self.config['ec2'], 'ec2', 'disable_geodata',
-                attribute_type=bool, default=False
-            ) or error
-            error = self.validate(
-                self.config['ec2'], 'ec2', 'disable_code',
-                attribute_type=bool, default=False
-            ) or error
-            error = self.validate(
-                self.config['ec2'], 'ec2', 'disable_database',
-                attribute_type=bool, default=False
-            ) or error
-            error = self.validate(
-                self.config['ec2'], 'ec2', 'disable_fillqueue',
-                attribute_type=bool, default=False
-            ) or error
-            error = self.validate(
-                self.config['ec2'], 'ec2', 'disable_tilesgen',
-                attribute_type=bool, default=False
-            ) or error
-
-        if 'sns' in self.config:  # pragma: no cover
-            error = self.validate(self.config['sns'], 'sns', 'topic', attribute_type=str, required=True) or error
-            error = self.validate(self.config['sns'], 'sns', 'region', attribute_type=str, default='eu-west-1') or error
 
         if error:
             exit(1)
@@ -618,7 +377,7 @@ class TileGeneration:
             style=layer['wmts_style'],
             format='.' + layer['extension'],
             dimensions=dimensions if dimensions is not None else [
-                (dimension['name'], dimension['value'])
+                (dimension['name'], dimension['generate'])
                 for dimension in layer['dimensions']
             ],
             tile_matrix_set=layer['grid'],
@@ -682,128 +441,6 @@ class TileGeneration:
 
         return cache_tilestore
 
-    def validate_exists(self, obj, obj_name, attribute):
-        if attribute not in obj:
-            logger.error("The attribute '%s' is required in the object %s." % (attribute, obj_name))
-            exit(1)
-
-    def _validate_type(self, value, attribute_type, enumeration, regex=None):
-        if attribute_type is not None:
-            if attribute_type == int and type(value) == str:
-                try:
-                    value = int(round(eval(value)))
-                except:
-                    return (True, None, 'right int expression: %s' % value)
-            if attribute_type == float:
-                if type(value) == int:
-                    value = float(value)
-                if type(value) == str:
-                    try:
-                        value = float(eval(value))
-                    except:
-                        return (True, None, 'right float expression: %s' % value)
-                elif type(value) != attribute_type:
-                    return (True, None, str(attribute_type))
-            elif attribute_type == str:
-                typ = type(value)
-                if typ == list or typ == dict:
-                    return (True, None, str(attribute_type))
-                if typ != str:
-                    value = str(value)
-                if regex is not None:
-                    if re.search(regex, value) is None:
-                        return (True, None, "value '%s' don't respect regex '%s'" % (value, regex))
-            else:
-                if type(value) != attribute_type:
-                    return (True, None, str(attribute_type))
-        if enumeration:
-            return (value not in enumeration, value, str(enumeration))
-        return (False, value, None)
-
-    def validate(
-            self, obj, obj_name, attribute, attribute_type=None, is_array=False,
-            default=None, required=False, enumeration=None, **kargs):
-        if attribute not in obj:
-            if required:
-                logger.error("The attribute '%s' is required in the object %s." % (attribute, obj_name))
-                return True
-            elif default is False:
-                # no value
-                obj[attribute] = False
-                # no test
-                return False
-            elif default is not None:
-                obj[attribute] = default
-            else:
-                # no value to test
-                return False
-
-        if is_array:
-            if type(obj[attribute]) == str:
-                obj[attribute] = [v.strip() for v in obj[attribute].split(',')]
-
-            if type(obj[attribute]) == list:
-                for n, v in enumerate(obj[attribute]):
-                    result, value, type_error = self._validate_type(v, attribute_type, enumeration, **kargs)
-                    if result:
-                        logger.error(
-                            "The attribute '%s' of the object %s has an element who is not a %s." %
-                            (attribute, obj_name, type_error)
-                        )
-                        return True
-                    obj[attribute][n] = value
-            else:
-                logger.error("The attribute '%s' of the object %s is not an array." % (attribute, obj_name))
-                return True
-        else:
-            result, value, type_error = self._validate_type(obj[attribute], attribute_type, enumeration, **kargs)
-            if result:
-                logger.error(
-                    "The attribute '%s' of the object %s is not a %s." %
-                    (attribute, obj_name, type_error)
-                )
-                return True
-            obj[attribute] = value
-        return False
-
-    def validate_apache_config(self):
-        error = False
-        error = self.validate(self.config, 'config', 'apache', attribute_type=dict, default={}) or error
-        error = self.validate(
-            self.config['apache'], 'apache', 'location', attribute_type=str,
-            default='/tiles'
-        ) or error
-        error = self.validate(
-            self.config['apache'], 'apache', 'config_file', attribute_type=str,
-            default='apache/tiles.conf'
-        ) or error
-        error = self.validate(
-            self.config['apache'], 'apache', 'expires', attribute_type=int,
-            default=8
-        ) or error
-        return not error
-
-    def validate_mapcache_config(self):
-        error = False
-        error = self.validate(self.config, 'config', 'mapcache', attribute_type=dict, default={}) or error
-        error = self.validate(
-            self.config['mapcache'], 'mapcache', 'config_file', attribute_type=str,
-            default='apache/mapcache.xml'
-        ) or error
-        error = self.validate(
-            self.config['mapcache'], 'mapcache', 'memcache_host', attribute_type=str,
-            default='localhost'
-        ) or error
-        error = self.validate(
-            self.config['mapcache'], 'mapcache', 'memcache_port', attribute_type=int,
-            default='11211'
-        ) or error
-        error = self.validate(
-            self.config['mapcache'], 'mapcache', 'location', attribute_type=str,
-            default='/mapcache'
-        ) or error
-        return not error
-
     def set_layer(self, layer, options):
         self.create_log_tiles_error(layer)
         self.layer = self.layers[layer]
@@ -865,7 +502,7 @@ class TileGeneration:
             dimensions.append((
                 dim['name'],
                 dimensions_args[dim['name']] if
-                dim['name'] in dimensions_args else dim['value']
+                dim['name'] in dimensions_args else dim['generate']
             ))
         cache_tilestore = self.get_store(cache, self.layer, dimensions=dimensions)
         if cache_tilestore is None:
@@ -887,13 +524,13 @@ class TileGeneration:
 
     def get_geoms(self, layer, extent=None):
         if not hasattr(self, 'layers_geoms'):
-            layers_geoms = {}
-        if layer['name'] in layers_geoms:  # pragma: no cover
+            self.layers_geoms = {}
+        if layer['name'] in self.layers_geoms:  # pragma: no cover
             # already build
-            return layers_geoms[layer['name']]
+            return self.layers_geoms[layer['name']]
 
         layer_geoms = {}
-        layers_geoms[layer['name']] = layer_geoms
+        self.layers_geoms[layer['name']] = layer_geoms
         if extent:
             geom = Polygon((
                 (extent[0], extent[1]),
@@ -907,26 +544,25 @@ class TileGeneration:
         if self.options is None or (
             self.options.near is None and self.options.geom
         ):
-            if 'connection' in layer:
-                connection = psycopg2.connect(layer['connection'])
+            for g in layer['geoms']:
+                connection = psycopg2.connect(g['connection'])
                 cursor = connection.cursor()
-                for g in layer['geoms']:
-                    sql = 'SELECT ST_AsBinary(geom) FROM (SELECT %s) AS g' % g['sql']
-                    logger.info('Execute SQL: %s.' % sql)
-                    cursor.execute(sql)
-                    geoms = [loads_wkb(binary_type(r[0])) for r in cursor.fetchall()]
-                    geom = cascaded_union(geoms)
-                    if extent:
-                        geom = geom.intersection(Polygon((
-                            (extent[0], extent[1]),
-                            (extent[0], extent[3]),
-                            (extent[2], extent[3]),
-                            (extent[2], extent[1]),
-                        )))
-                    for z, r in enumerate(layer['grid_ref']['resolutions']):
-                        if ('min_resolution' not in g or g['min_resolution'] <= r) and \
-                                ('max_resolution' not in g or g['max_resolution'] >= r):
-                            layer_geoms[z] = geom
+                sql = 'SELECT ST_AsBinary(geom) FROM (SELECT %s) AS g' % g['sql']
+                logger.info('Execute SQL: %s.' % sql)
+                cursor.execute(sql)
+                geoms = [loads_wkb(binary_type(r[0])) for r in cursor.fetchall()]
+                geom = cascaded_union(geoms)
+                if extent:
+                    geom = geom.intersection(Polygon((
+                        (extent[0], extent[1]),
+                        (extent[0], extent[3]),
+                        (extent[2], extent[3]),
+                        (extent[2], extent[1]),
+                    )))
+                for z, r in enumerate(layer['grid_ref']['resolutions']):
+                    if ('min_resolution' not in g or g['min_resolution'] <= r) and \
+                            ('max_resolution' not in g or g['max_resolution'] >= r):
+                        layer_geoms[z] = geom
                 cursor.close()
                 connection.close()
         return layer_geoms
@@ -944,7 +580,7 @@ class TileGeneration:
             queue_store=queue_store,
             px_buffer=(
                 layer['px_buffer'] +
-                layer['meta_buffer'] if layer['meta'] else 0
+                layer['meta_buffer'] if layer.get('meta', False) else 0
             )
         )
 
@@ -1138,8 +774,7 @@ class TileGeneration:
                         min(maxy, tilegrid.max_extent[3]),
                     ))
 
-        meta = self.layer['meta']
-        if meta:
+        if self.layer.get('meta', False):
             self.set_tilecoords(bounding_pyramid.metatilecoords(self.layer['meta_size']))
         else:
             self.set_tilecoords(bounding_pyramid)
@@ -1159,8 +794,8 @@ class TileGeneration:
 
     def process(self, name=None):
         if name is None:
-            name = self.layer['post_process']
-        if name:
+            name = self.layer.get('post_process')
+        if name is not None:
             self.imap(Process(self.config['process'][name], self.options))
 
     def get(self, store, time_message=None):
