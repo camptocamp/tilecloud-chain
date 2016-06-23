@@ -97,10 +97,14 @@ def add_comon_options(
         )
     if cache:
         parser.add_argument(
-            '--cache', '--destination-cache',
+            '--cache',
             dest='cache', metavar="NAME",
             help='The cache name to use'
         )
+    parser.add_argument(
+        '--logging-configuration-file',
+        help='Configuration file for Python logging.'
+    )
     parser.add_argument(
         '-q', '--quiet', default=False, action="store_true",
         help='Display only errors.'
@@ -148,16 +152,7 @@ class TileGeneration:
             if not hasattr(options, 'geom'):
                 options.geom = True
 
-        level = logging.WARNING
-        if options and options.quiet:
-            level = logging.ERROR
-        elif options and options.verbose:
-            level = logging.INFO
-        elif options and options.debug:
-            level = logging.DEBUG
-        logging.basicConfig(
-            format='%(levelname)s:%(name)s:%(funcName)s:%(message)s',
-            level=level)
+        self._configure_logging(options, '%(levelname)s:%(name)s:%(funcName)s:%(message)s')
 
         with open(config_file) as f:
             self.config = {}
@@ -302,11 +297,10 @@ class TileGeneration:
         if error:
             exit(1)
 
-        logging.basicConfig(
-            format=self.config['generation']['log_format'],
-            level=level)
+        if 'log_format' in self.config.get('generation', {}):
+            self._configure_logging(options, self.config['generation']['log_format'])
 
-        if options and options.zoom is not None:
+        if options is not None and options.zoom is not None:
             error_message = (
                 "The zoom argument '%s' has incorect format, "
                 "it can be a single value, a range (3-9), a list of values (2,5,7)."
@@ -367,6 +361,51 @@ class TileGeneration:
         for fact, nb in prime_fact.items():
             result *= fact ** nb
         return result
+
+    def _configure_logging(self, options, format_):
+        if os.environ.get('NOSE', 'FALSE') == 'TRUE':
+            pass
+        elif options is not None and options.logging_configuration_file:  # pragma: nocover
+            logging.config.fileConfig(options.logging_configuration_file)
+        else:  # pragma: nocover
+            level = logging.WARNING
+            other_level = logging.CRITICAL
+            if options is not None and options.quiet:
+                level = logging.ERROR
+            elif options is not None and options.verbose:
+                level = logging.INFO
+            elif options is not None and options.debug:
+                level = logging.DEBUG
+                other_level = logging.INFO
+            logging.config.dictConfig({
+                'version': 1,
+                'loggers': {
+                    'tilecloud': {
+                        'level': level,
+                        'handlers': ['console'],
+                    },
+                    'tilecloud_chain': {
+                        'level': level,
+                        'handlers': ['console'],
+                    },
+                    'pykwalify': {
+                        'level': other_level,
+                        'handlers': ['console'],
+                    },
+                },
+                'handlers': {
+                    'console': {
+                        'class': 'logging.StreamHandler',
+                        'formatter': 'default',
+                        'stream': 'ext://sys.stdout',
+                    },
+                },
+                'formatters': {
+                    'default': {
+                        'format': format_,
+                    },
+                },
+            })
 
     def get_store(self, cache, layer, dimensions=None, read_only=False):
         # build layout

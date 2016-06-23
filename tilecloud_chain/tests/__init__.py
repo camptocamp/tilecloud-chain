@@ -75,6 +75,7 @@ class CompareCase(TestCase):
             sys.argv = cmd
         else:
             sys.argv = re.sub(' +', ' ', cmd).split(' ')
+        os.environ['NOSE'] = 'TRUE'
         try:
             main_func()
         except SystemExit:

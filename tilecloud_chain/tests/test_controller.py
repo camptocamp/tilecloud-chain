@@ -929,7 +929,7 @@ class TestController(CompareCase):
     def test_multi_host_capabilities(self):
         self.assert_main_equals(
             cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml '
-            '--destination-cache multi_host',
+            '--cache multi_host',
             main_func=controller.main,
             regex=True,
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
@@ -1080,7 +1080,7 @@ class TestController(CompareCase):
     def test_multi_url_capabilities(self):
         self.assert_main_equals(
             cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml '
-            '--destination-cache multi_url',
+            '--cache multi_url',
             main_func=controller.main,
             regex=True,
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])

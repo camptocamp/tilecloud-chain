@@ -180,5 +180,6 @@ config:
             verbose = False
             debug = False
             time = None
+            logging_configuration_file = None
         gene = TileGeneration('tilecloud_chain/tests/tilegeneration/test.yaml', Opt(), 'point')
         self.assertEqual(gene.geoms[3].bounds, (583840.0, 173360.0, 624800.0, 214320.0))

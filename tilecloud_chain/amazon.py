@@ -333,7 +333,7 @@ def _get_arguments(options):
         "--config", options.config,
     ]
     if options.cache is not None:
-        arguments.extend(["--destination-cache", options.cache])
+        arguments.extend(["--cache", options.cache])
     if options.layer is not None:
         arguments.extend(["--layer", options.layer])
     if options.near is not None:

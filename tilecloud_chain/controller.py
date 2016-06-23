@@ -43,7 +43,7 @@ def main():
         help='Generate the legend images'
     )
     parser.add_argument(
-        '--openlayers', '--generate-openlayers-test-page', default=False,
+        '--openlayers', '--generate-openlayers-testpage', default=False,
         action='store_true', dest='openlayers',
         help='Generate openlayers test page'
     )

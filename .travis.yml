@@ -53,11 +53,11 @@ script:
 - vvv-validate-rst CHANGES.rst
 - python setup.py --long-description > PYPI.rst
 - vvv-validate-rst PYPI.rst
-- python setup.py nosetests --stop -a '!'nopy${TRAVIS_PYTHON_VERSION/./} -a '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
+- python setup.py nosetests --nocapture --nologcapture --stop -a '!'nopy${TRAVIS_PYTHON_VERSION/./} -a '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
 - if [ ${TRAVIS_PULL_REQUEST} != "false" ] ; then git diff --check ${TRAVIS_BRANCH} -- ; fi
 
 after_failure:
-- python setup.py nosetests -a '!'nopy${TRAVIS_PYTHON_VERSION/./} -a '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
+- python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain -a '!'nopy${TRAVIS_PYTHON_VERSION/./} -a '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
 
 after_success:
 # Report coverage results to coveralls.io
