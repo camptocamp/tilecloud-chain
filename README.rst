@@ -852,7 +852,6 @@ Build it:
 
    git submodule update --recursive
    mkdir .build
-   virtualenv --setuptools --no-site-packages .build/venv
-   .build/venv/bin/pip install 'pip>=6' 'setuptools>=12'
-   .build/venv/bin/pip install -e .
-   .build/venv/bin/pip install -r dev-requirements.txt
+   virtualenv venv
+   venv/bin/pip install -e .
+   venv/bin/pip install -r dev-requirements.txt
