@@ -155,7 +155,47 @@ class TileGeneration:
             if not hasattr(options, 'geom'):
                 options.geom = True
 
-        self._configure_logging(options, '%(levelname)s:%(name)s:%(funcName)s:%(message)s')
+        if options is not None and options.logging_configuration_file:
+            logging.config.fileConfig(options.logging_configuration_file)
+        else:
+            level = logging.WARNING
+            other_level = logging.CRITICAL
+            if options is not None and options.quiet:
+                level = logging.ERROR
+            elif options is not None and options.verbose:
+                level = logging.INFO
+            elif options is not None and options.debug:
+                level = logging.DEBUG
+                other_level = logging.INFO
+            logging.config.dictConfig({
+                'version': 1,
+                'loggers': {
+                    'tilecloud': {
+                        'level': level,
+                        'handlers': ['console'],
+                    },
+                    'tilecloud_chain': {
+                        'level': level,
+                        'handlers': ['console'],
+                    },
+                    'pykwalify': {
+                        'level': other_level,
+                        'handlers': ['console'],
+                    },
+                },
+                'handlers': {
+                    'console': {
+                        'class': 'logging.StreamHandler',
+                        'formatter': 'default',
+                        'stream': 'ext://sys.stdout',
+                    },
+                },
+                'formatters': {
+                    'default': {
+                        'format': '%(levelname)s:%(name)s:%(funcName)s:%(message)s',
+                    },
+                },
+            })
 
         with open(config_file) as f:
             self.config = {}
