@@ -17,14 +17,20 @@ Features:
 - Generate tiles.
 - Drop empty tiles.
 - Drop tiles outside a geometry or a bbox.
-- Use MetaTiles
+- Use MetaTiles.
+- Generate the legend images.
 - Generate GetCapabilities.
 - Generate OpenLayers example page.
-- Obtain the hash of an empty tile
-- In future, measure tile generation speed
+- Generate the Apache configuration.
+- Obtain the hash of an empty tile.
+- In future, measure tile generation speed.
 - Calculate cost and generation time.
 - In future, manage the AWS hosts that generate tiles.
 - Delete empty tiles.
+- Copy files between caches.
+- Be able to use an SQS queue to dispatch the generation.
+- Post processon the generated tiles.
+- ...
 
 
 .. contents:: Table of contents
@@ -756,7 +762,7 @@ OpenLayers test page
 
 To generate a test page use::
 
-    .build/venv/bin/generate_controller --openlayers-test
+    .build/venv/bin/generate_controller --openlayers
 
 
 ------------
