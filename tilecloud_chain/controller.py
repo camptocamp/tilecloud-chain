@@ -5,7 +5,6 @@ import sys
 import math
 import logging
 import yaml
-import urlparse
 import pkgutil
 from six import PY3
 from six import BytesIO as StringIO
@@ -13,7 +12,7 @@ from math import exp, log
 from copy import copy
 from argparse import ArgumentParser
 from hashlib import sha1
-from six.moves.urllib.parse import urlencode
+from six.moves.urllib.parse import urlencode, urljoin
 
 import requests
 from bottle import jinja2_template
@@ -188,7 +187,7 @@ def _generate_wmts_capabilities(gene):
         pkgutil.get_data("tilecloud_chain", "wmts_get_capabilities.jinja").decode('utf-8'),
         layers=gene.layers,
         grids=gene.grids,
-        getcapabilities=urlparse.urljoin(base_urls[0], (
+        getcapabilities=urljoin(base_urls[0], (
             'wmts/1.0.0/WMTSCapabilities.xml' if server
             else cache['wmtscapabilities_file']
         )),
