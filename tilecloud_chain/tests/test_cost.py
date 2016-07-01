@@ -10,6 +10,8 @@ from tilecloud_chain import cost
 
 
 class TestCost(CompareCase):
+    def setUp(self):  # noqa
+        self.maxDiff = None
 
     @classmethod
     def setUpClass(cls):  # noqa

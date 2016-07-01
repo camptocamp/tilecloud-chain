@@ -11,6 +11,8 @@ from tilecloud_chain import expiretiles
 
 
 class TestExpireTiles(CompareCase):
+    def setUp(self):  # noqa
+        self.maxDiff = None
 
     @classmethod
     def setUpClass(cls):  # noqa

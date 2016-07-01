@@ -145,6 +145,8 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
 
 
 class TestServe(CompareCase):
+    def setUp(self):  # noqa
+        self.maxDiff = None
 
     @classmethod
     def setUpClass(cls):  # noqa

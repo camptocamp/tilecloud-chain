@@ -12,6 +12,8 @@ from tilecloud_chain import controller, generate
 
 
 class TestError(CompareCase):
+    def setUp(self):  # noqa
+        self.maxDiff = None
 
     @classmethod
     def setUpClass(cls):  # noqa

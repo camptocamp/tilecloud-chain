@@ -11,6 +11,8 @@ from tilecloud_chain import copy_
 
 
 class TestGenerate(CompareCase):
+    def setUp(self):  # noqa
+        self.maxDiff = None
 
     @classmethod
     def setUpClass(cls):  # noqa
