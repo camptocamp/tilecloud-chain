@@ -25,7 +25,6 @@ class TestGenerate(CompareCase):
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')
 
-    @attr(copy=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_copy(self, l):
@@ -56,7 +55,6 @@ Size per tile: 10 o
         with open('/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png', 'r') as f:
             self.assertEqual(f.read(), 'test image')
 
-    @attr(process=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_process(self, l):

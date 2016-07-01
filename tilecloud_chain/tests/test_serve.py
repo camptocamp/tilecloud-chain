@@ -158,8 +158,6 @@ class TestServe(CompareCase):
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')
 
-    @attr(serve_kvp=True)
-    @attr(serve=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_serve_kvp(self, l):
@@ -705,8 +703,6 @@ Size per tile: 4[0-9][0-9] o
 
         l.check()
 
-    @attr(mbtiles_rest=True)
-    @attr(serve=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_mbtiles_rest(self, l):
@@ -812,8 +808,6 @@ Size per tile: 4[0-9][0-9] o
 
         l.check()
 
-    @attr(bsddb_rest=True)
-    @attr(serve=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_bsddb_rest(self, l):
@@ -919,8 +913,6 @@ Size per tile: 4[0-9][0-9] o
 
         l.check()
 
-    @attr(serve_gfi=True)
-    @attr(serve=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_serve_gfi(self, l):
@@ -995,8 +987,6 @@ Size per tile: 4[0-9][0-9] o
 </msGMLOutput>
 """)
 
-    @attr(wsgi=True)
-    @attr(serve=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_wsgi(self, l):

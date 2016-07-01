@@ -23,8 +23,6 @@ class TestController(CompareCase):
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')
 
-    @attr(capabilities=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_capabilities(self):
         self.assert_main_equals(
@@ -923,8 +921,6 @@ class TestController(CompareCase):
   </Contents>
 </Capabilities>"""
 
-    @attr(multi_host_capabilities=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_multi_host_capabilities(self):
         self.assert_main_equals(
@@ -934,9 +930,6 @@ class TestController(CompareCase):
             regex=True,
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
-    @attr(capabilities_slash=True)
-    @attr(capabilities=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_capabilities_slash(self):
         self.assert_main_equals(
@@ -1074,8 +1067,6 @@ class TestController(CompareCase):
   </Contents>
 </Capabilities>"""]])
 
-    @attr(multi_url_capabilities=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_multi_url_capabilities(self):
         self.assert_main_equals(
@@ -1085,8 +1076,6 @@ class TestController(CompareCase):
             regex=True,
             expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
 
-    @attr(mapcache=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_mapcache(self):
         self.assert_main_equals(
@@ -1405,8 +1394,6 @@ class TestController(CompareCase):
    <lock_dir>/tmp</lock_dir>
 </mapcache>"""]])
 
-    @attr(mapcache=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_mapcache2(self):
         self.assert_main_equals(
@@ -1485,8 +1472,6 @@ class TestController(CompareCase):
    <lock_dir>/tmp</lock_dir>
 </mapcache>"""]])
 
-    @attr(apache=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_apache(self):
         self.assert_main_equals(
@@ -1518,8 +1503,6 @@ MapCacheAlias /mapcache "%s"
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
 
-    @attr(apache_s3=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_apache_s3(self):
         self.assert_main_equals(
@@ -1549,9 +1532,6 @@ RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
 
-    @attr(apache_s3=True)
-    @attr(apache_s3_tilesurl=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_apache_s3_tilesurl(self):
         self.assert_main_equals(
@@ -1964,24 +1944,18 @@ mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 1
 openlayers: {center_x: 600000, center_y: 200000, srs: 'epsg:21781'}
 sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}"""
 
-    @attr(config=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_config(self):
         self.assert_cmd_yaml_equals(
             cmd='.build/venv/bin/generate_controller --dump-config -c tilegeneration/test-fix.yaml',
             main_func=controller.main, expected=self.CONFIG)
 
-    @attr(config_line=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_config_line(self):
         self.assert_cmd_yaml_equals(
             cmd='.build/venv/bin/generate_controller -l line --dump-config -c tilegeneration/test-fix.yaml',
             main_func=controller.main, expected=self.CONFIG)
 
-    @attr(openlayers=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_openlayers(self):
         html = u"""<!DOCTYPE html>
@@ -2155,8 +2129,6 @@ OpenLayers.Request.GET({
             ]
         )
 
-    @attr(quote=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_quote(self):
         from tilecloud_chain import quote
@@ -2167,8 +2139,6 @@ OpenLayers.Request.GET({
         self.assertEqual(quote("a\" b' c"), "'a\" b\\' c'")
         self.assertEqual(quote(""), "''")
 
-    @attr(legends=True)
-    @attr(controller=True)
     @attr(general=True)
     def test_legends(self):
         self.assert_tiles_generated(

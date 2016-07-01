@@ -20,7 +20,6 @@ class TestConfig(CompareCase):
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
     @log_capture('tilecloud_chain')
-    @attr(int_grid=True)
     @attr(general=True)
     def test_int_grid(self, l):
         self.run_cmd(

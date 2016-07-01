@@ -22,7 +22,6 @@ class TestError(CompareCase):
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
     @log_capture('tilecloud_chain')
-    @attr(resolution=True)
     @attr(general=True)
     def test_resolution(self, l):
         self.run_cmd(
@@ -33,7 +32,6 @@ class TestError(CompareCase):
         )
 
     @log_capture('tilecloud_chain')
-    @attr(mapnik_grid_meta=True)
     @attr(nopy3=True)
     @attr(general=True)
     def test_mapnik_grid_meta(self, l):
@@ -45,7 +43,6 @@ class TestError(CompareCase):
         )
 
     @log_capture('tilecloud_chain')
-    @attr(exists=True)
     @attr(general=True)
     def test_exists(self, l):
         self.run_cmd(
@@ -59,7 +56,6 @@ class TestError(CompareCase):
         )
 
     @log_capture('tilecloud_chain')
-    @attr(type=True)
     @attr(general=True)
     def test_type(self, l):
         self.run_cmd(
@@ -88,6 +84,7 @@ class TestError(CompareCase):
         ))
 
     @log_capture('tilecloud_chain')
+    @attr(general=True)
     def test_zoom_errors(self, l):
         self.run_cmd(
             cmd='.build/venv/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10',
@@ -102,7 +99,6 @@ class TestError(CompareCase):
         )
 
     @log_capture('tilecloud_chain')
-    @attr(wrong_srs_auth=True)
     @attr(general=True)
     def test_wrong_srs_auth(self, l):
         self.run_cmd(
@@ -125,7 +121,6 @@ class TestError(CompareCase):
         ))
 
     @log_capture('tilecloud_chain')
-    @attr(wrong_srs=True)
     @attr(general=True)
     def test_wrong_srs(self, l):
         self.run_cmd(

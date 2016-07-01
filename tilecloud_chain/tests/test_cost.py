@@ -45,8 +45,6 @@ ESB storage: %(esb)s [$/month]
 """
 # CloudFront: %(cloudfront)s [$/month]
 
-    @attr(cost_point=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_point(self):
         self.assert_cmd_equals(
@@ -114,8 +112,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_point_count=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_point_count(self):
         self.assert_cmd_equals(
@@ -183,8 +179,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_line=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_line(self):
         self.assert_cmd_equals(
@@ -259,8 +253,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_line_count=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_line_count(self):
         self.assert_cmd_equals(
@@ -335,8 +327,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_polygon=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_polygon(self):
         self.assert_cmd_equals(
@@ -406,8 +396,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_polygon_count=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_polygon_count(self):
         self.assert_cmd_equals(
@@ -478,8 +466,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_default=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_default(self):
         self.assert_cmd_equals(
@@ -619,8 +605,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_polygon2=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_polygon2(self):
         self.assert_cmd_equals(
@@ -673,8 +657,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_nometa=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_nometa(self):
         self.assert_cmd_equals(
@@ -724,8 +706,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_layer_bbox=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_layer_bbox(self):
         self.assert_cmd_equals(
@@ -796,8 +776,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_no_geom=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_no_geom(self):
         self.assert_cmd_equals(
@@ -865,8 +843,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_sqs_nometa=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_sqs_nometa(self):
         self.assert_cmd_equals(

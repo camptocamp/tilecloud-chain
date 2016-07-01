@@ -26,8 +26,6 @@ class TestGenerate(CompareCase):
             shutil.rmtree('/tmp/tiles')
 
     @log_capture('tilecloud_chain', level=30)
-    @attr(get_hash=True)
-    @attr(generate=True)
     @attr(general=True)
     def test_get_hash(self, l):
         for d in ('-d', ''):
@@ -46,8 +44,6 @@ class TestGenerate(CompareCase):
 
         l.check()
 
-    @attr(get_wrong_hash=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_get_wrong_hash(self, l):
@@ -58,8 +54,6 @@ class TestGenerate(CompareCase):
                 expected="""Error: image is not uniform.""")
         l.check()
 
-    @attr(get_bbox=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_get_bbox(self, l):
@@ -81,8 +75,6 @@ class TestGenerate(CompareCase):
 """)
         l.check()
 
-    @attr(hash_mapnik=True)
-    @attr(generate=True)
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
@@ -98,8 +90,6 @@ class TestGenerate(CompareCase):
 """)
         l.check()
 
-    @attr(hash_mapnik_grid=True)
-    @attr(generate=True)
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
@@ -115,8 +105,6 @@ class TestGenerate(CompareCase):
 """)
         l.check()
 
-    @attr(test_all=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_test_all(self, l):
@@ -196,8 +184,6 @@ Size per tile: [45][0-9][0-9] o
             )
         l.check()
 
-    @attr(multigeom=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_multigeom(self, l):
@@ -274,8 +260,6 @@ Size per tile: [79][0-9][0-9] o
         )
         l.check()
 
-    @attr(zoom_identifier=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_zoom_identifier(self, l):
@@ -351,8 +335,6 @@ Size per tile: 676 o
             )
         l.check()
 
-    @attr(empty_bbox=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_empty_bbox(self, l):
@@ -392,8 +374,6 @@ Size per tile: -1 o
             ('tilecloud_chain', 'WARNING', "bounds empty for zoom 3"),
         )
 
-    @attr(zoom=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_zoom(self, l):
@@ -423,8 +403,6 @@ Size per tile: 4[0-9][0-9] o
             )
         l.check()
 
-    @attr(zoom_range=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_zoom_range(self, l):
@@ -456,8 +434,6 @@ Size per tile: 4[0-9][0-9] o
             )
         l.check()
 
-    @attr(no_zoom=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_no_zoom(self, l):
@@ -490,8 +466,6 @@ Size per tile: 4[0-9][0-9] o
             )
         l.check()
 
-    @attr(py_buffer=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_py_buffer(self, l):
@@ -524,8 +498,6 @@ Size per tile: 4[0-9][0-9] o
             )
         l.check()
 
-    @attr(zoom_list=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_zoom_list(self, l):
@@ -560,8 +532,6 @@ Size per tile: 4[0-9][0-9] o
             )
         l.check()
 
-    @attr(layer_bbox=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_layer_bbox(self, l):
@@ -655,8 +625,6 @@ Size per tile: [89][0-9][0-9] o
             )
         l.check()
 
-    @attr(hash_generation=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_hash_generation(self, l):
@@ -686,8 +654,6 @@ Size per tile: 4[0-9][0-9] o
             )
         l.check()
 
-    @attr(mapnik=True)
-    @attr(generate=True)
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
@@ -714,8 +680,6 @@ Size per tile: 823 o
             )
         l.check()
 
-    @attr(mapnik_grid=True)
-    @attr(generate=True)
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
@@ -760,8 +724,6 @@ Size per tile: 385 o
                 )
         l.check()
 
-    @attr(mapnik_grid_drop=True)
-    @attr(generate=True)
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
@@ -809,8 +771,6 @@ Tile generation started
         )
         l.check()
 
-    @attr(not_authorised_user=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_not_authorised_user(self, l):
@@ -821,8 +781,6 @@ Tile generation started
                 expected="""not authorised, authorised user is: www-data.""")
         l.check()
 
-    @attr(verbose=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_verbose(self, l):
@@ -833,7 +791,6 @@ Tile generation started
             )
         l.check()
 
-    @attr(time=True)
     @log_capture('tilecloud_chain', level=30)
     def test_time(self, l):
         for d in ('-d', ''):
@@ -852,7 +809,6 @@ size: 862
                 empty_err=True)
         l.check()
 
-    @attr(time_layer_bbox=True)
     @log_capture('tilecloud_chain', level=30)
     def test_time_layer_bbox(self, l):
         for d in ('-d', ''):
@@ -871,8 +827,6 @@ size: 1010
                 empty_err=True)
         l.check()
 
-#    @attr(daemonize=True)
-#    @attr(generate=True)
 #    @attr(general=True)
 #    @log_capture('tilecloud_chain', level=30)
 #    def test_daemonize(self, l):
@@ -960,8 +914,6 @@ Size per tile: 4[0-9][0-9] o
 """,
             )
 
-    @attr(error_file=True)
-    @attr(generate=True)
     @attr(general=True)
     def test_error_file(self):
         if os.path.exists('error.list'):
