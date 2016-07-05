@@ -5,7 +5,6 @@ import os
 from testfixtures import log_capture
 
 from nose.plugins.attrib import attr
-from six import PY3
 
 from tilecloud_chain.tests import CompareCase
 from tilecloud_chain import controller, generate
