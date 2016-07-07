@@ -71,6 +71,7 @@ class TestMultihost(CompareCase):
         except:
             pass
 
+    @attr(nopy3=True)
     def test_database(self):
         out, err = self.run_cmd(
             cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
