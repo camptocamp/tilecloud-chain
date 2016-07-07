@@ -113,7 +113,7 @@ def main():
     else:
         host = options.host
 
-    if not options.local and options.geodata and 'geodata_folder' in gene.config['ec2']:
+    if not options.local and options.geodata and 'geodata_folder' in gene.config['ec2']:  # pragma: no cover
         print("==== Sync geodata ====")
         ssh_options = ''
         if 'ssh_options' in gene.config['ec2']:  # pragma: no cover

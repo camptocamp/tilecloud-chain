@@ -19,6 +19,8 @@ class TestMultihost(CompareCase):
     def setUpClass(cls):  # noqa
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
+    @attr(nopy2=True)
+    @attr(nopy3=True)
     def test_geodata(self):
         directory = os.getenv("HOME") + "/tilecloud_chain/tests/tilegeneration/hooks/"
         if os.path.exists(directory):
