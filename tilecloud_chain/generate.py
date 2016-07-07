@@ -219,7 +219,7 @@ class Generate:
 
             self.count_tiles = gene.counter()
 
-            if 'pre_hash_post_process' in gene.layer:
+            if 'pre_hash_post_process' in gene.layer:  # pragma: no cover
                 gene.process(gene.layer['pre_hash_post_process'])
 
             if options.role == 'hash':
