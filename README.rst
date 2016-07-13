@@ -40,16 +40,53 @@ Features:
 Get it
 ------
 
+With Docker
+-----------
+
+.. code:: bash
+
+   # Login to docker hub
+   docker login
+   docker pull camptocamp/tilecloud-chain
+
+   # Initialyse the project
+   docker run -ti \
+        --volume .:/project \
+        pcreate -s tilecloud_chain .
+
+   # Run the commands
+   DOCKER_ADRS=`ifconfig docker0 | head -n 2 | tail -n 1 | awk -F : '{print $2}' | awk '{print $1}'`
+   docker run -ti \
+        --volume .:/project \
+        --add-host=db:${DOCKER_ADRS} \
+        --add-host=mapserver:${DOCKER_ADRS} \
+        --env=USER_NAME=`whoami` \
+        --env=USER_ID=`id -u` \
+        --env=GROUP_ID=`id -g` \
+        --env=UMASK=`umask` \
+        camptocamp/tilecloud-chain \
+        run <a command>
+
+To share the home folder you should add the arguments:
+
+.. code:: bash
+
+    --volume=${HOME}:${HOME} \
+    --env=HOME=${HOME} \
+
+The image also contains some tools needed to render OSM data like: ``fonts-dejavu``, ``node-carto`` and ``osm2pgsql``.
+
+With pip
+--------
+
 Requirements::
 
     pg_config and a build environment.
 
 Install::
 
-    mkdir .build
-    virtualenv .build/venv
-    .build/venv/bin/pip install tilecloud-chain
-    .build/venv/bin/pcreate -s tilecloud_chain .
+    pip install tilecloud-chain
+    pcreate -s tilecloud_chain .
 
 Edit your layers configuration in ``./tilegeneration/config.yaml``.
 
@@ -199,7 +236,7 @@ The configuration of this hash is in the layer like this:
 
 To easily generate this configuration we can use the following command::
 
-    .build/venv/bin/generate_tiles --get-hash <z/x/y> -l <layer_name>
+    generate_tiles --get-hash <z/x/y> -l <layer_name>
 
 Where ``<z/x/y>`` should refer to an empty tile/metatile. Generally it's a good
 idea to use z as the maximum zoom, x and y as 0.
@@ -236,7 +273,7 @@ It's preferable to use simple geometries, too complex geometries can slow down t
 Legends
 ~~~~~~~
 
-To be able to generate legends with ``.build/venv/bin/generate_controller --generate-legend-images``
+To be able to generate legends with ``generate_controller --generate-legend-images``
 you should have ``legend_mime`` and ``legend_extention`` in the layer config.
 
 for example:
@@ -251,7 +288,7 @@ Then it will create a legend image per layer and per zoom level named
 only if she is deferent than the previous zoom level. If we have only one legend image
 it still stores in the file named ``legend0.{{legend_extention}}``.
 
-When we do ``.build/venv/bin/generate_controller --generate-wmts-capabilities`` we will at first
+When we do ``generate_controller --generate-wmts-capabilities`` we will at first
 parse the legend images to generate a layer config like this:
 
 .. code:: yaml
@@ -363,7 +400,7 @@ Configure Apache
 
 To generate the Apache configuration we use the command::
 
-    .build/venv/bin/generate_controller --generate-apache-config
+    generate_controller --generate-apache-config
 
 The Apache configuration look like this (default values):
 
@@ -409,7 +446,7 @@ The MapCache configuration look like this (default values):
 
 To generate the MapCache configuration we use the command::
 
-    .build/venv/bin/generate_controller --generate-mapcache-config
+    generate_controller --generate-mapcache-config
 
 Tiles error file
 ----------------
@@ -422,7 +459,7 @@ If we set a file path in config file:
         error_file: <path>
 
 The tiles that in error will be append to the file, ant the tiles can be regenerated with
-``.build/venv/bin/generate_tiles --layer <layer> --tiles <path>``.
+``generate_tiles --layer <layer> --tiles <path>``.
 
 The ``<path>`` can be ``/tmp/error_{layer}_{datetime:%Y-%m-%d_%H:%M:%S}``
 to have one file per layer and per run.
@@ -521,11 +558,11 @@ The queue should be used only by one layer.
 
 To use the SQS queue we should first fill the queue::
 
-    .build/venv/bin/generate_tiles --role master --layer <a_layer>
+    generate_tiles --role master --layer <a_layer>
 
 And then generate the tiles present in the SQS queue::
 
-    .build/venv/bin/generate_tiles --role slave --layer <a_layer>
+    generate_tiles --role slave --layer <a_layer>
 
 Configure SNS
 -------------
@@ -581,19 +618,19 @@ Than install it:
 
 .. code:: bash
 
-    .build/venv/bin/pip install awscli
+    pip install awscli
 
 And use it:
 
 .. code:: bash
 
-    .build/venv/bin/aws help
+    aws help
 
 For example to delete many tiles do:
 
 .. code:: bash
 
-    .build/venv/bin/aws s3 rm --recursive s3://your_bucket_name/folder
+    aws s3 rm --recursive s3://your_bucket_name/folder
 
 ---------------------------
 Other related configuration
@@ -635,7 +672,7 @@ The advantage of the internal server are:
 
 To generate the Apache configuration we use the command::
 
-    .build/venv/bin/generate_controller --generate-apache-config
+    generate_controller --generate-apache-config
 
 The server can be configure as it:
 
@@ -702,13 +739,13 @@ Commands
 Available commands
 ------------------
 
-* ``.build/venv/bin/generate_controller`` generate the annexe files like capabilities, legend, OpenLayers test page, MapCacke config, Apache config.
-* ``.build/venv/bin/generate_tiles`` generate the tiles.
-* ``.build/venv/bin/generate_copy`` copy the tiles from a cache to an other.
-* ``.build/venv/bin/generate_process`` prosses the tiles using a configured prosess.
-* ``.build/venv/bin/generate_cost`` estimate the cost.
-* ``.build/venv/bin/generate_amazon`` generate the tiles using EC2.
-* ``.build/venv/bin/import_expiretiles`` import the osm2pgsql expire-tiles file as geoms in the database.
+* ``generate_controller`` generate the annexe files like capabilities, legend, OpenLayers test page, MapCacke config, Apache config.
+* ``generate_tiles`` generate the tiles.
+* ``generate_copy`` copy the tiles from a cache to an other.
+* ``generate_process`` prosses the tiles using a configured prosess.
+* ``generate_cost`` estimate the cost.
+* ``generate_amazon`` generate the tiles using EC2.
+* ``import_expiretiles`` import the osm2pgsql expire-tiles file as geoms in the database.
 
 Each commands have a ``--help`` option to give a full arguments help.
 
@@ -718,43 +755,43 @@ Generate tiles
 
 Generate all the tiles::
 
-    .build/venv/bin/generate_tiles
+    generate_tiles
 
 Generate a specific layer::
 
-    .build/venv/bin/generate_tiles --layer <a_layer>
+    generate_tiles --layer <a_layer>
 
 Generate a specific zoom::
 
-    .build/venv/bin/generate_tiles --zoom 5
+    generate_tiles --zoom 5
 
 Generate a specific zoom range::
 
-    .build/venv/bin/generate_tiles --zoom 2-8
+    generate_tiles --zoom 2-8
 
 Generate a specific some zoom levels::
 
-    .build/venv/bin/generate_tiles --zoom 2,4,7
+    generate_tiles --zoom 2,4,7
 
 Generate tiles from an (error) tiles file::
 
-    .build/venv/bin/generate_tiles --layer <a_layer> --tiles <a_file.tiles>
+    generate_tiles --layer <a_layer> --tiles <a_file.tiles>
 
 Generate tiles on a bbox::
 
-    .build/venv/bin/generate_tiles --bbox <MINX> <MINY> <MAXX> <MAXY>
+    generate_tiles --bbox <MINX> <MINY> <MAXX> <MAXY>
 
 Generate a tiles near a tile coordinate (useful for test)::
 
-    .build/venv/bin/generate_tiles --near <X> <Y>
+    generate_tiles --near <X> <Y>
 
 Generate a tiles in a deferent cache than the default one::
 
-    .build/venv/bin/generate_tiles --cache <a_cache>
+    generate_tiles --cache <a_cache>
 
 And don't forget to generate the WMTS Capabilities::
 
-    .build/venv/bin/generate_controller --capabilities
+    generate_controller --capabilities
 
 
 OpenLayers test page
@@ -762,7 +799,7 @@ OpenLayers test page
 
 To generate a test page use::
 
-    .build/venv/bin/generate_controller --openlayers
+    generate_controller --openlayers
 
 
 ------------
@@ -809,7 +846,7 @@ Layer configuration (default values):
 
 The following commands can be used to know the time and cost to do generation::
 
-    .build/venv/bin/generate_controller --cost
+    generate_controller --cost
 
 This suppose that you use a separate EC2 host to generate the tiles.
 

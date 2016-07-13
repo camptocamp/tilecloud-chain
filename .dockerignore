@@ -1,0 +1,8 @@
+*
+!setup.py
+!requirements.txt
+!README.rst
+!CHANGES.rst
+!tilecloud_chain/*
+tilecloud_chain/tests
+!docker/run
