@@ -35,6 +35,8 @@ before_install:
 
 - sudo tilecloud_chain/tests/create-deploy.sh
 
+- ssh localhost echo add to know host
+
 - sudo mkdir /tmp/tests
 - sudo chmod g+s,o+w /tmp/tests
 
@@ -53,11 +55,11 @@ script:
 - vvv-validate-rst CHANGES.rst
 - python setup.py --long-description > PYPI.rst
 - vvv-validate-rst PYPI.rst
-- python setup.py nosetests --stop -a '!'nopy${TRAVIS_PYTHON_VERSION/./} -a '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
+- python setup.py nosetests --nocapture --nologcapture --stop --attr '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
 - if [ ${TRAVIS_PULL_REQUEST} != "false" ] ; then git diff --check ${TRAVIS_BRANCH} -- ; fi
 
 after_failure:
-- python setup.py nosetests -a '!'nopy${TRAVIS_PYTHON_VERSION/./} -a '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
+- python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
 
 after_success:
 # Report coverage results to coveralls.io

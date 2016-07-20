@@ -11,6 +11,9 @@ from tilecloud_chain import controller
 
 
 class TestConfig(CompareCase):
+    def setUp(self):  # noqa
+        self.maxDiff = None
+
     @classmethod
     def setUpClass(cls):  # noqa
         os.chdir(os.path.dirname(__file__))
@@ -20,7 +23,6 @@ class TestConfig(CompareCase):
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
     @log_capture('tilecloud_chain')
-    @attr(int_grid=True)
     @attr(general=True)
     def test_int_grid(self, l):
         self.run_cmd(

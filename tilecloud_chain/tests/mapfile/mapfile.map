@@ -48,6 +48,31 @@ MAP
   END
 
   LAYER
+    NAME "point_multi"
+    TYPE POINT
+    CONNECTIONTYPE postgis
+    CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
+    DATA "the_geom FROM (SELECT * FROM tests.point WHERE name='%POINT_NAME%') AS foo USING UNIQUE gid"
+    TEMPLATE fooOnlyForWMSGetFeatureInfo # For GetFeatureInfo
+    STATUS ON
+    METADATA
+        "gml_include_items" "all" # For GetFeatureInfo
+        "ows_geom_type" "point" # For returning geometries in GetFeatureInfo
+        "ows_geometries" "the_geom" # For returning geometries in GetFeatureInfo
+    END
+    VALIDATION
+        "POINT_NAME" "[a-z0-9]+"
+        "default_POINT_NAME" "point1"
+    END
+    CLASS
+        NAME "Point"
+        COLOR 255 0 0
+        SIZE 10
+        SYMBOL "circle"
+    END
+  END
+
+  LAYER
     NAME "line"
     TYPE LINE
     CONNECTIONTYPE postgis

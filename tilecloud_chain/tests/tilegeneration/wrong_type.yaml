@@ -6,7 +6,7 @@ grids:
         srs: [epsg21781]
     swissgrid_1:
         resolutions: [1]
-        bbox: 123
+        bbox: [123]
         srs: {}
     swissgrid_3: {}
     swissgrid!: {}
@@ -18,10 +18,10 @@ layers:
         wmts_style: yo!
         dimensions:
         -   name: DATE!
-            default: 2010!
-            value: 2012!
-            values: [2005!, 2010!, 2012!]
+            default: '2010!'
+            generate: ['2012!']
+            values: ['2005!', '2010!', '2012!']
         -   name: time
             default: 1
-            value: 1
+            generate: [1]
             values: [1]

@@ -12,6 +12,8 @@ from tilecloud_chain import generate, amazon
 
 
 class TestGenerate(CompareCase):
+    def setUp(self):  # noqa
+        self.maxDiff = None
 
     @classmethod
     def setUpClass(cls):  # noqa
@@ -26,8 +28,6 @@ class TestGenerate(CompareCase):
             shutil.rmtree('/tmp/tiles')
 
     @log_capture('tilecloud_chain', level=30)
-    @attr(get_hash=True)
-    @attr(generate=True)
     @attr(general=True)
     def test_get_hash(self, l):
         for d in ('-d', ''):
@@ -46,8 +46,6 @@ class TestGenerate(CompareCase):
 
         l.check()
 
-    @attr(get_wrong_hash=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_get_wrong_hash(self, l):
@@ -58,8 +56,6 @@ class TestGenerate(CompareCase):
                 expected="""Error: image is not uniform.""")
         l.check()
 
-    @attr(get_bbox=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_get_bbox(self, l):
@@ -81,8 +77,6 @@ class TestGenerate(CompareCase):
 """)
         l.check()
 
-    @attr(hash_mapnik=True)
-    @attr(generate=True)
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
@@ -98,8 +92,6 @@ class TestGenerate(CompareCase):
 """)
         l.check()
 
-    @attr(hash_mapnik_grid=True)
-    @attr(generate=True)
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
@@ -115,8 +107,6 @@ class TestGenerate(CompareCase):
 """)
         l.check()
 
-    @attr(test_all=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_test_all(self, l):
@@ -130,7 +120,7 @@ class TestGenerate(CompareCase):
                     ('line', 0, 7, 4), ('polygon', 0, 5, 4)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'line' is finish
+                expected="""The tile generation of layer 'line \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 40
@@ -142,7 +132,7 @@ Total size: 733 o
 Time per tiles: [0-9]+ ms
 Size per tile: 733 o
 
-The tile generation of layer 'polygon' is finish
+The tile generation of layer 'polygon \(DATE=2012\)' is finish
 Nb generated tiles: 1
 Nb tiles dropped: 0
 Nb tiles stored: 1
@@ -156,8 +146,6 @@ Size per tile: [45][0-9][0-9] o
             )
         l.check()
 
-    @attr(test_dimensions=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_test_dimensions(self, l):
@@ -172,7 +160,7 @@ Size per tile: [45][0-9][0-9] o
                     ('line', 0, 7, 4), ('polygon', 0, 5, 4)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'line' is finish
+                expected="""The tile generation of layer 'line \(DATE=2013\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 40
@@ -184,7 +172,7 @@ Total size: 733 o
 Time per tiles: [0-9]+ ms
 Size per tile: 733 o
 
-The tile generation of layer 'polygon' is finish
+The tile generation of layer 'polygon \(DATE=2013\)' is finish
 Nb generated tiles: 1
 Nb tiles dropped: 0
 Nb tiles stored: 1
@@ -198,8 +186,6 @@ Size per tile: [45][0-9][0-9] o
             )
         l.check()
 
-    @attr(multigeom=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_multigeom(self, l):
@@ -262,7 +248,7 @@ Size per tile: [45][0-9][0-9] o
                 (3, 58, 70),
             ],
             regex=True,
-            expected="""The tile generation of layer 'pp' is finish
+            expected="""The tile generation of layer 'pp \(DATE=2012\)' is finish
 Nb generated tiles: 51
 Nb tiles dropped: 0
 Nb tiles stored: 51
@@ -276,8 +262,6 @@ Size per tile: [79][0-9][0-9] o
         )
         l.check()
 
-    @attr(zoom_identifier=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_zoom_identifier(self, l):
@@ -291,7 +275,7 @@ Size per tile: [79][0-9][0-9] o
                     ('polygon2', '1', 585, 429)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'polygon2' is finish
+                expected="""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 42
@@ -314,7 +298,7 @@ Size per tile: 389 o
                     ('polygon2', '0_2', 2929, 2148)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'polygon2' is finish
+                expected="""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 34
@@ -337,7 +321,7 @@ Size per tile: 517 o
                     ('polygon2', '0_1', 5859, 4296)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'polygon2' is finish
+                expected="""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 4
@@ -353,8 +337,6 @@ Size per tile: 676 o
             )
         l.check()
 
-    @attr(empty_bbox=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_empty_bbox(self, l):
@@ -368,7 +350,7 @@ Size per tile: 676 o
                 tiles=[
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash' is finish
+                expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 0
 Nb metatiles dropped: 0
 Nb generated tiles: 0
@@ -394,8 +376,6 @@ Size per tile: -1 o
             ('tilecloud_chain', 'WARNING', "bounds empty for zoom 3"),
         )
 
-    @attr(zoom=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_zoom(self, l):
@@ -409,7 +389,7 @@ Size per tile: -1 o
                     ('point_hash', 1, 11, 14), ('point_hash', 1, 15, 8)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash' is finish
+                expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -425,8 +405,6 @@ Size per tile: 4[0-9][0-9] o
             )
         l.check()
 
-    @attr(zoom_range=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_zoom_range(self, l):
@@ -442,7 +420,7 @@ Size per tile: 4[0-9][0-9] o
                     ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42),
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash' is finish
+                expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 9
 Nb metatiles dropped: 4
 Nb generated tiles: 320
@@ -458,8 +436,6 @@ Size per tile: 4[0-9][0-9] o
             )
         l.check()
 
-    @attr(no_zoom=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_no_zoom(self, l):
@@ -476,7 +452,7 @@ Size per tile: 4[0-9][0-9] o
                     ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42),
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash' is finish
+                expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 10
 Nb metatiles dropped: 4
 Nb generated tiles: 384
@@ -492,8 +468,6 @@ Size per tile: 4[0-9][0-9] o
             )
         l.check()
 
-    @attr(py_buffer=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_py_buffer(self, l):
@@ -510,7 +484,7 @@ Size per tile: 4[0-9][0-9] o
                     (2, 29, 35), (2, 39, 21),
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_px_buffer' is finish
+                expected="""The tile generation of layer 'point_px_buffer \(DATE=2012\)' is finish
 Nb generated metatiles: 10
 Nb metatiles dropped: 4
 Nb generated tiles: 384
@@ -526,8 +500,6 @@ Size per tile: 4[0-9][0-9] o
             )
         l.check()
 
-    @attr(zoom_list=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_zoom_list(self, l):
@@ -546,7 +518,7 @@ Size per tile: 4[0-9][0-9] o
                     ('point_hash', 3, 58, 70), ('point_hash', 3, 78, 42),
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash' is finish
+                expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 9
 Nb metatiles dropped: 4
 Nb generated tiles: 320
@@ -562,8 +534,6 @@ Size per tile: 4[0-9][0-9] o
             )
         l.check()
 
-    @attr(layer_bbox=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_layer_bbox(self, l):
@@ -575,7 +545,7 @@ Size per tile: 4[0-9][0-9] o
                 tiles_pattern='1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png',
                 tiles=list(product((5, 6, 7), (4, 5, 6, 7))),
                 regex=True,
-                expected="""The tile generation of layer 'polygon' is finish
+                expected="""The tile generation of layer 'polygon \(DATE=2012\)' is finish
 Nb generated tiles: 12
 Nb tiles dropped: 0
 Nb tiles stored: 12
@@ -598,7 +568,7 @@ Size per tile: [69][0-9][0-9] o
                     (6, 5), (7, 5)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'polygon' is finish
+                expected="""The tile generation of layer 'polygon \(DATE=2012\)' is finish
 Nb generated tiles: 2
 Nb tiles dropped: 0
 Nb tiles stored: 2
@@ -621,7 +591,7 @@ Size per tile: [89][0-9][0-9] o
                     (6, 5), (7, 5)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'polygon' is finish
+                expected="""The tile generation of layer 'polygon \(DATE=2012\)' is finish
 Nb generated tiles: 2
 Nb tiles dropped: 0
 Nb tiles stored: 2
@@ -643,7 +613,7 @@ Size per tile: [89][0-9][0-9] o
                     (6, 5), (7, 5)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'all' is finish
+                expected="""The tile generation of layer 'all \(DATE=2012\)' is finish
 Nb generated tiles: 2
 Nb tiles dropped: 0
 Nb tiles stored: 2
@@ -657,8 +627,6 @@ Size per tile: [89][0-9][0-9] o
             )
         l.check()
 
-    @attr(hash_generation=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_hash_generation(self, l):
@@ -672,7 +640,7 @@ Size per tile: [89][0-9][0-9] o
                     (5, 7), (7, 4)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash' is finish
+                expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -688,8 +656,6 @@ Size per tile: 4[0-9][0-9] o
             )
         l.check()
 
-    @attr(mapnik=True)
-    @attr(generate=True)
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
@@ -716,8 +682,6 @@ Size per tile: 823 o
             )
         l.check()
 
-    @attr(mapnik_grid=True)
-    @attr(generate=True)
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
@@ -762,8 +726,6 @@ Size per tile: 385 o
                 )
         l.check()
 
-    @attr(mapnik_grid_drop=True)
-    @attr(generate=True)
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
@@ -790,8 +752,6 @@ Size per tile: 384 o
             )
         l.check()
 
-    @attr(local=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_local(self, l):
@@ -813,8 +773,6 @@ Tile generation started
         )
         l.check()
 
-    @attr(not_authorised_user=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_not_authorised_user(self, l):
@@ -825,8 +783,6 @@ Tile generation started
                 expected="""not authorised, authorised user is: www-data.""")
         l.check()
 
-    @attr(verbose=True)
-    @attr(generate=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_verbose(self, l):
@@ -837,7 +793,6 @@ Tile generation started
             )
         l.check()
 
-    @attr(time=True)
     @log_capture('tilecloud_chain', level=30)
     def test_time(self, l):
         for d in ('-d', ''):
@@ -856,7 +811,6 @@ size: 862
                 empty_err=True)
         l.check()
 
-    @attr(time_layer_bbox=True)
     @log_capture('tilecloud_chain', level=30)
     def test_time_layer_bbox(self, l):
         for d in ('-d', ''):
@@ -875,8 +829,6 @@ size: 1010
                 empty_err=True)
         l.check()
 
-#    @attr(daemonize=True)
-#    @attr(generate=True)
 #    @attr(general=True)
 #    @log_capture('tilecloud_chain', level=30)
 #    def test_daemonize(self, l):
@@ -896,8 +848,6 @@ size: 1010
             with open(path, 'w'):
                 pass
 
-    @attr(delete_meta=True)
-    @attr(generate=True)
     @attr(general=True)
     def test_delete_meta(self):
         for d in ('-d', ''):
@@ -919,7 +869,7 @@ size: 1010
                     (5, 7), (7, 4)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash_no_meta' is finish
+                expected="""The tile generation of layer 'point_hash_no_meta \(DATE=2012\)' is finish
 Nb generated tiles: 247
 Nb tiles dropped: 245
 Nb tiles stored: 2
@@ -932,8 +882,6 @@ Size per tile: 4[0-9][0-9] o
 """,
             )
 
-    @attr(delete_no_meta=True)
-    @attr(generate=True)
     @attr(general=True)
     def test_delete_no_meta(self):
         for d in ('-d', ''):
@@ -955,7 +903,7 @@ Size per tile: 4[0-9][0-9] o
                     (5, 7), (7, 4)
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'point_hash_no_meta' is finish
+                expected="""The tile generation of layer 'point_hash_no_meta \(DATE=2012\)' is finish
 Nb generated tiles: 247
 Nb tiles dropped: 245
 Nb tiles stored: 2
@@ -968,8 +916,6 @@ Size per tile: 4[0-9][0-9] o
 """,
             )
 
-    @attr(error_file=True)
-    @attr(generate=True)
     @attr(general=True)
     def test_error_file(self):
         if os.path.exists('error.list'):
@@ -1003,7 +949,7 @@ Size per tile: 4[0-9][0-9] o
                 (0, 5, 7), (0, 7, 4)
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash' is finish
+            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 3
 Nb metatiles dropped: 1
 Nb generated tiles: 128
@@ -1017,3 +963,47 @@ Size per tile: 4[0-9][0-9] o
 
 """,
         )
+
+    @attr(general=True)
+    def test_multy(self):
+        for d in ('-v', ''):
+            self.assert_tiles_generated(
+                cmd='.build/venv/bin/generate_tiles %s -c tilegeneration/test-multidim.yaml' % d,
+                main_func=generate.main,
+                directory="/tmp/tiles/",
+                tiles_pattern='1.0.0/multi/default/%s/swissgrid/%i/%i/%i.png',
+                tiles=[
+                    ('point1', 0, 5, 7),
+                    ('point1', 1, 11, 14),
+                    ('point1', 2, 29, 35),
+                    ('point2', 0, 7, 4),
+                    ('point2', 1, 15, 8),
+                    ('point2', 2, 39, 21),
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'multi \(POINT_NAME=point1\)' is finish
+Nb generated metatiles: 8
+Nb metatiles dropped: 5
+Nb generated tiles: 192
+Nb tiles dropped: 189
+Nb tiles stored: 3
+Nb error: 0
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 1.5 Kio
+Time per tiles: [0-9]+ ms
+Size per tile: 496 o
+
+The tile generation of layer 'multi \(POINT_NAME=point2\)' is finish
+Nb generated metatiles: 8
+Nb metatiles dropped: 5
+Nb generated tiles: 192
+Nb tiles dropped: 189
+Nb tiles stored: 3
+Nb error: 0
+Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+Total size: 1.5 Kio
+Time per tiles: [0-9]+ ms
+Size per tile: 500 o
+
+""",
+            )

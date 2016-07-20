@@ -10,6 +10,8 @@ from tilecloud_chain import cost
 
 
 class TestCost(CompareCase):
+    def setUp(self):  # noqa
+        self.maxDiff = None
 
     @classmethod
     def setUpClass(cls):  # noqa
@@ -45,8 +47,6 @@ ESB storage: %(esb)s [$/month]
 """
 # CloudFront: %(cloudfront)s [$/month]
 
-    @attr(cost_point=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_point(self):
         self.assert_cmd_equals(
@@ -114,8 +114,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_point_count=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_point_count(self):
         self.assert_cmd_equals(
@@ -183,8 +181,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_line=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_line(self):
         self.assert_cmd_equals(
@@ -259,8 +255,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_line_count=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_line_count(self):
         self.assert_cmd_equals(
@@ -326,7 +320,7 @@ ESB storage: %(esb)s [$/month]
                 self.LAYER_SUMMARY % {
                     'tiles': '1604',
                     'time': '0:00:49',
-                    'cost': '0.03'
+                    'cost': '0.02'
                 },
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',
@@ -335,8 +329,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_polygon=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_polygon(self):
         self.assert_cmd_equals(
@@ -390,14 +382,14 @@ ESB storage: %(esb)s [$/month]
                     'zoom': '4',
                     'time': '0:02:16',
                     's3': '0.02',
-                    'ec2': '0.01',
+                    'ec2': '0.00',
                     'esb': '0.02',
                     # 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
                     'tiles': '3084',
                     'time': '0:03:05',
-                    'cost': '0.07'
+                    'cost': '0.06'
                 },
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',
@@ -406,8 +398,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_polygon_count=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_polygon_count(self):
         self.assert_cmd_equals(
@@ -462,7 +452,7 @@ ESB storage: %(esb)s [$/month]
                     'zoom': '4',
                     'time': '0:02:14',
                     's3': '0.02',
-                    'ec2': '0.01',
+                    'ec2': '0.00',
                     'esb': '0.02',
                     # 'sqs': '0.00'
                 },
@@ -478,8 +468,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_default=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_default(self):
         self.assert_cmd_equals(
@@ -598,14 +586,14 @@ ESB storage: %(esb)s [$/month]
                     'zoom': '4',
                     'time': '0:02:16',
                     's3': '0.02',
-                    'ec2': '0.01',
+                    'ec2': '0.00',
                     'esb': '0.02',
                     # 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
                     'tiles': '3084',
                     'time': '0:03:05',
-                    'cost': '0.07'
+                    'cost': '0.06'
                 },
                 self.GLOBAL_SUMMARY % {
                     'tiles': '3405',
@@ -619,8 +607,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_polygon2=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_polygon2(self):
         self.assert_cmd_equals(
@@ -639,7 +625,7 @@ ESB storage: %(esb)s [$/month]
                     'zoom': '0',
                     'time': '0:27:43',
                     's3': '0.55',
-                    'ec2': '0.08',
+                    'ec2': '0.06',
                     'esb': '0.23',
                     # 'sqs': '0.00'
                 },
@@ -648,7 +634,7 @@ ESB storage: %(esb)s [$/month]
                     'zoom': '1',
                     'time': '11:21:02',
                     's3': '13.41',
-                    'ec2': '1.93',
+                    'ec2': '1.36',
                     'esb': '5.68',
                     # 'sqs': '0.00'
                 },
@@ -657,14 +643,14 @@ ESB storage: %(esb)s [$/month]
                     'zoom': '2',
                     'time': '1 21:18:05',
                     's3': '53.52',
-                    'ec2': '7.70',
+                    'ec2': '5.44',
                     'esb': '22.65',
                     # 'sqs': '0.00'
                 },
                 self.LAYER_SUMMARY % {
                     'tiles': '6747135',
                     'time': '2 9:06:51',
-                    'cost': '105.74'
+                    'cost': '102.88'
                 },
                 self.FINAL_SUMMARY % {
                     'storage': '0.02',
@@ -673,8 +659,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_nometa=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_nometa(self):
         self.assert_cmd_equals(
@@ -724,8 +708,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_layer_bbox=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_layer_bbox(self):
         self.assert_cmd_equals(
@@ -796,8 +778,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_no_geom=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_no_geom(self):
         self.assert_cmd_equals(
@@ -848,7 +828,7 @@ ESB storage: %(esb)s [$/month]
                     'zoom': '3',
                     'time': '0:12:18',
                     's3': '0.24',
-                    'ec2': '0.03',
+                    'ec2': '0.02',
                     'esb': '0.10',
                     # 'sqs': '0.00'
                 },
@@ -856,7 +836,7 @@ ESB storage: %(esb)s [$/month]
                 self.LAYER_SUMMARY % {
                     'tiles': '31829',
                     'time': '0:16:12',
-                    'cost': '0.50'
+                    'cost': '0.49'
                 },
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',
@@ -865,8 +845,6 @@ ESB storage: %(esb)s [$/month]
                     'esb': '11.00',
                 }]))
 
-    @attr(cost_sqs_nometa=True)
-    @attr(cost=True)
     @attr(general=True)
     def test_cost_sqs_nometa(self):
         self.assert_cmd_equals(
@@ -902,7 +880,7 @@ ESB storage: %(esb)s [$/month]
                     'zoom': '2',
                     'time': '0:06:04',
                     's3': '0.06',
-                    'ec2': '0.02',
+                    'ec2': '0.01',
                     'esb': '0.05',
                 },
                 'SQS usage: 0.00 [$]',
@@ -911,7 +889,7 @@ ESB storage: %(esb)s [$/month]
                     'zoom': '3',
                     'time': '0:23:52',
                     's3': '0.24',
-                    'ec2': '0.07',
+                    'ec2': '0.05',
                     'esb': '0.20',
                 },
                 'SQS usage: 0.00 [$]',
@@ -920,14 +898,14 @@ ESB storage: %(esb)s [$/month]
                     'zoom': '4',
                     'time': '1:34:37',
                     's3': '0.95',
-                    'ec2': '0.27',
+                    'ec2': '0.19',
                     'esb': '0.79',
                 },
                 'SQS usage: 0.00 [$]',
                 self.LAYER_SUMMARY % {
                     'tiles': '125886',
                     'time': '2:05:53',
-                    'cost': '2.67'
+                    'cost': '2.56'
                 },
                 self.FINAL_SUMMARY % {
                     'storage': '0.00',

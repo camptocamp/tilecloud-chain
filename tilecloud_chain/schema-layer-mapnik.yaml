@@ -1,0 +1,50 @@
+type: map
+mapping:
+    type:
+        type: str
+        default: wms
+        enum:
+        - mapnik
+    # Mapnik
+    layers:
+        type: str
+        default: __all__
+    mapfile:
+        type: str
+    meta_size:
+        type: int
+        default: 1
+    meta_buffer:
+        type: int
+        default: 0
+    data_buffer:
+        type: int
+        default: 128
+    output_format:
+        type: str
+        enum:
+        - png
+        - png256
+        - jpeg
+        - grid
+        default: png
+    wms_url:
+        type: str
+        pattern: https?://.+
+    # Mapnik grid
+    resolution:
+        type: int
+        default: 4
+    layers_fields:
+        type: map
+        mapping:
+            regex;.+:
+                type: seq
+                sequence:
+                - type: str
+#                        default: {}
+    drop_empty_utfgrid:
+        type: bool
+        default: false
+    regex;.+:
+        type: any

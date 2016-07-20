@@ -62,47 +62,52 @@ caches:
         bucket: tiles
         folder: tiles
 
-layer_default:
-    grid: swissgrid_5
-    type: wms
-    url: http://localhost/mapserv
-    wmts_style: default
-    mime_type: image/png
-    extension: png
-    dimensions:
-    -   name: DATE
-        default: 2012
-        value: 2012
-        values: [2005, 2010, 2012]
-    meta: on
-    meta_size: 8
-    meta_buffer: 128
-    connection: user=postgres password=postgres dbname=tests host=localhost
-    cost:
-        # [ms]
-        tileonly_generation_time: 60
-        # [ms]
-        tile_generation_time: 30
-        # [ms]
-        metatile_generation_time: 30
-        # [ko]
-        tile_size: 20
+defaults:
+    layer: &layer
+        grid: swissgrid_5
+        type: wms
+        url: http://localhost/mapserv
+        wmts_style: default
+        mime_type: image/png
+        extension: png
+        dimensions:
+        -   name: DATE
+            default: '2012'
+            generate: ['2012']
+            values: ['2005', '2010', '2012']
+        meta: on
+        meta_size: 8
+        meta_buffer: 128
+        cost:
+            # [ms]
+            tileonly_generation_time: 60
+            # [ms]
+            tile_generation_time: 30
+            # [ms]
+            metatile_generation_time: 30
+            # [ko]
+            tile_size: 20
 
 layers:
     point:
+        <<: *layer
         layers: point
         geoms:
-        - sql: the_geom AS geom FROM tests.point
+        -   sql: the_geom AS geom FROM tests.point
+            connection: user=postgres password=postgres dbname=tests host=localhost
         min_resolution_seed: 10
         sqs:
             queue: sqs_point
     point_error:
+        <<: *layer
         layers: point_error
     point_px_buffer:
+        <<: *layer
         layers: point
         px_buffer: 100
         geoms:
-        - sql: the_geom AS geom FROM tests.point
+        -   sql: the_geom AS geom FROM tests.point
+            connection: user=postgres password=postgres dbname=tests host=localhost
         empty_metatile_detection:
             size: 20743
             hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -110,9 +115,11 @@ layers:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     point_hash:
+        <<: *layer
         layers: point
         geoms:
-        - sql: the_geom AS geom FROM tests.point
+        -   sql: the_geom AS geom FROM tests.point
+            connection: user=postgres password=postgres dbname=tests host=localhost
         min_resolution_seed: 10
         empty_metatile_detection:
             size: 20743
@@ -121,6 +128,7 @@ layers:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     point_hash_no_meta:
+        <<: *layer
         layers: point
         meta: off
         empty_tile_detection:
@@ -129,9 +137,11 @@ layers:
         sqs:
             queue: sqs_point_no_meta
     line:
+        <<: *layer
         layers: line
         geoms:
-        - sql: the_geom AS geom FROM tests.line
+        -   sql: the_geom AS geom FROM tests.line
+            connection: user=postgres password=postgres dbname=tests host=localhost
         empty_metatile_detection:
             size: 20743
             hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -139,10 +149,12 @@ layers:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     polygon:
+        <<: *layer
         layers: polygon
         meta: off
         geoms:
-        - sql: the_geom AS geom FROM tests.polygon
+        -   sql: the_geom AS geom FROM tests.polygon
+            connection: user=postgres password=postgres dbname=tests host=localhost
         empty_metatile_detection:
             size: 20743
             hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -150,10 +162,12 @@ layers:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     polygon2:
+        <<: *layer
         layers: polygon
         grid: swissgrid_01
         geoms:
-        - sql: the_geom AS geom FROM tests.polygon
+        -   sql: the_geom AS geom FROM tests.polygon
+            connection: user=postgres password=postgres dbname=tests host=localhost
         empty_metatile_detection:
             size: 20743
             hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -161,20 +175,24 @@ layers:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     all:
+        <<: *layer
         layers: point,line,polygon
         meta: off
         bbox: [550000.0, 170000.0, 560000.0, 180000.0]
     mapnik:
+        <<: *layer
         type: mapnik
         mapfile: mapfile/test.mapnik
         meta: off
         data_buffer: 128
         output_format: png
         geoms:
-        - sql: the_geom AS geom FROM tests.polygon
+        -   sql: the_geom AS geom FROM tests.polygon
+            connection: user=postgres password=postgres dbname=tests host=localhost
         wms_url: http://localhost/mapserv
-        info_formats: text/xml
+        info_formats: [text/xml]
     mapnik_grid:
+        <<: *layer
         type: mapnik
         mapfile: mapfile/test.mapnik
         meta: off
@@ -184,7 +202,8 @@ layers:
         extension: json
         resolution: 16
         geoms:
-        - sql: the_geom AS geom FROM tests.polygon
+        -   sql: the_geom AS geom FROM tests.polygon
+            connection: user=postgres password=postgres dbname=tests host=localhost
         layers_fields:
             point:
             - name
@@ -193,6 +212,7 @@ layers:
             polygon:
             - name
     mapnik_grid_drop:
+        <<: *layer
         type: mapnik
         mapfile: mapfile/test.mapnik
         meta: off
@@ -204,7 +224,8 @@ layers:
         drop_empty_utfgrid: on
         resolution: 16
         geoms:
-        - sql: the_geom AS geom FROM tests.polygon
+        -   sql: the_geom AS geom FROM tests.polygon
+            connection: user=postgres password=postgres dbname=tests host=localhost
         layers_fields:
             point:
             - name

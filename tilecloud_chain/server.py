@@ -55,8 +55,6 @@ class Server:
 
         logger.info("Config file: '%s'" % config_file)
         self.tilegeneration = TileGeneration(config_file)
-        if not self.tilegeneration.validate_apache_config():  # pragma: no cover
-            raise "Apache configuration error"
 
         self.expires_hours = self.tilegeneration.config['apache']['expires']
         self.static_allow_extension = self.tilegeneration.config['server']['static_allow_extension'] \
@@ -99,8 +97,6 @@ class Server:
         # get capabilities or other static files
         self._get = types.MethodType(_get, self)
 
-        if not self.tilegeneration.validate_mapcache_config():  # pragma: no cover
-            raise "Mapcache configuration error"
         mapcache_base = self.tilegeneration.config['server']['mapcache_base'] if \
             'mapcache_base' in self.tilegeneration.config['server'] else \
             'http://localhost/'
@@ -141,15 +137,18 @@ class Server:
             # build stores
             store_defs = [{
                 'ref': [layer_name],
-                'dimensions': [],
+                'dimensions': {},
             }]
             for dimension in layer['dimensions']:
                 new_store_defs = []
                 for store_def in store_defs:
                     for value in dimension['values']:
+                        dimensions = {}
+                        dimensions.update(store_def['dimensions'])
+                        dimensions[dimension['name']] = value
                         new_store_defs.append({
                             'ref': store_def['ref'] + [value],
-                            'dimensions': store_def['dimensions'] + [(dimension['name'], value)],
+                            'dimensions': dimensions,
                         })
                 store_defs = new_store_defs
             for store_def in store_defs:
@@ -232,7 +231,7 @@ class Server:
                     params['TILECOL'] = path[index + 3]
                     params['I'] = path[index + 4]
                     params['J'] = last[0]
-                    params['INFO_FORMAT'] = layer['info_formats'][0]
+                    params['INFO_FORMAT'] = layer.get('info_formats', ['application/vnd.ogc.gml'])[0]
                 else:  # pragma: no cover
                     return self.error(400, "Wrong path length", **kwargs)
 
@@ -312,8 +311,8 @@ class Server:
                         'SERVICE': 'WMS',
                         'VERSION': '1.1.1',
                         'REQUEST': 'GetFeatureInfo',
-                        'LAYERS': ','.join(layer['layers']),
-                        'QUERY_LAYERS': ','.join(layer['query_layers']),
+                        'LAYERS': layer['layers'],
+                        'QUERY_LAYERS': layer['query_layers'],
                         'STYLES': params['STYLE'],
                         'FORMAT': params['FORMAT'],
                         'INFO_FORMAT': params['INFO_FORMAT'],

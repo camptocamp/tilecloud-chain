@@ -11,6 +11,8 @@ from tilecloud_chain import expiretiles
 
 
 class TestExpireTiles(CompareCase):
+    def setUp(self):  # noqa
+        self.maxDiff = None
 
     @classmethod
     def setUpClass(cls):  # noqa
@@ -31,7 +33,6 @@ class TestExpireTiles(CompareCase):
         os.remove('/tmp/expired-empty')
 
     @log_capture('tilecloud_chain', level=30)
-    @attr(expire_tiles=True)
     @attr(general=True)
     def test_expire_tiles(self, l):
         geom = (
@@ -127,8 +128,6 @@ class TestExpireTiles(CompareCase):
         l.check()
 
     @log_capture('tilecloud_chain', level=30)
-    @attr(expire_tiles=True)
-    @attr(expire_tiles_empty=True)
     @attr(general=True)
     def test_expire_tiles_empty(self, l):
         self.assert_cmd_equals(

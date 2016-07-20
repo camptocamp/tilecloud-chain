@@ -27,10 +27,12 @@ class CompareCase(TestCase):
                     else:
                         self.assertEqual(test[0].strip(), test[1].strip())
                 except AssertionError as e:
-                    for i in range(max(0, n - 10), min(len(result), n + 11)):
+                    for i in range(max(0, n - 20), min(len(result), n + 21)):
                         if i == n:
+                            print("> %i %s" % (i, result[i]))
                             log.info("> %i %s" % (i, result[i]))
                         else:
+                            print("  %i %s" % (i, result[i]))
                             log.info("  %i %s" % (i, result[i]))
                     raise e
         self.assertEqual(len(expected), len(result), repr(result))
@@ -75,6 +77,7 @@ class CompareCase(TestCase):
             sys.argv = cmd
         else:
             sys.argv = re.sub(' +', ' ', cmd).split(' ')
+        os.environ['NOSE'] = 'TRUE'
         try:
             main_func()
         except SystemExit:
@@ -121,11 +124,13 @@ class CompareCase(TestCase):
         for path, dirs, files in os.walk(directory):
             if len(files) != 0:
                 log.info((path, files))
+                print((path, files))
                 count += len(files)
 
         self.assertEqual(count, len(tiles))
         for tile in tiles:
             log.info(directory + tiles_pattern % tile)
+            print(directory + tiles_pattern % tile)
             self.assertTrue(os.path.exists(directory + tiles_pattern % tile))
 
     def assert_files_generated(self, **kargs):

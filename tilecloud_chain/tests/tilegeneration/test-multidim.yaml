@@ -1,6 +1,6 @@
 grids:
-    swissgrid_5:
-        resolutions: [100, 50, 20, 10, 5]
+    swissgrid:
+        resolutions: [100, 50, 20]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
         srs: epsg:21781
@@ -10,52 +10,34 @@ caches:
         type: filesystem
         http_url: http://wmts1/tiles
         folder: /tmp/tiles
-    mbtiles:
-        type: mbtiles
-        http_url: http://wmts1/tiles
-        folder: /tmp/tiles/mbtiles
+        wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
 
-defaults:
-    layer: &layer
-        grid: swissgrid_5
-        type: wms
+layers:
+    multi:
         url: http://localhost/mapserv
+        layers: point_multi
+        grid: swissgrid
+        type: wms
         wmts_style: default
         mime_type: image/png
         extension: png
-        dimensions:
-        -   name: DATE
-            default: '2012'
-            generate: ['2012']
-            values: ['2005', '2010', '2012']
         meta: on
         meta_size: 8
         meta_buffer: 128
-
-layers:
-    point_hash:
-        <<: *layer
-        layers: point
-        query_layers: point
+        dimensions:
+        -   name: POINT_NAME
+            default: point1
+            generate: [point1, point2]
+            values: [point1, point2]
         geoms:
         -   sql: the_geom AS geom FROM tests.point
             connection: user=postgres password=postgres dbname=tests host=localhost
-        min_resolution_seed: 10
         empty_metatile_detection:
             size: 20743
             hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
         empty_tile_detection:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+
 generation:
-    default_cache: mbtiles
-    maxconsecutive_errors: 2
-
-mapcache:
-    config_file: mapcache.xml
-
-apache:
-    config_file: tiles.conf
-
-server:
-    geoms_redirect: true
+    default_cache: local

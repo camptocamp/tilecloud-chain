@@ -1,0 +1,421 @@
+type: map
+mapping:
+    grids:
+        type: map
+        required: true
+        mapping:
+            regex;.+:
+                type: map
+                mapping:
+                    name: &name
+                        type: str
+                        required: true
+                        pattern: ^[a-zA-Z0-9_\-~\.]+$
+                    resolution_scale:
+                        type: int
+                    resolutions:
+                        type: seq
+                        sequence:
+                        - type: number
+                        required: true
+                    bbox:
+                        type: seq
+                        sequence:
+                        - type: number
+                        required: true
+                    srs: &srs
+                        type: str
+                        pattern: '^(?i)epsg:[0-9]+$'
+                        required: true
+                    proj4_literal:
+                        type: str
+                        pattern: .+
+                    unit:
+                        type: str
+                        default: m
+                    tile_size:
+                        type: int
+                        default: 256
+                    matrix_identifier:
+                        type: str
+                        default: zoom
+                        enum:
+                        - zoom
+                        - resolution
+    caches:
+        type: map
+        required: true
+        mapping:
+            regex;^[a-zA-Z0-9_\-~\.]+$:
+                type: map
+                mapping:
+                    name: *name
+                    type:
+                        type: str
+                        enum:
+                        - s3
+                        - filesystem
+                        - mbtiles
+                        - bsddb
+                    http_url: &url_slash
+                        type: str
+                        pattern: ^https?://.+/$
+                    http_urls:
+                        type: seq
+                        sequence:
+                        - *url_slash
+                    hosts:
+                        type: seq
+                        sequence:
+                        - type: str
+                    wmtscapabilities_file:
+                        type: str
+                        default: 1.0.0/WMTSCapabilities.xml
+                        pattern: '^[a-zA-Z0-9_\-~\.\/]+$'
+                    folder:
+                        type: str
+                        default: ""
+                    regex;.+:
+                        type: any
+    layers:
+        type: map
+        required: true
+        mapping:
+            regex;^[a-zA-Z0-9_\-~\.]+$:
+                type: map
+                mapping:
+                    name: *name
+                    type:
+                        type: str
+                        default: wms
+                        enum:
+                        - wms
+                        - mapnik
+                    grid:
+                        type: str
+                        required: true
+                    bbox:
+                        type: seq
+                        sequence:
+                        - type: number
+                    min_resolution_seed:
+                        type: float
+                    px_buffer:
+                        type: float
+                        default: .0
+                    meta:
+                        type: bool
+                        default: false
+                    meta_size:
+                        type: int
+                    meta_buffer:
+                        type: int
+                    layers:
+                        type: str
+                    # WMTS
+                    wmts_style: &url_part
+                        type: str
+                        pattern: '^[a-zA-Z0-9_\-~\.]+$'
+                        required: true
+                    mime_type: &mime_type_required
+                        type: str
+                        pattern: "^[a-zA-Z0-9!#$%^&\\*_\\-\\+{}\\|'.`~]+/[a-zA-Z0-9!#$%^&\\*_\\-\\+{}\\|'.`~]+$"
+                        required: true
+                    extension:
+                        type: str
+                        required: true
+                    dimensions:
+                        type: seq
+                        sequence:
+                        -   type: map
+                            mapping:
+                                name:
+                                    type: str
+                                    required: true
+                                    pattern: ^(?!(?i)(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\-~\.]+$
+                                generate:
+                                    type: seq
+                                    sequence:
+                                    - *url_part
+                                    required: true
+                                values:
+                                    type: seq
+                                    sequence:
+                                    - *url_part
+                                    required: true
+                                default: *url_part
+                    # Legend
+                    legends:
+                        type: seq
+                        sequence:
+                        -   type: map
+                            mapping:
+                                mime_type: &mime_type
+                                    <<: *mime_type_required
+                                    required: False
+                                href:
+                                    type: str
+                                    pattern: ^https?://.+$
+                    legend_mime: *mime_type
+                    legend_extention:
+                        type: str
+                        pattern: '^[a-zA-Z0-9]+$'
+                    # Post process
+                    pre_hash_post_process:
+                        type: str
+                        pattern: .+
+                    post_process:
+                        type: str
+                        pattern: .+
+                    # Other
+                    geoms:
+                        type: seq
+                        sequence:
+                        -   type: map
+                            mapping:
+                                connection:
+                                    type: str
+                                    required: true
+                                sql:
+                                    type: str
+                                    required: true
+                                min_resolution:
+                                    type: number
+                                max_resolution:
+                                    type: number
+                    empty_tile_detection: &empty_tile_detection
+                        type: map
+                        mapping:
+                            size:
+                                type: int
+                                required: true
+                            hash:
+                                type: str
+                                required: true
+                    empty_metatile_detection: *empty_tile_detection
+                    sqs:
+                        type: map
+                        mapping:
+                            queue:
+                                type: str
+                                required: true
+                            region: &aws-region
+                                type: str
+                                default: eu-west-1
+                                pattern: ^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$
+                    cost:
+                        type: map
+                        mapping:
+                            tileonly_generation_time:
+                                type: float
+                                default: 40.
+                            tile_generation_time:
+                                type: float
+                                default: 30.
+                            metatile_generation_time:
+                                type: float
+                                default: 30.
+                            tile_size:
+                                type: float
+                                default: 20.
+                    regex;.+:
+                        type: any
+    process:
+        type: map
+        mapping:
+            regex;.+:
+                type: seq
+                sequence:
+                -   type: map
+                    mapping:
+                        cmd:
+                            type: str
+                            required: true
+                        need_out:
+                            type: bool
+                            default: false
+                        arg:
+                            type: map
+                            mapping:
+                                default:
+                                    type: str
+                                verbose:
+                                    type: str
+                                debug:
+                                    type: str
+                                quiet:
+                                    type: str
+    generation:
+        type: map
+        mapping:
+            default_cache:
+                type: str
+                default: default
+            default_layers:
+                type: seq
+                sequence:
+                - type: str
+            log_format:
+                type: str
+                default: '%(levelname)s:%(name)s:%(funcName)s:%(message)s'
+            authorised_user:
+                type: str
+            maxconsecutive_errors:
+                type: int
+                default: 10
+            error_file:
+                type: str
+    ec2:
+        type: map
+        mapping:
+            number_process:
+                type: int
+                default: 1
+            host_type:
+                type: str
+                default: m4.large
+                pattern: '^[tmcgxrid][1-5].(nano|micro|small|medium|large|[0-9]*xlarge)$'
+            ssh_options:
+                type: str
+            geodata_folder:
+                type: str
+            code_folder:
+                type: str
+                required: true
+            deploy_config:
+                type: str
+                default: tilegeneration/deploy.cfg
+            deploy_user:
+                type: str
+                default: deploy
+            build_cmds:
+                type: seq
+                sequence:
+                - type: str
+            apache_config:
+                type: str
+            apache_content:
+                type: str
+            disable_geodata:
+                type: bool
+                default: false
+            disable_code:
+                type: bool
+                default: false
+            disable_database:
+                type: bool
+                default: false
+            disable_fillqueue:
+                type: bool
+                default: false
+            disable_tilesgen:
+                type: bool
+                default: false
+    sns:
+        type: map
+        mapping:
+            topic:
+                type: str
+                required: true
+            region: *aws-region
+    apache:
+        type: map
+        mapping:
+            location:
+                type: str
+                default: /tiles
+            config_file:
+                type: str
+                default: apache/tiles.conf
+            expires:
+                type: int
+                default: 8
+    mapcache:
+        type: map
+        mapping:
+            config_file:
+                type: str
+                default: apache/mapcache.xml
+            memcache_host:
+                type: str
+                default: localhost
+            memcache_port:
+                type: int
+                default: 11211
+            location:
+                type: str
+                default: /mapcache
+    openlayers:
+        type: map
+        mapping:
+            srs: *srs
+            center_x:
+                type: float
+                default: 600000.
+            center_y:
+                type: float
+                default: 200000.
+    server:
+        type: map
+        mapping:
+            geoms_redirect:
+                type: bool
+    cost:
+        type: map
+        mapping:
+            request_per_layers:
+                type: int
+                default: 10000000
+            esb_size:
+                type: int
+                default: 100
+            s3:
+                type: map
+                required: true
+                mapping:
+                    storage:
+                        type: float
+                        default: .125
+                    put:
+                        type: float
+                        default: .01
+                    get:
+                        type: float
+                        default: .01
+                    download:
+                        type: float
+                        default: .12
+            cloudfront:
+                type: map
+                required: true
+                mapping:
+                    get:
+                        type: float
+                        default: .009
+                    download:
+                        type: float
+                        default: .12
+            ec2:
+                type: map
+                required: true
+                mapping:
+                    usage:
+                        type: float
+                        default: .12
+            esb:
+                type: map
+                required: true
+                mapping:
+                    storage:
+                        type: float
+                        default: .11
+                    io:
+                        type: float
+                        default: 260.
+            sqs:
+                type: map
+                required: true
+                mapping:
+                    request:
+                        type: float
+                        default: .01

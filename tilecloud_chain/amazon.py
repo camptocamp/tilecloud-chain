@@ -113,7 +113,7 @@ def main():
     else:
         host = options.host
 
-    if not options.local and options.geodata and 'geodata_folder' in gene.config['ec2']:
+    if not options.local and options.geodata and 'geodata_folder' in gene.config['ec2']:  # pragma: no cover
         print("==== Sync geodata ====")
         ssh_options = ''
         if 'ssh_options' in gene.config['ec2']:  # pragma: no cover
@@ -127,9 +127,6 @@ def main():
 
     if options.deploy_code and not options.local:
         print("==== Sync and build code ====")
-        error = gene.validate(gene.config['ec2'], 'ec2', 'code_folder', required=True)
-        if error:
-            exit(1)  # pragma: no cover
 
         cmd = ['rsync', '--delete', ]
         if 'ssh_options' in gene.config['ec2']:  # pragma: no cover
@@ -336,7 +333,7 @@ def _get_arguments(options):
         "--config", options.config,
     ]
     if options.cache is not None:
-        arguments.extend(["--destination-cache", options.cache])
+        arguments.extend(["--cache", options.cache])
     if options.layer is not None:
         arguments.extend(["--layer", options.layer])
     if options.near is not None:

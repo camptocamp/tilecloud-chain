@@ -91,7 +91,7 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>19</MatrixWidth>
@@ -101,7 +101,7 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>38</MatrixWidth>
@@ -111,7 +111,7 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
       <TileMatrix>
         <ows:Identifier>2</ows:Identifier>
         <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>94</MatrixWidth>
@@ -121,7 +121,7 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
       <TileMatrix>
         <ows:Identifier>3</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>188</MatrixWidth>
@@ -131,7 +131,7 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
       <TileMatrix>
         <ows:Identifier>4</ows:Identifier>
         <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>375</MatrixWidth>
@@ -145,6 +145,8 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
 
 
 class TestServe(CompareCase):
+    def setUp(self):  # noqa
+        self.maxDiff = None
 
     @classmethod
     def setUpClass(cls):  # noqa
@@ -158,8 +160,6 @@ class TestServe(CompareCase):
         if os.path.exists('/tmp/tiles'):
             shutil.rmtree('/tmp/tiles')
 
-    @attr(serve_kvp=True)
-    @attr(serve=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_serve_kvp(self, l):
@@ -174,7 +174,7 @@ class TestServe(CompareCase):
                 ('point_hash/default/2012/swissgrid_5/1/15/8.png'),
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash' is finish
+            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -585,7 +585,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>3571.4285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>1875</MatrixWidth>
@@ -595,7 +595,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>0_2</ows:Identifier>
         <ScaleDenominator>714.28571428[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>9375</MatrixWidth>
@@ -605,7 +605,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>0_1</ows:Identifier>
         <ScaleDenominator>357.14285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>18750</MatrixWidth>
@@ -620,7 +620,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>0_25</ows:Identifier>
         <ScaleDenominator>892.85714285[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>7500</MatrixWidth>
@@ -635,7 +635,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>2_5</ows:Identifier>
         <ScaleDenominator>8928.5714285[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>750</MatrixWidth>
@@ -650,7 +650,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>19</MatrixWidth>
@@ -660,7 +660,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>38</MatrixWidth>
@@ -670,7 +670,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>2</ows:Identifier>
         <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>94</MatrixWidth>
@@ -680,7 +680,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>3</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>188</MatrixWidth>
@@ -690,7 +690,7 @@ Size per tile: 4[0-9][0-9] o
       <TileMatrix>
         <ows:Identifier>4</ows:Identifier>
         <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
-        <TopLeftCorner>420000.0 350000.0</TopLeftCorner>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
         <TileWidth>256</TileWidth>
         <TileHeight>256</TileHeight>
         <MatrixWidth>375</MatrixWidth>
@@ -705,8 +705,6 @@ Size per tile: 4[0-9][0-9] o
 
         l.check()
 
-    @attr(mbtiles_rest=True)
-    @attr(serve=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_mbtiles_rest(self, l):
@@ -720,7 +718,7 @@ Size per tile: 4[0-9][0-9] o
                 ('point_hash/default/2012/swissgrid_5.png.mbtiles')
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash' is finish
+            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -812,8 +810,6 @@ Size per tile: 4[0-9][0-9] o
 
         l.check()
 
-    @attr(bsddb_rest=True)
-    @attr(serve=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_bsddb_rest(self, l):
@@ -827,7 +823,7 @@ Size per tile: 4[0-9][0-9] o
                 ('point_hash/default/2012/swissgrid_5.png.bsddb')
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash' is finish
+            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -919,8 +915,6 @@ Size per tile: 4[0-9][0-9] o
 
         l.check()
 
-    @attr(serve_gfi=True)
-    @attr(serve=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_serve_gfi(self, l):
@@ -995,8 +989,6 @@ Size per tile: 4[0-9][0-9] o
 </msGMLOutput>
 """)
 
-    @attr(wsgi=True)
-    @attr(serve=True)
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_wsgi(self, l):
@@ -1010,7 +1002,7 @@ Size per tile: 4[0-9][0-9] o
                 ('point_hash/default/2012/swissgrid_5.png.mbtiles')
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash' is finish
+            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64

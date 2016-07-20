@@ -12,12 +12,15 @@ from tilecloud_chain import amazon, TileGeneration
 
 
 class TestMultihost(CompareCase):
+    def setUp(self):  # noqa
+        self.maxDiff = None
 
     @classmethod
     def setUpClass(cls):  # noqa
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-    @attr(geodata=True)
+    @attr(nopy2=True)
+    @attr(nopy3=True)
     def test_geodata(self):
         directory = os.getenv("HOME") + "/tilecloud_chain/tests/tilegeneration/hooks/"
         if os.path.exists(directory):
@@ -34,8 +37,6 @@ class TestMultihost(CompareCase):
 """
         )
 
-    @attr(none=True)
-    @attr(multihost=True)
     def test_none(self):
         self.assert_cmd_equals(
             cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
@@ -44,8 +45,6 @@ class TestMultihost(CompareCase):
             main_func=amazon.main,
             expected='')
 
-    @attr(code=True)
-    @attr(multihost=True)
     def test_code(self):
         if os.path.exists('/tmp/tests/test.conf'):
             os.remove('/tmp/tests/test.conf')
@@ -72,8 +71,7 @@ class TestMultihost(CompareCase):
         except:
             pass
 
-    @attr(database=True)
-    @attr(multihost=True)
+    @attr(nopy3=True)
     def test_database(self):
         out, err = self.run_cmd(
             cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
@@ -93,8 +91,6 @@ class TestMultihost(CompareCase):
 
 """)
 
-    @attr(time_multihost=True)
-    @attr(multihost=True)
     def test_time_multihost(self):
         self.assert_cmd_equals(
             cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
@@ -129,8 +125,6 @@ config:
         tile_size: 1.144
 """, regex=True)
 
-    @attr(time_near=True)
-    @attr(multihost=True)
     def test_time_near(self):
         self.assert_cmd_equals(
             cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
@@ -149,8 +143,6 @@ config:
         tile_size: 0.326
 """, regex=True)
 
-    @attr(time_no_geom=True)
-    @attr(multihost=True)
     def test_time_no_geom(self):
         self.assert_cmd_equals(
             cmd='generate_amazon -c tilecloud_chain/tests/tilegeneration/test.yaml '
@@ -169,8 +161,6 @@ config:
         tile_size: 0.326
 """, regex=True)
 
-    @attr(near=True)
-    @attr(multihost=True)
     def test_near(self):
         class Opt:
             zoom = '3'
@@ -180,5 +170,6 @@ config:
             verbose = False
             debug = False
             time = None
+            logging_configuration_file = None
         gene = TileGeneration('tilecloud_chain/tests/tilegeneration/test.yaml', Opt(), 'point')
         self.assertEqual(gene.geoms[3].bounds, (583840.0, 173360.0, 624800.0, 214320.0))

@@ -28,7 +28,10 @@ def main():
     )
 
     options = parser.parse_args()
-    gene = TileGeneration(options.config, options, layer_name=options.layer)
+    gene = TileGeneration(
+        options.config, options,
+        layer_name=options.layer, base_config={'cost': {}}
+    )
 
     all_size = 0
     tile_size = 0
@@ -72,102 +75,7 @@ def main():
     sys.exit(0)
 
 
-def validate_calculate_cost(gene):
-    error = False
-    name = "layer[%s]" % gene.layer['name']
-    error = gene.validate(gene.layer, name, 'cost', attribute_type=dict, default={}) or error
-    error = gene.validate(
-        gene.layer['cost'], name + '.cost', 'tileonly_generation_time',
-        attribute_type=float, default=40.0
-    ) or error
-    error = gene.validate(
-        gene.layer['cost'], name + '.cost', 'tile_generation_time',
-        attribute_type=float, default=30.0
-    ) or error
-    error = gene.validate(
-        gene.layer['cost'], name + '.cost', 'metatile_generation_time',
-        attribute_type=float, default=30.0
-    ) or error
-    error = gene.validate(
-        gene.layer['cost'], name + '.cost', 'tile_size',
-        attribute_type=float, default=20.0
-    ) or error
-
-    error = gene.validate(gene.config, 'config', 'cost', attribute_type=dict, default={}) or error
-    error = gene.validate(
-        gene.config['cost'], 'cost', 'request_per_layers',
-        attribute_type=int, default=10000000
-    ) or error
-    error = gene.validate(gene.config['cost'], 'cost', 'esb_size', attribute_type=int, default=100) or error
-    # http://aws.amazon.com/s3/pricing/
-    error = gene.validate(gene.config['cost'], 'cost', 's3', attribute_type=dict, default={}) or error
-    # [$/Go/month]
-    error = gene.validate(gene.config['cost']['s3'], 'cost.s3', 'storage', attribute_type=float, default=0.125) or error
-    # [$/put/1000]
-    error = gene.validate(gene.config['cost']['s3'], 'cost.s3', 'put', attribute_type=float, default=0.01) or error
-    # [$/get/10000]
-    error = gene.validate(gene.config['cost']['s3'], 'cost.s3', 'get', attribute_type=float, default=0.01) or error
-    # [$/Go]
-    error = gene.validate(gene.config['cost']['s3'], 'cost.s3', 'download', attribute_type=float, default=0.12) or error
-    # http://aws.amazon.com/cloudfront/pricing/
-    error = gene.validate(gene.config['cost'], 'cost', 'cloudfront', attribute_type=dict, default={}) or error
-    # [$/get/10000]
-    error = gene.validate(
-        gene.config['cost']['cloudfront'], 'cost.cloudfront', 'get',
-        attribute_type=float, default=0.009
-    ) or error
-    # [$/Go]
-    error = gene.validate(
-        gene.config['cost']['cloudfront'], 'cost.cloudfront', 'download',
-        attribute_type=float, default=0.12
-    ) or error
-    # http://aws.amazon.com/ec2/pricing/
-    error = gene.validate(gene.config['cost'], 'cost', 'ec2', attribute_type=dict, default={}) or error
-    # [$/hour]
-    ec2cost = {
-        't1.micro': 0.02,
-        'm1.small': 0.085,
-        'm1.medium': 0.17,
-        'm1.large': 0.34,
-        'm1.xlarge': 0.68,
-        'm2.xlarge': 0.506,
-        'm2.2xlarge': 1.012,
-        'm2.4xlarge': 2.024,
-        'c1.medium': 0.186,
-        'c1.xlarge': 0.744,
-        'cc1.4xlarge': 1.3,  # usa-est-1
-        'cc1.8xlarge': 2.7,
-        'cg1.4xlarge': 2.36,
-        'hi1.4xlarge': 3.41,
-    }
-    error = gene.validate(
-        gene.config['cost']['ec2'], 'cost.ec2', 'usage', attribute_type=float,
-        default=ec2cost[gene.config['ec2']['host_type']] if 'ec2' in gene.config else -1,
-    ) or error
-    # http://aws.amazon.com/ebs/
-    error = gene.validate(gene.config['cost'], 'cost', 'esb', attribute_type=dict, default={}) or error
-    # [$/1Go/month]
-    error = gene.validate(
-        gene.config['cost']['esb'], 'cost.esb', 'storage',
-        attribute_type=float, default=0.11
-    ) or error
-    # [$/ 1000 E/S/s /month]
-    error = gene.validate(gene.config['cost']['esb'], 'cost.esb', 'io', attribute_type=float, default=260.0) or error
-    # http://aws.amazon.com/sqs/pricing/
-    error = gene.validate(gene.config['cost'], 'cost', 'sqs', attribute_type=dict, default={}) or error
-    # [$/10000]
-    error = gene.validate(
-        gene.config['cost']['sqs'], 'cost.sqs', 'request',
-        attribute_type=float, default=0.01
-    ) or error
-
-    if error:
-        exit(1)  # pragma: no cover
-
-
 def _calculate_cost(gene, options):
-    validate_calculate_cost(gene)
-
     nb_metatiles = {}
     nb_tiles = {}
 
