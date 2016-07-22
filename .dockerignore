@@ -3,6 +3,7 @@
 !requirements.txt
 !README.rst
 !CHANGES.rst
+!MANIFEST.in
 !tilecloud_chain/*
 tilecloud_chain/tests
 !docker/run
