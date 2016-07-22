@@ -44,7 +44,7 @@ Nb errored tiles: 0
 Nb dropped tiles: 0
 Total time: 0:00:[0-9][0-9]
 Total size: 10 o
-Time per tiles: [0-9]+ ms
+Time per tile: [0-9]+ ms
 Size per tile: 10 o
 
 """ if d != '-q' else '',
@@ -85,7 +85,7 @@ Nb errored tiles: 0
 Nb dropped tiles: 0
 Total time: 0:00:[0-9][0-9]
 Total size: 103 o
-Time per tiles: [0-9]+ ms
+Time per tile: [0-9]+ ms
 Size per tile: 103 o
 
 """ if d != '-q' else '',

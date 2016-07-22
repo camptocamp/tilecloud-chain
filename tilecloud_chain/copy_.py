@@ -64,7 +64,7 @@ Nb errored tiles: %i
 Nb dropped tiles: %i
 Total time: %s
 Total size: %s
-Time per tiles: %i ms
+Time per tile: %i ms
 Size per tile: %i o
 """ % (
                     task_name,
