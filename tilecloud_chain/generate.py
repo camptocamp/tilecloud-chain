@@ -51,6 +51,7 @@ class Generate:
         count_metatiles_dropped = Count()
         count_tiles = None
         count_tiles_dropped = Count()
+        count_tiles_stored = None
 
         if options.get_bbox:
             try:
@@ -116,6 +117,7 @@ class Generate:
         if options.role == 'master':  # pragma: no cover
             # Put the metatiles into the SQS queue
             gene.put(sqs_tilestore)
+            count_tiles = gene.counter()
 
         elif options.role in ('local', 'slave', 'hash'):
             if gene.layer['type'] == 'wms':
@@ -145,6 +147,7 @@ class Generate:
 
                 grid = gene.get_grid()
                 if gene.layer['output_format'] == 'grid':
+                    count_tiles = gene.counter()
                     gene.get(MapnikDropActionTileStore(
                         tilegrid=grid['obj'],
                         mapfile=gene.layer['mapfile'],
@@ -217,7 +220,8 @@ class Generate:
                 # Handle errors
                 gene.add_error_filters()
 
-            self.count_tiles = gene.counter()
+            if gene.layer['type'] != 'mapnik' or gene.layer['output_format'] != 'grid':
+                count_tiles = gene.counter()
 
             if 'pre_hash_post_process' in gene.layer:  # pragma: no cover
                 gene.process(gene.layer['pre_hash_post_process'])
@@ -236,11 +240,13 @@ class Generate:
                     ))
 
             gene.process()
+        else:  # pragma: no cover
+            count_tiles = gene.counter()
 
         if options.role in ('local', 'slave'):
             gene.add_error_filters()
             gene.ifilter(DropEmpty(gene))
-            count_tiles = gene.counter(size=True)
+            count_tiles_stored = gene.counter(size=True)
 
             if options.time:
                 def log_size(tile):
@@ -249,8 +255,6 @@ class Generate:
                 gene.imap(log_size)
 
             gene.put(cache_tilestore, "Store the tile")
-        else:
-            count_tiles = gene.counter(size=True)
 
         gene.add_error_filters()
         if options.generated_tiles_file:  # pragma: no cover
@@ -272,6 +276,7 @@ class Generate:
             else:
                 gene.delete(sqs_tilestore)
 
+        message = []
         if options.time is not None:
             class LogTime:
                 n = 0
@@ -292,38 +297,44 @@ class Generate:
         else:
             gene.consume()
 
+            message = [
+                "The tile generation of layer '{}{}' is finish".format(
+                    gene.layer['name'],
+                    "" if len(dimensions) == 0 or gene.layer['type'] != 'wms'
+                    else " (%s)" % ", ".join(["=".join(d) for d in dimensions.items()])
+                ),
+            ]
+            if options.role == "master":  # pragma: no cover
+                message.append("Nb of generated jobs: {}".format(count_tiles.nb))
+            else:
+                if meta:
+                    message += [
+                        "Nb generated metatiles: {}".format(count_metatiles.nb),
+                        "Nb metatiles dropped: {}".format(count_metatiles_dropped.nb),
+                    ]
+                message += [
+                    "Nb generated tiles: {}".format(count_tiles.nb),
+                    "Nb tiles dropped: {}".format(count_tiles_dropped.nb),
+                ]
+                if options.role in ('local', 'slave'):
+                    message += [
+                        "Nb tiles stored: {}".format(count_tiles_stored.nb),
+                        "Nb tiles in error: {}".format(gene.error),
+                        "Total time: {}".format(duration_format(gene.duration)),
+                    ]
+                    if count_tiles_stored.nb != 0:
+                        message.append("Total size: {}".format(size_format(count_tiles_stored.size)))
+                    if count_tiles.nb != 0:
+                        message.append("Time per tile: {:0.0f} ms".format(
+                            (gene.duration / count_tiles.nb * 1000).seconds)
+                        )
+                    if count_tiles_stored.nb != 0:
+                        message.append("Size per tile: {:0.0f} o".format(
+                            count_tiles_stored.size / count_tiles_stored.nb)
+                        )
+
             if not options.quiet and options.role in ('local', 'slave'):
-                nb_tiles = count_tiles.nb + count_tiles_dropped.nb
-                print(
-                    """The tile generation of layer '%s%s' is finish
-%sNb generated tiles: %i
-Nb tiles dropped: %i
-Nb tiles stored: %i
-Nb error: %i
-Total time: %s
-Total size: %s
-Time per tiles: %i ms
-Size per tile: %i o
-""" % (
-                        gene.layer['name'],
-                        "" if len(dimensions) == 0 or gene.layer['type'] != 'wms'
-                        else " (%s)" % ", ".join(["=".join(d) for d in dimensions.items()]),
-                        """Nb generated metatiles: %i
-Nb metatiles dropped: %i
-""" %
-                        (
-                            count_metatiles.nb, count_metatiles_dropped.nb
-                        ) if meta else '',
-                        nb_tiles,
-                        count_tiles_dropped.nb,
-                        count_tiles.nb,
-                        gene.error,
-                        duration_format(gene.duration),
-                        size_format(count_tiles.size),
-                        (gene.duration / nb_tiles * 1000).seconds if nb_tiles != 0 else 0,
-                        count_tiles.size / count_tiles.nb if count_tiles.nb != 0 else -1
-                    )
-                )
+                print("\n".join(message) + "\n")
 
         if cache_tilestore is not None and hasattr(cache_tilestore, 'connection'):
             cache_tilestore.connection.close()
@@ -333,35 +344,17 @@ Nb metatiles dropped: %i
                 connection = sns.connect_to_region(gene.config['sns']['region'])
             else:
                 connection = boto.connect_sns()
+            sns_message = [message[0]]
+            sns_message += [
+                "Layer: {}".format(gene.layer['name']),
+                "Role: {}".format(options.role),
+                "Host: {}".format(socket.getfqdn()),
+                "Command: {}".format(' '.join([quote(arg) for arg in sys.argv])),
+            ]
+            sns_message += message[1:]
             connection.publish(
                 gene.config['sns']['topic'],
-                """The tile generation is finish
-Layer: %(layer)s
-Role: %(role)s
-Host: %(host)s
-Command: %(cmd)s
-
-%(meta)sNb generated tiles: %(nb_tiles)i
-Nb tiles dropped: %(nb_tiles_dropped)i
-Total time: %(duration)s [s]
-Time per tiles: %(tile_duration)i [ms]""" %
-                {
-                    'role': options.role,
-                    'layer': gene.layer['name'],
-                    'host': socket.getfqdn(),
-                    'cmd': ' '.join([quote(arg) for arg in sys.argv]),
-                    'meta': """Nb generated metatiles: %(nb_metatiles)i
-Nb metatiles dropped: %(nb_metatiles_dropped)i
-""" %
-                    {
-                        'nb_metatiles': count_metatiles.nb,
-                        'nb_metatiles_dropped': count_metatiles_dropped.nb,
-                    } if meta else '',
-                    'nb_tiles': nb_tiles if meta else count_metatiles.nb,
-                    'nb_tiles_dropped': count_tiles_dropped.nb if meta else count_metatiles_dropped.nb,
-                    'duration': duration_format(gene.duration),
-                    'tile_duration': (gene.duration / nb_tiles * 1000).seconds if nb_tiles != 0 else 0,
-                },
+                "\n".join(sns_message),
                 "Tile generation (%(layer)s - %(role)s)" % {
                     'role': options.role,
                     'layer': gene.layer['name']
