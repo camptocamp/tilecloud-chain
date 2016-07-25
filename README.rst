@@ -166,6 +166,8 @@ To start the common attributes are:
 
 ``bbox`` used to limit the tiles generation.
 
+``px_buffer`` a buffer in px arround the object area (geoms or extent).
+
 
 WMTS layout
 ~~~~~~~~~~~
