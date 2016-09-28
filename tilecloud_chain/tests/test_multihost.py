@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import shutil
 from subprocess import Popen, PIPE
 
@@ -59,6 +60,7 @@ class TestMultihost(CompareCase):
             '--disable-geodata --disable-database --disable-fillqueue --disable-tilesgen --host localhost',
             main_func=amazon.main)
         self.assertEqual(out, '==== Sync and build code ====\n')
+        err = re.sub(re.escape("b\"AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1. Set the 'ServerName' directive globally to suppress this message\\n\""), "", err).strip()  # noqa
         self.assertEqual(err, '')
         with open('/tmp/tests/test/tilecloud_chain/tests/tilegeneration/hooks/post-restore-database', 'r') as f:
             self.assert_result_equals(f.read(), "echo SUCCESS\n")
