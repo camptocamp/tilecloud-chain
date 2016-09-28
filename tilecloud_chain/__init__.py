@@ -17,6 +17,7 @@ from hashlib import sha1
 from fractions import Fraction
 from datetime import datetime
 from tilecloud import consume
+from itertools import product
 
 try:
     from PIL import Image
@@ -429,7 +430,7 @@ class TileGeneration:
             if dim['name'] not in options_dimensions
         ]
         all_dimensions += [[p] for p in options_dimensions.items()]
-        all_dimensions = zip(*all_dimensions)
+        all_dimensions = product(*all_dimensions)
         return [dict(d) for d in all_dimensions]
 
     def get_store(self, cache, layer, dimensions=None, read_only=False):
