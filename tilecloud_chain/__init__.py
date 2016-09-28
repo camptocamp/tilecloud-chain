@@ -433,7 +433,7 @@ class TileGeneration:
         all_dimensions = product(*all_dimensions)
         return [dict(d) for d in all_dimensions]
 
-    def get_store(self, cache, layer, dimensions=None, read_only=False):
+    def get_store(self, cache, layer, dimensions={}, read_only=False):
         # build layout
         grid = layer['grid_ref'] if 'grid_ref' in layer else None
         layout = WMTSTileLayout(
