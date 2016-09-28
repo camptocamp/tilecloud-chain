@@ -18,11 +18,8 @@ class Copy:
         if gene.layers[layer]['type'] == 'wms':
             all_dimensions = gene.get_all_dimensions(gene.layers[layer])
 
-            if len(all_dimensions) == 0:
-                self._copy(options, gene, layer, source, dest, task_name)
-            else:  # pragma: no cover
-                for dimensions in all_dimensions:
-                    self._copy(options, gene, layer, source, dest, task_name, dimensions)
+            for dimensions in all_dimensions:
+                self._copy(options, gene, layer, source, dest, task_name, dimensions)
         else:  # pragma: no cover
             self._copy(options, gene, layer, source, dest, task_name)
 
