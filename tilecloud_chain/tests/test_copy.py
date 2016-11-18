@@ -66,7 +66,7 @@ Size per tile: 10 o
                 'wget',
                 'http://localhost/mapserv?STYLES=default&SERVICE=WMS&FORMAT=\
 image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
-%28560800.0%2C+158000.0%2C+573600.0%2C+170800.0%29&LAYERS=point&SRS=epsg%3A21781',
+%28560800.0%2C+158000.0%2C+573600.0%2C+170800.0%29&LAYERS=point&SRS=EPSG%3A21781',
                 '-O',
                 '/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png',
             ])
