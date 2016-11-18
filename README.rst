@@ -253,9 +253,9 @@ The configuration is in the layer like this:
 
 .. code:: yaml
 
-    connection: user=www-data password=www-data dbname=<db> host=localhost
     geoms:
-    -   sql: <column> AS geom FROM <table>
+    -   connection: user=www-data password=www-data dbname=<db> host=localhost
+        sql: <column> AS geom FROM <table>
         min_resolution: <resolution> # included, optional, last win
         max_resolution: <resolution> # included, optional, last win
 
@@ -263,10 +263,11 @@ Example:
 
 .. code:: yaml
 
-    connection: user=postgres password=postgres dbname=tests host=localhost
     geoms:
-    -   sql: the_geom AS geom FROM tests.polygon
-    -   sql: the_geom AS geom FROM tests.point
+    -   connection: user=postgres password=postgres dbname=tests host=localhost
+        sql: the_geom AS geom FROM tests.polygon
+    -   connection: user=postgres password=postgres dbname=tests host=localhost
+        sql: the_geom AS geom FROM tests.point
         min_resolution: 10
         max_resolution: 20
 
