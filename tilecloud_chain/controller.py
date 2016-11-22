@@ -226,7 +226,7 @@ def _generate_legend_images(gene):
                             legends.append(Image.open(StringIO(response.content)))
                         except:  # pragma: nocover
                             logger.warn(
-                                "Unable to read legend image for layer '{}'-'{}', resolution '{}': {}".format(
+                                "Unable to read legend image for layer '{0}'-'{1}', resolution '{2}': {3}".format(
                                     layer['name'], l, resolution, response.content
                                 )
                             )
