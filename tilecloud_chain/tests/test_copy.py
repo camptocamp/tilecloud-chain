@@ -35,7 +35,7 @@ class TestGenerate(CompareCase):
 
         for d in ('-d', '-q', '-v'):
             self.assert_cmd_equals(
-                cmd='.build/venv/bin/generate_copy %s -c tilegeneration/test-copy.yaml src dst' % d,
+                cmd='.build/venv/bin/generate_copy {0!s} -c tilegeneration/test-copy.yaml src dst'.format(d),
                 main_func=copy_.main,
                 regex=True,
                 expected="""The tile copy of layer 'point_hash' is finish
@@ -76,7 +76,7 @@ image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
             self.assertEqual(statinfo.st_size, 755)
 
             self.assert_cmd_equals(
-                cmd='.build/venv/bin/generate_process %s -c tilegeneration/test-copy.yaml --cache src optipng' % d,
+                cmd='.build/venv/bin/generate_process {0!s} -c tilegeneration/test-copy.yaml --cache src optipng'.format(d),
                 main_func=copy_.process,
                 regex=True,
                 expected="""The tile process of layer 'point_hash' is finish

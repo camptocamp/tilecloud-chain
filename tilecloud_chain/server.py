@@ -53,7 +53,7 @@ class Server:
         self.filters = {}
         self.max_zoom_seed = {}
 
-        logger.info("Config file: '%s'" % config_file)
+        logger.info("Config file: '{0!s}'".format(config_file))
         self.tilegeneration = TileGeneration(config_file)
 
         self.expires_hours = self.tilegeneration.config['apache']['expires']
@@ -73,12 +73,12 @@ class Server:
             def _get(self, path, **kwargs):
                 global s3bucket
                 try:
-                    s3key = s3bucket.key(os.path.join('%(folder)s' % self.cache, path))
+                    s3key = s3bucket.key(os.path.join('{folder!s}'.format(**self.cache), path))
                     responce = s3key.get()
                     return responce.body, responce.headers['Content-Type']
                 except:
                     s3bucket = S3Connection().bucket(self.cache['bucket'])
-                    s3key = s3bucket.key(os.path.join('%(folder)s' % self.cache, path))
+                    s3key = s3bucket.key(os.path.join('{folder!s}'.format(**self.cache), path))
                     responce = s3key.get()
                     return responce.body, responce.headers['Content-Type']
         else:
@@ -177,7 +177,7 @@ class Server:
                             datetime.datetime.utcnow() +
                             datetime.timedelta(hours=self.expires_hours)
                         ).isoformat(),
-                        'Cache-Control': "max-age=%i" % (3600 * self.expires_hours),
+                        'Cache-Control': "max-age={0:d}".format((3600 * self.expires_hours)),
                         'Access-Control-Allow-Origin': '*',
                         'Access-Control-Allow-Methods': 'GET',
                     }, **kwargs)
@@ -186,7 +186,7 @@ class Server:
             elif len(path) >= 1 and path[0] != 'wmts':  # pragma: no cover
                 return self.error(
                     404,
-                    "Type '%s' don't exists, allows values: 'wmts' or 'static'" % path[0],
+                    "Type '{0!s}' don't exists, allows values: 'wmts' or 'static'".format(path[0]),
                     **kwargs
                 )
             path = path[1:]  # remove type
@@ -207,7 +207,7 @@ class Server:
                 if params['LAYER'] in self.layers:
                     layer = self.tilegeneration.layers[params['LAYER']]
                 else:
-                    return self.error(400, "Wrong Layer '%s'" % params['LAYER'], **kwargs)
+                    return self.error(400, "Wrong Layer '{0!s}'".format(params['LAYER']), **kwargs)
 
                 index = 3
                 dimensions = path[index:index + len(layer['dimensions'])]
@@ -225,7 +225,7 @@ class Server:
                     params['REQUEST'] = 'GetTile'
                     params['TILECOL'] = last[0]
                     if last[1] != layer['extension']:  # pragma: no cover
-                        return self.error(400, "Wrong extention '%s'" % last[1], **kwargs)
+                        return self.error(400, "Wrong extention '{0!s}'".format(last[1]), **kwargs)
                 elif len(path) == index + 6:
                     params['REQUEST'] = 'GetFeatureInfo'
                     params['TILECOL'] = path[index + 3]
@@ -244,9 +244,9 @@ class Server:
                 return self.error(400, "Not all required parameters are present", **kwargs)
 
         if params['SERVICE'] != 'WMTS':
-            return self.error(400, "Wrong Service '%s'" % params['SERVICE'], **kwargs)
+            return self.error(400, "Wrong Service '{0!s}'".format(params['SERVICE']), **kwargs)
         if params['VERSION'] != '1.0.0':
-            return self.error(400, "Wrong Version '%s'" % params['VERSION'], **kwargs)
+            return self.error(400, "Wrong Version '{0!s}'".format(params['VERSION']), **kwargs)
 
         if params['REQUEST'] == 'GetCapabilities':
             wmtscapabilities_file = self.cache['wmtscapabilities_file']
@@ -258,7 +258,7 @@ class Server:
                         datetime.datetime.utcnow() +
                         datetime.timedelta(hours=self.expires_hours)
                     ).isoformat(),
-                    'Cache-Control': "max-age=%i" % (3600 * self.expires_hours),
+                    'Cache-Control': "max-age={0:d}".format((3600 * self.expires_hours)),
                     'Access-Control-Allow-Origin': '*',
                     'Access-Control-Allow-Methods': 'GET',
                 }, **kwargs)
@@ -278,7 +278,7 @@ class Server:
             if params['LAYER'] in self.layers:
                 layer = self.tilegeneration.layers[params['LAYER']]
             else:
-                return self.error(400, "Wrong Layer '%s'" % params['LAYER'], **kwargs)
+                return self.error(400, "Wrong Layer '{0!s}'".format(params['LAYER']), **kwargs)
 
             for dimension in layer['dimensions']:
                 dimensions.append(
@@ -288,9 +288,9 @@ class Server:
                 )
 
         if params['STYLE'] != layer['wmts_style']:
-            return self.error(400, "Wrong Style '%s'" % params['STYLE'], **kwargs)
+            return self.error(400, "Wrong Style '{0!s}'".format(params['STYLE']), **kwargs)
         if params['TILEMATRIXSET'] != layer['grid']:
-            return self.error(400, "Wrong TileMatrixSet '%s'" % params['TILEMATRIXSET'], **kwargs)
+            return self.error(400, "Wrong TileMatrixSet '{0!s}'".format(params['TILEMATRIXSET']), **kwargs)
 
         tile = Tile(TileCoord(
             # TODO fix for matrix_identifier = resolution
@@ -325,13 +325,13 @@ class Server:
                     }), no_cache=True, **kwargs
                 )
             else:  # pragma: no cover
-                return self.error(400, "Layer '%s' not queryable" % layer['name'], **kwargs)
+                return self.error(400, "Layer '{0!s}' not queryable".format(layer['name']), **kwargs)
 
         if params['REQUEST'] != 'GetTile':
-            return self.error(400, "Wrong Request '%s'" % params['REQUEST'], **kwargs)
+            return self.error(400, "Wrong Request '{0!s}'".format(params['REQUEST']), **kwargs)
 
         if params['FORMAT'] != layer['mime_type']:
-            return self.error(400, "Wrong Format '%s'" % params['FORMAT'], **kwargs)
+            return self.error(400, "Wrong Format '{0!s}'".format(params['FORMAT']), **kwargs)
 
         if tile.tilecoord.z > self.max_zoom_seed[layer['name']]:  # pragma: no cover
             return self.forward(
@@ -363,7 +363,7 @@ class Server:
         else:  # pragma: no cover
             return self.error(
                 400,
-                "No store found for layer '%s' and dimensions %s" % (
+                "No store found for layer '{0!s}' and dimensions {1!s}".format(
                     layer['name'], ', '.join(dimensions)
                 ),
                 **kwargs
@@ -377,7 +377,7 @@ class Server:
                     datetime.datetime.utcnow() +
                     datetime.timedelta(hours=self.expires_hours)
                 ).isoformat(),
-                'Cache-Control': "max-age=%i" % (3600 * self.expires_hours),
+                'Cache-Control': "max-age={0:d}".format((3600 * self.expires_hours)),
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET',
             }, **kwargs)
@@ -400,14 +400,14 @@ class Server:
                     datetime.datetime.utcnow() +
                     datetime.timedelta(hours=self.expires_hours)
                 ).isoformat()
-                responce_headers['Cache-Control'] = "max-age=%i" % (3600 * self.expires_hours)
+                responce_headers['Cache-Control'] = "max-age={0:d}".format((3600 * self.expires_hours))
                 responce_headers['Access-Control-Allow-Origin'] = '*'
                 responce_headers['Access-Control-Allow-Methods'] = 'GET'
             responce_headers
             return self.responce(responce.content, headers=responce_headers, **kwargs)
         else:  # pragma: no cover
-            message = "The URL '%s' return '%i %s', content:\n%s" % (
-                url, responce.status_code, responce.reason, responce.text,
+            message = "The URL '{0!s}' return '{1:d} {2!s}', content:\n{3!s}".format(
+                url, responce.status_code, responce.reason, responce.text
             )
             logger.warning(message)
             return self.error(502, message=message, **kwargs)
