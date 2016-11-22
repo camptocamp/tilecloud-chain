@@ -384,7 +384,9 @@ class Server:
         else:
             return self.error(204, **kwargs)
 
-    def forward(self, url, headers={}, no_cache=False, **kwargs):
+    def forward(self, url, headers=None, no_cache=False, **kwargs):
+        if headers is None:
+            headers = {}
         if no_cache:
             headers['Cache-Control'] = 'no-cache'
             headers['Pragma'] = 'no-cache'
@@ -424,7 +426,9 @@ class Server:
         start_response(self.HTTP_MESSAGES[code], [])
         return [message]
 
-    def responce(self, data, headers={}, start_response=None):
+    def responce(self, data, headers=None, start_response=None):
+        if headers is None:
+            headers = {}
         headers['Content-Length'] = str(len(data))
         start_response('200 OK', headers.items())
         return [data]
@@ -466,7 +470,9 @@ class PyramidView(Server):
     def error(self, code, message=''):
         raise self.HTTP_EXCEPTIONS[code](message)
 
-    def responce(self, data, headers={}):
+    def responce(self, data, headers=None):
+        if headers is None:
+            headers = {}
         self.request.response.headers = headers
         if type(data) == memoryview:
             self.request.response.body_file = data
