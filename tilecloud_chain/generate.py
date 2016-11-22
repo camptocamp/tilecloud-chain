@@ -298,38 +298,38 @@ class Generate:
             gene.consume()
 
             message = [
-                "The tile generation of layer '{}{}' is finish".format(
+                "The tile generation of layer '{0}{1}' is finish".format(
                     gene.layer['name'],
                     "" if len(dimensions) == 0 or gene.layer['type'] != 'wms'
                     else " (%s)" % ", ".join(["=".join(d) for d in dimensions.items()])
                 ),
             ]
             if options.role == "master":  # pragma: no cover
-                message.append("Nb of generated jobs: {}".format(count_tiles.nb))
+                message.append("Nb of generated jobs: {0}".format(count_tiles.nb))
             else:
                 if meta:
                     message += [
-                        "Nb generated metatiles: {}".format(count_metatiles.nb),
-                        "Nb metatiles dropped: {}".format(count_metatiles_dropped.nb),
+                        "Nb generated metatiles: {0}".format(count_metatiles.nb),
+                        "Nb metatiles dropped: {0}".format(count_metatiles_dropped.nb),
                     ]
                 message += [
-                    "Nb generated tiles: {}".format(count_tiles.nb),
-                    "Nb tiles dropped: {}".format(count_tiles_dropped.nb),
+                    "Nb generated tiles: {0}".format(count_tiles.nb),
+                    "Nb tiles dropped: {0}".format(count_tiles_dropped.nb),
                 ]
                 if options.role in ('local', 'slave'):
                     message += [
-                        "Nb tiles stored: {}".format(count_tiles_stored.nb),
-                        "Nb tiles in error: {}".format(gene.error),
-                        "Total time: {}".format(duration_format(gene.duration)),
+                        "Nb tiles stored: {0}".format(count_tiles_stored.nb),
+                        "Nb tiles in error: {0}".format(gene.error),
+                        "Total time: {0}".format(duration_format(gene.duration)),
                     ]
                     if count_tiles_stored.nb != 0:
-                        message.append("Total size: {}".format(size_format(count_tiles_stored.size)))
+                        message.append("Total size: {0}".format(size_format(count_tiles_stored.size)))
                     if count_tiles.nb != 0:
-                        message.append("Time per tile: {:0.0f} ms".format(
+                        message.append("Time per tile: {0:0.0f} ms".format(
                             (gene.duration / count_tiles.nb * 1000).seconds)
                         )
                     if count_tiles_stored.nb != 0:
-                        message.append("Size per tile: {:0.0f} o".format(
+                        message.append("Size per tile: {0:0.0f} o".format(
                             count_tiles_stored.size / count_tiles_stored.nb)
                         )
 
@@ -346,10 +346,10 @@ class Generate:
                 connection = boto.connect_sns()
             sns_message = [message[0]]
             sns_message += [
-                "Layer: {}".format(gene.layer['name']),
-                "Role: {}".format(options.role),
-                "Host: {}".format(socket.getfqdn()),
-                "Command: {}".format(' '.join([quote(arg) for arg in sys.argv])),
+                "Layer: {0}".format(gene.layer['name']),
+                "Role: {0}".format(options.role),
+                "Host: {0}".format(socket.getfqdn()),
+                "Command: {0}".format(' '.join([quote(arg) for arg in sys.argv])),
             ]
             sns_message += message[1:]
             connection.publish(
