@@ -46,7 +46,9 @@ class Generate:
         else:  # pragma: no cover
             self._gene(options, gene, layer)
 
-    def _gene(self, options, gene, layer, dimensions={}):
+    def _gene(self, options, gene, layer, dimensions=None):
+        if dimensions is None:  # pragma: no cover
+            dimensions = {}
         count_metatiles = None
         count_metatiles_dropped = Count()
         count_tiles = None
