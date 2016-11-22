@@ -241,7 +241,11 @@ class TileGeneration:
                 scale = grid['resolution_scale']
                 for r in grid['resolutions']:
                     if r * scale % 1 != 0.0:
-                        logger.error("The resolution {0!s} * resolution_scale {1:d} is not an integer.".format(r, scale))
+                        logger.error(
+                            "The resolution {0!s} * resolution_scale {1:d} is not an integer.".format(
+                                r, scale
+                            )
+                        )
                         error = True
             else:
                 grid['resolution_scale'] = self._resolution_scale(grid['resolutions'])

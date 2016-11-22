@@ -128,8 +128,7 @@ def _get(path, cache):
 def _validate_generate_wmts_capabilities(gene, cache):
     if 'http_url' not in cache and 'http_urls' not in cache:  # pragma: no cover
         logger.error(
-            "The attribute 'http_url' or 'http_urls' is required in the object {0!s}.".format(
-            ('cache[{0!s}]'.format(cache['name'])))
+            "The attribute 'http_url' or 'http_urls' is required in the object cache[{0!s}].".format(cache['name'])
         )
         exit(1)
 
@@ -312,7 +311,7 @@ def _generate_apache_config(gene):
                         'region': cache['region'],
                         'bucket': cache['bucket'],
                         'folder': folder
-                })
+                    })
                 f.write(
                     """
     <Proxy {tiles_url!s}*>

@@ -58,10 +58,9 @@ class Generate:
         if options.get_bbox:
             try:
                 tilecoord = parse_tilecoord(options.get_bbox)
-                print(
-                    "Tile bounds: [{0:d},{1:d},{2:d},{3:d}]".format(*
-                    gene.layer['grid_ref']['obj'].extent(tilecoord))
-                )
+                print("Tile bounds: [{0:d},{1:d},{2:d},{3:d}]".format(
+                    *gene.layer['grid_ref']['obj'].extent(tilecoord)
+                ))
                 exit()
             except ValueError as e:  # pragma: no cover
                 exit(
@@ -261,7 +260,7 @@ class Generate:
             generated_tiles_file = open(options.generated_tiles_file, 'a')
 
             def do(tile):
-                generated_tiles_file.write('{0!s}\n'.format(tile.tilecoord ))
+                generated_tiles_file.write('{0!s}\n'.format(tile.tilecoord))
                 return tile
             gene.imap(do)
 
@@ -289,7 +288,9 @@ class Generate:
                     elif self.n == 2 * options.time:
                         t2 = datetime.now()
                         d = (t2 - self.t1) / options.time
-                        sys.stdout.write('time: {0:d}\n'.format(((d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds)))
+                        sys.stdout.write('time: {0:d}\n'.format(
+                            ((d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds)
+                        ))
                     return tile
             gene.imap(LogTime())
 

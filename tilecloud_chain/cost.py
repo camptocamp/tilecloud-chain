@@ -59,7 +59,9 @@ def main():
         print('Total generation time: {0!s} [d h:mm:ss]'.format((duration_format(all_time))))
         print('Total generation cost: {0:0.2f} [$]'.format(all_price))
     print("")
-    print('S3 Storage: {0:0.2f} [$/month]'.format((all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024))))
+    print('S3 Storage: {0:0.2f} [$/month]'.format(
+        all_size * gene.config['cost']['s3']['storage'] / (1024.0 * 1024 * 1024)
+    ))
     print('S3 get: {0:0.2f} [$/month]'.format((
         gene.config['cost']['s3']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
         gene.config['cost']['s3']['download'] * gene.config['cost']['request_per_layers'] * tile_size))
