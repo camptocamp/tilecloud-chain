@@ -197,24 +197,24 @@ class TileGeneration:
                         source_data=cache,
                         schema_data=yaml.load(pkgutil.get_data("tilecloud_chain", "schema-cache-s3.yaml")),
                     )
-                    path_ = 'caches/{}'.format(name)
+                    path_ = 'caches/{0}'.format(name)
                     self.config['caches'][name] = c.validate()
             for name, layer in self.config['layers'].items():
                 c = Core(
                     source_data=layer,
                     schema_data=yaml.load(pkgutil.get_data(
                         "tilecloud_chain",
-                        "schema-layer-{}.yaml".format(layer['type'])
+                        "schema-layer-{0}.yaml".format(layer['type'])
                     )),
                 )
-                path_ = 'layers/{}'.format(name)
+                path_ = 'layers/{0}'.format(name)
                 self.config['layers'][name] = c.validate()
 
         except SchemaError:
-            logger.error("The config file '{}' in invalid.\n{}".format(
+            logger.error("The config file '{0}' in invalid.\n{1}".format(
                 config_file,
                 "\n".join(sorted([
-                    " - {}: {}".format(
+                    " - {0}: {1}".format(
                         os.path.join('/', path_, re.sub('^/', '', error.path)),
                         re.sub(" Path: '{path}'", '', error.msg).format(**error.__dict__)
                     )
@@ -223,12 +223,12 @@ class TileGeneration:
             ))
             exit(1)
         except NotSequenceError as e:
-            logger.error("The config file '{}' in invalid.\n - {}".format(
+            logger.error("The config file '{0}' in invalid.\n - {1}".format(
                 config_file, e.msg
             ))
             exit(1)
         except NotMappingError as e:  # pragma: no cover
-            logger.error("The config file '{}' in invalid.\n - {}".format(
+            logger.error("The config file '{0}' in invalid.\n - {1}".format(
                 config_file, e.msg
             ))
             exit(1)
@@ -288,7 +288,7 @@ class TileGeneration:
             if layer['type'] == 'mapnik' and \
                     layer['output_format'] == 'grid' and \
                     layer.get('meta', False):
-                logger.error("The layer '{}' is of type Mapnik/Grid, that can't support matatiles.".format(
+                logger.error("The layer '{0}' is of type Mapnik/Grid, that can't support matatiles.".format(
                     lname
                 ))
                 error = True
