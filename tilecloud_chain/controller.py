@@ -94,7 +94,7 @@ def main():
 def _send(data, path, mime_type, cache):
     if cache['type'] == 's3':  # pragma: no cover
         s3bucket = S3Connection().bucket(cache['bucket'])
-        s3key = s3bucket.key(os.path.join('%(folder)s' % cache, path))
+        s3key = s3bucket.key(os.path.join('{folder!s}'.format(**cache), path))
         s3key.body = data
         s3key['Content-Encoding'] = 'utf-8'
         s3key['Content-Type'] = mime_type
@@ -115,7 +115,7 @@ def _send(data, path, mime_type, cache):
 def _get(path, cache):
     if cache['type'] == 's3':  # pragma: no cover
         s3bucket = S3Connection().bucket(cache['bucket'])
-        s3key = s3bucket.key(os.path.join('%(folder)s' % cache, path))
+        s3key = s3bucket.key(os.path.join('{folder!s}'.format(**cache), path))
         return s3key.get().body
     else:
         p = os.path.join(cache['folder'], path)
@@ -128,8 +128,8 @@ def _get(path, cache):
 def _validate_generate_wmts_capabilities(gene, cache):
     if 'http_url' not in cache and 'http_urls' not in cache:  # pragma: no cover
         logger.error(
-            "The attribute 'http_url' or 'http_urls' is required in the object %s." %
-            ('cache[%s]' % cache['name'])
+            "The attribute 'http_url' or 'http_urls' is required in the object {0!s}.".format(
+            ('cache[{0!s}]'.format(cache['name'])))
         )
         exit(1)
 
@@ -159,7 +159,7 @@ def _generate_wmts_capabilities(gene):
         if 'legend_mime' in layer and 'legend_extention' in layer and 'legends' not in layer:
             layer['legends'] = []
             for zoom, resolution in enumerate(layer['grid_ref']['resolutions']):
-                path = '/'.join(['1.0.0', layer['name'], layer['wmts_style'], 'legend%s.%s' % (
+                path = '/'.join(['1.0.0', layer['name'], layer['wmts_style'], 'legend{0!s}.{1!s}'.format(
                     zoom,
                     layer['legend_extention']
                 )])
@@ -179,7 +179,7 @@ def _generate_wmts_capabilities(gene):
                         new_legend['width'] = pil_img.size[0]
                         new_legend['height'] = pil_img.size[1]
                     except:  # pragma: nocover
-                        logger.warn("Unable to read legend image '%s', with '%r'" % (path, img))
+                        logger.warn("Unable to read legend image '{0!s}', with '{1!r}'".format(path, img))
                     previous_legend = new_legend
                 previous_resolution = resolution
 
@@ -245,7 +245,7 @@ def _generate_legend_images(gene):
                         previous_hash = new_hash
                         _send(
                             result,
-                            '1.0.0/%s/%s/legend%s.%s' % (
+                            '1.0.0/{0!s}/{1!s}/legend{2!s}.{3!s}'.format(
                                 layer['name'],
                                 layer['wmts_style'],
                                 zoom,
@@ -291,55 +291,55 @@ def _generate_apache_config(gene):
 
         if not use_server:
             f.write("""
-    <Location %(location)s>
+    <Location {location!s}>
         ExpiresActive on
-        ExpiresDefault "now plus %(expires)i hours"
-    %(headers)s
+        ExpiresDefault "now plus {expires:d} hours"
+    {headers!s}
     </Location>
-    """ % {
+    """.format(**{
                 'location': gene.config['apache']['location'],
                 'expires': gene.config['apache']['expires'],
                 'headers': ''.join([
-                    '    Header set %s "%s"' % h
+                    '    Header set {0!s} "{1!s}"'.format(*h)
                     for h in gene.config['apache'].get('headers', {
                         'Cache-Control': 'max-age=864000, public'
                     }).items()
                 ]),
-            })
+            }))
             if cache['type'] == 's3':
                 tiles_url = cache['tiles_url'] if 'tiles_url' in cache else \
-                    'http://s3-%(region)s.amazonaws.com/%(bucket)s/%(folder)s' % {
+                    'http://s3-{region!s}.amazonaws.com/{bucket!s}/{folder!s}'.format(**{
                         'region': cache['region'],
                         'bucket': cache['bucket'],
                         'folder': folder
-                }
+                })
                 f.write(
                     """
-    <Proxy %(tiles_url)s*>
+    <Proxy {tiles_url!s}*>
         Order deny,allow
         Allow from all
     </Proxy>
-    ProxyPass %(location)s/ %(tiles_url)s
-    ProxyPassReverse %(location)s/ %(tiles_url)s
-    """ % {
+    ProxyPass {location!s}/ {tiles_url!s}
+    ProxyPassReverse {location!s}/ {tiles_url!s}
+    """.format(**{
                         'location': gene.config['apache']['location'],
                         'tiles_url': tiles_url,
-                    }
+                    })
                 )
             elif cache['type'] == 'filesystem':
                 f.write(
                     """
-    Alias %(location)s %(files_folder)s
-    """ % {
+    Alias {location!s} {files_folder!s}
+    """.format(**{
                         'location': gene.config['apache']['location'],
                         'files_folder': folder,
                         'headers': ''.join([
-                            "    Header set %s '%s'" % h
+                            "    Header set {0!s} '{1!s}'".format(*h)
                             for h in gene.config['apache'].get('headers', {
                                 'Cache-Control': 'max-age=864000, public'
                             }).items()
                         ]),
-                    }
+                    })
                 )
 
         use_mapcache = 'mapcache' in gene.config
@@ -369,7 +369,7 @@ def _generate_apache_config(gene):
                                 'layer': layer['name'],
                                 'token_regex': token_regex,
                                 'dimensions_re': ''.join(['/' + token_regex for e in range(dim)]),
-                                'dimensions_rep': ''.join(['/$%i' % (e + 2) for e in range(dim)]),
+                                'dimensions_rep': ''.join(['/${0:d}'.format((e + 2)) for e in range(dim)]),
                                 'tilematrixset': dim + 2,
                                 'final': dim + 3,
                                 'zoom': layer['grid_ref']['resolutions'].index(r)
@@ -378,11 +378,11 @@ def _generate_apache_config(gene):
 
         if use_mapcache:
             f.write("""
-    MapCacheAlias %(mapcache_location)s "%(mapcache_config)s"
-    """ % {
+    MapCacheAlias {mapcache_location!s} "{mapcache_config!s}"
+    """.format(**{
                 'mapcache_location': gene.config['mapcache']['location'],
                 'mapcache_config': os.path.abspath(gene.config['mapcache']['config_file'])
-            })
+            }))
 
 
 def _get_resource(ressource):

@@ -59,14 +59,13 @@ class Generate:
             try:
                 tilecoord = parse_tilecoord(options.get_bbox)
                 print(
-                    "Tile bounds: [%i,%i,%i,%i]" %
-                    gene.layer['grid_ref']['obj'].extent(tilecoord)
+                    "Tile bounds: [{0:d},{1:d},{2:d},{3:d}]".format(*
+                    gene.layer['grid_ref']['obj'].extent(tilecoord))
                 )
                 exit()
             except ValueError as e:  # pragma: no cover
                 exit(
-                    "Tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n\n%r" %
-                    (options.get_bbox, e)
+                    "Tile '{0!s}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{1!r}".format(options.get_bbox, e)
                 )
 
         if options.get_hash:
@@ -107,8 +106,7 @@ class Generate:
                     gene.set_tilecoords([TileCoord(z, x, y)])
             except ValueError as e:  # pragma: no cover
                 exit(
-                    "Tile '%s' is not in the format 'z/x/y'\n%r" %
-                    (options.get_hash, e)
+                    "Tile '{0!s}' is not in the format 'z/x/y'\n{1!r}".format(options.get_hash, e)
                 )
 
         # At this stage, the tilestream contains metatiles that intersect geometry
@@ -178,13 +176,13 @@ class Generate:
                 if tile is not None and tile.content_type is not None \
                         and tile.content_type.find("image/") != 0:
                     if tile.content_type.find("application/vnd.ogc.se_xml") == 0:
-                        tile.error = "WMS server error: %s" % (
+                        tile.error = "WMS server error: {0!s}".format((
                             self._re_rm_xml_tag.sub(
                                 '', tile.data.decode('utf-8') if PY3 else tile.data
                             )
-                        )
+                        ))
                     else:  # pragma: no cover
-                        tile.error = "%s is not an image format, error: %s" % (
+                        tile.error = "{0!s} is not an image format, error: {1!s}".format(
                             tile.content_type,
                             tile.data
                         )
@@ -252,7 +250,7 @@ class Generate:
 
             if options.time:
                 def log_size(tile):
-                    sys.stdout.write('size: %i\n' % len(tile.data))
+                    sys.stdout.write('size: {0:d}\n'.format(len(tile.data)))
                     return tile
                 gene.imap(log_size)
 
@@ -263,7 +261,7 @@ class Generate:
             generated_tiles_file = open(options.generated_tiles_file, 'a')
 
             def do(tile):
-                generated_tiles_file.write('%s\n' % (tile.tilecoord, ))
+                generated_tiles_file.write('{0!s}\n'.format(tile.tilecoord ))
                 return tile
             gene.imap(do)
 
@@ -291,7 +289,7 @@ class Generate:
                     elif self.n == 2 * options.time:
                         t2 = datetime.now()
                         d = (t2 - self.t1) / options.time
-                        sys.stdout.write('time: %i\n' % ((d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds))
+                        sys.stdout.write('time: {0:d}\n'.format(((d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds)))
                     return tile
             gene.imap(LogTime())
 
@@ -303,7 +301,7 @@ class Generate:
                 "The tile generation of layer '{}{}' is finish".format(
                     gene.layer['name'],
                     "" if len(dimensions) == 0 or gene.layer['type'] != 'wms'
-                    else " (%s)" % ", ".join(["=".join(d) for d in dimensions.items()])
+                    else " ({0!s})".format(", ".join(["=".join(d) for d in dimensions.items()]))
                 ),
             ]
             if options.role == "master":  # pragma: no cover
@@ -357,10 +355,10 @@ class Generate:
             connection.publish(
                 gene.config['sns']['topic'],
                 "\n".join(sns_message),
-                "Tile generation (%(layer)s - %(role)s)" % {
+                "Tile generation ({layer!s} - {role!s})".format(**{
                     'role': options.role,
                     'layer': gene.layer['name']
-                }
+                })
             )
 
 
@@ -368,12 +366,12 @@ def daemonize():  # pragma: no cover
     try:
         pid = os.fork()
         if pid > 0:
-            print("Daemonize with pid %i." % pid)
+            print("Daemonize with pid {0:d}.".format(pid))
             sys.stderr.write(str(pid))
             # exit parent
             sys.exit(0)
     except OSError as e:
-        exit("fork #1 failed: %d (%s)\n" % (e.errno, e.strerror))
+        exit("fork #1 failed: {0:d} ({1!s})\n".format(e.errno, e.strerror))
 
 
 def main():
@@ -419,7 +417,7 @@ def main():
     if options.get_hash is None and options.get_bbox is None and \
             'authorised_user' in gene.config['generation'] and \
             gene.config['generation']['authorised_user'] != getuser():
-        exit('not authorised, authorised user is: %s.' % gene.config['generation']['authorised_user'])
+        exit('not authorised, authorised user is: {0!s}.'.format(gene.config['generation']['authorised_user']))
 
     if options.cache is None:
         options.cache = gene.config['generation']['default_cache']
