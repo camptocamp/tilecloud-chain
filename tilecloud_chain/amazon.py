@@ -142,7 +142,7 @@ def main():
         if 'apache_content' in gene.config['ec2'] and 'apache_config' in gene.config['ec2']:
             run(
                 options,
-                'echo %s > %s' % (
+                'echo {0!s} > {1!s}'.format(
                     gene.config['ec2']['apache_content'],
                     gene.config['ec2']['apache_config']
                 ), host, project_dir, gene
@@ -168,7 +168,7 @@ def main():
         for i in range(gene.config['ec2']['number_process']):
             processes.append(
                 run_remote_process(
-                    "%sgenerate_tiles %s" % (
+                    "{0!s}generate_tiles {1!s}".format(
                         _get_path(),
                         ' '.join([str(a) for a in arguments])
                     ), host, project_dir, gene
@@ -180,7 +180,7 @@ def main():
         for p in processes:
             results = p.communicate()
             if results[1] != '':  # pragma: no cover
-                logger.debug('ERROR: %s' % results[1])
+                logger.debug('ERROR: {0!s}'.format(results[1]))
             if PY3:
                 results = [r.decode('utf-8') for r in results]
             results = (re.sub(u'\n[^\n]*\r', u'\n', results[0]), )
@@ -205,14 +205,14 @@ def main():
         mean_size_kb = mean_size / 1024.0
 
         print('==== Time results ====')
-        print('A tile is generated in: %0.3f [ms]' % mean_time_ms)
-        print('Then mean generated tile size: %0.3f [kb]' % (mean_size_kb))
+        print('A tile is generated in: {0:0.3f} [ms]'.format(mean_time_ms))
+        print('Then mean generated tile size: {0:0.3f} [kb]'.format((mean_size_kb)))
         print('''config:
     cost:
-        tileonly_generation_time: %0.3f
-        tile_generation_time: %0.3f
+        tileonly_generation_time: {0:0.3f}
+        tile_generation_time: {1:0.3f}
         metatile_generation_time: 0
-        tile_size: %0.3f''' % (mean_time_ms, mean_time_ms, mean_size_kb))
+        tile_size: {2:0.3f}'''.format(mean_time_ms, mean_time_ms, mean_size_kb))
 
         if options.shutdown:  # pragma: no cover
             run(options, 'sudo shutdown 0', host, project_dir, gene)
@@ -227,7 +227,7 @@ def main():
         project_dir = gene.config['ec2']['code_folder']
         run_remote_process(
             options,
-            "%sgenerate_tiles %s" % (
+            "{0!s}generate_tiles {1!s}".format(
                 _get_path(),
                 ' '.join([str(a) for a in arguments])
             ), host, project_dir, gene
@@ -235,9 +235,9 @@ def main():
         sleep(5)
         attributes = gene.get_sqs_queue().get_attributes()
         print(
-            "\rTiles to generate: %s/%s" % (
+            "\rTiles to generate: {0!s}/{1!s}".format(
                 attributes['ApproximateNumberOfMessages'],
-                attributes['ApproximateNumberOfMessagesNotVisible'],
+                attributes['ApproximateNumberOfMessagesNotVisible']
             )
         )
 
@@ -252,9 +252,9 @@ def main():
                     while True:
                         attributes = gene.get_sqs_queue().get_attributes()
                         print(
-                            "\rTiles to generate/generating: %s/%s" % (
+                            "\rTiles to generate/generating: {0!s}/{1!s}".format(
                                 attributes['ApproximateNumberOfMessages'],
-                                attributes['ApproximateNumberOfMessagesNotVisible'],
+                                attributes['ApproximateNumberOfMessagesNotVisible']
                             )
                         )
 
@@ -273,14 +273,14 @@ def main():
         for i in range(gene.config['ec2']['number_process']):
             if options.local:
                 threads.append(run_local_process(
-                    "%sgenerate_tiles --local-process-number %i %s" % (
+                    "{0!s}generate_tiles --local-process-number {1:d} {2!s}".format(
                         _get_path(),
                         i, ' '.join([str(a) for a in arguments])
                     )
                 ))
             else:
                 run_remote_process(
-                    "%sgenerate_tiles %s" % (
+                    "{0!s}generate_tiles {1!s}".format(
                         _get_path(),
                         ' '.join([str(a) for a in arguments])
                     ), host, project_dir, gene
@@ -304,12 +304,12 @@ def main():
             connection.publish(
                 gene.config['sns']['topic'],
                 """The tile generation is finish
-Host: %(host)s
-Command: %(cmd)s""" %
+Host: {host!s}
+Command: {cmd!s}""".format(**
                 {
                     'host': socket.getfqdn(),
                     'cmd': ' '.join([quote(arg) for arg in sys.argv])
-                },
+                }),
                 "Tile generation controller"
             )
 
@@ -318,13 +318,12 @@ def _deploy(gene, host):
     print("==== Deploy database ====")
     deploy_cmd = 'deploy'
     if 'deploy_user' in gene.config['ec2']:
-        deploy_cmd = 'sudo -u %s deploy' % gene.config['ec2']['deploy_user']
+        deploy_cmd = 'sudo -u {0!s} deploy'.format(gene.config['ec2']['deploy_user'])
         index = host.find('@')
         if index >= 0:  # pragma: no cover
             host = host[index + 1:]
     run_local(
-        '%s --remote --components=[databases] %s %s' %
-        (deploy_cmd, gene.options.deploy_config, host)
+        '{0!s} --remote --components=[databases] {1!s} {2!s}'.format(deploy_cmd, gene.options.deploy_config, host)
     )
 
 
@@ -363,7 +362,7 @@ def run_local(cmd):
     if type(cmd) != list:
         cmd = cmd.split(' ')
 
-    logger.debug('Run: %s.' % ' '.join([quote(c) for c in cmd]))
+    logger.debug('Run: {0!s}.'.format(' '.join([quote(c) for c in cmd])))
     result = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()
     if PY3:
         result = [r.decode('utf-8') for r in result]
@@ -378,7 +377,7 @@ def run_local(cmd):
 def run_local_process(cmd):
     if type(cmd) != list:
         cmd = cmd.split(' ')
-    logger.debug('Run: %s.' % ' '.join([quote(c) for c in cmd]))
+    logger.debug('Run: {0!s}.'.format(' '.join([quote(c) for c in cmd])))
     task = Run(cmd)
     task.start()
     return task
@@ -393,10 +392,10 @@ def run_remote_process(remote_cmd, host, project_dir, gene):
     cmd.append(host)
     env = ''
     if os.getenv('AWS_ACCESS_KEY_ID') and os.getenv('AWS_SECRET_ACCESS_KEY'):  # pragma: no cover
-        env = 'export AWS_ACCESS_KEY_ID=%(access_key)s;export AWS_SECRET_ACCESS_KEY=%(secret_key)s;' % {
+        env = 'export AWS_ACCESS_KEY_ID={access_key!s};export AWS_SECRET_ACCESS_KEY={secret_key!s};'.format(**{
             'access_key': os.getenv('AWS_ACCESS_KEY_ID'),
             'secret_key': os.getenv('AWS_SECRET_ACCESS_KEY'),
-        }
+        })
     cmd.append(
         'cd %(project_dir)s;'
         '%(env)s'
@@ -407,7 +406,7 @@ def run_remote_process(remote_cmd, host, project_dir, gene):
         }
     )
 
-    logger.debug('Run: %s.' % ' '.join([quote(c) for c in cmd]))
+    logger.debug('Run: {0!s}.'.format(' '.join([quote(c) for c in cmd])))
     return Popen(cmd, stdout=PIPE, stderr=PIPE)
 
 
@@ -449,9 +448,9 @@ def status(options, gene):  # pragma: no cover
     attributes = gene.get_sqs_queue().get_attributes()
 
     print(
-        """Approximate number of tiles to generate: %s
-        Approximate number of generating tiles: %s
-        Last modification in tile queue: %s""" % (
+        """Approximate number of tiles to generate: {0!s}
+        Approximate number of generating tiles: {1!s}
+        Last modification in tile queue: {2!s}""".format(
             attributes['ApproximateNumberOfMessages'],
             attributes['ApproximateNumberOfMessagesNotVisible'],
             attributes['LastModifiedTimestamp']
