@@ -90,7 +90,7 @@ Install::
 
 Edit your layers configuration in ``./tilegeneration/config.yaml``.
 
-`Default configuration file <https://github.com/sbrunner/tilecloud-chain/blob/master/tilecloud_chain/scaffolds/create/tilegeneration/config.yaml.in_tmpl>`_.
+`Default configuration file <https://github.com/sbrunner/tilecloud-chain/blob/master/tilecloud_chain/scaffolds/create/tilegeneration/config.yaml.mako_tmpl>`_.
 
 ---------
 Configure
