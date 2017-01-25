@@ -8,7 +8,7 @@ grids:
 caches:
     s3:
         type: s3
-        http_url: https://%(host)s/%(bucket)s/%(folder)s
+        http_url: https://%(host)s/%(bucket)s/%(folder)s/
         host: s3-eu-west-1.amazonaws.com
         bucket: tiles
         folder: tiles

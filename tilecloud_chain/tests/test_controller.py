@@ -1567,26 +1567,26 @@ apache: {config_file: tiles.conf, expires: 8, location: /tiles}
 caches:
   local:
     folder: /tmp/tiles
-    http_url: 'http://wmts1/tiles'
+    http_url: 'http://wmts1/tiles/'
     name: local
     type: filesystem
     wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   mbtiles:
     folder: /tmp/tiles/mbtiles
-    http_url: 'http://wmts1/tiles'
+    http_url: 'http://wmts1/tiles/'
     name: mbtiles
     type: mbtiles
     wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   multi_host:
     folder: /tmp/tiles
     hosts: [wmts1, wmts2, wmts3]
-    http_url: http://%(host)s/tiles
+    http_url: http://%(host)s/tiles/
     name: multi_host
     type: filesystem
     wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   multi_url:
     folder: /tmp/tiles
-    http_urls: ['http://wmts1/tiles', 'http://wmts2/tiles', 'http://wmts3/tiles']
+    http_urls: ['http://wmts1/tiles/', 'http://wmts2/tiles/', 'http://wmts3/tiles/']
     name: multi_url
     type: filesystem
     wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
@@ -1594,7 +1594,7 @@ caches:
     bucket: tiles
     folder: tiles
     host: s3-eu-west-1.amazonaws.com
-    http_url: 'https://%(host)s/%(bucket)s/%(folder)s'
+    http_url: 'https://%(host)s/%(bucket)s/%(folder)s/'
     name: s3
     region: eu-west-1
     type: s3

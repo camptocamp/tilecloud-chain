@@ -538,7 +538,7 @@ The cache configuration is like this:
         # the used folder in the bucket [default to '']
         folder: ''
         # for GetCapabilities
-        http_url: https://%(host)s/%(bucket)s/%(folder)s
+        http_url: https://%(host)s/%(bucket)s/%(folder)s/
         hosts:
         - wmts0.<host>
 

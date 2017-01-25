@@ -14,7 +14,7 @@ caches:
         folder: /var/sig/tiles
         wmtscapabilities_file: ${wmtscapabilities_path}
         # for GetCapabilities
-        http_url: https://%(host)s/tiles
+        http_url: https://%(host)s/tiles/
         hosts:
         - wmts0.<host>
         - wmts1.<host>
@@ -26,7 +26,7 @@ caches:
         bucket: tiles
         folder: ''
         # for GetCapabilities
-        http_url: https://%(host)s/%(bucket)s/%(folder)s
+        http_url: https://%(host)s/%(bucket)s/%(folder)s/
         hosts:
         - wmts0.<host>
 
