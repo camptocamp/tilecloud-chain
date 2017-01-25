@@ -61,11 +61,8 @@ script:
 - vvv-validate-rst CHANGES.rst
 - python setup.py --long-description > PYPI.rst
 - vvv-validate-rst PYPI.rst
-- python setup.py nosetests --nocapture --nologcapture --stop --attr '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
+- python setup.py nosetests --attr '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
 - git --no-pager diff --check `git log --oneline | tail -1 | cut --fields=1 --delimiter=' '`
-
-after_failure:
-- python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
 
 after_success:
 # Report coverage results to coveralls.io
