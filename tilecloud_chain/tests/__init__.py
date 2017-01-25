@@ -8,8 +8,18 @@ import shutil
 from six import StringIO
 from six import text_type as str, PY3
 from unittest2 import TestCase
+from logging import config
 
 log = logging.getLogger("tests")
+
+config.dictConfig({
+    "version": 1,
+    "loggers": {
+        "pykwalify": {
+            "level": "WARN"
+        }
+    }
+})
 
 
 class CompareCase(TestCase):
