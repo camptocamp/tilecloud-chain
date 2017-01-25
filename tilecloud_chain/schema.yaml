@@ -265,52 +265,9 @@ mapping:
                 default: 10
             error_file:
                 type: str
-    ec2:
-        type: map
-        mapping:
             number_process:
                 type: int
                 default: 1
-            host_type:
-                type: str
-                default: m4.large
-                pattern: '^[tmcgxrid][1-5].(nano|micro|small|medium|large|[0-9]*xlarge)$'
-            ssh_options:
-                type: str
-            geodata_folder:
-                type: str
-            code_folder:
-                type: str
-                required: true
-            deploy_config:
-                type: str
-                default: tilegeneration/deploy.cfg
-            deploy_user:
-                type: str
-                default: deploy
-            build_cmds:
-                type: seq
-                sequence:
-                - type: str
-            apache_config:
-                type: str
-            apache_content:
-                type: str
-            disable_geodata:
-                type: bool
-                default: false
-            disable_code:
-                type: bool
-                default: false
-            disable_database:
-                type: bool
-                default: false
-            disable_fillqueue:
-                type: bool
-                default: false
-            disable_tilesgen:
-                type: bool
-                default: false
     sns:
         type: map
         mapping:
@@ -366,9 +323,6 @@ mapping:
             request_per_layers:
                 type: int
                 default: 10000000
-            esb_size:
-                type: int
-                default: 100
             s3:
                 type: map
                 required: true
@@ -395,23 +349,6 @@ mapping:
                     download:
                         type: float
                         default: .12
-            ec2:
-                type: map
-                required: true
-                mapping:
-                    usage:
-                        type: float
-                        default: .12
-            esb:
-                type: map
-                required: true
-                mapping:
-                    storage:
-                        type: float
-                        default: .11
-                    io:
-                        type: float
-                        default: 260.
             sqs:
                 type: map
                 required: true

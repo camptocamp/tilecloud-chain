@@ -27,9 +27,8 @@ before_install:
 - echo "PATH=${PATH}" > ~/.bashrc
 
 - sudo rm -rf /usr/local
-- sudo add-apt-repository --yes ppa:stephane-brunner/trusty-gis
 - sudo apt-get update
-- sudo apt-get install -y --force-yes libstdc++-4.8-dev libc6 libmapnik-dev apache2 libapache2-mod-fcgid cgi-mapserver deploy libdb-dev optipng docker-engine
+- sudo apt-get install -y --force-yes libstdc++-4.8-dev libc6 libmapnik-dev apache2 libapache2-mod-fcgid cgi-mapserver libdb-dev optipng docker-engine
 
 - sudo service postgresql stop
 - docker build --tag=test-db docker/test-db
@@ -38,8 +37,6 @@ before_install:
 - sudo a2enmod fcgid
 - sudo cp tilecloud_chain/tests/apache.conf /etc/apache2/sites-enabled/apache.conf
 - sudo apache2ctl graceful
-
-- sudo tilecloud_chain/tests/create-deploy.sh
 
 - ssh localhost echo add to know host
 

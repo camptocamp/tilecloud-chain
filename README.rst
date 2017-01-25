@@ -582,31 +582,6 @@ The configuration is like this:
 
 The topic should already exists.
 
-Configure and explain EC2
--------------------------
-
-The generation can be deported on an external host.
-
-This will deploy the code the database and the geodata to an external host,
-configure or build the application, configure apache, and run the tile generation.
-
-This work only with S3 and needs SQS.
-
-In a future version it will start the new EC2 host, join an ESB, run the tile generation,
-and do snapshot on the ESB.
-
-The configuration is like this:
-
-.. code:: yaml
-
-    ec2:
-        geodata_folder: /var/sig
-        deploy_config: tilegeneration/deploy.cfg
-        deploy_user: deploy
-        code_folder: /var/www/vhost/project/private/project
-        apache_config: /var/www/vhost/project/conf/tilegeneration.conf
-        apache_content: Include /var/www/vhost/project/private/project/apache/\*.conf
-
 Amazon tool
 -----------
 
@@ -747,7 +722,6 @@ Available commands
 * ``generate_copy`` copy the tiles from a cache to an other.
 * ``generate_process`` prosses the tiles using a configured prosess.
 * ``generate_cost`` estimate the cost.
-* ``generate_amazon`` generate the tiles using EC2.
 * ``import_expiretiles`` import the osm2pgsql expire-tiles file as geoms in the database.
 
 Each commands have a ``--help`` option to give a full arguments help.
@@ -816,17 +790,9 @@ Configuration (default values):
     cost:
         # [nb/month]
         request_per_layers: 10000000
-        # GeoData size [Go]
-        esb_size: 100
         cloudfront:
             download: 0.12,
             get: 0.009
-        ec2:
-            usage: 0.17
-        esb:
-            io: 260.0,
-            storage: 0.11
-        esb_size: 100
         request_per_layers: 10000000
         s3:
             download: 0.12,

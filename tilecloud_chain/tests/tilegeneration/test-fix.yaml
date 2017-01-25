@@ -235,14 +235,6 @@ generation:
     maxconsecutive_errors: 2
     error_file: error.list
 
-ec2:
-    geodata_folder: tilecloud_chain
-    deploy_config: tests/deploy.cfg
-    deploy_user: deploy
-    code_folder: /tmp/tests/test
-    apache_config: /tmp/tests/test.conf
-    apache_content: test file
-
 openlayers:
     srs: epsg:21781
     center_x: 600000
@@ -251,12 +243,8 @@ openlayers:
 cost:
     # [nb/month]
     request_per_layers: 10000000
-    # GeoData size [Go]
-    esb_size: 100
     s3: {}
     cloudfront: {}
-    ec2: {}
-    esb: {}
     sqs: {}
 
 mapcache:

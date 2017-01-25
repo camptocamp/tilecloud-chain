@@ -231,18 +231,6 @@ generation:
     default_layers: [line, polygon]
     maxconsecutive_errors: 2
     error_file: error.list
-
-ec2:
-    geodata_folder: tilecloud_chain
-    deploy_config: tests/deploy.cfg
-    build_cmds:
-    - mkdir -p .build/venv
-    - ln -s /home/travis/virtualenv/python%(TRAVIS_PYTHON_VERSION)s/bin .build/venv/
-    - pip install .
-    deploy_user: deploy
-    code_folder: /tmp/tests/test
-    apache_config: /tmp/tests/test.conf
-    apache_content: test file
     number_process: 2
 
 openlayers:
@@ -253,8 +241,6 @@ openlayers:
 cost:
     # [nb/month]
     request_per_layers: 10000000
-    # GeoData size [Go]
-    esb_size: 100
 
 mapcache:
     config_file: mapcache.xml

@@ -1601,32 +1601,16 @@ caches:
     wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
 cost:
   cloudfront: {download: 0.12, get: 0.009}
-  ec2: {usage: 0.12}
-  esb: {io: 260.0, storage: 0.11}
-  esb_size: 100
   request_per_layers: 10000000
   s3: {download: 0.12, get: 0.01, put: 0.01, storage: 0.125}
   sqs: {request: 0.01}
-ec2:
-  apache_config: /tmp/tests/test.conf
-  apache_content: test file
-  code_folder: /tmp/tests/test
-  deploy_config: tests/deploy.cfg
-  deploy_user: deploy
-  disable_code: false
-  disable_database: false
-  disable_fillqueue: false
-  disable_geodata: false
-  disable_tilesgen: false
-  host_type: m4.large
-  geodata_folder: tilecloud_chain
-  number_process: 1
 generation:
   default_cache: local
   default_layers: [line, polygon]
   error_file: error.list
   log_format: '%(levelname)s:%(name)s:%(funcName)s:%(message)s'
   maxconsecutive_errors: 2
+  number_process: 1
 grids:
   swissgrid_01: &id004
     bbox: [420000, 30000, 900000, 350000]

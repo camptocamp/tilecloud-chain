@@ -168,10 +168,6 @@ class TileGeneration:
                 self.config['cost']['s3'] = {}
             if 'cloudfront' not in self.config['cost']:
                 self.config['cost']['cloudfront'] = {}
-            if 'ec2' not in self.config['cost']:
-                self.config['cost']['ec2'] = {}
-            if 'esb' not in self.config['cost']:
-                self.config['cost']['esb'] = {}
             if 'sqs' not in self.config['cost']:
                 self.config['cost']['sqs'] = {}
         if 'generation' not in self.config:
@@ -618,7 +614,7 @@ class TileGeneration:
 
     def add_local_process_filter(self):  # pragma: no cover
         self.ifilter(LocalProcessFilter(
-            self.config["ec2"]["number_process"],
+            self.config["generation"]["number_process"],
             self.options.local_process_number
         ))
 

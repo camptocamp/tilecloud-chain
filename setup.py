@@ -49,7 +49,6 @@ setup(
         'console_scripts': [
             'generate_tiles = tilecloud_chain.generate:main',
             'generate_controller = tilecloud_chain.controller:main',
-            'generate_amazon = tilecloud_chain.amazon:main',
             'generate_cost = tilecloud_chain.cost:main',
             'generate_copy = tilecloud_chain.copy_:main',
             'generate_process = tilecloud_chain.copy_:process',
@@ -57,7 +56,6 @@ setup(
         ],
         'pyramid.scaffold': [
             'tilecloud_chain = tilecloud_chain.scaffolds:Create',
-            'tilecloud_chain_ec2 = tilecloud_chain.scaffolds:Ec2',
         ],
         'paste.app_factory': [
             'server = tilecloud_chain.server:app_factory',
