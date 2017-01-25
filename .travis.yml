@@ -26,13 +26,15 @@ before_install:
 - chmod 644 ~/.bashrc
 - echo "PATH=${PATH}" > ~/.bashrc
 
-- sudo rm -f /etc/apt/sources.list.d/pgdg-source.list
 - sudo rm -rf /usr/local
 - sudo add-apt-repository --yes ppa:stephane-brunner/trusty-gis
 - sudo apt-get update
-- sudo apt-get install -y --force-yes libstdc++-4.8-dev libc6 libmapnik-dev apache2 libapache2-mod-fcgid cgi-mapserver deploy libdb-dev optipng postgresql-9.3-postgis-2.1
+- sudo apt-get install -y --force-yes libstdc++-4.8-dev libc6 libmapnik-dev apache2 libapache2-mod-fcgid cgi-mapserver deploy libdb-dev optipng docker-engine
 
-- sudo -u postgres tilecloud_chain/tests/create_test_data.sh
+- sudo service postgresql stop
+- docker build --tag=test-db docker/test-db
+- docker run --publish=5432:5432 --detach test-db
+
 - sudo a2enmod fcgid
 - sudo cp tilecloud_chain/tests/apache.conf /etc/apache2/sites-enabled/apache.conf
 - sudo apache2ctl graceful
