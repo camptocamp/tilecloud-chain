@@ -173,11 +173,14 @@ class TileGeneration:
         if 'generation' not in self.config:
             self.config['generation'] = {}
         for gname, grid in sorted(self.config.get('grids', {}).items()):
-            grid["name"] = gname
+            if grid is not None:
+                grid["name"] = gname
         for cname, cache in sorted(self.config.get('caches', {}).items()):
-            cache["name"] = cname
+            if cache is not None:
+                cache["name"] = cname
         for lname, layer in sorted(self.config.get('layers', {}).items()):
-            layer["name"] = lname
+            if layer is not None:
+                layer["name"] = lname
 
         c = Core(
             source_data=self.config,

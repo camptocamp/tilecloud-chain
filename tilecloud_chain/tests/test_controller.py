@@ -317,7 +317,7 @@ class TestController(CompareCase):
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_01</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>3571.4285714[0-9]*</ScaleDenominator>
@@ -352,7 +352,7 @@ class TestController(CompareCase):
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_025</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0_25</ows:Identifier>
         <ScaleDenominator>892.85714285[0-9]*</ScaleDenominator>
@@ -367,7 +367,7 @@ class TestController(CompareCase):
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_2_5</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>2_5</ows:Identifier>
         <ScaleDenominator>8928.5714285[0-9]*</ScaleDenominator>
@@ -382,7 +382,7 @@ class TestController(CompareCase):
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_5</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
@@ -802,7 +802,7 @@ class TestController(CompareCase):
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_01</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>3571.4285714[0-9]*</ScaleDenominator>
@@ -837,7 +837,7 @@ class TestController(CompareCase):
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_025</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0_25</ows:Identifier>
         <ScaleDenominator>892.85714285[0-9]*</ScaleDenominator>
@@ -852,7 +852,7 @@ class TestController(CompareCase):
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_2_5</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>2_5</ows:Identifier>
         <ScaleDenominator>8928.5714285[0-9]*</ScaleDenominator>
@@ -867,7 +867,7 @@ class TestController(CompareCase):
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_5</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
@@ -1043,7 +1043,7 @@ class TestController(CompareCase):
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
@@ -1096,7 +1096,7 @@ class TestController(CompareCase):
    <grid name="swissgrid_01">
       <size>256 256</size>
       <extent>420000 30000 900000 350000</extent>
-      <srs>epsg:21781</srs>
+      <srs>EPSG:21781</srs>
       <units>m</units>
       <resolutions>1 0.2 0.1 </resolutions>
       <origin>top-left</origin>
@@ -1105,7 +1105,7 @@ class TestController(CompareCase):
    <grid name="swissgrid_025">
       <size>256 256</size>
       <extent>420000 30000 900000 350000</extent>
-      <srs>epsg:21781</srs>
+      <srs>EPSG:21781</srs>
       <units>m</units>
       <resolutions>0.25 </resolutions>
       <origin>top-left</origin>
@@ -1114,7 +1114,7 @@ class TestController(CompareCase):
    <grid name="swissgrid_2_5">
       <size>256 256</size>
       <extent>420000 30000 900000 350000</extent>
-      <srs>epsg:21781</srs>
+      <srs>EPSG:21781</srs>
       <units>m</units>
       <resolutions>2.5 </resolutions>
       <origin>top-left</origin>
@@ -1123,7 +1123,7 @@ class TestController(CompareCase):
    <grid name="swissgrid_5">
       <size>256 256</size>
       <extent>420000 30000 900000 350000</extent>
-      <srs>epsg:21781</srs>
+      <srs>EPSG:21781</srs>
       <units>m</units>
       <resolutions>100 50 20 10 5 </resolutions>
       <origin>top-left</origin>
@@ -1414,7 +1414,7 @@ class TestController(CompareCase):
    <grid name="swissgrid_5">
       <size>256 256</size>
       <extent>420000 30000 900000 350000</extent>
-      <srs>epsg:21781</srs>
+      <srs>EPSG:21781</srs>
       <units>m</units>
       <resolutions>100 50 20 10 5 </resolutions>
       <origin>top-left</origin>
@@ -1620,7 +1620,7 @@ grids:
     u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 10
     resolutions: [1, 0.2, 0.1]
-    srs: epsg:21781
+    srs: EPSG:21781
     tile_size: 256
     unit: m
   swissgrid_025:
@@ -1631,7 +1631,7 @@ grids:
         u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 4
     resolutions: [0.25]
-    srs: epsg:21781
+    srs: EPSG:21781
     tile_size: 256
     unit: m
   swissgrid_2_5:
@@ -1642,7 +1642,7 @@ grids:
         u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 2
     resolutions: [2.5]
-    srs: epsg:21781
+    srs: EPSG:21781
     tile_size: 256
     unit: m
   swissgrid_5: &id003
@@ -1653,7 +1653,7 @@ grids:
         u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 1
     resolutions: [100, 50, 20, 10, 5]
-    srs: epsg:21781
+    srs: EPSG:21781
     tile_size: 256
     unit: m
 layers:
@@ -1804,7 +1804,7 @@ layers:
     name: point
     px_buffer: 0.0
     params: {}
-    sqs: {queue: sqs_point}
+    sqs: {queue: sqs_point, region: eu-west-1}
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1927,7 +1927,7 @@ layers:
     url: http://localhost/mapserv
     wmts_style: default
 mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 11211, location: /mapcache}
-openlayers: {center_x: 600000, center_y: 200000, srs: 'epsg:21781'}
+openlayers: {center_x: 600000, center_y: 200000, srs: 'EPSG:21781'}
 sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}"""
 
     @attr(general=True)
@@ -1994,7 +1994,7 @@ sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud
 
 map = new OpenLayers.Map({
     div: "map",
-    projection: "epsg:21781",
+    projection: "EPSG:21781",
     controls: [
         new OpenLayers.Control.Navigation(),
         new OpenLayers.Control.Zoom(),
@@ -2285,7 +2285,7 @@ OpenLayers.Request.GET({
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>

@@ -87,7 +87,7 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_5</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
@@ -581,7 +581,7 @@ Size per tile: 4[0-9][0-9] o
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_01</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>3571.4285714[0-9]*</ScaleDenominator>
@@ -616,7 +616,7 @@ Size per tile: 4[0-9][0-9] o
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_025</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0_25</ows:Identifier>
         <ScaleDenominator>892.85714285[0-9]*</ScaleDenominator>
@@ -631,7 +631,7 @@ Size per tile: 4[0-9][0-9] o
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_2_5</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>2_5</ows:Identifier>
         <ScaleDenominator>8928.5714285[0-9]*</ScaleDenominator>
@@ -646,7 +646,7 @@ Size per tile: 4[0-9][0-9] o
 
     <TileMatrixSet>
       <ows:Identifier>swissgrid_5</ows:Identifier>
-      <ows:SupportedCRS>urn:ogc:def:crs:epsg::21781</ows:SupportedCRS>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
       <TileMatrix>
         <ows:Identifier>0</ows:Identifier>
         <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>

@@ -3,7 +3,7 @@ grids:
         resolutions: [100, 50, 20, 10, 5]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
-        srs: epsg:21781
+        srs: EPSG:21781
 
 caches:
     local:

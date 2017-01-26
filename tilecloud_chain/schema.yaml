@@ -25,7 +25,7 @@ mapping:
                         required: true
                     srs: &srs
                         type: str
-                        pattern: '^(?i)epsg:[0-9]+$'
+                        pattern: '^EPSG:[0-9]+$'
                         required: true
                     proj4_literal:
                         type: str

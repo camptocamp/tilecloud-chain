@@ -3,27 +3,27 @@ grids:
         resolutions: [100, 50, 20, 10, 5]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
-        srs: epsg:21781
+        srs: EPSG:21781
 
     swissgrid_01:
         resolutions: [1, 0.2, 0.1]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
-        srs: epsg:21781
+        srs: EPSG:21781
         matrix_identifier: resolution
 
     swissgrid_2_5:
         resolutions: [2.5]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
-        srs: epsg:21781
+        srs: EPSG:21781
         matrix_identifier: resolution
 
     swissgrid_025:
         resolutions: [0.25]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
-        srs: epsg:21781
+        srs: EPSG:21781
         matrix_identifier: resolution
 
 caches:
@@ -234,7 +234,7 @@ generation:
     number_process: 2
 
 openlayers:
-    srs: epsg:21781
+    srs: EPSG:21781
     center_x: 600000
     center_y: 200000
 
