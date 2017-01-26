@@ -602,7 +602,6 @@ S3 get: %(get)s [$/month]
                     'tiles': '81',
                     'zoom': '4',
                     'time': '0:00:04',
-                    'time': '0:00:04',
                     's3': '0.00',
                 },
                 self.LAYER_SUMMARY % {
