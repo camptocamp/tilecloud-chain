@@ -2,7 +2,7 @@ grids:
     swissgrid_01:
         resolutions: [1]
         bbox: [420000, 30000, 900000, 350000]
-        srs: epsg21781
+        srs: EPSG21781
 
 caches: {}
 

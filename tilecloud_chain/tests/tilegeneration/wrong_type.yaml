@@ -3,7 +3,7 @@ grids:
         resolutions: [2]
         resolution_scale: 5.5
         bbox: [a, b, c]
-        srs: [epsg21781]
+        srs: ['EPSG:21781']
     swissgrid_2:
         resolutions: [1]
         bbox: [123]
