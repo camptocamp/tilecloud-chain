@@ -134,7 +134,9 @@ def get_tile_matrix_identifier(grid, resolution=None, zoom=None):
 
 class TileGeneration:
 
-    def __init__(self, config_file, options=None, layer_name=None, base_config={}):
+    def __init__(self, config_file, options=None, layer_name=None, base_config=None):
+        if base_config is None:
+            base_config = {}
         self.close_actions = []
         self.geom = None
         self.error = 0
@@ -432,8 +434,10 @@ class TileGeneration:
         all_dimensions = product(*all_dimensions)
         return [dict(d) for d in all_dimensions]
 
-    def get_store(self, cache, layer, dimensions={}, read_only=False):
+    def get_store(self, cache, layer, dimensions=None, read_only=False):
         # build layout
+        if dimensions is None:  # pragma: no cover
+            dimensions = {}
         grid = layer['grid_ref'] if 'grid_ref' in layer else None
         layout = WMTSTileLayout(
             layer=layer['name'],

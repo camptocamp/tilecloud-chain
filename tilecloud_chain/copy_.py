@@ -23,8 +23,10 @@ class Copy:
         else:  # pragma: no cover
             self._copy(options, gene, layer, source, dest, task_name)
 
-    def _copy(self, options, gene, layer, source, dest, task_name, dimensions={}):
+    def _copy(self, options, gene, layer, source, dest, task_name, dimensions=None):
         # disable metatiles
+        if dimensions is None:  # pragma: no cover
+            dimensions = {}
         del gene.layers[layer]['meta']
         count_tiles_dropped = Count()
 
