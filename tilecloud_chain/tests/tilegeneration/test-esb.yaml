@@ -1,6 +1,6 @@
 grids:
     swissgrid_5:
-        resolutions: [100, 50, 20, 10]
+        resolutions: [100, 50, 20, 10, 5]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
         srs: EPSG:21781
@@ -16,7 +16,6 @@ defaults:
     layer: &layer
         grid: swissgrid_5
         type: wms
-        url: http://localhost/mapserv
         wmts_style: default
         mime_type: image/png
         extension: png
@@ -25,28 +24,43 @@ defaults:
             default: '2012'
             generate: ['2012']
             values: ['2005', '2010', '2012']
-        meta: off
+        meta: on
         meta_size: 8
         meta_buffer: 128
-        empty_metatile_detection:
-            size: 20743
-            hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
-        empty_tile_detection:
-            size: 334
-            hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+        cost:
+            # [ms]
+            tileonly_generation_time: 60
+            # [ms]
+            tile_generation_time: 30
+            # [ms]
+            metatile_generation_time: 30
+            # [ko]
+            tile_size: 20
 
 layers:
-    pp:
+    point:
         <<: *layer
-        layers: point,polygon
+        url: http://localhost/mapserv
+        layers: point
         geoms:
-        -   sql: the_geom AS geom FROM tests.polygon
-            connection: user=postgres password=postgres dbname=tests host=localhost
         -   sql: the_geom AS geom FROM tests.point
             connection: user=postgres password=postgres dbname=tests host=localhost
-            min_resolution: 10
-            max_resolution: 20
+        min_resolution_seed: 10
+        sqs:
+            queue: sqs_point
 
 generation:
     default_cache: local
-    maxconsecutive_errors: 2
+
+esb: {}
+
+cost:
+    # [nb/month]
+    request_per_layers: 10000000
+    # GeoData size [Go]
+    esb_size: 100
+    s3: {}
+    cloudfront: {}
+    ec2: {}
+    esb: {}
+    sqs: {}

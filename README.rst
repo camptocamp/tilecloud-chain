@@ -29,7 +29,7 @@ Features:
 - Delete empty tiles.
 - Copy files between caches.
 - Be able to use an SQS queue to dispatch the generation.
-- Post processon the generated tiles.
+- Post processing the generated tiles.
 - ...
 
 
@@ -166,7 +166,7 @@ To start the common attributes are:
 
 ``bbox`` used to limit the tiles generation.
 
-``px_buffer`` a buffer in px arround the object area (geoms or extent).
+``px_buffer`` a buffer in px around the object area (geoms or extent).
 
 
 WMTS layout
@@ -277,7 +277,7 @@ Legends
 ~~~~~~~
 
 To be able to generate legends with ``generate_controller --generate-legend-images``
-you should have ``legend_mime`` and ``legend_extention`` in the layer config.
+you should have ``legend_mime`` and ``legend_extention`` in the layer configuration.
 
 for example:
 
@@ -288,11 +288,11 @@ for example:
 
 Then it will create a legend image per layer and per zoom level named
 ``.../1.0.0/{{layer}}/{{wmts_style}}/legend{{zoom}}.{{legend_extention}}``
-only if she is deferent than the previous zoom level. If we have only one legend image
+only if she is different than the previous zoom level. If we have only one legend image
 it still stores in the file named ``legend0.{{legend_extention}}``.
 
 When we do ``generate_controller --generate-wmts-capabilities`` we will at first
-parse the legend images to generate a layer config like this:
+parse the legend images to generate a layer configuration like this:
 
 .. code:: yaml
 
@@ -421,7 +421,7 @@ The Apache configuration look like this (default values):
         headers:
             Cache-Control: max-age=864000, public
 
-If we use a proxy to access to the tiles we can specify a deferent URL to access
+If we use a proxy to access to the tiles we can specify a different URL to access
 to the tiles by adding the parameter ``tiles_url`` in the cache.
 
 Configure MapCache
@@ -454,7 +454,7 @@ To generate the MapCache configuration we use the command::
 Tiles error file
 ----------------
 
-If we set a file path in config file:
+If we set a file path in configuration file:
 
 .. code:: yaml
 
@@ -538,7 +538,7 @@ The cache configuration is like this:
         # the used folder in the bucket [default to '']
         folder: ''
         # for GetCapabilities
-        http_url: https://%(host)s/%(bucket)s/%(folder)s
+        http_url: https://%(host)s/%(bucket)s/%(folder)s/
         hosts:
         - wmts0.<host>
 
@@ -581,31 +581,6 @@ The configuration is like this:
         region: eu-west-1
 
 The topic should already exists.
-
-Configure and explain EC2
--------------------------
-
-The generation can be deported on an external host.
-
-This will deploy the code the database and the geodata to an external host,
-configure or build the application, configure apache, and run the tile generation.
-
-This work only with S3 and needs SQS.
-
-In a future version it will start the new EC2 host, join an ESB, run the tile generation,
-and do snapshot on the ESB.
-
-The configuration is like this:
-
-.. code:: yaml
-
-    ec2:
-        geodata_folder: /var/sig
-        deploy_config: tilegeneration/deploy.cfg
-        deploy_user: deploy
-        code_folder: /var/www/vhost/project/private/project
-        apache_config: /var/www/vhost/project/conf/tilegeneration.conf
-        apache_content: Include /var/www/vhost/project/private/project/apache/\*.conf
 
 Amazon tool
 -----------
@@ -692,7 +667,7 @@ The server can be configure as it:
         # allowed extension in the static path (default value), not used for s3.
         static_allow_extension: [jpeg, png, xml, js, html, css]
 
-The minimal config is to enable it:
+The minimal configuration is to enable it:
 
 .. code:: yaml
 
@@ -705,7 +680,7 @@ You should also configure the ``http_url`` of the used `cache`, to something lik
 Pyramid view
 ------------
 
-To use the pyramid view use the following config:
+To use the pyramid view use the following configuration:
 
 .. code:: python
 
@@ -725,7 +700,7 @@ in ``production.ini``::
     use = egg:tilecloud_chain#server
     configfile = %(here)s/tilegeneration/config.yaml
 
-with the apache configuration::
+with the Apache configuration::
 
     WSGIDaemonProcess tiles:${instanceid} display-name=%{GROUP} user=${modwsgi_user}
     WSGIScriptAlias /${instanceid}/tiles ${directory}/apache/wmts.wsgi
@@ -742,12 +717,11 @@ Commands
 Available commands
 ------------------
 
-* ``generate_controller`` generate the annexe files like capabilities, legend, OpenLayers test page, MapCacke config, Apache config.
+* ``generate_controller`` generate the annexe files like capabilities, legend, OpenLayers test page, MapCache configuration, Apache configuration.
 * ``generate_tiles`` generate the tiles.
 * ``generate_copy`` copy the tiles from a cache to an other.
-* ``generate_process`` prosses the tiles using a configured prosess.
+* ``generate_process`` process the tiles using a configured process.
 * ``generate_cost`` estimate the cost.
-* ``generate_amazon`` generate the tiles using EC2.
 * ``import_expiretiles`` import the osm2pgsql expire-tiles file as geoms in the database.
 
 Each commands have a ``--help`` option to give a full arguments help.
@@ -788,7 +762,7 @@ Generate a tiles near a tile coordinate (useful for test)::
 
     generate_tiles --near <X> <Y>
 
-Generate a tiles in a deferent cache than the default one::
+Generate a tiles in a different cache than the default one::
 
     generate_tiles --cache <a_cache>
 
@@ -816,17 +790,9 @@ Configuration (default values):
     cost:
         # [nb/month]
         request_per_layers: 10000000
-        # GeoData size [Go]
-        esb_size: 100
         cloudfront:
             download: 0.12,
             get: 0.009
-        ec2:
-            usage: 0.17
-        esb:
-            io: 260.0,
-            storage: 0.11
-        esb_size: 100
         request_per_layers: 10000000
         s3:
             download: 0.12,
@@ -850,8 +816,6 @@ Layer configuration (default values):
 The following commands can be used to know the time and cost to do generation::
 
     generate_controller --cost
-
-This suppose that you use a separate EC2 host to generate the tiles.
 
 Useful options
 --------------

@@ -168,20 +168,19 @@ class TileGeneration:
                 self.config['cost']['s3'] = {}
             if 'cloudfront' not in self.config['cost']:
                 self.config['cost']['cloudfront'] = {}
-            if 'ec2' not in self.config['cost']:
-                self.config['cost']['ec2'] = {}
-            if 'esb' not in self.config['cost']:
-                self.config['cost']['esb'] = {}
             if 'sqs' not in self.config['cost']:
                 self.config['cost']['sqs'] = {}
         if 'generation' not in self.config:
             self.config['generation'] = {}
         for gname, grid in sorted(self.config.get('grids', {}).items()):
-            grid["name"] = gname
+            if grid is not None:
+                grid["name"] = gname
         for cname, cache in sorted(self.config.get('caches', {}).items()):
-            cache["name"] = cname
+            if cache is not None:
+                cache["name"] = cname
         for lname, layer in sorted(self.config.get('layers', {}).items()):
-            layer["name"] = lname
+            if layer is not None:
+                layer["name"] = lname
 
         c = Core(
             source_data=self.config,
@@ -222,7 +221,7 @@ class TileGeneration:
                 ]))
             ))
             exit(1)
-        except NotSequenceError as e:
+        except NotSequenceError as e:  # pragma: no cover
             logger.error("The config file '{}' in invalid.\n - {}".format(
                 config_file, e.msg
             ))
@@ -287,7 +286,7 @@ class TileGeneration:
                 layer['dimensions'] = []
             if layer['type'] == 'mapnik' and \
                     layer['output_format'] == 'grid' and \
-                    layer.get('meta', False):
+                    layer.get('meta', False):  # pragma: no cover
                 logger.error("The layer '{}' is of type Mapnik/Grid, that can't support matatiles.".format(
                     lname
                 ))
@@ -512,7 +511,7 @@ class TileGeneration:
 
         if options.near is not None or (
                 options.time is not None and 'bbox' in self.layer and options.zoom is not None
-        ):
+        ):  # pragma: no cover
             if options.zoom is None or len(options.zoom) != 1:  # pragma: no cover
                 exit('Option --near needs the option --zoom with one value.')
             if not (options.time is not None or options.test is not None):  # pragma: no cover
@@ -618,7 +617,7 @@ class TileGeneration:
 
     def add_local_process_filter(self):  # pragma: no cover
         self.ifilter(LocalProcessFilter(
-            self.config["ec2"]["number_process"],
+            self.config["generation"]["number_process"],
             self.options.local_process_number
         ))
 

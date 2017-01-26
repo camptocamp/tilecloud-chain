@@ -26,18 +26,17 @@ before_install:
 - chmod 644 ~/.bashrc
 - echo "PATH=${PATH}" > ~/.bashrc
 
-- sudo rm -f /etc/apt/sources.list.d/pgdg-source.list
 - sudo rm -rf /usr/local
-- sudo add-apt-repository --yes ppa:stephane-brunner/trusty-gis
 - sudo apt-get update
-- sudo apt-get install -y --force-yes libstdc++-4.8-dev libc6 libmapnik-dev apache2 libapache2-mod-fcgid cgi-mapserver deploy libdb-dev optipng postgresql-9.3-postgis-2.1
+- sudo apt-get install -y --force-yes libstdc++-4.8-dev libc6 libmapnik-dev apache2 libapache2-mod-fcgid cgi-mapserver libdb-dev optipng docker-engine
 
-- sudo -u postgres tilecloud_chain/tests/create_test_data.sh
+- sudo service postgresql stop
+- docker build --tag=test-db docker/test-db
+- docker run --publish=5432:5432 --detach test-db
+
 - sudo a2enmod fcgid
 - sudo cp tilecloud_chain/tests/apache.conf /etc/apache2/sites-enabled/apache.conf
 - sudo apache2ctl graceful
-
-- sudo tilecloud_chain/tests/create-deploy.sh
 
 - ssh localhost echo add to know host
 
@@ -59,11 +58,8 @@ script:
 - vvv-validate-rst CHANGES.rst
 - python setup.py --long-description > PYPI.rst
 - vvv-validate-rst PYPI.rst
-- python setup.py nosetests --nocapture --nologcapture --stop --attr '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
+- python setup.py nosetests --attr '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
 - git --no-pager diff --check `git log --oneline | tail -1 | cut --fields=1 --delimiter=' '`
-
-after_failure:
-- python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
 
 after_success:
 # Report coverage results to coveralls.io

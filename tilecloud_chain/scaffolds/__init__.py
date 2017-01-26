@@ -13,8 +13,3 @@ Welcome to TileCloud chain.
 
 By default this scaffold use variable from Puppet facter.
 """)
-
-
-class Ec2(Template):  # pragma: no cover
-    _template_dir = 'ec2'
-    summary = 'Template used to complete TileCloud-chain project with ec2 support'

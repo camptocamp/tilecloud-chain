@@ -68,10 +68,6 @@ def main():
 #        print('CloudFront: %0.2f [$/month]' % ()
 #            gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
 #            gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
-    if 'ec2' in gene.config:
-        print('ESB storage: %0.2f [$/month]' % (
-            gene.config['cost']['esb']['storage'] * gene.config['cost']['esb_size'])
-        )
     sys.exit(0)
 
 
@@ -164,15 +160,6 @@ def _calculate_cost(gene, options):
         c = gene.config['cost']['s3']['put'] * nb_tiles[z] / 1000.0
         price += c
         print('S3 PUT: %0.2f [$]' % c)
-
-        if 'ec2' in gene.config:
-            c = time * gene.config['cost']['ec2']['usage'] / (1000.0 * 3600)
-            price += c
-            print('EC2 usage: %0.2f [$]' % c)
-
-            c = gene.config['cost']['esb']['io'] * time / (1000.0 * 2600 * 24 * 30)
-            price += c
-            print('ESB usage: %0.2f [$]' % c)
 
         if 'sqs' in gene.layer:
             if meta:

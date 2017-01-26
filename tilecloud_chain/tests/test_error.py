@@ -64,24 +64,40 @@ class TestError(CompareCase):
             main_func=controller.main)
         l.check((
             'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_type.yaml' in invalid.
- - /grids/swissgrid!/name: Value 'swissgrid!' does not match pattern '^[a-zA-Z0-9_\\-~\\.]+$'.
+ - /grids/swissgrid!/name: Value 'swissgrid!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
  - /grids/swissgrid!: Cannot find required key 'bbox'.
  - /grids/swissgrid!: Cannot find required key 'resolutions'.
  - /grids/swissgrid!: Cannot find required key 'srs'.
- - /grids/swissgrid_1/srs: Value '{}' does not match pattern '^(?i)epsg:[0-9]+$'.
- - /grids/swissgrid_1/srs: Value '{}' is not of type 'str'.
- - /grids/swissgrid_2/bbox/0: Value 'a' is not of type 'number'.
- - /grids/swissgrid_2/bbox/1: Value 'b' is not of type 'number'.
- - /grids/swissgrid_2/bbox/2: Value 'c' is not of type 'number'.
- - /grids/swissgrid_2/resolution_scale: Value '5.5' is not of type 'int'.
- - /grids/swissgrid_2/srs: Value '['epsg21781']' does not match pattern '^(?i)epsg:[0-9]+$'.
- - /grids/swissgrid_2/srs: Value '['epsg21781']' is not of type 'str'.
+ - /grids/swissgrid_1/bbox/0: Value 'a' is not of type 'number'.
+ - /grids/swissgrid_1/bbox/1: Value 'b' is not of type 'number'.
+ - /grids/swissgrid_1/bbox/2: Value 'c' is not of type 'number'.
+ - /grids/swissgrid_1/resolution_scale: Value '5.5' is not of type 'int'.
+ - /grids/swissgrid_1/srs: Value '['epsg21781']' is not of type 'str'.
+ - /grids/swissgrid_2/srs: Value '{}' is not of type 'str'.
+ - /grids/swissgrid_3/srs: Value 'epsg:21781' does not match pattern '^EPSG:[0-9]+$'.
  - /grids/swissgrid_3: Cannot find required key 'bbox'.
  - /grids/swissgrid_3: Cannot find required key 'resolutions'.
- - /grids/swissgrid_3: Cannot find required key 'srs'.
+ - /grids/swissgrid_4/srs: Value 'epsg21781' does not match pattern '^EPSG:[0-9]+$'.
+ - /grids/swissgrid_4: Cannot find required key 'bbox'.
+ - /grids/swissgrid_4: Cannot find required key 'resolutions'.
+ - /grids/swissgrid_5: Cannot find required key 'bbox'.
+ - /grids/swissgrid_5: Cannot find required key 'resolutions'.
+ - /grids/swissgrid_5: Cannot find required key 'srs'.
+ - /grids/swissgrid_6: Value 'None' is not a dict. Value path: '/grids/swissgrid_6'
+ - /layers/hi!/dimensions/0/default: Value '2010!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
+ - /layers/hi!/dimensions/0/generate/0: Value '2012!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
+ - /layers/hi!/dimensions/0/name: Value 'DATE!' does not match pattern '^(?!(?i)(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\-~\.]+$'.
+ - /layers/hi!/dimensions/0/values/0: Value '2005!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
+ - /layers/hi!/dimensions/0/values/1: Value '2010!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
+ - /layers/hi!/dimensions/0/values/2: Value '2012!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
+ - /layers/hi!/dimensions/1/default: Value '1' is not of type 'str'.
+ - /layers/hi!/dimensions/1/generate/0: Value '1' is not of type 'str'.
+ - /layers/hi!/dimensions/1/values/0: Value '1' is not of type 'str'.
+ - /layers/hi!/name: Value 'hi!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
+ - /layers/hi!/wmts_style: Value 'yo!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
  - /layers/hi!: Cannot find required key 'extension'.
  - /layers/hi!: Cannot find required key 'grid'.
- - /layers/hi!: Cannot find required key 'mime_type'."""
+ - /layers/hi!: Cannot find required key 'mime_type'.""" # noqa
         ))
 
     @log_capture('tilecloud_chain')
@@ -107,7 +123,7 @@ class TestError(CompareCase):
             main_func=controller.main)
         l.check((
             'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs_auth.yaml' in invalid.
- - /grids/swissgrid_01/srs: Value 'toto:21781' does not match pattern '^(?i)epsg:[0-9]+$'."""  # noqa
+ - /grids/swissgrid_01/srs: Value 'toto:21781' does not match pattern '^EPSG:[0-9]+$'."""  # noqa
         ))
 
     @log_capture('tilecloud_chain')
@@ -118,7 +134,7 @@ class TestError(CompareCase):
             main_func=controller.main)
         l.check((
             'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs_id.yaml' in invalid.
- - /grids/swissgrid_01/srs: Value 'epsg:21781a' does not match pattern '^(?i)epsg:[0-9]+$'."""  # noqa
+ - /grids/swissgrid_01/srs: Value 'epsg:21781a' does not match pattern '^EPSG:[0-9]+$'."""  # noqa
         ))
 
     @log_capture('tilecloud_chain')
@@ -129,7 +145,7 @@ class TestError(CompareCase):
             main_func=controller.main)
         l.check((
             'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs.yaml' in invalid.
- - /grids/swissgrid_01/srs: Value 'epsg21781' does not match pattern '^(?i)epsg:[0-9]+$'."""
+ - /grids/swissgrid_01/srs: Value 'epsg21781' does not match pattern '^EPSG:[0-9]+$'."""
         ))
 
     @log_capture('tilecloud_chain')
@@ -154,5 +170,9 @@ class TestError(CompareCase):
             main_func=controller.main)
         l.check((
             'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_sequence.yaml' in invalid.
- - Value: test is not of a sequence type"""
+ - /: Cannot find required key 'caches'.
+ - /: Cannot find required key 'layers'.
+ - /grids/test/resolutions: Value 'test' is not a list. Value path: '/grids/test/resolutions'
+ - /grids/test: Cannot find required key 'bbox'.
+ - /grids/test: Cannot find required key 'srs'."""
         ))

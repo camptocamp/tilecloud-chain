@@ -3,12 +3,12 @@ grids:
         resolutions: [100, 50, 20, 10, 5]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
-        srs: epsg:21781
+        srs: EPSG:21781
 
 caches:
     s3:
         type: s3
-        http_url: https://%(host)s/%(bucket)s/%(folder)s
+        http_url: https://%(host)s/%(bucket)s/%(folder)s/
         host: s3-eu-west-1.amazonaws.com
         bucket: tiles
         folder: tiles

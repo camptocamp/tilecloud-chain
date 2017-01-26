@@ -3,38 +3,38 @@ grids:
         resolutions: [100, 50, 20, 10, 5]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
-        srs: epsg:21781
+        srs: EPSG:21781
 
     swissgrid_01:
         resolutions: [1, 0.2, 0.1]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
-        srs: epsg:21781
+        srs: EPSG:21781
         matrix_identifier: resolution
 
     swissgrid_2_5:
         resolutions: [2.5]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
-        srs: epsg:21781
+        srs: EPSG:21781
         matrix_identifier: resolution
 
     swissgrid_025:
         resolutions: [0.25]
         bbox: [420000, 30000, 900000, 350000]
         tile_size: 256
-        srs: epsg:21781
+        srs: EPSG:21781
         matrix_identifier: resolution
 
 caches:
     local:
         type: filesystem
-        http_url: http://wmts1/tiles
+        http_url: http://wmts1/tiles/
         folder: /tmp/tiles
         wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
     multi_host:
         type: filesystem
-        http_url: http://%(host)s/tiles
+        http_url: http://%(host)s/tiles/
         folder: /tmp/tiles
         hosts:
         - wmts1
@@ -43,17 +43,17 @@ caches:
     multi_url:
         type: filesystem
         http_urls:
-        - http://wmts1/tiles
-        - http://wmts2/tiles
-        - http://wmts3/tiles
+        - http://wmts1/tiles/
+        - http://wmts2/tiles/
+        - http://wmts3/tiles/
         folder: /tmp/tiles
     mbtiles:
         type: mbtiles
-        http_url: http://wmts1/tiles
+        http_url: http://wmts1/tiles/
         folder: /tmp/tiles/mbtiles
     s3:
         type: s3
-        http_url: https://%(host)s/%(bucket)s/%(folder)s
+        http_url: https://%(host)s/%(bucket)s/%(folder)s/
         host: s3-eu-west-1.amazonaws.com
         bucket: tiles
         folder: tiles
@@ -235,28 +235,16 @@ generation:
     maxconsecutive_errors: 2
     error_file: error.list
 
-ec2:
-    geodata_folder: tilecloud_chain
-    deploy_config: tests/deploy.cfg
-    deploy_user: deploy
-    code_folder: /tmp/tests/test
-    apache_config: /tmp/tests/test.conf
-    apache_content: test file
-
 openlayers:
-    srs: epsg:21781
+    srs: EPSG:21781
     center_x: 600000
     center_y: 200000
 
 cost:
     # [nb/month]
     request_per_layers: 10000000
-    # GeoData size [Go]
-    esb_size: 100
     s3: {}
     cloudfront: {}
-    ec2: {}
-    esb: {}
     sqs: {}
 
 mapcache:
