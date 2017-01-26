@@ -405,9 +405,6 @@ def _generate_openlayers(gene):
     if 'http_urls' in cache and cache['http_urls']:
         http_url = cache['http_urls'][0] % cache
 
-    if http_url and http_url[-1] != '/':
-        http_url += '/'
-
     js = jinja2_template(
         pkgutil.get_data("tilecloud_chain", "openlayers.js").decode('utf-8'),
         srs=gene.config['openlayers']['srs'],

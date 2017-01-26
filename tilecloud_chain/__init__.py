@@ -221,7 +221,7 @@ class TileGeneration:
                 ]))
             ))
             exit(1)
-        except NotSequenceError as e:
+        except NotSequenceError as e:  # pragma: no cover
             logger.error("The config file '{}' in invalid.\n - {}".format(
                 config_file, e.msg
             ))
@@ -286,7 +286,7 @@ class TileGeneration:
                 layer['dimensions'] = []
             if layer['type'] == 'mapnik' and \
                     layer['output_format'] == 'grid' and \
-                    layer.get('meta', False):
+                    layer.get('meta', False):  # pragma: no cover
                 logger.error("The layer '{}' is of type Mapnik/Grid, that can't support matatiles.".format(
                     lname
                 ))
@@ -511,7 +511,7 @@ class TileGeneration:
 
         if options.near is not None or (
                 options.time is not None and 'bbox' in self.layer and options.zoom is not None
-        ):
+        ):  # pragma: no cover
             if options.zoom is None or len(options.zoom) != 1:  # pragma: no cover
                 exit('Option --near needs the option --zoom with one value.')
             if not (options.time is not None or options.test is not None):  # pragma: no cover
