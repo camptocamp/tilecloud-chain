@@ -21,7 +21,7 @@ from tilecloud.filter.logger import Logger
 
 from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty, TilesFileStore, \
     add_comon_options, parse_tilecoord, quote, Count
-from tilecloud_chain.format import size_format, duration_format
+from tilecloud_chain.format import size_format, duration_format, default_int
 
 logger = logging.getLogger(__name__)
 
@@ -58,14 +58,15 @@ class Generate:
         if options.get_bbox:
             try:
                 tilecoord = parse_tilecoord(options.get_bbox)
-                print("Tile bounds: [{0:d},{1:d},{2:d},{3:d}]".format(
-                    *gene.layer['grid_ref']['obj'].extent(tilecoord)
+                print("Tile bounds: [{},{},{},{}]".format(
+                    *default_int(gene.layer['grid_ref']['obj'].extent(tilecoord))
                 ))
                 exit()
             except ValueError as e:  # pragma: no cover
-                exit(
-                    "Tile '{0!s}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{1!r}".format(options.get_bbox, e)
+                print(
+                    "Tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{1!r}".format(options.get_bbox, e)
                 )
+                exit(1)
 
         if options.get_hash:
             options.role = 'hash'
@@ -105,7 +106,7 @@ class Generate:
                     gene.set_tilecoords([TileCoord(z, x, y)])
             except ValueError as e:  # pragma: no cover
                 exit(
-                    "Tile '{0!s}' is not in the format 'z/x/y'\n{1!r}".format(options.get_hash, e)
+                    "Tile '{}' is not in the format 'z/x/y'\n{1!r}".format(options.get_hash, e)
                 )
 
         # At this stage, the tilestream contains metatiles that intersect geometry
@@ -175,13 +176,13 @@ class Generate:
                 if tile is not None and tile.content_type is not None \
                         and tile.content_type.find("image/") != 0:
                     if tile.content_type.find("application/vnd.ogc.se_xml") == 0:
-                        tile.error = "WMS server error: {0!s}".format((
+                        tile.error = "WMS server error: {}".format((
                             self._re_rm_xml_tag.sub(
                                 '', tile.data.decode('utf-8') if PY3 else tile.data
                             )
                         ))
                     else:  # pragma: no cover
-                        tile.error = "{0!s} is not an image format, error: {1!s}".format(
+                        tile.error = "{} is not an image format, error: {}".format(
                             tile.content_type,
                             tile.data
                         )
@@ -249,7 +250,7 @@ class Generate:
 
             if options.time:
                 def log_size(tile):
-                    sys.stdout.write('size: {0:d}\n'.format(len(tile.data)))
+                    sys.stdout.write('size: {}\n'.format(len(tile.data)))
                     return tile
                 gene.imap(log_size)
 
@@ -260,7 +261,7 @@ class Generate:
             generated_tiles_file = open(options.generated_tiles_file, 'a')
 
             def do(tile):
-                generated_tiles_file.write('{0!s}\n'.format(tile.tilecoord))
+                generated_tiles_file.write('{}\n'.format(tile.tilecoord))
                 return tile
             gene.imap(do)
 
@@ -288,7 +289,7 @@ class Generate:
                     elif self.n == 2 * options.time:
                         t2 = datetime.now()
                         d = (t2 - self.t1) / options.time
-                        sys.stdout.write('time: {0:d}\n'.format(
+                        sys.stdout.write('time: {}\n'.format(
                             ((d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds)
                         ))
                     return tile
@@ -302,7 +303,7 @@ class Generate:
                 "The tile generation of layer '{}{}' is finish".format(
                     gene.layer['name'],
                     "" if len(dimensions) == 0 or gene.layer['type'] != 'wms'
-                    else " ({0!s})".format(", ".join(["=".join(d) for d in dimensions.items()]))
+                    else " ({})".format(", ".join(["=".join(d) for d in dimensions.items()]))
                 ),
             ]
             if options.role == "master":  # pragma: no cover
@@ -367,12 +368,12 @@ def daemonize():  # pragma: no cover
     try:
         pid = os.fork()
         if pid > 0:
-            print("Daemonize with pid {0:d}.".format(pid))
+            print("Daemonize with pid {}.".format(pid))
             sys.stderr.write(str(pid))
             # exit parent
             sys.exit(0)
     except OSError as e:
-        exit("fork #1 failed: {0:d} ({1!s})\n".format(e.errno, e.strerror))
+        exit("fork #1 failed: {} ({})\n".format(e.errno, e.strerror))
 
 
 def main():
@@ -418,7 +419,7 @@ def main():
     if options.get_hash is None and options.get_bbox is None and \
             'authorised_user' in gene.config['generation'] and \
             gene.config['generation']['authorised_user'] != getuser():
-        exit('not authorised, authorised user is: {0!s}.'.format(gene.config['generation']['authorised_user']))
+        exit('not authorised, authorised user is: {}.'.format(gene.config['generation']['authorised_user']))
 
     if options.cache is None:
         options.cache = gene.config['generation']['default_cache']

@@ -1041,7 +1041,7 @@ Size per tile: 4[0-9][0-9] o
             for key, value in p_headers:
                 headers[key] = value
         result = serve({
-            'QUERY_STRING': '&'.join(['{0!s}={1!s}'.format(*item) for item in {
+            'QUERY_STRING': '&'.join(['{}={}'.format(*item) for item in {
                 'Service': 'WMTS',
                 'Version': '1.0.0',
                 'Request': 'GetFeatureInfo',

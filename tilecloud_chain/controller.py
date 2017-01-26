@@ -128,7 +128,7 @@ def _get(path, cache):
 def _validate_generate_wmts_capabilities(gene, cache):
     if 'http_url' not in cache and 'http_urls' not in cache:  # pragma: no cover
         logger.error(
-            "The attribute 'http_url' or 'http_urls' is required in the object cache[{0!s}].".format(cache['name'])
+            "The attribute 'http_url' or 'http_urls' is required in the object cache[{}].".format(cache['name'])
         )
         exit(1)
 
@@ -158,7 +158,7 @@ def _generate_wmts_capabilities(gene):
         if 'legend_mime' in layer and 'legend_extention' in layer and 'legends' not in layer:
             layer['legends'] = []
             for zoom, resolution in enumerate(layer['grid_ref']['resolutions']):
-                path = '/'.join(['1.0.0', layer['name'], layer['wmts_style'], 'legend{0!s}.{1!s}'.format(
+                path = '/'.join(['1.0.0', layer['name'], layer['wmts_style'], 'legend{}.{}'.format(
                     zoom,
                     layer['legend_extention']
                 )])
@@ -178,7 +178,7 @@ def _generate_wmts_capabilities(gene):
                         new_legend['width'] = pil_img.size[0]
                         new_legend['height'] = pil_img.size[1]
                     except:  # pragma: nocover
-                        logger.warn("Unable to read legend image '{0!s}', with '{1!r}'".format(path, img))
+                        logger.warn("Unable to read legend image '{}', with '{1!r}'".format(path, img))
                     previous_legend = new_legend
                 previous_resolution = resolution
 
@@ -244,7 +244,7 @@ def _generate_legend_images(gene):
                         previous_hash = new_hash
                         _send(
                             result,
-                            '1.0.0/{0!s}/{1!s}/legend{2!s}.{3!s}'.format(
+                            '1.0.0/{}/{}/legend{}.{}'.format(
                                 layer['name'],
                                 layer['wmts_style'],
                                 zoom,
@@ -292,14 +292,14 @@ def _generate_apache_config(gene):
             f.write("""
     <Location {location!s}>
         ExpiresActive on
-        ExpiresDefault "now plus {expires:d} hours"
+        ExpiresDefault "now plus {expires} hours"
     {headers!s}
     </Location>
     """.format(**{
                 'location': gene.config['apache']['location'],
                 'expires': gene.config['apache']['expires'],
                 'headers': ''.join([
-                    '    Header set {0!s} "{1!s}"'.format(*h)
+                    '    Header set {} "{}"'.format(*h)
                     for h in gene.config['apache'].get('headers', {
                         'Cache-Control': 'max-age=864000, public'
                     }).items()
@@ -333,7 +333,7 @@ def _generate_apache_config(gene):
                         'location': gene.config['apache']['location'],
                         'files_folder': folder,
                         'headers': ''.join([
-                            "    Header set {0!s} '{1!s}'".format(*h)
+                            "    Header set {} '{}'".format(*h)
                             for h in gene.config['apache'].get('headers', {
                                 'Cache-Control': 'max-age=864000, public'
                             }).items()
@@ -368,7 +368,7 @@ def _generate_apache_config(gene):
                                 'layer': layer['name'],
                                 'token_regex': token_regex,
                                 'dimensions_re': ''.join(['/' + token_regex for e in range(dim)]),
-                                'dimensions_rep': ''.join(['/${0:d}'.format((e + 2)) for e in range(dim)]),
+                                'dimensions_rep': ''.join(['/${}'.format((e + 2)) for e in range(dim)]),
                                 'tilematrixset': dim + 2,
                                 'final': dim + 3,
                                 'zoom': layer['grid_ref']['resolutions'].index(r)

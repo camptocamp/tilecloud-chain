@@ -33,17 +33,17 @@ class CompareCase(TestCase):
             if test[0] != 'PASS...':
                 try:
                     if regex:
-                        self.assertRegexpMatches(test[1].strip(), '^{0!s}$'.format(test[0].strip()))
+                        self.assertRegexpMatches(test[1].strip(), '^{}$'.format(test[0].strip()))
                     else:
                         self.assertEqual(test[0].strip(), test[1].strip())
                 except AssertionError as e:
                     for i in range(max(0, n - 20), min(len(result), n + 21)):
                         if i == n:
-                            print("> {0:d} {1!s}".format(i, result[i]))
-                            log.info("> {0:d} {1!s}".format(i, result[i]))
+                            print("> {} {}".format(i, result[i]))
+                            log.info("> {} {}".format(i, result[i]))
                         else:
-                            print("  {0:d} {1!s}".format(i, result[i]))
-                            log.info("  {0:d} {1!s}".format(i, result[i]))
+                            print("  {} {}".format(i, result[i]))
+                            log.info("  {} {}".format(i, result[i]))
                     raise e
         self.assertEqual(len(expected), len(result), repr(result))
 

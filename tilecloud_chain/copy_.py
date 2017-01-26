@@ -57,14 +57,14 @@ class Copy:
         gene.consume()
         if not options.quiet:
             print(
-                """The tile {0!s} of layer '{1!s}' is finish
-Nb {2!s} tiles: {3:d}
-Nb errored tiles: {4:d}
-Nb dropped tiles: {5:d}
-Total time: {6!s}
-Total size: {7!s}
-Time per tile: {8:d} ms
-Size per tile: {9:d} o
+                """The tile {} of layer '{}' is finish
+Nb {} tiles: {}
+Nb errored tiles: {}
+Nb dropped tiles: {}
+Total time: {}
+Total size: {}
+Time per tile: {} ms
+Size per tile: {} o
 """.format(
                     task_name,
                     gene.layer['name'],

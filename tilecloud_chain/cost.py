@@ -44,7 +44,7 @@ def main():
         all_price = 0
         for layer in gene.config['generation']['default_layers']:
             print("")
-            print("===== {0!s} =====".format(layer))
+            print("===== {} =====".format(layer))
             gene.set_layer(layer, options)
             (size, time, price, tiles) = _calculate_cost(gene, options)
             tile_size += gene.layer['cost']['tile_size'] / (1024.0 * 1024)
@@ -55,8 +55,8 @@ def main():
 
         print("")
         print("===== GLOBAL =====")
-        print("Total number of tiles: {0:d}".format(all_tiles))
-        print('Total generation time: {0!s} [d h:mm:ss]'.format((duration_format(all_time))))
+        print("Total number of tiles: {}".format(all_tiles))
+        print('Total generation time: {} [d h:mm:ss]'.format((duration_format(all_time))))
         print('Total generation cost: {0:0.2f} [$]'.format(all_price))
     print("")
     print('S3 Storage: {0:0.2f} [$/month]'.format(
@@ -84,7 +84,7 @@ def _calculate_cost(gene, options):
             if 'min_resolution_seed' in gene.layer and resolution < gene.layer['min_resolution_seed']:
                 continue
 
-            print("Calculate zoom {0:d}.".format(zoom))
+            print("Calculate zoom {}.".format(zoom))
 
             px_buffer = gene.layer['px_buffer'] + \
                 gene.layer['meta_buffer'] if meta else 0
@@ -128,7 +128,7 @@ def _calculate_cost(gene, options):
                 if tile.tilecoord.z in nb_tiles:
                     nb_tiles[tile.tilecoord.z] += 1
                 else:
-                    print("Calculate zoom {0:d}.".format(tile.tilecoord.z))
+                    print("Calculate zoom {}.".format(tile.tilecoord.z))
                     nb_tiles[tile.tilecoord.z] = 1
             return tile
         gene.imap(count_tile)
@@ -138,7 +138,7 @@ def _calculate_cost(gene, options):
     times = {}
     print('')
     for z in nb_metatiles:
-        print("{0:d} meta tiles in zoom {1:d}.".format(nb_metatiles[z], z))
+        print("{} meta tiles in zoom {}.".format(nb_metatiles[z], z))
         times[z] = gene.layer['cost']['metatile_generation_time'] * nb_metatiles[z]
 
     price = 0
@@ -147,7 +147,7 @@ def _calculate_cost(gene, options):
     all_tiles = 0
     for z in nb_tiles:
         print('')
-        print("{0:d} tiles in zoom {1:d}.".format(nb_tiles[z], z))
+        print("{} tiles in zoom {}.".format(nb_tiles[z], z))
         all_tiles += nb_tiles[z]
         if meta:
             time = times[z] + gene.layer['cost']['tile_generation_time'] * nb_tiles[z]
@@ -158,7 +158,7 @@ def _calculate_cost(gene, options):
 
         all_time += time
         td = timedelta(milliseconds=time)
-        print("Time to generate: {0!s} [d h:mm:ss]".format((duration_format(td))))
+        print("Time to generate: {} [d h:mm:ss]".format((duration_format(td))))
         c = gene.config['cost']['s3']['put'] * nb_tiles[z] / 1000.0
         price += c
         print('S3 PUT: {0:0.2f} [$]'.format(c))
@@ -174,8 +174,8 @@ def _calculate_cost(gene, options):
 
     print("")
     td = timedelta(milliseconds=all_time)
-    print("Number of tiles: {0:d}".format(all_tiles))
-    print('Generation time: {0!s} [d h:mm:ss]'.format((duration_format(td))))
+    print("Number of tiles: {}".format(all_tiles))
+    print('Generation time: {} [d h:mm:ss]'.format((duration_format(td))))
     print('Generation cost: {0:0.2f} [$]'.format(price))
 
     return (all_size, td, price, all_tiles)

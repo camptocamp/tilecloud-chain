@@ -1502,7 +1502,7 @@ MapCacheAlias /mapcache "%s"
             cmd='.build/venv/bin/generate_controller --apache -c tilegeneration/test-serve.yaml',
             main_func=controller.main,
             expected=[['tiles.conf', u"""
-MapCacheAlias /mapcache "{0!s}"
+MapCacheAlias /mapcache "{}"
 """.format((os.path.abspath('mapcache.xml')))]])
 
     @attr(general=True)

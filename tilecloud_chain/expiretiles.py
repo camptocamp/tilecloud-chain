@@ -81,20 +81,20 @@ def main():
 
     if options.create:
         cursor.execute(
-            "SELECT count(*) FROM pg_tables WHERE schemaname='{0!s}' AND tablename='{1!s}'".format(
+            "SELECT count(*) FROM pg_tables WHERE schemaname='{}' AND tablename='{}'".format(
                 options.schema, options.table
             )
         )
         if cursor.fetchone()[0] == 0:
-            cursor.execute('CREATE TABLE IF NOT EXISTS "{0!s}"."{1!s}" (id serial)'.format(
+            cursor.execute('CREATE TABLE IF NOT EXISTS "{}"."{}" (id serial)'.format(
                 options.schema, options.table
             ))
-            cursor.execute("SELECT AddGeometryColumn('{0!s}', '{1!s}', '{2!s}', {3!s}, 'MULTIPOLYGON', 2)".format(
+            cursor.execute("SELECT AddGeometryColumn('{}', '{}', '{}', {}, 'MULTIPOLYGON', 2)".format(
                 options.schema, options.table, options.column, options.srid
             ))
 
     if options.delete:
-        cursor.execute('DELETE FROM "{0!s}"'.format((options.table)))
+        cursor.execute('DELETE FROM "{}"'.format((options.table)))
 
     geoms = []
     grid = QuadTileGrid(
@@ -122,13 +122,13 @@ def main():
     if options.simplify > 0:
         geom.simplify(options.simplify)
 
-    sql_geom = "ST_GeomFromText('{0!s}', 3857)".format(geom.wkt)
+    sql_geom = "ST_GeomFromText('{}', 3857)".format(geom.wkt)
     if options.srid <= 0:
-        sql_geom = "ST_GeomFromText('{0!s}')".format(geom.wkt)  # pragma: no cover
+        sql_geom = "ST_GeomFromText('{}')".format(geom.wkt)  # pragma: no cover
     elif options.srid != 3857:
-        sql_geom = 'ST_Transform({0!s}, {1:d})'.format(sql_geom, options.srid)
+        sql_geom = 'ST_Transform({}, {})'.format(sql_geom, options.srid)
 
-    cursor.execute('INSERT INTO "{0!s}" ("{1!s}") VALUES ({2!s})'.format(
+    cursor.execute('INSERT INTO "{}" ("{}") VALUES ({})'.format(
         options.table, options.column, sql_geom
     ))
     connection.commit()

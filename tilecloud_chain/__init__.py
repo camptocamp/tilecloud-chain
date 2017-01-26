@@ -242,7 +242,7 @@ class TileGeneration:
                 for r in grid['resolutions']:
                     if r * scale % 1 != 0.0:
                         logger.error(
-                            "The resolution {0!s} * resolution_scale {1:d} is not an integer.".format(
+                            "The resolution {} * resolution_scale {} is not an integer.".format(
                                 r, scale
                             )
                         )
@@ -266,7 +266,7 @@ class TileGeneration:
                         '+x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 ' \
                         '+units=m +no_defs'
                 else:  # pragma: no cover
-                    grid['proj4_literal'] = '+init={0!s}'.format(grid['srs'])
+                    grid['proj4_literal'] = '+init={}'.format(grid['srs'])
 
             scale = grid['resolution_scale']
             grid['obj'] = FreeTileGrid(
@@ -569,7 +569,7 @@ class TileGeneration:
         if self.layer is None:
             exit("A layer must be specified.")
         if 'sqs' not in self.layer:
-            exit("The layer '{0!s}' hasn't any configured queue".format(self.layer['name']))
+            exit("The layer '{}' hasn't any configured queue".format(self.layer['name']))
         connection = boto.sqs.connect_to_region(self.layer['sqs']['region'])
         queue = connection.get_queue(self.layer['sqs']['queue'])
         queue.set_message_class(JSONMessage)
@@ -603,8 +603,8 @@ class TileGeneration:
             for g in layer['geoms']:
                 connection = psycopg2.connect(g['connection'])
                 cursor = connection.cursor()
-                sql = 'SELECT ST_AsBinary(geom) FROM (SELECT {0!s}) AS g'.format(g['sql'])
-                logger.info('Execute SQL: {0!s}.'.format(sql))
+                sql = 'SELECT ST_AsBinary(geom) FROM (SELECT {}) AS g'.format(g['sql'])
+                logger.info('Execute SQL: {}.'.format(sql))
                 cursor.execute(sql)
                 geoms = [loads_wkb(binary_type(r[0])) for r in cursor.fetchall()]
                 geom = cascaded_union(geoms)
@@ -656,7 +656,7 @@ class TileGeneration:
                 variables = dict()
                 variables.update(tile.__dict__)
                 variables.update(tile.tilecoord.__dict__)
-                sys.stdout.write("{tilecoord!s}          \r".format(**variables))
+                sys.stdout.write("{tilecoord}          \r".format(**variables))
                 sys.stdout.flush()
                 return tile
             self.imap(log_tiles)
@@ -717,7 +717,7 @@ class TileGeneration:
                 ),
                 'a'
             )
-            self.error_file.write("# [{0!s}] Start the layer '{1!s}' generation\n".format(time, layer))
+            self.error_file.write("# [{}] Start the layer '{}' generation\n".format(time, layer))
 
     def log_tiles_error(self, tilecoord=None, message=None):
         if 'error_file' in self.config['generation']:
@@ -725,10 +725,10 @@ class TileGeneration:
             if self.error_file is None:  # pragma: no cover
                 raise "Missing error file"
 
-            tilecoord = "" if tilecoord is None else "{0!s} ".format(tilecoord)
-            message = "" if message is None else " {0!s}".format(message)
+            tilecoord = "" if tilecoord is None else "{} ".format(tilecoord)
+            message = "" if message is None else " {}".format(message)
 
-            self.error_file.write('{0!s}# [{1!s}]{2!s}\n'.format(tilecoord, time, message.replace('\n', ' ')))
+            self.error_file.write('{}# [{}]{}\n'.format(tilecoord, time, message.replace('\n', ' ')))
 
     def add_error_filters(self):
         self.imap(LogErrors(
@@ -810,7 +810,7 @@ class TileGeneration:
                 extent = self.geoms[zoom].bounds
 
                 if len(extent) == 0:
-                    logger.warn("bounds empty for zoom {0:d}".format(zoom))
+                    logger.warn("bounds empty for zoom {}".format(zoom))
                 else:
                     minx, miny, maxx, maxy = extent
                     px_buffer = self.layer['px_buffer']
@@ -863,7 +863,7 @@ class TileGeneration:
                     n = datetime.now()
                     t = store.get_one(tile)
                     if time_message:
-                        logger.info("{0!s} in {1!s}".format(time_message, str(datetime.now() - n)))
+                        logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
                     return t
                 except GeneratorExit as e:  # pragma: no cover
                     raise e
@@ -885,7 +885,7 @@ class TileGeneration:
                     n = datetime.now()
                     t = store.put_one(tile)
                     if time_message:
-                        logger.info("{0!s} in {1!s}".format(time_message, str(datetime.now() - n)))
+                        logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
                     return t
                 except GeneratorExit as e:  # pragma: no cover
                     raise e
@@ -907,7 +907,7 @@ class TileGeneration:
                     n = datetime.now()
                     t = store.delete_one(tile)
                     if time_message:
-                        logger.info("{0!s} in {1!s}".format(time_message, str(datetime.now() - n)))
+                        logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
                     return t
                 except GeneratorExit as e:  # pragma: no cover
                     raise e
@@ -929,7 +929,7 @@ class TileGeneration:
                     n = datetime.now()
                     t = tile_filter(tile)
                     if time_message:  # pragma: no cover
-                        logger.info("{0!s} in {1!s}".format(time_message, str(datetime.now() - n)))
+                        logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
                     return t
                 except GeneratorExit as e:  # pragma: no cover
                     raise e
@@ -952,7 +952,7 @@ class TileGeneration:
                         n = datetime.now()
                         t = tile_filter(tile)
                         if time_message:
-                            logger.debug("{0!s} in {1!s}".format(time_message, str(datetime.now() - n)))
+                            logger.debug("{} in {}".format(time_message, str(datetime.now() - n)))
                         return t
                     except GeneratorExit as e:  # pragma: no cover
                         raise e
@@ -1026,7 +1026,7 @@ class HashDropper:
                         self.store.delete_one(Tile(tilecoord))
                 else:
                     self.store.delete_one(tile)
-            logger.info("The tile {0!s} is dropped".format(str(tile.tilecoord)))
+            logger.info("The tile {} is dropped".format(str(tile.tilecoord)))
             if hasattr(tile, 'metatile'):
                 tile.metatile.elapsed_togenerate -= 1
                 if tile.metatile.elapsed_togenerate == 0 and self.queue_store is not None:
@@ -1061,10 +1061,10 @@ class HashLogger:
             elif px != ref:
                 exit("Error: image is not uniform.")
 
-        print("""Tile: {0!s}
-    {1!s}:
-        size: {2:d}
-        hash: {3!s}""".format(str(tile.tilecoord), self.block, len(tile.data), sha1(tile.data).hexdigest()))
+        print("""Tile: {}
+    {}:
+        size: {}
+        hash: {}""".format(str(tile.tilecoord), self.block, len(tile.data), sha1(tile.data).hexdigest()))
         return tile
 
 
@@ -1134,11 +1134,11 @@ def quote(arg):
     if ' ' in arg:
         if "'" in arg:
             if '"' in arg:
-                return "'{0!s}'".format(arg.replace("'", "\\'"))
+                return "'{}'".format(arg.replace("'", "\\'"))
             else:
-                return '"{0!s}"'.format(arg)
+                return '"{}"'.format(arg)
         else:
-            return "'{0!s}'".format(arg)
+            return "'{}'".format(arg)
     elif arg == '':
         return "''"
     else:
@@ -1202,7 +1202,7 @@ class Process:
                     'y': tile.tilecoord.y,
                     'z': tile.tilecoord.z
                 }
-                logger.info('process: {0!s}'.format(command))
+                logger.info('process: {}'.format(command))
                 code = subprocess.call(command, shell=True)
                 if code != 0:  # pragma: no cover
                     tile.error = "Command '%s' on tile %s " \
@@ -1237,4 +1237,4 @@ class TilesFileStore:
                 try:
                     yield Tile(parse_tilecoord(line))
                 except ValueError as e:  # pragma: no cover
-                    logger.error("A tile '{0!s}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{1!r}".format(line, e))
+                    logger.error("A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{1!r}".format(line, e))
