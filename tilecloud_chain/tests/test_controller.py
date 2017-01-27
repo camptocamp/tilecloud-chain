@@ -1502,8 +1502,8 @@ MapCacheAlias /mapcache "%s"
             cmd='.build/venv/bin/generate_controller --apache -c tilegeneration/test-serve.yaml',
             main_func=controller.main,
             expected=[['tiles.conf', u"""
-MapCacheAlias /mapcache "%s"
-""" % (os.path.abspath('mapcache.xml'))]])
+MapCacheAlias /mapcache "{}"
+""".format((os.path.abspath('mapcache.xml')))]])
 
     @attr(general=True)
     def test_apache_s3(self):

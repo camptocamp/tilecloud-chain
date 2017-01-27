@@ -35,7 +35,7 @@ class TestGenerate(CompareCase):
 
         for d in ('-d', '-q', '-v'):
             self.assert_cmd_equals(
-                cmd='.build/venv/bin/generate_copy %s -c tilegeneration/test-copy.yaml src dst' % d,
+                cmd='.build/venv/bin/generate_copy {} -c tilegeneration/test-copy.yaml src dst'.format(d),
                 main_func=copy_.main,
                 regex=True,
                 expected="""The tile copy of layer 'point_hash' is finish
@@ -45,7 +45,7 @@ Nb dropped tiles: 0
 Total time: 0:00:[0-9][0-9]
 Total size: 10 o
 Time per tile: [0-9]+ ms
-Size per tile: 10 o
+Size per tile: 10(.0)? o
 
 """ if d != '-q' else '',
                 empty_err=True)
@@ -76,7 +76,8 @@ image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
             self.assertEqual(statinfo.st_size, 755)
 
             self.assert_cmd_equals(
-                cmd='.build/venv/bin/generate_process %s -c tilegeneration/test-copy.yaml --cache src optipng' % d,
+                cmd='.build/venv/bin/generate_process {} -c '
+                    'tilegeneration/test-copy.yaml --cache src optipng'.format(d),
                 main_func=copy_.process,
                 regex=True,
                 expected="""The tile process of layer 'point_hash' is finish
@@ -86,7 +87,7 @@ Nb dropped tiles: 0
 Total time: 0:00:[0-9][0-9]
 Total size: 103 o
 Time per tile: [0-9]+ ms
-Size per tile: 103 o
+Size per tile: 103(.0)? o
 
 """ if d != '-q' else '',
                 empty_err=True)
