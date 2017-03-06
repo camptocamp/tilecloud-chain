@@ -50,7 +50,7 @@ class TestError(CompareCase):
             cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_exists.yaml',
             main_func=controller.main)
         l.check(
-            ('tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_exists.yaml' in invalid.
+            ('tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_exists.yaml' is invalid.
  - /: Cannot find required key 'caches'.
  - /: Cannot find required key 'grids'.
  - /: Cannot find required key 'layers'."""),
@@ -63,7 +63,7 @@ class TestError(CompareCase):
             cmd='.build/venv/bin/generate_controller -v -c tilegeneration/wrong_type.yaml',
             main_func=controller.main)
         l.check((
-            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_type.yaml' in invalid.
+            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_type.yaml' is invalid.
  - /grids/swissgrid!/name: Value 'swissgrid!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
  - /grids/swissgrid!: Cannot find required key 'bbox'.
  - /grids/swissgrid!: Cannot find required key 'resolutions'.
@@ -122,7 +122,7 @@ class TestError(CompareCase):
             cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_srs_auth.yaml',
             main_func=controller.main)
         l.check((
-            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs_auth.yaml' in invalid.
+            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs_auth.yaml' is invalid.
  - /grids/swissgrid_01/srs: Value 'toto:21781' does not match pattern '^EPSG:[0-9]+$'."""  # noqa
         ))
 
@@ -133,7 +133,7 @@ class TestError(CompareCase):
             cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_srs_id.yaml',
             main_func=controller.main)
         l.check((
-            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs_id.yaml' in invalid.
+            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs_id.yaml' is invalid.
  - /grids/swissgrid_01/srs: Value 'EPSG:21781a' does not match pattern '^EPSG:[0-9]+$'."""  # noqa
         ))
 
@@ -144,7 +144,7 @@ class TestError(CompareCase):
             cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_srs.yaml',
             main_func=controller.main)
         l.check((
-            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs.yaml' in invalid.
+            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs.yaml' is invalid.
  - /grids/swissgrid_01/srs: Value 'EPSG21781' does not match pattern '^EPSG:[0-9]+$'."""
         ))
 
@@ -157,7 +157,7 @@ class TestError(CompareCase):
             cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_map.yaml',
             main_func=controller.main)
         l.check((
-            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_map.yaml' in invalid.
+            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_map.yaml' is invalid.
  - Value: test is not of a mapping type"""
         ))
 
@@ -169,7 +169,7 @@ class TestError(CompareCase):
             cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_sequence.yaml',
             main_func=controller.main)
         l.check((
-            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_sequence.yaml' in invalid.
+            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_sequence.yaml' is invalid.
  - /: Cannot find required key 'caches'.
  - /: Cannot find required key 'layers'.
  - /grids/test/resolutions: Value 'test' is not a list. Value path: '/grids/test/resolutions'

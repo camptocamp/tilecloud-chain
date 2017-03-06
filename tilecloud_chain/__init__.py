@@ -212,7 +212,7 @@ class TileGeneration:
                 self.config['layers'][name] = c.validate()
 
         except SchemaError:
-            logger.error("The config file '{}' in invalid.\n{}".format(
+            logger.error("The config file '{}' is invalid.\n{}".format(
                 config_file,
                 "\n".join(sorted([
                     " - {}: {}".format(
@@ -224,12 +224,12 @@ class TileGeneration:
             ))
             exit(1)
         except NotSequenceError as e:  # pragma: no cover
-            logger.error("The config file '{}' in invalid.\n - {}".format(
+            logger.error("The config file '{}' is invalid.\n - {}".format(
                 config_file, e.msg
             ))
             exit(1)
         except NotMappingError as e:  # pragma: no cover
-            logger.error("The config file '{}' in invalid.\n - {}".format(
+            logger.error("The config file '{}' is invalid.\n - {}".format(
                 config_file, e.msg
             ))
             exit(1)
@@ -459,7 +459,8 @@ class TileGeneration:
         # store
         if cache['type'] == 's3':
             # on s3
-            cache_tilestore = S3TileStore(cache['bucket'], layout)  # pragma: no cover
+            cache_tilestore = S3TileStore(cache['bucket'], layout,
+                                          s3_host=cache.get('host'))  # pragma: no cover
         elif cache['type'] == 'mbtiles':
             # on mbtiles file
             filename = layout.filename(TileCoord(0, 0, 0)).replace(

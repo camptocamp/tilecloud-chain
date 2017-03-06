@@ -542,7 +542,8 @@ The cache configuration is like this:
         hosts:
         - wmts0.<host>
 
-The bucket should already exists.
+The bucket should already exists. If you don't use Amazon's S3, you must specify the ``host`` and
+the ``tiles_url`` configuration parameter.
 
 Configure SQS
 -------------
