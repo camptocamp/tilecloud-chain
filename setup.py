@@ -38,7 +38,7 @@ setup(
     ],
     author='Stéphane Brunner',
     author_email='stephane.brunner@camptocamp.com',
-    url='http://github.com/sbrunner/tilecloud-chain',
+    url='http://github.com/camptocamp/tilecloud-chain',
     license='BSD',
     keywords='gis tilecloud chain',
     packages=find_packages(exclude=["*.tests", "*.tests.*"]),
