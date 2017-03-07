@@ -1,8 +1,8 @@
 TileCloud Chain
 ===============
 
-.. image:: https://secure.travis-ci.org/sbrunner/tilecloud-chain.svg?branch=master
-.. image:: https://coveralls.io/repos/sbrunner/tilecloud-chain/badge.png?branch=master
+.. image:: https://secure.travis-ci.org/camptocamp/tilecloud-chain.svg?branch=master
+.. image:: https://coveralls.io/repos/camptocamp/tilecloud-chain/badge.png?branch=master
 
 The goal of TileCloud Chain is to provide tools around tile generation on a chain like:
 
@@ -90,7 +90,7 @@ Install::
 
 Edit your layers configuration in ``./tilegeneration/config.yaml``.
 
-`Default configuration file <https://github.com/sbrunner/tilecloud-chain/blob/master/tilecloud_chain/scaffolds/create/tilegeneration/config.yaml.mako_tmpl>`_.
+`Default configuration file <https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/scaffolds/create/tilegeneration/config.yaml.mako_tmpl>`_.
 
 ---------
 Configure
@@ -542,7 +542,8 @@ The cache configuration is like this:
         hosts:
         - wmts0.<host>
 
-The bucket should already exists.
+The bucket should already exists. If you don't use Amazon's S3, you must specify the ``host`` and
+the ``tiles_url`` configuration parameter.
 
 Configure SQS
 -------------

@@ -17,8 +17,8 @@ from six.moves.urllib.parse import urlencode, urljoin
 import requests
 from bottle import jinja2_template
 from PIL import Image
-from tilecloud.lib.s3 import S3Connection
 from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
+import tilecloud.store.s3
 
 from tilecloud_chain import TileGeneration, add_comon_options, get_tile_matrix_identifier
 
@@ -93,12 +93,11 @@ def main():
 
 def _send(data, path, mime_type, cache):
     if cache['type'] == 's3':  # pragma: no cover
-        s3bucket = S3Connection().bucket(cache['bucket'])
-        s3key = s3bucket.key(os.path.join('{folder!s}'.format(**cache), path))
-        s3key.body = data
-        s3key['Content-Encoding'] = 'utf-8'
-        s3key['Content-Type'] = mime_type
-        s3key.put()
+        client = tilecloud.store.s3.get_client(cache.get('host'))
+        key_name = os.path.join('{folder!s}'.format(**cache), path)
+        bucket = cache['bucket']
+        client.put_object(ACL='public-read', Body=data, Key=key_name, Bucket=bucket, ContentEncoding='utf-8',
+                          ContentType=mime_type)
     else:
         if PY3 and isinstance(data, str):
             data = data.encode('utf-8')
@@ -114,9 +113,11 @@ def _send(data, path, mime_type, cache):
 
 def _get(path, cache):
     if cache['type'] == 's3':  # pragma: no cover
-        s3bucket = S3Connection().bucket(cache['bucket'])
-        s3key = s3bucket.key(os.path.join('{folder!s}'.format(**cache), path))
-        return s3key.get().body
+        client = tilecloud.store.s3.get_client(cache.get('host'))
+        key_name = os.path.join('{folder!s}'.format(**cache), path)
+        bucket = cache['bucket']
+        response = client.get_object(Bucket=bucket, Key=key_name)
+        return response['Body'].read()
     else:
         p = os.path.join(cache['folder'], path)
         if not os.path.isfile(p):  # pragma: no cover
@@ -306,7 +307,7 @@ def _generate_apache_config(gene):
                 ]),
             }))
             if cache['type'] == 's3':
-                tiles_url = cache['tiles_url'] if 'tiles_url' in cache else \
+                tiles_url = (cache['tiles_url'] % cache) if 'tiles_url' in cache else \
                     'http://s3-{region!s}.amazonaws.com/{bucket!s}/{folder!s}'.format(**{
                         'region': cache['region'],
                         'bucket': cache['bucket'],

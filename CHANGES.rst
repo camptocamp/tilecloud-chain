@@ -86,7 +86,7 @@ Release 0.6
 
 6. New ``--get-bbox`` option to get the bbox of a tile.
 
-7. Add coveralls support (https://coveralls.io/r/sbrunner/tilecloud-chain).
+7. Add coveralls support (https://coveralls.io/r/camptocamp/tilecloud-chain).
 
 8. Add an config option ``generation:error_file`` and a command option ``--tiles``
    to store and regenerate errored tiles.

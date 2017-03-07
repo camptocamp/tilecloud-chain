@@ -36,7 +36,7 @@ import mimetypes
 from six.moves.urllib.parse import urlencode, parse_qs
 
 from tilecloud import Tile, TileCoord
-from tilecloud.lib.s3 import S3Connection
+import tilecloud.store.s3
 from tilecloud_chain import TileGeneration
 
 if sys.version_info.major >= 3:
@@ -68,19 +68,20 @@ class Server:
         ]
 
         if self.cache['type'] == 's3':  # pragma: no cover
-            s3bucket = S3Connection().bucket(self.cache['bucket'])
+            client = tilecloud.store.s3.get_client(self.cache.get('host'))
+            bucket = self.cache['bucket']
 
             def _get(self, path, **kwargs):
-                global s3bucket
+                global client
                 try:
-                    s3key = s3bucket.key(os.path.join('{folder!s}'.format(**self.cache), path))
-                    responce = s3key.get()
-                    return responce.body, responce.headers['Content-Type']
+                    key_name = os.path.join('{folder!s}'.format(**self.cache), path)
+                    response = client.get_object(Bucket=bucket, Key=key_name)
+                    return response['Body'].read(), response.get('ContentType')
                 except:
-                    s3bucket = S3Connection().bucket(self.cache['bucket'])
-                    s3key = s3bucket.key(os.path.join('{folder!s}'.format(**self.cache), path))
-                    responce = s3key.get()
-                    return responce.body, responce.headers['Content-Type']
+                    client = tilecloud.store.s3.get_client(self.cache.get('host'))
+                    key_name = os.path.join('{folder!s}'.format(**self.cache), path)
+                    response = client.get_object(Bucket=bucket, Key=key_name)
+                    return response['Body'].read(), response.get('ContentType')
         else:
             folder = self.cache['folder'] or ''
 
