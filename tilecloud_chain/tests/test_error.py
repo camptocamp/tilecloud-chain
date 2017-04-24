@@ -84,17 +84,17 @@ class TestError(CompareCase):
  - /grids/swissgrid_5: Cannot find required key 'resolutions'.
  - /grids/swissgrid_5: Cannot find required key 'srs'.
  - /grids/swissgrid_6: Value 'None' is not a dict. Value path: '/grids/swissgrid_6'
- - /layers/hi!/dimensions/0/default: Value '2010!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
- - /layers/hi!/dimensions/0/generate/0: Value '2012!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
+ - /layers/hi!/dimensions/0/default: Value '2010!' does not match pattern '^[a-zA-Z0-9_\-\+~\.]+$'.
+ - /layers/hi!/dimensions/0/generate/0: Value '2012!' does not match pattern '^[a-zA-Z0-9_\-\+~\.]+$'.
  - /layers/hi!/dimensions/0/name: Value 'DATE!' does not match pattern '^(?!(?i)(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\-~\.]+$'.
- - /layers/hi!/dimensions/0/values/0: Value '2005!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
- - /layers/hi!/dimensions/0/values/1: Value '2010!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
- - /layers/hi!/dimensions/0/values/2: Value '2012!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
+ - /layers/hi!/dimensions/0/values/0: Value '2005!' does not match pattern '^[a-zA-Z0-9_\-\+~\.]+$'.
+ - /layers/hi!/dimensions/0/values/1: Value '2010!' does not match pattern '^[a-zA-Z0-9_\-\+~\.]+$'.
+ - /layers/hi!/dimensions/0/values/2: Value '2012!' does not match pattern '^[a-zA-Z0-9_\-\+~\.]+$'.
  - /layers/hi!/dimensions/1/default: Value '1' is not of type 'str'.
  - /layers/hi!/dimensions/1/generate/0: Value '1' is not of type 'str'.
  - /layers/hi!/dimensions/1/values/0: Value '1' is not of type 'str'.
  - /layers/hi!/name: Value 'hi!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
- - /layers/hi!/wmts_style: Value 'yo!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
+ - /layers/hi!/wmts_style: Value 'yo!' does not match pattern '^[a-zA-Z0-9_\-\+~\.]+$'.
  - /layers/hi!: Cannot find required key 'extension'.
  - /layers/hi!: Cannot find required key 'grid'.
  - /layers/hi!: Cannot find required key 'mime_type'.""" # noqa

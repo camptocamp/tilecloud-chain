@@ -115,7 +115,7 @@ mapping:
                     # WMTS
                     wmts_style: &url_part
                         type: str
-                        pattern: '^[a-zA-Z0-9_\-~\.]+$'
+                        pattern: '^[a-zA-Z0-9_\-\+~\.]+$'
                         required: true
                     mime_type: &mime_type_required
                         type: str
