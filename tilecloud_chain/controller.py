@@ -6,6 +6,7 @@ import math
 import logging
 import yaml
 import pkgutil
+import time
 from six import PY3
 from six import BytesIO as StringIO
 from math import exp, log
@@ -34,6 +35,10 @@ def main():
     )
     add_comon_options(parser, tile_pyramid=False, no_geom=False)
     parser.add_argument(
+        '--status', default=False, action="store_true",
+        help='Display the SQS queue status and exit'
+    )
+    parser.add_argument(
         '--capabilities', '--generate-wmts-capabilities', default=False, action='store_true',
         help='Generate the WMTS Capabilities'
     )
@@ -61,6 +66,10 @@ def main():
 
     options = parser.parse_args()
     gene = TileGeneration(options.config, options, layer_name=options.layer)
+
+    if options.status:  # pragma: no cover
+        status(options, gene)
+        sys.exit(0)
 
     if options.cache is None:
         options.cache = gene.config['generation']['default_cache']
@@ -433,3 +442,20 @@ def _generate_openlayers(gene):
     _send(_get_resource('OpenLayers-style.css'), 'theme/default/style.css', 'text/css', cache)
     _send(_get_resource('layer-switcher-maximize.png'), 'img/layer-switcher-maximize.png', 'image/png', cache)
     _send(_get_resource('layer-switcher-minimize.png'), 'img/layer-switcher-minimize.png', 'image/png', cache)
+
+
+def status(options, gene):  # pragma: no cover
+    # get SQS status
+    attributes = gene.get_sqs_queue().get_attributes()
+    attributes["CreatedTimestamp"] = time.ctime(int(attributes["CreatedTimestamp"]))
+    attributes["LastModifiedTimestamp"] = time.ctime(int(attributes["LastModifiedTimestamp"]))
+
+    print(
+        """Approximate number of tiles to generate: {ApproximateNumberOfMessages}
+        Approximate number of generating tiles: {ApproximateNumberOfMessagesNotVisible}
+        Delay in seconds: {DelaySeconds}
+        Receive message wait time in seconds: {ReceiveMessageWaitTimeSeconds}
+        Visibility timeout in seconds: {VisibilityTimeout}
+        Queue creation date: {CreatedTimestamp}
+        Last modification in tile queue: {LastModifiedTimestamp}""".format(**attributes)
+    )
