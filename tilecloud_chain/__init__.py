@@ -337,10 +337,6 @@ class TileGeneration:
         if error:  # pragma: no cover
             exit(1)
 
-        self.layer = None
-        if layer_name and not error:
-            self.set_layer(layer_name, options)
-
         if 'logging' in self.config:
             db_params = self.config['logging']['database']
             self._db_connection = psycopg2.connect(
@@ -385,15 +381,22 @@ class TileGeneration:
                             ('test_layer', -1, 'test', '-1x-1')
                         )
                     except psycopg2.DatabaseError:
-                        logging.error('Unable to insert logging data into %s.%s', self._logging_schema, self._logging_table)
+                        logging.error('Unable to insert logging data into %s.%s',
+                                      self._logging_schema, self._logging_table)
                         error = True
                     finally:
                         self._db_connection.rollback()
         else:
             self._db_connection = None
 
+        self._db_logger = None
+
         if error:
             exit(1)
+
+        self.layer = None
+        if layer_name and not error:
+            self.set_layer(layer_name, options)
 
     def _primefactors(self, x):
         factorlist = []
@@ -607,6 +610,10 @@ class TileGeneration:
         else:
             self.init_geom(self.layer['grid_ref']['bbox'])
 
+        if self._db_connection:
+            self._db_logger = DatabaseLogger(self._db_connection, self._logging_schema,
+                                             self._logging_table, layer)
+
     def get_grid(self, name=None):
         if not name:
             name = self.layer['grid']
@@ -802,6 +809,9 @@ class TileGeneration:
         if 'maxconsecutive_errors' in self.config['generation']:
             self.tilestream = map(MaximumConsecutiveErrors(
                 self.config['generation']['maxconsecutive_errors']), self.tilestream)
+
+        if self._db_logger:
+            self.imap(self._db_logger)
 
         def drop_count(tile):
             if tile and tile.error:
@@ -1121,6 +1131,51 @@ class HashLogger:
     {}:
         size: {}
         hash: {}""".format(str(tile.tilecoord), self.block, len(tile.data), sha1(tile.data).hexdigest()))
+        return tile
+
+
+class DatabaseLogger:  # pragma: no cover
+
+    def __init__(self, connection, schema, table, layer):
+        self.connection = connection
+        self.full_table = '{}.{}'.format(schema, table)
+        self.layer = layer
+        self.run = None
+
+    def __call__(self, tile):
+        if self.run is None:
+            run = (
+                '(SELECT COALESCE(MAX(run), 0) + 1 FROM {} '
+                'WHERE layer = %(layer)s)'
+            ).format(self.full_table)
+        else:
+            run = self.run
+
+        if tile.error:
+            action = 'error'
+        else:
+            action = 'create'
+
+        with self.connection.cursor() as cursor:
+            try:
+                cursor.execute(
+                    'INSERT INTO {}(layer, run, action, tile)'
+                    'VALUES (%(layer)s, {}, %(action)s::varchar(7), %(tile)s)'
+                    'RETURNING run'.format(self.full_table, run),
+                    {'layer': self.layer, 'action': action, 'tile': str(tile.tilecoord)}
+                )
+                self.run, = cursor.fetchone()
+            except psycopg2.IntegrityError:
+                self.connection.rollback()
+                if action != 'create':
+                    cursor.execute(
+                        'UPDATE {} SET action = %(action)s '
+                        'WHERE layer = %(layer)s AND run = {} AND tile = %(tile)s'.format(self.full_table, run),
+                        {'layer': self.layer, 'action': action, 'tile': str(tile.tilecoord)}
+                    )
+
+            self.connection.commit()
+
         return tile
 
 
