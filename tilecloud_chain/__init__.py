@@ -341,6 +341,60 @@ class TileGeneration:
         if layer_name and not error:
             self.set_layer(layer_name, options)
 
+        if 'logging' in self.config:
+            db_params = self.config['logging']['database']
+            self._db_connection = psycopg2.connect(
+                dbname=db_params['dbname'],
+                host=db_params.get('host'),
+                port=db_params.get('port')
+            )
+            if '.' in db_params['table']:
+                schema, table = db_params['table'].split('.')
+            else:
+                schema = 'public'
+                table = db_params['table']
+
+            self._logging_schema = psycopg2.extensions.quote_ident(schema, self._db_connection)
+            self._logging_table = psycopg2.extensions.quote_ident(table, self._db_connection)
+
+            with self._db_connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT EXISTS(SELECT 1 FROM pg_tables WHERE schemaname=%s AND tablename=%s)",
+                    (schema, table)
+                )
+                if not cursor.fetchone()[0]:
+                    try:
+                        cursor.execute(
+                            'CREATE TABLE {}.{} ('
+                            '  id SERIAL PRIMARY KEY,'
+                            '  layer CHARACTER VARYING(80) NOT NULL,'
+                            '  run INTEGER NOT NULL,'
+                            '  action CHARACTER VARYING(7) NOT NULL,'
+                            '  tile TEXT NOT NULL,'
+                            '  UNIQUE (layer, run, tile))'.format(self._logging_schema, self._logging_table)
+                        )
+                        self._db_connection.commit()
+                    except psycopg2.DatabaseError:
+                        logging.error('Unable to create table %s.%s', self._logging_schema, self._logging_table)
+                        error = True
+                else:
+                    try:
+                        cursor.execute(
+                            'INSERT INTO {}.{}(layer, run, action, tile) '
+                            'VALUES (%s, %s, %s, %s)'.format(self._logging_schema, self._logging_table),
+                            ('test_layer', -1, 'test', '-1x-1')
+                        )
+                    except psycopg2.DatabaseError:
+                        logging.error('Unable to insert logging data into %s.%s', self._logging_schema, self._logging_table)
+                        error = True
+                    finally:
+                        self._db_connection.rollback()
+        else:
+            self._db_connection = None
+
+        if error:
+            exit(1)
+
     def _primefactors(self, x):
         factorlist = []
         loop = 2
