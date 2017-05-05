@@ -15,7 +15,7 @@ import boto
 from boto import sns
 from tilecloud import TileCoord
 from tilecloud.store.url import URLTileStore
-from tilecloud.store.sqs import SQSTileStore
+from tilecloud.store.sqs import SQSTileStore, maybe_stop
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.filter.logger import Logger
 
@@ -75,7 +75,8 @@ class Generate:
         sqs_tilestore = None
         if options.role in ('master', 'slave'):
             # Create SQS queue
-            sqs_tilestore = SQSTileStore(gene.get_sqs_queue())  # pragma: no cover
+            sqs_tilestore = SQSTileStore(gene.get_sqs_queue(),
+                                         on_empty=await_message if options.daemon else maybe_stop)  # pragma: no cover
 
         cache_tilestore = None
         if options.role in ('local', 'slave'):
@@ -364,11 +365,19 @@ class Generate:
             )
 
 
-def daemonize():  # pragma: no cover
+def await_message(queue):  # pragma: no cover
+    try:
+        while queue.read(visibility_timeout=0, wait_time_seconds=20) is None:
+            pass
+    except (Exception, KeyboardInterrupt):
+        raise StopIteration
+
+
+def detach():  # pragma: no cover
     try:
         pid = os.fork()
         if pid > 0:
-            print("Daemonize with pid {}.".format(pid))
+            print("Detached with pid {}.".format(pid))
             sys.stderr.write(str(pid))
             # exit parent
             sys.exit(0)
@@ -397,8 +406,12 @@ def main():
         help="The number of process that we run in parallel"
     )
     parser.add_argument(
-        '--daemonize', default=False, action="store_true",
-        help='run as a daemon'
+        '--detach', default=False, action="store_true",
+        help='run detached from the terminal'
+    )
+    parser.add_argument(
+        '--daemon', default=False, action="store_true",
+        help='run continuously as a daemon'
     )
     parser.add_argument(
         '--tiles', metavar="FILE",
@@ -411,8 +424,8 @@ def main():
 
     options = parser.parse_args()
 
-    if options.daemonize:
-        daemonize()  # pragma: no cover
+    if options.detach:
+        detach()  # pragma: no cover
 
     gene = TileGeneration(options.config, options)
 
