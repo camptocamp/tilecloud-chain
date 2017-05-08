@@ -1249,7 +1249,7 @@ class MultiTileStore(TileStore):
         self.default_layer = self.stores[default_layer_name]
 
     def _get_store(self, tile):
-        return self.stores.get(tile.layer, self.default_layer)
+        return self.stores.get(getattr(tile, 'layer', None), self.default_layer)
 
     def __contains__(self, tile):
         """
