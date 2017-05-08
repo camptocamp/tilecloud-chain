@@ -1275,7 +1275,8 @@ class MultiTileStore(TileStore):
         """
         return self._get_store(tile).delete_one(tile)
 
-    def list(self):
+    @staticmethod
+    def list():
         """
         Generate all the tiles in the store, but without their data.
 

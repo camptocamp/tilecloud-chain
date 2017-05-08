@@ -78,8 +78,8 @@ class Generate:
 
         if options.role in ('master', 'slave'):
             # Create SQS queue
-            self.sqs_tilestore = SQSTileStore(gene.get_sqs_queue(),
-                                              on_empty=await_message if options.daemon else maybe_stop)  # pragma: no cover
+            self.sqs_tilestore = SQSTileStore(
+                gene.get_sqs_queue(), on_empty=await_message if options.daemon else maybe_stop)  # pragma: no cover
 
         if options.role in ('local', 'slave'):
             self.cache_tilestore = gene.get_tilesstore(options.cache, dimensions)
