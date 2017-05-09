@@ -358,7 +358,7 @@ class Server:
                     **kwargs
                 )
 
-        store_ref = '/'.join([params['LAYER']] + dimensions)
+        store_ref = '/'.join([params['LAYER']] + list(dimensions))
         if store_ref in self.stores:  # pragma: no cover
             store = self.stores[store_ref]
         else:  # pragma: no cover
