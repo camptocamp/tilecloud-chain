@@ -317,6 +317,14 @@ mapping:
         mapping:
             geoms_redirect:
                 type: bool
+            mapcache_base:
+                type: str
+            mapcache_headers:
+                type: map
+                matching-rule: 'any'
+                mapping:
+                  regex;(.*):
+                    type: str
     cost:
         type: map
         mapping:

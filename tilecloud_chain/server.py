@@ -168,7 +168,7 @@ class Server:
     def serve(self, path, params, **kwargs):
         dimensions = []
 
-        if path is not None:
+        if path:
             if len(path) >= 1 and path[0] == 'static':
                 body, mime = self._get('/'.join(path[1:]), **kwargs)
                 if mime is not None:
@@ -275,7 +275,7 @@ class Server:
                 'TILECOL' not in params:  # pragma: no cover
             return self.error(400, "Not all required parameters are present", **kwargs)
 
-        if path is None:
+        if not path:
             if params['LAYER'] in self.layers:
                 layer = self.tilegeneration.layers[params['LAYER']]
             else:
@@ -358,7 +358,7 @@ class Server:
                     **kwargs
                 )
 
-        store_ref = '/'.join([params['LAYER']] + dimensions)
+        store_ref = '/'.join([params['LAYER']] + list(dimensions))
         if store_ref in self.stores:  # pragma: no cover
             store = self.stores[store_ref]
         else:  # pragma: no cover
@@ -462,7 +462,7 @@ class PyramidView(Server):
 
         if 'path' in self.request.matchdict:
             path = self.request.matchdict['path']
-        else:
+        if not path:
             for param, value in self.request.params.items():
                 params[param.upper()] = value
 
