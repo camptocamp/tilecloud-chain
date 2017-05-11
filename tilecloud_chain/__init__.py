@@ -362,7 +362,7 @@ class TileGeneration:
                     try:
                         cursor.execute(
                             'CREATE TABLE {}.{} ('
-                            '  id SERIAL PRIMARY KEY,'
+                            '  id BIGSERIAL PRIMARY KEY,'
                             '  layer CHARACTER VARYING(80) NOT NULL,'
                             '  run INTEGER NOT NULL,'
                             '  action CHARACTER VARYING(7) NOT NULL,'
@@ -389,7 +389,11 @@ class TileGeneration:
         else:
             self._db_connection = None
 
-        self._db_logger = None
+        if self._db_connection:
+            self._db_logger = DatabaseLogger(self._db_connection, self._logging_schema,
+                                             self._logging_table, '- no layer -')
+        else:
+            self._db_logger = None
 
         if error:
             exit(1)
@@ -1139,7 +1143,7 @@ class DatabaseLogger:  # pragma: no cover
     def __init__(self, connection, schema, table, layer):
         self.connection = connection
         self.full_table = '{}.{}'.format(schema, table)
-        self.layer = layer
+        self.default_layer = layer
         self.run = None
 
     def __call__(self, tile):
@@ -1153,8 +1157,12 @@ class DatabaseLogger:  # pragma: no cover
 
         if tile.error:
             action = 'error'
-        else:
+        elif tile.data:
             action = 'create'
+        else:
+            action = 'queue'
+
+        layer = tile.metadata.get('layer', self.default_layer)
 
         with self.connection.cursor() as cursor:
             try:
@@ -1162,17 +1170,16 @@ class DatabaseLogger:  # pragma: no cover
                     'INSERT INTO {}(layer, run, action, tile)'
                     'VALUES (%(layer)s, {}, %(action)s::varchar(7), %(tile)s)'
                     'RETURNING run'.format(self.full_table, run),
-                    {'layer': self.layer, 'action': action, 'tile': str(tile.tilecoord)}
+                    {'layer': layer, 'action': action, 'tile': str(tile.tilecoord)}
                 )
                 self.run, = cursor.fetchone()
             except psycopg2.IntegrityError:
                 self.connection.rollback()
-                if action != 'create':
-                    cursor.execute(
-                        'UPDATE {} SET action = %(action)s '
-                        'WHERE layer = %(layer)s AND run = {} AND tile = %(tile)s'.format(self.full_table, run),
-                        {'layer': self.layer, 'action': action, 'tile': str(tile.tilecoord)}
-                    )
+                cursor.execute(
+                    'UPDATE {} SET action = %(action)s '
+                    'WHERE layer = %(layer)s AND run = {} AND tile = %(tile)s'.format(self.full_table, run),
+                    {'layer': layer, 'action': action, 'tile': str(tile.tilecoord)}
+                )
 
             self.connection.commit()
 
