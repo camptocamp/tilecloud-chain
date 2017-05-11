@@ -20,7 +20,7 @@ from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.filter.logger import Logger
 
 from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty, TilesFileStore, \
-    add_comon_options, parse_tilecoord, quote, Count
+    add_comon_options, parse_tilecoord, quote, Count, MultiTileStore
 from tilecloud_chain.format import size_format, duration_format, default_int
 
 logger = logging.getLogger(__name__)
@@ -49,11 +49,15 @@ class Generate:
     def _gene(self, options, gene, layer, dimensions=None):
         if dimensions is None:  # pragma: no cover
             dimensions = {}
-        count_metatiles = None
-        count_metatiles_dropped = Count()
-        count_tiles = None
-        count_tiles_dropped = Count()
-        count_tiles_stored = None
+        self.dimensions = dimensions
+        self.count_metatiles = None
+        self.count_metatiles_dropped = Count()
+        self.count_tiles = None
+        self.count_tiles_dropped = Count()
+        self.count_tiles_stored = None
+        self.meta = gene.layer['meta']
+        self.sqs_tilestore = None
+        self.cache_tilestore = None
 
         if options.get_bbox:
             try:
@@ -72,17 +76,14 @@ class Generate:
             options.role = 'hash'
             options.test = 1
 
-        sqs_tilestore = None
         if options.role in ('master', 'slave'):
             # Create SQS queue
-            sqs_tilestore = SQSTileStore(gene.get_sqs_queue(),
-                                         on_empty=await_message if options.daemon else maybe_stop)  # pragma: no cover
+            self.sqs_tilestore = SQSTileStore(
+                gene.get_sqs_queue(), on_empty=await_message if options.daemon else maybe_stop)  # pragma: no cover
 
-        cache_tilestore = None
         if options.role in ('local', 'slave'):
-            cache_tilestore = gene.get_tilesstore(options.cache, dimensions)
+            self.cache_tilestore = gene.get_tilesstore(options.cache, dimensions)
 
-        meta = gene.layer['meta']
         if options.tiles:
             gene.set_store(TilesFileStore(options.tiles))
 
@@ -96,12 +97,12 @@ class Generate:
 
         elif options.role == 'slave':
             # Get the metatiles from the SQS queue
-            gene.set_store(sqs_tilestore)  # pragma: no cover
+            gene.set_store(self.sqs_tilestore)  # pragma: no cover
 
         elif options.role == 'hash':
             try:
                 z, x, y = (int(v) for v in options.get_hash.split('/'))
-                if meta:
+                if self.meta:
                     gene.set_tilecoords([TileCoord(z, x, y, gene.layer['meta_size'])])
                 else:
                     gene.set_tilecoords([TileCoord(z, x, y)])
@@ -113,65 +114,21 @@ class Generate:
         # At this stage, the tilestream contains metatiles that intersect geometry
         gene.add_logger()
 
-        count_metatiles = gene.counter()
+        self.count_metatiles = gene.counter()
 
         if options.role == 'master':  # pragma: no cover
             # Put the metatiles into the SQS queue
-            gene.put(sqs_tilestore)
-            count_tiles = gene.counter()
+            gene.put(self.sqs_tilestore)
+            self.count_tiles = gene.counter()
 
         elif options.role in ('local', 'slave', 'hash'):
-            if gene.layer['type'] == 'wms':
-                params = gene.layer['params'].copy()
-                if 'STYLES' not in params:
-                    params['STYLES'] = ','.join(gene.layer['wmts_style'] for l in gene.layer['layers'].split(','))
-                if gene.layer['generate_salt']:
-                    params['SALT'] = str(random.randint(0, 999999))
-                params.update(dimensions)
-
-                # Get the metatile image from the WMS server
-                gene.get(URLTileStore(
-                    tilelayouts=(WMSTileLayout(
-                        url=gene.layer['url'],
-                        layers=gene.layer['layers'],
-                        srs=gene.layer['grid_ref']['srs'],
-                        format=gene.layer['mime_type'],
-                        border=gene.layer['meta_buffer'] if meta else 0,
-                        tilegrid=gene.get_grid()['obj'],
-                        params=params,
-                    ),),
-                    headers=gene.layer['headers'],
-                ), "Get tile from WMS")
-            elif gene.layer['type'] == 'mapnik':  # pragma: no cover
-                from tilecloud.store.mapnik_ import MapnikTileStore
-                from tilecloud_chain.mapnik_ import MapnikDropActionTileStore
-
-                grid = gene.get_grid()
-                if gene.layer['output_format'] == 'grid':
-                    count_tiles = gene.counter()
-                    gene.get(MapnikDropActionTileStore(
-                        tilegrid=grid['obj'],
-                        mapfile=gene.layer['mapfile'],
-                        image_buffer=gene.layer['meta_buffer'] if meta else 0,
-                        data_buffer=gene.layer['data_buffer'],
-                        output_format=gene.layer['output_format'],
-                        resolution=gene.layer['resolution'],
-                        layers_fields=gene.layer['layers_fields'],
-                        drop_empty_utfgrid=gene.layer['drop_empty_utfgrid'],
-                        store=cache_tilestore,
-                        queue_store=sqs_tilestore,
-                        count=count_tiles_dropped,
-                        proj4_literal=grid['proj4_literal'],
-                    ), "Create Mapnik grid tile")
-                else:
-                    gene.get(MapnikTileStore(
-                        tilegrid=grid['obj'],
-                        mapfile=gene.layer['mapfile'],
-                        image_buffer=gene.layer['meta_buffer'] if meta else 0,
-                        data_buffer=gene.layer['data_buffer'],
-                        output_format=gene.layer['output_format'],
-                        proj4_literal=grid['proj4_literal'],
-                    ), "Create Mapnik tile")
+            if options.role == 'slave':
+                gene.get(MultiTileStore({
+                    name: self._get_tilestore_and_message_for_layer(layer, gene)[0]
+                    for name, layer in gene.layers.items()
+                }, gene.layer['name']), 'Get tile')
+            else:
+                gene.get(*self._get_tilestore_and_message_for_layer(gene.layer, gene))
 
             def wrong_content_type_to_error(tile):
                 if tile is not None and tile.content_type is not None \
@@ -193,7 +150,7 @@ class Generate:
             # Handle errors
             gene.add_error_filters()
 
-            if meta:
+            if self.meta:
                 if options.role == 'hash':
                     gene.imap(HashLogger('empty_metatile_detection'))
                 elif not options.near:
@@ -202,9 +159,9 @@ class Generate:
                         empty_tile = gene.layer['empty_metatile_detection']
 
                         gene.imap(HashDropper(
-                            empty_tile['size'], empty_tile['hash'], store=cache_tilestore,
-                            queue_store=sqs_tilestore,
-                            count=count_metatiles_dropped,
+                            empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
+                            queue_store=self.sqs_tilestore,
+                            count=self.count_metatiles_dropped,
                         ))
 
                 def add_elapsed_togenerate(metatile):
@@ -222,7 +179,7 @@ class Generate:
                 gene.add_error_filters()
 
             if gene.layer['type'] != 'mapnik' or gene.layer['output_format'] != 'grid':
-                count_tiles = gene.counter()
+                self.count_tiles = gene.counter()
 
             if 'pre_hash_post_process' in gene.layer:  # pragma: no cover
                 gene.process(gene.layer['pre_hash_post_process'])
@@ -235,19 +192,19 @@ class Generate:
                     empty_tile = gene.layer['empty_tile_detection']
 
                     gene.imap(HashDropper(
-                        empty_tile['size'], empty_tile['hash'], store=cache_tilestore,
-                        queue_store=sqs_tilestore,
-                        count=count_tiles_dropped,
+                        empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
+                        queue_store=self.sqs_tilestore,
+                        count=self.count_tiles_dropped,
                     ))
 
             gene.process()
         else:  # pragma: no cover
-            count_tiles = gene.counter()
+            self.count_tiles = gene.counter()
 
         if options.role in ('local', 'slave'):
             gene.add_error_filters()
             gene.ifilter(DropEmpty(gene))
-            count_tiles_stored = gene.counter(size=True)
+            self.count_tiles_stored = gene.counter(size=True)
 
             if options.time:
                 def log_size(tile):
@@ -255,7 +212,7 @@ class Generate:
                     return tile
                 gene.imap(log_size)
 
-            gene.put(cache_tilestore, "Store the tile")
+            gene.put(self.cache_tilestore, "Store the tile")
 
         gene.add_error_filters()
         if options.generated_tiles_file:  # pragma: no cover
@@ -267,15 +224,15 @@ class Generate:
             gene.imap(do)
 
         if options.role == 'slave':  # pragma: no cover
-            if meta:
+            if self.meta:
                 def decr_tile_in_metatile(tile):
                     tile.metatile.elapsed_togenerate -= 1
                     if tile.metatile.elapsed_togenerate == 0:
-                        sqs_tilestore.delete_one(tile.metatile)
+                        self.sqs_tilestore.delete_one(tile.metatile)
                     return True
                 gene.ifilter(decr_tile_in_metatile)
             else:
-                gene.delete(sqs_tilestore)
+                gene.delete(self.sqs_tilestore)
 
         message = []
         if options.time is not None:
@@ -308,39 +265,39 @@ class Generate:
                 ),
             ]
             if options.role == "master":  # pragma: no cover
-                message.append("Nb of generated jobs: {}".format(count_tiles.nb))
+                message.append("Nb of generated jobs: {}".format(self.count_tiles.nb))
             else:
-                if meta:
+                if self.meta:
                     message += [
-                        "Nb generated metatiles: {}".format(count_metatiles.nb),
-                        "Nb metatiles dropped: {}".format(count_metatiles_dropped.nb),
+                        "Nb generated metatiles: {}".format(self.count_metatiles.nb),
+                        "Nb metatiles dropped: {}".format(self.count_metatiles_dropped.nb),
                     ]
                 message += [
-                    "Nb generated tiles: {}".format(count_tiles.nb),
-                    "Nb tiles dropped: {}".format(count_tiles_dropped.nb),
+                    "Nb generated tiles: {}".format(self.count_tiles.nb),
+                    "Nb tiles dropped: {}".format(self.count_tiles_dropped.nb),
                 ]
                 if options.role in ('local', 'slave'):
                     message += [
-                        "Nb tiles stored: {}".format(count_tiles_stored.nb),
+                        "Nb tiles stored: {}".format(self.count_tiles_stored.nb),
                         "Nb tiles in error: {}".format(gene.error),
                         "Total time: {}".format(duration_format(gene.duration)),
                     ]
-                    if count_tiles_stored.nb != 0:
-                        message.append("Total size: {}".format(size_format(count_tiles_stored.size)))
-                    if count_tiles.nb != 0:
+                    if self.count_tiles_stored.nb != 0:
+                        message.append("Total size: {}".format(size_format(self.count_tiles_stored.size)))
+                    if self.count_tiles.nb != 0:
                         message.append("Time per tile: {:0.0f} ms".format(
-                            (gene.duration / count_tiles.nb * 1000).seconds)
+                            (gene.duration / self.count_tiles.nb * 1000).seconds)
                         )
-                    if count_tiles_stored.nb != 0:
+                    if self.count_tiles_stored.nb != 0:
                         message.append("Size per tile: {:0.0f} o".format(
-                            count_tiles_stored.size / count_tiles_stored.nb)
+                            self.count_tiles_stored.size / self.count_tiles_stored.nb)
                         )
 
             if not options.quiet and options.role in ('local', 'slave'):
                 print("\n".join(message) + "\n")
 
-        if cache_tilestore is not None and hasattr(cache_tilestore, 'connection'):
-            cache_tilestore.connection.close()
+        if self.cache_tilestore is not None and hasattr(self.cache_tilestore, 'connection'):
+            self.cache_tilestore.connection.close()
 
         if options.role != 'hash' and options.time is None and 'sns' in gene.config:  # pragma: no cover
             if 'region' in gene.config['sns']:
@@ -363,6 +320,59 @@ class Generate:
                     'layer': gene.layer['name']
                 })
             )
+
+    def _get_tilestore_and_message_for_layer(self, layer, gene):
+        if layer['type'] == 'wms':
+            params = layer['params'].copy()
+            if 'STYLES' not in params:
+                params['STYLES'] = ','.join(layer['wmts_style'] for l in layer['layers'].split(','))
+            if layer['generate_salt']:
+                params['SALT'] = str(random.randint(0, 999999))
+            params.update(self.dimensions)
+
+            # Get the metatile image from the WMS server
+            return (URLTileStore(
+                tilelayouts=(WMSTileLayout(
+                    url=layer['url'],
+                    layers=layer['layers'],
+                    srs=layer['grid_ref']['srs'],
+                    format=layer['mime_type'],
+                    border=layer['meta_buffer'] if self.meta else 0,
+                    tilegrid=gene.get_grid()['obj'],
+                    params=params,
+                ),),
+                headers=layer['headers'],
+            ), "Get tile from WMS")
+        elif layer['type'] == 'mapnik':  # pragma: no cover
+            from tilecloud.store.mapnik_ import MapnikTileStore
+            from tilecloud_chain.mapnik_ import MapnikDropActionTileStore
+
+            grid = gene.get_grid()
+            if layer['output_format'] == 'grid':
+                self.count_tiles = gene.counter()
+                return (MapnikDropActionTileStore(
+                    tilegrid=grid['obj'],
+                    mapfile=layer['mapfile'],
+                    image_buffer=layer['meta_buffer'] if self.meta else 0,
+                    data_buffer=layer['data_buffer'],
+                    output_format=layer['output_format'],
+                    resolution=layer['resolution'],
+                    layers_fields=layer['layers_fields'],
+                    drop_empty_utfgrid=layer['drop_empty_utfgrid'],
+                    store=self.cache_tilestore,
+                    queue_store=self.sqs_tilestore,
+                    count=self.count_tiles_dropped,
+                    proj4_literal=grid['proj4_literal'],
+                ), "Create Mapnik grid tile")
+            else:
+                return (MapnikTileStore(
+                    tilegrid=grid['obj'],
+                    mapfile=layer['mapfile'],
+                    image_buffer=layer['meta_buffer'] if self.meta else 0,
+                    data_buffer=layer['data_buffer'],
+                    output_format=layer['output_format'],
+                    proj4_literal=grid['proj4_literal'],
+                ), "Create Mapnik tile")
 
 
 def await_message(queue):  # pragma: no cover

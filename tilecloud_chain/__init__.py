@@ -34,7 +34,7 @@ from boto.sqs.jsonmessage import JSONMessage
 from pykwalify.core import Core
 from pykwalify.errors import SchemaError, NotSequenceError, NotMappingError
 
-from tilecloud import Tile, BoundingPyramid, TileCoord
+from tilecloud import Tile, BoundingPyramid, TileCoord, TileStore
 from tilecloud.grid.free import FreeTileGrid
 from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.store.s3 import S3TileStore
@@ -561,9 +561,10 @@ class TileGeneration:
 
     def get_tilesstore(self, cache_name, dimensions):
         cache = self.caches[cache_name]
-        cache_tilestore = self.get_store(cache, self.layer, dimensions=dimensions)
-        if cache_tilestore is None:
-            exit('Unknown cache type: ' + cache['type'])  # pragma: no cover
+        cache_tilestore = MultiTileStore({
+            lname: self.get_store(cache, layer, dimensions=dimensions)
+            for lname, layer in self.layers.items()
+        }, self.layer['name'])
         return cache_tilestore
 
     def get_sqs_queue(self):  # pragma: no cover
@@ -838,7 +839,7 @@ class TileGeneration:
 
     def set_tilecoords(self, tilecoords):
         self.tilestream = (
-            Tile(tilecoord) for tilecoord in tilecoords
+            Tile(tilecoord, layer=self.layer['name']) for tilecoord in tilecoords
         )
 
     def set_store(self, store):  # pragma: no cover
@@ -1239,3 +1240,73 @@ class TilesFileStore:
                     yield Tile(parse_tilecoord(line))
                 except ValueError as e:  # pragma: no cover
                     logger.error("A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{1!r}".format(line, e))
+
+
+class MultiTileStore(TileStore):
+    def __init__(self, stores, default_layer_name, **kwargs):
+        TileStore.__init__(self, **kwargs)
+        self.stores = stores
+        self.default_layer = self.stores[default_layer_name]
+
+    def _get_store(self, tile):
+        return self.stores.get(tile.metadata.get('layer', None), self.default_layer)
+
+    def __contains__(self, tile):
+        """
+        Return true if this store contains ``tile``.
+
+        :param tile: Tile
+        :type tile: :class:`Tile`
+
+        :rtype: bool
+
+        """
+        return tile in self._get_store(tile)
+
+    def delete_one(self, tile):
+        """
+        Delete ``tile`` and return ``tile``.
+
+        :param tile: Tile
+        :type tile: :class:`Tile` or ``None``
+
+        :rtype: :class:`Tile` or ``None``
+
+        """
+        return self._get_store(tile).delete_one(tile)
+
+    @staticmethod
+    def list():
+        """
+        Generate all the tiles in the store, but without their data.
+
+        :rtype: iterator
+
+        """
+        # Too dangerous to list all tiles in all stores. Return an empty iterator instead
+        while False:
+            yield
+
+    def put_one(self, tile):
+        """
+        Store ``tile`` in the store.
+
+        :param tile: Tile
+        :type tile: :class:`Tile` or ``None``
+
+        :rtype: :class:`Tile` or ``None``
+
+        """
+        return self._get_store(tile).put_one(tile)
+
+    def get_one(self, tile):
+        """
+        Add data to ``tile``, or return ``None`` if ``tile`` is not in the store.
+
+        :param tile: Tile
+        :type tile: :class:`Tile` or ``None``
+
+        :rtype: :class:`Tile` or ``None``
+
+        """
+        return self._get_store(tile).get_one(tile)
