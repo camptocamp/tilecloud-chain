@@ -364,3 +364,21 @@ mapping:
                     request:
                         type: float
                         default: .01
+    logging:
+      type: map
+      mapping:
+        database:
+          type: map
+          required: true
+          mapping:
+            host:
+              type: str
+            port:
+              type: int
+              default: 5432
+            dbname:
+              type: str
+              required: true
+            table:
+              type: str
+              required: true
