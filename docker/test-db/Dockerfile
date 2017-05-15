@@ -1,4 +1,4 @@
-FROM camptocamp/postgis:latest
+FROM camptocamp/postgres:latest
 
 LABEL maintainer "stephane.brunner@camptocamp.com"
 
