@@ -1,3 +1,5 @@
+CREATE EXTENSION postgis;
+
 CREATE SCHEMA tests;
 
 CREATE TABLE tests.point (gid serial Primary KEY, name varchar(10));
