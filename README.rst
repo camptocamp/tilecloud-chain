@@ -52,6 +52,7 @@ With Docker
    # Initialyse the project
    docker run -ti \
         --volume .:/project \
+        camptocamp/tilecloud-chain \
         pcreate -s tilecloud_chain .
 
    # Run the commands
@@ -398,6 +399,24 @@ The ``cmd`` can have the following optional argument:
 * ``x``, ``y``, ``z`` the tile coordinates.
 
 
+Logging
+-------
+
+Tile logs can be saved to a PostgresQL database with this configuration:
+
+..code:: yaml
+
+    logging:
+        database:
+            dbname: my_db
+            host: db
+            port: 5432
+            table: tilecloud_logs
+
+PostgresQL authentication can be specified with the ``PGUSER`` and ``PGPASSWORD`` environment variables.
+If the database is not reachable, the process will wait until it is.
+
+
 Configure Apache
 ----------------
 
@@ -567,6 +586,12 @@ To use the SQS queue we should first fill the queue::
 And then generate the tiles present in the SQS queue::
 
     generate_tiles --role slave --layer <a_layer>
+
+For the slave to keep listening when the queue is empty and be able to support more than one layer, you must
+enable the daemon mode and must not specify the layer::
+
+    generate_tiles --role slave --daemon
+
 
 Configure SNS
 -------------
