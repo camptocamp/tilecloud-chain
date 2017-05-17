@@ -163,7 +163,7 @@ def _calculate_cost(gene, options):
         price += c
         print('S3 PUT: {0:0.2f} [$]'.format(c))
 
-        if 'sqs' in gene.layer:
+        if 'sqs' in gene.config:
             if meta:
                 nb_sqs = nb_metatiles[z] * 3
             else:

@@ -1804,7 +1804,6 @@ layers:
     name: point
     px_buffer: 0.0
     params: {}
-    sqs: {queue: sqs_point, region: eu-west-1}
     type: wms
     url: http://localhost/mapserv
     wmts_style: default
@@ -1928,6 +1927,7 @@ layers:
     wmts_style: default
 mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 11211, location: /mapcache}
 openlayers: {center_x: 600000, center_y: 200000, srs: 'EPSG:21781'}
+sqs: {queue: sqs_point, region: eu-west-1}
 sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}"""
 
     @attr(general=True)

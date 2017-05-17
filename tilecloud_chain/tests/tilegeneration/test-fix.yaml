@@ -92,8 +92,6 @@ layers:
         -   sql: the_geom AS geom FROM tests.point
             connection: user=postgres password=postgres dbname=tests host=localhost
         min_resolution_seed: 10
-        sqs:
-            queue: sqs_point
     point_px_buffer:
         <<: *layer
         url: http://localhost/mapserv
@@ -246,6 +244,9 @@ cost:
     s3: {}
     cloudfront: {}
     sqs: {}
+
+sqs:
+    queue: sqs_point
 
 mapcache:
     config_file: mapcache.xml

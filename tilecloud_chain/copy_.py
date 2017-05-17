@@ -39,13 +39,11 @@ class Copy:
         gene.get(source_tilestore, "Get the tiles")
         gene.ifilter(DropEmpty(gene))
         # Discard tiles with certain content
-        if 'empty_tile_detection' in gene.layer:
+        if gene.layer and 'empty_tile_detection' in gene.layer:
             empty_tile = gene.layer['empty_tile_detection']
 
             gene.imap(HashDropper(
-                empty_tile['size'], empty_tile['hash'], store=dest_tilestore,
-                count=count_tiles_dropped,
-            ))
+                empty_tile['size'], empty_tile['hash'], store=dest_tilestore, count=count_tiles_dropped))
 
         if options.process:
             gene.process(options.process)

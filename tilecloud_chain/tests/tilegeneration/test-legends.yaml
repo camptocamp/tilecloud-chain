@@ -48,8 +48,6 @@ layers:
         -   sql: the_geom AS geom FROM tests.point
             connection: user=postgres password=postgres dbname=tests host=localhost
         min_resolution_seed: 10
-        sqs:
-            queue: sqs_point
     line:
         <<: *layer
         url: http://localhost/mapserv
@@ -90,3 +88,6 @@ layers:
 
 generation:
     default_cache: local
+
+sqs:
+    queue: sqs_point

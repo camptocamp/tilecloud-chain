@@ -14,7 +14,7 @@ class MapnikDropActionTileStore(MapnikTileStore):
     def __init__(self, store=None, queue_store=None, count=None, **kwargs):
         self.store = store
         self.queue_store = queue_store
-        self.count = count
+        self.count = count or []
         MapnikTileStore.__init__(self, **kwargs)
 
     def get_one(self, tile):
@@ -34,6 +34,6 @@ class MapnikDropActionTileStore(MapnikTileStore):
             elif self.queue_store is not None:  # pragma: no cover
                 self.queue_store.delete_one(tile)
 
-            if self.count:
-                self.count()
+            for count in self.count:
+                count()
         return result

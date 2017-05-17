@@ -96,8 +96,6 @@ layers:
         -   sql: the_geom AS geom FROM tests.point
             connection: user=postgres password=postgres dbname=tests host=localhost
         min_resolution_seed: 10
-        sqs:
-            queue: sqs_point
     point_error:
         <<: *layer
         layers: point_error
@@ -134,8 +132,6 @@ layers:
         empty_tile_detection:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
-        sqs:
-            queue: sqs_point_no_meta
     line:
         <<: *layer
         layers: line
@@ -253,3 +249,6 @@ apache:
 sns:
     topic: arn:aws:sns:eu-west-1:your-account-id:tilecloud
     region: eu-west-1
+
+sqs:
+    queue: sqs_point
