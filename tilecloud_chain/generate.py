@@ -19,9 +19,10 @@ from tilecloud.store.sqs import SQSTileStore, maybe_stop
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.filter.logger import Logger
 
-from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty, TilesFileStore, \
+from tilecloud_chain import TileGeneration, HashDropper, HashLogger, TilesFileStore, \
     add_comon_options, parse_tilecoord, quote, Count, MultiTileStore
 from tilecloud_chain.format import size_format, duration_format, default_int
+from tilecloud_chain.database_logger import DatabaseLoggerInit, DatabaseLogger
 
 logger = logging.getLogger(__name__)
 
@@ -29,24 +30,26 @@ logger = logging.getLogger(__name__)
 class Generate:
     _re_rm_xml_tag = re.compile('(<[^>]*>|\n)')
 
-    def gene(self, options, gene, layer):
-        if options.role == 'slave' or options.get_hash or options.get_bbox:
+    def gene(self, options, gene, layer=None):
+        if options.role == 'slave':
+            pass
+        elif options.get_hash or options.get_bbox:
             gene.layer = gene.layers[layer]
         else:
             gene.set_layer(layer, options)
 
-        if options.role in ('local', 'slave', 'hash'):
+        if options.role in ('local', 'master', 'hash'):
             all_dimensions = gene.get_all_dimensions()
 
             if len(all_dimensions) == 0:  # pragma: no cover
-                self._gene(options, gene, layer)
+                self._gene(options, gene)
             else:
                 for dimensions in all_dimensions:
-                    self._gene(options, gene, layer, dimensions)
+                    self._gene(options, gene, dimensions)
         else:  # pragma: no cover
-            self._gene(options, gene, layer)
+            self._gene(options, gene)
 
-    def _gene(self, options, gene, layer, dimensions=None):
+    def _gene(self, options, gene, dimensions=None):
         if dimensions is None:  # pragma: no cover
             dimensions = {}
         self.dimensions = dimensions
@@ -55,7 +58,6 @@ class Generate:
         self.count_tiles = None
         self.count_tiles_dropped = Count()
         self.count_tiles_stored = None
-        self.meta = gene.layer['meta']
         self.sqs_tilestore = None
         self.cache_tilestore = None
 
@@ -92,6 +94,9 @@ class Generate:
             gene.init_tilecoords()
             gene.add_geom_filter()
 
+        if options.role in ('local', 'master') and 'logging' in gene.config:
+            gene.imap(DatabaseLoggerInit(gene.config['logging'], options is not None and options.daemon))
+
         if options.local_process_number is not None:  # pragma: no cover
             gene.add_local_process_filter()
 
@@ -102,7 +107,7 @@ class Generate:
         elif options.role == 'hash':
             try:
                 z, x, y = (int(v) for v in options.get_hash.split('/'))
-                if self.meta:
+                if 'meta' in gene.layer:
                     gene.set_tilecoords([TileCoord(z, x, y, gene.layer['meta_size'])])
                 else:
                     gene.set_tilecoords([TileCoord(z, x, y)])
@@ -147,36 +152,29 @@ class Generate:
                 return tile
             gene.imap(wrong_content_type_to_error)
 
-            # Handle errors
-            gene.add_error_filters()
-
-            if self.meta:
-                if options.role == 'hash':
+            if options.role == 'hash':
+                if 'meta' in gene.layer:
                     gene.imap(HashLogger('empty_metatile_detection'))
-                elif not options.near:
-                    # Discard tiles with certain content
-                    if 'empty_metatile_detection' in gene.layer:
-                        empty_tile = gene.layer['empty_metatile_detection']
+            elif not options.near:
+                # Discard tiles with certain content
+                if 'empty_tile_detection' in gene.layer:
+                    empty_tile = gene.layer['empty_tile_detection']
+                    gene.imap(HashDropper(
+                        empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
+                        queue_store=self.sqs_tilestore,
+                        count=self.count_metatiles_dropped,
+                    ))
 
-                        gene.imap(HashDropper(
-                            empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
-                            queue_store=self.sqs_tilestore,
-                            count=self.count_metatiles_dropped,
-                        ))
+            def add_elapsed_togenerate(metatile):
+                if metatile is not None:
+                    metatile.elapsed_togenerate = metatile.tilecoord.n ** 2
+                    return True
+                return False  # pragma: no cover
+            gene.ifilter(add_elapsed_togenerate)
 
-                def add_elapsed_togenerate(metatile):
-                    if metatile is not None:
-                        metatile.elapsed_togenerate = metatile.tilecoord.n ** 2
-                        return True
-                    return False  # pragma: no cover
-                gene.ifilter(add_elapsed_togenerate)
-
-                # Split the metatile image into individual tiles
-                gene.add_metatile_splitter()
-                gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
-
-                # Handle errors
-                gene.add_error_filters()
+            # Split the metatile image into individual tiles
+            gene.add_metatile_splitter()
+            gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
             if gene.layer['type'] != 'mapnik' or gene.layer['output_format'] != 'grid':
                 self.count_tiles = gene.counter()
@@ -188,22 +186,17 @@ class Generate:
                 gene.imap(HashLogger('empty_tile_detection'))
             elif not options.near:
                 # Discard tiles with certain content
-                if 'empty_tile_detection' in gene.layer:
-                    empty_tile = gene.layer['empty_tile_detection']
-
-                    gene.imap(HashDropper(
-                        empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
-                        queue_store=self.sqs_tilestore,
-                        count=self.count_tiles_dropped,
-                    ))
+                gene.imap(HashDropper(
+                    empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
+                    queue_store=self.sqs_tilestore,
+                    count=self.count_tiles_dropped,
+                ))
 
             gene.process()
         else:  # pragma: no cover
             self.count_tiles = gene.counter()
 
         if options.role in ('local', 'slave'):
-            gene.add_error_filters()
-            gene.ifilter(DropEmpty(gene))
             self.count_tiles_stored = gene.counter(size=True)
 
             if options.time:
@@ -214,7 +207,6 @@ class Generate:
 
             gene.put(self.cache_tilestore, "Store the tile")
 
-        gene.add_error_filters()
         if options.generated_tiles_file:  # pragma: no cover
             generated_tiles_file = open(options.generated_tiles_file, 'a')
 
@@ -233,6 +225,10 @@ class Generate:
                 gene.ifilter(decr_tile_in_metatile)
             else:
                 gene.delete(self.sqs_tilestore)
+
+        if options.role in ('local', 'slave') and 'logging' in gene.config:
+            gene.imap(DatabaseLogger(gene.config['logging'], options is not None and options.daemon))
+        gene.add_error_filters()
 
         message = []
         if options.time is not None:
@@ -460,6 +456,9 @@ def main():
             exit("With --get-hash option we needs to specify a layer")
         elif options.tiles:  # pragma: no cover
             exit("With --tiles option we needs to specify a layer")
+        elif 'default_layers' in gene.config['generation']:
+            generate = Generate()
+            generate.gene(options, gene)
         else:
             for layer in gene.config['generation'].get('default_layers', gene.layers.keys()):
                 generate = Generate()

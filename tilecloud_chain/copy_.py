@@ -43,9 +43,7 @@ class Copy:
             empty_tile = gene.layer['empty_tile_detection']
 
             gene.imap(HashDropper(
-                empty_tile['size'], empty_tile['hash'], store=dest_tilestore,
-                count=count_tiles_dropped,
-            ))
+                empty_tile['size'], empty_tile['hash'], store=dest_tilestore, count=count_tiles_dropped))
 
         if options.process:
             gene.process(options.process)
