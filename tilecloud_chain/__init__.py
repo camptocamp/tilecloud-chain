@@ -337,67 +337,6 @@ class TileGeneration:
         if error:  # pragma: no cover
             exit(1)
 
-        if 'logging' in self.config:
-            db_params = self.config['logging']['database']
-            self._db_connection = psycopg2.connect(
-                dbname=db_params['dbname'],
-                host=db_params.get('host'),
-                port=db_params.get('port')
-            )
-            if '.' in db_params['table']:
-                schema, table = db_params['table'].split('.')
-            else:
-                schema = 'public'
-                table = db_params['table']
-
-            self._logging_schema = psycopg2.extensions.quote_ident(schema, self._db_connection)
-            self._logging_table = psycopg2.extensions.quote_ident(table, self._db_connection)
-
-            with self._db_connection.cursor() as cursor:
-                cursor.execute(
-                    "SELECT EXISTS(SELECT 1 FROM pg_tables WHERE schemaname=%s AND tablename=%s)",
-                    (schema, table)
-                )
-                if not cursor.fetchone()[0]:
-                    try:
-                        cursor.execute(
-                            'CREATE TABLE {}.{} ('
-                            '  id BIGSERIAL PRIMARY KEY,'
-                            '  layer CHARACTER VARYING(80) NOT NULL,'
-                            '  run INTEGER NOT NULL,'
-                            '  action CHARACTER VARYING(7) NOT NULL,'
-                            '  tile TEXT NOT NULL,'
-                            '  UNIQUE (layer, run, tile))'.format(self._logging_schema, self._logging_table)
-                        )
-                        self._db_connection.commit()
-                    except psycopg2.DatabaseError:
-                        logging.error('Unable to create table %s.%s', self._logging_schema, self._logging_table)
-                        error = True
-                else:
-                    try:
-                        cursor.execute(
-                            'INSERT INTO {}.{}(layer, run, action, tile) '
-                            'VALUES (%s, %s, %s, %s)'.format(self._logging_schema, self._logging_table),
-                            ('test_layer', -1, 'test', '-1x-1')
-                        )
-                    except psycopg2.DatabaseError:
-                        logging.error('Unable to insert logging data into %s.%s',
-                                      self._logging_schema, self._logging_table)
-                        error = True
-                    finally:
-                        self._db_connection.rollback()
-        else:
-            self._db_connection = None
-
-        if self._db_connection:
-            self._db_logger = DatabaseLogger(self._db_connection, self._logging_schema,
-                                             self._logging_table, '- no layer -')
-        else:
-            self._db_logger = None
-
-        if error:
-            exit(1)
-
         self.layer = None
         if layer_name and not error:
             self.set_layer(layer_name, options)
@@ -614,10 +553,6 @@ class TileGeneration:
         else:
             self.init_geom(self.layer['grid_ref']['bbox'])
 
-        if self._db_connection:
-            self._db_logger = DatabaseLogger(self._db_connection, self._logging_schema,
-                                             self._logging_table, layer)
-
     def get_grid(self, name=None):
         if not name:
             name = self.layer['grid']
@@ -629,16 +564,14 @@ class TileGeneration:
         cache_tilestore = MultiTileStore({
             lname: self.get_store(cache, layer, dimensions=dimensions)
             for lname, layer in self.layers.items()
-        }, self.layer['name'])
+        }, self.layer['name'] if self.layer else None)
         return cache_tilestore
 
     def get_sqs_queue(self):  # pragma: no cover
-        if self.layer is None:
-            exit("A layer must be specified.")
-        if 'sqs' not in self.layer:
-            exit("The layer '{}' hasn't any configured queue".format(self.layer['name']))
-        connection = boto.sqs.connect_to_region(self.layer['sqs']['region'])
-        queue = connection.get_queue(self.layer['sqs']['queue'])
+        if 'sqs' not in self.config:
+            exit("The config hasn't any configured queue")
+        connection = boto.sqs.connect_to_region(self.config['sqs']['region'])
+        queue = connection.get_queue(self.config['sqs']['queue'])
         queue.set_message_class(JSONMessage)
         return queue
 
@@ -742,6 +675,7 @@ class TileGeneration:
                     substream = store.get((metatile,))
                     for tile in substream:
                         tile.metatile = metatile
+                        tile.metadata = metatile.metadata
                         yield tile
             self.tilestream = meta_get(self.tilestream)  # pragma: no cover
         else:
@@ -751,25 +685,14 @@ class TileGeneration:
                         substream = store.get((metatile,))
                         for tile in substream:
                             tile.metatile = metatile
+                            tile.metadata = metatile.metadata
+                            if metatile.error:
+                                tile.error = metatile.error
+                            elif metatile.data is None:
+                                tile.error = "Metatile data is empty"
                             yield tile
                     except GeneratorExit as e:
                         raise e
-                    except:  # pragma: no cover
-                        data = repr(metatile.data)
-                        if len(data) < 2000:
-                            metatile.error = str(sys.exc_info()[1]) + " - " + metatile.data
-                        else:
-                            class NoRepr:
-                                def __init__(self, value):
-                                    self.value = value
-
-                                def __repr__(self):
-                                    return self.value
-
-                            metatile.error = NoRepr(
-                                repr(str(sys.exc_info()[1])) + " - " + data[0:2000] + '...'
-                            )
-                        yield metatile
             self.tilestream = safe_get(self.tilestream)
 
     error_file = None
@@ -810,12 +733,9 @@ class TileGeneration:
                     self.log_tiles_error(tilecoord=tile.tilecoord, message=repr(tile.error))
                 return tile
             self.imap(do)
-        if 'maxconsecutive_errors' in self.config['generation']:
+        if self.config['generation']['maxconsecutive_errors'] > 0:
             self.tilestream = map(MaximumConsecutiveErrors(
                 self.config['generation']['maxconsecutive_errors']), self.tilestream)
-
-        if self._db_logger:
-            self.imap(self._db_logger)
 
         def drop_count(tile):
             if tile and tile.error:
@@ -1051,7 +971,8 @@ class Count:
         self.nb = 0
 
     def __call__(self, tile=None):
-        self.nb += 1
+        if tile and tile.data:
+            self.nb += 1
         return tile
 
 
@@ -1104,8 +1025,8 @@ class HashDropper:
             elif self.queue_store is not None:  # pragma: no cover
                 self.queue_store.delete_one(tile)
 
-            if self.count:
-                self.count()
+                if self.count:
+                    self.count()
 
             return None
 
@@ -1135,54 +1056,6 @@ class HashLogger:
     {}:
         size: {}
         hash: {}""".format(str(tile.tilecoord), self.block, len(tile.data), sha1(tile.data).hexdigest()))
-        return tile
-
-
-class DatabaseLogger:  # pragma: no cover
-
-    def __init__(self, connection, schema, table, layer):
-        self.connection = connection
-        self.full_table = '{}.{}'.format(schema, table)
-        self.default_layer = layer
-        self.run = None
-
-    def __call__(self, tile):
-        if self.run is None:
-            run = (
-                '(SELECT COALESCE(MAX(run), 0) + 1 FROM {} '
-                'WHERE layer = %(layer)s)'
-            ).format(self.full_table)
-        else:
-            run = self.run
-
-        if tile.error:
-            action = 'error'
-        elif tile.data:
-            action = 'create'
-        else:
-            action = 'queue'
-
-        layer = tile.metadata.get('layer', self.default_layer)
-
-        with self.connection.cursor() as cursor:
-            try:
-                cursor.execute(
-                    'INSERT INTO {}(layer, run, action, tile)'
-                    'VALUES (%(layer)s, {}, %(action)s::varchar(7), %(tile)s)'
-                    'RETURNING run'.format(self.full_table, run),
-                    {'layer': layer, 'action': action, 'tile': str(tile.tilecoord)}
-                )
-                self.run, = cursor.fetchone()
-            except psycopg2.IntegrityError:
-                self.connection.rollback()
-                cursor.execute(
-                    'UPDATE {} SET action = %(action)s '
-                    'WHERE layer = %(layer)s AND run = {} AND tile = %(tile)s'.format(self.full_table, run),
-                    {'layer': layer, 'action': action, 'tile': str(tile.tilecoord)}
-                )
-
-            self.connection.commit()
-
         return tile
 
 
@@ -1359,10 +1232,9 @@ class TilesFileStore:
 
 
 class MultiTileStore(TileStore):
-    def __init__(self, stores, default_layer_name, **kwargs):
+    def __init__(self, layers, default_layer_name, **kwargs):
         TileStore.__init__(self, **kwargs)
-        self.stores = stores
-        self.default_layer = self.stores[default_layer_name]
+        self.layers = layers
 
     def _get_store(self, tile):
         return self.stores.get(tile.metadata.get('layer', None), self.default_layer)
