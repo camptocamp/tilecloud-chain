@@ -439,7 +439,7 @@ def app_factory(global_config, configfile='tilegeneration/config.yaml', **local_
     return Server(configfile)
 
 
-class PyramidView(Server):
+class PyramidServer(Server):
 
     from pyramid.httpexceptions import HTTPNoContent, HTTPBadRequest, \
         HTTPForbidden, HTTPNotFound, HTTPBadGateway
@@ -452,9 +452,32 @@ class PyramidView(Server):
         502: HTTPBadGateway,
     }
 
+    def error(self, code, message='', request=None):
+        raise self.HTTP_EXCEPTIONS[code](message)
+
+    def responce(self, data, headers=None, request=None):
+        if headers is None:  # pragma: no cover
+            headers = {}
+        request.response.headers = headers
+        if type(data) == memoryview:
+            request.response.body_file = data
+        else:
+            request.response.body = data
+        return request.response
+
+
+pyramid_server = None
+
+
+class PyramidView():
+
     def __init__(self, request):
         self.request = request
-        Server.__init__(self, request.registry.settings['tilegeneration_configfile'])
+        global pyramid_server
+        if pyramid_server is None:
+            pyramid_server = PyramidServer(
+                request.registry.settings['tilegeneration_configfile'])
+        self.server = pyramid_server
 
     def __call__(self):
         params = {}
@@ -466,17 +489,4 @@ class PyramidView(Server):
             for param, value in self.request.params.items():
                 params[param.upper()] = value
 
-        return self.serve(path, params)
-
-    def error(self, code, message=''):
-        raise self.HTTP_EXCEPTIONS[code](message)
-
-    def responce(self, data, headers=None):
-        if headers is None:  # pragma: no cover
-            headers = {}
-        self.request.response.headers = headers
-        if type(data) == memoryview:
-            self.request.response.body_file = data
-        else:
-            self.request.response.body = data
-        return self.request.response
+        return self.server.serve(path, params, request=self.request)

@@ -12,6 +12,7 @@ from pyramid.httpexceptions import HTTPNoContent, HTTPBadRequest
 from tilecloud_chain.tests import CompareCase
 from tilecloud_chain import generate, controller
 from tilecloud_chain.server import PyramidView, app_factory
+from tilecloud_chain import server
 
 
 CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
@@ -201,6 +202,7 @@ Size per tile: 4[0-9][0-9] o
             ],
         )
 
+        server.pyramid_server = None
         request = DummyRequest()
         request.registry.settings = {
             'tilegeneration_configfile': 'tilegeneration/test-nosns.yaml',
@@ -744,6 +746,7 @@ Size per tile: 4[0-9][0-9] o
             ],
         )
 
+        server.pyramid_server = None
         request = DummyRequest()
         request.registry.settings = {
             'tilegeneration_configfile': 'tilegeneration/test-serve.yaml',
@@ -849,6 +852,7 @@ Size per tile: 4[0-9][0-9] o
             ],
         )
 
+        server.pyramid_server = None
         request = DummyRequest()
         request.registry.settings = {
             'tilegeneration_configfile': 'tilegeneration/test-bsddb.yaml',
@@ -918,6 +922,7 @@ Size per tile: 4[0-9][0-9] o
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_serve_gfi(self, l):
+        server.pyramid_server = None
         request = DummyRequest()
         request.registry.settings = {
             'tilegeneration_configfile': 'tilegeneration/test-serve.yaml',
@@ -951,6 +956,7 @@ Size per tile: 4[0-9][0-9] o
 </msGMLOutput>
 """)
 
+        server.pyramid_server = None
         request = DummyRequest()
         request.registry.settings = {
             'tilegeneration_configfile': 'tilegeneration/test-serve.yaml',
