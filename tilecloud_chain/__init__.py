@@ -19,6 +19,11 @@ from datetime import datetime
 from tilecloud import consume
 from itertools import product
 
+from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
+
+from tilecloud_chain.database_logger import DatabaseLogger
+from tilecloud_chain.multitilestore import MultiTileStore
+
 try:
     from PIL import Image
     Image  # suppress pyflakes warning
@@ -664,10 +669,11 @@ class TileGeneration:
             self.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
     def add_metatile_splitter(self):
-        store = MetaTileSplitterTileStore(
-            self.layer['mime_type'],
-            self.layer['grid_ref']['tile_size'],
-            self.layer['meta_buffer'])
+        store = MultiTileStore({lname: MetaTileSplitterTileStore(
+            layer['mime_type'],
+            layer['grid_ref']['tile_size'],
+            layer['meta_buffer'])
+            for lname, layer in self.layers.items()})
 
         if self.options.debug:
             def meta_get(tilestream):  # pragma: no cover
@@ -839,7 +845,7 @@ class TileGeneration:
         return count
 
     def process(self, name=None):
-        if name is None:
+        if name is None and self.layer is not None:
             name = self.layer.get('post_process')
         if name is not None:
             self.imap(Process(self.config['process'][name], self.options))
@@ -1229,72 +1235,3 @@ class TilesFileStore:
                     yield Tile(parse_tilecoord(line))
                 except ValueError as e:  # pragma: no cover
                     logger.error("A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{1!r}".format(line, e))
-
-
-class MultiTileStore(TileStore):
-    def __init__(self, layers, default_layer_name, **kwargs):
-        TileStore.__init__(self, **kwargs)
-        self.layers = layers
-
-    def _get_store(self, tile):
-        return self.stores.get(tile.metadata.get('layer', None), self.default_layer)
-
-    def __contains__(self, tile):
-        """
-        Return true if this store contains ``tile``.
-
-        :param tile: Tile
-        :type tile: :class:`Tile`
-
-        :rtype: bool
-
-        """
-        return tile in self._get_store(tile)
-
-    def delete_one(self, tile):
-        """
-        Delete ``tile`` and return ``tile``.
-
-        :param tile: Tile
-        :type tile: :class:`Tile` or ``None``
-
-        :rtype: :class:`Tile` or ``None``
-
-        """
-        return self._get_store(tile).delete_one(tile)
-
-    @staticmethod
-    def list():
-        """
-        Generate all the tiles in the store, but without their data.
-
-        :rtype: iterator
-
-        """
-        # Too dangerous to list all tiles in all stores. Return an empty iterator instead
-        while False:
-            yield
-
-    def put_one(self, tile):
-        """
-        Store ``tile`` in the store.
-
-        :param tile: Tile
-        :type tile: :class:`Tile` or ``None``
-
-        :rtype: :class:`Tile` or ``None``
-
-        """
-        return self._get_store(tile).put_one(tile)
-
-    def get_one(self, tile):
-        """
-        Add data to ``tile``, or return ``None`` if ``tile`` is not in the store.
-
-        :param tile: Tile
-        :type tile: :class:`Tile` or ``None``
-
-        :rtype: :class:`Tile` or ``None``
-
-        """
-        return self._get_store(tile).get_one(tile)
