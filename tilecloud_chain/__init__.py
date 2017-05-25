@@ -19,9 +19,6 @@ from datetime import datetime
 from tilecloud import consume
 from itertools import product
 
-from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
-
-from tilecloud_chain.database_logger import DatabaseLogger
 from tilecloud_chain.multitilestore import MultiTileStore
 
 try:
@@ -39,7 +36,7 @@ from boto.sqs.jsonmessage import JSONMessage
 from pykwalify.core import Core
 from pykwalify.errors import SchemaError, NotSequenceError, NotMappingError
 
-from tilecloud import Tile, BoundingPyramid, TileCoord, TileStore
+from tilecloud import Tile, BoundingPyramid, TileCoord
 from tilecloud.grid.free import FreeTileGrid
 from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.store.s3 import S3TileStore
