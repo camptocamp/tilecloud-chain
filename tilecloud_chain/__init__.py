@@ -1104,6 +1104,26 @@ class IntersectGeometryFilter:
         ))
 
 
+class DropEmpty:
+    """
+    Create a filter for dropping all tiles with errors.
+    """
+
+    def __init__(self, gene):
+        self.gene = gene
+
+    def __call__(self, tile):
+        if not tile or not tile.data:  # pragma: no cover
+            logger.error("The tile: {tilecoord!s} is empty".format(**{
+                'tilecoord': tile.tilecoord if tile else 'not defined'
+            }))
+            if 'error_file' in self.gene.config['generation'] and tile:
+                self.gene.log_tiles_error(tilecoord=tile.tilecoord, message='The tile is empty')
+            return None
+        else:
+            return tile
+
+
 def quote(arg):
     if ' ' in arg:
         if "'" in arg:
