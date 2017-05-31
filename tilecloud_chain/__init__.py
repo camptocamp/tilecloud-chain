@@ -554,7 +554,7 @@ class TileGeneration:
             self.init_geom(self.layer['grid_ref']['bbox'])
 
     def get_grid(self, name=None):
-        if not name:
+        if name is None:
             name = self.layer['grid']
 
         return self.grids[name]
