@@ -20,7 +20,7 @@ from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.filter.logger import Logger
 
 from tilecloud_chain import TileGeneration, HashDropper, HashLogger, TilesFileStore, \
-    add_comon_options, parse_tilecoord, quote, Count, MultiTileStore
+    add_comon_options, parse_tilecoord, quote, Count, MultiTileStore, MultiHashDropper
 from tilecloud_chain.format import size_format, duration_format, default_int
 from tilecloud_chain.database_logger import DatabaseLoggerInit, DatabaseLogger
 
@@ -155,9 +155,21 @@ class Generate:
             if options.role == 'hash':
                 if 'meta' in gene.layer:
                     gene.imap(HashLogger('empty_metatile_detection'))
+            elif options.role == 'slave':
+                droppers = {}
+                for lname, layer in gene.layers.items():
+                    if 'empty_tile_detection' in layer:
+                        empty_tile = layer['empty_tile_detection']
+                        droppers[lname] = HashDropper(
+                            empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
+                            queue_store=self.sqs_tilestore,
+                            count=self.count_metatiles_dropped,
+                        )
+                if droppers:
+                    gene.imap(MultiHashDropper(droppers))
             elif not options.near:
                 # Discard tiles with certain content
-                if 'empty_tile_detection' in gene.layer:
+                if gene.layer and 'empty_tile_detection' in gene.layer:
                     empty_tile = gene.layer['empty_tile_detection']
                     gene.imap(HashDropper(
                         empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
@@ -176,24 +188,23 @@ class Generate:
             gene.add_metatile_splitter()
             gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
-            if gene.layer is not None:
-                if gene.layer['type'] != 'mapnik' or gene.layer['output_format'] != 'grid':
-                    self.count_tiles = gene.counter()
-
-                if 'pre_hash_post_process' in gene.layer:  # pragma: no cover
-                    gene.process(gene.layer['pre_hash_post_process'])
-            else:
+            if self.count_tiles is None:
                 self.count_tiles = gene.counter()
+
+            gene.process(key='pre_hash_post_process')
 
             if options.role == 'hash':
                 gene.imap(HashLogger('empty_tile_detection'))
+            elif options.role == 'slave':
+                gene.imap(MultiHashDropper(droppers))
             elif not options.near:
                 # Discard tiles with certain content
-                gene.imap(HashDropper(
-                    empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
-                    queue_store=self.sqs_tilestore,
-                    count=self.count_tiles_dropped,
-                ))
+                if gene.layer and 'empty_tile_detection' in gene.layer:
+                    gene.imap(HashDropper(
+                        empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
+                        queue_store=self.sqs_tilestore,
+                        count=self.count_tiles_dropped,
+                    ))
 
             gene.process()
         else:  # pragma: no cover
