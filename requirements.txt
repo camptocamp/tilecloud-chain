@@ -1,4 +1,4 @@
-tilecloud>=0.5.0.dev1
+tilecloud>=0.5.0.dev2
 psycopg2
 Shapely
 boto>=2.0
