@@ -36,7 +36,7 @@ from boto.sqs.jsonmessage import JSONMessage
 from pykwalify.core import Core
 from pykwalify.errors import SchemaError, NotSequenceError, NotMappingError
 
-from tilecloud import Tile, BoundingPyramid, TileCoord
+from tilecloud import Tile, BoundingPyramid, TileCoord, TileStore
 from tilecloud.grid.free import FreeTileGrid
 from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.store.s3 import S3TileStore
@@ -666,11 +666,20 @@ class TileGeneration:
             self.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
     def add_metatile_splitter(self):
-        store = MultiTileStore({lname: MetaTileSplitterTileStore(
-            layer['mime_type'],
-            layer['grid_ref']['tile_size'],
-            layer['meta_buffer'])
-            for lname, layer in self.layers.items()})
+        class NullSplitter(TileStore):
+            @staticmethod
+            def get_one(tile):
+                return tile
+
+        splitters = {None: NullSplitter()}
+        for lname, layer in self.layers.items():
+            if layer.get('meta'):
+                splitters[lname] = MetaTileSplitterTileStore(
+                    layer['mime_type'],
+                    layer['grid_ref']['tile_size'],
+                    layer['meta_buffer'])
+
+        store = MultiTileStore(splitters)
 
         if self.options.debug:
             def meta_get(tilestream):  # pragma: no cover
@@ -985,8 +994,7 @@ class Count:
         self.nb = 0
 
     def __call__(self, tile=None):
-        if tile and tile.data:
-            self.nb += 1
+        self.nb += 1
         return tile
 
 
@@ -1039,8 +1047,8 @@ class HashDropper:
             elif self.queue_store is not None:  # pragma: no cover
                 self.queue_store.delete_one(tile)
 
-                if self.count:
-                    self.count()
+            if self.count:
+                self.count()
 
             return None
 

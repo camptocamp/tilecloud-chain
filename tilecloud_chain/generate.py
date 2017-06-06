@@ -107,7 +107,7 @@ class Generate:
         elif options.role == 'hash':
             try:
                 z, x, y = (int(v) for v in options.get_hash.split('/'))
-                if 'meta' in gene.layer:
+                if gene.layer.get('meta'):
                     gene.set_tilecoords([TileCoord(z, x, y, gene.layer['meta_size'])])
                 else:
                     gene.set_tilecoords([TileCoord(z, x, y)])
@@ -141,25 +141,26 @@ class Generate:
                     if tile.content_type.find("application/vnd.ogc.se_xml") == 0:
                         tile.error = "WMS server error: {}".format((
                             self._re_rm_xml_tag.sub(
-                                '', tile.data.decode('utf-8') if PY3 else tile.data
+                                '', tile.error.decode('utf-8') if PY3 else tile.error
                             )
                         ))
                     else:  # pragma: no cover
                         tile.error = "{} is not an image format, error: {}".format(
                             tile.content_type,
-                            tile.data
+                            tile.error
                         )
                 return tile
             gene.imap(wrong_content_type_to_error)
+            gene.add_error_filters()
 
             if options.role == 'hash':
-                if 'meta' in gene.layer:
+                if gene.layer.get('meta', False):
                     gene.imap(HashLogger('empty_metatile_detection'))
             elif options.role == 'slave':
                 droppers = {}
                 for lname, layer in gene.layers.items():
-                    if 'empty_tile_detection' in layer:
-                        empty_tile = layer['empty_tile_detection']
+                    if 'empty_metatile_detection' in layer:
+                        empty_tile = layer['empty_metatile_detection']
                         droppers[lname] = HashDropper(
                             empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
                             queue_store=self.sqs_tilestore,
@@ -169,8 +170,8 @@ class Generate:
                     gene.imap(MultiHashDropper(droppers))
             elif not options.near:
                 # Discard tiles with certain content
-                if gene.layer and 'empty_tile_detection' in gene.layer:
-                    empty_tile = gene.layer['empty_tile_detection']
+                if gene.layer and 'empty_metatile_detection' in gene.layer:
+                    empty_tile = gene.layer['empty_metatile_detection']
                     gene.imap(HashDropper(
                         empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
                         queue_store=self.sqs_tilestore,
@@ -196,10 +197,21 @@ class Generate:
             if options.role == 'hash':
                 gene.imap(HashLogger('empty_tile_detection'))
             elif options.role == 'slave':
-                gene.imap(MultiHashDropper(droppers))
+                droppers = {}
+                for lname, layer in gene.layers.items():
+                    if 'empty_tile_detection' in layer:
+                        empty_tile = layer['empty_tile_detection']
+                        droppers[lname] = HashDropper(
+                            empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
+                            queue_store=self.sqs_tilestore,
+                            count=self.count_metatiles_dropped,
+                        )
+                if droppers:
+                    gene.imap(MultiHashDropper(droppers))
             elif not options.near:
                 # Discard tiles with certain content
                 if gene.layer and 'empty_tile_detection' in gene.layer:
+                    empty_tile = gene.layer['empty_tile_detection']
                     gene.imap(HashDropper(
                         empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
                         queue_store=self.sqs_tilestore,
@@ -278,7 +290,7 @@ class Generate:
                 if options.role == "master":  # pragma: no cover
                     message.append("Nb of generated jobs: {}".format(self.count_tiles.nb))
                 else:
-                    if "meta" in gene.layer:
+                    if gene.layer.get('meta'):
                         message += [
                             "Nb generated metatiles: {}".format(self.count_metatiles.nb),
                             "Nb metatiles dropped: {}".format(self.count_metatiles_dropped.nb),
@@ -480,9 +492,6 @@ def main():
             exit("With --get-hash option we needs to specify a layer")
         elif options.tiles:  # pragma: no cover
             exit("With --tiles option we needs to specify a layer")
-        elif 'default_layers' in gene.config['generation']:
-            generate = Generate()
-            generate.gene(options, gene)
         else:
             for layer in gene.config['generation'].get('default_layers', gene.layers.keys()):
                 generate = Generate()

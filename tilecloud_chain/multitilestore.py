@@ -92,4 +92,7 @@ class MultiTileStore(TileStore):
 
 
 def _get_layer(tile):
-    return tile.metadata.get('layer')
+    if tile:
+        return tile.metadata.get('layer')
+    else:
+        return None
