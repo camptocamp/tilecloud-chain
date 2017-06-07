@@ -686,8 +686,13 @@ class TileGeneration:
                 for metatile in tilestream:
                     substream = store.get((metatile,))
                     for tile in substream:
-                        tile.metatile = metatile
-                        tile.metadata = metatile.metadata
+                        if tile is not metatile:
+                            tile.metatile = metatile
+                            tile.metadata = metatile.metadata
+                            if metatile.error:
+                                tile.error = metatile.error
+                            elif metatile.data is None:
+                                tile.error = "Metatile data is empty"
                         yield tile
             self.tilestream = meta_get(self.tilestream)  # pragma: no cover
         else:
@@ -696,12 +701,13 @@ class TileGeneration:
                     try:
                         substream = store.get((metatile,))
                         for tile in substream:
-                            tile.metatile = metatile
-                            tile.metadata = metatile.metadata
-                            if metatile.error:
-                                tile.error = metatile.error
-                            elif metatile.data is None:
-                                tile.error = "Metatile data is empty"
+                            if tile is not metatile:
+                                tile.metatile = metatile
+                                tile.metadata = metatile.metadata
+                                if metatile.error:
+                                    tile.error = metatile.error
+                                elif metatile.data is None:
+                                    tile.error = "Metatile data is empty"
                             yield tile
                     except GeneratorExit as e:
                         raise e
@@ -1274,8 +1280,9 @@ class MultiProcess:
 
 
 class TilesFileStore:
-    def __init__(self, tiles_file):
+    def __init__(self, tiles_file, layer=None):
         self.tiles_file = open(tiles_file)
+        self.layer = layer
 
     def list(self):
         while True:
@@ -1285,6 +1292,6 @@ class TilesFileStore:
             line = line.split('#')[0].strip()
             if line != '':
                 try:
-                    yield Tile(parse_tilecoord(line))
+                    yield Tile(parse_tilecoord(line), layer=self.layer)
                 except ValueError as e:  # pragma: no cover
                     logger.error("A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{1!r}".format(line, e))

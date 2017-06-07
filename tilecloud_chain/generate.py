@@ -87,7 +87,7 @@ class Generate:
             self.cache_tilestore = gene.get_tilesstore(options.cache, dimensions)
 
         if options.tiles:
-            gene.set_store(TilesFileStore(options.tiles))
+            gene.set_store(TilesFileStore(options.tiles, options.layer))
 
         elif options.role in ('local', 'master'):
             # Generate a stream of metatiles
