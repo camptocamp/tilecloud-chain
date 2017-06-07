@@ -96,8 +96,6 @@ layers:
         -   sql: the_geom AS geom FROM tests.point
             connection: user=postgres password=postgres dbname=tests host=localhost
         min_resolution_seed: 10
-        sqs:
-            queue: sqs_point
     point_error:
         <<: *layer
         layers: point_error
@@ -249,3 +247,6 @@ apache:
     config_file: tiles.conf
 
 server: {}
+
+sqs:
+    queue: sqs_point

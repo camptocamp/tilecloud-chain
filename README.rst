@@ -885,3 +885,25 @@ Build it:
    virtualenv venv
    venv/bin/pip install -e .
    venv/bin/pip install -r dev-requirements.txt
+
+
+-------------
+Run the tests
+-------------
+
+Setup your environment:
+
+.. code:: bash
+
+   sudo apt-get install optipng libdb-dev
+   virtualenv .venv
+   .venv/bin/pip install -r dev-requirements.txt -r requirements.txt mapnik bsddb3 -e .
+   touch tilecloud_chain/OpenLayers.js
+   docker-compose -f test-docker-compose.yml up
+
+To run the tests:
+
+.. code:: bash
+
+   .venv/bin/python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain \
+       --attr '!'nopy`echo $TRAVIS_PYTHON_VERSION | awk -F . '{{print $1}}'`
