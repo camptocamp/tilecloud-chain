@@ -9,7 +9,6 @@ import random
 from datetime import datetime
 from getpass import getuser
 from argparse import ArgumentParser
-from six import PY3
 
 import boto
 from boto import sns
@@ -141,7 +140,7 @@ class Generate:
                     if tile.content_type.find("application/vnd.ogc.se_xml") == 0:
                         tile.error = "WMS server error: {}".format((
                             self._re_rm_xml_tag.sub(
-                                '', tile.error.decode('utf-8') if PY3 else tile.error
+                                '', tile.error
                             )
                         ))
                     else:  # pragma: no cover
