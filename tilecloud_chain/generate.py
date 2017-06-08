@@ -203,7 +203,7 @@ class Generate:
                         droppers[lname] = HashDropper(
                             empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
                             queue_store=self.sqs_tilestore,
-                            count=self.count_metatiles_dropped,
+                            count=self.count_tiles_dropped,
                         )
                 if droppers:
                     gene.imap(MultiHashDropper(droppers))
