@@ -749,7 +749,7 @@ Size per tile: 385 o
                 tiles=((5, 7), (7, 4)),
                 regex=True,
                 expected="""The tile generation of layer 'mapnik_grid_drop' is finish
-Nb generated tiles: 12
+Nb generated tiles: 2
 Nb tiles dropped: 10
 Nb tiles stored: 2
 Nb tiles in error: 0

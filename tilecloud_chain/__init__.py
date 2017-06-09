@@ -857,21 +857,15 @@ class TileGeneration:
         return count
 
     def process(self, name=None, key='post_process'):
-        if self.layer:
-            if name is None:
-                name = self.layer.get(key)
-            if name is not None:
-                self.imap(Process(self.config['process'][name], self.options))
-        else:
-            processes = {}
-            for lname, layer in self.layers.items():
-                name_ = name
-                if name_ is None:
-                    name_ = layer.get(key)
-                if name_ is not None:
-                    processes[lname] = Process(self.config['process'][name_], self.options)
-            if processes:
-                self.imap(MultiProcess(processes))
+        processes = {}
+        for lname, layer in self.layers.items():
+            name_ = name
+            if name_ is None:
+                name_ = layer.get(key)
+            if name_ is not None:
+                processes[lname] = Process(self.config['process'][name_], self.options)
+        if processes:
+            self.imap(MultiAction(processes))
 
     def get(self, store, time_message=None):
         if self.options.debug:
@@ -1059,26 +1053,21 @@ class HashDropper:
             return None
 
 
-class MultiHashDropper:
+class MultiAction:
     """
-    Create a filter to remove the tiles data where they have
-    the specified size and hash.
-
-    Used to drop the empty tiles in slave mode
-
-    The ``droppers`` must be a dict of layer names to ``HashDropper``
+    Used to perform an action based on the tile's layer name. E.g a HashDropper or Process
     """
 
-    def __init__(self, droppers):
-        self.droppers = droppers
+    def __init__(self, actions):
+        self.actions = actions
 
     def __call__(self, tile):
         layer = tile.metadata.get('layer')
-        dropper = self.droppers.get(layer, self.no_drop)
-        return dropper(tile)
+        action = self.actions.get(layer, self.noop)
+        return action(tile)
 
     @staticmethod
-    def no_drop(tile):
+    def noop(tile):
         return tile
 
 
@@ -1262,20 +1251,6 @@ class Process:
                 tile.data = file_out.read()
             os.close(fd_in)
 
-        return tile
-
-
-class MultiProcess:
-    def __init__(self, processes):
-        self.processes = processes
-
-    def __call__(self, tile):
-        layer = tile.metadata.get('layer')
-        process = self.processes.get(layer, self.no_process)
-        return process(tile)
-
-    @staticmethod
-    def no_process(tile):
         return tile
 
 

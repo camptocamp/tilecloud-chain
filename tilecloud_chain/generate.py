@@ -19,7 +19,7 @@ from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.filter.logger import Logger
 
 from tilecloud_chain import TileGeneration, HashDropper, HashLogger, TilesFileStore, \
-    add_comon_options, parse_tilecoord, quote, Count, MultiTileStore, MultiHashDropper
+    add_comon_options, parse_tilecoord, quote, Count, MultiTileStore, MultiAction
 from tilecloud_chain.format import size_format, duration_format, default_int
 from tilecloud_chain.database_logger import DatabaseLoggerInit, DatabaseLogger
 
@@ -126,13 +126,10 @@ class Generate:
             self.count_tiles = gene.counter()
 
         elif options.role in ('local', 'slave', 'hash'):
-            if options.role == 'slave':
-                gene.get(MultiTileStore({
-                    name: self._get_tilestore_and_message_for_layer(layer, gene)[0]
-                    for name, layer in gene.layers.items()
-                }), 'Get tile')
-            else:
-                gene.get(*self._get_tilestore_and_message_for_layer(gene.layer, gene))
+            gene.get(MultiTileStore({
+                name: self._get_tilestore_for_layer(layer, gene)
+                for name, layer in gene.layers.items()
+            }), 'Get tile')
 
             def wrong_content_type_to_error(tile):
                 if tile is not None and tile.content_type is not None \
@@ -155,7 +152,7 @@ class Generate:
             if options.role == 'hash':
                 if gene.layer.get('meta', False):
                     gene.imap(HashLogger('empty_metatile_detection'))
-            elif options.role == 'slave':
+            elif not options.near:
                 droppers = {}
                 for lname, layer in gene.layers.items():
                     if 'empty_metatile_detection' in layer:
@@ -166,16 +163,7 @@ class Generate:
                             count=self.count_metatiles_dropped,
                         )
                 if droppers:
-                    gene.imap(MultiHashDropper(droppers))
-            elif not options.near:
-                # Discard tiles with certain content
-                if gene.layer and 'empty_metatile_detection' in gene.layer:
-                    empty_tile = gene.layer['empty_metatile_detection']
-                    gene.imap(HashDropper(
-                        empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
-                        queue_store=self.sqs_tilestore,
-                        count=self.count_metatiles_dropped,
-                    ))
+                    gene.imap(MultiAction(droppers))
 
             def add_elapsed_togenerate(metatile):
                 if metatile is not None:
@@ -195,7 +183,7 @@ class Generate:
 
             if options.role == 'hash':
                 gene.imap(HashLogger('empty_tile_detection'))
-            elif options.role == 'slave':
+            elif not options.near:
                 droppers = {}
                 for lname, layer in gene.layers.items():
                     if 'empty_tile_detection' in layer:
@@ -206,16 +194,7 @@ class Generate:
                             count=self.count_tiles_dropped,
                         )
                 if droppers:
-                    gene.imap(MultiHashDropper(droppers))
-            elif not options.near:
-                # Discard tiles with certain content
-                if gene.layer and 'empty_tile_detection' in gene.layer:
-                    empty_tile = gene.layer['empty_tile_detection']
-                    gene.imap(HashDropper(
-                        empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
-                        queue_store=self.sqs_tilestore,
-                        count=self.count_tiles_dropped,
-                    ))
+                    gene.imap(MultiAction(droppers))
 
             gene.process()
         else:  # pragma: no cover
@@ -349,7 +328,7 @@ class Generate:
                 })
             )
 
-    def _get_tilestore_and_message_for_layer(self, layer, gene):
+    def _get_tilestore_for_layer(self, layer, gene):
         if layer['type'] == 'wms':
             params = layer['params'].copy()
             if 'STYLES' not in params:
@@ -359,7 +338,7 @@ class Generate:
             params.update(self.dimensions)
 
             # Get the metatile image from the WMS server
-            return (URLTileStore(
+            return URLTileStore(
                 tilelayouts=(WMSTileLayout(
                     url=layer['url'],
                     layers=layer['layers'],
@@ -370,15 +349,14 @@ class Generate:
                     params=params,
                 ),),
                 headers=layer['headers'],
-            ), "Get tile from WMS")
+            )
         elif layer['type'] == 'mapnik':  # pragma: no cover
             from tilecloud.store.mapnik_ import MapnikTileStore
             from tilecloud_chain.mapnik_ import MapnikDropActionTileStore
 
             grid = gene.get_grid(layer['grid'])
             if layer['output_format'] == 'grid':
-                self.count_tiles = gene.counter()
-                return (MapnikDropActionTileStore(
+                return MapnikDropActionTileStore(
                     tilegrid=grid['obj'],
                     mapfile=layer['mapfile'],
                     image_buffer=layer['meta_buffer'] if layer.get('meta') else 0,
@@ -391,16 +369,16 @@ class Generate:
                     queue_store=self.sqs_tilestore,
                     count=self.count_tiles_dropped,
                     proj4_literal=grid['proj4_literal'],
-                ), "Create Mapnik grid tile")
+                )
             else:
-                return (MapnikTileStore(
+                return MapnikTileStore(
                     tilegrid=grid['obj'],
                     mapfile=layer['mapfile'],
                     image_buffer=layer['meta_buffer'] if layer.get('meta') else 0,
                     data_buffer=layer['data_buffer'],
                     output_format=layer['output_format'],
                     proj4_literal=grid['proj4_literal'],
-                ), "Create Mapnik tile")
+                )
 
 
 def await_message(queue):  # pragma: no cover
