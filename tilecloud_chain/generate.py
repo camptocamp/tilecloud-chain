@@ -351,8 +351,11 @@ class Generate:
                 headers=layer['headers'],
             )
         elif layer['type'] == 'mapnik':  # pragma: no cover
-            from tilecloud.store.mapnik_ import MapnikTileStore
-            from tilecloud_chain.mapnik_ import MapnikDropActionTileStore
+            try:
+                from tilecloud.store.mapnik_ import MapnikTileStore
+                from tilecloud_chain.mapnik_ import MapnikDropActionTileStore
+            except ImportError:
+                return None
 
             grid = gene.get_grid(layer['grid'])
             if layer['output_format'] == 'grid':
