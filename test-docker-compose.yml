@@ -1,0 +1,13 @@
+db:
+  build: docker/test-db
+  ports:
+    - 5432:5432
+
+mapserver:
+  image: camptocamp/mapserver
+  volumes:
+    - ./tilecloud_chain/tests/mapfile-docker:/etc/mapserver
+  links:
+    - db:db
+  ports:
+    - 80:80

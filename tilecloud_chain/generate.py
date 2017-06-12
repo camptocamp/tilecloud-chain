@@ -9,7 +9,6 @@ import random
 from datetime import datetime
 from getpass import getuser
 from argparse import ArgumentParser
-from six import PY3
 
 import boto
 from boto import sns
@@ -19,9 +18,10 @@ from tilecloud.store.sqs import SQSTileStore, maybe_stop
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.filter.logger import Logger
 
-from tilecloud_chain import TileGeneration, HashDropper, HashLogger, DropEmpty, TilesFileStore, \
-    add_comon_options, parse_tilecoord, quote, Count, MultiTileStore
+from tilecloud_chain import TileGeneration, HashDropper, HashLogger, TilesFileStore, \
+    add_comon_options, parse_tilecoord, quote, Count, MultiTileStore, MultiAction
 from tilecloud_chain.format import size_format, duration_format, default_int
+from tilecloud_chain.database_logger import DatabaseLoggerInit, DatabaseLogger
 
 logger = logging.getLogger(__name__)
 
@@ -29,33 +29,34 @@ logger = logging.getLogger(__name__)
 class Generate:
     _re_rm_xml_tag = re.compile('(<[^>]*>|\n)')
 
-    def gene(self, options, gene, layer):
-        if options.role == 'slave' or options.get_hash or options.get_bbox:
+    def gene(self, options, gene, layer=None):
+        if options.role == 'slave':
+            pass
+        elif options.get_hash or options.get_bbox:
             gene.layer = gene.layers[layer]
         else:
             gene.set_layer(layer, options)
 
-        if options.role in ('local', 'slave', 'hash'):
+        if options.role in ('local', 'master', 'hash'):
             all_dimensions = gene.get_all_dimensions()
 
             if len(all_dimensions) == 0:  # pragma: no cover
-                self._gene(options, gene, layer)
+                self._gene(options, gene)
             else:
                 for dimensions in all_dimensions:
-                    self._gene(options, gene, layer, dimensions)
+                    self._gene(options, gene, dimensions)
         else:  # pragma: no cover
-            self._gene(options, gene, layer)
+            self._gene(options, gene)
 
-    def _gene(self, options, gene, layer, dimensions=None):
+    def _gene(self, options, gene, dimensions=None):
         if dimensions is None:  # pragma: no cover
             dimensions = {}
         self.dimensions = dimensions
         self.count_metatiles = None
         self.count_metatiles_dropped = Count()
-        self.count_tiles = None
+        self.count_tiles = Count()
         self.count_tiles_dropped = Count()
         self.count_tiles_stored = None
-        self.meta = gene.layer['meta']
         self.sqs_tilestore = None
         self.cache_tilestore = None
 
@@ -85,12 +86,15 @@ class Generate:
             self.cache_tilestore = gene.get_tilesstore(options.cache, dimensions)
 
         if options.tiles:
-            gene.set_store(TilesFileStore(options.tiles))
+            gene.set_store(TilesFileStore(options.tiles, options.layer))
 
         elif options.role in ('local', 'master'):
             # Generate a stream of metatiles
             gene.init_tilecoords()
             gene.add_geom_filter()
+
+        if options.role in ('local', 'master') and 'logging' in gene.config:
+            gene.imap(DatabaseLoggerInit(gene.config['logging'], options is not None and options.daemon))
 
         if options.local_process_number is not None:  # pragma: no cover
             gene.add_local_process_filter()
@@ -102,7 +106,7 @@ class Generate:
         elif options.role == 'hash':
             try:
                 z, x, y = (int(v) for v in options.get_hash.split('/'))
-                if self.meta:
+                if gene.layer.get('meta'):
                     gene.set_tilecoords([TileCoord(z, x, y, gene.layer['meta_size'])])
                 else:
                     gene.set_tilecoords([TileCoord(z, x, y)])
@@ -122,13 +126,10 @@ class Generate:
             self.count_tiles = gene.counter()
 
         elif options.role in ('local', 'slave', 'hash'):
-            if options.role == 'slave':
-                gene.get(MultiTileStore({
-                    name: self._get_tilestore_and_message_for_layer(layer, gene)[0]
-                    for name, layer in gene.layers.items()
-                }, gene.layer['name']), 'Get tile')
-            else:
-                gene.get(*self._get_tilestore_and_message_for_layer(gene.layer, gene))
+            gene.get(MultiTileStore({
+                name: self._get_tilestore_for_layer(layer, gene)
+                for name, layer in gene.layers.items()
+            }), 'Get tile')
 
             def wrong_content_type_to_error(tile):
                 if tile is not None and tile.content_type is not None \
@@ -136,74 +137,69 @@ class Generate:
                     if tile.content_type.find("application/vnd.ogc.se_xml") == 0:
                         tile.error = "WMS server error: {}".format((
                             self._re_rm_xml_tag.sub(
-                                '', tile.data.decode('utf-8') if PY3 else tile.data
+                                '', tile.error
                             )
                         ))
                     else:  # pragma: no cover
                         tile.error = "{} is not an image format, error: {}".format(
                             tile.content_type,
-                            tile.data
+                            tile.error
                         )
                 return tile
             gene.imap(wrong_content_type_to_error)
-
-            # Handle errors
             gene.add_error_filters()
 
-            if self.meta:
-                if options.role == 'hash':
+            if options.role == 'hash':
+                if gene.layer.get('meta', False):
                     gene.imap(HashLogger('empty_metatile_detection'))
-                elif not options.near:
-                    # Discard tiles with certain content
-                    if 'empty_metatile_detection' in gene.layer:
-                        empty_tile = gene.layer['empty_metatile_detection']
-
-                        gene.imap(HashDropper(
+            elif not options.near:
+                droppers = {}
+                for lname, layer in gene.layers.items():
+                    if 'empty_metatile_detection' in layer:
+                        empty_tile = layer['empty_metatile_detection']
+                        droppers[lname] = HashDropper(
                             empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
                             queue_store=self.sqs_tilestore,
                             count=self.count_metatiles_dropped,
-                        ))
+                        )
+                if droppers:
+                    gene.imap(MultiAction(droppers))
 
-                def add_elapsed_togenerate(metatile):
-                    if metatile is not None:
-                        metatile.elapsed_togenerate = metatile.tilecoord.n ** 2
-                        return True
-                    return False  # pragma: no cover
-                gene.ifilter(add_elapsed_togenerate)
+            def add_elapsed_togenerate(metatile):
+                if metatile is not None:
+                    metatile.elapsed_togenerate = metatile.tilecoord.n ** 2
+                    return True
+                return False  # pragma: no cover
+            gene.ifilter(add_elapsed_togenerate)
 
-                # Split the metatile image into individual tiles
-                gene.add_metatile_splitter()
-                gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
+            # Split the metatile image into individual tiles
+            gene.add_metatile_splitter()
+            gene.imap(Logger(logger, logging.INFO, '%(tilecoord)s'))
 
-                # Handle errors
-                gene.add_error_filters()
+            gene.imap(self.count_tiles)
 
-            if gene.layer['type'] != 'mapnik' or gene.layer['output_format'] != 'grid':
-                self.count_tiles = gene.counter()
-
-            if 'pre_hash_post_process' in gene.layer:  # pragma: no cover
-                gene.process(gene.layer['pre_hash_post_process'])
+            gene.process(key='pre_hash_post_process')
 
             if options.role == 'hash':
                 gene.imap(HashLogger('empty_tile_detection'))
             elif not options.near:
-                # Discard tiles with certain content
-                if 'empty_tile_detection' in gene.layer:
-                    empty_tile = gene.layer['empty_tile_detection']
-
-                    gene.imap(HashDropper(
-                        empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
-                        queue_store=self.sqs_tilestore,
-                        count=self.count_tiles_dropped,
-                    ))
+                droppers = {}
+                for lname, layer in gene.layers.items():
+                    if 'empty_tile_detection' in layer:
+                        empty_tile = layer['empty_tile_detection']
+                        droppers[lname] = HashDropper(
+                            empty_tile['size'], empty_tile['hash'], store=self.cache_tilestore,
+                            queue_store=self.sqs_tilestore,
+                            count=self.count_tiles_dropped,
+                        )
+                if droppers:
+                    gene.imap(MultiAction(droppers))
 
             gene.process()
         else:  # pragma: no cover
             self.count_tiles = gene.counter()
 
         if options.role in ('local', 'slave'):
-            gene.add_error_filters()
-            gene.ifilter(DropEmpty(gene))
             self.count_tiles_stored = gene.counter(size=True)
 
             if options.time:
@@ -214,7 +210,6 @@ class Generate:
 
             gene.put(self.cache_tilestore, "Store the tile")
 
-        gene.add_error_filters()
         if options.generated_tiles_file:  # pragma: no cover
             generated_tiles_file = open(options.generated_tiles_file, 'a')
 
@@ -224,15 +219,19 @@ class Generate:
             gene.imap(do)
 
         if options.role == 'slave':  # pragma: no cover
-            if self.meta:
-                def decr_tile_in_metatile(tile):
+            def delete_from_store(tile):
+                if hasattr(tile, 'metatile'):
                     tile.metatile.elapsed_togenerate -= 1
                     if tile.metatile.elapsed_togenerate == 0:
                         self.sqs_tilestore.delete_one(tile.metatile)
-                    return True
-                gene.ifilter(decr_tile_in_metatile)
-            else:
-                gene.delete(self.sqs_tilestore)
+                else:
+                    self.sqs_tilestore.delete_one(tile)
+                return True
+            gene.ifilter(delete_from_store)
+
+        if options.role in ('local', 'slave') and 'logging' in gene.config:
+            gene.imap(DatabaseLogger(gene.config['logging'], options is not None and options.daemon))
+        gene.add_error_filters()
 
         message = []
         if options.time is not None:
@@ -257,21 +256,28 @@ class Generate:
         else:
             gene.consume()
 
-            message = [
-                "The tile generation of layer '{}{}' is finish".format(
-                    gene.layer['name'],
-                    "" if len(dimensions) == 0 or gene.layer['type'] != 'wms'
-                    else " ({})".format(", ".join(["=".join(d) for d in dimensions.items()]))
-                ),
-            ]
-            if options.role == "master":  # pragma: no cover
-                message.append("Nb of generated jobs: {}".format(self.count_tiles.nb))
+            if gene.layer is not None:
+                message = [
+                    "The tile generation of layer '{}{}' is finish".format(
+                        gene.layer['name'],
+                        "" if len(dimensions) == 0 or gene.layer['type'] != 'wms'
+                        else " ({})".format(", ".join(["=".join(d) for d in dimensions.items()]))
+                    ),
+                ]
+                if options.role == "master":  # pragma: no cover
+                    message.append("Nb of generated jobs: {}".format(self.count_tiles.nb))
+                else:
+                    if gene.layer.get('meta'):
+                        message += [
+                            "Nb generated metatiles: {}".format(self.count_metatiles.nb),
+                            "Nb metatiles dropped: {}".format(self.count_metatiles_dropped.nb),
+                        ]
             else:
-                if self.meta:
-                    message += [
-                        "Nb generated metatiles: {}".format(self.count_metatiles.nb),
-                        "Nb metatiles dropped: {}".format(self.count_metatiles_dropped.nb),
-                    ]
+                message = [
+                    "The tile generation is finish"
+                ]
+
+            if options.role != "master":
                 message += [
                     "Nb generated tiles: {}".format(self.count_tiles.nb),
                     "Nb tiles dropped: {}".format(self.count_tiles_dropped.nb),
@@ -306,7 +312,7 @@ class Generate:
                 connection = boto.connect_sns()
             sns_message = [message[0]]
             sns_message += [
-                "Layer: {}".format(gene.layer['name']),
+                "Layer: {}".format(gene.layer['name'] if gene.layer is not None else "(All layers)"),
                 "Role: {}".format(options.role),
                 "Host: {}".format(socket.getfqdn()),
                 "Command: {}".format(' '.join([quote(arg) for arg in sys.argv])),
@@ -317,11 +323,11 @@ class Generate:
                 "\n".join(sns_message),
                 "Tile generation ({layer!s} - {role!s})".format(**{
                     'role': options.role,
-                    'layer': gene.layer['name']
+                    'layer': gene.layer['name'] if gene.layer is not None else "All layers"
                 })
             )
 
-    def _get_tilestore_and_message_for_layer(self, layer, gene):
+    def _get_tilestore_for_layer(self, layer, gene):
         if layer['type'] == 'wms':
             params = layer['params'].copy()
             if 'STYLES' not in params:
@@ -331,29 +337,33 @@ class Generate:
             params.update(self.dimensions)
 
             # Get the metatile image from the WMS server
-            return (URLTileStore(
+            return URLTileStore(
                 tilelayouts=(WMSTileLayout(
                     url=layer['url'],
                     layers=layer['layers'],
                     srs=layer['grid_ref']['srs'],
                     format=layer['mime_type'],
-                    border=layer['meta_buffer'] if self.meta else 0,
-                    tilegrid=gene.get_grid()['obj'],
+                    border=layer['meta_buffer'] if layer.get('meta') else 0,
+                    tilegrid=gene.get_grid(layer['grid'])['obj'],
                     params=params,
                 ),),
                 headers=layer['headers'],
-            ), "Get tile from WMS")
+            )
         elif layer['type'] == 'mapnik':  # pragma: no cover
-            from tilecloud.store.mapnik_ import MapnikTileStore
-            from tilecloud_chain.mapnik_ import MapnikDropActionTileStore
+            try:
+                from tilecloud.store.mapnik_ import MapnikTileStore
+                from tilecloud_chain.mapnik_ import MapnikDropActionTileStore
+            except ImportError:
+                if 'TRAVIS' not in os.environ:  # pragma nocover
+                    logger.error("Mapnik is not available")
+                return None
 
-            grid = gene.get_grid()
+            grid = gene.get_grid(layer['grid'])
             if layer['output_format'] == 'grid':
-                self.count_tiles = gene.counter()
-                return (MapnikDropActionTileStore(
+                return MapnikDropActionTileStore(
                     tilegrid=grid['obj'],
                     mapfile=layer['mapfile'],
-                    image_buffer=layer['meta_buffer'] if self.meta else 0,
+                    image_buffer=layer['meta_buffer'] if layer.get('meta') else 0,
                     data_buffer=layer['data_buffer'],
                     output_format=layer['output_format'],
                     resolution=layer['resolution'],
@@ -361,18 +371,18 @@ class Generate:
                     drop_empty_utfgrid=layer['drop_empty_utfgrid'],
                     store=self.cache_tilestore,
                     queue_store=self.sqs_tilestore,
-                    count=self.count_tiles_dropped,
+                    count=[self.count_tiles, self.count_tiles_dropped],
                     proj4_literal=grid['proj4_literal'],
-                ), "Create Mapnik grid tile")
+                )
             else:
-                return (MapnikTileStore(
+                return MapnikTileStore(
                     tilegrid=grid['obj'],
                     mapfile=layer['mapfile'],
-                    image_buffer=layer['meta_buffer'] if self.meta else 0,
+                    image_buffer=layer['meta_buffer'] if layer.get('meta') else 0,
                     data_buffer=layer['data_buffer'],
                     output_format=layer['output_format'],
                     proj4_literal=grid['proj4_literal'],
-                ), "Create Mapnik tile")
+                )
 
 
 def await_message(queue):  # pragma: no cover
@@ -451,7 +461,10 @@ def main():
         exit("The --tiles option work only with role local or master")
 
     try:
-        if (options.layer):
+        if options.role == 'slave':
+            generate = Generate()
+            generate.gene(options, gene)
+        elif (options.layer):
             generate = Generate()
             generate.gene(options, gene, options.layer)
         elif options.get_bbox:  # pragma: no cover

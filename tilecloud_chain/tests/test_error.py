@@ -158,7 +158,13 @@ class TestError(CompareCase):
             main_func=controller.main)
         l.check((
             'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_map.yaml' is invalid.
- - Value: test is not of a mapping type"""
+ - /: Cannot find required key 'caches'.
+ - /: Cannot find required key 'grids'.
+ - /layers/test/empty_tile_detection: Value 'test' is not a dict. Value path: '/layers/test/empty_tile_detection'
+ - /layers/test: Cannot find required key 'extension'.
+ - /layers/test: Cannot find required key 'grid'.
+ - /layers/test: Cannot find required key 'mime_type'.
+ - /layers/test: Cannot find required key 'wmts_style'."""
         ))
 
     @log_capture('tilecloud_chain')
