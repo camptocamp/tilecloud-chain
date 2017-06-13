@@ -20,7 +20,7 @@ class DatabaseLoggerCommon(object):  # pragma: no cover
                 break
             except psycopg2.OperationalError as e:
                 if daemon:
-                    logger.warn("Failed connecting to the database. Will try again in 1s")
+                    logger.warning("Failed connecting to the database. Will try again in 1s")
                     time.sleep(1)
                 else:
                     exit("Cannot connect to the database: " + str(e))
@@ -86,7 +86,7 @@ class DatabaseLoggerInit(DatabaseLoggerCommon):  # pragma: no cover
 class DatabaseLogger(DatabaseLoggerCommon):  # pragma: no cover
     def __call__(self, tile):
         if tile is None:
-            logger.warn("The tile is None")
+            logger.warning("The tile is None")
             return None
 
         if tile.error:
@@ -95,8 +95,6 @@ class DatabaseLogger(DatabaseLoggerCommon):  # pragma: no cover
             action = 'create'
         else:
             action = 'delete'
-
-        logger.warn("TEST: " + action)
 
         layer = tile.metadata.get('layer', '- No layer -')
         run = tile.metadata.get('run', -1)
