@@ -114,7 +114,8 @@ def _calculate_cost(gene, options):
             gene.imap(count_metatile)
 
             class MetaTileSplitter(TileStore):
-                def get(self, tiles):
+                @staticmethod
+                def get(tiles):
                     for metatile in tiles:
                         for tilecoord in metatile.tilecoord:
                             yield Tile(tilecoord)

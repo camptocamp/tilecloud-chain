@@ -69,7 +69,8 @@ class Generate:
                 exit()
             except ValueError as e:  # pragma: no cover
                 print(
-                    "Tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{1!r}".format(options.get_bbox, e)
+                    "Tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{}".format(
+                        options.get_bbox, repr(e))
                 )
                 exit(1)
 
@@ -112,7 +113,8 @@ class Generate:
                     gene.set_tilecoords([TileCoord(z, x, y)])
             except ValueError as e:  # pragma: no cover
                 exit(
-                    "Tile '{}' is not in the format 'z/x/y'\n{1!r}".format(options.get_hash, e)
+                    "Tile '{}' is not in the format 'z/x/y'\n{}".format(
+                        options.get_hash, repr(e))
                 )
 
         # At this stage, the tilestream contains metatiles that intersect geometry

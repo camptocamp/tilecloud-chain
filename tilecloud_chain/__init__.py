@@ -162,7 +162,7 @@ class TileGeneration:
         with open(config_file) as f:
             self.config = {}
             self.config.update(base_config)
-            self.config.update(yaml.load(f))
+            self.config.update(yaml.safe_load(f))
         self.options = options
         if 'defaults' in self.config:
             del self.config['defaults']
@@ -188,7 +188,7 @@ class TileGeneration:
 
         c = Core(
             source_data=self.config,
-            schema_data=yaml.load(pkgutil.get_data("tilecloud_chain", "schema.yaml")),
+            schema_data=yaml.safe_load(pkgutil.get_data("tilecloud_chain", "schema.yaml")),
         )
         path_ = ''
         try:
@@ -198,17 +198,17 @@ class TileGeneration:
                 if cache['type'] == 's3':
                     c = Core(
                         source_data=cache,
-                        schema_data=yaml.load(pkgutil.get_data("tilecloud_chain", "schema-cache-s3.yaml")),
+                        schema_data=yaml.safe_load(
+                            pkgutil.get_data("tilecloud_chain", "schema-cache-s3.yaml")),
                     )
                     path_ = 'caches/{}'.format(name)
                     self.config['caches'][name] = c.validate()
             for name, layer in self.config['layers'].items():
                 c = Core(
                     source_data=layer,
-                    schema_data=yaml.load(pkgutil.get_data(
-                        "tilecloud_chain",
-                        "schema-layer-{}.yaml".format(layer['type'])
-                    )),
+                    schema_data=yaml.safe_load(
+                        pkgutil.get_data("tilecloud_chain", "schema-layer-{}.yaml".format(layer['type']))
+                    ),
                 )
                 path_ = 'layers/{}'.format(name)
                 self.config['layers'][name] = c.validate()
@@ -343,7 +343,8 @@ class TileGeneration:
         if layer_name and not error:
             self.set_layer(layer_name, options)
 
-    def _primefactors(self, x):
+    @staticmethod
+    def _primefactors(x):
         factorlist = []
         loop = 2
         while loop <= x:
@@ -370,7 +371,8 @@ class TileGeneration:
             result *= fact ** nb
         return result
 
-    def _configure_logging(self, options, format_):
+    @staticmethod
+    def _configure_logging(options, format_):
         if os.environ.get('NOSE', 'FALSE') == 'TRUE':
             pass
         elif options is not None and options.logging_configuration_file:  # pragma: nocover
@@ -631,7 +633,8 @@ class TileGeneration:
             self.options.local_process_number
         ))
 
-    def get_geoms_filter(self, layer, grid, geoms, queue_store=None):
+    @staticmethod
+    def get_geoms_filter(layer, grid, geoms, queue_store=None):
         return IntersectGeometryFilter(
             grid=grid,
             geoms=geoms,
@@ -1132,7 +1135,8 @@ class IntersectGeometryFilter:
     def __call__(self, tile):
         return tile if self.filter_tilecoord(tile.tilecoord) else None
 
-    def bbox_polygon(self, bbox):
+    @staticmethod
+    def bbox_polygon(bbox):
         return Polygon((
             (bbox[0], bbox[1]),
             (bbox[0], bbox[3]),
@@ -1236,9 +1240,8 @@ class Process:
                 logger.info('process: {}'.format(command))
                 code = subprocess.call(command, shell=True)
                 if code != 0:  # pragma: no cover
-                    tile.error = "Command '%s' on tile %s " \
-                        "return error code %i" % \
-                        (command, tile.tilecoord, code)
+                    tile.error = "Command '{}' on tile {} return error code {}".format(
+                        command, tile.tilecoord, code)
                     tile.data = None
                     return tile
 
@@ -1269,4 +1272,5 @@ class TilesFileStore:
                 try:
                     yield Tile(parse_tilecoord(line), layer=self.layer)
                 except ValueError as e:  # pragma: no cover
-                    logger.error("A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{1!r}".format(line, e))
+                    logger.error("A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{}".format(
+                        line, repr(e)))
