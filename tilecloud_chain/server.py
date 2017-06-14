@@ -423,16 +423,16 @@ class Server:
         502: '502 Bad Gateway',
     }
 
-    def error(self, code, message='', start_response=None):
-        start_response(self.HTTP_MESSAGES[code], [])
+    def error(self, code, message='', **kwargs):
+        kwargs['start_response'](self.HTTP_MESSAGES[code], [])
         return [message]
 
     @staticmethod
-    def responce(data, headers=None, start_response=None):
+    def responce(data, headers=None, **kwargs):
         if headers is None:  # pragma: no cover
             headers = {}
         headers['Content-Length'] = str(len(data))
-        start_response('200 OK', headers.items())
+        kwargs['start_response']('200 OK', headers.items())
         return [data]
 
 
@@ -453,18 +453,18 @@ class PyramidServer(Server):
         502: HTTPBadGateway,
     }
 
-    def error(self, code, message='', request=None):
+    def error(self, code, message='', **kwargs):
         raise self.HTTP_EXCEPTIONS[code](message)
 
-    def responce(self, data, headers=None, request=None):
+    def responce(self, data, headers=None, **kwargs):
         if headers is None:  # pragma: no cover
             headers = {}
-        request.response.headers = headers
+        kwargs['request'].response.headers = headers
         if type(data) == memoryview:
-            request.response.body_file = data
+            kwargs['request'].response.body_file = data
         else:
-            request.response.body = data
-        return request.response
+            kwargs['request'].response.body = data
+        return kwargs['request'].response
 
 
 pyramid_server = None
