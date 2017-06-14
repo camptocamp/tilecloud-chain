@@ -406,7 +406,6 @@ class Server:
                 responce_headers['Cache-Control'] = "max-age={}".format((3600 * self.expires_hours))
                 responce_headers['Access-Control-Allow-Origin'] = '*'
                 responce_headers['Access-Control-Allow-Methods'] = 'GET'
-            responce_headers
             return self.responce(responce.content, headers=responce_headers, **kwargs)
         else:  # pragma: no cover
             message = "The URL '{}' return '{} {}', content:\n{}".format(
