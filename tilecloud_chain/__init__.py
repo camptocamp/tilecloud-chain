@@ -343,7 +343,8 @@ class TileGeneration:
         if layer_name and not error:
             self.set_layer(layer_name, options)
 
-    def _primefactors(self, x):
+    @staticmethod
+    def _primefactors(x):
         factorlist = []
         loop = 2
         while loop <= x:
@@ -370,7 +371,8 @@ class TileGeneration:
             result *= fact ** nb
         return result
 
-    def _configure_logging(self, options, format_):
+    @staticmethod
+    def _configure_logging(options, format_):
         if os.environ.get('NOSE', 'FALSE') == 'TRUE':
             pass
         elif options is not None and options.logging_configuration_file:  # pragma: nocover
@@ -631,7 +633,8 @@ class TileGeneration:
             self.options.local_process_number
         ))
 
-    def get_geoms_filter(self, layer, grid, geoms, queue_store=None):
+    @staticmethod
+    def get_geoms_filter(layer, grid, geoms, queue_store=None):
         return IntersectGeometryFilter(
             grid=grid,
             geoms=geoms,
@@ -1132,7 +1135,8 @@ class IntersectGeometryFilter:
     def __call__(self, tile):
         return tile if self.filter_tilecoord(tile.tilecoord) else None
 
-    def bbox_polygon(self, bbox):
+    @staticmethod
+    def bbox_polygon(bbox):
         return Polygon((
             (bbox[0], bbox[1]),
             (bbox[0], bbox[3]),

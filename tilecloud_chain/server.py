@@ -427,7 +427,8 @@ class Server:
         start_response(self.HTTP_MESSAGES[code], [])
         return [message]
 
-    def responce(self, data, headers=None, start_response=None):
+    @staticmethod
+    def responce(data, headers=None, start_response=None):
         if headers is None:  # pragma: no cover
             headers = {}
         headers['Content-Length'] = str(len(data))
