@@ -232,14 +232,6 @@ class Generate:
 
             self._gene.put(self._cache_tilestore, "Store the tile")
 
-        if self._options.generated_tiles_file:  # pragma: no cover
-            generated_tiles_file = open(self._options.generated_tiles_file, 'a')
-
-            def do(tile):
-                generated_tiles_file.write('{}\n'.format(tile.tilecoord))
-                return tile
-            self._gene.imap(do)
-
         if self._options.role == 'slave':  # pragma: no cover
             def delete_from_store(tile):
                 if hasattr(tile, 'metatile'):
@@ -465,10 +457,6 @@ def main():
     parser.add_argument(
         '--tiles', metavar="FILE",
         help='Generate the tiles from a tiles file, use the format z/x/y, or z/x/y:+n/+n for metatiles'
-    )
-    parser.add_argument(
-        '--generated-tiles-file', metavar="FILE",
-        help='Store the tiles in a file (unrecommended)'
     )
 
     options = parser.parse_args()
