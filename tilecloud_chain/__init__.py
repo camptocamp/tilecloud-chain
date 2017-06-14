@@ -1241,7 +1241,7 @@ class Process:
                 code = subprocess.call(command, shell=True)
                 if code != 0:  # pragma: no cover
                     tile.error = "Command '{}' on tile {} return error code {}".format(
-                            command, tile.tilecoord, code)
+                        command, tile.tilecoord, code)
                     tile.data = None
                     return tile
 
