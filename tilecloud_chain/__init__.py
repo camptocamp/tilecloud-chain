@@ -162,7 +162,7 @@ class TileGeneration:
         with open(config_file) as f:
             self.config = {}
             self.config.update(base_config)
-            self.config.update(yaml.load(f))
+            self.config.update(yaml.safe_load(f))
         self.options = options
         if 'defaults' in self.config:
             del self.config['defaults']
@@ -188,7 +188,7 @@ class TileGeneration:
 
         c = Core(
             source_data=self.config,
-            schema_data=yaml.load(pkgutil.get_data("tilecloud_chain", "schema.yaml")),
+            schema_data=yaml.safe_load(pkgutil.get_data("tilecloud_chain", "schema.yaml")),
         )
         path_ = ''
         try:
@@ -198,17 +198,17 @@ class TileGeneration:
                 if cache['type'] == 's3':
                     c = Core(
                         source_data=cache,
-                        schema_data=yaml.load(pkgutil.get_data("tilecloud_chain", "schema-cache-s3.yaml")),
+                        schema_data=yaml.safe_load(
+                            pkgutil.get_data("tilecloud_chain", "schema-cache-s3.yaml")),
                     )
                     path_ = 'caches/{}'.format(name)
                     self.config['caches'][name] = c.validate()
             for name, layer in self.config['layers'].items():
                 c = Core(
                     source_data=layer,
-                    schema_data=yaml.load(pkgutil.get_data(
-                        "tilecloud_chain",
-                        "schema-layer-{}.yaml".format(layer['type'])
-                    )),
+                    schema_data=yaml.safe_load(
+                        pkgutil.get_data("tilecloud_chain", "schema-layer-{}.yaml".format(layer['type']))
+                    ),
                 )
                 path_ = 'layers/{}'.format(name)
                 self.config['layers'][name] = c.validate()
