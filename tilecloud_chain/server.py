@@ -457,7 +457,7 @@ class PyramidServer(Server):
         if headers is None:  # pragma: no cover
             headers = {}
         kwargs['request'].response.headers = headers
-        if type(data) == memoryview:
+        if isinstance(data, memoryview):
             kwargs['request'].response.body_file = data
         else:
             kwargs['request'].response.body = data
