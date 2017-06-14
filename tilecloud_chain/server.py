@@ -39,10 +39,8 @@ from tilecloud import Tile, TileCoord
 import tilecloud.store.s3
 from tilecloud_chain import TileGeneration
 
-if sys.version_info.major >= 3:
-    buffer = memoryview
-else:  # pragma: no cover
-    memoryview = buffer
+if sys.version_info.major < 3:
+    memoryview = buffer  # noqa: F821
 
 logger = logging.getLogger(__name__)
 
