@@ -1240,9 +1240,8 @@ class Process:
                 logger.info('process: {}'.format(command))
                 code = subprocess.call(command, shell=True)
                 if code != 0:  # pragma: no cover
-                    tile.error = "Command '%s' on tile %s " \
-                        "return error code %i" % \
-                        (command, tile.tilecoord, code)
+                    tile.error = "Command '{}' on tile {} return error code {}".format(
+                            command, tile.tilecoord, code)
                     tile.data = None
                     return tile
 
@@ -1273,4 +1272,5 @@ class TilesFileStore:
                 try:
                     yield Tile(parse_tilecoord(line), layer=self.layer)
                 except ValueError as e:  # pragma: no cover
-                    logger.error("A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{1!r}".format(line, e))
+                    logger.error("A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{}".format(
+                        line, repr(e)))

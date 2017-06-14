@@ -1,7 +1,7 @@
 div.olMap {
     z-index: 0;
-    padding: 0 !important;
-    margin: 0 !important;
+    padding: 0;
+    margin: 0;
     cursor: default;
 }
 
@@ -19,14 +19,14 @@ div.olLayerDiv {
     bottom: 2px;
 }
 .olLayerGoogleV3.olLayerGoogleCopyright {
-    right: auto !important;
+    right: auto;
 }
 .olLayerGooglePoweredBy {
     left: 2px;
     bottom: 15px;
 }
 .olLayerGoogleV3.olLayerGooglePoweredBy {
-    bottom: 15px !important;
+    bottom: 15px;
 }
 .olControlAttribution {
     font-size: smaller;
