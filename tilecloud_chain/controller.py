@@ -357,7 +357,7 @@ def _generate_apache_config(gene):
             token_regex = '([a-zA-Z0-9_\-\+~\.]+)'
             f.write('\n')
 
-            for l, layer in sorted(gene.config['layers'].items()):
+            for _, layer in sorted(gene.config['layers'].items()):
                 if 'min_resolution_seed' in layer:
                     res = [r for r in layer['grid_ref']['resolutions'] if r < layer['min_resolution_seed']]
                     dim = len(layer['dimensions'])
