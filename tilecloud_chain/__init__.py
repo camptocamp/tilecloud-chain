@@ -741,7 +741,7 @@ class TileGeneration:
 
             self.error_file.write('{}# [{}]{}\n'.format(tilecoord, time, message.replace('\n', ' ')))
 
-    def add_error_filters(self):
+    def add_error_filters(self, queue_store=None):
         self.imap(LogErrors(
             logger, logging.ERROR,
             "Error in tile: %(tilecoord)s, %(error)r"
@@ -760,6 +760,8 @@ class TileGeneration:
 
         def drop_count(tile):
             if tile and tile.error:
+                if queue_store is not None:
+                    queue_store.delete_one(tile)
                 self.error += 1
                 return None
             return tile

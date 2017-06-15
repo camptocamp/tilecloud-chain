@@ -103,11 +103,9 @@ class DatabaseLogger(DatabaseLoggerCommon):  # pragma: no cover
             try:
                 cursor.execute(
                     'INSERT INTO {} (layer, run, action, tile)'
-                    'VALUES (%(layer)s, %(run)s, %(action)s::varchar(7), %(tile)s)'
-                    'RETURNING run'.format(self.full_table),
+                    'VALUES (%(layer)s, %(run)s, %(action)s::varchar(7), %(tile)s)'.format(self.full_table),
                     {'layer': layer, 'action': action, 'tile': str(tile.tilecoord), 'run': run}
                 )
-                self.run, = cursor.fetchone()
             except psycopg2.IntegrityError:
                 self.connection.rollback()
                 cursor.execute(
