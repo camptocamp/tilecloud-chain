@@ -149,7 +149,11 @@ class Generate:
                         )
                 return tile
             gene.imap(wrong_content_type_to_error)
-            gene.add_error_filters()
+            if options.role in ('local', 'slave') and 'logging' in gene.config:
+                gene.imap(DatabaseLogger(gene.config['logging'], options is not None and options.daemon))
+                gene.add_error_filters(self.sqs_tilestore)
+            else:
+                gene.add_error_filters()
 
             if options.role == 'hash':
                 if gene.layer.get('meta', False):
