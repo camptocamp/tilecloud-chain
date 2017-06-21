@@ -84,7 +84,8 @@ class Generate:
                 gene.get_sqs_queue(), on_empty=await_message if options.daemon else maybe_stop)  # pragma: no cover
 
         if options.role in ('local', 'slave'):
-            self.cache_tilestore = gene.get_tilesstore(options.cache, dimensions)
+            self.cache_tilestore = gene.get_tilesstore(options.cache,
+                                                       dimensions if options.role == 'local' else None)
 
         if options.tiles:
             gene.set_store(TilesFileStore(options.tiles, options.layer))
