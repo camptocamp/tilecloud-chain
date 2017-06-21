@@ -308,7 +308,7 @@ class Server:
                 return self.forward(
                     layer['url'] + '?' + urlencode({
                         'SERVICE': 'WMS',
-                        'VERSION': '1.1.1',
+                        'VERSION': layer['version'],
                         'REQUEST': 'GetFeatureInfo',
                         'LAYERS': layer['layers'],
                         'QUERY_LAYERS': layer['query_layers'],

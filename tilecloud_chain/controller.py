@@ -224,7 +224,7 @@ def _generate_legend_images(gene):
                     for l in layer['layers'].split(','):
                         response = session.get(layer['url'] + '?' + urlencode({
                             'SERVICE': 'WMS',
-                            'VERSION': '1.1.1',
+                            'VERSION': layer['version'],
                             'REQUEST': 'GetLegendGraphic',
                             'LAYER': l,
                             'FORMAT': layer['legend_mime'],

@@ -1682,6 +1682,7 @@ layers:
     px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
+    version: 1.1.1
     wmts_style: default
   line:
     cost: *id001
@@ -1706,6 +1707,7 @@ layers:
     px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
+    version: 1.1.1
     wmts_style: default
   mapnik:
     cost: *id001
@@ -1806,6 +1808,7 @@ layers:
     params: {}
     type: wms
     url: http://localhost/mapserv
+    version: 1.1.1
     wmts_style: default
   point_hash_no_meta:
     cost: *id001
@@ -1827,6 +1830,7 @@ layers:
     px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
+    version: 1.1.1
     wmts_style: default
   point_hash:
     cost: *id001
@@ -1852,6 +1856,7 @@ layers:
     px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
+    version: 1.1.1
     wmts_style: default
   point_px_buffer:
     cost: *id001
@@ -1876,6 +1881,7 @@ layers:
     px_buffer: 100
     type: wms
     url: http://localhost/mapserv
+    version: 1.1.1
     wmts_style: default
   polygon:
     cost: *id001
@@ -1900,6 +1906,7 @@ layers:
     px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
+    version: 1.1.1
     wmts_style: default
   polygon2:
     cost: *id001
@@ -1924,6 +1931,7 @@ layers:
     px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
+    version: 1.1.1
     wmts_style: default
 mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 11211, location: /mapcache}
 openlayers: {center_x: 600000, center_y: 200000, srs: 'EPSG:21781'}
