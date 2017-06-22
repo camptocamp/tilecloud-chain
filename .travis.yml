@@ -28,7 +28,7 @@ before_install:
 
 - sudo rm -rf /usr/local
 - sudo apt-get update
-- sudo apt-get install -y --force-yes libstdc++-4.8-dev libc6 libmapnik-dev apache2 libapache2-mod-fcgid cgi-mapserver libdb-dev optipng docker-engine
+- sudo apt-get install -y --force-yes libstdc++-4.8-dev libc6 libmapnik-dev apache2 libapache2-mod-fcgid cgi-mapserver libdb-dev optipng
 
 - sudo service postgresql stop
 - docker build --tag=test-db docker/test-db
