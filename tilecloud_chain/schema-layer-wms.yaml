@@ -40,3 +40,6 @@ mapping:
         default: 128
     regex;.+:
         type: any
+    version:
+        type: str
+        default: 1.1.1

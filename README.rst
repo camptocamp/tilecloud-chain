@@ -318,7 +318,7 @@ The previously defined ``mime_type`` is also used in the WMS requests.
 To customise the request you also have the attributes ``params``, ``headers``
 and ``generate_salt``.
 In ``params`` you can specify additional parameter of the WMS request,
-in ``headers`` you can modify the request headers. See the
+in ``headers`` you can modify the request headers. In ``version``, you can change the WMS version. See the
 `Proxy/cache issue`_ for additional informations.
 
 

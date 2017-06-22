@@ -445,7 +445,15 @@ class TileGeneration:
     def get_store(self, cache, layer, dimensions=None, read_only=False):
         # build layout
         if dimensions is None:  # pragma: no cover
-            dimensions = {}
+            all_dimensions = self.get_all_dimensions(layer)
+            if len(all_dimensions) > 0:
+                dimensions = all_dimensions[0]
+                if len(all_dimensions) != 1:
+                    logger.warning("This mode doesn't support multi-dimensions values. Doing only: %s",
+                                   repr(dimensions))
+            else:
+                dimensions = {}
+
         grid = layer['grid_ref'] if 'grid_ref' in layer else None
         layout = WMTSTileLayout(
             layer=layer['name'],
