@@ -15,7 +15,9 @@ class DatabaseLoggerCommon(object):  # pragma: no cover
                 self.connection = psycopg2.connect(
                     dbname=db_params['dbname'],
                     host=db_params.get('host'),
-                    port=db_params.get('port')
+                    port=db_params.get('port'),
+                    user=db_params.get('user'),
+                    password=db_params.get('password')
                 )
                 break
             except psycopg2.OperationalError as e:
