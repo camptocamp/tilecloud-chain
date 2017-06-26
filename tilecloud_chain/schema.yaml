@@ -382,3 +382,9 @@ mapping:
             table:
               type: str
               required: true
+            user:
+              type: str
+              required: true
+            password:
+              type: str
+              required: true
