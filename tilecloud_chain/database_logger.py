@@ -104,7 +104,7 @@ class DatabaseLogger(DatabaseLoggerCommon):  # pragma: no cover
         with self.connection.cursor() as cursor:
             try:
                 cursor.execute(
-                    'INSERT INTO {} (layer, run, action, tile)'
+                    'INSERT INTO {} (layer, run, action, tile) '
                     'VALUES (%(layer)s, %(run)s, %(action)s::varchar(7), %(tile)s)'.format(self.full_table),
                     {'layer': layer, 'action': action, 'tile': str(tile.tilecoord), 'run': run}
                 )

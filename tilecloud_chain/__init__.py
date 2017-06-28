@@ -885,21 +885,22 @@ class TileGeneration:
             self.tilestream = store.get(self.tilestream)  # pragma: no cover
         else:
             def safe_get(tile):
-                try:
-                    n = datetime.now()
-                    t = store.get_one(tile)
-                    if time_message:
-                        logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
-                    return t
-                except GeneratorExit as e:  # pragma: no cover
-                    raise e
-                except SystemExit as e:  # pragma: no cover
-                    raise e
-                except KeyboardInterrupt:  # pragma: no cover
-                    exit("User interrupt")
-                except:  # pragma: no cover
-                    tile.error = sys.exc_info()[1]
-                    return tile
+                if tile is not None:
+                    try:
+                        n = datetime.now()
+                        t = store.get_one(tile)
+                        if time_message:
+                            logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
+                        return t
+                    except GeneratorExit as e:  # pragma: no cover
+                        raise e
+                    except SystemExit as e:  # pragma: no cover
+                        raise e
+                    except KeyboardInterrupt:  # pragma: no cover
+                        exit("User interrupt")
+                    except:  # pragma: no cover
+                        tile.error = sys.exc_info()[1]
+                        return tile
             self.tilestream = map(safe_get, filter(None, self.tilestream))
 
     def put(self, store, time_message=None):
@@ -907,21 +908,22 @@ class TileGeneration:
             self.tilestream = store.put(self.tilestream)  # pragma: no cover
         else:
             def safe_put(tile):
-                try:
-                    n = datetime.now()
-                    t = store.put_one(tile)
-                    if time_message:
-                        logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
-                    return t
-                except GeneratorExit as e:  # pragma: no cover
-                    raise e
-                except SystemExit as e:  # pragma: no cover
-                    raise e
-                except KeyboardInterrupt:  # pragma: no cover
-                    exit("User interrupt")
-                except:  # pragma: no cover
-                    tile.error = sys.exc_info()[1]
-                    return tile
+                if tile is not None:
+                    try:
+                        n = datetime.now()
+                        t = store.put_one(tile)
+                        if time_message:
+                            logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
+                        return t
+                    except GeneratorExit as e:  # pragma: no cover
+                        raise e
+                    except SystemExit as e:  # pragma: no cover
+                        raise e
+                    except KeyboardInterrupt:  # pragma: no cover
+                        exit("User interrupt")
+                    except:  # pragma: no cover
+                        tile.error = sys.exc_info()[1]
+                        return tile
             self.tilestream = map(safe_put, filter(None, self.tilestream))
 
     def delete(self, store, time_message=None):  # pragma: no cover
@@ -929,21 +931,22 @@ class TileGeneration:
             self.tilestream = store.delete(self.tilestream)
         else:
             def safe_delete(tile):
-                try:
-                    n = datetime.now()
-                    t = store.delete_one(tile)
-                    if time_message:
-                        logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
-                    return t
-                except GeneratorExit as e:  # pragma: no cover
-                    raise e
-                except SystemExit as e:  # pragma: no cover
-                    raise e
-                except KeyboardInterrupt:  # pragma: no cover
-                    exit("User interrupt")
-                except:  # pragma: no cover
-                    tile.error = sys.exc_info()[1]
-                    return tile
+                if tile is not None:
+                    try:
+                        n = datetime.now()
+                        t = store.delete_one(tile)
+                        if time_message:
+                            logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
+                        return t
+                    except GeneratorExit as e:  # pragma: no cover
+                        raise e
+                    except SystemExit as e:  # pragma: no cover
+                        raise e
+                    except KeyboardInterrupt:  # pragma: no cover
+                        exit("User interrupt")
+                    except:  # pragma: no cover
+                        tile.error = sys.exc_info()[1]
+                        return tile
             self.tilestream = map(safe_delete, filter(None, self.tilestream))
 
     def imap(self, tile_filter, time_message=None):
@@ -951,21 +954,22 @@ class TileGeneration:
             self.tilestream = map(tile_filter, self.tilestream)  # pragma: no cover
         else:
             def safe_imap(tile):
-                try:
-                    n = datetime.now()
-                    t = tile_filter(tile)
-                    if time_message:  # pragma: no cover
-                        logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
-                    return t
-                except GeneratorExit as e:  # pragma: no cover
-                    raise e
-                except SystemExit as e:  # pragma: no cover
-                    raise e
-                except KeyboardInterrupt:  # pragma: no cover
-                    exit("User interrupt")
-                except:  # pragma: no cover
-                    tile.error = sys.exc_info()[1]
-                    return tile
+                if tile is not None:
+                    try:
+                        n = datetime.now()
+                        t = tile_filter(tile)
+                        if time_message:  # pragma: no cover
+                            logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
+                        return t
+                    except GeneratorExit as e:  # pragma: no cover
+                        raise e
+                    except SystemExit as e:  # pragma: no cover
+                        raise e
+                    except KeyboardInterrupt:  # pragma: no cover
+                        exit("User interrupt")
+                    except:  # pragma: no cover
+                        tile.error = sys.exc_info()[1]
+                        return tile
             self.tilestream = map(safe_imap, filter(None, self.tilestream))
 
     def ifilter(self, tile_filter, time_message=None):
@@ -973,7 +977,7 @@ class TileGeneration:
             self.tilestream = filter(tile_filter, self.tilestream)  # pragma: no cover
         else:
             def safe_filter(tile):
-                if tile:
+                if tile is not None:
                     try:
                         n = datetime.now()
                         t = tile_filter(tile)
