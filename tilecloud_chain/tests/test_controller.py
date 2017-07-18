@@ -1599,6 +1599,7 @@ caches:
     region: eu-west-1
     type: s3
     wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
+    cache_control: 'public, max-age=14400'
 cost:
   cloudfront: {download: 0.12, get: 0.009}
   request_per_layers: 10000000

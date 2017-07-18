@@ -558,6 +558,7 @@ The cache configuration is like this:
         folder: ''
         # for GetCapabilities
         http_url: https://%(host)s/%(bucket)s/%(folder)s/
+        cache_control: 'public, max-age=14400'
         hosts:
         - wmts0.<host>
 

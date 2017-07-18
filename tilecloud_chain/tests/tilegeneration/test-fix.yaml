@@ -57,6 +57,7 @@ caches:
         host: s3-eu-west-1.amazonaws.com
         bucket: tiles
         folder: tiles
+        cache_control: 'public, max-age=14400'
 
 defaults:
     layer: &layer

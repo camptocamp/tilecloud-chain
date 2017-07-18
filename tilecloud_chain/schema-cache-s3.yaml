@@ -16,5 +16,7 @@ mapping:
         type: str
         default: eu-west-1
         pattern: (eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]
+    cache_control:
+        type: str
     regex;.+:
         type: any

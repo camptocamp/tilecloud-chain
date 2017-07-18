@@ -472,7 +472,8 @@ class TileGeneration:
         if cache['type'] == 's3':
             # on s3
             cache_tilestore = S3TileStore(cache['bucket'], layout,
-                                          s3_host=cache.get('host'))  # pragma: no cover
+                                          s3_host=cache.get('host'),
+                                          cache_control=cache.get('cache_control'))  # pragma: no cover
         elif cache['type'] == 'mbtiles':
             # on mbtiles file
             filename = layout.filename(TileCoord(0, 0, 0)).replace(
