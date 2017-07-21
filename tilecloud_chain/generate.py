@@ -494,7 +494,7 @@ def main():
         generate = Generate(options, gene)
         if options.role == 'slave':
             generate.gene()
-        elif (options.layer):
+        elif options.layer:
             generate.gene(options.layer)
         elif options.get_bbox:  # pragma: no cover
             exit("With --get-bbox option we needs to specify a layer")
