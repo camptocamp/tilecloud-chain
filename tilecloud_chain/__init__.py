@@ -313,7 +313,7 @@ class TileGeneration:
 
         if options is not None and options.zoom is not None:
             error_message = (
-                "The zoom argument '%s' has incorect format, "
+                "The zoom argument '%s' has incorrect format, "
                 "it can be a single value, a range (3-9), a list of values (2,5,7)."
             ) % options.zoom
             if options.zoom.find('-') >= 0:
