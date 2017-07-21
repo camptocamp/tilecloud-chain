@@ -135,16 +135,19 @@ def get_tile_matrix_identifier(grid, resolution=None, zoom=None):
 
 
 class TileGeneration:
+    _geom = None
+
+    geoms = None
+    tilestream = None
+    duration = 0
+    error = 0
+    error_file = None
 
     def __init__(self, config_file, options=None, layer_name=None, base_config=None):
         if base_config is None:
             base_config = {}
-        self.close_actions = []
-        self.geom = None
-        self.error = 0
-        self.layers_geoms = {}
-        self.tilestream = None
-        self.duration = 0
+        self._close_actions = []
+        self._layers_geoms = {}
 
         if options is not None:
             if not hasattr(options, 'bbox'):
@@ -509,12 +512,14 @@ class TileGeneration:
             )
 
             class Close:
+                db = None
+
                 def __call__(self):
                     self.db.close()
 
             ca = Close()
             ca.db = db
-            self.close_actions.append(ca)
+            self._close_actions.append(ca)
 
             cache_tilestore = BSDDBTileStore(
                 db, content_type=layer['mime_type'],
@@ -595,12 +600,12 @@ class TileGeneration:
         self.geoms = self.get_geoms(self.layer, extent)
 
     def get_geoms(self, layer, extent=None):
-        if layer['name'] in self.layers_geoms:  # pragma: no cover
+        if layer['name'] in self._layers_geoms:  # pragma: no cover
             # already build
-            return self.layers_geoms[layer['name']]
+            return self._layers_geoms[layer['name']]
 
         layer_geoms = {}
-        self.layers_geoms[layer['name']] = layer_geoms
+        self._layers_geoms[layer['name']] = layer_geoms
         if extent:
             geom = Polygon((
                 (extent[0], extent[1]),
@@ -725,8 +730,6 @@ class TileGeneration:
                     except GeneratorExit as e:
                         raise e
             self.tilestream = safe_get(self.tilestream)
-
-    error_file = None
 
     def create_log_tiles_error(self, layer):
         if 'error_file' in self.config['generation']:
@@ -1003,7 +1006,7 @@ class TileGeneration:
         start = datetime.now()
         consume(self.tilestream, test)
         self.duration = datetime.now() - start
-        for ca in self.close_actions:
+        for ca in self._close_actions:
             ca()
 
 
