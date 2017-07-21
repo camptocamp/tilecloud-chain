@@ -61,9 +61,7 @@ class Generate:
             self._generate()
 
     def _generate(self, dimensions=None):
-        if dimensions is None:  # pragma: no cover
-            dimensions = {}
-        self._dimensions = dimensions
+        self._dimensions = {} if dimensions is None else dimensions
         self._count_metatiles_dropped = Count()
         self._count_tiles = Count()
         self._count_tiles_dropped = Count()
@@ -274,9 +272,9 @@ class Generate:
                         self.t1 = datetime.now()
                     elif self.n == 2 * options.time:
                         t2 = datetime.now()
-                        d = (t2 - self.t1) / options.time
+                        duration = (t2 - self.t1) / options.time
                         sys.stdout.write('time: {}\n'.format(
-                            ((d.days * 24 * 3600 + d.seconds) * 1000000 + d.microseconds)
+                            ((duration.days * 24 * 3600 + duration.seconds) * 1000000 + duration.microseconds)
                         ))
                     return tile
             self._gene.imap(LogTime())
