@@ -68,7 +68,7 @@ def main():
     gene = TileGeneration(options.config, options, layer_name=options.layer)
 
     if options.status:  # pragma: no cover
-        status(options, gene)
+        status(gene)
         sys.exit(0)
 
     if options.cache is None:
@@ -445,7 +445,7 @@ def _generate_openlayers(gene):
     _send(_get_resource('layer-switcher-minimize.png'), 'img/layer-switcher-minimize.png', 'image/png', cache)
 
 
-def status(options, gene):  # pragma: no cover
+def status(gene):  # pragma: no cover
     # get SQS status
     attributes = gene.get_sqs_queue().get_attributes()
     attributes["CreatedTimestamp"] = time.ctime(int(attributes["CreatedTimestamp"]))
