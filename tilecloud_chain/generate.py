@@ -172,9 +172,10 @@ class Generate:
             else:
                 self._gene.add_error_filters()
 
-            if self._options.role == 'hash':
-                if self._gene.layer.get('meta', False):
-                    self._gene.imap(HashLogger('empty_metatile_detection'))
+            if self._options.role == 'hash' and self._gene.layer.get('meta', False):
+                self._gene.imap(HashLogger('empty_metatile_detection'))
+            elif self._options.role == 'hash':
+                pass
             elif not self._options.near:
                 droppers = {}
                 for lname, layer in self._gene.layers.items():
