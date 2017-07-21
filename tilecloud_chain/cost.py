@@ -36,7 +36,7 @@ def main():
     all_size = 0
     tile_size = 0
     all_tiles = 0
-    if (options.layer):
+    if options.layer:
         (all_size, all_time, all_price, all_tiles) = _calculate_cost(gene, options)
         tile_size = gene.layer['cost']['tile_size'] / (1024.0 * 1024)
     else:

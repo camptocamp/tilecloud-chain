@@ -102,7 +102,7 @@ def main():
 
     gene = TileGeneration(options.config, options)
 
-    if (options.layer):  # pragma: no cover
+    if options.layer:  # pragma: no cover
         copy = Copy()
         copy.copy(options, gene, options.layer, options.source, options.dest, 'copy')
     else:
