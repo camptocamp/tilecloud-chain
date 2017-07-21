@@ -144,8 +144,6 @@ class TileGeneration:
     error_file = None
 
     def __init__(self, config_file, options=None, layer_name=None, base_config=None):
-        if base_config is None:
-            base_config = {}
         self._close_actions = []
         self._layers_geoms = {}
 
@@ -167,7 +165,7 @@ class TileGeneration:
 
         with open(config_file) as f:
             self.config = {}
-            self.config.update(base_config)
+            self.config.update({} if base_config is None else base_config)
             self.config.update(yaml.safe_load(f))
         self.options = options
         if 'defaults' in self.config:
