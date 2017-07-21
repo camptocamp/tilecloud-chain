@@ -142,6 +142,9 @@ class TileGeneration:
         self.close_actions = []
         self.geom = None
         self.error = 0
+        self.layers_geoms = {}
+        self.tilestream = None
+        self.duration = 0
 
         if options is not None:
             if not hasattr(options, 'bbox'):
@@ -592,8 +595,6 @@ class TileGeneration:
         self.geoms = self.get_geoms(self.layer, extent)
 
     def get_geoms(self, layer, extent=None):
-        if not hasattr(self, 'layers_geoms'):
-            self.layers_geoms = {}
         if layer['name'] in self.layers_geoms:  # pragma: no cover
             # already build
             return self.layers_geoms[layer['name']]
