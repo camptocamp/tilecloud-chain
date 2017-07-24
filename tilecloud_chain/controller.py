@@ -77,7 +77,7 @@ def main():
     if options.dump_config:
         for layer in gene.config['layers'].keys():
             gene.set_layer(layer, options)
-        _validate_generate_wmts_capabilities(gene, gene.caches[options.cache])
+        _validate_generate_wmts_capabilities(gene.caches[options.cache])
         for grid in gene.config['grids'].values():
             if 'obj' in grid:
                 del grid['obj']
@@ -135,7 +135,7 @@ def _get(path, cache):
             return file.read()
 
 
-def _validate_generate_wmts_capabilities(gene, cache):
+def _validate_generate_wmts_capabilities(cache):
     if 'http_url' not in cache and 'http_urls' not in cache:  # pragma: no cover
         logger.error(
             "The attribute 'http_url' or 'http_urls' is required in the object cache[{}].".format(cache['name'])
@@ -145,7 +145,7 @@ def _validate_generate_wmts_capabilities(gene, cache):
 
 def _generate_wmts_capabilities(gene):
     cache = gene.caches[gene.options.cache]
-    _validate_generate_wmts_capabilities(gene, cache)
+    _validate_generate_wmts_capabilities(cache)
     server = 'server' in gene.config
 
     base_urls = []

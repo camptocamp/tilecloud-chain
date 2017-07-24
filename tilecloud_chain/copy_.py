@@ -129,7 +129,7 @@ def process():
     gene = TileGeneration(options.config, options)
 
     copy = Copy()
-    if (options.layer):  # pragma: no cover
+    if options.layer:  # pragma: no cover
         copy.copy(options, gene, options.layer, options.cache, options.cache, 'process')
     else:
         layers_name = gene.config['generation']['default_layers'] \
