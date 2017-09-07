@@ -34,6 +34,9 @@ import types
 import datetime
 import mimetypes
 from six.moves.urllib.parse import urlencode, parse_qs
+from pyramid.config import Configurator
+from c2cwsgiutils import health_check
+import c2cwsgiutils.pyramid
 
 from tilecloud import Tile, TileCoord
 import tilecloud.store.s3
@@ -170,7 +173,7 @@ class Server:
             if len(path) >= 1 and path[0] == 'static':
                 body, mime = self._get('/'.join(path[1:]), **kwargs)
                 if mime is not None:
-                    return self.responce(body, {
+                    return self.response(body, {
                         'Content-Type': mime,
                         'Expires': (
                             datetime.datetime.utcnow() +
@@ -251,7 +254,7 @@ class Server:
             wmtscapabilities_file = self.cache['wmtscapabilities_file']
             body, mime = self._get(wmtscapabilities_file, **kwargs)
             if mime is not None:
-                return self.responce(body, headers={
+                return self.response(body, headers={
                     'Content-Type': "application/xml",
                     'Expires': (
                         datetime.datetime.utcnow() +
@@ -370,7 +373,7 @@ class Server:
 
         tile = store.get_one(tile)
         if tile:
-            return self.responce(tile.data, headers={
+            return self.response(tile.data, headers={
                 'Content-Type': tile.content_type,
                 'Expires': (
                     datetime.datetime.utcnow() +
@@ -390,24 +393,24 @@ class Server:
             headers['Cache-Control'] = 'no-cache'
             headers['Pragma'] = 'no-cache'
 
-        responce = requests.get(url, headers=headers)
-        if responce.status_code == 200:
-            responce_headers = responce.headers.copy()
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            response_headers = response.headers.copy()
             if no_cache:
-                responce_headers['Cache-Control'] = 'no-cache, no-store'
-                responce_headers['Pragma'] = 'no-cache'
+                response_headers['Cache-Control'] = 'no-cache, no-store'
+                response_headers['Pragma'] = 'no-cache'
             else:  # pragma: no cover
-                responce_headers['Expires'] = (
+                response_headers['Expires'] = (
                     datetime.datetime.utcnow() +
                     datetime.timedelta(hours=self.expires_hours)
                 ).isoformat()
-                responce_headers['Cache-Control'] = "max-age={}".format((3600 * self.expires_hours))
-                responce_headers['Access-Control-Allow-Origin'] = '*'
-                responce_headers['Access-Control-Allow-Methods'] = 'GET'
-            return self.responce(responce.content, headers=responce_headers, **kwargs)
+                response_headers['Cache-Control'] = "max-age={}".format((3600 * self.expires_hours))
+                response_headers['Access-Control-Allow-Origin'] = '*'
+                response_headers['Access-Control-Allow-Methods'] = 'GET'
+            return self.response(response.content, headers=response_headers, **kwargs)
         else:  # pragma: no cover
             message = "The URL '{}' return '{} {}', content:\n{}".format(
-                url, responce.status_code, responce.reason, responce.text
+                url, response.status_code, response.reason, response.text
             )
             logger.warning(message)
             return self.error(502, message=message, **kwargs)
@@ -425,7 +428,7 @@ class Server:
         return [message]
 
     @staticmethod
-    def responce(data, headers=None, **kwargs):
+    def response(data, headers=None, **kwargs):
         if headers is None:  # pragma: no cover
             headers = {}
         headers['Content-Length'] = str(len(data))
@@ -453,7 +456,7 @@ class PyramidServer(Server):
     def error(self, code, message='', **kwargs):
         raise self.HTTP_EXCEPTIONS[code](message)
 
-    def responce(self, data, headers=None, **kwargs):
+    def response(self, data, headers=None, **kwargs):
         if headers is None:  # pragma: no cover
             headers = {}
         kwargs['request'].response.headers = headers
@@ -488,3 +491,13 @@ class PyramidView():
                 params[param.upper()] = value
 
         return self.server.serve(path, params, request=self.request)
+
+
+def main(_, **settings):
+    config = Configurator(settings=settings, route_prefix='/tiles')
+    config.include(c2cwsgiutils.pyramid.includeme)
+    health_check.HealthCheck(config)
+
+    config.add_route('tiles', '/*path')
+    config.add_view(PyramidView, route_name='tiles')
+    return config.make_wsgi_app()

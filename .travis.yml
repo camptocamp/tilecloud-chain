@@ -5,9 +5,8 @@ dist: trusty
 language: python
 
 python:
-- 2.7
-- 3.3
 - 3.4
+- 3.6
 
 env:
   global:
@@ -45,7 +44,6 @@ before_install:
 
 install:
 - pip install --upgrade pip
-- if [[ ${TRAVIS_PYTHON_VERSION} == 2.7 ]] ; then pip install mapnik ; fi
 - pip install bsddb3
 - pip install -r requirements.txt
 - pip install -r dev-requirements.txt
@@ -75,5 +73,5 @@ deploy:
   distributions: sdist bdist_wheel
   on:
     tags: true
-    python: 2.7
+    python: 3.4
     condition: '"${TRAVIS_TAG}" == "`python setup.py --version`"'

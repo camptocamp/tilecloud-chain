@@ -1,12 +1,14 @@
+from c2cwsgiutils import stats
 from itertools import chain, groupby, starmap
 
 from tilecloud import TileStore
 
 
 class MultiTileStore(TileStore):
-    def __init__(self, stores, default_layer_name=None, **kwargs):
+    def __init__(self, stores, stats_name, default_layer_name=None, **kwargs):
         TileStore.__init__(self, **kwargs)
         self._stores = stores
+        self._stats_name = stats_name
         self._default_store = self._stores.get(default_layer_name)
 
     def _get_store(self, layer):
@@ -22,7 +24,9 @@ class MultiTileStore(TileStore):
         :rtype: bool
 
         """
-        return tile in self._get_store(_get_layer(tile))
+        layer = _get_layer(tile)
+        with stats.timer_context([self._stats_name, layer, 'contains']):
+            return tile in self._get_store(layer)
 
     def delete_one(self, tile):
         """
@@ -34,7 +38,9 @@ class MultiTileStore(TileStore):
         :rtype: :class:`Tile` or ``None``
 
         """
-        return self._get_store(_get_layer(tile)).delete_one(tile)
+        layer = _get_layer(tile)
+        with stats.timer_context([self._stats_name, layer, 'delete_one']):
+            return self._get_store(layer).delete_one(tile)
 
     @staticmethod
     def list():
@@ -58,7 +64,9 @@ class MultiTileStore(TileStore):
         :rtype: :class:`Tile` or ``None``
 
         """
-        return self._get_store(_get_layer(tile)).put_one(tile)
+        layer = _get_layer(tile)
+        with stats.timer_context([self._stats_name, layer, 'put_one']):
+            return self._get_store(layer).put_one(tile)
 
     def get_one(self, tile):
         """
@@ -70,23 +78,28 @@ class MultiTileStore(TileStore):
         :rtype: :class:`Tile` or ``None``
 
         """
-        return self._get_store(_get_layer(tile)).get_one(tile)
+        layer = _get_layer(tile)
+        with stats.timer_context([self._stats_name, layer, 'get_one']):
+            return self._get_store(layer).get_one(tile)
 
     def get(self, tiles):
         def apply(layer, tiles):
-            return self._get_store(layer).get(tiles)
+            with stats.timer_context([self._stats_name, layer, 'get']):
+                return self._get_store(layer).get(tiles)
 
         return chain.from_iterable(starmap(apply, groupby(tiles, _get_layer)))
 
     def put(self, tiles):
         def apply(layer, tiles):
-            return self._get_store(layer).put(tiles)
+            with stats.timer_context([self._stats_name, layer, 'put']):
+                return self._get_store(layer).put(tiles)
 
         return chain.from_iterable(starmap(apply, groupby(tiles, _get_layer)))
 
     def delete(self, tiles):
         def apply(layer, tiles):
-            return self._get_store(layer).delete(tiles)
+            with stats.timer_context([self._stats_name, layer, 'delete']):
+                return self._get_store(layer).delete(tiles)
 
         return chain.from_iterable(starmap(apply, groupby(tiles, _get_layer)))
 
