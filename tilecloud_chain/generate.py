@@ -12,6 +12,7 @@ from argparse import ArgumentParser
 
 import boto
 from boto import sns
+from c2cwsgiutils import stats
 from tilecloud import TileCoord
 from tilecloud.store.url import URLTileStore
 from tilecloud.store.sqs import SQSTileStore, maybe_stop
@@ -143,7 +144,7 @@ class Generate:
             self._gene.get(MultiTileStore({
                 name: self._get_tilestore_for_layer(layer)
                 for name, layer in self._gene.layers.items()
-            }), 'Get tile')
+            }, stats_name='get'), 'Get tile')
 
             def wrong_content_type_to_error(tile):
                 if tile is not None and tile.content_type is not None \
@@ -427,6 +428,7 @@ def detach():  # pragma: no cover
 
 
 def main():
+    stats.init_backends({})
     parser = ArgumentParser(description='Used to generate the tiles', prog=sys.argv[0])
     add_comon_options(parser, dimensions=True)
     parser.add_argument(
@@ -495,3 +497,7 @@ def main():
     finally:
         if gene.error_file is not None:
             gene.error_file.close()
+
+
+if __name__ == "__main__":
+    main()

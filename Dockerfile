@@ -1,30 +1,43 @@
-FROM ubuntu:16.04
+FROM camptocamp/c2cwsgiutils:0
 MAINTAINER Stéphane Brunner <stephane.brunner@camptocamp.com>
 
 RUN \
   apt-get update && \
-  apt-get install --assume-yes --no-install-recommends wget ca-certificates python python-mapnik mapnik-utils gdal-bin libpq5 libgeos-c1v5 fonts-dejavu node-carto osm2pgsql curl unzip gcc python-dev libpq-dev libgeos-dev libmapnik-dev && \
+  apt-get install --assume-yes --no-install-recommends \
+    ca-certificates \
+    libmapnik-dev \
+    mapnik-utils \
+    gdal-bin \
+    fonts-dejavu \
+    node-carto \
+    osm2pgsql \
+    curl \
+    unzip && \
   cd /tmp && \
-  wget https://bootstrap.pypa.io/get-pip.py && \
-  python get-pip.py && \
   mkdir /fonts && \
-  mkdir /project
-
-COPY requirements.txt /src/
-
-RUN \
-  cd /src && \
-  pip install -r requirements.txt && \
-  apt-get remove --assume-yes --purge gcc python-dev libpq-dev libgeos-dev libmapnik-dev wget && \
-  apt-get autoremove --assume-yes && \
+  mkdir /project && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /root/.cache/*
 
-COPY . /src/
+COPY requirements.txt /app/
 
 RUN \
-  cd /src && \
+  cd /app && \
+  pip install --no-cache-dir -r requirements.txt
+
+COPY . /app/
+
+RUN \
+  cd /app && \
   pip install -e . && \
   mv docker/run /usr/bin/
+
+ENV TILEGENERATION_CONFIGFILE=tilegeneration/config.yaml \
+    C2CWSGI_LOG_LEVEL=WARN \
+    TILECLOUD_LOG_LEVEL=INFO \
+    TILECLOUD_CHAIN_LOG_LEVEL=INFO \
+    GUNICORN_PARAMS="-b :80 --worker-class gthread --threads 1 --workers 5"
+
+EXPOSE 80
 
 WORKDIR /project

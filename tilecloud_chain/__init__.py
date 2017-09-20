@@ -4,6 +4,7 @@ import sys
 import os
 import re
 import logging
+import logging.config
 import yaml
 import sqlite3
 import tempfile
@@ -35,6 +36,7 @@ import boto.sqs
 from boto.sqs.jsonmessage import JSONMessage
 from pykwalify.core import Core
 from pykwalify.errors import SchemaError, NotSequenceError, NotMappingError
+from c2cwsgiutils import stats, sentry
 
 from tilecloud import Tile, BoundingPyramid, TileCoord, TileStore
 from tilecloud.grid.free import FreeTileGrid
@@ -393,33 +395,42 @@ class TileGeneration:
                 other_level = logging.INFO
             logging.config.dictConfig({
                 'version': 1,
+                'disable_existing_loggers': False,  # Without that, existing loggers are silent
                 'loggers': {
                     'tilecloud': {
-                        'level': level,
-                        'handlers': ['console'],
+                        'level': level
                     },
                     'tilecloud_chain': {
-                        'level': level,
-                        'handlers': ['console'],
-                    },
-                    'pykwalify': {
-                        'level': other_level,
-                        'handlers': ['console'],
-                    },
+                        'level': level
+                    }
+                },
+                'root': {
+                    'level': other_level,
+                    'handlers': [os.environ.get('LOG_TYPE', 'console')]
                 },
                 'handlers': {
                     'console': {
                         'class': 'logging.StreamHandler',
                         'formatter': 'default',
-                        'stream': 'ext://sys.stdout',
+                        'stream': 'ext://sys.stdout'
+                    },
+                    'logstash': {
+                        'class': 'c2cwsgiutils.pyramid_logging.PyramidCeeSysLogHandler',
+                        'address': (os.environ.get('LOG_HOST', 'localhost'),
+                                    int(os.environ.get('LOG_PORT', '514')))
+                    },
+                    'json': {
+                        'class': 'c2cwsgiutils.pyramid_logging.JsonLogHandler',
+                        'stream': 'ext://sys.stdout'
                     },
                 },
                 'formatters': {
                     'default': {
-                        'format': format_,
-                    },
-                },
+                        'format': format_
+                    }
+                }
             })
+        sentry.init()
 
     def get_all_dimensions(self, layer=None):
         if layer is None:
@@ -583,7 +594,7 @@ class TileGeneration:
         cache_tilestore = MultiTileStore({
             lname: self.get_store(cache, layer, dimensions=dimensions)
             for lname, layer in self.layers.items()
-        }, self.layer['name'] if self.layer else None)
+        }, stats_name='store', default_layer_name=self.layer['name'] if self.layer else None)
         return cache_tilestore
 
     def get_sqs_queue(self):  # pragma: no cover
@@ -695,7 +706,7 @@ class TileGeneration:
                     layer['grid_ref']['tile_size'],
                     layer['meta_buffer'])
 
-        store = MultiTileStore(splitters)
+        store = MultiTileStore(splitters, stats_name='splitter')
 
         if self.options.debug:
             def meta_get(tilestream):  # pragma: no cover
@@ -757,6 +768,13 @@ class TileGeneration:
             logger, logging.ERROR,
             "Error in tile: %(tilecoord)s, %(error)r"
         ))
+
+        if stats.BACKENDS:
+            def add_stats(tile):
+                if tile and tile.error:
+                    stats.increment_counter(['error', tile.metadata.get('layer', 'None')])
+                return tile
+            self.imap(add_stats)
 
         if 'error_file' in self.config['generation']:
 

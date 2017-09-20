@@ -58,7 +58,7 @@ setup(
             'tilecloud_chain = tilecloud_chain.scaffolds:Create',
         ],
         'paste.app_factory': [
-            'server = tilecloud_chain.server:app_factory',
+            'main = tilecloud_chain.server:main',
         ],
     }
 )
