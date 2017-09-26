@@ -34,10 +34,13 @@ class TestController(CompareCase):
             expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
                 u"""<\?xml version="1.0" encoding="UTF-8"\?>
-<Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
-              xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xmlns:gml="http://www.opengis.net/gml"
-              xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
+<Capabilities version="1.0.0"
+    xmlns="http://www.opengis.net/wmts/1.0"
+    xmlns:ows="http://www.opengis.net/ows/1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gml="http://www.opengis.net/gml"
+    xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
   <ows:ServiceIdentification> </ows:ServiceIdentification>
   <ows:ServiceProvider> </ows:ServiceProvider>
   <ows:OperationsMetadata>
@@ -439,10 +442,13 @@ class TestController(CompareCase):
 </Capabilities>"""]])
 
     MULTIHOST_CAPABILITIES = u"""<\?xml version="1.0" encoding="UTF-8"\?>
-<Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
-              xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xmlns:gml="http://www.opengis.net/gml"
-              xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
+<Capabilities version="1.0.0"
+    xmlns="http://www.opengis.net/wmts/1.0"
+    xmlns:ows="http://www.opengis.net/ows/1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gml="http://www.opengis.net/gml"
+    xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
   <ows:ServiceIdentification> </ows:ServiceIdentification>
   <ows:ServiceProvider> </ows:ServiceProvider>
   <ows:OperationsMetadata>
@@ -941,10 +947,13 @@ class TestController(CompareCase):
             expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
                 u"""<\?xml version="1.0" encoding="UTF-8"\?>
-<Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
-              xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xmlns:gml="http://www.opengis.net/gml"
-              xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
+<Capabilities version="1.0.0"
+    xmlns="http://www.opengis.net/wmts/1.0"
+    xmlns:ows="http://www.opengis.net/ows/1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gml="http://www.opengis.net/gml"
+    xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
   <ows:ServiceIdentification> </ows:ServiceIdentification>
   <ows:ServiceProvider> </ows:ServiceProvider>
   <ows:OperationsMetadata>
@@ -1490,10 +1499,10 @@ class TestController(CompareCase):
 
 Alias /tiles /tmp/tiles/
 
-RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
-                """/mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
-RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
-                """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
+RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/"""
+                """4/(.*)$ /mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
+RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/"""
+                """4/(.*)$ /mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
 
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
@@ -1526,10 +1535,10 @@ MapCacheAlias /mapcache "{}"
 ProxyPass /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
 ProxyPassReverse /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
 
-RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
-                """/mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
-RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
-                """/mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
+RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/"""
+                """4/(.*)$ /mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
+RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/"""
+                """4/(.*)$ /mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
 
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
@@ -2107,7 +2116,10 @@ OpenLayers.Request.GET({
         )
 
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml --cache multi_host',
+            cmd=(
+                '.build/venv/bin/generate_controller --openlayers '
+                '-c tilegeneration/test-fix.yaml --cache multi_host'
+            ),
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],
@@ -2116,7 +2128,10 @@ OpenLayers.Request.GET({
         )
 
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml --cache multi_url',
+            cmd=(
+                '.build/venv/bin/generate_controller --openlayers '
+                '-c tilegeneration/test-fix.yaml --cache multi_url'
+            ),
             main_func=controller.main,
             expected=[
                 ['/tmp/tiles/index.html', html],
@@ -2152,11 +2167,14 @@ OpenLayers.Request.GET({
             regex=True,
             expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
-                u"""<\?xml version="1.0" encoding="UTF-8"\?>
-<Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
-              xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xmlns:gml="http://www.opengis.net/gml"
-              xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
+                """<\?xml version="1.0" encoding="UTF-8"\?>
+<Capabilities version="1.0.0"
+    xmlns="http://www.opengis.net/wmts/1.0"
+    xmlns:ows="http://www.opengis.net/ows/1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gml="http://www.opengis.net/gml"
+    xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
   <ows:ServiceIdentification> </ows:ServiceIdentification>
   <ows:ServiceProvider> </ows:ServiceProvider>
   <ows:OperationsMetadata>

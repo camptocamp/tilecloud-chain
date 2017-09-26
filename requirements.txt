@@ -1,9 +1,8 @@
-boto>=2.0
-c2cwsgiutils>0,<1
-Jinja2
-pykwalify
-PyYAML
-Shapely
-simplejson
-six
-tilecloud>=0.5.0.dev3
+boto==2.48.0
+Jinja2==2.9.6
+pykwalify==1.6.0
+PyYAML==3.12
+Shapely==1.6.1
+simplejson==3.11.1
+six==1.11.0
+tilecloud==0.5.0.dev6

@@ -14,33 +14,29 @@ logger = logging.getLogger(__name__)
 class Copy:
     count = None
 
-    def copy(self, options, gene, layer, source, dest, task_name):
+    def copy(self, options, gene, layer, source, destination, task_name):
         if gene.layers[layer]['type'] == 'wms':
-            all_dimensions = gene.get_all_dimensions(gene.layers[layer])
-
-            for dimensions in all_dimensions:
-                self._copy(options, gene, layer, source, dest, task_name, dimensions)
+            self._copy(options, gene, layer, source, destination, task_name)
         else:  # pragma: no cover
-            self._copy(options, gene, layer, source, dest, task_name)
+            self._copy(options, gene, layer, source, destination, task_name)
 
-    def _copy(self, options, gene, layer, source, dest, task_name, dimensions=None):
+    def _copy(self, options, gene, layer_name, source, dest, task_name):
         # disable metatiles
-        if dimensions is None:  # pragma: no cover
-            dimensions = {}
-        del gene.layers[layer]['meta']
+        layer = gene.layers[layer_name]
+        del layer['meta']
         count_tiles_dropped = Count()
 
-        gene.set_layer(layer, options)
-        source_tilestore = gene.get_tilesstore(source, dimensions)
-        dest_tilestore = gene.get_tilesstore(dest, dimensions)
-        gene.init_tilecoords()
-        gene.add_geom_filter()
+        gene.init_layer(layer, options)
+        source_tilestore = gene.get_tilesstore(source)
+        dest_tilestore = gene.get_tilesstore(dest)
+        gene.init_tilecoords(layer)
+        gene.add_geom_filter(layer)
         gene.add_logger()
         gene.get(source_tilestore, "Get the tiles")
         gene.ifilter(DropEmpty(gene))
         # Discard tiles with certain content
-        if gene.layer and 'empty_tile_detection' in gene.layer:
-            empty_tile = gene.layer['empty_tile_detection']
+        if 'empty_tile_detection' in layer:
+            empty_tile = layer['empty_tile_detection']
 
             gene.imap(HashDropper(
                 empty_tile['size'], empty_tile['hash'], store=dest_tilestore, count=count_tiles_dropped))
@@ -65,7 +61,7 @@ Time per tile: {} ms
 Size per tile: {} o
 """.format(
                     task_name,
-                    gene.layer['name'],
+                    layer['name'],
                     task_name,
                     self.count.nb,
                     count_tiles_dropped.nb,

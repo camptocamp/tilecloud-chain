@@ -16,10 +16,13 @@ from tilecloud_chain import server
 
 
 CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
-<Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
-              xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xmlns:gml="http://www.opengis.net/gml"
-              xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
+<Capabilities version="1.0.0"
+    xmlns="http://www.opengis.net/wmts/1.0"
+    xmlns:ows="http://www.opengis.net/ows/1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gml="http://www.opengis.net/gml"
+    xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
   <ows:ServiceIdentification> </ows:ServiceIdentification>
   <ows:ServiceProvider> </ows:ServiceProvider>
   <ows:OperationsMetadata>
@@ -270,10 +273,13 @@ Size per tile: 4[0-9][0-9] o
             request.response.body.decode('utf-8') if PY3 else request.response.body,
             regex=True,
             expected=u"""<\?xml version="1.0" encoding="UTF-8"\?>
-<Capabilities version="1.0.0" xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1"
-              xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xmlns:gml="http://www.opengis.net/gml"
-              xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
+<Capabilities version="1.0.0"
+    xmlns="http://www.opengis.net/wmts/1.0"
+    xmlns:ows="http://www.opengis.net/ows/1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gml="http://www.opengis.net/gml"
+    xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
   <ows:ServiceIdentification> </ows:ServiceIdentification>
   <ows:ServiceProvider> </ows:ServiceProvider>
   <ows:OperationsMetadata>
@@ -963,7 +969,8 @@ Size per tile: 4[0-9][0-9] o
         }
         request.matchdict = {
             'path': [
-                'wmts', '1.0.0', 'point_hash', 'default', '2012', 'swissgrid_5', '1', '11', '14', '114', '111.xml'
+                'wmts', '1.0.0', 'point_hash', 'default', '2012', 'swissgrid_5',
+                '1', '11', '14', '114', '111.xml'
             ]
         }
         request.params = {

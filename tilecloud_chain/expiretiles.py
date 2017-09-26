@@ -48,7 +48,10 @@ def main():
     parser.add_argument(
         'connection',
         metavar='CONNECTION',
-        help='The PostgreSQL connection string e.g. "user=www-data password=www-data dbname=sig host=localhost"',
+        help=(
+            'The PostgreSQL connection string e.g. '
+            '"user=www-data password=www-data dbname=sig host=localhost"'
+        ),
     )
     parser.add_argument(
         'table',

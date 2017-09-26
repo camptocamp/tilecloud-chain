@@ -35,11 +35,11 @@ class TestGenerate(CompareCase):
                 cmd='.build/venv/bin/generate_tiles {} --get-hash 4/0/0 '
                     '-c tilegeneration/test.yaml -l point'.format(d),
                 main_func=generate.main,
-                expected="""Tile: 4/0/0:+8/+8
+                expected="""Tile: 4/0/0:+8/+8 dimension_DATE=2012 layer=point
         empty_metatile_detection:
             size: 20743
             hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
-    Tile: 4/0/0
+    Tile: 4/0/0 dimension_DATE=2012 layer=point
         empty_tile_detection:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
@@ -445,7 +445,10 @@ Size per tile: 4[0-9][0-9] o
     def test_no_zoom(self, l):
         for d in ('-d', ''):
             self.assert_tiles_generated(
-                cmd='.build/venv/bin/generate_tiles {} -c tilegeneration/test-nosns.yaml -l point_hash'.format(d),
+                cmd=(
+                    '.build/venv/bin/generate_tiles {} '
+                    '-c tilegeneration/test-nosns.yaml -l point_hash'
+                ).format(d),
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern='1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png',
@@ -919,15 +922,19 @@ Size per tile: 4[0-9][0-9] o
             regex=True,
             expected=[[
                 'error.list',
-                u"""# \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] Start the layer 'point_error' generation
-0/0/0:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: """
-                """msWMSLoadGetMapParams\(\): WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
+                u"""# \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] """
+                """Start the layer 'point_error' generation
+0/0/0:\+8/\+8 dimension_DATE=2012 layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] """
+                """[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): """
+                """WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
                 """A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'
-0/0/8:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: """
-                """msWMSLoadGetMapParams\(\): WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
+0/0/8:\+8/\+8 dimension_DATE=2012 layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] """
+                """[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): """
+                """WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
                 """A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'
-0/8/0:\+8/\+8 # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: """
-                """msWMSLoadGetMapParams\(\): WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
+0/8/0:\+8/\+8 dimension_DATE=2012 layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] """
+                """[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): """
+                """WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
                 """A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'
 """]],
         )
@@ -974,29 +981,17 @@ Size per tile: [45][0-9][0-9] o
                     ('point2', 2, 39, 21),
                 ],
                 regex=True,
-                expected="""The tile generation of layer 'multi \(POINT_NAME=point1\)' is finish
-Nb generated metatiles: 8
-Nb metatiles dropped: 5
-Nb generated tiles: 192
-Nb tiles dropped: 189
-Nb tiles stored: 3
+                expected="""The tile generation of layer 'multi \(POINT_NAME=point1 - POINT_NAME=point2\)' is finish
+Nb generated metatiles: 16
+Nb metatiles dropped: 10
+Nb generated tiles: 384
+Nb tiles dropped: 378
+Nb tiles stored: 6
 Nb tiles in error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: 1.5 Kio
+Total size: 2.9 Kio
 Time per tile: [0-9]+ ms
-Size per tile: 496 o
-
-The tile generation of layer 'multi \(POINT_NAME=point2\)' is finish
-Nb generated metatiles: 8
-Nb metatiles dropped: 5
-Nb generated tiles: 192
-Nb tiles dropped: 189
-Nb tiles stored: 3
-Nb tiles in error: 0
-Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: 1.5 Kio
-Time per tile: [0-9]+ ms
-Size per tile: 500 o
+Size per tile: 498 o
 
 """,
             )

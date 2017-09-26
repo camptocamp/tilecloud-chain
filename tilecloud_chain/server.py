@@ -74,13 +74,12 @@ class Server:
 
             def _get(self, path, **kwargs):
                 global client
+                key_name = os.path.join('{folder}'.format(**self.cache), path)
                 try:
-                    key_name = os.path.join('{folder!s}'.format(**self.cache), path)
                     response = client.get_object(Bucket=bucket, Key=key_name)
                     return response['Body'].read(), response.get('ContentType')
                 except:
                     client = tilecloud.store.s3.get_client(self.cache.get('host'))
-                    key_name = os.path.join('{folder!s}'.format(**self.cache), path)
                     response = client.get_object(Bucket=bucket, Key=key_name)
                     return response['Body'].read(), response.get('ContentType')
         else:
@@ -155,7 +154,7 @@ class Server:
                 store_defs = new_store_defs
             for store_def in store_defs:
                 self.stores['/'.join(store_def['ref'])] = \
-                    self.tilegeneration.get_store(self.cache, layer, store_def['dimensions'], read_only=True)
+                    self.tilegeneration.get_store(self.cache, layer, read_only=True)
 
     def __call__(self, environ, start_response):
         params = {}
@@ -168,6 +167,7 @@ class Server:
 
     def serve(self, path, params, **kwargs):
         dimensions = []
+        metadata = {}
 
         if path:
             if len(path) >= 1 and path[0] == 'static':
@@ -214,6 +214,7 @@ class Server:
                 index = 3
                 dimensions = path[index:index + len(layer['dimensions'])]
                 for dimension in layer['dimensions']:
+                    metadata["dimension_" + dimension['name']] = path[index]
                     params[dimension['name'].upper()] = path[index]
                     index += 1
 
@@ -283,11 +284,11 @@ class Server:
                 return self.error(400, "Wrong Layer '{}'".format(params['LAYER']), **kwargs)
 
             for dimension in layer['dimensions']:
-                dimensions.append(
-                    params[dimension['name'].upper()]
-                    if dimension['name'].lower() in params
+                value = params[dimension['name'].upper()] \
+                    if dimension['name'].upper() in params \
                     else dimension['default']
-                )
+                dimensions.append(value)
+                metadata["dimension_" + dimension['name']] = value
 
         if params['STYLE'] != layer['wmts_style']:
             return self.error(400, "Wrong Style '{}'".format(params['STYLE']), **kwargs)
@@ -299,7 +300,7 @@ class Server:
             int(params['TILEMATRIX']),
             int(params['TILECOL']),
             int(params['TILEROW']),
-        ))
+        ), metadata=metadata)
 
         if params['REQUEST'] == 'GetFeatureInfo':
             if \
@@ -373,6 +374,9 @@ class Server:
 
         tile = store.get_one(tile)
         if tile:
+            if tile.error:
+                return self.error(500, tile.error, **kwargs)
+
             return self.response(tile.data, headers={
                 'Content-Type': tile.content_type,
                 'Expires': (
@@ -443,13 +447,14 @@ def app_factory(global_config, configfile='tilegeneration/config.yaml', **local_
 class PyramidServer(Server):
 
     from pyramid.httpexceptions import HTTPNoContent, HTTPBadRequest, \
-        HTTPForbidden, HTTPNotFound, HTTPBadGateway
+        HTTPForbidden, HTTPNotFound, HTTPBadGateway, HTTPInternalServerError
 
     HTTP_EXCEPTIONS = {
         204: HTTPNoContent,
         400: HTTPBadRequest,
         403: HTTPForbidden,
         404: HTTPNotFound,
+        500: HTTPInternalServerError,
         502: HTTPBadGateway,
     }
 

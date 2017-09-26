@@ -19,7 +19,7 @@ def main():
         description='Used to calculate the generation cost',
         prog=sys.argv[0]
     )
-    add_comon_options(parser, tile_pyramid=False)
+    add_comon_options(parser, tile_pyramid=False, dimensions=True)
     parser.add_argument(
         '--cost-algo', '--calculate-cost-algorithm', default='area', dest='cost_algo',
         choices=('area', 'count'),
@@ -37,17 +37,21 @@ def main():
     tile_size = 0
     all_tiles = 0
     if options.layer:
-        (all_size, all_time, all_price, all_tiles) = _calculate_cost(gene, options)
-        tile_size = gene.layer['cost']['tile_size'] / (1024.0 * 1024)
+        layer = gene.layers[options.layer]
+        (all_size, all_time, all_price, all_tiles) = _calculate_cost(
+            gene, layer, options
+        )
+        tile_size = layer['cost']['tile_size'] / (1024.0 * 1024)
     else:
         all_time = timedelta()
         all_price = 0
-        for layer in gene.config['generation']['default_layers']:
+        for layer_name in gene.config['generation']['default_layers']:
             print("")
-            print("===== {} =====".format(layer))
-            gene.set_layer(layer, options)
-            (size, time, price, tiles) = _calculate_cost(gene, options)
-            tile_size += gene.layer['cost']['tile_size'] / (1024.0 * 1024)
+            print("===== {} =====".format(layer_name))
+            layer = gene.layers[layer_name]
+            gene.init_layer(layer, options)
+            (size, time, price, tiles) = _calculate_cost(gene, layer, options)
+            tile_size += layer['cost']['tile_size'] / (1024.0 * 1024)
             all_time += time
             all_price += price
             all_size += size
@@ -69,28 +73,29 @@ def main():
 #    if 'cloudfront' in gene.config['cost']:
 #        print('CloudFront: %0.2f [$/month]' % ()
 #            gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
-#            gene.config['cost']['cloudfront']['download'] * gene.config['cost']['request_per_layers'] * tile_size)
+#            gene.config['cost']['cloudfront']['download'] *
+#            gene.config['cost']['request_per_layers'] * tile_size)
     sys.exit(0)
 
 
-def _calculate_cost(gene, options):
+def _calculate_cost(gene, layer, options):
     nb_metatiles = {}
     nb_tiles = {}
 
-    meta = gene.layer['meta']
+    meta = layer['meta']
     if options.cost_algo == 'area':
-        tile_size = gene.layer['grid_ref']['tile_size']
-        for zoom, resolution in enumerate(gene.layer['grid_ref']['resolutions']):
-            if 'min_resolution_seed' in gene.layer and resolution < gene.layer['min_resolution_seed']:
+        tile_size = layer['grid_ref']['tile_size']
+        for zoom, resolution in enumerate(layer['grid_ref']['resolutions']):
+            if 'min_resolution_seed' in layer and resolution < layer['min_resolution_seed']:
                 continue
 
             print("Calculate zoom {}.".format(zoom))
 
-            px_buffer = gene.layer['px_buffer'] + \
-                gene.layer['meta_buffer'] if meta else 0
+            px_buffer = layer['px_buffer'] + \
+                layer['meta_buffer'] if meta else 0
             m_buffer = px_buffer * resolution
             if meta:
-                size = tile_size * gene.layer['meta_size'] * resolution
+                size = tile_size * layer['meta_size'] * resolution
                 meta_buffer = size * 0.7 + m_buffer
                 meta_geom = gene.geoms[zoom].buffer(meta_buffer, 1)
                 nb_metatiles[zoom] = int(round(meta_geom.area / size ** 2))
@@ -100,8 +105,8 @@ def _calculate_cost(gene, options):
             nb_tiles[zoom] = int(round(geom.area / size ** 2))
 
     elif options.cost_algo == 'count':
-        gene.init_tilecoords()
-        gene.add_geom_filter()
+        gene.init_tilecoords(layer)
+        gene.add_geom_filter(layer)
 
         if meta:
             def count_metatile(tile):
@@ -122,7 +127,7 @@ def _calculate_cost(gene, options):
             gene.tilestream = MetaTileSplitter().get(gene.tilestream)
 
             # Only keep tiles that intersect geometry
-            gene.add_geom_filter()
+            gene.add_geom_filter(layer)
 
         def count_tile(tile):
             if tile:
@@ -140,7 +145,7 @@ def _calculate_cost(gene, options):
     print('')
     for z in nb_metatiles:
         print("{} meta tiles in zoom {}.".format(nb_metatiles[z], z))
-        times[z] = gene.layer['cost']['metatile_generation_time'] * nb_metatiles[z]
+        times[z] = layer['cost']['metatile_generation_time'] * nb_metatiles[z]
 
     price = 0
     all_size = 0
@@ -151,10 +156,10 @@ def _calculate_cost(gene, options):
         print("{} tiles in zoom {}.".format(nb_tiles[z], z))
         all_tiles += nb_tiles[z]
         if meta:
-            time = times[z] + gene.layer['cost']['tile_generation_time'] * nb_tiles[z]
+            time = times[z] + layer['cost']['tile_generation_time'] * nb_tiles[z]
         else:
-            time = gene.layer['cost']['tileonly_generation_time'] * nb_tiles[z]
-        size = gene.layer['cost']['tile_size'] * nb_tiles[z]
+            time = layer['cost']['tileonly_generation_time'] * nb_tiles[z]
+        size = layer['cost']['tile_size'] * nb_tiles[z]
         all_size += size
 
         all_time += time
@@ -179,4 +184,4 @@ def _calculate_cost(gene, options):
     print('Generation time: {} [d h:mm:ss]'.format((duration_format(td))))
     print('Generation cost: {0:0.2f} [$]'.format(price))
 
-    return (all_size, td, price, all_tiles)
+    return all_size, td, price, all_tiles

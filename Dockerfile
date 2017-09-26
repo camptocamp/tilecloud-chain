@@ -8,6 +8,7 @@ RUN \
     libmapnik-dev \
     mapnik-utils \
     gdal-bin \
+    libdb-dev \
     fonts-dejavu \
     node-carto \
     osm2pgsql \
@@ -25,13 +26,6 @@ RUN \
   cd /app && \
   pip install --no-cache-dir -r requirements.txt
 
-COPY . /app/
-
-RUN \
-  cd /app && \
-  pip install -e . && \
-  mv docker/run /usr/bin/
-
 ENV TILEGENERATION_CONFIGFILE=tilegeneration/config.yaml \
     C2CWSGI_LOG_LEVEL=WARN \
     TILECLOUD_LOG_LEVEL=INFO \
@@ -41,3 +35,10 @@ ENV TILEGENERATION_CONFIGFILE=tilegeneration/config.yaml \
 EXPOSE 80
 
 WORKDIR /project
+
+COPY . /app/
+
+RUN \
+  cd /app && \
+  pip install --editable=. && \
+  mv docker/run /usr/bin/

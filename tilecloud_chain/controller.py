@@ -75,8 +75,8 @@ def main():
         options.cache = gene.config['generation']['default_cache']
 
     if options.dump_config:
-        for layer in gene.config['layers'].keys():
-            gene.set_layer(layer, options)
+        for layer in gene.config['layers'].values():
+            gene.init_layer(layer, options)
         _validate_generate_wmts_capabilities(gene.caches[options.cache])
         for grid in gene.config['grids'].values():
             if 'obj' in grid:
@@ -138,7 +138,9 @@ def _get(path, cache):
 def _validate_generate_wmts_capabilities(cache):
     if 'http_url' not in cache and 'http_urls' not in cache:  # pragma: no cover
         logger.error(
-            "The attribute 'http_url' or 'http_urls' is required in the object cache[{}].".format(cache['name'])
+            "The attribute 'http_url' or 'http_urls' is required in the object cache[{}].".format(
+                cache['name']
+            )
         )
         exit(1)
 
@@ -274,7 +276,8 @@ def _generate_mapcache_config(gene):
             if 'LAYERS' not in layer.get('params', {}):
                 layer.get('params', {})['LAYERS'] = layer['layers']
             if 'TRANSPARENT' not in layer.get('params', {}):
-                layer.get('params', {})['TRANSPARENT'] = 'TRUE' if layer['mime_type'] == 'image/png' else 'FALSE'
+                layer.get('params', {})['TRANSPARENT'] = 'TRUE' \
+                    if layer['mime_type'] == 'image/png' else 'FALSE'
     config = jinja2_template(
         pkgutil.get_data("tilecloud_chain", "mapcache_config.jinja").decode('utf-8'),
         layers=gene.layers,
@@ -367,7 +370,8 @@ def _generate_apache_config(gene):
                             ' '
                             '^%(tiles_location)s/1.0.0/%(layer)s/%(token_regex)s'  # Baseurl/layer/Style
                             '%(dimensions_re)s'  # Dimensions : variable number of values
-                            '/%(token_regex)s/%(zoom)s/(.*)$'  # TileMatrixSet/TileMatrix/TileRow/TileCol.extension
+                            # TileMatrixSet/TileMatrix/TileRow/TileCol.extension
+                            '/%(token_regex)s/%(zoom)s/(.*)$'
                             ' '
                             '%(mapcache_location)s/wmts/1.0.0/%(layer)s/$1'
                             '%(dimensions_rep)s'
