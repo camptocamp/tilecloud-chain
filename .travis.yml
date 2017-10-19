@@ -43,15 +43,14 @@ before_install:
 - sudo chmod g+s,o+w /tmp/tests
 
 install:
-- pip install --upgrade pip
 - pip install bsddb3
-- pip install -r requirements.txt
-- pip install -r dev-requirements.txt
-- pip install .
+- pip install --requirement=requirements.txt
+- pip install --requirement=dev-requirements.txt
+- pip install --editable=.
 - touch tilecloud_chain/OpenLayers.js
 
 script:
-- flake8 --max-line-length=120 tilecloud_chain
+- flake8 --max-line-length=110 tilecloud_chain
 - vvv-validate-rst README.rst
 - vvv-validate-rst CHANGES.rst
 - python setup.py --long-description > PYPI.rst
@@ -73,5 +72,5 @@ deploy:
   distributions: sdist bdist_wheel
   on:
     tags: true
-    python: 3.4
+    python: 3.6
     condition: '"${TRAVIS_TAG}" == "`python setup.py --version`"'

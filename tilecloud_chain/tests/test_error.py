@@ -39,9 +39,10 @@ class TestError(CompareCase):
         self.run_cmd(
             cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_mapnik_grid_meta.yaml',
             main_func=controller.main)
-        l.check(
-            ('tilecloud_chain', 'ERROR', "The layer 'b' is of type Mapnik/Grid, that can't support matatiles."),
-        )
+        l.check((
+            'tilecloud_chain', 'ERROR',
+            "The layer 'b' is of type Mapnik/Grid, that can't support matatiles."
+        ))
 
     @log_capture('tilecloud_chain')
     @attr(general=True)
@@ -160,7 +161,8 @@ class TestError(CompareCase):
             'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_map.yaml' is invalid.
  - /: Cannot find required key 'caches'.
  - /: Cannot find required key 'grids'.
- - /layers/test/empty_tile_detection: Value 'test' is not a dict. Value path: '/layers/test/empty_tile_detection'
+ - /layers/test/empty_tile_detection: Value 'test' is not a dict. """
+            """Value path: '/layers/test/empty_tile_detection'
  - /layers/test: Cannot find required key 'extension'.
  - /layers/test: Cannot find required key 'grid'.
  - /layers/test: Cannot find required key 'mime_type'.

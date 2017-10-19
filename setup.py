@@ -10,7 +10,17 @@ with open(os.path.join(here, 'README.rst')) as r:
     with open(os.path.join(here, 'CHANGES.rst')) as c:
         README = r.read() + '\n\n' + c.read()
 
-install_requires = open(os.path.join(here, 'requirements.txt')).read().splitlines()
+install_requires = [
+    'boto>=2.0',
+    'c2cwsgiutils>0,<1',
+    'Jinja2',
+    'pykwalify',
+    'PyYAML',
+    'Shapely',
+    'simplejson',
+    'six',
+    'tilecloud>=0.5.0.dev4',
+]
 
 if sys.version_info < (2, 7):
     install_requires.extend([
@@ -19,7 +29,7 @@ if sys.version_info < (2, 7):
 
 setup(
     name='tilecloud-chain',
-    version='1.3.0',
+    version='1.4.0',
     description=(
         "Tools to generates tiles from WMS or Mapnik, to S3, "
         "Berkley DB, MBTiles, or local filesystem in WMTS layout using "

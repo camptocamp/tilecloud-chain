@@ -897,13 +897,13 @@ Setup your environment:
 .. code:: bash
 
    sudo apt-get install optipng libdb-dev
-   virtualenv --python=python3 .venv
-   .venv/bin/pip install --upgrade -r dev-requirements.txt -r requirements.txt bsddb3 -e .
-   touch tilecloud_chain/OpenLayers.js
+   python3 -m venv .venv
+   .venv/bin/pip install --upgrade --requirement=dev-requirements.txt --requirement=requirements.txt
+   .venv/bin/pip install --editable=.
    docker-compose -f test-docker-compose.yml up
 
 To run the tests:
 
 .. code:: bash
 
-   TRAVIS=true .venv/bin/python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
+   CI=true .venv/bin/python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
