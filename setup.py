@@ -19,7 +19,7 @@ install_requires = [
     'Shapely',
     'simplejson',
     'six',
-    'tilecloud>=0.5.0.dev4',
+    'tilecloud>=0.5.0.dev6',
 ]
 
 if sys.version_info < (2, 7):
