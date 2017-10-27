@@ -78,7 +78,7 @@ class Server:
                 try:
                     response = client.get_object(Bucket=bucket, Key=key_name)
                     return response['Body'].read(), response.get('ContentType')
-                except:
+                except Exception:
                     client = tilecloud.store.s3.get_client(self.cache.get('host'))
                     response = client.get_object(Bucket=bucket, Key=key_name)
                     return response['Body'].read(), response.get('ContentType')

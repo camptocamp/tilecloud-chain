@@ -102,7 +102,7 @@ class CompareCase(TestCase):
         try:
             main_func()
             assert("exit() not called.")
-        except:
+        except Exception:
             pass
         if expected:
             for expect in expected:

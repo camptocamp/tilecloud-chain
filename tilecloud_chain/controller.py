@@ -189,7 +189,7 @@ def _generate_wmts_capabilities(gene):
                         pil_img = Image.open(StringIO(img))
                         new_legend['width'] = pil_img.size[0]
                         new_legend['height'] = pil_img.size[1]
-                    except:  # pragma: nocover
+                    except Exception:  # pragma: nocover
                         logger.warning("Unable to read legend image '{}', with '{}'".format(
                             path, repr(img)))
                     previous_legend = new_legend
@@ -236,7 +236,7 @@ def _generate_legend_images(gene):
                         }))
                         try:
                             legends.append(Image.open(StringIO(response.content)))
-                        except:  # pragma: nocover
+                        except Exception:  # pragma: nocover
                             logger.warning(
                                 "Unable to read legend image for layer '{}'-'{}', resolution '{}': {}".format(
                                     layer['name'], l, resolution, response.content
