@@ -918,7 +918,7 @@ class TileGeneration:
                         raise e
                     except KeyboardInterrupt:  # pragma: no cover
                         exit("User interrupt")
-                    except:  # pragma: no cover
+                    except Exception:  # pragma: no cover
                         tile.error = sys.exc_info()[1]
                         return tile
             self.tilestream = map(safe_get, filter(None, self.tilestream))
@@ -944,7 +944,7 @@ class TileGeneration:
                         raise e
                     except KeyboardInterrupt:  # pragma: no cover
                         exit("User interrupt")
-                    except:  # pragma: no cover
+                    except Exception:  # pragma: no cover
                         tile.error = sys.exc_info()[1]
                         return tile
             self.tilestream = map(safe_put, filter(None, self.tilestream))
@@ -970,7 +970,7 @@ class TileGeneration:
                         raise e
                     except KeyboardInterrupt:  # pragma: no cover
                         exit("User interrupt")
-                    except:  # pragma: no cover
+                    except Exception:  # pragma: no cover
                         tile.error = sys.exc_info()[1]
                         return tile
             self.tilestream = map(safe_delete, filter(None, self.tilestream))
@@ -996,7 +996,7 @@ class TileGeneration:
                         raise e
                     except KeyboardInterrupt:  # pragma: no cover
                         exit("User interrupt")
-                    except:  # pragma: no cover
+                    except Exception:  # pragma: no cover
                         tile.error = sys.exc_info()[1]
                         return tile
             self.tilestream = map(safe_imap, filter(None, self.tilestream))
@@ -1022,7 +1022,7 @@ class TileGeneration:
                         raise e
                     except KeyboardInterrupt:  # pragma: no cover
                         exit("User interrupt")
-                    except:  # pragma: no cover
+                    except Exception:  # pragma: no cover
                         tile.error = sys.exc_info()[1]
                         return tile
             self.tilestream = filter(safe_filter, self.tilestream)
