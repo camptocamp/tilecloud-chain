@@ -2,7 +2,7 @@ boto==2.48.0
 Jinja2==2.9.6
 pykwalify==1.6.0
 PyYAML==3.12
-Shapely==1.6.2
+Shapely==1.6.2.post1
 simplejson==3.11.1
 six==1.11.0
 tilecloud==0.5.0.dev6
