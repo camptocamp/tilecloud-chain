@@ -12,7 +12,7 @@ with open(os.path.join(here, 'README.rst')) as r:
 
 install_requires = [
     'boto>=2.0',
-    'c2cwsgiutils>0,<1',
+    'c2cwsgiutils>=1.0,<2.0',
     'Jinja2',
     'pykwalify',
     'PyYAML',
