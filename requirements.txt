@@ -1,5 +1,5 @@
 boto==2.48.0
-Jinja2==2.9.6
+Jinja2==2.10
 pykwalify==1.6.0
 PyYAML==3.12
 Shapely==1.6.2.post1
