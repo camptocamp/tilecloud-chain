@@ -179,6 +179,8 @@ class TileGeneration:
                 self.config['cost']['sqs'] = {}
         if 'generation' not in self.config:
             self.config['generation'] = {}
+        if 'metadata' not in self.config:
+            self.config['metadata'] = {}
         for gname, grid in sorted(self.config.get('grids', {}).items()):
             if grid is not None:
                 grid["name"] = gname
@@ -304,6 +306,7 @@ class TileGeneration:
                 error = True
 
         self.caches = self.config['caches']
+        self.metadata = self.config['metadata']
 
         if error:
             exit(1)

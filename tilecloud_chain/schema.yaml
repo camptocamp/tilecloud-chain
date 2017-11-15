@@ -364,6 +364,11 @@ mapping:
                     request:
                         type: float
                         default: .01
+    metadata:
+        type: map
+        mapping:
+            title:
+                type: str
     logging:
       type: map
       mapping:

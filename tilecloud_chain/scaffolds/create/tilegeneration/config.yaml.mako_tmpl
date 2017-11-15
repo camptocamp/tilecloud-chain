@@ -134,3 +134,6 @@ openlayers:
     srs: EPSG:21781
     center_x: 600000
     center_y: 200000
+
+metadata:
+    title: Some title
