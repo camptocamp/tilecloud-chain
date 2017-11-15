@@ -1951,7 +1951,7 @@ mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 1
 openlayers: {center_x: 600000, center_y: 200000, srs: 'EPSG:21781'}
 sqs: {queue: sqs_point, region: eu-west-1}
 sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}
-metadata: {title: 'Some title'}"""
+metadata: {servicetype: 'OGC WMTS', title: 'Some title'}"""
 
     @attr(general=True)
     def test_config(self):

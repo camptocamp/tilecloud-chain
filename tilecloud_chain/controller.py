@@ -207,7 +207,7 @@ def _generate_wmts_capabilities(gene):
         base_url_postfix='wmts/' if server else '',
         get_tile_matrix_identifier=get_tile_matrix_identifier,
         server=server,
-        title=gene.metadata['title'] if 'title' in gene.metadata else None,
+        metadata=gene.metadata,
         enumerate=enumerate, ceil=math.ceil, int=int, sorted=sorted,
     )
     _send(capabilities, cache['wmtscapabilities_file'], 'application/xml', cache)

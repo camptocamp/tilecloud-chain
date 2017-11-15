@@ -137,3 +137,4 @@ openlayers:
 
 metadata:
     title: Some title
+    servicetype: OGC WMTS

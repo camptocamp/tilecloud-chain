@@ -6,10 +6,10 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:gml="http://www.opengis.net/gml"
     xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">{%
-  if title %}
+  if 'title' in metadata and metadata['title'] %}
   <ows:ServiceIdentification>
-    <ows:Title>{{title}}</ows:Title>
-    <ows:ServiceType>OGC WMTS</ows:ServiceType>
+    <ows:Title>{{metadata['title']}}</ows:Title>
+    <ows:ServiceType>{{metadata['servicetype']}}</ows:ServiceType>
     <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
   </ows:ServiceIdentification>{%
   endif %}
