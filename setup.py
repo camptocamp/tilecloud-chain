@@ -17,7 +17,6 @@ install_requires = [
     'pykwalify',
     'PyYAML',
     'Shapely',
-    'simplejson',
     'six',
     'tilecloud>=0.5.0.dev6',
 ]
