@@ -23,8 +23,6 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:gml="http://www.opengis.net/gml"
     xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
-  <ows:ServiceIdentification> </ows:ServiceIdentification>
-  <ows:ServiceProvider> </ows:ServiceProvider>
   <ows:OperationsMetadata>
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
@@ -280,8 +278,6 @@ Size per tile: 4[0-9][0-9] o
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:gml="http://www.opengis.net/gml"
     xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
-  <ows:ServiceIdentification> </ows:ServiceIdentification>
-  <ows:ServiceProvider> </ows:ServiceProvider>
   <ows:OperationsMetadata>
     <ows:Operation name="GetCapabilities">
       <ows:DCP>

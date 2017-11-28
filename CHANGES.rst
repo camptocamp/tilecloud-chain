@@ -2,6 +2,12 @@ Changelog
 =========
 
 -----------
+Release 1.4
+-----------
+
+1. Add optional ``metadata`` section to the config file. See the scaffolds for example.
+
+-----------
 Release 0.9
 -----------
 

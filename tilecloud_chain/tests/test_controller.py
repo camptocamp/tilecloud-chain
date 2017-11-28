@@ -41,8 +41,11 @@ class TestController(CompareCase):
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:gml="http://www.opengis.net/gml"
     xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
-  <ows:ServiceIdentification> </ows:ServiceIdentification>
-  <ows:ServiceProvider> </ows:ServiceProvider>
+  <ows:ServiceIdentification>
+    <ows:Title>Some title</ows:Title>
+    <ows:ServiceType>OGC WMTS</ows:ServiceType>
+    <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
+  </ows:ServiceIdentification>
   <ows:OperationsMetadata>
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
@@ -449,8 +452,11 @@ class TestController(CompareCase):
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:gml="http://www.opengis.net/gml"
     xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
-  <ows:ServiceIdentification> </ows:ServiceIdentification>
-  <ows:ServiceProvider> </ows:ServiceProvider>
+  <ows:ServiceIdentification>
+    <ows:Title>Some title</ows:Title>
+    <ows:ServiceType>OGC WMTS</ows:ServiceType>
+    <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
+  </ows:ServiceIdentification>
   <ows:OperationsMetadata>
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
@@ -954,8 +960,6 @@ class TestController(CompareCase):
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:gml="http://www.opengis.net/gml"
     xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
-  <ows:ServiceIdentification> </ows:ServiceIdentification>
-  <ows:ServiceProvider> </ows:ServiceProvider>
   <ows:OperationsMetadata>
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
@@ -1946,7 +1950,8 @@ layers:
 mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 11211, location: /mapcache}
 openlayers: {center_x: 600000, center_y: 200000, srs: 'EPSG:21781'}
 sqs: {queue: sqs_point, region: eu-west-1}
-sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}"""
+sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}
+metadata: {servicetype: 'OGC WMTS', title: 'Some title'}"""
 
     @attr(general=True)
     def test_config(self):
@@ -2175,8 +2180,6 @@ OpenLayers.Request.GET({
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:gml="http://www.opengis.net/gml"
     xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
-  <ows:ServiceIdentification> </ows:ServiceIdentification>
-  <ows:ServiceProvider> </ows:ServiceProvider>
   <ows:OperationsMetadata>
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
