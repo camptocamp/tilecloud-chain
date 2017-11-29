@@ -43,9 +43,34 @@ class TestController(CompareCase):
     xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
   <ows:ServiceIdentification>
     <ows:Title>Some title</ows:Title>
+    <ows:Abstract>Some abstract</ows:Abstract>
+    <ows:Keywords>
+        <ows:Keyword>some</ows:Keyword>
+        <ows:Keyword>keywords</ows:Keyword>
+    </ows:Keywords>
     <ows:ServiceType>OGC WMTS</ows:ServiceType>
     <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
+    <ows:Fees>None</ows:Fees>
+    <ows:AccessConstraint>None</ows:AccessConstraint>
   </ows:ServiceIdentification>
+  <ows:ServiceProvider>
+    <ows:ProviderName>The provider name</ows:ProviderName>
+    <ows:ProviderSite>The provider URL</ows:ProviderSite>
+    <ows:ServiceContact>
+      <ows:IndividualName>The contact name</ows:IndividualName>
+      <ows:PositionName>The position name</ows:PositionName>
+      <ows:ContactInfo>
+        <ows:Address>
+          <ows:DeliveryPoint>Address delivery</ows:DeliveryPoint>
+          <ows:City>Berne</ows:City>
+          <ows:AdministrativeArea>BE</ows:AdministrativeArea>
+          <ows:PostalCode>3000</ows:PostalCode>
+          <ows:Country>Switzerland</ows:Country>
+          <ows:ElectronicMailAddress>info@example.com</ows:ElectronicMailAddress>
+        </ows:Address>
+      </ows:ContactInfo>
+    </ows:ServiceContact>
+  </ows:ServiceProvider>
   <ows:OperationsMetadata>
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
@@ -333,7 +358,6 @@ class TestController(CompareCase):
         <MatrixWidth>1875</MatrixWidth>
         <MatrixHeight>1250</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>0_2</ows:Identifier>
         <ScaleDenominator>714.28571428[0-9]*</ScaleDenominator>
@@ -343,7 +367,6 @@ class TestController(CompareCase):
         <MatrixWidth>9375</MatrixWidth>
         <MatrixHeight>6250</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>0_1</ows:Identifier>
         <ScaleDenominator>357.14285714[0-9]*</ScaleDenominator>
@@ -353,9 +376,7 @@ class TestController(CompareCase):
         <MatrixWidth>18750</MatrixWidth>
         <MatrixHeight>12500</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
     <TileMatrixSet>
       <ows:Identifier>swissgrid_025</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
@@ -368,9 +389,7 @@ class TestController(CompareCase):
         <MatrixWidth>7500</MatrixWidth>
         <MatrixHeight>5000</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
     <TileMatrixSet>
       <ows:Identifier>swissgrid_2_5</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
@@ -383,9 +402,7 @@ class TestController(CompareCase):
         <MatrixWidth>750</MatrixWidth>
         <MatrixHeight>500</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
     <TileMatrixSet>
       <ows:Identifier>swissgrid_5</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
@@ -398,7 +415,6 @@ class TestController(CompareCase):
         <MatrixWidth>19</MatrixWidth>
         <MatrixHeight>13</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
@@ -408,7 +424,6 @@ class TestController(CompareCase):
         <MatrixWidth>38</MatrixWidth>
         <MatrixHeight>25</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>2</ows:Identifier>
         <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
@@ -418,7 +433,6 @@ class TestController(CompareCase):
         <MatrixWidth>94</MatrixWidth>
         <MatrixHeight>63</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>3</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
@@ -428,7 +442,6 @@ class TestController(CompareCase):
         <MatrixWidth>188</MatrixWidth>
         <MatrixHeight>125</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>4</ows:Identifier>
         <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
@@ -438,9 +451,7 @@ class TestController(CompareCase):
         <MatrixWidth>375</MatrixWidth>
         <MatrixHeight>250</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
   </Contents>
 </Capabilities>"""]])
 
@@ -454,9 +465,34 @@ class TestController(CompareCase):
     xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
   <ows:ServiceIdentification>
     <ows:Title>Some title</ows:Title>
+    <ows:Abstract>Some abstract</ows:Abstract>
+    <ows:Keywords>
+        <ows:Keyword>some</ows:Keyword>
+        <ows:Keyword>keywords</ows:Keyword>
+    </ows:Keywords>
     <ows:ServiceType>OGC WMTS</ows:ServiceType>
     <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
+    <ows:Fees>None</ows:Fees>
+    <ows:AccessConstraint>None</ows:AccessConstraint>
   </ows:ServiceIdentification>
+  <ows:ServiceProvider>
+    <ows:ProviderName>The provider name</ows:ProviderName>
+    <ows:ProviderSite>The provider URL</ows:ProviderSite>
+    <ows:ServiceContact>
+      <ows:IndividualName>The contact name</ows:IndividualName>
+      <ows:PositionName>The position name</ows:PositionName>
+      <ows:ContactInfo>
+        <ows:Address>
+          <ows:DeliveryPoint>Address delivery</ows:DeliveryPoint>
+          <ows:City>Berne</ows:City>
+          <ows:AdministrativeArea>BE</ows:AdministrativeArea>
+          <ows:PostalCode>3000</ows:PostalCode>
+          <ows:Country>Switzerland</ows:Country>
+          <ows:ElectronicMailAddress>info@example.com</ows:ElectronicMailAddress>
+        </ows:Address>
+      </ows:ContactInfo>
+    </ows:ServiceContact>
+  </ows:ServiceProvider>
   <ows:OperationsMetadata>
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
@@ -824,7 +860,6 @@ class TestController(CompareCase):
         <MatrixWidth>1875</MatrixWidth>
         <MatrixHeight>1250</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>0_2</ows:Identifier>
         <ScaleDenominator>714.28571428[0-9]*</ScaleDenominator>
@@ -834,7 +869,6 @@ class TestController(CompareCase):
         <MatrixWidth>9375</MatrixWidth>
         <MatrixHeight>6250</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>0_1</ows:Identifier>
         <ScaleDenominator>357.14285714[0-9]*</ScaleDenominator>
@@ -844,9 +878,7 @@ class TestController(CompareCase):
         <MatrixWidth>18750</MatrixWidth>
         <MatrixHeight>12500</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
     <TileMatrixSet>
       <ows:Identifier>swissgrid_025</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
@@ -859,9 +891,7 @@ class TestController(CompareCase):
         <MatrixWidth>7500</MatrixWidth>
         <MatrixHeight>5000</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
     <TileMatrixSet>
       <ows:Identifier>swissgrid_2_5</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
@@ -874,9 +904,7 @@ class TestController(CompareCase):
         <MatrixWidth>750</MatrixWidth>
         <MatrixHeight>500</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
     <TileMatrixSet>
       <ows:Identifier>swissgrid_5</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
@@ -889,7 +917,6 @@ class TestController(CompareCase):
         <MatrixWidth>19</MatrixWidth>
         <MatrixHeight>13</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
@@ -899,7 +926,6 @@ class TestController(CompareCase):
         <MatrixWidth>38</MatrixWidth>
         <MatrixHeight>25</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>2</ows:Identifier>
         <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
@@ -909,7 +935,6 @@ class TestController(CompareCase):
         <MatrixWidth>94</MatrixWidth>
         <MatrixHeight>63</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>3</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
@@ -919,7 +944,6 @@ class TestController(CompareCase):
         <MatrixWidth>188</MatrixWidth>
         <MatrixHeight>125</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>4</ows:Identifier>
         <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
@@ -929,9 +953,7 @@ class TestController(CompareCase):
         <MatrixWidth>375</MatrixWidth>
         <MatrixHeight>250</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
   </Contents>
 </Capabilities>"""
 
@@ -1066,7 +1088,6 @@ class TestController(CompareCase):
         <MatrixWidth>19</MatrixWidth>
         <MatrixHeight>13</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
@@ -1076,9 +1097,7 @@ class TestController(CompareCase):
         <MatrixWidth>188</MatrixWidth>
         <MatrixHeight>125</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
   </Contents>
 </Capabilities>"""]])
 
@@ -1951,7 +1970,23 @@ mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 1
 openlayers: {center_x: 600000, center_y: 200000, srs: 'EPSG:21781'}
 sqs: {queue: sqs_point, region: eu-west-1}
 sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}
-metadata: {servicetype: 'OGC WMTS', title: 'Some title'}"""
+metadata:
+  abstract: Some abstract
+  access_constraints: None
+  fees: None
+  keywords: [some, keywords]
+  servicetype: OGC WMTS
+  title: Some title
+provider:
+  contact:
+    info:
+      address: {area: BE, city: Berne, country: Switzerland, delivery: Address delivery, """ \
+        u"""email: info@example.com, postal_code: 3000}
+      phone: {fax: +41 11 222 33 44, voice: +41 11 222 33 44}
+    name: The contact name
+    position: The position name
+  name: The provider name
+  url: The provider URL"""
 
     @attr(general=True)
     def test_config(self):
@@ -2325,7 +2360,6 @@ OpenLayers.Request.GET({
         <MatrixWidth>19</MatrixWidth>
         <MatrixHeight>13</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
@@ -2335,7 +2369,6 @@ OpenLayers.Request.GET({
         <MatrixWidth>38</MatrixWidth>
         <MatrixHeight>25</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>2</ows:Identifier>
         <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
@@ -2345,7 +2378,6 @@ OpenLayers.Request.GET({
         <MatrixWidth>94</MatrixWidth>
         <MatrixHeight>63</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>3</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
@@ -2355,7 +2387,6 @@ OpenLayers.Request.GET({
         <MatrixWidth>188</MatrixWidth>
         <MatrixHeight>125</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>4</ows:Identifier>
         <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
@@ -2365,8 +2396,6 @@ OpenLayers.Request.GET({
         <MatrixWidth>375</MatrixWidth>
         <MatrixHeight>250</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
   </Contents>
 </Capabilities>"""]])

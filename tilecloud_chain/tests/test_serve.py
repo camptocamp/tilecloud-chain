@@ -99,7 +99,6 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
         <MatrixWidth>19</MatrixWidth>
         <MatrixHeight>13</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
@@ -109,7 +108,6 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
         <MatrixWidth>38</MatrixWidth>
         <MatrixHeight>25</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>2</ows:Identifier>
         <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
@@ -119,7 +117,6 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
         <MatrixWidth>94</MatrixWidth>
         <MatrixHeight>63</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>3</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
@@ -129,7 +126,6 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
         <MatrixWidth>188</MatrixWidth>
         <MatrixHeight>125</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>4</ows:Identifier>
         <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
@@ -139,9 +135,7 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
         <MatrixWidth>375</MatrixWidth>
         <MatrixHeight>250</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
   </Contents>
 </Capabilities>"""
 
@@ -595,7 +589,6 @@ Size per tile: 4[0-9][0-9] o
         <MatrixWidth>1875</MatrixWidth>
         <MatrixHeight>1250</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>0_2</ows:Identifier>
         <ScaleDenominator>714.28571428[0-9]*</ScaleDenominator>
@@ -605,7 +598,6 @@ Size per tile: 4[0-9][0-9] o
         <MatrixWidth>9375</MatrixWidth>
         <MatrixHeight>6250</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>0_1</ows:Identifier>
         <ScaleDenominator>357.14285714[0-9]*</ScaleDenominator>
@@ -615,9 +607,7 @@ Size per tile: 4[0-9][0-9] o
         <MatrixWidth>18750</MatrixWidth>
         <MatrixHeight>12500</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
     <TileMatrixSet>
       <ows:Identifier>swissgrid_025</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
@@ -630,9 +620,7 @@ Size per tile: 4[0-9][0-9] o
         <MatrixWidth>7500</MatrixWidth>
         <MatrixHeight>5000</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
     <TileMatrixSet>
       <ows:Identifier>swissgrid_2_5</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
@@ -645,9 +633,7 @@ Size per tile: 4[0-9][0-9] o
         <MatrixWidth>750</MatrixWidth>
         <MatrixHeight>500</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
     <TileMatrixSet>
       <ows:Identifier>swissgrid_5</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
@@ -660,7 +646,6 @@ Size per tile: 4[0-9][0-9] o
         <MatrixWidth>19</MatrixWidth>
         <MatrixHeight>13</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>1</ows:Identifier>
         <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
@@ -670,7 +655,6 @@ Size per tile: 4[0-9][0-9] o
         <MatrixWidth>38</MatrixWidth>
         <MatrixHeight>25</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>2</ows:Identifier>
         <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
@@ -680,7 +664,6 @@ Size per tile: 4[0-9][0-9] o
         <MatrixWidth>94</MatrixWidth>
         <MatrixHeight>63</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>3</ows:Identifier>
         <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
@@ -690,7 +673,6 @@ Size per tile: 4[0-9][0-9] o
         <MatrixWidth>188</MatrixWidth>
         <MatrixHeight>125</MatrixHeight>
       </TileMatrix>
-
       <TileMatrix>
         <ows:Identifier>4</ows:Identifier>
         <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
@@ -700,9 +682,7 @@ Size per tile: 4[0-9][0-9] o
         <MatrixWidth>375</MatrixWidth>
         <MatrixHeight>250</MatrixHeight>
       </TileMatrix>
-
     </TileMatrixSet>
-
   </Contents>
 </Capabilities>"""
         )

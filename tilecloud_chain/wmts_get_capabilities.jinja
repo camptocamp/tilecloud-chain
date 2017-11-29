@@ -6,12 +6,84 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:gml="http://www.opengis.net/gml"
     xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">{%
-  if 'title' in metadata and metadata['title'] %}
+  if has_metadata %}
   <ows:ServiceIdentification>
-    <ows:Title>{{metadata['title']}}</ows:Title>
-    <ows:ServiceType>{{metadata['servicetype']}}</ows:ServiceType>
-    <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
+    <ows:Title>{{ metadata['title'] }}</ows:Title>{%
+    if 'abstract' in metadata %}
+    <ows:Abstract>{{ metadata['abstract'] }}</ows:Abstract>{%
+    endif %}{%
+    if 'keywords' in metadata %}
+    <ows:Keywords>{%
+    for keyword in metadata['keywords'] %}
+        <ows:Keyword>{{ keyword }}</ows:Keyword>{%
+    endfor %}
+    </ows:Keywords>{%
+    endif %}
+    <ows:ServiceType>{{ metadata['servicetype'] }}</ows:ServiceType>
+    <ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>{%
+    if 'fees' in metadata %}
+    <ows:Fees>{{ metadata['fees'] }}</ows:Fees>{%
+    endif %}{%
+    if 'access_constraints' in metadata %}
+    <ows:AccessConstraint>{{ metadata['access_constraints'] }}</ows:AccessConstraint>{%
+    endif %}
   </ows:ServiceIdentification>{%
+  endif %}{%
+  if has_provider %}
+  <ows:ServiceProvider>{%
+    if 'name' in provider %}
+    <ows:ProviderName>{{ provider['name'] }}</ows:ProviderName>{%
+    endif %}{%
+    if 'url' in provider %}
+    <ows:ProviderSite>{{ provider['url'] }}</ows:ProviderSite>{%
+    endif %}{%
+    if 'contact' in provider %}
+    <ows:ServiceContact>{%
+      if 'name' in provider['contact'] %}
+      <ows:IndividualName>{{ provider['contact']['name'] }}</ows:IndividualName>{%
+      endif %}{%
+      if 'position' in provider['contact'] %}
+      <ows:PositionName>{{ provider['contact']['position'] }}</ows:PositionName>{%
+      endif %}{%
+      if 'info' in provider['contact'] %}
+      <ows:ContactInfo>{%
+        if 'phone' in provider['contact']['indo'] %}
+        <ows:Phone>{%
+          if 'voice' in provider['contact']['info']['phone'] %}
+          <ows:Voice>{{ provider['contact']['info']['phone']['voice'] }}</ows:Voice>{%
+          endif %}{%
+          if 'fax' in provider['contact']['info']['phone'] %}
+          <ows:Facsimile>{{ provider['contact']['info']['phone']['fax'] }}</ows:Facsimile>{%
+          endif %}
+        </ows:Phone>{%
+        endif %}{%
+        if 'address' in provider['contact']['info'] %}
+        <ows:Address>{%
+          if 'delivery' in provider['contact']['info']['address'] %}
+          <ows:DeliveryPoint>{{ provider['contact']['info']['address']['delivery'] }}</ows:DeliveryPoint>{%
+          endif %}{%
+          if 'city' in provider['contact']['info']['address'] %}
+          <ows:City>{{ provider['contact']['info']['address']['city'] }}</ows:City>{%
+          endif %}{%
+          if 'area' in provider['contact']['info']['address'] %}
+          <ows:AdministrativeArea>{{ provider['contact']['info']['address']['area'] }}</ows:AdministrativeArea>{%
+          endif %}{%
+          if 'postal_code' in provider['contact']['info']['address'] %}
+          <ows:PostalCode>{{ provider['contact']['info']['address']['postal_code'] }}</ows:PostalCode>{%
+          endif %}{%
+          if 'country' in provider['contact']['info']['address'] %}
+          <ows:Country>{{ provider['contact']['info']['address']['country'] }}</ows:Country>{%
+          endif %}{%
+          if 'email' in provider['contact']['info']['address'] %}
+          <ows:ElectronicMailAddress>{{ provider['contact']['info']['address']['email'] }}</ows:ElectronicMailAddress>{%
+          endif %}
+        </ows:Address>{%
+        endif %}
+      </ows:ContactInfo>{%
+      endif %}
+    </ows:ServiceContact>{%
+    endif %}
+  </ows:ServiceProvider>{%
   endif %}
   <ows:OperationsMetadata>
     <ows:Operation name="GetCapabilities">
@@ -75,7 +147,7 @@
         endif %}{% endif %}/>{%
         endfor %}
       </Style>
-      <Format>{{layer['mime_type']}}</Format> {%
+      <Format>{{layer['mime_type']}}</Format>{%
       if 'query_layers' in layer %}{%
       for info_format in layer.get('info_formats', ['application/vnd.ogc.gml']) %}
       <InfoFormat>{{infoformat}}</InfoFormat>{%
@@ -84,9 +156,9 @@
       for dimension in layer['dimensions'] %}
       <Dimension>
         <ows:Identifier>{{dimension['name']}}</ows:Identifier>
-        <Default>{{dimension['default']}}</Default> {%
+        <Default>{{dimension['default']}}</Default>{%
             for value in dimension['values'] %}
-        <Value>{{value}}</Value> {%
+        <Value>{{value}}</Value>{%
             endfor %}
       </Dimension>{%
       endfor %}{%
@@ -127,9 +199,9 @@
         <TileHeight>{{grid['tile_size']}}</TileHeight>
         <MatrixWidth>{{width}}</MatrixWidth>
         <MatrixHeight>{{height}}</MatrixHeight>
-      </TileMatrix>
-      {% endfor %}
-    </TileMatrixSet>
-    {% endfor %}
+      </TileMatrix>{%
+      endfor %}
+    </TileMatrixSet>{%
+    endfor %}
   </Contents>
 </Capabilities>

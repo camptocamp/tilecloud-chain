@@ -179,8 +179,6 @@ class TileGeneration:
                 self.config['cost']['sqs'] = {}
         if 'generation' not in self.config:
             self.config['generation'] = {}
-        if 'metadata' not in self.config:
-            self.config['metadata'] = {}
         for gname, grid in sorted(self.config.get('grids', {}).items()):
             if grid is not None:
                 grid["name"] = gname
@@ -306,7 +304,8 @@ class TileGeneration:
                 error = True
 
         self.caches = self.config['caches']
-        self.metadata = self.config['metadata']
+        self.metadata = self.config.get('metadata')
+        self.provider = self.config.get('provider')
 
         if error:
             exit(1)
@@ -378,7 +377,7 @@ class TileGeneration:
 
     @staticmethod
     def _configure_logging(options, format_):
-        if os.environ.get('NOSE', 'FALSE') == 'TRUE':
+        if os.environ.get('CI', 'FALSE') == 'TRUE':
             pass
         elif options is not None and options.logging_configuration_file:  # pragma: nocover
             logging.config.fileConfig(options.logging_configuration_file)
