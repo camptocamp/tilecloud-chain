@@ -369,9 +369,61 @@ mapping:
         mapping:
             title:
                 type: str
+                required: true
+            abstract:
+                type: str
             servicetype:
                 type: str
                 default: OGC WMTS
+            keywords:
+                type: seq
+                sequence:
+                  - type: str
+            fees:
+                type: str
+            access_constraints:
+                type: str
+
+    provider:
+        type: map
+        mapping:
+            name:
+                type: str
+            url:
+                type: str
+            contact:
+                type: map
+                mapping:
+                    name:
+                        type: str
+                    position:
+                        type: str
+                    info:
+                        type: map
+                        mapping:
+                            phone:
+                                type: map
+                                mapping:
+                                    voice:
+                                        type: str
+                                    fax:
+                                        type: str
+                            address:
+                                type: map
+                                mapping:
+                                    delivery:
+                                        type: str
+                                    city:
+                                        type: str
+                                    area:
+                                        type: str
+                                    postal_code:
+                                        type: int
+                                    country:
+                                        type: str
+                                    email:
+                                        type: str
+
     logging:
       type: map
       mapping:
