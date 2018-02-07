@@ -22,6 +22,7 @@ from datetime import datetime
 from itertools import product
 
 from tilecloud_chain.multitilestore import MultiTileStore
+from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
 from PIL import Image
 
@@ -578,10 +579,10 @@ class TileGeneration:
 
     def get_tilesstore(self, cache_name):
         cache = self.caches[cache_name]
-        cache_tilestore = MultiTileStore({
+        cache_tilestore = TimedTileStoreWrapper(MultiTileStore({
             lname: self.get_store(cache, layer)
             for lname, layer in self.layers.items()
-        }, stats_name='store')
+        }), stats_name='store')
         return cache_tilestore
 
     def get_sqs_queue(self):  # pragma: no cover
@@ -616,26 +617,27 @@ class TileGeneration:
             self.options.near is None and self.options.geom
         ):
             for g in layer['geoms']:
-                connection = psycopg2.connect(g['connection'])
-                cursor = connection.cursor()
-                sql = 'SELECT ST_AsBinary(geom) FROM (SELECT {}) AS g'.format(g['sql'])
-                logger.info('Execute SQL: {}.'.format(sql))
-                cursor.execute(sql)
-                geoms = [loads_wkb(binary_type(r[0])) for r in cursor.fetchall()]
-                geom = cascaded_union(geoms)
-                if extent:
-                    geom = geom.intersection(Polygon((
-                        (extent[0], extent[1]),
-                        (extent[0], extent[3]),
-                        (extent[2], extent[3]),
-                        (extent[2], extent[1]),
-                    )))
-                for z, r in enumerate(layer['grid_ref']['resolutions']):
-                    if ('min_resolution' not in g or g['min_resolution'] <= r) and \
-                            ('max_resolution' not in g or g['max_resolution'] >= r):
-                        layer_geoms[z] = geom
-                cursor.close()
-                connection.close()
+                with stats.timer_context(['geoms_get', layer['name']]):
+                    connection = psycopg2.connect(g['connection'])
+                    cursor = connection.cursor()
+                    sql = 'SELECT ST_AsBinary(geom) FROM (SELECT {}) AS g'.format(g['sql'])
+                    logger.info('Execute SQL: {}.'.format(sql))
+                    cursor.execute(sql)
+                    geoms = [loads_wkb(binary_type(r[0])) for r in cursor.fetchall()]
+                    geom = cascaded_union(geoms)
+                    if extent:
+                        geom = geom.intersection(Polygon((
+                            (extent[0], extent[1]),
+                            (extent[0], extent[3]),
+                            (extent[2], extent[3]),
+                            (extent[2], extent[1]),
+                        )))
+                    for z, r in enumerate(layer['grid_ref']['resolutions']):
+                        if ('min_resolution' not in g or g['min_resolution'] <= r) and \
+                                ('max_resolution' not in g or g['max_resolution'] >= r):
+                            layer_geoms[z] = geom
+                    cursor.close()
+                    connection.close()
         return layer_geoms
 
     def add_local_process_filter(self):  # pragma: no cover
@@ -688,7 +690,7 @@ class TileGeneration:
                     layer['grid_ref']['tile_size'],
                     layer['meta_buffer'])
 
-        store = MultiTileStore(splitters, stats_name='splitter')
+        store = TimedTileStoreWrapper(MultiTileStore(splitters), stats_name='splitter')
 
         if self.options.debug:
             def meta_get(tilestream):  # pragma: no cover

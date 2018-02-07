@@ -43,7 +43,6 @@ before_install:
 - sudo chmod g+s,o+w /tmp/tests
 
 install:
-- pip install bsddb3
 - pip install --requirement=requirements.txt
 - pip install --requirement=dev-requirements.txt
 - pip install --editable=.

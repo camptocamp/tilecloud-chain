@@ -1,14 +1,12 @@
-from c2cwsgiutils import stats
 from itertools import chain, groupby, starmap
 
 from tilecloud import TileStore
 
 
 class MultiTileStore(TileStore):
-    def __init__(self, stores, stats_name):
+    def __init__(self, stores):
         TileStore.__init__(self)
         self._stores = stores
-        self._stats_name = stats_name
 
     def _get_store(self, layer):
         assert layer is not None
@@ -26,8 +24,7 @@ class MultiTileStore(TileStore):
 
         """
         layer = self._get_layer(tile)
-        with stats.timer_context([self._stats_name, layer, 'contains']):
-            return tile in self._get_store(layer)
+        return tile in self._get_store(layer)
 
     def delete_one(self, tile):
         """
@@ -43,8 +40,7 @@ class MultiTileStore(TileStore):
         assert layer is not None
         store = self._get_store(layer)
         assert store is not None
-        with stats.timer_context([self._stats_name, layer, 'delete_one']):
-            return store.delete_one(tile)
+        return store.delete_one(tile)
 
     @staticmethod
     def list():
@@ -69,8 +65,7 @@ class MultiTileStore(TileStore):
 
         """
         layer = self._get_layer(tile)
-        with stats.timer_context([self._stats_name, layer, 'put_one']):
-            return self._get_store(layer).put_one(tile)
+        return self._get_store(layer).put_one(tile)
 
     def get_one(self, tile):
         """
@@ -83,28 +78,24 @@ class MultiTileStore(TileStore):
 
         """
         layer = self._get_layer(tile)
-        with stats.timer_context([self._stats_name, layer, 'get_one']):
-            return self._get_store(layer).get_one(tile)
+        return self._get_store(layer).get_one(tile)
 
     def get(self, tiles):
         def apply(layer, tiles):
-            with stats.timer_context([self._stats_name, layer, 'get']):
-                store = self._get_store(layer)
-                return tiles if store is None else store.get(tiles)
+            store = self._get_store(layer)
+            return tiles if store is None else store.get(tiles)
 
         return chain.from_iterable(starmap(apply, groupby(tiles, self._get_layer)))
 
     def put(self, tiles):
         def apply(layer, tiles):
-            with stats.timer_context([self._stats_name, layer, 'put']):
-                return self._get_store(layer).put(tiles) if layer is not None else None
+            return self._get_store(layer).put(tiles) if layer is not None else None
 
         return chain.from_iterable(starmap(apply, groupby(tiles, self._get_layer)))
 
     def delete(self, tiles):
         def apply(layer, tiles):
-            with stats.timer_context([self._stats_name, layer, 'delete']):
-                return self._get_store(layer).delete(tiles)
+            return self._get_store(layer).delete(tiles)
 
         return chain.from_iterable(starmap(apply, groupby(tiles, self._get_layer)))
 
