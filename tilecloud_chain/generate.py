@@ -20,7 +20,7 @@ from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.filter.logger import Logger
 
 from tilecloud_chain import TileGeneration, HashDropper, HashLogger, TilesFileStore, \
-    add_comon_options, parse_tilecoord, quote, Count, MultiTileStore, MultiAction
+    add_comon_options, parse_tilecoord, quote, Count, MultiTileStore, MultiAction, TimedTileStoreWrapper
 from tilecloud_chain.format import size_format, duration_format, default_int
 from tilecloud_chain.database_logger import DatabaseLoggerInit, DatabaseLogger
 
@@ -63,10 +63,10 @@ class Generate:
 
         if self._options.role in ('master', 'slave'):
             # Create SQS queue
-            self._sqs_tilestore = SQSTileStore(
+            self._sqs_tilestore = TimedTileStoreWrapper(SQSTileStore(
                 self._gene.get_sqs_queue(),
                 on_empty=await_message if self._options.daemon else maybe_stop
-            )  # pragma: no cover
+            ), stats_name='SQS')  # pragma: no cover
 
         if self._options.role in ('local', 'slave'):
             self._cache_tilestore = self._gene.get_tilesstore(self._options.cache)
@@ -140,10 +140,10 @@ class Generate:
             self._gene.set_store(self._sqs_tilestore)  # pragma: no cover
             self._gene.ifilter(lambda tile: 'layer' in tile.metadata)
 
-        self._gene.get(MultiTileStore({
+        self._gene.get(TimedTileStoreWrapper(MultiTileStore({
             name: self._get_tilestore_for_layer(layer)
             for name, layer in self._gene.layers.items()
-        }, stats_name='get'), 'Get tile')
+        }), stats_name='get'), 'Get tile')
 
         def wrong_content_type_to_error(tile):
             if tile is not None and tile.content_type is not None \

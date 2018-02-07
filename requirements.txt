@@ -1,4 +1,5 @@
 boto==2.48.0
+c2cwsgiutils>=1,<2
 Jinja2==2.10
 pykwalify==1.6.0
 PyYAML==3.12

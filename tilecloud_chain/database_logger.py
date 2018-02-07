@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from c2cwsgiutils import stats
 import logging
 import psycopg2
 import time
@@ -101,21 +102,24 @@ class DatabaseLogger(DatabaseLoggerCommon):  # pragma: no cover
         layer = tile.metadata.get('layer', '- No layer -')
         run = tile.metadata.get('run', -1)
 
-        with self.connection.cursor() as cursor:
-            try:
-                cursor.execute(
-                    'INSERT INTO {} (layer, run, action, tile) '
-                    'VALUES (%(layer)s, %(run)s, %(action)s::varchar(7), %(tile)s)'.format(self.full_table),
-                    {'layer': layer, 'action': action, 'tile': str(tile.tilecoord), 'run': run}
-                )
-            except psycopg2.IntegrityError:
-                self.connection.rollback()
-                cursor.execute(
-                    'UPDATE {} SET action = %(action)s '
-                    'WHERE layer = %(layer)s AND run = %(run)s AND tile = %(tile)s'.format(self.full_table),
-                    {'layer': layer, 'action': action, 'tile': str(tile.tilecoord), 'run': run}
-                )
+        with stats.timer_context(['db_logger', 'insert']):
+            with self.connection.cursor() as cursor:
+                try:
+                    cursor.execute(
+                        'INSERT INTO {} (layer, run, action, tile) '
+                        'VALUES (%(layer)s, %(run)s, %(action)s::varchar(7), %(tile)s)'.
+                        format(self.full_table),
+                        {'layer': layer, 'action': action, 'tile': str(tile.tilecoord), 'run': run}
+                    )
+                except psycopg2.IntegrityError:
+                    self.connection.rollback()
+                    cursor.execute(
+                        'UPDATE {} SET action = %(action)s '
+                        'WHERE layer = %(layer)s AND run = %(run)s AND tile = %(tile)s'.
+                        format(self.full_table),
+                        {'layer': layer, 'action': action, 'tile': str(tile.tilecoord), 'run': run}
+                    )
 
-            self.connection.commit()
+                self.connection.commit()
 
         return tile
