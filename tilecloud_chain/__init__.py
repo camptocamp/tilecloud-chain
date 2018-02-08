@@ -30,8 +30,7 @@ import psycopg2
 from shapely.wkb import loads as loads_wkb
 from shapely.geometry import Polygon
 from shapely.ops import cascaded_union
-import boto.sqs
-from boto.sqs.jsonmessage import JSONMessage
+import boto3
 from pykwalify.core import Core
 from pykwalify.errors import SchemaError, NotSequenceError, NotMappingError
 from c2cwsgiutils import stats, sentry
@@ -327,19 +326,19 @@ class TileGeneration:
                 try:
                     options.zoom = range(int(r[0]), int(r[1]) + 1)
                 except ValueError:  # pragma: no cover
-                    logger.error(error_message)
+                    logger.error(error_message, exc_info=True)
                     error = True
             elif options.zoom.find(',') >= 0:
                 try:
                     options.zoom = [int(z) for z in options.zoom.split(',')]
                 except ValueError:  # pragma: no cover
-                    logger.error(error_message)
+                    logger.error(error_message, exc_info=True)
                     error = True
             else:
                 try:
                     options.zoom = [int(options.zoom)]
                 except ValueError:  # pragma: no cover
-                    logger.error(error_message)
+                    logger.error(error_message, exc_info=True)
                     error = True
 
         if error:  # pragma: no cover
@@ -588,9 +587,8 @@ class TileGeneration:
     def get_sqs_queue(self):  # pragma: no cover
         if 'sqs' not in self.config:
             exit("The config hasn't any configured queue")
-        connection = boto.sqs.connect_to_region(self.config['sqs']['region'])
-        queue = connection.get_queue(self.config['sqs']['queue'])
-        queue.set_message_class(JSONMessage)
+        sqs = boto3.resource('sqs', region_name=self.config['sqs']['region'])
+        queue = sqs.get_queue_by_name(QueueName=self.config['sqs']['queue'])
         return queue
 
     def init_geom(self, layer, extent=None):
@@ -736,7 +734,7 @@ class TileGeneration:
         if 'error_file' in self.config['generation']:
             time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
             if self.get_log_tiles_error_file(tile.metadata.get('layer')) is None:  # pragma: no cover
-                raise "Missing error file"
+                raise Exception("Missing error file")
 
             tilecoord = "" \
                 if tile.tilecoord is None \
@@ -905,131 +903,41 @@ class TileGeneration:
         assert self.tilestream is not None
         assert store is not None
 
-        if self.options.debug:
-            self.tilestream = store.get(self.tilestream)  # pragma: no cover
-        else:
-            def safe_get(tile):
-                if tile is not None:
-                    try:
-                        n = datetime.now()
-                        t = store.get_one(tile)
-                        if time_message:
-                            logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
-                        return t
-                    except GeneratorExit as e:  # pragma: no cover
-                        raise e
-                    except SystemExit as e:  # pragma: no cover
-                        raise e
-                    except KeyboardInterrupt:  # pragma: no cover
-                        exit("User interrupt")
-                    except Exception:  # pragma: no cover
-                        tile.error = sys.exc_info()[1]
-                        return tile
-            self.tilestream = map(safe_get, filter(None, self.tilestream))
+        self.tilestream = store.get(self.tilestream)
+        if not self.options.debug:
+            self.tilestream = _safe_generator(self.tilestream, time_message)
 
     def put(self, store, time_message=None):
         assert self.tilestream is not None
         assert store is not None
 
-        if self.options.debug:
-            self.tilestream = store.put(self.tilestream)  # pragma: no cover
-        else:
-            def safe_put(tile):
-                if tile is not None:
-                    try:
-                        n = datetime.now()
-                        t = store.put_one(tile)
-                        if time_message:
-                            logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
-                        return t
-                    except GeneratorExit as e:  # pragma: no cover
-                        raise e
-                    except SystemExit as e:  # pragma: no cover
-                        raise e
-                    except KeyboardInterrupt:  # pragma: no cover
-                        exit("User interrupt")
-                    except Exception:  # pragma: no cover
-                        tile.error = sys.exc_info()[1]
-                        return tile
-            self.tilestream = map(safe_put, filter(None, self.tilestream))
+        self.tilestream = store.put(self.tilestream)
+        if not self.options.debug:
+            self.tilestream = _safe_generator(self.tilestream, time_message)
 
-    def delete(self, store, time_message=None):  # pragma: no cover
+    def delete(self, store, time_message=None):
         assert self.tilestream is not None
         assert store is not None
 
-        if self.options.debug:
-            self.tilestream = store.delete(self.tilestream)
-        else:
-            def safe_delete(tile):
-                if tile is not None:
-                    try:
-                        n = datetime.now()
-                        t = store.delete_one(tile)
-                        if time_message:
-                            logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
-                        return t
-                    except GeneratorExit as e:  # pragma: no cover
-                        raise e
-                    except SystemExit as e:  # pragma: no cover
-                        raise e
-                    except KeyboardInterrupt:  # pragma: no cover
-                        exit("User interrupt")
-                    except Exception:  # pragma: no cover
-                        tile.error = sys.exc_info()[1]
-                        return tile
-            self.tilestream = map(safe_delete, filter(None, self.tilestream))
+        self.tilestream = store.delete(self.tilestream)
+        if not self.options.debug:
+            self.tilestream = _safe_generator(self.tilestream, time_message)
 
     def imap(self, tile_filter, time_message=None):
         assert self.tilestream is not None
         assert tile_filter is not None
 
-        if self.options.debug:
-            self.tilestream = map(tile_filter, self.tilestream)  # pragma: no cover
-        else:
-            def safe_imap(tile):
-                if tile is not None:
-                    try:
-                        n = datetime.now()
-                        t = tile_filter(tile)
-                        if time_message:  # pragma: no cover
-                            logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
-                        return t
-                    except GeneratorExit as e:  # pragma: no cover
-                        raise e
-                    except SystemExit as e:  # pragma: no cover
-                        raise e
-                    except KeyboardInterrupt:  # pragma: no cover
-                        exit("User interrupt")
-                    except Exception:  # pragma: no cover
-                        tile.error = sys.exc_info()[1]
-                        return tile
-            self.tilestream = map(safe_imap, filter(None, self.tilestream))
+        self.tilestream = map(tile_filter, self.tilestream)
+        if not self.options.debug:
+            self.tilestream = _safe_generator(self.tilestream, time_message)
 
     def ifilter(self, tile_filter, time_message=None):
         assert self.tilestream is not None
         assert tile_filter is not None
 
-        if self.options.debug:
-            self.tilestream = filter(tile_filter, self.tilestream)  # pragma: no cover
-        else:
-            def safe_filter(tile):
-                if tile is not None:
-                    try:
-                        n = datetime.now()
-                        t = tile_filter(tile)
-                        if time_message:
-                            logger.debug("{} in {}".format(time_message, str(datetime.now() - n)))
-                        return t
-                    except GeneratorExit as e:  # pragma: no cover
-                        raise e
-                    except SystemExit as e:  # pragma: no cover
-                        raise e
-                    except KeyboardInterrupt:  # pragma: no cover
-                        exit("User interrupt")
-                    except Exception:  # pragma: no cover
-                        tile.error = sys.exc_info()[1]
-                        return tile
-            self.tilestream = filter(safe_filter, self.tilestream)
+        self.tilestream = filter(tile_filter, self.tilestream)
+        if not self.options.debug:
+            self.tilestream = _safe_generator(self.tilestream, time_message)
 
     def consume(self, test=None, force=False):
         assert self.tilestream is not None
@@ -1042,7 +950,7 @@ class TileGeneration:
                 except KeyboardInterrupt:
                     sys.exit()
                 except Exception as e:
-                    logger.error(e)
+                    logger.error(e, exc_info=True)
                     traceback.print_exc()
                     time.sleep(1)
 
@@ -1148,7 +1056,7 @@ class HashLogger:
         try:
             image = Image.open(StringIO(tile.data))
         except IOError as e:  # pragma: no cover
-            logger.error(tile.data)
+            logger.error(tile.data, exc_info=True)
             raise e
         for px in image.getdata():
             if ref is None:
@@ -1340,7 +1248,7 @@ class TilesFileStore(TileStore):
                     tilecoord = parse_tilecoord(line)
                 except ValueError as e:  # pragma: no cover
                     logger.error("A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{}".format(
-                        line, repr(e))
+                        line, repr(e), exc_info=True)
                     )
                     continue
 
@@ -1349,3 +1257,26 @@ class TilesFileStore(TileStore):
                     for k, v in dimensions.items():
                         metadata["dimension_" + k] = v
                     yield Tile(tilecoord, metadata=metadata)
+
+
+def _safe_generator(generator, time_message=None):
+    while True:  # will exit when next(generator) raises StopIteration
+        try:
+            n = datetime.now()
+            tile = next(generator)
+            if tile is None:
+                continue
+            if time_message:
+                logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
+        except GeneratorExit as e:  # pragma: no cover
+            raise e
+        except SystemExit as e:  # pragma: no cover
+            raise e
+        except KeyboardInterrupt:  # pragma: no cover
+            exit("User interrupt")
+        except StopIteration:
+            return
+        except Exception:  # pragma: no cover
+            logger.warning("Error in put", exc_info=True)
+            tile.error = sys.exc_info()[1]
+        yield tile

@@ -23,7 +23,7 @@ class DatabaseLoggerCommon(object):  # pragma: no cover
                 break
             except psycopg2.OperationalError as e:
                 if daemon:
-                    logger.warning("Failed connecting to the database. Will try again in 1s")
+                    logger.warning("Failed connecting to the database. Will try again in 1s", exc_info=True)
                     time.sleep(1)
                 else:
                     exit("Cannot connect to the database: " + str(e))

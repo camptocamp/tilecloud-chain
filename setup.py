@@ -11,14 +11,13 @@ with open(os.path.join(here, 'README.rst')) as r:
         README = r.read() + '\n\n' + c.read()
 
 install_requires = [
-    'boto>=2.0',
-    'c2cwsgiutils>=1.0,<2.0',
+    'c2cwsgiutils',
     'Jinja2',
     'pykwalify',
     'PyYAML',
     'Shapely',
     'six',
-    'tilecloud>=0.5.0.dev6',
+    'tilecloud>=0.5.0.dev7',
 ]
 
 if sys.version_info < (2, 7):
