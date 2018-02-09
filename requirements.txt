@@ -4,4 +4,4 @@ pykwalify==1.6.0
 PyYAML==3.12
 Shapely==1.6.4.post1
 six==1.11.0
-tilecloud==0.5.0.dev7
+tilecloud==0.4.0
