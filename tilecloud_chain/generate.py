@@ -10,8 +10,7 @@ from datetime import datetime
 from getpass import getuser
 from argparse import ArgumentParser
 
-import boto
-from boto import sns
+import boto3
 from c2cwsgiutils import stats
 from tilecloud import TileCoord
 from tilecloud.store.url import URLTileStore
@@ -82,10 +81,8 @@ class Generate:
                 ))
                 exit()
             except ValueError as e:  # pragma: no cover
-                print(
-                    "Tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{}".format(
-                        self._options.get_bbox, repr(e))
-                )
+                logger.error("Tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n", self._options.get_bbox,
+                             exc_info=True)
                 exit(1)
 
         if self._options.get_hash:
@@ -345,9 +342,9 @@ class Generate:
                 self._options.time is None and \
                 'sns' in self._gene.config:  # pragma: no cover
             if 'region' in self._gene.config['sns']:
-                connection = sns.connect_to_region(self._gene.config['sns']['region'])
+                sns_client = boto3.client('sns', region_name=self._gene.config['sns']['region'])
             else:
-                connection = boto.connect_sns()
+                sns_client = boto3.client('sns')
             sns_message = [message[0]]
             sns_message += [
                 "Layer: {}".format(layer['name'] if layer is not None else "(All layers)"),
@@ -356,14 +353,10 @@ class Generate:
                 "Command: {}".format(' '.join([quote(arg) for arg in sys.argv])),
             ]
             sns_message += message[1:]
-            connection.publish(
-                self._gene.config['sns']['topic'],
-                "\n".join(sns_message),
-                "Tile generation ({layer} - {role})".format(**{
-                    'role': self._options.role,
-                    'layer': layer['name'] if layer is not None else "All layers"
-                })
-            )
+            sns_client.publish(TopicArn=self._gene.config['sns']['topic'], Message="\n".join(sns_message),
+                               Subject="Tile generation ({layer} - {role})".format(
+                                   role=self._options.role,
+                                   layer=layer['name'] if layer is not None else "All layers"))
 
     def _get_tilestore_for_layer(self, layer):
         if layer['type'] == 'wms':
@@ -392,7 +385,7 @@ class Generate:
                 from tilecloud_chain.mapnik_ import MapnikDropActionTileStore
             except ImportError:
                 if 'CI' not in os.environ:  # pragma nocover
-                    logger.error("Mapnik is not available")
+                    logger.error("Mapnik is not available", exc_info=True)
                 return None
 
             grid = self._gene.get_grid(layer)
@@ -424,7 +417,7 @@ class Generate:
 
 def await_message(queue):  # pragma: no cover
     try:
-        while queue.read(visibility_timeout=0, wait_time_seconds=20) is None:
+        while queue.receive_messages(VisibilityTimeout=0, WaitTimeSeconds=20) is None:
             pass
     except KeyboardInterrupt:
         raise StopIteration

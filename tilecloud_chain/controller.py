@@ -191,7 +191,7 @@ def _generate_wmts_capabilities(gene):
                         new_legend['height'] = pil_img.size[1]
                     except Exception:  # pragma: nocover
                         logger.warning("Unable to read legend image '{}', with '{}'".format(
-                            path, repr(img)))
+                            path, repr(img)), exc_info=True)
                     previous_legend = new_legend
                 previous_resolution = resolution
 
@@ -244,7 +244,7 @@ def _generate_legend_images(gene):
                             logger.warning(
                                 "Unable to read legend image for layer '{}'-'{}', resolution '{}': {}".format(
                                     layer['name'], l, resolution, response.content
-                                )
+                                ), exc_info=True
                             )
                     width = max(i.size[0] for i in legends)
                     height = sum(i.size[1] for i in legends)
