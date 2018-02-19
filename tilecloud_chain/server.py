@@ -73,7 +73,6 @@ class Server:
             bucket = self.cache['bucket']
 
             def _get(self, path, **kwargs):
-                global client
                 key_name = os.path.join('{folder}'.format(**self.cache), path)
                 try:
                     response = client.get_object(Bucket=bucket, Key=key_name)

@@ -49,7 +49,7 @@ install:
 - touch tilecloud_chain/OpenLayers.js
 
 script:
-- flake8 --max-line-length=110 tilecloud_chain
+- flake8 tilecloud_chain
 - vvv-validate-rst README.rst
 - vvv-validate-rst CHANGES.rst
 - python setup.py --long-description > PYPI.rst
