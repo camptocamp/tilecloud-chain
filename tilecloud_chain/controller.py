@@ -455,16 +455,18 @@ def _generate_openlayers(gene):
 
 def status(gene):  # pragma: no cover
     # get SQS status
-    attributes = gene.get_sqs_queue().get_attributes()
+    queue = gene.get_sqs_queue()
+    queue.load()
+    attributes = dict(queue.attributes)
     attributes["CreatedTimestamp"] = time.ctime(int(attributes["CreatedTimestamp"]))
     attributes["LastModifiedTimestamp"] = time.ctime(int(attributes["LastModifiedTimestamp"]))
 
     print(
         """Approximate number of tiles to generate: {ApproximateNumberOfMessages}
-        Approximate number of generating tiles: {ApproximateNumberOfMessagesNotVisible}
-        Delay in seconds: {DelaySeconds}
-        Receive message wait time in seconds: {ReceiveMessageWaitTimeSeconds}
-        Visibility timeout in seconds: {VisibilityTimeout}
-        Queue creation date: {CreatedTimestamp}
-        Last modification in tile queue: {LastModifiedTimestamp}""".format(**attributes)
+Approximate number of generating tiles: {ApproximateNumberOfMessagesNotVisible}
+Delay in seconds: {DelaySeconds}
+Receive message wait time in seconds: {ReceiveMessageWaitTimeSeconds}
+Visibility timeout in seconds: {VisibilityTimeout}
+Queue creation date: {CreatedTimestamp}
+Last modification in tile queue: {LastModifiedTimestamp}""".format(**attributes)
     )
