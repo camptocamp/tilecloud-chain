@@ -1261,6 +1261,7 @@ class TilesFileStore(TileStore):
 
 def _safe_generator(generator, time_message=None):
     while True:  # will exit when next(generator) raises StopIteration
+        tile = None
         try:
             n = datetime.now()
             tile = next(generator)
@@ -1276,7 +1277,4 @@ def _safe_generator(generator, time_message=None):
             exit("User interrupt")
         except StopIteration:
             return
-        except Exception:  # pragma: no cover
-            logger.warning("Error in put", exc_info=True)
-            tile.error = sys.exc_info()[1]
         yield tile
