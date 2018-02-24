@@ -42,7 +42,7 @@ defaults:
         url: http://mapserver/
         # Set the headers to get the right virtual host, and don't get any cached result
         headers:
-            Host: ${host}
+            Host: '${host}'
             Cache-Control: no-cache, no-store
             Pragma: no-cache
         # file name extension
@@ -107,11 +107,8 @@ generation:
     # maximum allowed consecutive errors, after it exit [default to 10]
     maxconsecutive_errors: 10
 
-apache:
-    location: /tiles
-
 mapcache:
-    config_file: apache/mapcache.xml
+    config_file: mapcache/mapcache.xml
     memcache_host: localhost
     memcache_port: 11211
 
