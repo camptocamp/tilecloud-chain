@@ -20,6 +20,7 @@ from bottle import jinja2_template
 from PIL import Image
 from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
 import tilecloud.store.s3
+from c2cwsgiutils import stats
 
 from tilecloud_chain import TileGeneration, add_comon_options, get_tile_matrix_identifier
 
@@ -28,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 def main():
+    stats.init_backends({})
     parser = ArgumentParser(
         description='Used to generate the contextual file like the capabilities, the legends, '
         'the Apache and MapCache configuration',
@@ -455,9 +457,11 @@ def _generate_openlayers(gene):
 
 def status(gene):  # pragma: no cover
     # get SQS status
-    queue = gene.get_sqs_queue()
-    queue.load()
-    attributes = dict(queue.attributes)
+    stats_prefix = ['SQS', gene.config.get('sqs', {}).get('queue', 'unknown')]
+    with stats.timer_context(stats_prefix + ['get_stats']):
+        queue = gene.get_sqs_queue()
+        queue.load()
+        attributes = dict(queue.attributes)
     attributes["CreatedTimestamp"] = time.ctime(int(attributes["CreatedTimestamp"]))
     attributes["LastModifiedTimestamp"] = time.ctime(int(attributes["LastModifiedTimestamp"]))
 
@@ -470,3 +474,5 @@ Visibility timeout in seconds: {VisibilityTimeout}
 Queue creation date: {CreatedTimestamp}
 Last modification in tile queue: {LastModifiedTimestamp}""".format(**attributes)
     )
+
+    stats.set_gauge(stats_prefix + ['nb_messages'], int(attributes['ApproximateNumberOfMessages']))
