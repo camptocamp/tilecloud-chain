@@ -1,6 +1,6 @@
 c2cwsgiutils>=1,<2
 Jinja2==2.10
-pykwalify==1.6.0
+pykwalify==1.6.1
 PyYAML==3.12
 Shapely==1.6.4.post1
 six==1.11.0
