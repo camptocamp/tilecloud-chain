@@ -131,7 +131,7 @@
   <Contents>
     {% for layername, layer in sorted(layers.items()) %}
     <Layer>
-      <ows:Title>{{layername}}</ows:Title>
+      <ows:Title>{{layer.get('title', layername)}}</ows:Title>
       <ows:Identifier>{{layername}}</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>{{layer['wmts_style']}}</ows:Identifier>{%
