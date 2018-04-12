@@ -85,6 +85,8 @@ mapping:
                 type: map
                 mapping:
                     name: *name
+                    title:
+                        type: str
                     type:
                         type: str
                         default: wms
