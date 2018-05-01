@@ -1,4 +1,4 @@
-c2cwsgiutils>=1,<2
+c2cwsgiutils>=1,<3
 Jinja2==2.10
 pykwalify==1.6.1
 PyYAML==3.12
