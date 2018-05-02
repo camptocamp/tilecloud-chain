@@ -29,7 +29,7 @@ setup(
     name='tilecloud-chain',
     version='1.5.0',
     description=(
-        "Tools to generates tiles from WMS or Mapnik, to S3, "
+        "Tools to generate tiles from WMS or Mapnik, to S3, "
         "Berkley DB, MBTiles, or local filesystem in WMTS layout using "
         "Amazon cloud services."
     ),

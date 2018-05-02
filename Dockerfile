@@ -1,4 +1,4 @@
-FROM camptocamp/c2cwsgiutils:1
+FROM camptocamp/c2cwsgiutils:2
 MAINTAINER Stéphane Brunner <stephane.brunner@camptocamp.com>
 
 RUN \
