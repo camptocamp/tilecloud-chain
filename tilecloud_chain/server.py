@@ -227,7 +227,7 @@ class Server:
                     params['REQUEST'] = 'GetTile'
                     params['TILECOL'] = last[0]
                     if last[1] != layer['extension']:  # pragma: no cover
-                        return self.error(400, "Wrong extention '{}'".format(last[1]), **kwargs)
+                        return self.error(400, "Wrong extension '{}'".format(last[1]), **kwargs)
                 elif len(path) == index + 6:
                     params['REQUEST'] = 'GetFeatureInfo'
                     params['TILECOL'] = path[index + 3]
