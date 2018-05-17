@@ -3,7 +3,7 @@ coverage==4.5.1
 flake8==3.5.0 # lint
 nose==1.3.7
 pep8==1.7.1 # lint
-pep8-naming==0.6.1 # Lint
+pep8-naming==0.7.0 # Lint
 pyflakes==1.6.0 # lint
 testfixtures==6.0.2
 unittest2==1.1.0
