@@ -30,7 +30,8 @@ ENV TILEGENERATION_CONFIGFILE=tilegeneration/config.yaml \
     C2CWSGI_LOG_LEVEL=WARN \
     TILECLOUD_LOG_LEVEL=INFO \
     TILECLOUD_CHAIN_LOG_LEVEL=INFO \
-    GUNICORN_PARAMS="-b :80 --worker-class gthread --threads 1 --workers 5"
+    GUNICORN_PARAMS="-b :80 --worker-class gthread --threads 1 --workers 5" \
+    VISIBLE_ENTRY_POINT=/
 
 EXPOSE 80
 
