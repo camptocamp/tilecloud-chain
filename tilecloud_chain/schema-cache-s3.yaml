@@ -6,7 +6,6 @@ mapping:
         - s3
     tiles_url:
         type: str
-        pattern: https?://.+/
     host:
         type: str
         default: s3-eu-west-1.amazonaws.com

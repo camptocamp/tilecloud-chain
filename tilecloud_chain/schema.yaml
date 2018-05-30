@@ -59,7 +59,6 @@ mapping:
                         - bsddb
                     http_url: &url_slash
                         type: str
-                        pattern: ^https?://.+/$
                     http_urls:
                         type: seq
                         sequence:
