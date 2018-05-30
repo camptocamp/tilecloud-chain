@@ -49,7 +49,7 @@ With Docker
    docker login
    docker pull camptocamp/tilecloud-chain
 
-   # Initialyse the project
+   # Initialize the project
    docker run -ti \
         --volume .:/project \
         camptocamp/tilecloud-chain \
@@ -690,7 +690,7 @@ The server can be configure as it:
         mapcache_base: http://localhost/
         mapcache_headers: # headers, can be used to access to an other Apache vhost [default to {}]
             Host: localhost
-        geoms_redirect: true # use the geoms to redirect to MapCache [defaut to false]
+        geoms_redirect: true # use the geoms to redirect to MapCache [default to false]
         # allowed extension in the static path (default value), not used for s3.
         static_allow_extension: [jpeg, png, xml, js, html, css]
 

@@ -405,8 +405,8 @@ def _generate_apache_config(gene):
             }))
 
 
-def _get_resource(ressource):
-    path = os.path.join(os.path.dirname(__file__), ressource)
+def _get_resource(resource):
+    path = os.path.join(os.path.dirname(__file__), resource)
     with open(path, 'rb') as f:
         return f.read()
 
