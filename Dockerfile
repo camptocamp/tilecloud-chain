@@ -26,7 +26,7 @@ RUN \
   cd /app && \
   pip install --no-cache-dir -r requirements.txt
 
-ENV TILEGENERATION_CONFIGFILE=tilegeneration/config.yaml \
+ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
     C2CWSGI_LOG_LEVEL=WARN \
     TILECLOUD_LOG_LEVEL=INFO \
     TILECLOUD_CHAIN_LOG_LEVEL=INFO \
