@@ -498,7 +498,7 @@ class PyramidView():
 
 
 def main(_, **settings):
-    config = Configurator(settings=settings, route_prefix='/tiles')
+    config = Configurator(settings=settings)
     config.include(c2cwsgiutils.pyramid.includeme)
     health_check.HealthCheck(config)
 

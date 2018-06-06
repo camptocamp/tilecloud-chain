@@ -31,7 +31,7 @@ ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
     TILECLOUD_LOG_LEVEL=INFO \
     TILECLOUD_CHAIN_LOG_LEVEL=INFO \
     GUNICORN_PARAMS="-b :80 --worker-class gthread --threads 15 --workers 3" \
-    VISIBLE_ENTRY_POINT=/
+    VISIBLE_ENTRY_POINT=/tiles/
 
 EXPOSE 80
 
