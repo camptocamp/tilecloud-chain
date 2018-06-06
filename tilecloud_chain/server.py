@@ -57,15 +57,15 @@ class Server:
         logger.info("Config file: '{}'".format(config_file))
         self.tilegeneration = TileGeneration(config_file)
 
-        self.expires_hours = self.tilegeneration.config['apache']['expires']
-        self.static_allow_extension = self.tilegeneration.config['server']['static_allow_extension'] \
-            if 'static_allow_extension' in self.tilegeneration.config['server'] \
-            else ['jpeg', 'png', 'xml', 'js', 'html', 'css']
+        self.expires_hours = self.tilegeneration.config['server']['expires']
+        self.static_allow_extension = self.tilegeneration.config['server'].get(
+            'static_allow_extension', ['jpeg', 'png', 'xml', 'js', 'html', 'css']
+        )
 
         self.cache = self.tilegeneration.caches[
-            self.tilegeneration.config['server']['cache'] if
-            'cache' in self.tilegeneration.config['server'] else
-            self.tilegeneration.config['generation']['default_cache']
+            self.tilegeneration.config['server'].get(
+                'cache', self.tilegeneration.config['generation']['default_cache']
+            )
         ]
 
         if self.cache['type'] == 's3':  # pragma: no cover
@@ -97,19 +97,15 @@ class Server:
         # get capabilities or other static files
         self._get = types.MethodType(_get, self)
 
-        mapcache_base = self.tilegeneration.config['server']['mapcache_base'] if \
-            'mapcache_base' in self.tilegeneration.config['server'] else \
-            'http://localhost/'
+        mapcache_base = self.tilegeneration.config['server']['mapcache_base']
         self.mapcache_baseurl = mapcache_base + self.tilegeneration.config['mapcache']['location'] + '/wmts'
-        self.mapcache_header = self.tilegeneration.config['server']['mapcache_headers'] if \
-            'mapcache_headers' in self.tilegeneration.config['server'] else {}
+        self.mapcache_header = self.tilegeneration.config['server'].get('mapcache_headers', {})
 
-        geoms_redirect = bool(self.tilegeneration.config['server']['geoms_redirect']) if \
-            'geoms_redirect' in self.tilegeneration.config['server'] else False
+        geoms_redirect = self.tilegeneration.config['server']['geoms_redirect']
 
-        self.layers = self.tilegeneration.config['server']['layers'] if \
-            'layers' in self.tilegeneration.config['server'] else \
-            self.tilegeneration.layers.keys()
+        self.layers = self.tilegeneration.config['server'].get(
+            'layers', self.tilegeneration.layers.keys()
+        )
         self.stores = {}
         for layer_name in self.layers:
             layer = self.tilegeneration.layers[layer_name]
@@ -155,6 +151,9 @@ class Server:
                 self.stores['/'.join(store_def['ref'])] = \
                     self.tilegeneration.get_store(self.cache, layer, read_only=True)
 
+        self.wmts_path = self.tilegeneration.config['server']['wmts_path']
+        self.static_path = self.tilegeneration.config['server']['static_path']
+
     def __call__(self, environ, start_response):
         params = {}
         for key, value in parse_qs(environ['QUERY_STRING'], True).items():
@@ -169,7 +168,7 @@ class Server:
         metadata = {}
 
         if path:
-            if len(path) >= 1 and path[0] == 'static':
+            if len(path) >= 1 and path[0] == self.static_path:
                 body, mime = self._get('/'.join(path[1:]), **kwargs)
                 if mime is not None:
                     return self.response(body, {
@@ -184,10 +183,12 @@ class Server:
                     }, **kwargs)
                 else:  # pragma: no cover
                     return body
-            elif len(path) >= 1 and path[0] != 'wmts':  # pragma: no cover
+            elif len(path) >= 1 and path[0] != self.wmts_path:  # pragma: no cover
                 return self.error(
                     404,
-                    "Type '{}' don't exists, allows values: 'wmts' or 'static'".format(path[0]),
+                    "Type '{}' don't exists, allows values: '{}' or '{}'".format(
+                        path[0], self.wmts_path, self.static_path
+                    ),
                     **kwargs
                 )
             path = path[1:]  # remove type
