@@ -35,7 +35,7 @@ ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
 
 EXPOSE 80
 
-WORKDIR /project
+WORKDIR /etc/tilegeneration/
 
 COPY . /app/
 
