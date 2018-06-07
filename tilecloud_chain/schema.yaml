@@ -70,7 +70,6 @@ mapping:
                     wmtscapabilities_file:
                         type: str
                         default: 1.0.0/WMTSCapabilities.xml
-                        pattern: '^[a-zA-Z0-9_\-~\.\/]+$'
                     folder:
                         type: str
                         default: ""
@@ -156,7 +155,6 @@ mapping:
                                     required: False
                                 href:
                                     type: str
-                                    pattern: ^https?://.+$
                     legend_mime: *mime_type
                     legend_extention:
                         type: str

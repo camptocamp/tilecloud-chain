@@ -30,7 +30,6 @@ mapping:
         default: png
     wms_url:
         type: str
-        pattern: https?://.+
     # Mapnik grid
     resolution:
         type: int
