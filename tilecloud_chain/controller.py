@@ -150,7 +150,7 @@ def _validate_generate_wmts_capabilities(cache):
 def _generate_wmts_capabilities(gene):
     cache = gene.caches[gene.options.cache]
     _validate_generate_wmts_capabilities(cache)
-    server = 'server' in gene.config
+    server = gene.config.get('server')
 
     base_urls = []
     if 'http_url' in cache:
@@ -180,7 +180,11 @@ def _generate_wmts_capabilities(gene):
                 if img is not None:
                     new_legend = {
                         'mime_type': layer['legend_mime'],
-                        'href': os.path.join(base_urls[0], 'static/' if server else '', path),
+                        'href': os.path.join(
+                            base_urls[0],
+                            server.get('static_path', 'static') + '/' if server else '',
+                            path
+                        ),
                     }
                     layer['legends'].append(new_legend)
                     if previous_legend is not None:
@@ -202,13 +206,13 @@ def _generate_wmts_capabilities(gene):
         layers=gene.layers,
         grids=gene.grids,
         getcapabilities=urljoin(base_urls[0], (
-            'wmts/1.0.0/WMTSCapabilities.xml' if server
+            server.get('wmts_path', 'wmts') + '/1.0.0/WMTSCapabilities.xml' if server
             else cache['wmtscapabilities_file']
         )),
         base_urls=base_urls,
-        base_url_postfix='wmts/' if server else '',
+        base_url_postfix=(server.get('wmts_path', 'wmts') + '/') if server else '',
         get_tile_matrix_identifier=get_tile_matrix_identifier,
-        server=server,
+        server=server is not None,
         has_metadata=gene.metadata is not None,
         metadata=gene.metadata,
         has_provider=gene.provider is not None,

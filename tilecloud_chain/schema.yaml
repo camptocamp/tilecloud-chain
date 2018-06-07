@@ -316,16 +316,37 @@ mapping:
     server:
         type: map
         mapping:
+            cache:
+                type: str
+            layers:
+                type: seq
+                sequence:
+                - type: str
             geoms_redirect:
                 type: bool
+                default: False
             mapcache_base:
                 type: str
+                default: 'http://localhost/'
             mapcache_headers:
                 type: map
                 matching-rule: 'any'
                 mapping:
                   regex;(.*):
                     type: str
+            static_allow_extension:
+                type: seq
+                sequence:
+                - type: str
+            wmts_path:
+                type: str
+                default: 'wmts'
+            static_path:
+                type: str
+                default: 'static'
+            expires:
+                type: int
+                default: 8
     cost:
         type: map
         mapping:
