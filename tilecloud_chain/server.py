@@ -440,7 +440,13 @@ class Server:
         return [data]
 
 
-def app_factory(global_config, configfile='tilegeneration/config.yaml', **local_conf):
+def app_factory(
+    global_config,
+    configfile=os.environ.get('TILEGENERATION_CONFIGFILE', 'tilegeneration/config.yaml'),
+    **local_conf
+):
+    del global_config
+    del local_conf
     return Server(configfile)
 
 

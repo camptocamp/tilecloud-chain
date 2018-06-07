@@ -53,7 +53,7 @@ def add_comon_options(
         parser, tile_pyramid=True, no_geom=True,
         near=True, time=True, dimensions=False, cache=True):
     parser.add_argument(
-        '-c', '--config', default='tilegeneration/config.yaml',
+        '-c', '--config', default=os.environ.get('TILEGENERATION_CONFIGFILE', 'tilegeneration/config.yaml'),
         help='path to the configuration file', metavar="FILE"
     )
     parser.add_argument(
