@@ -296,7 +296,7 @@ mapping:
                 type: str
                 default: localhost
             memcache_port:
-                type: int
+                type: any
                 default: 11211
             location:
                 type: str
