@@ -97,8 +97,12 @@ class Server:
         # get capabilities or other static files
         self._get = types.MethodType(_get, self)
 
-        mapcache_base = self.tilegeneration.config['server']['mapcache_base']
-        self.mapcache_baseurl = mapcache_base + self.tilegeneration.config['mapcache']['location'] + '/wmts'
+        mapcache_base = self.tilegeneration.config['server']['mapcache_base'].rstrip('/')
+        mapcache_location = self.tilegeneration.config['mapcache']['location'].strip('/')
+        if mapcache_location == '':
+            self.mapcache_baseurl = mapcache_base + '/wmts'
+        else:
+            self.mapcache_baseurl = '{}/{}/wmts'.format(mapcache_base, mapcache_location)
         self.mapcache_header = self.tilegeneration.config['server'].get('mapcache_headers', {})
 
         geoms_redirect = self.tilegeneration.config['server']['geoms_redirect']
