@@ -317,7 +317,43 @@ The previously defined ``mime_type`` is also used in the WMS requests.
 
 To customise the request you also have the attributes ``params``, ``headers``
 and ``generate_salt``.
-In ``params`` you can specify additional parameter of the WMS request,
+
+In ``params`` you can specify additional parameter of the WMS request.
+Note that ``params["FILTER"]`` behave like a template, populated with other request parameters.
+This allow applying a WMS filter for dimension value.
+
+QGIS expression filter example:
+
+.. code-block:: yaml
+
+   layers:
+       layer_name:
+           type: wms
+           url: https://localhost/qgis_mapserv
+           layers: layer1,layer2
+           params:
+               FILTER:  layer1:\"floor\" = '{floor}';
+                        layer2:\"floor\" = '{floor}'"
+
+OGC filter example:
+
+.. code-block:: yaml
+
+   layers:
+       layer_name:
+           type: wms
+           url: https://localhost/qgis_mapserv
+           layers: layer1,layer2
+           params:
+               FILTER: "\
+   (<Filter>\
+   <PropertyIsEqualTo>\
+   <PropertyName>floor</PropertyName>\
+   <Literal>{FLOOR}</Literal>\
+   </PropertyIsEqualTo>\
+   </Filter>)\
+   ()"
+
 in ``headers`` you can modify the request headers. In ``version``, you can change the WMS version. See the
 `Proxy/cache issue`_ for additional informations.
 
@@ -531,9 +567,9 @@ Alternate mime type
 By default TileCloud support only the ``image/jpeg`` and ``image/png`` mime type.
 
 
-----------------
+---------------
 Amazon services
-----------------
+---------------
 
 Authentication
 --------------
