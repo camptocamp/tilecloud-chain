@@ -1,7 +1,7 @@
 c2cwsgiutils>=2,<3
 Jinja2==2.10
 pykwalify==1.6.1
-PyYAML==4.1
+PyYAML==3.13
 Shapely==1.6.4.post1
 six==1.11.0
 tilecloud==1.0.0
