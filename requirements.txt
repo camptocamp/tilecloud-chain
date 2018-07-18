@@ -2,7 +2,7 @@ c2cwsgiutils>=2,<3
 Jinja2==2.10
 pykwalify==1.6.1
 PyYAML==3.13
-Shapely==1.6.4.post1
+Shapely==1.6.4.post2
 six==1.11.0
 tilecloud==1.0.0
 python-dateutil==2.6.1  # rq.filter: <2.7.0
