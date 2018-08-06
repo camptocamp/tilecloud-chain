@@ -9,6 +9,7 @@ import random
 from datetime import datetime
 from getpass import getuser
 from argparse import ArgumentParser
+import time
 
 import boto3
 from c2cwsgiutils import stats
@@ -417,8 +418,8 @@ class Generate:
 
 def await_message(queue):  # pragma: no cover
     try:
-        while queue.receive_messages(VisibilityTimeout=0, WaitTimeSeconds=20) is None:
-            pass
+        # Just sleep, the SQSTileStore will try again after that...
+        time.sleep(10)
     except KeyboardInterrupt:
         raise StopIteration
 
