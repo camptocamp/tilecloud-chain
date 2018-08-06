@@ -17,7 +17,7 @@ install_requires = [
     'PyYAML',
     'Shapely',
     'six',
-    'tilecloud>=0.5.0.dev7',
+    'tilecloud>=1.0.1',
 ]
 
 if sys.version_info < (2, 7):
@@ -27,7 +27,7 @@ if sys.version_info < (2, 7):
 
 setup(
     name='tilecloud-chain',
-    version='1.6.0.dev3',
+    version='1.6.0',
     description=(
         "Tools to generate tiles from WMS or Mapnik, to S3, "
         "Berkley DB, MBTiles, or local filesystem in WMTS layout using "
