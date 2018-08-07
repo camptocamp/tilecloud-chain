@@ -882,10 +882,9 @@ Build it:
 .. code:: bash
 
    git submodule update --recursive
-   mkdir .build
-   virtualenv --python=python3 .venv
-   .venv/bin/pip install -e .
-   .venv/bin/pip install -r dev-requirements.txt
+   virtualenv --python=python3 .build/venv
+   .build/venv/bin/pip install -e .
+   .build/venv/bin/pip install -r dev-requirements.txt
 
 
 -------------
@@ -897,13 +896,13 @@ Setup your environment:
 .. code:: bash
 
    sudo apt-get install optipng libdb-dev
-   python3 -m venv .venv
-   .venv/bin/pip install --upgrade --requirement=dev-requirements.txt --requirement=requirements.txt
-   .venv/bin/pip install --editable=.
+   python3 -m venv .build/venv
+   .build/venv/bin/pip install --upgrade --requirement=dev-requirements.txt --requirement=requirements.txt
+   .build/venv/bin/pip install --editable=.
    docker-compose -f test-docker-compose.yml up
 
 To run the tests:
 
 .. code:: bash
 
-   CI=true .venv/bin/python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
+   CI=true .build/venv/bin/python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3

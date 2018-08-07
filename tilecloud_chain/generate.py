@@ -16,6 +16,7 @@ from c2cwsgiutils import stats
 from tilecloud import TileCoord
 from tilecloud.store.url import URLTileStore
 from tilecloud.store.sqs import SQSTileStore, maybe_stop
+from tilecloud.store.redis import RedisTileStore
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.filter.logger import Logger
 
@@ -36,7 +37,7 @@ class Generate:
         self._count_tiles = None
         self._count_tiles_dropped = None
         self._count_tiles_stored = None
-        self._sqs_tilestore = None
+        self._queue_tilestore = None
         self._cache_tilestore = None
         self._options = options
         self._gene = gene
@@ -50,23 +51,30 @@ class Generate:
             self._generate_queue(layer)
             if self._options.role != 'master':
                 self._generate_tiles()
-        else:  # pragma: no cover
+        else:
             self._generate_tiles()
         self.generate_consume()
         self.generate_resume(layer)
 
     def _generate_init(self):
-
         self._count_metatiles_dropped = Count()
         self._count_tiles = Count()
         self._count_tiles_dropped = Count()
 
         if self._options.role in ('master', 'slave'):
-            # Create SQS queue
-            self._sqs_tilestore = TimedTileStoreWrapper(SQSTileStore(
-                self._gene.get_sqs_queue(),
-                on_empty=await_message if self._options.daemon else maybe_stop
-            ), stats_name='SQS')  # pragma: no cover
+            if 'redis' in self._gene.config:
+                # Create a Redis queue
+                config = self._gene.config['redis']
+                self._queue_tilestore = TimedTileStoreWrapper(
+                    RedisTileStore(config['url'], name=config['queue'],
+                                   stop_if_empty=not self._options.daemon),
+                    stats_name='redis')
+            else:
+                # Create a SQS queue
+                self._queue_tilestore = TimedTileStoreWrapper(
+                    SQSTileStore(self._gene.get_sqs_queue(),
+                                 on_empty=await_message if self._options.daemon else maybe_stop),
+                    stats_name='SQS')  # pragma: no cover
 
         if self._options.role in ('local', 'slave'):
             self._cache_tilestore = self._gene.get_tilesstore(self._options.cache)
@@ -128,15 +136,16 @@ class Generate:
         self._count_metatiles = self._gene.counter()
 
         if self._options.role == 'master':  # pragma: no cover
-            # Put the metatiles into the SQS queue
-            self._gene.put(self._sqs_tilestore)
+            # Put the metatiles into the SQS or Redis queue
+            self._gene.put(self._queue_tilestore)
             self._count_tiles = self._gene.counter()
 
     def _generate_tiles(self):
         if self._options.role == 'slave':
-            # Get the metatiles from the SQS queue
-            self._gene.set_store(self._sqs_tilestore)  # pragma: no cover
+            # Get the metatiles from the SQS/Redis queue
+            self._gene.set_store(self._queue_tilestore)  # pragma: no cover
             self._gene.ifilter(lambda tile: 'layer' in tile.metadata)
+            self._count_metatiles = self._gene.counter()
 
         self._gene.get(TimedTileStoreWrapper(MultiTileStore({
             name: self._get_tilestore_for_layer(layer)
@@ -165,7 +174,7 @@ class Generate:
                 self._options is not None and self._options.daemon
             ))
             self._gene.add_error_filters(
-                self._sqs_tilestore
+                self._queue_tilestore
                 if 'error_file' in self._gene.config['generation']
                 else None
             )
@@ -184,7 +193,7 @@ class Generate:
                     droppers[lname] = HashDropper(
                         empty_tile['size'], empty_tile['hash'],
                         store=self._cache_tilestore,
-                        queue_store=self._sqs_tilestore,
+                        queue_store=self._queue_tilestore,
                         count=self._count_metatiles_dropped,
                     )
             if droppers:
@@ -214,7 +223,7 @@ class Generate:
                     empty_tile = layer['empty_tile_detection']
                     droppers[lname] = HashDropper(
                         empty_tile['size'], empty_tile['hash'], store=self._cache_tilestore,
-                        queue_store=self._sqs_tilestore,
+                        queue_store=self._queue_tilestore,
                         count=self._count_tiles_dropped,
                     )
             if len(droppers) != 0:
@@ -239,9 +248,9 @@ class Generate:
                 if hasattr(tile, 'metatile'):
                     tile.metatile.elapsed_togenerate -= 1
                     if tile.metatile.elapsed_togenerate == 0:
-                        self._sqs_tilestore.delete_one(tile.metatile)
+                        self._queue_tilestore.delete_one(tile.metatile)
                 else:
-                    self._sqs_tilestore.delete_one(tile)
+                    self._queue_tilestore.delete_one(tile)
                 return True
             self._gene.ifilter(delete_from_store)
 
@@ -298,17 +307,16 @@ class Generate:
                         )
                     ),
                 ]
-                if self._options.role == "master":  # pragma: no cover
-                    message.append("Nb of generated jobs: {}".format(self._count_tiles.nb))
-                else:
-                    if layer.get('meta'):
-                        message += [
-                            "Nb generated metatiles: {}".format(self._count_metatiles.nb),
-                            "Nb metatiles dropped: {}".format(self._count_metatiles_dropped.nb),
-                        ]
             else:
                 message = [
                     "The tile generation is finish"
+                ]
+            if self._options.role == "master":  # pragma: no cover
+                message.append("Nb of generated jobs: {}".format(self._count_tiles.nb))
+            elif layer.get('meta') if layer is not None else self._options.role == "slave":
+                message += [
+                    "Nb generated metatiles: {}".format(self._count_metatiles.nb),
+                    "Nb metatiles dropped: {}".format(self._count_metatiles_dropped.nb),
                 ]
 
             if self._options.role != "master":
@@ -333,7 +341,7 @@ class Generate:
                             self._count_tiles_stored.size / self._count_tiles_stored.nb)
                         )
 
-            if not self._options.quiet and self._options.role in ('local', 'slave'):
+            if not self._options.quiet and self._options.role in ('local', 'slave', 'master') and message:
                 print("\n".join(message) + "\n")
 
         if self._cache_tilestore is not None and hasattr(self._cache_tilestore, 'connection'):
@@ -401,7 +409,7 @@ class Generate:
                     layers_fields=layer['layers_fields'],
                     drop_empty_utfgrid=layer['drop_empty_utfgrid'],
                     store=self._cache_tilestore,
-                    queue_store=self._sqs_tilestore,
+                    queue_store=self._queue_tilestore,
                     count=[self._count_tiles, self._count_tiles_dropped],
                     proj4_literal=grid['proj4_literal'],
                 )

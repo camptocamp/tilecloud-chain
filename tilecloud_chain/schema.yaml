@@ -274,6 +274,17 @@ mapping:
                 type: str
                 required: true
             region: *aws-region
+    redis:
+        type: map
+        mapping:
+            url:
+                type: str
+                required: true
+                pattern: ^redis://[^:]+:\d+$
+            queue:
+                type: str
+                default: tilecloud
+
     apache:
         type: map
         mapping:

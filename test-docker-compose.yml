@@ -11,3 +11,19 @@ mapserver:
     - db:db
   ports:
     - 80:80
+
+redis:
+  image: redis:3.2
+  user: www-data
+  command:
+    - redis-server
+    - --save
+    - ''
+    - --appendonly
+    - 'no'
+    - --maxmemory
+    - 512mb
+    - --maxmemory-policy
+    - allkeys-lru
+  ports:
+    - 6379:6379
