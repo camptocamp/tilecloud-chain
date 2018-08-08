@@ -8,6 +8,9 @@ python:
 - 3.5
 - 3.6
 
+services:
+- redis-server
+
 env:
   global:
   - BERKELEYDB_LIBDIR=/usr/lib/x86_64-linux-gnu BERKELEYDB_INCDIR=/usr/include

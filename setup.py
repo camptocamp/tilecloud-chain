@@ -17,7 +17,7 @@ install_requires = [
     'PyYAML',
     'Shapely',
     'six',
-    'tilecloud>=1.0.1',
+    'tilecloud>=1.1.0',
 ]
 
 if sys.version_info < (2, 7):

@@ -9,6 +9,7 @@ from nose.plugins.attrib import attr
 
 from tilecloud_chain.tests import CompareCase
 from tilecloud_chain import generate
+from tilecloud.store.redis import RedisTileStore
 
 
 class TestGenerate(CompareCase):
@@ -995,3 +996,35 @@ Size per tile: 498 o
 
 """,
             )
+
+    @attr(general=True)
+    def test_redis(self):
+        RedisTileStore('redis://localhost:6379').delete_all()
+        self.assert_cmd_equals(
+            cmd='.build/venv/bin/generate_tiles -c tilegeneration/test-redis.yaml --role master -l point',
+            main_func=generate.main,
+            regex=False,
+            expected="""The tile generation of layer 'point (DATE=2012)' is finish
+Nb of generated jobs: 10
+
+"""
+        )
+
+        self.assert_cmd_equals(
+            cmd='.build/venv/bin/generate_tiles -c tilegeneration/test-redis.yaml --role slave',
+            main_func=generate.main,
+            regex=True,
+            expected="""The tile generation is finish
+Nb generated metatiles: 10
+Nb metatiles dropped: 0
+Nb generated tiles: 640
+Nb tiles dropped: 0
+Nb tiles stored: 640
+Nb tiles in error: 0
+Total time: 0:\d\d:\d\d
+Total size: \d+ Kio
+Time per tile: \d+ ms
+Size per tile: \d+ o
+
+""",
+        )
