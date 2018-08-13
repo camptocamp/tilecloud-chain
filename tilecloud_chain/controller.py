@@ -281,13 +281,17 @@ def _generate_legend_images(gene):
 def _generate_mapcache_config(gene):
     for layer in gene.layers.values():
         if layer['type'] == 'wms' or 'wms_url' in layer:
-            if 'FORMAT' not in layer.get('params', {}):
-                layer.get('params', {})['FORMAT'] = layer['mime_type']
+            params = {}
+            params.update(layer.get('params', {}))
+            if 'FORMAT' not in params:
+                params['FORMAT'] = layer['mime_type']
             if 'LAYERS' not in layer.get('params', {}):
-                layer.get('params', {})['LAYERS'] = layer['layers']
+                params['LAYERS'] = layer['layers']
             if 'TRANSPARENT' not in layer.get('params', {}):
-                layer.get('params', {})['TRANSPARENT'] = 'TRUE' \
+                params['TRANSPARENT'] = 'TRUE' \
                     if layer['mime_type'] == 'image/png' else 'FALSE'
+            layer['params'] = params
+
     config = jinja2_template(
         pkgutil.get_data("tilecloud_chain", "mapcache_config.jinja").decode('utf-8'),
         layers=gene.layers,

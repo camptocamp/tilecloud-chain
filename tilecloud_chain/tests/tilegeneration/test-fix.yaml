@@ -66,6 +66,7 @@ defaults:
         wmts_style: default
         mime_type: image/png
         extension: png
+        params: {}
         dimensions:
         -   name: DATE
             default: '2012'
