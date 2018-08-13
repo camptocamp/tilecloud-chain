@@ -1645,7 +1645,7 @@ generation:
   maxconsecutive_errors: 2
   number_process: 1
 grids:
-  swissgrid_01: &id004
+  swissgrid_01: &id005
     bbox: [420000, 30000, 900000, 350000]
     matrix_identifier: resolution
     name: swissgrid_01
@@ -1711,7 +1711,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     name: all
-    params: {}
+    params: &id004 {}
     px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
@@ -1761,6 +1761,7 @@ layers:
     mime_type: image/png
     name: mapnik
     output_format: png
+    params: *id004
     px_buffer: 0.0
     resolution: 4
     type: mapnik
@@ -1789,6 +1790,7 @@ layers:
     mime_type: application/utfgrid
     name: mapnik_grid
     output_format: grid
+    params: *id004
     px_buffer: 0.0
     resolution: 16
     type: mapnik
@@ -1815,6 +1817,7 @@ layers:
     mime_type: application/utfgrid
     name: mapnik_grid_drop
     output_format: grid
+    params: *id004
     px_buffer: 0.0
     resolution: 16
     type: mapnik
@@ -1837,8 +1840,8 @@ layers:
     mime_type: image/png
     min_resolution_seed: 10
     name: point
+    params: *id004
     px_buffer: 0.0
-    params: {}
     type: wms
     url: http://localhost/mapserv
     version: 1.1.1
@@ -1859,7 +1862,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     name: point_hash_no_meta
-    params: {}
+    params: *id004
     px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
@@ -1885,7 +1888,7 @@ layers:
     mime_type: image/png
     min_resolution_seed: 10
     name: point_hash
-    params: {}
+    params: *id004
     px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
@@ -1910,7 +1913,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     name: point_px_buffer
-    params: {}
+    params: *id004
     px_buffer: 100
     type: wms
     url: http://localhost/mapserv
@@ -1935,7 +1938,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     name: polygon
-    params: {}
+    params: *id004
     px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
@@ -1952,7 +1955,7 @@ layers:
     - sql: the_geom AS geom FROM tests.polygon
       connection: user=postgres password=postgres dbname=tests host=localhost
     grid: swissgrid_01
-    grid_ref: *id004
+    grid_ref: *id005
     headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
     layers: polygon
     meta: true
@@ -1960,7 +1963,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     name: polygon2
-    params: {}
+    params: *id004
     px_buffer: 0.0
     type: wms
     url: http://localhost/mapserv
