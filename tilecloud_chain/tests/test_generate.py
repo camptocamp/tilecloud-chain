@@ -8,7 +8,7 @@ from testfixtures import log_capture
 from nose.plugins.attrib import attr
 
 from tilecloud_chain.tests import CompareCase
-from tilecloud_chain import generate
+from tilecloud_chain import generate, controller
 from tilecloud.store.redis import RedisTileStore
 
 
@@ -1011,6 +1011,14 @@ Nb of generated jobs: 10
         )
 
         self.assert_cmd_equals(
+            cmd='.build/venv/bin/generate_controller -c tilegeneration/test-redis.yaml --status',
+            main_func=controller.main,
+            regex=False,
+            expected="""Approximate number of tiles to generate: 10
+"""
+        )
+
+        self.assert_cmd_equals(
             cmd='.build/venv/bin/generate_tiles -c tilegeneration/test-redis.yaml --role slave',
             main_func=generate.main,
             regex=True,
@@ -1027,4 +1035,12 @@ Time per tile: \d+ ms
 Size per tile: \d+ o
 
 """,
+        )
+
+        self.assert_cmd_equals(
+            cmd='.build/venv/bin/generate_controller -c tilegeneration/test-redis.yaml --status',
+            main_func=controller.main,
+            regex=False,
+            expected="""Approximate number of tiles to generate: 0
+"""
         )
