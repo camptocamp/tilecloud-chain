@@ -1,3 +1,4 @@
+
 grids:
     swissgrid_5:
         resolutions: [100, 50, 20, 10, 5]
@@ -6,11 +7,10 @@ grids:
         srs: EPSG:21781
 
 caches:
-    bsddb:
-        type: bsddb
+    local:
+        type: filesystem
         http_url: http://wmts1/tiles/
-        folder: /tmp/tiles/bsddb
-        wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
+        folder: /tmp/tiles-ondemend
 
 defaults:
     layer: &layer
@@ -44,9 +44,8 @@ layers:
         empty_tile_detection:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
-
 generation:
-    default_cache: bsddb
+    default_cache: local
     maxconsecutive_errors: 2
 
 mapcache:
@@ -55,4 +54,5 @@ mapcache:
 apache:
     config_file: tiles.conf
 
-server: {}
+server:
+    geoms_redirect: true

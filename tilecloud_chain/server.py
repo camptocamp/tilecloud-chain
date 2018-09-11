@@ -26,21 +26,21 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import sys
-import logging
-import requests
-import types
-import datetime
-import mimetypes
-from six.moves.urllib.parse import urlencode, parse_qs
-from pyramid.config import Configurator
-from c2cwsgiutils import health_check
 import c2cwsgiutils.pyramid
-
-from tilecloud import Tile, TileCoord
+import datetime
+import logging
+import mimetypes
+import os
+import requests
+import sys
 import tilecloud.store.s3
-from tilecloud_chain import TileGeneration
+import types
+
+from c2cwsgiutils import health_check
+from pyramid.config import Configurator
+from six.moves.urllib.parse import urlencode, parse_qs
+from tilecloud import Tile, TileCoord
+from tilecloud_chain import TileGeneration, controller
 
 if sys.version_info.major < 3:
     memoryview = buffer  # noqa: F821
@@ -256,8 +256,12 @@ class Server:
             return self.error(400, "Wrong Version '{}'".format(params['VERSION']), **kwargs)
 
         if params['REQUEST'] == 'GetCapabilities':
-            wmtscapabilities_file = self.cache['wmtscapabilities_file']
-            body, mime = self._get(wmtscapabilities_file, **kwargs)
+            if 'wmtscapabilities_file' in self.cache:
+                wmtscapabilities_file = self.cache['wmtscapabilities_file']
+                body, mime = self._get(wmtscapabilities_file, **kwargs)
+            else:
+                body = controller.get_wmts_capabilities(self.tilegeneration, self.cache).encode('utf-8')
+                mime = "application/xml"
             if mime is not None:
                 return self.response(body, headers={
                     'Content-Type': "application/xml",

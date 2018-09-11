@@ -1097,3 +1097,23 @@ Size per tile: 4[0-9][0-9] o
             CAPABILITIES,
             regex=True,
         )
+
+    @attr(general=True)
+    @log_capture('tilecloud_chain', level=30)
+    def test_ondemend_wmtscapabilities(self, l):
+        server.pyramid_server = None
+        request = DummyRequest()
+        request.registry.settings = {
+            'tilegeneration_configfile': 'tilegeneration/test-serve-wmtscapabilities.yaml',
+        }
+        request.matchdict['path'] = [
+            'wmts', '1.0.0', 'WMTSCapabilities.xml'
+        ]
+        PyramidView(request)()
+        self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
+        self.assert_result_equals(
+            request.response.body.decode('utf-8') if PY3 else request.response.body,
+            CAPABILITIES,
+            regex=True,
+        )
+        l.check()
