@@ -1608,20 +1608,17 @@ caches:
     http_url: 'http://wmts1/tiles/'
     name: mbtiles
     type: mbtiles
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   multi_host:
     folder: /tmp/tiles
     hosts: [wmts1, wmts2, wmts3]
     http_url: http://%(host)s/tiles/
     name: multi_host
     type: filesystem
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   multi_url:
     folder: /tmp/tiles
     http_urls: ['http://wmts1/tiles/', 'http://wmts2/tiles/', 'http://wmts3/tiles/']
     name: multi_url
     type: filesystem
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   s3:
     bucket: tiles
     folder: tiles
@@ -1630,7 +1627,6 @@ caches:
     name: s3
     region: eu-west-1
     type: s3
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
     cache_control: 'public, max-age=14400'
 cost:
   cloudfront: {download: 0.12, get: 0.009}

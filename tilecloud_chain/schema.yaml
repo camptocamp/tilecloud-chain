@@ -69,7 +69,6 @@ mapping:
                         - type: str
                     wmtscapabilities_file:
                         type: str
-                        default: 1.0.0/WMTSCapabilities.xml
                     folder:
                         type: str
                         default: ""

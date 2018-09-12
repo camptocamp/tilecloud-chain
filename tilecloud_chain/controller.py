@@ -79,7 +79,7 @@ def main():
     if options.dump_config:
         for layer in gene.config['layers'].values():
             gene.init_layer(layer, options)
-        _validate_generate_wmts_capabilities(gene.caches[options.cache])
+        _validate_generate_wmts_capabilities(gene.caches[options.cache], True)
         for grid in gene.config['grids'].values():
             if 'obj' in grid:
                 del grid['obj']
@@ -137,21 +137,47 @@ def _get(path, cache):
             return file.read()
 
 
-def _validate_generate_wmts_capabilities(cache):
+def _validate_generate_wmts_capabilities(cache, exit_):
     if 'http_url' not in cache and 'http_urls' not in cache:  # pragma: no cover
         logger.error(
             "The attribute 'http_url' or 'http_urls' is required in the object cache[{}].".format(
                 cache['name']
             )
         )
-        exit(1)
+        if exit_:
+            exit(1)
+        return False
+    return True
 
 
-def _generate_wmts_capabilities(gene):
-    cache = gene.caches[gene.options.cache]
-    _validate_generate_wmts_capabilities(cache)
-    server = gene.config.get('server')
+def get_wmts_capabilities(gene, cache, exit_=False):
+    if _validate_generate_wmts_capabilities(cache, exit_):
+        server = gene.config.get('server')
 
+        base_urls = _get_base_urls(cache)
+        _fill_legend(gene, cache, server, base_urls)
+
+        return jinja2_template(
+            pkgutil.get_data("tilecloud_chain", "wmts_get_capabilities.jinja").decode('utf-8'),
+            layers=gene.layers,
+            grids=gene.grids,
+            getcapabilities=urljoin(base_urls[0], (
+                server.get('wmts_path', 'wmts') + '/1.0.0/WMTSCapabilities.xml' if server
+                else cache.get('wmtscapabilities_file', '1.0.0/WMTSCapabilities.xml')
+            )),
+            base_urls=base_urls,
+            base_url_postfix=(server.get('wmts_path', 'wmts') + '/') if server else '',
+            get_tile_matrix_identifier=get_tile_matrix_identifier,
+            server=server is not None,
+            has_metadata=gene.metadata is not None,
+            metadata=gene.metadata,
+            has_provider=gene.provider is not None,
+            provider=gene.provider,
+            enumerate=enumerate, ceil=math.ceil, int=int, sorted=sorted,
+        )
+
+
+def _get_base_urls(cache):
     base_urls = []
     if 'http_url' in cache:
         if 'hosts' in cache:
@@ -163,9 +189,11 @@ def _generate_wmts_capabilities(gene):
             base_urls = [cache['http_url'] % cache]
     if 'http_urls' in cache:
         base_urls = [url % cache for url in cache['http_urls']]
-
     base_urls = [url + '/' if url[-1] != '/' else url for url in base_urls]
+    return base_urls
 
+
+def _fill_legend(gene, cache, server, base_urls):
     for layer in gene.layers.values():
         previous_legend = None
         previous_resolution = None
@@ -201,25 +229,17 @@ def _generate_wmts_capabilities(gene):
                     previous_legend = new_legend
                 previous_resolution = resolution
 
-    capabilities = jinja2_template(
-        pkgutil.get_data("tilecloud_chain", "wmts_get_capabilities.jinja").decode('utf-8'),
-        layers=gene.layers,
-        grids=gene.grids,
-        getcapabilities=urljoin(base_urls[0], (
-            server.get('wmts_path', 'wmts') + '/1.0.0/WMTSCapabilities.xml' if server
-            else cache['wmtscapabilities_file']
-        )),
-        base_urls=base_urls,
-        base_url_postfix=(server.get('wmts_path', 'wmts') + '/') if server else '',
-        get_tile_matrix_identifier=get_tile_matrix_identifier,
-        server=server is not None,
-        has_metadata=gene.metadata is not None,
-        metadata=gene.metadata,
-        has_provider=gene.provider is not None,
-        provider=gene.provider,
-        enumerate=enumerate, ceil=math.ceil, int=int, sorted=sorted,
+
+def _generate_wmts_capabilities(gene):
+    cache = gene.caches[gene.options.cache]
+
+    capabilities = get_wmts_capabilities(gene, cache, True)
+    _send(
+        capabilities,
+        cache.get('wmtscapabilities_file', '1.0.0/WMTSCapabilities.xml'),
+        'application/xml',
+        cache,
     )
-    _send(capabilities, cache['wmtscapabilities_file'], 'application/xml', cache)
 
 
 def _generate_legend_images(gene):
