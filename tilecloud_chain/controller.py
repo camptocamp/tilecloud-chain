@@ -7,6 +7,7 @@ import logging
 import yaml
 import pkgutil
 import time
+import redis
 from six import PY3
 from six import BytesIO as StringIO
 from math import exp, log
@@ -484,6 +485,27 @@ def _generate_openlayers(gene):
 
 
 def status(gene):  # pragma: no cover
+    if 'redis' in gene.config:
+        _redis_status(gene)
+    else:
+        _sqs_status(gene)
+
+
+def _redis_status(gene):
+    config = gene.config['redis']
+    queue = config['queue']
+    if not queue.startswith('queue_'):
+        queue = 'queue_' + queue
+    stats_prefix = ['redis', queue]
+    with stats.timer_context(stats_prefix + ['get_stats']):
+        con = redis.StrictRedis.from_url(config['url'])
+        nb_messages = con.llen(queue)
+    print("Approximate number of tiles to generate: {nb_messages}".format(nb_messages=nb_messages))
+
+    stats.set_gauge(stats_prefix + ['nb_messages'], nb_messages)
+
+
+def _sqs_status(gene):
     # get SQS status
     stats_prefix = ['SQS', gene.config.get('sqs', {}).get('queue', 'unknown')]
     with stats.timer_context(stats_prefix + ['get_stats']):
