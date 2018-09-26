@@ -425,6 +425,7 @@ class Generate:
 
 
 def await_message(queue):  # pragma: no cover
+    del queue
     try:
         # Just sleep, the SQSTileStore will try again after that...
         time.sleep(10)
