@@ -178,8 +178,7 @@ class Server:
                     return self.response(body, {
                         'Content-Type': mime,
                         'Expires': (
-                            datetime.datetime.utcnow() +
-                            datetime.timedelta(hours=self.expires_hours)
+                            datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
                         ).isoformat(),
                         'Cache-Control': "max-age={}".format((3600 * self.expires_hours)),
                         'Access-Control-Allow-Origin': '*',
@@ -266,8 +265,7 @@ class Server:
                 return self.response(body, headers={
                     'Content-Type': "application/xml",
                     'Expires': (
-                        datetime.datetime.utcnow() +
-                        datetime.timedelta(hours=self.expires_hours)
+                        datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
                     ).isoformat(),
                     'Cache-Control': "max-age={}".format((3600 * self.expires_hours)),
                     'Access-Control-Allow-Origin': '*',
@@ -388,8 +386,7 @@ class Server:
             return self.response(tile.data, headers={
                 'Content-Type': tile.content_type,
                 'Expires': (
-                    datetime.datetime.utcnow() +
-                    datetime.timedelta(hours=self.expires_hours)
+                    datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
                 ).isoformat(),
                 'Cache-Control': "max-age={}".format((3600 * self.expires_hours)),
                 'Access-Control-Allow-Origin': '*',
@@ -413,8 +410,7 @@ class Server:
                 response_headers['Pragma'] = 'no-cache'
             else:  # pragma: no cover
                 response_headers['Expires'] = (
-                    datetime.datetime.utcnow() +
-                    datetime.timedelta(hours=self.expires_hours)
+                    datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
                 ).isoformat()
                 response_headers['Cache-Control'] = "max-age={}".format((3600 * self.expires_hours))
                 response_headers['Access-Control-Allow-Origin'] = '*'

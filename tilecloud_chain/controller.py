@@ -392,7 +392,7 @@ def _generate_apache_config(gene):
 
         use_mapcache = 'mapcache' in gene.config
         if use_mapcache and not use_server:
-            token_regex = '([a-zA-Z0-9_\-\+~\.]+)'
+            token_regex = r'([a-zA-Z0-9_\-\+~\.]+)'
             f.write('\n')
 
             for _, layer in sorted(gene.config['layers'].items()):

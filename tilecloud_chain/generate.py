@@ -89,7 +89,7 @@ class Generate:
                     *default_int(layer['grid_ref']['obj'].extent(tilecoord))
                 ))
                 exit()
-            except ValueError as e:  # pragma: no cover
+            except ValueError:  # pragma: no cover
                 logger.error("Tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n", self._options.get_bbox,
                              exc_info=True)
                 exit(1)
@@ -294,8 +294,8 @@ class Generate:
                     "The tile generation of layer '{}{}' is finish".format(
                         layer['name'],
                         "" if (
-                            (len(all_dimensions) == 1 and len(all_dimensions[0]) == 0) or
-                            layer['type'] != 'wms'
+                            (len(all_dimensions) == 1 and len(all_dimensions[0]) == 0)
+                            or layer['type'] != 'wms'
                         )
                         else " ({})".format(
                             " - ".join([
