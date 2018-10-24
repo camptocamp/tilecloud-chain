@@ -33,7 +33,7 @@ class TestController(CompareCase):
             regex=True,
             expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
-                u"""<\?xml version="1.0" encoding="UTF-8"\?>
+                r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -455,7 +455,7 @@ class TestController(CompareCase):
   </Contents>
 </Capabilities>"""]])
 
-    MULTIHOST_CAPABILITIES = u"""<\?xml version="1.0" encoding="UTF-8"\?>
+    MULTIHOST_CAPABILITIES = r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -554,13 +554,13 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/all/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts2/tiles/1.0.0/all/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts3/tiles/1.0.0/all/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -974,7 +974,7 @@ class TestController(CompareCase):
             regex=True,
             expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
-                u"""<\?xml version="1.0" encoding="UTF-8"\?>
+                r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -1513,7 +1513,7 @@ class TestController(CompareCase):
             main_func=controller.main,
             expected=[[
                 'tiles.conf',
-                u"""
+                r"""
 <Location /tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
@@ -1523,9 +1523,9 @@ class TestController(CompareCase):
 Alias /tiles /tmp/tiles/
 
 RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/"""
-                """4/(.*)$ /mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
+                r"""4/(.*)$ /mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
 RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/"""
-                """4/(.*)$ /mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
+                r"""4/(.*)$ /mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
 
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
@@ -1544,7 +1544,7 @@ MapCacheAlias /mapcache "{}"
             main_func=controller.main,
             expected=[[
                 'tiles.conf',
-                u"""
+                r"""
 <Location /tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
@@ -1559,9 +1559,9 @@ ProxyPass /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
 ProxyPassReverse /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
 
 RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/"""
-                """4/(.*)$ /mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
+                r"""4/(.*)$ /mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
 RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/"""
-                """4/(.*)$ /mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
+                r"""4/(.*)$ /mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
 
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
@@ -1574,7 +1574,7 @@ MapCacheAlias /mapcache "%s"
             main_func=controller.main,
             expected=[[
                 'tiles.conf',
-                u"""
+                r"""
 <Location /tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
@@ -1589,7 +1589,7 @@ ProxyPass /tiles/ http://tiles.example.com/
 ProxyPassReverse /tiles/ http://tiles.example.com/
 
 RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
-                """/mapcache/wmts/1.0.0/point/$1/$2/4/$3 [PT]
+                r"""/mapcache/wmts/1.0.0/point/$1/$2/4/$3 [PT]
 
 MapCacheAlias /mapcache "%s"
 """ % (os.path.abspath('mapcache.xml'))]])
@@ -2206,7 +2206,7 @@ OpenLayers.Request.GET({
             regex=True,
             expected=[[
                 '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
-                """<\?xml version="1.0" encoding="UTF-8"\?>
+                r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -2265,7 +2265,7 @@ OpenLayers.Request.GET({
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/all/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -2277,9 +2277,9 @@ OpenLayers.Request.GET({
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend0.png" """
-                """width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
+                r"""width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend2.png" """
-                """width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
+                r"""width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -2291,7 +2291,7 @@ OpenLayers.Request.GET({
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/line/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>

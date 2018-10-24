@@ -650,8 +650,7 @@ class TileGeneration:
             grid=grid,
             geoms=geoms,
             px_buffer=(
-                layer['px_buffer'] +
-                layer['meta_buffer'] if layer.get('meta', False) else 0
+                layer['px_buffer'] + layer['meta_buffer'] if layer.get('meta', False) else 0
             )
         )
 

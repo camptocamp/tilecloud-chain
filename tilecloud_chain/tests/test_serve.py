@@ -15,7 +15,7 @@ from tilecloud_chain.server import PyramidView, app_factory
 from tilecloud_chain import server
 
 
-CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
+CAPABILITIES = r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -79,7 +79,7 @@ CAPABILITIES = """<\?xml version="1.0" encoding="UTF-8"\?>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/wmts/1.0.0/point_hash/default/{DATE}/""" \
-    """{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+    r"""{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -170,7 +170,7 @@ class TestServe(CompareCase):
                 ('point_hash/default/2012/swissgrid_5/1/15/8.png'),
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
+            expected=r"""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -264,7 +264,7 @@ Size per tile: 4[0-9][0-9] o
         self.assert_result_equals(
             request.response.body.decode('utf-8') if PY3 else request.response.body,
             regex=True,
-            expected=u"""<\?xml version="1.0" encoding="UTF-8"\?>
+            expected=r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -702,7 +702,7 @@ Size per tile: 4[0-9][0-9] o
                 ('point_hash/default/2012/swissgrid_5.png.mbtiles')
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
+            expected=r"""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -808,7 +808,7 @@ Size per tile: 4[0-9][0-9] o
                 ('point_hash/default/2012/swissgrid_5.png.bsddb')
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
+            expected=r"""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -991,7 +991,7 @@ Size per tile: 4[0-9][0-9] o
                 ('point_hash/default/2012/swissgrid_5.png.mbtiles')
             ],
             regex=True,
-            expected="""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
+            expected=r"""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 64
@@ -1074,13 +1074,13 @@ Size per tile: 4[0-9][0-9] o
 </msGMLOutput>
 """)
 
-        result = serve({
+        serve({
             'QUERY_STRING': '',
             'PATH_INFO': '/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png'
         }, start_response)
         self.assertEqual(code, '204 No Content')
 
-        result = serve({
+        serve({
             'QUERY_STRING': '',
             'PATH_INFO': '/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png'
         }, start_response)
