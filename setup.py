@@ -27,7 +27,7 @@ if sys.version_info < (2, 7):
 
 setup(
     name='tilecloud-chain',
-    version='1.8.1',
+    version='1.8.2',
     description=(
         "Tools to generate tiles from WMS or Mapnik, to S3, "
         "Berkley DB, MBTiles, or local filesystem in WMTS layout using "
