@@ -504,11 +504,11 @@ def main():
         elif options.layer:
             generate.gene(gene.layers[options.layer])
         elif options.get_bbox:  # pragma: no cover
-            exit("With --get-bbox option we needs to specify a layer")
+            exit("With --get-bbox option you need to specify a layer")
         elif options.get_hash:  # pragma: no cover
-            exit("With --get-hash option we needs to specify a layer")
+            exit("With --get-hash option you need to specify a layer")
         elif options.tiles:  # pragma: no cover
-            exit("With --tiles option we needs to specify a layer")
+            exit("With --tiles option you need to specify a layer")
         else:
             for layer in gene.config['generation'].get('default_layers', gene.layers.keys()):
                 generate.gene(gene.layers[layer])
