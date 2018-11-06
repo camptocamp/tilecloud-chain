@@ -1307,7 +1307,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1321,7 +1321,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1335,7 +1335,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1349,7 +1349,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1361,7 +1361,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1375,7 +1375,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1387,7 +1387,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1401,7 +1401,7 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012">2005,2010,2012</dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1426,7 +1426,7 @@ class TestController(CompareCase):
    <default_format>image/jpeg</default_format>
    <errors>report</errors>
    <lock_dir>/tmp</lock_dir>
-</mapcache>"""]])
+</mapcache>"""]])  # noqa: E501
 
     @attr(general=True)
     def test_mapcache2(self):
