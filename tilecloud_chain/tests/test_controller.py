@@ -1113,7 +1113,10 @@ class TestController(CompareCase):
     @attr(general=True)
     def test_mapcache(self):
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --mapcache -c tilegeneration/test-fix.yaml',
+            cmd=(
+                '.build/venv/bin/generate_controller --mapcache --mapcache-version 1.6 '
+                '-c tilegeneration/test-fix.yaml'
+            ),
             main_func=controller.main,
             expected=[['mapcache.xml', u"""<?xml version="1.0" encoding="UTF-8"?>
 <mapcache>
