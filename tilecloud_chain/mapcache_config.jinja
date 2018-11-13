@@ -50,10 +50,16 @@ if layer['type'] == 'wms' or 'wms_url' in layer %}
       <auto_expire>13800</auto_expire> <!-- 4 hours -->{%
 if len(layer['dimensions']) > 0 %}
       <dimensions>{%
-for dim in layer['dimensions'] %}
+for dim in layer['dimensions'] %}{%
+if version == '1.4' %}
+        <dimension type="values" name="{{dim['name']}}" default="{{dim['default']}}">{{
+            ','.join(dim['values'])
+        }}</dimension>{%
+else %}
         <dimension type="values" name="{{dim['name']}}" default="{{dim['default']}}"><value>{{
             '</value><value>'.join(dim['values'])
         }}</value></dimension>{%
+endif %}{%
 endfor %}
       </dimensions>{% endif %}
    </tileset>
