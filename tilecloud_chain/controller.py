@@ -59,6 +59,10 @@ def main():
         help='Generate MapCache configuration file'
     )
     parser.add_argument(
+        '--mapcache-version', default='1.4', choices=('1.4', '1.6'),
+        help='The used version of MapCache'
+    )
+    parser.add_argument(
         '--apache', '--generate-apache-config', default=False, action='store_true', dest='apache',
         help='Generate Apache configuration file'
     )
@@ -94,7 +98,7 @@ def main():
         _generate_wmts_capabilities(gene)
 
     if options.mapcache:
-        _generate_mapcache_config(gene)
+        _generate_mapcache_config(gene, options.mapcache_version)
 
     if options.apache:
         _generate_apache_config(gene)
@@ -299,7 +303,7 @@ def _generate_legend_images(gene):
                         )
 
 
-def _generate_mapcache_config(gene):
+def _generate_mapcache_config(gene, version):
     for layer in gene.layers.values():
         if layer['type'] == 'wms' or 'wms_url' in layer:
             params = {}
@@ -318,6 +322,7 @@ def _generate_mapcache_config(gene):
         layers=gene.layers,
         grids=gene.grids,
         mapcache=gene.config['mapcache'],
+        version=version,
         min=min,
         len=len,
         sorted=sorted,
