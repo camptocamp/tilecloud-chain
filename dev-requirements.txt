@@ -1,5 +1,5 @@
 bsddb3==6.2.6
-coverage==4.5.1
+coverage==4.5.2
 flake8==3.6.0 # lint
 nose==1.3.7
 pep8==1.7.1 # lint
