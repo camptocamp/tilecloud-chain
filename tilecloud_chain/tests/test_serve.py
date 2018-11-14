@@ -198,6 +198,7 @@ Size per tile: 4[0-9][0-9] o
         )
 
         server.pyramid_server = None
+        server.tilegeneration = None
         request = DummyRequest()
         request.registry.settings = {
             'tilegeneration_configfile': 'tilegeneration/test-nosns.yaml',
@@ -729,6 +730,7 @@ Size per tile: 4[0-9][0-9] o
         )
 
         server.pyramid_server = None
+        server.tilegeneration = None
         request = DummyRequest()
         request.registry.settings = {
             'tilegeneration_configfile': 'tilegeneration/test-serve.yaml',
@@ -835,6 +837,7 @@ Size per tile: 4[0-9][0-9] o
         )
 
         server.pyramid_server = None
+        server.tilegeneration = None
         request = DummyRequest()
         request.registry.settings = {
             'tilegeneration_configfile': 'tilegeneration/test-bsddb.yaml',
@@ -905,6 +908,7 @@ Size per tile: 4[0-9][0-9] o
     @log_capture('tilecloud_chain', level=30)
     def test_serve_gfi(self, l):
         server.pyramid_server = None
+        server.tilegeneration = None
         request = DummyRequest()
         request.registry.settings = {
             'tilegeneration_configfile': 'tilegeneration/test-serve.yaml',
@@ -939,6 +943,7 @@ Size per tile: 4[0-9][0-9] o
 """)
 
         server.pyramid_server = None
+        server.tilegeneration = None
         request = DummyRequest()
         request.registry.settings = {
             'tilegeneration_configfile': 'tilegeneration/test-serve.yaml',
@@ -1017,6 +1022,8 @@ Size per tile: 4[0-9][0-9] o
             ],
         )
 
+        server.pyramid_server = None
+        server.tilegeneration = None
         serve = app_factory({}, configfile='tilegeneration/test-serve.yaml')
 
         global code, headers
@@ -1102,6 +1109,7 @@ Size per tile: 4[0-9][0-9] o
     @log_capture('tilecloud_chain', level=30)
     def test_ondemend_wmtscapabilities(self, l):
         server.pyramid_server = None
+        server.tilegeneration = None
         request = DummyRequest()
         request.registry.settings = {
             'tilegeneration_configfile': 'tilegeneration/test-serve-wmtscapabilities.yaml',

@@ -14,6 +14,7 @@ install_requires = [
     'c2cwsgiutils',
     'Jinja2',
     'pykwalify',
+    'pyramid_mako',
     'PyYAML',
     'Shapely',
     'six',
