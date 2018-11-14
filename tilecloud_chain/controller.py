@@ -490,10 +490,11 @@ def _generate_openlayers(gene):
 
 
 def status(gene):  # pragma: no cover
-    if 'redis' in gene.config:
-        _redis_status(gene)
-    else:
-        _sqs_status(gene)
+    print('\n'.join(get_status(gene)))
+
+
+def get_status(gene):
+    return _redis_status(gene) if 'redis' in gene.config else _sqs_status(gene)
 
 
 def _redis_status(gene):
@@ -505,9 +506,12 @@ def _redis_status(gene):
     with stats.timer_context(stats_prefix + ['get_stats']):
         con = redis.StrictRedis.from_url(config['url'])
         nb_messages = con.llen(queue)
-    print("Approximate number of tiles to generate: {nb_messages}".format(nb_messages=nb_messages))
 
     stats.set_gauge(stats_prefix + ['nb_messages'], nb_messages)
+
+    return([
+        "Approximate number of tiles to generate: {nb_messages}".format(nb_messages=nb_messages)
+    ])
 
 
 def _sqs_status(gene):
@@ -520,14 +524,14 @@ def _sqs_status(gene):
     attributes["CreatedTimestamp"] = time.ctime(int(attributes["CreatedTimestamp"]))
     attributes["LastModifiedTimestamp"] = time.ctime(int(attributes["LastModifiedTimestamp"]))
 
-    print(
-        """Approximate number of tiles to generate: {ApproximateNumberOfMessages}
-Approximate number of generating tiles: {ApproximateNumberOfMessagesNotVisible}
-Delay in seconds: {DelaySeconds}
-Receive message wait time in seconds: {ReceiveMessageWaitTimeSeconds}
-Visibility timeout in seconds: {VisibilityTimeout}
-Queue creation date: {CreatedTimestamp}
-Last modification in tile queue: {LastModifiedTimestamp}""".format(**attributes)
-    )
-
     stats.set_gauge(stats_prefix + ['nb_messages'], int(attributes['ApproximateNumberOfMessages']))
+
+    return [
+        "Approximate number of tiles to generate: {ApproximateNumberOfMessages}".format(**attributes),
+        "Approximate number of generating tiles: {ApproximateNumberOfMessagesNotVisible}".format(**attributes),
+        "Delay in seconds: {DelaySeconds}".format(**attributes),
+        "Receive message wait time in seconds: {ReceiveMessageWaitTimeSeconds}".format(**attributes),
+        "Visibility timeout in seconds: {VisibilityTimeout}".format(**attributes),
+        "Queue creation date: {CreatedTimestamp}".format(**attributes),
+        "Last modification in tile queue: {LastModifiedTimestamp}".format(**attributes),
+    ]

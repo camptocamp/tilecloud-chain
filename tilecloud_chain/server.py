@@ -492,7 +492,8 @@ class PyramidView():
         global pyramid_server
         if pyramid_server is None:
             pyramid_server = PyramidServer(
-                request.registry.settings['tilegeneration_configfile'])
+                request.registry.settings['tilegeneration_configfile']
+            )
         self.server = pyramid_server
 
     def __call__(self):
@@ -509,10 +510,17 @@ class PyramidView():
 
 
 def main(_, **settings):
+    from pyramid_mako import add_mako_renderer
+
     config = Configurator(settings=settings)
     config.include(c2cwsgiutils.pyramid.includeme)
     health_check.HealthCheck(config)
 
+    add_mako_renderer(config, ".html")
+
     config.add_route('tiles', '/*path')
     config.add_view(PyramidView, route_name='tiles')
+
+    config.add_route("index", "/admin")
+
     return config.make_wsgi_app()

@@ -355,6 +355,18 @@ mapping:
             expires:
                 type: int
                 default: 8
+            predefined_run:
+                type: seq
+                sequence:
+                  - type: map
+                    mapping:
+                        command:
+                            type: str
+                            requied: True
+                        name:
+                            type: str
+                            requied: True
+
     cost:
         type: map
         mapping:
