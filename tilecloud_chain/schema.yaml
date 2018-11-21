@@ -352,9 +352,26 @@ mapping:
             static_path:
                 type: str
                 default: 'static'
+            admin_path:
+                type: str
+                default: 'admin'
             expires:
                 type: int
                 default: 8
+            predefined_commands:
+                type: seq
+                sequence:
+                  - type: map
+                    mapping:
+                        command:
+                            type: str
+                        name:
+                            type: str
+            allowed_commands:
+                type: seq
+                sequence:
+                  - type: str
+
     cost:
         type: map
         mapping:

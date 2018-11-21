@@ -48,23 +48,32 @@ if sys.version_info.major < 3:
 logger = logging.getLogger(__name__)
 
 
+tilegeneration = None
+
+
+def init_tilegeneration(config_file):
+    global tilegeneration
+    if tilegeneration is None:
+        logger.info("Config file: '{}'".format(config_file))
+        tilegeneration = TileGeneration(config_file)
+
+
 class Server:
 
-    def __init__(self, config_file):
+    def __init__(self):
         self.filters = {}
         self.max_zoom_seed = {}
 
-        logger.info("Config file: '{}'".format(config_file))
-        self.tilegeneration = TileGeneration(config_file)
+        global tilegeneration
 
-        self.expires_hours = self.tilegeneration.config['server']['expires']
-        self.static_allow_extension = self.tilegeneration.config['server'].get(
+        self.expires_hours = tilegeneration.config['server']['expires']
+        self.static_allow_extension = tilegeneration.config['server'].get(
             'static_allow_extension', ['jpeg', 'png', 'xml', 'js', 'html', 'css']
         )
 
-        self.cache = self.tilegeneration.caches[
-            self.tilegeneration.config['server'].get(
-                'cache', self.tilegeneration.config['generation']['default_cache']
+        self.cache = tilegeneration.caches[
+            tilegeneration.config['server'].get(
+                'cache', tilegeneration.config['generation']['default_cache']
             )
         ]
 
@@ -94,32 +103,32 @@ class Server:
                     data = file.read()
                 mime = mimetypes.guess_type(p)
                 return data, mime[0]
-        # get capabilities or other static files
+        # Get capabilities or other static files
         self._get = types.MethodType(_get, self)
 
-        mapcache_base = self.tilegeneration.config['server']['mapcache_base'].rstrip('/')
-        mapcache_location = self.tilegeneration.config['mapcache']['location'].strip('/')
+        mapcache_base = tilegeneration.config['server']['mapcache_base'].rstrip('/')
+        mapcache_location = tilegeneration.config['mapcache']['location'].strip('/')
         if mapcache_location == '':
             self.mapcache_baseurl = mapcache_base + '/wmts'
         else:
             self.mapcache_baseurl = '{}/{}/wmts'.format(mapcache_base, mapcache_location)
-        self.mapcache_header = self.tilegeneration.config['server'].get('mapcache_headers', {})
+        self.mapcache_header = tilegeneration.config['server'].get('mapcache_headers', {})
 
-        geoms_redirect = self.tilegeneration.config['server']['geoms_redirect']
+        geoms_redirect = tilegeneration.config['server']['geoms_redirect']
 
-        self.layers = self.tilegeneration.config['server'].get(
-            'layers', self.tilegeneration.layers.keys()
+        self.layers = tilegeneration.config['server'].get(
+            'layers', tilegeneration.layers.keys()
         )
         self.stores = {}
         for layer_name in self.layers:
-            layer = self.tilegeneration.layers[layer_name]
+            layer = tilegeneration.layers[layer_name]
 
-            # build geoms redirect
+            # Build geoms redirect
             if geoms_redirect:
-                self.filters[layer_name] = self.tilegeneration.get_geoms_filter(
+                self.filters[layer_name] = tilegeneration.get_geoms_filter(
                     layer=layer,
                     grid=layer['grid_ref'],
-                    geoms=self.tilegeneration.get_geoms(
+                    geoms=tilegeneration.get_geoms(
                         layer,
                         extent=layer['bbox'] if 'bbox' in layer else layer['grid_ref']['bbox'],
                     ),
@@ -134,7 +143,7 @@ class Server:
             else:
                 self.max_zoom_seed[layer_name] = 999999
 
-            # build stores
+            # Build stores
             store_defs = [{
                 'ref': [layer_name],
                 'dimensions': {},
@@ -153,10 +162,10 @@ class Server:
                 store_defs = new_store_defs
             for store_def in store_defs:
                 self.stores['/'.join(store_def['ref'])] = \
-                    self.tilegeneration.get_store(self.cache, layer, read_only=True)
+                    tilegeneration.get_store(self.cache, layer, read_only=True)
 
-        self.wmts_path = self.tilegeneration.config['server']['wmts_path']
-        self.static_path = self.tilegeneration.config['server']['static_path']
+        self.wmts_path = tilegeneration.config['server']['wmts_path']
+        self.static_path = tilegeneration.config['server']['static_path']
 
     def __call__(self, environ, start_response):
         params = {}
@@ -210,7 +219,7 @@ class Server:
                 params['STYLE'] = path[2]
 
                 if params['LAYER'] in self.layers:
-                    layer = self.tilegeneration.layers[params['LAYER']]
+                    layer = tilegeneration.layers[params['LAYER']]
                 else:
                     return self.error(400, "Wrong Layer '{}'".format(params['LAYER']), **kwargs)
 
@@ -259,7 +268,7 @@ class Server:
                 wmtscapabilities_file = self.cache['wmtscapabilities_file']
                 body, mime = self._get(wmtscapabilities_file, **kwargs)
             else:
-                body = controller.get_wmts_capabilities(self.tilegeneration, self.cache).encode('utf-8')
+                body = controller.get_wmts_capabilities(tilegeneration, self.cache).encode('utf-8')
                 mime = "application/xml"
             if mime is not None:
                 return self.response(body, headers={
@@ -285,7 +294,7 @@ class Server:
 
         if not path:
             if params['LAYER'] in self.layers:
-                layer = self.tilegeneration.layers[params['LAYER']]
+                layer = tilegeneration.layers[params['LAYER']]
             else:
                 return self.error(400, "Wrong Layer '{}'".format(params['LAYER']), **kwargs)
 
@@ -451,7 +460,10 @@ def app_factory(
 ):
     del global_config
     del local_conf
-    return Server(configfile)
+
+    init_tilegeneration(configfile)
+
+    return Server()
 
 
 class PyramidServer(Server):
@@ -490,9 +502,11 @@ class PyramidView():
     def __init__(self, request):
         self.request = request
         global pyramid_server
+
+        init_tilegeneration(request.registry.settings['tilegeneration_configfile'])
+
         if pyramid_server is None:
-            pyramid_server = PyramidServer(
-                request.registry.settings['tilegeneration_configfile'])
+            pyramid_server = PyramidServer()
         self.server = pyramid_server
 
     def __call__(self):
@@ -509,10 +523,30 @@ class PyramidView():
 
 
 def main(_, **settings):
+    from pyramid_mako import add_mako_renderer
+
     config = Configurator(settings=settings)
+
+    init_tilegeneration(settings['tilegeneration_configfile'])
+    global tilegeneration
+
     config.include(c2cwsgiutils.pyramid.includeme)
     health_check.HealthCheck(config)
 
-    config.add_route('tiles', '/*path')
+    add_mako_renderer(config, ".html")
+
+    config.add_route(
+        'admin', '/{}/'.format(tilegeneration.config['server']['admin_path']),
+        request_method='GET',
+    )
+    config.add_route(
+        'admin_run', '/{}/run'.format(tilegeneration.config['server']['admin_path']),
+        request_method='POST',
+    )
+
+    config.add_route('tiles', '/*path', request_method='GET')
     config.add_view(PyramidView, route_name='tiles')
+
+    config.scan('tilecloud_chain.views')
+
     return config.make_wsgi_app()
