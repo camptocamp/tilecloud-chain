@@ -141,7 +141,9 @@ class TileGeneration:
     duration = 0
     error = 0
 
-    def __init__(self, config_file, options=None, layer_name=None, base_config=None):
+    def __init__(
+        self, config_file, options=None, layer_name=None, base_config=None, configure_logging=True
+    ):
         self._close_actions = []
         self._layers_geoms = {}
         self.error_files_ = {}
@@ -160,7 +162,8 @@ class TileGeneration:
             if not hasattr(options, 'geom'):
                 options.geom = True
 
-        self._configure_logging(options, '%(levelname)s:%(name)s:%(funcName)s:%(message)s')
+        if configure_logging:
+            self._configure_logging(options, '%(levelname)s:%(name)s:%(funcName)s:%(message)s')
 
         with open(config_file) as f:
             self.config = {}
