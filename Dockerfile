@@ -24,7 +24,8 @@ COPY requirements.txt /app/
 
 RUN \
   cd /app && \
-  pip install --no-cache-dir -r requirements.txt
+  pip install --no-cache-dir -r requirements.txt && /
+  python3 -m compileall -q
 
 ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
     C2CWSGI_LOG_LEVEL=WARN \
@@ -42,4 +43,5 @@ COPY . /app/
 RUN \
   cd /app && \
   pip install --editable=. && \
-  mv docker/run /usr/bin/
+  mv docker/run /usr/bin/ && \
+  python3 -m compileall -q /app/tilecloud_chain
