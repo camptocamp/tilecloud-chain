@@ -34,8 +34,7 @@ import shlex
 import subprocess
 import tilecloud_chain.server
 import threading
-from c2cwsgiutils._auth import is_auth, auth_view
-from c2cwsgiutils.debug import ENV_KEY, CONFIG_KEY
+from c2cwsgiutils._auth import is_auth, auth_view, SECRET_ENV, SECRET_PROP
 from pyramid.view import view_config
 from tilecloud_chain.controller import get_status
 from typing import List
@@ -51,7 +50,7 @@ class LogThread(threading.Thread):
 
     def run(self):
         try:
-            display_command = ' '.join[shlex.quote(arg for arg in self.command)]
+            display_command = ' '.join([shlex.quote(arg) for arg in self.command])
             LOG.error("Run the command `{}`".format(display_command))
             with subprocess.Popen(
                 self.command,
@@ -85,7 +84,7 @@ class Admin:
     def index(self):
         return {
             'secret': self.request.params.get('secret'),
-            'auth': is_auth(self.request, ENV_KEY, CONFIG_KEY),
+            'auth': is_auth(self.request, SECRET_ENV, SECRET_PROP),
             'commands': self.gene.config.get('server', {}).get('predefined_commands', []),
             'status': get_status(self.gene),
             'run_url': self.request.route_url('admin_run')
@@ -93,7 +92,7 @@ class Admin:
 
     @view_config(route_name='admin_run')
     def run(self):
-        auth_view(self.request, ENV_KEY, CONFIG_KEY)
+        auth_view(self.request, SECRET_ENV, SECRET_PROP)
 
         if 'command' not in self.request.POST:
             raise pyramid.httpexceptions.HTTPBadRequest("The POST argument 'command' is required")
@@ -106,6 +105,6 @@ class Admin:
             raise pyramid.httpexceptions.HTTPBadRequest(
                 "The given executable '{}' is not allowed".format(command[0])
             )
-        lt = LogThread(self.request.POST['command'])
+        lt = LogThread(command)
         lt.start()
         return pyramid.httpexceptions.HTTPFound(self.request.route_url('admin'))
