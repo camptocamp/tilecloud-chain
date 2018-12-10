@@ -24,7 +24,7 @@ COPY requirements.txt /app/
 
 RUN \
   cd /app && \
-  pip install --no-cache-dir -r requirements.txt && /
+  pip install --no-cache-dir -r requirements.txt && \
   python3 -m compileall -q
 
 ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
