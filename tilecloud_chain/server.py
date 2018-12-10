@@ -55,7 +55,7 @@ def init_tilegeneration(config_file):
     global tilegeneration
     if tilegeneration is None:
         logger.info("Config file: '{}'".format(config_file))
-        tilegeneration = TileGeneration(config_file)
+        tilegeneration = TileGeneration(config_file, configure_logging=False)
 
 
 class Server:
