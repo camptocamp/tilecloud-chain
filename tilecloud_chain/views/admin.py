@@ -34,7 +34,7 @@ import shlex
 import subprocess
 import tilecloud_chain.server
 import threading
-from c2cwsgiutils._auth import is_auth, auth_view, SECRET_ENV, SECRET_PROP
+from c2cwsgiutils.auth import is_auth, auth_view
 from pyramid.view import view_config
 from tilecloud_chain.controller import get_status
 from typing import List
@@ -84,7 +84,7 @@ class Admin:
     def index(self):
         return {
             'secret': self.request.params.get('secret'),
-            'auth': is_auth(self.request, SECRET_ENV, SECRET_PROP),
+            'auth': is_auth(self.request),
             'commands': self.gene.config.get('server', {}).get('predefined_commands', []),
             'status': get_status(self.gene),
             'run_url': self.request.route_url('admin_run')
@@ -92,7 +92,7 @@ class Admin:
 
     @view_config(route_name='admin_run')
     def run(self):
-        auth_view(self.request, SECRET_ENV, SECRET_PROP)
+        auth_view(self.request)
 
         if 'command' not in self.request.POST:
             raise pyramid.httpexceptions.HTTPBadRequest("The POST argument 'command' is required")
