@@ -165,7 +165,7 @@ class Server:
                     tilegeneration.get_store(self.cache, layer, read_only=True)
 
         self.wmts_path = tilegeneration.config['server']['wmts_path']
-        self.static_path = tilegeneration.config['server']['static_path']
+        self.static_path = tilegeneration.config['server']['static_path'].split('/')
 
     def __call__(self, environ, start_response):
         params = {}
@@ -181,7 +181,7 @@ class Server:
         metadata = {}
 
         if path:
-            if len(path) >= 1 and path[0] == self.static_path:
+            if path[:len(self.static_path)] == self.static_path:
                 body, mime = self._get('/'.join(path[1:]), **kwargs)
                 if mime is not None:
                     return self.response(body, {
@@ -199,7 +199,7 @@ class Server:
                 return self.error(
                     404,
                     "Type '{}' don't exists, allows values: '{}' or '{}'".format(
-                        path[0], self.wmts_path, self.static_path
+                        path[0], self.wmts_path, '/'.join(self.static_path)
                     ),
                     **kwargs
                 )
