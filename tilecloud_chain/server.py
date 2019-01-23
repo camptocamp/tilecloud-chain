@@ -182,7 +182,7 @@ class Server:
 
         if path:
             if path[:len(self.static_path)] == self.static_path:
-                body, mime = self._get('/'.join(path[1:]), **kwargs)
+                body, mime = self._get('/'.join(path[len(self.static_path):]), **kwargs)
                 if mime is not None:
                     return self.response(body, {
                         'Content-Type': mime,
