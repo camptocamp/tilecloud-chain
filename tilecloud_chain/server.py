@@ -522,8 +522,9 @@ class PyramidView():
         return self.server.serve(path, params, request=self.request)
 
 
-def main(_, **settings):
+def main(global_config, **settings):
     from pyramid_mako import add_mako_renderer
+    del global_config  # unused
 
     config = Configurator(settings=settings)
 
