@@ -481,7 +481,10 @@ class PyramidServer(Server):
     }
 
     def error(self, code, message='', **kwargs):
-        raise self.HTTP_EXCEPTIONS[code](message)
+        raise self.HTTP_EXCEPTIONS[code](message, headers={
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET',
+        })
 
     def response(self, data, headers=None, **kwargs):
         if headers is None:  # pragma: no cover
