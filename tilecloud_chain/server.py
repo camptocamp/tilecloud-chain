@@ -468,20 +468,13 @@ def app_factory(
 
 class PyramidServer(Server):
 
-    from pyramid.httpexceptions import HTTPNoContent, HTTPBadRequest, \
-        HTTPForbidden, HTTPNotFound, HTTPBadGateway, HTTPInternalServerError
-
-    HTTP_EXCEPTIONS = {
-        204: HTTPNoContent,
-        400: HTTPBadRequest,
-        403: HTTPForbidden,
-        404: HTTPNotFound,
-        500: HTTPInternalServerError,
-        502: HTTPBadGateway,
-    }
-
     def error(self, code, message='', **kwargs):
-        raise self.HTTP_EXCEPTIONS[code](message)
+        from pyramid.httpexceptions import exception_response
+
+        raise exception_response(code, detail=message, headers={
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET',
+        })
 
     def response(self, data, headers=None, **kwargs):
         if headers is None:  # pragma: no cover
