@@ -46,6 +46,7 @@ before_install:
 - sudo chmod g+s,o+w /tmp/tests
 
 install:
+- (python --version | grep -q " 3.5" && pip install "c2cwsgiutils<3") || true
 - pip install --requirement=requirements.txt
 - pip install --requirement=dev-requirements.txt
 - pip install --editable=.

@@ -1,9 +1,11 @@
-FROM camptocamp/c2cwsgiutils:2
+FROM camptocamp/c2cwsgiutils:3-full
 MAINTAINER Stéphane Brunner <stephane.brunner@camptocamp.com>
 
+COPY requirements.txt /app/
 RUN \
+  DEV_PACKAGES="python3.7-dev build-essential libgeos-dev" && \
   apt-get update && \
-  apt-get install --assume-yes --no-install-recommends \
+  DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
     ca-certificates \
     libmapnik-dev \
     mapnik-utils \
@@ -13,28 +15,25 @@ RUN \
     node-carto \
     osm2pgsql \
     curl \
-    unzip && \
-  cd /tmp && \
+    unzip \
+    ${DEV_PACKAGES} && \
+  cd /app && \
+  pip install --disable-pip-version-check --no-cache-dir -r requirements.txt && \
   mkdir /fonts && \
   mkdir /project && \
+  apt remove --purge --yes ${DEV_PACKAGES} gcc-7 && \
+  apt autoremove --purge --yes && \
   apt-get clean && \
-  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /root/.cache/*
-
-COPY requirements.txt /app/
-
-RUN \
-  cd /app && \
-  pip install --no-cache-dir -r requirements.txt && \
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /root/.cache/* && \
   python3 -m compileall -q
 
 ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
     C2CWSGI_LOG_LEVEL=WARN \
     TILECLOUD_LOG_LEVEL=INFO \
     TILECLOUD_CHAIN_LOG_LEVEL=INFO \
-    GUNICORN_PARAMS="-b :80 --worker-class gthread --threads 15 --workers 3" \
     VISIBLE_ENTRY_POINT=/tiles/
 
-EXPOSE 80
+EXPOSE 8080
 
 WORKDIR /etc/tilegeneration/
 
