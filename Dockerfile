@@ -21,8 +21,7 @@ RUN \
   pip install --disable-pip-version-check --no-cache-dir -r requirements.txt && \
   mkdir /fonts && \
   mkdir /project && \
-  apt remove --purge --yes ${DEV_PACKAGES} gcc-7 && \
-  apt autoremove --purge --yes && \
+  apt remove --purge --autoremove --yes ${DEV_PACKAGES} binutils && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /root/.cache/* && \
   python3 -m compileall -q
