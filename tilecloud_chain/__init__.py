@@ -1279,4 +1279,10 @@ def _safe_generator(generator, time_message=None):
             exit("User interrupt")
         except StopIteration:
             return
+        except RuntimeError as e:
+            if isinstance(e.__cause__, StopIteration):
+                # since python 3.7, a StopIteration is wrapped in a RuntimeError (PEP 479)
+                return
+            else:
+                raise e
         yield tile
