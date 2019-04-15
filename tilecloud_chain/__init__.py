@@ -41,6 +41,8 @@ from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.mbtiles import MBTilesTileStore
 from tilecloud.store.filesystem import FilesystemTileStore
+from tilecloud.store.sqs import SQSTileStore, maybe_stop
+from tilecloud.store.redis import RedisTileStore
 from tilecloud.layout.wmts import WMTSTileLayout
 from tilecloud.filter.logger import Logger
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
@@ -586,13 +588,6 @@ class TileGeneration:
             for lname, layer in self.layers.items()
         }), stats_name='store')
         return cache_tilestore
-
-    def get_sqs_queue(self):  # pragma: no cover
-        if 'sqs' not in self.config:
-            exit("The config hasn't any configured queue")
-        sqs = boto3.resource('sqs', region_name=self.config['sqs']['region'])
-        queue = sqs.get_queue_by_name(QueueName=self.config['sqs']['queue'])
-        return queue
 
     def init_geom(self, layer, extent=None):
         self.geoms = self.get_geoms(layer, extent)
@@ -1285,3 +1280,38 @@ def _safe_generator(generator, time_message=None):
             else:
                 raise e
         yield tile
+
+
+def _await_message(queue):  # pragma: no cover
+    del queue
+    try:
+        # Just sleep, the SQSTileStore will try again after that...
+        time.sleep(10)
+    except KeyboardInterrupt:
+        raise StopIteration
+
+
+def get_queue_store(config, daemon):
+    if 'redis' in config:
+        # Create a Redis queue
+        conf = config['redis']
+        return TimedTileStoreWrapper(
+            RedisTileStore(conf['url'], name=conf['queue'], stop_if_empty=not daemon,
+                           timeout=conf['timeout'], pending_timeout=conf['pending_timeout'],
+                           max_retries=conf['max_retries'], max_errors_age=conf['max_errors_age'],
+                           max_errors_nb=conf['max_errors_nb']),
+            stats_name='redis')
+    else:
+        # Create a SQS queue
+        return TimedTileStoreWrapper(
+            SQSTileStore(_get_sqs_queue(config),
+                         on_empty=_await_message if daemon else maybe_stop),
+            stats_name='SQS')  # pragma: no cover
+
+
+def _get_sqs_queue(config):  # pragma: no cover
+    if 'sqs' not in config:
+        exit("The config hasn't any configured queue")
+    sqs = boto3.resource('sqs', region_name=config['sqs']['region'])
+    queue = sqs.get_queue_by_name(QueueName=config['sqs']['queue'])
+    return queue

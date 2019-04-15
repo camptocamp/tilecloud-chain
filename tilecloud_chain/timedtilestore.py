@@ -59,6 +59,9 @@ class TimedTileStoreWrapper(TileStore):
         with stats.timer_context(self._get_stats_name('put_one', tile)):
             return self._tile_store.put_one(tile)
 
+    def __getattr__(self, item):
+        return getattr(self._tile_store, item)
+
     def get_bounding_pyramid(self):
         return self._tile_store.get_bounding_pyramid()
 

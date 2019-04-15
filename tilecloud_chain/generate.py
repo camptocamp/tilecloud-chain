@@ -9,19 +9,17 @@ import random
 from datetime import datetime
 from getpass import getuser
 from argparse import ArgumentParser
-import time
 
 import boto3
 from c2cwsgiutils import stats
 from tilecloud import TileCoord
 from tilecloud.store.url import URLTileStore
-from tilecloud.store.sqs import SQSTileStore, maybe_stop
-from tilecloud.store.redis import RedisTileStore
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.filter.logger import Logger
 
 from tilecloud_chain import TileGeneration, HashDropper, HashLogger, TilesFileStore, \
-    add_comon_options, parse_tilecoord, quote, Count, MultiTileStore, MultiAction, TimedTileStoreWrapper
+    add_comon_options, parse_tilecoord, quote, Count, MultiTileStore, MultiAction, TimedTileStoreWrapper, \
+    get_queue_store
 from tilecloud_chain.format import size_format, duration_format, default_int
 from tilecloud_chain.database_logger import DatabaseLoggerInit, DatabaseLogger
 
@@ -62,19 +60,7 @@ class Generate:
         self._count_tiles_dropped = Count()
 
         if self._options.role in ('master', 'slave'):
-            if 'redis' in self._gene.config:
-                # Create a Redis queue
-                config = self._gene.config['redis']
-                self._queue_tilestore = TimedTileStoreWrapper(
-                    RedisTileStore(config['url'], name=config['queue'],
-                                   stop_if_empty=not self._options.daemon),
-                    stats_name='redis')
-            else:
-                # Create a SQS queue
-                self._queue_tilestore = TimedTileStoreWrapper(
-                    SQSTileStore(self._gene.get_sqs_queue(),
-                                 on_empty=await_message if self._options.daemon else maybe_stop),
-                    stats_name='SQS')  # pragma: no cover
+            self._queue_tilestore = get_queue_store(self._gene.config, self._options.daemon)
 
         if self._options.role in ('local', 'slave'):
             self._cache_tilestore = self._gene.get_tilesstore(self._options.cache)
@@ -422,15 +408,6 @@ class Generate:
                     output_format=layer['output_format'],
                     proj4_literal=grid['proj4_literal'],
                 )
-
-
-def await_message(queue):  # pragma: no cover
-    del queue
-    try:
-        # Just sleep, the SQSTileStore will try again after that...
-        time.sleep(10)
-    except KeyboardInterrupt:
-        raise StopIteration
 
 
 def detach():  # pragma: no cover
