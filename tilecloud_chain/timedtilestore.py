@@ -18,9 +18,12 @@ class TimedTileStoreWrapper(TileStore):
             return [self._stats_name, func_name]
 
     def _time_iteration(self, generator, func_name):
-        while True:  # will exit when next(generator) raises StopIteration
+        while True:
             timer = stats.timer()
-            tile = next(generator)
+            try:
+                tile = next(generator)
+            except StopIteration:
+                break
             timer.stop(self._get_stats_name(func_name, tile))
             yield tile
 

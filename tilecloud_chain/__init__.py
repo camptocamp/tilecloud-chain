@@ -688,19 +688,24 @@ class TileGeneration:
         store = TimedTileStoreWrapper(MultiTileStore(splitters), stats_name='splitter')
 
         def meta_get(tilestream):  # pragma: no cover
-            for metatile in tilestream:
-                substream = store.get((metatile,))
-                try:
-                    for tile in substream:
-                        yield tile
-                except StopIteration:
-                    pass
-                except RuntimeError as e:
-                    if isinstance(e.__cause__, StopIteration):
-                        # since python 3.7, a StopIteration is wrapped in a RuntimeError (PEP 479)
+            try:
+                for metatile in tilestream:
+                    substream = store.get((metatile,))
+                    try:
+                        for tile in substream:
+                            yield tile
+                    except StopIteration:
                         pass
-                    else:
-                        raise e
+                    except RuntimeError as e:
+                        if isinstance(e.__cause__, StopIteration):
+                            # since python 3.7, a StopIteration is wrapped in a RuntimeError (PEP 479)
+                            pass
+                        else:
+                            raise e
+            except RuntimeError as e:
+                if isinstance(e.__cause__, StopIteration):
+                    logger.warning("StopIterator from hell", exc_info=True)
+                raise e
 
         self.tilestream = meta_get(self.tilestream)  # pragma: no cover
 
