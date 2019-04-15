@@ -999,7 +999,10 @@ Size per tile: 498 o
 
     @attr(general=True)
     def test_redis(self):
-        RedisTileStore('redis://localhost:6379').delete_all()
+        redis_url = os.environ.get('REDIS_URL')
+        if redis_url is None:
+            return
+        RedisTileStore(redis_url).delete_all()
         self.assert_cmd_equals(
             cmd='.build/venv/bin/generate_tiles -c tilegeneration/test-redis.yaml --role master -l point',
             main_func=generate.main,
@@ -1015,6 +1018,8 @@ Nb of generated jobs: 10
             main_func=controller.main,
             regex=False,
             expected="""Approximate number of tiles to generate: 10
+Approximate number of generating tiles: 0
+Tiles in error:
 """
         )
 
@@ -1042,5 +1047,7 @@ Size per tile: \d+ o
             main_func=controller.main,
             regex=False,
             expected="""Approximate number of tiles to generate: 0
+Approximate number of generating tiles: 0
+Tiles in error:
 """
         )

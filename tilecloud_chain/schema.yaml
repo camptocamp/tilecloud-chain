@@ -279,10 +279,25 @@ mapping:
             url:
                 type: str
                 required: true
-                pattern: ^redis://[^:]+:[^:]+$
+                pattern: ^redis://[^:]+:\d+(?:/\d+)?$
             queue:
                 type: str
                 default: tilecloud
+            timeout:
+                type: int
+                default: 5
+            pending_timeout:
+                type: int
+                default: 300
+            max_retries:
+                type: int
+                default: 5
+            max_errors_age:
+                type: int
+                default: 86400
+            max_errors_nb:
+                type: int
+                default: 100
 
     apache:
         type: map

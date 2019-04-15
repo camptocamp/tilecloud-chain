@@ -6,8 +6,6 @@ import math
 import logging
 import yaml
 import pkgutil
-import time
-import redis
 from six import PY3
 from six import BytesIO as StringIO
 from math import exp, log
@@ -23,7 +21,7 @@ from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
 import tilecloud.store.s3
 from c2cwsgiutils import stats
 
-from tilecloud_chain import TileGeneration, add_comon_options, get_tile_matrix_identifier
+from tilecloud_chain import TileGeneration, add_comon_options, get_tile_matrix_identifier, get_queue_store
 
 
 logger = logging.getLogger(__name__)
@@ -494,44 +492,11 @@ def status(gene):  # pragma: no cover
 
 
 def get_status(gene):
-    return _redis_status(gene) if 'redis' in gene.config else _sqs_status(gene)
-
-
-def _redis_status(gene):
-    config = gene.config['redis']
-    queue = config['queue']
-    if not queue.startswith('queue_'):
-        queue = 'queue_' + queue
-    stats_prefix = ['redis', queue]
+    store = get_queue_store(gene.config, False)
+    kind = 'redis' if 'redis' in gene.config else 'sqs'
+    stats_prefix = [kind, gene.config[kind]['queue']]
     with stats.timer_context(stats_prefix + ['get_stats']):
-        con = redis.StrictRedis.from_url(config['url'])
-        nb_messages = con.llen(queue)
-
-    stats.set_gauge(stats_prefix + ['nb_messages'], nb_messages)
-
-    return([
-        "Approximate number of tiles to generate: {nb_messages}".format(nb_messages=nb_messages)
-    ])
-
-
-def _sqs_status(gene):
-    # get SQS status
-    stats_prefix = ['SQS', gene.config.get('sqs', {}).get('queue', 'unknown')]
-    with stats.timer_context(stats_prefix + ['get_stats']):
-        queue = gene.get_sqs_queue()
-        queue.load()
-        attributes = dict(queue.attributes)
-    attributes["CreatedTimestamp"] = time.ctime(int(attributes["CreatedTimestamp"]))
-    attributes["LastModifiedTimestamp"] = time.ctime(int(attributes["LastModifiedTimestamp"]))
-
-    stats.set_gauge(stats_prefix + ['nb_messages'], int(attributes['ApproximateNumberOfMessages']))
-
-    return [e.format(**attributes) for e in [
-        "Approximate number of tiles to generate: {ApproximateNumberOfMessages}",
-        "Approximate number of generating tiles: {ApproximateNumberOfMessagesNotVisible}",
-        "Delay in seconds: {DelaySeconds}",
-        "Receive message wait time in seconds: {ReceiveMessageWaitTimeSeconds}",
-        "Visibility timeout in seconds: {VisibilityTimeout}",
-        "Queue creation date: {CreatedTimestamp}",
-        "Last modification in tile queue: {LastModifiedTimestamp}",
-    ]]
+        status = store.get_status()
+    if 'Approximate number of tiles to generate' in status:
+        stats.set_gauge(stats_prefix + ['nb_messages'], status['Approximate number of tiles to generate'])
+    return [name + ': ' + str(value) for name, value in status.items()]

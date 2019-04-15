@@ -4,9 +4,20 @@ dist: trusty
 
 language: python
 
-python:
-- 3.5
-- 3.6
+matrix:
+  include:
+    - python: 3.5
+      # not available on xenial and the redis version is too old (<5), there => no redis tests
+    - python: 3.6
+      dist: xenial
+      sudo: true
+      env:
+        - REDIS_URL=redis://localhost:6379
+    - python: 3.7
+      dist: xenial
+      sudo: true
+      env:
+        - REDIS_URL=redis://localhost:6379
 
 services:
 - redis-server

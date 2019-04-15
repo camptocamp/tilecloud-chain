@@ -18,9 +18,12 @@ class TimedTileStoreWrapper(TileStore):
             return [self._stats_name, func_name]
 
     def _time_iteration(self, generator, func_name):
-        while True:  # will exit when next(generator) raises StopIteration
+        while True:
             timer = stats.timer()
-            tile = next(generator)
+            try:
+                tile = next(generator)
+            except StopIteration:
+                break
             timer.stop(self._get_stats_name(func_name, tile))
             yield tile
 
@@ -58,6 +61,9 @@ class TimedTileStoreWrapper(TileStore):
     def put_one(self, tile):
         with stats.timer_context(self._get_stats_name('put_one', tile)):
             return self._tile_store.put_one(tile)
+
+    def __getattr__(self, item):
+        return getattr(self._tile_store, item)
 
     def get_bounding_pyramid(self):
         return self._tile_store.get_bounding_pyramid()
