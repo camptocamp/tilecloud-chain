@@ -1018,6 +1018,8 @@ Nb of generated jobs: 10
             main_func=controller.main,
             regex=False,
             expected="""Approximate number of tiles to generate: 10
+Approximate number of generating tiles: 0
+Tiles in error:
 """
         )
 
@@ -1045,5 +1047,7 @@ Size per tile: \d+ o
             main_func=controller.main,
             regex=False,
             expected="""Approximate number of tiles to generate: 0
+Approximate number of generating tiles: 0
+Tiles in error:
 """
         )

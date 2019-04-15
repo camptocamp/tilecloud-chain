@@ -905,4 +905,4 @@ To run the tests:
 
 .. code:: bash
 
-   CI=true .build/venv/bin/python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
+   CI=true REDIS_URL=redis://localhost:6379/ .build/venv/bin/python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
