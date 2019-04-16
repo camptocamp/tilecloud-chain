@@ -497,6 +497,4 @@ def get_status(gene):
     stats_prefix = [kind, gene.config[kind]['queue']]
     with stats.timer_context(stats_prefix + ['get_stats']):
         status = store.get_status()
-    if 'Approximate number of tiles to generate' in status:
-        stats.set_gauge(stats_prefix + ['nb_messages'], status['Approximate number of tiles to generate'])
     return [name + ': ' + str(value) for name, value in status.items()]
