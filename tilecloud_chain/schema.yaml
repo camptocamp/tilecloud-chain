@@ -279,7 +279,7 @@ mapping:
             url:
                 type: str
                 required: true
-                pattern: ^redis://[^:]+:\d+(?:/\d+)?$
+                pattern: ^redis://[^:]+:[^:]+$
             queue:
                 type: str
                 default: tilecloud
