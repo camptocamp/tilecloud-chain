@@ -10,7 +10,6 @@ import sqlite3
 import tempfile
 import subprocess
 import pkgutil
-import traceback
 import time
 from six.moves import map, filter
 from six import binary_type
@@ -695,17 +694,19 @@ class TileGeneration:
                         for tile in substream:
                             yield tile
                     except StopIteration:
-                        pass
+                        return
                     except RuntimeError as e:
                         if isinstance(e.__cause__, StopIteration):
                             # since python 3.7, a StopIteration is wrapped in a RuntimeError (PEP 479)
-                            pass
+                            return
                         else:
-                            raise e
+                            raise
             except RuntimeError as e:
                 if isinstance(e.__cause__, StopIteration):
                     logger.warning("StopIterator from hell", exc_info=True)
-                raise e
+                    return
+                else:
+                    raise
 
         self.tilestream = meta_get(self.tilestream)  # pragma: no cover
 
@@ -950,10 +951,6 @@ class TileGeneration:
                     self.consume(test, True)
                 except KeyboardInterrupt:
                     sys.exit()
-                except Exception as e:
-                    logger.error(e, exc_info=True)
-                    traceback.print_exc()
-                    time.sleep(1)
 
         test = self.options.test if test is None else test
 
@@ -1056,9 +1053,9 @@ class HashLogger:
         ref = None
         try:
             image = Image.open(StringIO(tile.data))
-        except IOError as e:  # pragma: no cover
+        except IOError:  # pragma: no cover
             logger.error(tile.data, exc_info=True)
-            raise e
+            raise
         for px in image.getdata():
             if ref is None:
                 ref = px
@@ -1270,10 +1267,10 @@ def _safe_generator(generator, time_message=None):
                 continue
             if time_message:
                 logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
-        except GeneratorExit as e:  # pragma: no cover
-            raise e
-        except SystemExit as e:  # pragma: no cover
-            raise e
+        except GeneratorExit:  # pragma: no cover
+            raise
+        except SystemExit:  # pragma: no cover
+            raise
         except KeyboardInterrupt:  # pragma: no cover
             exit("User interrupt")
         except StopIteration:
@@ -1283,7 +1280,7 @@ def _safe_generator(generator, time_message=None):
                 # since python 3.7, a StopIteration is wrapped in a RuntimeError (PEP 479)
                 return
             else:
-                raise e
+                raise
         yield tile
 
 

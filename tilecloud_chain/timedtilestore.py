@@ -24,6 +24,12 @@ class TimedTileStoreWrapper(TileStore):
                 tile = next(generator)
             except StopIteration:
                 break
+            except RuntimeError as e:
+                if isinstance(e.__cause__, StopIteration):
+                    # since python 3.7, a StopIteration is wrapped in a RuntimeError (PEP 479)
+                    break
+                else:
+                    raise
             timer.stop(self._get_stats_name(func_name, tile))
             yield tile
 
