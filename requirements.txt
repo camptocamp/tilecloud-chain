@@ -1,9 +1,14 @@
+bsddb3==6.2.6
 c2cwsgiutils>=2.16,<4
 Jinja2==2.10.1
-pykwalify==1.7.0
-PyYAML==5.1.1
-Shapely==1.6.4.post2
-six==1.12.0
-tilecloud==1.3.1
+nose==1.3.7
 pyramid_mako==1.0.2
 python-dateutil==2.6.1  # rq.filter: <2.7.0
+pykwalify==1.7.0
+PyYAML==5.1.1
+redlock-py==1.0.8
+Shapely==1.6.4.post2
+six==1.12.0
+testfixtures==6.8.2
+tilecloud==1.3.1
+unittest2==1.1.0

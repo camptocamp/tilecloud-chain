@@ -40,7 +40,7 @@ from c2cwsgiutils import health_check
 from pyramid.config import Configurator
 from six.moves.urllib.parse import urlencode, parse_qs
 from tilecloud import Tile, TileCoord
-from tilecloud_chain import TileGeneration, controller
+from tilecloud_chain import TileGeneration, controller, internal_mapcache
 
 if sys.version_info.major < 3:
     memoryview = buffer  # noqa: F821
@@ -106,13 +106,17 @@ class Server:
         # Get capabilities or other static files
         self._get = types.MethodType(_get, self)
 
-        mapcache_base = tilegeneration.config['server']['mapcache_base'].rstrip('/')
-        mapcache_location = tilegeneration.config['mapcache']['location'].strip('/')
-        if mapcache_location == '':
-            self.mapcache_baseurl = mapcache_base + '/wmts'
+        if tilegeneration.config['server']['mapcache_internal']:
+            self.mapcache_baseurl = None
+            self.mapcache_header = {}
         else:
-            self.mapcache_baseurl = '{}/{}/wmts'.format(mapcache_base, mapcache_location)
-        self.mapcache_header = tilegeneration.config['server'].get('mapcache_headers', {})
+            mapcache_base = tilegeneration.config['server']['mapcache_base'].rstrip('/')
+            mapcache_location = tilegeneration.config['mapcache']['location'].strip('/')
+            if mapcache_location == '':
+                self.mapcache_baseurl = mapcache_base + '/wmts'
+            else:
+                self.mapcache_baseurl = '{}/{}/wmts'.format(mapcache_base, mapcache_location)
+            self.mapcache_header = tilegeneration.config['server'].get('mapcache_headers', {})
 
         geoms_redirect = tilegeneration.config['server']['geoms_redirect']
 
@@ -310,6 +314,7 @@ class Server:
         if params['TILEMATRIXSET'] != layer['grid']:
             return self.error(400, "Wrong TileMatrixSet '{}'".format(params['TILEMATRIXSET']), **kwargs)
 
+        metadata['layer'] = layer['name']
         tile = Tile(TileCoord(
             # TODO fix for matrix_identifier = resolution
             int(params['TILEMATRIX']),
@@ -352,11 +357,7 @@ class Server:
             return self.error(400, "Wrong Format '{}'".format(params['FORMAT']), **kwargs)
 
         if tile.tilecoord.z > self.max_zoom_seed[layer['name']]:  # pragma: no cover
-            return self.forward(
-                self.mapcache_baseurl + '?' + urlencode(params),
-                headers=self.mapcache_header,
-                **kwargs
-            )
+            return self._map_cache(layer, tile, params, kwargs)
 
         if layer['name'] in self.filters:
             layer_filter = self.filters[layer['name']]
@@ -369,11 +370,7 @@ class Server:
                 meta_size,
             ) if meta_size != 1 else tile.tilecoord
             if not layer_filter.filter_tilecoord(meta_tilecoord):  # pragma: no cover
-                return self.forward(
-                    self.mapcache_baseurl + '?' + urlencode(params),
-                    headers=self.mapcache_header,
-                    **kwargs
-                )
+                return self._map_cache(layer, tile, params, kwargs)
 
         store_ref = '/'.join([params['LAYER']] + list(dimensions))
         if store_ref in self.stores:  # pragma: no cover
@@ -403,6 +400,17 @@ class Server:
             }, **kwargs)
         else:
             return self.error(204, **kwargs)
+
+    def _map_cache(self, layer, tile, params, kwargs):
+        if self.mapcache_baseurl is not None:
+            return self.forward(
+                self.mapcache_baseurl + '?' + urlencode(params),
+                headers=self.mapcache_header,
+                **kwargs
+            )
+        else:
+            global tilegeneration
+            return internal_mapcache.fetch(self, tilegeneration, layer, tile, kwargs)
 
     def forward(self, url, headers=None, no_cache=False, **kwargs):
         if headers is None:

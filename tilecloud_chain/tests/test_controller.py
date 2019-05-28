@@ -1122,7 +1122,7 @@ class TestController(CompareCase):
 <mapcache>
     <cache name="default" type="memcache">
        <server>
-          <host>localhost</host>
+          <host>memcached</host>
           <port>11211</port>
        </server>
     </cache>
@@ -1174,7 +1174,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url>http://localhost/mapserv</url>
+         <url>http://mapserver:8080/mapserv</url>
          <headers>
             <Cache-Control>no-cache, no-store</Cache-Control>
             <Pragma>no-cache</Pragma>
@@ -1192,7 +1192,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url>http://localhost/mapserv</url>
+         <url>http://mapserver:8080/mapserv</url>
          <headers>
             <Cache-Control>no-cache</Cache-Control>
          </headers>
@@ -1208,7 +1208,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url>http://localhost/mapserv</url>
+         <url>http://mapserver:8080/mapserv</url>
          <headers>
             <Cache-Control>no-cache, no-store</Cache-Control>
             <Pragma>no-cache</Pragma>
@@ -1225,7 +1225,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url>http://localhost/mapserv</url>
+         <url>http://mapserver:8080/mapserv</url>
          <headers>
             <Cache-Control>no-cache, no-store</Cache-Control>
             <Pragma>no-cache</Pragma>
@@ -1242,7 +1242,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url>http://localhost/mapserv</url>
+         <url>http://mapserver:8080/mapserv</url>
          <headers>
             <Cache-Control>no-cache, no-store</Cache-Control>
             <Pragma>no-cache</Pragma>
@@ -1259,7 +1259,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url>http://localhost/mapserv</url>
+         <url>http://mapserver:8080/mapserv</url>
          <headers>
             <Cache-Control>no-cache, no-store</Cache-Control>
             <Pragma>no-cache</Pragma>
@@ -1276,7 +1276,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url>http://localhost/mapserv</url>
+         <url>http://mapserver:8080/mapserv</url>
          <headers>
             <Cache-Control>no-cache, no-store</Cache-Control>
             <Pragma>no-cache</Pragma>
@@ -1293,7 +1293,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url>http://localhost/mapserv</url>
+         <url>http://mapserver:8080/mapserv</url>
          <headers>
             <Cache-Control>no-cache, no-store</Cache-Control>
             <Pragma>no-cache</Pragma>
@@ -1440,7 +1440,7 @@ class TestController(CompareCase):
 <mapcache>
     <cache name="default" type="memcache">
        <server>
-          <host>localhost</host>
+          <host>memcached</host>
           <port>11211</port>
        </server>
     </cache>
@@ -1465,7 +1465,7 @@ class TestController(CompareCase):
          </params>
       </getmap>
       <http>
-         <url>http://localhost/mapserv</url>
+         <url>http://mapserver:8080/mapserv</url>
          <headers>
             <Cache-Control>no-cache, no-store</Cache-Control>
             <Host>example.com</Host>
@@ -1713,7 +1713,7 @@ layers:
     params: &id004 {}
     px_buffer: 0.0
     type: wms
-    url: http://localhost/mapserv
+    url: http://mapserver:8080/mapserv
     version: 1.1.1
     wmts_style: default
   line:
@@ -1725,7 +1725,7 @@ layers:
     generate_salt: false
     geoms:
     - sql: the_geom AS geom FROM tests.line
-      connection: user=postgres password=postgres dbname=tests host=localhost
+      connection: user=postgres password=postgres dbname=tests host=db
     grid: swissgrid_5
     grid_ref: *id003
     headers: {Cache-Control: 'no-cache'}
@@ -1738,7 +1738,7 @@ layers:
     params: {PARAM: value}
     px_buffer: 0.0
     type: wms
-    url: http://localhost/mapserv
+    url: http://mapserver:8080/mapserv
     version: 1.1.1
     wmts_style: default
   mapnik:
@@ -1748,7 +1748,7 @@ layers:
     drop_empty_utfgrid: false
     extension: png
     geoms:
-    - connection: user=postgres password=postgres dbname=tests host=localhost
+    - connection: user=postgres password=postgres dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
     grid_ref: *id003
@@ -1773,7 +1773,7 @@ layers:
     extension: json
     geoms:
     - sql: the_geom AS geom FROM tests.polygon
-      connection: user=postgres password=postgres dbname=tests host=localhost
+      connection: user=postgres password=postgres dbname=tests host=db
     grid: swissgrid_5
     grid_ref: *id003
     layers: __all__
@@ -1802,7 +1802,7 @@ layers:
     extension: json
     geoms:
     - sql: the_geom AS geom FROM tests.polygon
-      connection: user=postgres password=postgres dbname=tests host=localhost
+      connection: user=postgres password=postgres dbname=tests host=db
     grid: swissgrid_5
     grid_ref: *id003
     layers: __all__
@@ -1828,7 +1828,7 @@ layers:
     generate_salt: false
     geoms:
     - sql: the_geom AS geom FROM tests.point
-      connection: user=postgres password=postgres dbname=tests host=localhost
+      connection: user=postgres password=postgres dbname=tests host=db
     grid: swissgrid_5
     grid_ref: *id003
     headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
@@ -1842,7 +1842,7 @@ layers:
     params: *id004
     px_buffer: 0.0
     type: wms
-    url: http://localhost/mapserv
+    url: http://mapserver:8080/mapserv
     version: 1.1.1
     wmts_style: default
   point_hash_no_meta:
@@ -1864,7 +1864,7 @@ layers:
     params: *id004
     px_buffer: 0.0
     type: wms
-    url: http://localhost/mapserv
+    url: http://mapserver:8080/mapserv
     version: 1.1.1
     wmts_style: default
   point_hash:
@@ -1876,7 +1876,7 @@ layers:
     generate_salt: false
     geoms:
     - sql: the_geom AS geom FROM tests.point
-      connection: user=postgres password=postgres dbname=tests host=localhost
+      connection: user=postgres password=postgres dbname=tests host=db
     grid: swissgrid_5
     grid_ref: *id003
     headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
@@ -1890,7 +1890,7 @@ layers:
     params: *id004
     px_buffer: 0.0
     type: wms
-    url: http://localhost/mapserv
+    url: http://mapserver:8080/mapserv
     version: 1.1.1
     wmts_style: default
   point_px_buffer:
@@ -1902,7 +1902,7 @@ layers:
     generate_salt: false
     geoms:
     - sql: the_geom AS geom FROM tests.point
-      connection: user=postgres password=postgres dbname=tests host=localhost
+      connection: user=postgres password=postgres dbname=tests host=db
     grid: swissgrid_5
     grid_ref: *id003
     headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
@@ -1915,7 +1915,7 @@ layers:
     params: *id004
     px_buffer: 100
     type: wms
-    url: http://localhost/mapserv
+    url: http://mapserver:8080/mapserv
     version: 1.1.1
     wmts_style: default
   polygon:
@@ -1927,7 +1927,7 @@ layers:
     generate_salt: false
     geoms:
     - sql: the_geom AS geom FROM tests.polygon
-      connection: user=postgres password=postgres dbname=tests host=localhost
+      connection: user=postgres password=postgres dbname=tests host=db
     grid: swissgrid_5
     grid_ref: *id003
     headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
@@ -1940,7 +1940,7 @@ layers:
     params: *id004
     px_buffer: 0.0
     type: wms
-    url: http://localhost/mapserv
+    url: http://mapserver:8080/mapserv
     version: 1.1.1
     wmts_style: default
   polygon2:
@@ -1952,7 +1952,7 @@ layers:
     generate_salt: false
     geoms:
     - sql: the_geom AS geom FROM tests.polygon
-      connection: user=postgres password=postgres dbname=tests host=localhost
+      connection: user=postgres password=postgres dbname=tests host=db
     grid: swissgrid_01
     grid_ref: *id005
     headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
@@ -1965,10 +1965,10 @@ layers:
     params: *id004
     px_buffer: 0.0
     type: wms
-    url: http://localhost/mapserv
+    url: http://mapserver:8080/mapserv
     version: 1.1.1
     wmts_style: default
-mapcache: {config_file: mapcache.xml, memcache_host: localhost, memcache_port: 11211, location: /mapcache}
+mapcache: {config_file: mapcache.xml, memcache_host: memcached, memcache_port: 11211, location: /mapcache}
 openlayers: {center_x: 600000, center_y: 200000, srs: 'EPSG:21781'}
 sqs: {queue: sqs_point, region: eu-west-1}
 sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}

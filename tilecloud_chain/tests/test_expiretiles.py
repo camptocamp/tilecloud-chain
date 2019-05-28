@@ -57,14 +57,14 @@ class TestExpireTiles(CompareCase):
                 '.build/venv/bin/import_expiretiles',
                 '--create', '--delete', '--srid', '21781',
                 '/tmp/expired',
-                'user=postgres password=postgres dbname=tests host=localhost',
+                'user=postgres password=postgres dbname=tests host=db',
                 'expired', 'the_geom',
             ],
             main_func=expiretiles.main,
             expected='''Import successful
 '''
         )
-        connection = psycopg2.connect('user=postgres password=postgres dbname=tests host=localhost')
+        connection = psycopg2.connect('user=postgres password=postgres dbname=tests host=db')
         cursor = connection.cursor()
         cursor.execute('SELECT ST_AsText(the_geom) FROM expired')
         geoms = [str(r[0]) for r in cursor.fetchall()]
@@ -76,14 +76,14 @@ class TestExpireTiles(CompareCase):
                 '.build/venv/bin/import_expiretiles',
                 '--create', '--delete', '--srid', '21781',
                 '/tmp/expired',
-                'user=postgres password=postgres dbname=tests host=localhost',
+                'user=postgres password=postgres dbname=tests host=db',
                 'expired', 'the_geom',
             ],
             main_func=expiretiles.main,
             expected='''Import successful
 '''
         )
-        connection = psycopg2.connect('user=postgres password=postgres dbname=tests host=localhost')
+        connection = psycopg2.connect('user=postgres password=postgres dbname=tests host=db')
         cursor = connection.cursor()
         cursor.execute('SELECT ST_AsText(the_geom) FROM expired')
         geoms = [str(r[0]) for r in cursor.fetchall()]
@@ -95,14 +95,14 @@ class TestExpireTiles(CompareCase):
                 '.build/venv/bin/import_expiretiles',
                 '--simplify', '1000', '--create', '--delete',
                 '/tmp/expired',
-                'user=postgres password=postgres dbname=tests host=localhost',
+                'user=postgres password=postgres dbname=tests host=db',
                 'expired2',
             ],
             main_func=expiretiles.main,
             expected='''Import successful
 '''
         )
-        connection = psycopg2.connect('user=postgres password=postgres dbname=tests host=localhost')
+        connection = psycopg2.connect('user=postgres password=postgres dbname=tests host=db')
         cursor = connection.cursor()
         cursor.execute('SELECT ST_AsText(geom) FROM expired2')
         geoms = [str(r[0]) for r in cursor.fetchall()]
@@ -135,14 +135,14 @@ class TestExpireTiles(CompareCase):
                 '.build/venv/bin/import_expiretiles',
                 '--create', '--delete', '--srid', '21781',
                 '/tmp/expired-empty',
-                'user=postgres password=postgres dbname=tests host=localhost',
+                'user=postgres password=postgres dbname=tests host=db',
                 'expired', 'the_geom',
             ],
             main_func=expiretiles.main,
             expected='''No coords found
 '''
         )
-        connection = psycopg2.connect('user=postgres password=postgres dbname=tests host=localhost')
+        connection = psycopg2.connect('user=postgres password=postgres dbname=tests host=db')
         cursor = connection.cursor()
         cursor.execute('SELECT the_geom FROM expired')
         geoms = cursor.fetchall()

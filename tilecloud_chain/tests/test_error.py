@@ -33,7 +33,6 @@ class TestError(CompareCase):
         )
 
     @log_capture('tilecloud_chain')
-    @attr(nopy3=True)
     @attr(general=True)
     def test_mapnik_grid_meta(self, l):
         self.run_cmd(
@@ -151,8 +150,6 @@ class TestError(CompareCase):
 
     @log_capture('tilecloud_chain')
     @attr(general=True)
-    @attr(nopy2=True)
-    @attr(nopy3=True)
     def test_wrong_map(self, l):
         self.run_cmd(
             cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_map.yaml',
@@ -171,7 +168,6 @@ class TestError(CompareCase):
 
     @log_capture('tilecloud_chain')
     @attr(general=True)
-    @attr(nopy3=True)
     def test_wrong_sequence(self, l):
         self.run_cmd(
             cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_sequence.yaml',
@@ -180,7 +176,7 @@ class TestError(CompareCase):
             'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_sequence.yaml' is invalid.
  - /: Cannot find required key 'caches'.
  - /: Cannot find required key 'layers'.
- - /grids/test/resolutions: Value 'test' is not a list. Value path: '/grids/test/resolutions'
+ - /grids/test/resolutions: Value 'b'test'' is not a list. Value path: '/grids/test/resolutions'
  - /grids/test: Cannot find required key 'bbox'.
  - /grids/test: Cannot find required key 'srs'."""
         ))

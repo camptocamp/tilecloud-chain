@@ -1,26 +1,23 @@
-config:
-  build: docker
-
 db:
   image: camptocamp/postgres:9.6
   environment:
     POSTGRES_USER: www-data
     POSTGRES_DB: tests
-  volumes_from:
-    - config
+  volumes:
+    - ./docker/test-db:/docker-entrypoint-initdb.d:ro
 
 mapserver:
   image: camptocamp/mapserver:latest
-  volumes_from:
-    - config
+  volumes:
+    - ./docker/mapfile-docker:/etc/mapserver:ro
   links:
     - db:db
   user: www-data
 
 mapcache:
   image: camptocamp/mapcache:latest
-  volumes_from:
-    - config
+  volumes:
+    - ./docker/mapcache-docker:/etc/mapcache:ro
   links:
     - mapserver:mapserver
     - memcached:memcached
@@ -60,3 +57,5 @@ test:
     - mapcache
     - mapserver
     - redis
+  volumes:
+    - ./tilecloud_chain:/app/tilecloud_chain

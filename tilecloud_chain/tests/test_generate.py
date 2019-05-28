@@ -100,7 +100,6 @@ class TestGenerate(CompareCase):
         l.check()
 
     @attr(general=True)
-    @attr(nopy3=True)
     @log_capture('tilecloud_chain', level=30)
     def test_hash_mapnik_grid(self, l):
         for d in ('-d', ''):
@@ -108,10 +107,14 @@ class TestGenerate(CompareCase):
                 cmd='.build/venv/bin/generate_tiles {} '
                     '--get-hash 4/0/0 -c tilegeneration/test.yaml -l all'.format(d),
                 main_func=generate.main,
-                expected="""Tile: 4/0/0
-        empty_tile_detection:
-            size: 334
-            hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+                expected="""Tile: 4/0/0 dimension_DATE=2012 layer=all
+empty_metatile_detection:
+    size: 334
+    hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+Tile: 4/0/0 dimension_DATE=2012 layer=all
+empty_tile_detection:
+    size: 334
+    hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
 """)
         l.check()
 
@@ -999,10 +1002,7 @@ Size per tile: 498 o
 
     @attr(general=True)
     def test_redis(self):
-        redis_url = os.environ.get('REDIS_URL')
-        if redis_url is None:
-            return
-        RedisTileStore(redis_url).delete_all()
+        RedisTileStore("redis://redis:6379/").delete_all()
         self.assert_cmd_equals(
             cmd='.build/venv/bin/generate_tiles -c tilegeneration/test-redis.yaml --role master -l point',
             main_func=generate.main,

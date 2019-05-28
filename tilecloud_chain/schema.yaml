@@ -298,6 +298,9 @@ mapping:
             max_errors_nb:
                 type: int
                 default: 100
+            prefix:
+                type: str
+                default: tilecloud_cache
 
     apache:
         type: map
@@ -348,6 +351,9 @@ mapping:
             geoms_redirect:
                 type: bool
                 default: False
+            mapcache_internal:
+                type: bool
+                default: false
             mapcache_base:
                 type: str
                 default: 'http://localhost/'

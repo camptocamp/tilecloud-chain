@@ -5,6 +5,5 @@
 !CHANGES.rst
 !MANIFEST.in
 !tilecloud_chain/*
-tilecloud_chain/tests
 !docker/run
 !production.ini
