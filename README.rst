@@ -895,14 +895,11 @@ Setup your environment:
 
 .. code:: bash
 
-   sudo apt-get install optipng libdb-dev
-   python3 -m venv .build/venv
-   .build/venv/bin/pip install --upgrade --requirement=dev-requirements.txt --requirement=requirements.txt
-   .build/venv/bin/pip install --editable=.
-   docker-compose -f test-docker-compose.yml up
+   docker build --tag camptocamp/tilecloud-chain:latest .
+   docker-compose -p tilecloud up
 
 To run the tests:
 
 .. code:: bash
 
-   CI=true REDIS_URL=redis://localhost:6379/ .build/venv/bin/python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
+   docker-compose -p tilecloud exec test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3

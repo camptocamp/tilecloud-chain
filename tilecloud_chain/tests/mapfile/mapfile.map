@@ -30,7 +30,7 @@ MAP
     NAME "point"
     TYPE POINT
     CONNECTIONTYPE postgis
-    CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
+    CONNECTION "user=postgres password=postgres dbname=tests host=db"
     DATA "the_geom FROM tests.point"
     TEMPLATE fooOnlyForWMSGetFeatureInfo # For GetFeatureInfo
     STATUS ON
@@ -51,7 +51,7 @@ MAP
     NAME "point_multi"
     TYPE POINT
     CONNECTIONTYPE postgis
-    CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
+    CONNECTION "user=postgres password=postgres dbname=tests host=db"
     DATA "the_geom FROM (SELECT * FROM tests.point WHERE name='%POINT_NAME%') AS foo USING UNIQUE gid"
     TEMPLATE fooOnlyForWMSGetFeatureInfo # For GetFeatureInfo
     STATUS ON
@@ -76,7 +76,7 @@ MAP
     NAME "line"
     TYPE LINE
     CONNECTIONTYPE postgis
-    CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
+    CONNECTION "user=postgres password=postgres dbname=tests host=db"
     DATA "the_geom FROM tests.line"
     STATUS ON
     CLASS
@@ -101,7 +101,7 @@ MAP
     NAME "polygon"
     TYPE POLYGON
     CONNECTIONTYPE postgis
-    CONNECTION "user=postgres password=postgres dbname=tests host=localhost"
+    CONNECTION "user=postgres password=postgres dbname=tests host=db"
     DATA "the_geom FROM tests.polygon"
     STATUS ON
     CLASS

@@ -17,7 +17,7 @@ defaults:
     layer: &layer
         grid: swissgrid_5
         type: wms
-        url: http://localhost/mapserv
+        url: http://mapserver:8080/mapserv
         headers:
             Host: example.com
             Cache-Control: no-cache, no-store
@@ -38,6 +38,7 @@ layers:
 
 mapcache:
     config_file: mapcache.xml
+    memcache_host: memcached
 
 apache:
     config_file: tiles.conf

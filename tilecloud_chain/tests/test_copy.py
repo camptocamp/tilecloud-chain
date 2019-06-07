@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import requests
 import shutil
 
 from testfixtures import log_capture
@@ -60,16 +61,13 @@ Size per tile: 10(.0)? o
     @attr(general=True)
     @log_capture('tilecloud_chain', level=30)
     def test_process(self, l):
-        import subprocess
         for d in ('-vd', '-q', '-v', ''):
-            subprocess.call([
-                'wget',
-                'http://localhost/mapserv?STYLES=default&SERVICE=WMS&FORMAT=\
+            response = requests.get('http://mapserver:8080/mapserv?STYLES=default&SERVICE=WMS&FORMAT=\
 image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
-%28560800.0%2C+158000.0%2C+573600.0%2C+170800.0%29&LAYERS=point&SRS=EPSG%3A21781',
-                '-O',
-                '/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png',
-            ])
+%28560800.0%2C+158000.0%2C+573600.0%2C+170800.0%29&LAYERS=point&SRS=EPSG%3A21781')
+            response.raise_for_status()
+            with open('/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png', 'wb') as out:
+                out.write(response.content)
             statinfo = os.stat(
                 '/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png',
             )

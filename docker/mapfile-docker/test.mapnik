@@ -23,7 +23,7 @@
             <Parameter name="srid">21781</Parameter>
             <Parameter name="type">postgis</Parameter>
             <Parameter name="dbname">tests</Parameter>
-            <Parameter name="host">localhost</Parameter>
+            <Parameter name="host">db</Parameter>
             <Parameter name="port">5432</Parameter>
             <Parameter name="user">postgres</Parameter>
             <Parameter name="password">postgres</Parameter>
@@ -39,7 +39,7 @@
             <Parameter name="srid">21781</Parameter>
             <Parameter name="type">postgis</Parameter>
             <Parameter name="dbname">tests</Parameter>
-            <Parameter name="host">localhost</Parameter>
+            <Parameter name="host">db</Parameter>
             <Parameter name="port">5432</Parameter>
             <Parameter name="user">postgres</Parameter>
             <Parameter name="password">postgres</Parameter>
@@ -55,7 +55,7 @@
             <Parameter name="srid">21781</Parameter>
             <Parameter name="type">postgis</Parameter>
             <Parameter name="dbname">tests</Parameter>
-            <Parameter name="host">localhost</Parameter>
+            <Parameter name="host">db</Parameter>
             <Parameter name="port">5432</Parameter>
             <Parameter name="user">postgres</Parameter>
             <Parameter name="password">postgres</Parameter>

@@ -16,6 +16,7 @@ RUN \
     osm2pgsql \
     curl \
     unzip \
+    optipng \
     ${DEV_PACKAGES} && \
   cd /app && \
   pip install --disable-pip-version-check --no-cache-dir -r requirements.txt && \

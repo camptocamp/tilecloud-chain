@@ -127,7 +127,7 @@ class Generate:
             self._count_tiles = self._gene.counter()
 
     def _generate_tiles(self):
-        if self._options.role == 'slave':
+        if self._options.role in ('slave', 'server'):
             # Get the metatiles from the SQS/Redis queue
             self._gene.set_store(self._queue_tilestore)  # pragma: no cover
             self._gene.ifilter(lambda tile: 'layer' in tile.metadata)
@@ -169,8 +169,6 @@ class Generate:
 
         if self._options.role == 'hash':
             self._gene.imap(HashLogger('empty_metatile_detection'))
-        elif self._options.role == 'hash':
-            pass
         elif not self._options.near:
             droppers = {}
             for lname, layer in self._gene.layers.items():
@@ -217,7 +215,7 @@ class Generate:
 
         self._gene.process()
 
-        if self._options.role in ('local', 'slave'):
+        if self._options.role in ('local', 'slave', 'server'):
             self._count_tiles_stored = self._gene.counter(size=True)
 
             if self._options.time:
@@ -379,7 +377,7 @@ class Generate:
                 from tilecloud.store.mapnik_ import MapnikTileStore
                 from tilecloud_chain.mapnik_ import MapnikDropActionTileStore
             except ImportError:
-                if 'CI' not in os.environ:  # pragma nocover
+                if os.environ.get('CI', 'FALSE') == 'FALSE':  # pragma nocover
                     logger.error("Mapnik is not available", exc_info=True)
                 return None
 
@@ -408,6 +406,12 @@ class Generate:
                     output_format=layer['output_format'],
                     proj4_literal=grid['proj4_literal'],
                 )
+
+    def server_init(self, input_store, cache_store):
+        self._queue_tilestore = input_store
+        self._cache_tilestore = cache_store
+        self._count_tiles = Count()
+        self._generate_tiles()
 
 
 def detach():  # pragma: no cover

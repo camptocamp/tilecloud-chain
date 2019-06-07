@@ -30,7 +30,7 @@ if layer['type'] == 'wms' or 'wms_url' in layer %}
       <http>
          <url>{{layer['wms_url'] if 'wms_url' in layer else layer['url']}}</url>
          <headers>{%
-         for key, value in sorted(layer['headers'].items()) %}
+         for key, value in sorted(layer.get('headers', {}).items()) %}
             <{{key}}>{{value}}</{{key}}>{%
          endfor %}
          </headers>

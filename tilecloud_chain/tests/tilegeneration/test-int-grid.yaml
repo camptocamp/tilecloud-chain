@@ -16,7 +16,7 @@ defaults:
     layer: &layer_defaults
         grid: '21781'
         type: wms
-        url: http://localhost/mapserv
+        url: http://mapserver:8080/mapserv
         wmts_style: default
         mime_type: image/png
         extension: png
@@ -36,7 +36,7 @@ layers:
         query_layers: point
         geoms:
         -   sql: the_geom AS geom FROM tests.point
-            connection: user=postgres password=postgres dbname=tests host=localhost
+            connection: user=postgres password=postgres dbname=tests host=db
         min_resolution_seed: 10
         empty_metatile_detection:
             size: 20743

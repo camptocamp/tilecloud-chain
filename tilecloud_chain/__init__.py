@@ -890,7 +890,7 @@ class TileGeneration:
         assert store is not None
 
         self.tilestream = store.get(self.tilestream)
-        if not self.options.debug:
+        if self.options is None or not self.options.debug:
             self.tilestream = _safe_generator(self.tilestream, time_message)
 
     def put(self, store, time_message=None):
@@ -898,7 +898,7 @@ class TileGeneration:
         assert store is not None
 
         self.tilestream = store.put(self.tilestream)
-        if not self.options.debug:
+        if self.options is None or not self.options.debug:
             self.tilestream = _safe_generator(self.tilestream, time_message)
 
     def delete(self, store, time_message=None):
@@ -914,7 +914,7 @@ class TileGeneration:
         assert tile_filter is not None
 
         self.tilestream = map(tile_filter, self.tilestream)
-        if not self.options.debug:
+        if self.options is None or not self.options.debug:
             self.tilestream = _safe_generator(self.tilestream, time_message)
 
     def ifilter(self, tile_filter, time_message=None):
@@ -922,7 +922,7 @@ class TileGeneration:
         assert tile_filter is not None
 
         self.tilestream = filter(tile_filter, self.tilestream)
-        if not self.options.debug:
+        if self.options is None or not self.options.debug:
             self.tilestream = _safe_generator(self.tilestream, time_message)
 
     def consume(self, test=None, force=False):
@@ -1037,8 +1037,8 @@ class HashLogger:
         ref = None
         try:
             image = Image.open(StringIO(tile.data))
-        except IOError:  # pragma: no cover
-            logger.error(tile.data, exc_info=True)
+        except IOError as ex:  # pragma: no cover
+            logger.error("%s: %s", str(ex), tile.data, exc_info=True)
             raise
         for px in image.getdata():
             if ref is None:

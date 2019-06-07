@@ -40,11 +40,11 @@ defaults:
 layers:
     point:
         <<: *layer
-        url: http://localhost/mapserv
+        url: http://mapserver:8080/mapserv
         layers: point
         geoms:
         -   sql: the_geom AS geom FROM tests.point
-            connection: user=postgres password=postgres dbname=tests host=localhost
+            connection: user=postgres password=postgres dbname=tests host=db
         min_resolution_seed: 10
 
 sqs:
