@@ -4,13 +4,17 @@ config:
 db:
   image: camptocamp/postgres:9.6
   environment:
-    POSTGRES_USER: www-data
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
     POSTGRES_DB: tests
   volumes_from:
     - config
 
 mapserver:
-  image: camptocamp/mapserver:latest
+  image: camptocamp/mapserver:7.4
+  environment:
+    MS_DEBUGLEVEL: "5"
+    MAPSERVER_CATCH_SEGV: "1"
   volumes_from:
     - config
   links:
@@ -18,7 +22,7 @@ mapserver:
   user: www-data
 
 mapcache:
-  image: camptocamp/mapcache:latest
+  image: camptocamp/mapcache:1.6
   volumes_from:
     - config
   links:
@@ -52,6 +56,7 @@ test:
   working_dir: /app
   environment:
     CI: "TRUE"
+    PGPASSWORD: postgres
   command:
     - sleep
     - "3600"

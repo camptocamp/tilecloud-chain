@@ -279,7 +279,7 @@ class TileGeneration:
 
             scale = grid['resolution_scale']
             grid['obj'] = FreeTileGrid(
-                resolutions=[int(r * scale) for r in grid['resolutions']],
+                resolutions=[r * scale for r in grid['resolutions']],
                 scale=scale,
                 max_extent=grid['bbox'],
                 tile_size=grid['tile_size']) if not error else None
