@@ -1,13 +1,14 @@
 db:
   image: camptocamp/postgres:9.6
   environment:
-    POSTGRES_USER: www-data
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
     POSTGRES_DB: tests
   volumes:
     - ./docker/test-db:/docker-entrypoint-initdb.d:ro
 
 mapserver:
-  image: camptocamp/mapserver:latest
+  image: camptocamp/mapserver:7.4
   volumes:
     - ./docker/mapfile-docker:/etc/mapserver:ro
   links:
@@ -15,7 +16,7 @@ mapserver:
   user: www-data
 
 mapcache:
-  image: camptocamp/mapcache:latest
+  image: camptocamp/mapcache:1.6
   volumes:
     - ./docker/mapcache-docker:/etc/mapcache:ro
   links:
