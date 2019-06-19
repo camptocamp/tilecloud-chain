@@ -10,5 +10,5 @@ redlock-py==1.0.8
 Shapely==1.6.4.post2
 six==1.12.0
 testfixtures==6.9.0
-tilecloud==1.3.1
+tilecloud==1.3.2
 unittest2==1.1.0
