@@ -179,11 +179,13 @@ def fetch(server, tilegeneration, layer, tile, kwargs):
                 assert fetched_tile is not None
 
     response_headers = {
-        'Content-Encoding': tile.content_encoding,
-        'Content-Type': tile.content_type,
         'Expires': (datetime.datetime.utcnow() + datetime.timedelta(hours=server.expires_hours)).isoformat(),
         'Cache-Control': "max-age={}".format((3600 * server.expires_hours)),
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET'
     }
+    if tile.content_encoding:
+        response_headers['Content-Encoding'] = tile.content_encoding
+    if tile.content_type:
+        response_headers['Content-Type'] = tile.content_type
     return server.response(fetched_tile.data, headers=response_headers, **kwargs)
