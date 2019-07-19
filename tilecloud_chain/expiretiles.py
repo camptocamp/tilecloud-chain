@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import sys
 from argparse import ArgumentParser
 
-import sys
 import psycopg2
-from shapely.geometry import Polygon, MultiPolygon
+from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import cascaded_union
 
 from tilecloud.grid.quad import QuadTileGrid

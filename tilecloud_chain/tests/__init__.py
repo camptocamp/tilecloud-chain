@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import sys
 import os
 import re
 import shutil
-from six import StringIO
-from six import text_type as str, PY3
-from unittest2 import TestCase
+import sys
+from io import StringIO
 from logging import config
+
+from unittest2 import TestCase
 
 log = logging.getLogger("tests")
 
@@ -63,9 +63,8 @@ class CompareCase(TestCase):
         out, err = self.run_cmd(cmd, main_func)
         if empty_err:
             self.assertEqual(err, '')
-        if PY3:
-            if isinstance(out, bytes):
-                out = out.decode('utf-8')
+        if isinstance(out, bytes):
+            out = out.decode('utf-8')
         else:
             out = str(out)
         self.assert_result_equals(result=out, **kargs)

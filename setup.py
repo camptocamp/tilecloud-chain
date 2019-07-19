@@ -3,7 +3,7 @@
 import os
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.rst')) as r:
@@ -17,14 +17,8 @@ install_requires = [
     'pyramid_mako',
     'PyYAML',
     'Shapely',
-    'six',
     'tilecloud>=1.3.0',
 ]
-
-if sys.version_info < (2, 7):
-    install_requires.extend([
-        'argparse',
-    ])
 
 setup(
     name='tilecloud-chain',

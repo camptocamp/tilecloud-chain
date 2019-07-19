@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import logging
+import sys
 from argparse import ArgumentParser
 
-from tilecloud_chain import TileGeneration, DropEmpty, \
-    HashDropper, Count, add_comon_options
-from tilecloud_chain.format import size_format, duration_format
+from tilecloud_chain import (Count, DropEmpty, HashDropper, TileGeneration,
+                             add_comon_options)
+from tilecloud_chain.format import duration_format, size_format
 
 logger = logging.getLogger(__name__)
 

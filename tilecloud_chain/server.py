@@ -26,24 +26,21 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import c2cwsgiutils.pyramid
 import datetime
 import logging
 import mimetypes
 import os
-import requests
-import sys
-import tilecloud.store.s3
 import types
+from urllib.parse import parse_qs, urlencode
 
+import c2cwsgiutils.pyramid
+import requests
 from c2cwsgiutils import health_check
 from pyramid.config import Configurator
-from six.moves.urllib.parse import urlencode, parse_qs
+
+import tilecloud.store.s3
 from tilecloud import Tile, TileCoord
 from tilecloud_chain import TileGeneration, controller, internal_mapcache
-
-if sys.version_info.major < 3:
-    memoryview = buffer  # noqa: F821
 
 logger = logging.getLogger(__name__)
 

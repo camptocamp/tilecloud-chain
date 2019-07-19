@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from c2cwsgiutils import stats
 import logging
-import psycopg2
 import time
+
+import psycopg2
+from c2cwsgiutils import stats
 
 logger = logging.getLogger(__name__)
 

@@ -3,17 +3,14 @@
 import os
 import shutil
 
-from six import PY3
-from testfixtures import log_capture
-from nose.plugins.attrib import attr
+from pyramid.httpexceptions import HTTPBadRequest, HTTPNoContent
 from pyramid.testing import DummyRequest
-from pyramid.httpexceptions import HTTPNoContent, HTTPBadRequest
 
-from tilecloud_chain.tests import CompareCase
-from tilecloud_chain import generate, controller
+from nose.plugins.attrib import attr
+from testfixtures import log_capture
+from tilecloud_chain import controller, generate, server
 from tilecloud_chain.server import PyramidView, app_factory
-from tilecloud_chain import server
-
+from tilecloud_chain.tests import CompareCase
 
 CAPABILITIES = r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
@@ -263,7 +260,7 @@ Size per tile: 4[0-9][0-9] o
         PyramidView(request)()
         self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
         self.assert_result_equals(
-            request.response.body.decode('utf-8') if PY3 else request.response.body,
+            request.response.body.decode('utf-8'),
             regex=True,
             expected=r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
@@ -779,7 +776,7 @@ Size per tile: 4[0-9][0-9] o
         PyramidView(request)()
         self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
         self.assert_result_equals(
-            request.response.body.decode('utf-8') if PY3 else request.response.body,
+            request.response.body.decode('utf-8'),
             CAPABILITIES,
             regex=True,
         )
@@ -790,7 +787,7 @@ Size per tile: 4[0-9][0-9] o
         PyramidView(request)()
         self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
         self.assert_result_equals(
-            request.response.body.decode('utf-8') if PY3 else request.response.body,
+            request.response.body.decode('utf-8'),
             CAPABILITIES,
             regex=True,
         )
@@ -886,7 +883,7 @@ Size per tile: 4[0-9][0-9] o
         PyramidView(request)()
         self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
         self.assert_result_equals(
-            request.response.body.decode('utf-8') if PY3 else request.response.body,
+            request.response.body.decode('utf-8'),
             CAPABILITIES,
             regex=True,
         )
@@ -897,7 +894,7 @@ Size per tile: 4[0-9][0-9] o
         PyramidView(request)()
         self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
         self.assert_result_equals(
-            request.response.body.decode('utf-8') if PY3 else request.response.body,
+            request.response.body.decode('utf-8'),
             CAPABILITIES,
             regex=True,
         )
@@ -932,8 +929,8 @@ Size per tile: 4[0-9][0-9] o
         serve = PyramidView(request)
         serve()
         self.assert_result_equals(
-            request.response.body.decode('utf-8') if PY3 else request.response.body,
-            u"""<?xml version="1.0" encoding="UTF-8"?>
+            request.response.body.decode('utf-8'),
+            """<?xml version="1.0" encoding="UTF-8"?>
 
 <msGMLOutput
     xmlns:gml="http://www.opengis.net/gml"
@@ -973,8 +970,8 @@ Size per tile: 4[0-9][0-9] o
         serve = PyramidView(request)
         serve()
         self.assert_result_equals(
-            request.response.body.decode('utf-8') if PY3 else request.response.body,
-            u"""<?xml version="1.0" encoding="UTF-8"?>
+            request.response.body.decode('utf-8'),
+            """<?xml version="1.0" encoding="UTF-8"?>
 
 <msGMLOutput
     xmlns:gml="http://www.opengis.net/gml"
@@ -1056,8 +1053,8 @@ Size per tile: 4[0-9][0-9] o
         }, start_response)
         self.assertEqual(code, '200 OK')
         self.assert_result_equals(
-            result[0].decode("utf-8") if PY3 else result[0],
-            u"""<?xml version="1.0" encoding="UTF-8"?>
+            result[0].decode("utf-8"),
+            """<?xml version="1.0" encoding="UTF-8"?>
 
 <msGMLOutput
     xmlns:gml="http://www.opengis.net/gml"
@@ -1071,8 +1068,8 @@ Size per tile: 4[0-9][0-9] o
             'PATH_INFO': '/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/14/11/114/111.xml'
         }, start_response)
         self.assert_result_equals(
-            result[0].decode("utf-8") if PY3 else result[0],
-            u"""<?xml version="1.0" encoding="UTF-8"?>
+            result[0].decode("utf-8"),
+            """<?xml version="1.0" encoding="UTF-8"?>
 
 <msGMLOutput
     xmlns:gml="http://www.opengis.net/gml"
@@ -1100,7 +1097,7 @@ Size per tile: 4[0-9][0-9] o
         }, start_response)
         self.assertEqual(code, '200 OK')
         self.assert_result_equals(
-            result[0].decode("utf-8") if PY3 else result[0],
+            result[0].decode("utf-8"),
             CAPABILITIES,
             regex=True,
         )
@@ -1120,7 +1117,7 @@ Size per tile: 4[0-9][0-9] o
         PyramidView(request)()
         self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
         self.assert_result_equals(
-            request.response.body.decode('utf-8') if PY3 else request.response.body,
+            request.response.body.decode('utf-8'),
             CAPABILITIES,
             regex=True,
         )
