@@ -467,7 +467,7 @@ def main():
 
     gene = TileGeneration(options.config, options)
 
-    if options.get_hash is None and options.get_bbox is None and \
+    if options.get_hash is None and options.get_bbox is None and options.role != "slave" and \
             'authorised_user' in gene.config['generation'] and \
             gene.config['generation']['authorised_user'] != getuser():
         exit('not authorised, authorised user is: {}.'.format(gene.config['generation']['authorised_user']))
