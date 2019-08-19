@@ -6,7 +6,6 @@ import logging
 from tilecloud import Tile
 from tilecloud.store.mapnik_ import MapnikTileStore
 
-
 logger = logging.getLogger(__name__)
 
 

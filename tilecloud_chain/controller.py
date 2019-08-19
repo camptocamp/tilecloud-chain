@@ -1,28 +1,27 @@
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-import math
 import logging
-import yaml
+import math
+import os
 import pkgutil
-from six import PY3
-from six import BytesIO as StringIO
-from math import exp, log
-from copy import copy
+import sys
 from argparse import ArgumentParser
+from copy import copy
 from hashlib import sha1
-from six.moves.urllib.parse import urlencode, urljoin
+from io import BytesIO
+from math import exp, log
+from urllib.parse import urlencode, urljoin
 
 import requests
+import yaml
 from bottle import jinja2_template
-from PIL import Image
-from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
-import tilecloud.store.s3
 from c2cwsgiutils import stats
+from PIL import Image
 
-from tilecloud_chain import TileGeneration, add_comon_options, get_tile_matrix_identifier, get_queue_store
-
+import tilecloud.store.s3
+from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
+from tilecloud_chain import (TileGeneration, add_comon_options,
+                             get_queue_store, get_tile_matrix_identifier)
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +112,7 @@ def _send(data, path, mime_type, cache):
         client.put_object(ACL='public-read', Body=data, Key=key_name, Bucket=bucket, ContentEncoding='utf-8',
                           ContentType=mime_type)
     else:
-        if PY3 and isinstance(data, str):
+        if isinstance(data, str):
             data = data.encode('utf-8')
 
         folder = cache['folder'] or ''
@@ -223,7 +222,7 @@ def _fill_legend(gene, cache, server, base_urls):
                         previous_legend['min_resolution'] = middle_res
                         new_legend['max_resolution'] = middle_res
                     try:
-                        pil_img = Image.open(StringIO(img))
+                        pil_img = Image.open(BytesIO(img))
                         new_legend['width'] = pil_img.size[0]
                         new_legend['height'] = pil_img.size[1]
                     except Exception:  # pragma: nocover
@@ -268,7 +267,7 @@ def _generate_legend_images(gene):
                             'SCALE': resolution / 0.00028
                         }))
                         try:
-                            legends.append(Image.open(StringIO(response.content)))
+                            legends.append(Image.open(BytesIO(response.content)))
                         except Exception:  # pragma: nocover
                             logger.warning(
                                 "Unable to read legend image for layer '{}'-'{}', resolution '{}': {}".format(
@@ -282,7 +281,7 @@ def _generate_legend_images(gene):
                     for i in legends:
                         image.paste(i, (0, y))
                         y += i.size[1]
-                    string_io = StringIO()
+                    string_io = BytesIO()
                     image.save(string_io, FORMAT_BY_CONTENT_TYPE[layer['legend_mime']])
                     result = string_io.getvalue()
                     new_hash = sha1(result).hexdigest()

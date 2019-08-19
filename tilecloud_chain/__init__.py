@@ -1,51 +1,46 @@
 # -*- coding: utf-8 -*-
 
-import sys
-import os
-import re
 import logging
 import logging.config
-import yaml
-import sqlite3
-import tempfile
-import subprocess
+import os
 import pkgutil
+import re
+import sqlite3
+import subprocess
+import sys
+import tempfile
 import time
-from six.moves import map, filter
-from six import binary_type
-from six import BytesIO as StringIO
-from math import ceil, sqrt
-from hashlib import sha1
-from fractions import Fraction
 from datetime import datetime
+from fractions import Fraction
+from hashlib import sha1
+from io import BytesIO
 from itertools import product
+from math import ceil, sqrt
 
-from tilecloud_chain.multitilestore import MultiTileStore
-from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
-
-from PIL import Image
-
+import boto3
 import psycopg2
-from shapely.wkb import loads as loads_wkb
+import yaml
+from c2cwsgiutils import sentry, stats
+from PIL import Image
 from shapely.geometry import Polygon
 from shapely.ops import cascaded_union
-import boto3
+from shapely.wkb import loads as loads_wkb
+
 from pykwalify.core import Core
-from pykwalify.errors import SchemaError, NotSequenceError, NotMappingError
-from c2cwsgiutils import stats, sentry
-
-from tilecloud import Tile, BoundingPyramid, TileCoord, TileStore, consume
-from tilecloud.grid.free import FreeTileGrid
-from tilecloud.store.metatile import MetaTileSplitterTileStore
-from tilecloud.store.s3 import S3TileStore
-from tilecloud.store.mbtiles import MBTilesTileStore
-from tilecloud.store.filesystem import FilesystemTileStore
-from tilecloud.store.sqs import SQSTileStore, maybe_stop
-from tilecloud.store.redis import RedisTileStore
-from tilecloud.layout.wmts import WMTSTileLayout
-from tilecloud.filter.logger import Logger
+from pykwalify.errors import NotMappingError, NotSequenceError, SchemaError
+from tilecloud import BoundingPyramid, Tile, TileCoord, TileStore, consume
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
-
+from tilecloud.filter.logger import Logger
+from tilecloud.grid.free import FreeTileGrid
+from tilecloud.layout.wmts import WMTSTileLayout
+from tilecloud.store.filesystem import FilesystemTileStore
+from tilecloud.store.mbtiles import MBTilesTileStore
+from tilecloud.store.metatile import MetaTileSplitterTileStore
+from tilecloud.store.redis import RedisTileStore
+from tilecloud.store.s3 import S3TileStore
+from tilecloud.store.sqs import SQSTileStore, maybe_stop
+from tilecloud_chain.multitilestore import MultiTileStore
+from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
 logger = logging.getLogger('tilecloud_chain')
 
@@ -618,7 +613,7 @@ class TileGeneration:
                     sql = 'SELECT ST_AsBinary(geom) FROM (SELECT {}) AS g'.format(g['sql'])
                     logger.info('Execute SQL: {}.'.format(sql))
                     cursor.execute(sql)
-                    geoms = [loads_wkb(binary_type(r[0])) for r in cursor.fetchall()]
+                    geoms = [loads_wkb(bytes(r[0])) for r in cursor.fetchall()]
                     geom = cascaded_union(geoms)
                     if extent:
                         geom = geom.intersection(Polygon((
@@ -1036,7 +1031,7 @@ class HashLogger:
     def __call__(self, tile):
         ref = None
         try:
-            image = Image.open(StringIO(tile.data))
+            image = Image.open(BytesIO(tile.data))
         except IOError as ex:  # pragma: no cover
             logger.error("%s: %s", str(ex), tile.data, exc_info=True)
             raise

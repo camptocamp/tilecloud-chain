@@ -1,27 +1,28 @@
 # -*- coding: utf-8 -*-
 
-import os
-import re
-import sys
 import logging
-import socket
+import os
 import random
+import re
+import socket
+import sys
+from argparse import ArgumentParser
 from datetime import datetime
 from getpass import getuser
-from argparse import ArgumentParser
 
 import boto3
 from c2cwsgiutils import stats
-from tilecloud import TileCoord
-from tilecloud.store.url import URLTileStore
-from tilecloud.layout.wms import WMSTileLayout
-from tilecloud.filter.logger import Logger
 
-from tilecloud_chain import TileGeneration, HashDropper, HashLogger, TilesFileStore, \
-    add_comon_options, parse_tilecoord, quote, Count, MultiTileStore, MultiAction, TimedTileStoreWrapper, \
-    get_queue_store
-from tilecloud_chain.format import size_format, duration_format, default_int
-from tilecloud_chain.database_logger import DatabaseLoggerInit, DatabaseLogger
+from tilecloud import TileCoord
+from tilecloud.filter.logger import Logger
+from tilecloud.layout.wms import WMSTileLayout
+from tilecloud.store.url import URLTileStore
+from tilecloud_chain import (Count, HashDropper, HashLogger, MultiAction,
+                             MultiTileStore, TileGeneration, TilesFileStore,
+                             TimedTileStoreWrapper, add_comon_options,
+                             get_queue_store, parse_tilecoord, quote)
+from tilecloud_chain.database_logger import DatabaseLogger, DatabaseLoggerInit
+from tilecloud_chain.format import default_int, duration_format, size_format
 
 logger = logging.getLogger(__name__)
 
@@ -140,13 +141,15 @@ class Generate:
 
         def wrong_content_type_to_error(tile):
             if tile is not None and tile.content_type is not None \
-                    and tile.content_type.find("image/") != 0:
-                if tile.content_type.find("application/vnd.ogc.se_xml") == 0:
+                    and not tile.content_type.startswith("image/"):
+                if tile.content_type.startswith("application/vnd.ogc.se_xml"):
                     tile.error = "WMS server error: {}".format((
                         self._re_rm_xml_tag.sub(
                             '', tile.error
                         )
                     ))
+                elif tile.content_type.startswith("text/"):
+                    tile.error = "WMS server error: {}".format(tile.error)
                 else:  # pragma: no cover
                     tile.error = "{} is not an image format, error: {}".format(
                         tile.content_type,

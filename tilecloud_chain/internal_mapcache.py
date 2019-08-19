@@ -3,14 +3,14 @@ import datetime
 import json
 import logging
 import queue
-import redis
-import redlock
 import struct
 import threading
-from tilecloud import TileStore, Tile, consume
 
+import redis
+
+import redlock
+from tilecloud import Tile, TileStore, consume
 from tilecloud_chain.generate import Generate
-
 
 MAX_GENERATION_TIME = 60
 RETRY_DELAY = 0.05

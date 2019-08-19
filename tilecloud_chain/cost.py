@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import logging
-from datetime import timedelta
+import sys
 from argparse import ArgumentParser
+from datetime import timedelta
 
 from tilecloud import Tile, TileStore, consume
-
 from tilecloud_chain import TileGeneration, add_comon_options
 from tilecloud_chain.format import duration_format
-
 
 logger = logging.getLogger(__name__)
 
