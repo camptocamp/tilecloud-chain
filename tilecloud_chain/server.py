@@ -394,6 +394,7 @@ class Server:
                 'Cache-Control': "max-age={}".format((3600 * self.expires_hours)),
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET',
+                'Tile-Backend': 'Cache'
             }, **kwargs)
         else:
             return self.error(204, **kwargs)

@@ -182,7 +182,8 @@ def fetch(server, tilegeneration, layer, tile, kwargs):
         'Expires': (datetime.datetime.utcnow() + datetime.timedelta(hours=server.expires_hours)).isoformat(),
         'Cache-Control': "max-age={}".format((3600 * server.expires_hours)),
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET'
+        'Access-Control-Allow-Methods': 'GET',
+        'Tile-Backend': 'WMS'
     }
     if tile.content_encoding:
         response_headers['Content-Encoding'] = tile.content_encoding
