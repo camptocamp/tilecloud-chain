@@ -75,18 +75,26 @@ class Server:
         ]
 
         if self.cache['type'] == 's3':  # pragma: no cover
-            client = tilecloud.store.s3.get_client(self.cache.get('host'))
+            self.s3_client = tilecloud.store.s3.get_client(self.cache.get('host'))
             bucket = self.cache['bucket']
+
+            def _read(self, key_name):
+                response = self.s3_client.get_object(Bucket=bucket, Key=key_name)
+                body = response['Body']
+                try:
+                    return body.read(), response.get('ContentType')
+                finally:
+                    body.close()
 
             def _get(self, path, **kwargs):
                 key_name = os.path.join('{folder}'.format(**self.cache), path)
                 try:
-                    response = client.get_object(Bucket=bucket, Key=key_name)
-                    return response['Body'].read(), response.get('ContentType')
+                    return self._read(key_name)
                 except Exception:
-                    client = tilecloud.store.s3.get_client(self.cache.get('host'))
-                    response = client.get_object(Bucket=bucket, Key=key_name)
-                    return response['Body'].read(), response.get('ContentType')
+                    self.s3_client = tilecloud.store.s3.get_client(self.cache.get('host'))
+                    return self._read(key_name)
+            self._read = types.MethodType(_read, self)
+
         else:
             folder = self.cache['folder'] or ''
 
