@@ -60,3 +60,4 @@ test:
     - redis
   volumes:
     - ./tilecloud_chain:/app/tilecloud_chain
+    # - ../tilecloud/tilecloud:/usr/local/lib/python3.7/dist-packages/tilecloud
