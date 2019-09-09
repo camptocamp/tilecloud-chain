@@ -4,4 +4,4 @@ pep8==1.7.1 # lint
 pep8-naming==0.8.2 # Lint
 pyflakes==2.1.1 # lint
 vvv==0.4.3
-twine==1.13.0
+twine==1.14.0
