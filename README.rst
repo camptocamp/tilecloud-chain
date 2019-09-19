@@ -779,7 +779,7 @@ Generate a specific some zoom levels::
 
 Generate tiles from an (error) tiles file::
 
-    generate_tiles --layer <a_layer> --tiles <a_file.tiles>
+    generate_tiles --layer <a_layer> --tiles <z/x/y>
 
 Generate tiles on a bbox::
 
