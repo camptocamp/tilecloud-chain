@@ -190,7 +190,7 @@ class Server:
         metadata = {}
 
         if path:
-            if path[:len(self.static_path)] == self.static_path:
+            if tuple(path[:len(self.static_path)]) == tuple(self.static_path):
                 body, mime = self._get('/'.join(path[len(self.static_path):]), **kwargs)
                 if mime is not None:
                     return self.response(body, {
