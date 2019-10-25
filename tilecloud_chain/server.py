@@ -33,13 +33,13 @@ import os
 import types
 from urllib.parse import parse_qs, urlencode
 
-import c2cwsgiutils.pyramid
-import requests
 from c2cwsgiutils import health_check
+import c2cwsgiutils.pyramid
 from pyramid.config import Configurator
+import requests
 
-import tilecloud.store.s3
 from tilecloud import Tile, TileCoord
+import tilecloud.store.s3
 from tilecloud_chain import TileGeneration, controller, internal_mapcache
 
 logger = logging.getLogger(__name__)
@@ -482,13 +482,22 @@ def app_factory(
 
 class PyramidServer(Server):
 
-    def error(self, code, message='', **kwargs):
+    def error(self, code, message=None, **kwargs):
         from pyramid.httpexceptions import exception_response
-
-        raise exception_response(code, detail=message, headers={
+        headers = {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET',
-        })
+        }
+        if code == 204:
+            headers.update({
+                'Expires': (
+                    datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
+                ).isoformat(),
+                'Cache-Control': "max-age={}".format((3600 * self.expires_hours)),
+            })
+            return exception_response(code, detail=message, headers=headers)
+
+        raise exception_response(code, detail=message, headers=headers)
 
     def response(self, data, headers=None, **kwargs):
         if headers is None:  # pragma: no cover
