@@ -218,7 +218,7 @@ Size per tile: 4[0-9][0-9] o
         self.assertEqual(request.response.headers['Cache-Control'], 'max-age=28800')
 
         request.params['TileRow'] = '12'
-        self.assertRaises(HTTPNoContent, serve)
+        assert isinstance(serve(), HTTPNoContent)
 
         request.params['TileRow'] = '11'
         request.params['Service'] = 'test'
@@ -743,7 +743,9 @@ Size per tile: 4[0-9][0-9] o
         self.assertEqual(request.response.headers['Cache-Control'], 'max-age=28800')
 
         request.matchdict['path'][7] = '12'
-        self.assertRaises(HTTPNoContent, serve)
+        response = serve()
+        assert isinstance(response, HTTPNoContent)
+        assert response.headers['Cache-Control'] == 'max-age=28800'
 
         request.matchdict['path'][7] = '11'
         request.matchdict['path'][1] = '0.9'
@@ -850,7 +852,7 @@ Size per tile: 4[0-9][0-9] o
         self.assertEqual(request.response.headers['Cache-Control'], 'max-age=28800')
 
         request.matchdict['path'][7] = '12'
-        self.assertRaises(HTTPNoContent, serve)
+        assert isinstance(serve(), HTTPNoContent)
 
         request.matchdict['path'][7] = '11'
         request.matchdict['path'][1] = '0.9'
