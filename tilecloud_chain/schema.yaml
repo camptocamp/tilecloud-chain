@@ -301,6 +301,9 @@ mapping:
             prefix:
                 type: str
                 default: tilecloud_cache
+            expiration:
+                type: int
+                default: 28800  # 8h
 
     apache:
         type: map
