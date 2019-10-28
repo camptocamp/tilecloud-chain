@@ -65,10 +65,11 @@ def _encode_tile(tile):
 
 
 class RedisStore(TileStore):
-    def __init__(self, url, prefix, **kwargs):
+    def __init__(self, url, prefix, expiration, **kwargs):
         super(RedisStore, self).__init__(**kwargs)
         self._redis = redis.Redis.from_url(url)
         self._prefix = prefix
+        self._expiration = expiration
         self._redis_lock = redlock.Redlock([self._redis], retry_count=MAX_GENERATION_TIME / RETRY_DELAY,
                                            retry_delay=RETRY_DELAY)
 
@@ -89,7 +90,7 @@ class RedisStore(TileStore):
 
     def put_one(self, tile):
         key = self._get_key(tile)
-        self._redis.set(key, _encode_tile(tile))
+        self._redis.set(key, _encode_tile(tile), ex=self._expiration)
         LOG.warning("Tile saved: %s/%s", tile.metadata['layer'], tile.tilecoord)
         return tile
 
@@ -125,7 +126,8 @@ class Generator():
     def __init__(self, tilegeneration):
         self._input_store = InputStore()
         redis_config = tilegeneration.config['redis']
-        self._cache_store = RedisStore(redis_config['url'], redis_config['prefix'])
+        self._cache_store = RedisStore(redis_config['url'], redis_config['prefix'],
+                                       redis_config['expiration'])
         for i in range(10):
             thread = GeneratorThread(i, tilegeneration, self._input_store, self._cache_store)
             thread.start()
