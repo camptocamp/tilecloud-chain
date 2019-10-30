@@ -1,5 +1,5 @@
 c2cwsgiutils>=2,<3
-Jinja2==2.10
+Jinja2==2.10.1
 pykwalify==1.7.0
 PyYAML==3.13
 Shapely==1.6.4.post2
