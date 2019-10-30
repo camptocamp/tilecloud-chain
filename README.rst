@@ -93,6 +93,11 @@ Edit your layers configuration in ``./tilegeneration/config.yaml``.
 
 `Default configuration file <https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/scaffolds/create/tilegeneration/config.yaml.mako_tmpl>`_.
 
+Support
+-------
+
+Only the latest release is supported and version < 1.11 contains security issues.
+
 ---------
 Configure
 ---------
