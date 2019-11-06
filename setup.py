@@ -22,7 +22,7 @@ install_requires = [
 
 setup(
     name='tilecloud-chain',
-    version='1.13.5',
+    version='1.13.6',
     description=(
         "Tools to generate tiles from WMS or Mapnik, to S3, "
         "Berkley DB, MBTiles, or local filesystem in WMTS layout using "
