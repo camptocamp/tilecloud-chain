@@ -101,7 +101,8 @@ def add_comon_options(
         )
     parser.add_argument(
         '--logging-configuration-file',
-        help='Configuration file for Python logging.'
+        help='Configuration file for Python logging.',
+        default='/app/production.ini'
     )
     parser.add_argument(
         '-q', '--quiet', default=False, action="store_true",
@@ -309,7 +310,7 @@ class TileGeneration:
         if error:
             exit(1)
 
-        if 'log_format' in self.config.get('generation', {}):
+        if self.configure_logging and 'log_format' in self.config.get('generation', {}):
             self._configure_logging(options, self.config['generation']['log_format'])
 
         if options is not None and options.zoom is not None:
@@ -378,7 +379,8 @@ class TileGeneration:
     def _configure_logging(options, format_):
         if os.environ.get('CI', 'FALSE') == 'TRUE':
             pass
-        elif options is not None and options.logging_configuration_file:  # pragma: nocover
+        elif options is not None and options.logging_configuration_file \
+                and os.exists(options.logging_configuration_file):  # pragma: nocover
             logging.config.fileConfig(options.logging_configuration_file)
         else:  # pragma: nocover
             level = logging.WARNING
