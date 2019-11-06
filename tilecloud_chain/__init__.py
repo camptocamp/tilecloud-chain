@@ -411,13 +411,6 @@ class TileGeneration:
                         'formatter': 'default',
                         'stream': 'ext://sys.stdout'
                     },
-                    'logstash': {
-                        'class': 'c2cwsgiutils.pyramid_logging.PyramidCeeSysLogHandler',
-                        'address': (
-                            os.environ.get('LOG_HOST', 'localhost'),
-                            int(os.environ.get('LOG_PORT', '514'))
-                        )
-                    },
                     'json': {
                         'class': 'c2cwsgiutils.pyramid_logging.JsonLogHandler',
                         'stream': 'ext://sys.stdout'
