@@ -310,7 +310,7 @@ class TileGeneration:
         if error:
             exit(1)
 
-        if self.configure_logging and 'log_format' in self.config.get('generation', {}):
+        if configure_logging and 'log_format' in self.config.get('generation', {}):
             self._configure_logging(options, self.config['generation']['log_format'])
 
         if options is not None and options.zoom is not None:
