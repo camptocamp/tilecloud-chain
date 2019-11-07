@@ -328,7 +328,7 @@ class TileGeneration:
                         [
                             " - {}: {}".format(
                                 os.path.join("/", path_, re.sub("^/", "", error.path)),
-                                re.sub(" Path: '{path}'", "", error.msg).format(**error.__dict__),
+                                re.sub(" : '{path}'", "", error.msg).format(**error.__dict__),
                             )
                             for error in c.errors
                         ]
