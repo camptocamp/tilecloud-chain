@@ -381,7 +381,7 @@ class TileGeneration:
             pass
         elif options is not None and options.logging_configuration_file \
                 and os.path.exists(options.logging_configuration_file):  # pragma: nocover
-            logging.config.fileConfig(options.logging_configuration_file)
+            logging.config.fileConfig(options.logging_configuration_file, defaults=dict(os.environ))
         else:  # pragma: nocover
             level = logging.WARNING
             other_level = logging.CRITICAL
