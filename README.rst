@@ -75,7 +75,7 @@ To share the home folder you should add the arguments:
     --volume=${HOME}:${HOME} \
     --env=HOME=${HOME} \
 
-The image also contains some tools needed to render OSM data like: ``fonts-dejavu``, ``node-carto`` and ``osm2pgsql``.
+The image also contains some tools needed to render OSM data like: ``fonts-dejavu``, ``node-carto``.
 
 With pip
 --------
