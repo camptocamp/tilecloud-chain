@@ -3,23 +3,21 @@ MAINTAINER Stéphane Brunner <stephane.brunner@camptocamp.com>
 
 COPY requirements.txt /app/
 RUN \
-  DEV_PACKAGES="python3.7-dev build-essential libgeos-dev" && \
+  DEV_PACKAGES="python3.7-dev build-essential libgeos-dev libmapnik-dev libdb-dev" && \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
     ca-certificates \
-    libmapnik-dev \
+    libmapnik3.0 \
     mapnik-utils \
     gdal-bin \
-    libdb-dev \
+    libdb5.3 \
     fonts-dejavu \
     node-carto \
-    osm2pgsql \
     curl \
-    unzip \
     optipng \
     ${DEV_PACKAGES} && \
   cd /app && \
-  pip install --disable-pip-version-check --no-cache-dir -r requirements.txt && \
+  python3 -m pip install --disable-pip-version-check --no-cache-dir -r requirements.txt && \
   mkdir /fonts && \
   mkdir /project && \
   apt remove --purge --autoremove --yes ${DEV_PACKAGES} binutils && \
