@@ -93,6 +93,11 @@ Edit your layers configuration in ``./tilegeneration/config.yaml``.
 
 `Default configuration file <https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/scaffolds/create/tilegeneration/config.yaml.mako_tmpl>`_.
 
+Support
+-------
+
+Only the latest release is supported and version < 1.11 contains security issues.
+
 ---------
 Configure
 ---------
@@ -119,10 +124,10 @@ The ``unit`` is the unit used by the projection.
 
 The ``tile_size`` is the tile size in [px], defaults to 256.
 
-The ``matrix_identifier`` is ``zoom`` by default and can also be set to ``resolution``. It specifies how the z index is build to store
-the tiles, for example, for the resolutions ``[2, 1, 0.5]`` the used values are ``[0, 1, 2]`` based on the zoom
-and ``[2, 1, 0_5]`` based on the resolution. The second has the advantage of allowing to add a new
-resolution without regenerating all the tiles, but it does not work with MapCache.
+The ``matrix_identifier`` is ``zoom`` by default and can also be set to ``resolution``. It specifies how the
+z index is build to store the tiles, for example, for the resolutions ``[2, 1, 0.5]`` the used values are
+``[0, 1, 2]`` based on the zoom and ``[2, 1, 0_5]`` based on the resolution. The second has the advantage of
+allowing to add a new resolution without regenerating all the tiles, but it does not work with MapCache.
 
 
 Configure caches
@@ -130,8 +135,9 @@ Configure caches
 
 The available tile caches are: ``s3``, ``bsddb``, ``mbtile`` and ``filesystem``.
 
-The best solution to store the tiles, ``s3``, ``mbtiles`` and ``bsddb``, have the advantage of using only one file per
-layer - style  dimensions. To serve the ``mbtile`` and the ``bsddb`` see `Distribute the tiles`_.
+The best solution to store the tiles, ``s3``, ``mbtiles`` and ``bsddb``, have the advantage of using only
+one file per layer - style  dimensions. To serve the ``mbtile`` and the ``bsddb`` see
+`Distribute the tiles`_.
 
 ``s3`` needs a ``bucket`` and a ``folder`` (defaults to '').
 
@@ -142,7 +148,8 @@ This is needed to generate the capabilities. We can specify:
 
 * ``http_url`` direct url to the tiles root.
 * ``http_urls`` (array) urls to the tiles root.
-* ``http_url`` and ``hosts`` (array), where each value of ``hosts`` is used to replace ``%(host)s`` in ``http_url``.
+* ``http_url`` and ``hosts`` (array), where each value of ``hosts`` is used to replace ``%(host)s`` in
+  ``http_url``.
 
 In all case ``http_url`` or ``http_urls`` can include all attributes of this cache as ``%(attribute)s``.
 
@@ -157,7 +164,8 @@ MBTiles vs Berkley DB (``bsddb``)
 Configure layers
 ----------------
 
-First of all, all the attributes in ``layer_default`` are copied in all the layers to define the default values.
+First of all, all the attributes in ``layer_default`` are copied in all the layers to define the default
+values.
 
 We have two ``type`` of layer: ``wms`` or ``mapnik``.
 
@@ -206,7 +214,8 @@ then with the following configuration:
             value: 2013
             values: [2012, 2013]
 
-We will have two set of tiles ``2012`` and ``2013``, both accessible by the capabilities, and by default we will see the first set of tiles.
+We will have two set of tiles ``2012`` and ``2013``, both accessible by the capabilities, and by default we
+will see the first set of tiles.
 
 
 Metatiles
@@ -218,7 +227,8 @@ The metatiles are used for two things: first to generate multiple tiles with onl
 By setting ``meta_size`` to 8 we will generate a square of 8 by 8 tiles in one shot.
 
 The second usage of metatiles is prevent cut label names: this is solved by getting a bigger image
-and cutting the borders. The ``meta_buffer`` should be set to a bigger value than half the size of the longest label.
+and cutting the borders. The ``meta_buffer`` should be set to a bigger value than half the size of the
+longest label.
 
 
 Configure hash
@@ -327,17 +337,20 @@ Mapnik layers
 
 We need to specify the ``mapfile`` path.
 
-With Mapnik we have the possibility to specify a ``data_buffer`` then we should set the unneeded ``meta_buffer`` to 0.
+With Mapnik we have the possibility to specify a ``data_buffer`` then we should set the unneeded
+``meta_buffer`` to 0.
 
-And the ``output_format`` used for the Mapnik renderer, can be ``png``, ``png256``, ``jpeg``, ``grid`` (grid_renderer).
+And the ``output_format`` used for the Mapnik renderer, can be ``png``, ``png256``, ``jpeg``, ``grid``
+(grid_renderer).
 
 
 ~~~~~~~~~~~~~~~~~~
 Mapnik grid layers
 ~~~~~~~~~~~~~~~~~~
 
-With Mapnik we can generate UTFGrid tiles (JSON format that describes the tiles present on a corresponding tile)
-by using the ``output_format`` 'grid', see also: https://github.com/mapnik/mapnik/wiki/MapnikRenderers#grid_renderer.
+With Mapnik we can generate UTFGrid tiles (JSON format that describes the tiles present on a corresponding
+tile) by using the ``output_format`` 'grid', see also:
+https://github.com/mapnik/mapnik/wiki/MapnikRenderers#grid_renderer.
 
 Specific configuration:
 
@@ -744,7 +757,8 @@ Commands
 Available commands
 ------------------
 
-* ``generate_controller`` generate the annexe files like capabilities, legend, OpenLayers test page, MapCache configuration, Apache configuration.
+* ``generate_controller`` generate the annexe files like capabilities, legend, OpenLayers test page,
+  MapCache configuration, Apache configuration.
 * ``generate_tiles`` generate the tiles.
 * ``generate_copy`` copy the tiles from a cache to an other.
 * ``generate_process`` process the tiles using a configured process.
