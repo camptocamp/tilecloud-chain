@@ -721,7 +721,7 @@ class TileGeneration:
                 tilecoord, time, message.replace('\n', ' ')
             ))
 
-    def add_error_filters(self, queue_store=None):
+    def add_error_filters(self, queue_store=None, daemon=False):
         assert self.tilestream is not None
 
         self.imap(LogErrors(
@@ -743,7 +743,7 @@ class TileGeneration:
                     self.log_tiles_error(tile=tile, message=repr(tile.error))
                 return tile
             self.imap(do)
-        if self.config['generation']['maxconsecutive_errors'] > 0:
+        if self.config['generation']['maxconsecutive_errors'] > 0 and not daemon:
             self.tilestream = map(MaximumConsecutiveErrors(
                 self.config['generation']['maxconsecutive_errors']), self.tilestream)
 

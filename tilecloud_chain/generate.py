@@ -165,10 +165,11 @@ class Generate:
             self._gene.add_error_filters(
                 self._queue_tilestore
                 if 'error_file' in self._gene.config['generation']
-                else None
+                else None,
+                self._options.daemon
             )
         else:
-            self._gene.add_error_filters()
+            self._gene.add_error_filters(daemon=self._options.daemon)
 
         if self._options.role == 'hash':
             self._gene.imap(HashLogger('empty_metatile_detection'))
@@ -246,7 +247,7 @@ class Generate:
                 self._gene.config['logging'],
                 self._options is not None and self._options.daemon
             ))
-        self._gene.add_error_filters()
+        self._gene.add_error_filters(daemon=self._options.daemon)
 
     def generate_consume(self):
         if self._options.time is not None:
