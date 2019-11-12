@@ -28,17 +28,19 @@
 
 
 import logging
-import pyramid.request
-import pyramid.httpexceptions
+import os.environ
 import shlex
 import subprocess
-import tilecloud_chain.server
 import threading
-from c2cwsgiutils.auth import is_auth, auth_view
-from pyramid.view import view_config
-from tilecloud_chain.controller import get_status
 from typing import List
 
+from c2cwsgiutils.auth import auth_view, is_auth
+import pyramid.httpexceptions
+import pyramid.request
+from pyramid.view import view_config
+
+from tilecloud_chain.controller import get_status
+import tilecloud_chain.server
 
 LOG = logging.getLogger(__name__)
 
@@ -52,10 +54,14 @@ class LogThread(threading.Thread):
         try:
             display_command = ' '.join([shlex.quote(arg) for arg in self.command])
             LOG.info("Run the command `{}`".format(display_command))
+            env = {}
+            env.update(os.environ)
+            env['FRONTEND'] = 'noninteractive'
             with subprocess.Popen(
                 self.command,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                env=env,
             ) as process:
                 stdout, stderr = process.communicate()
                 if process.returncode != 0:
