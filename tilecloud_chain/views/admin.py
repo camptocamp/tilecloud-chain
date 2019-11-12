@@ -51,21 +51,23 @@ class LogThread(threading.Thread):
     def run(self):
         try:
             display_command = ' '.join([shlex.quote(arg) for arg in self.command])
-            LOG.error("Run the command `{}`".format(display_command))
+            LOG.info("Run the command `{}`".format(display_command))
             with subprocess.Popen(
                 self.command,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             ) as process:
-                process.wait()
+                stdout, stderr = process.communicate()
                 if process.returncode != 0:
-                    LOG.error("The command `{}` exited with en error code: {}".format(
-                        display_command, process.returncode
+                    LOG.error(
+                        "The command `{}` exited with an error code: {}\nstdout:\n{}\nstderr:\n{}".format(
+                            display_command, process.returncode, stdout.decode(), stderr.decode()
+                        )
+                    )
+                else:
+                    LOG.indo("The command `{}` succeeded with stdout:\n{}\nstderr:\n{}".format(
+                        display_command, stdout.decode(), stderr.decode()
                     ))
-                LOG.info('`{}`: {}'.format(display_command, process.stdout.read().decode().strip()))
-                stderr = process.stderr.read().decode().strip()
-                if len(stderr) > 0:
-                    LOG.warning('`{}`: {}'.format(display_command, stderr))
         except Exception as e:
             LOG.error(str(e))
             raise e
