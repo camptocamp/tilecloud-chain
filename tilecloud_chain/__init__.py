@@ -651,7 +651,8 @@ class TileGeneration:
     def add_logger(self):
         if not self.options.quiet and \
                 not self.options.verbose and \
-                not self.options.debug:
+                not self.options.debug and \
+                os.environ.get('FRONTEND') != 'noninteractive':
             def log_tiles(tile):
                 variables = dict()
                 variables.update(tile.__dict__)
