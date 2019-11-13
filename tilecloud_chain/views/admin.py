@@ -28,7 +28,7 @@
 
 
 import logging
-import os.environ
+import os
 import shlex
 import subprocess
 import threading
