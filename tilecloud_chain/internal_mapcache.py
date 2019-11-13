@@ -24,6 +24,7 @@ class FakeOptions:
     debug = False
     near = True
     time = False
+    daemon = True
 
 
 class InputStore(TileStore):
