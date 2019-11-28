@@ -71,7 +71,7 @@ class LogThread(threading.Thread):
                         )
                     )
                 else:
-                    LOG.indo("The command `{}` succeeded with stdout:\n{}\nstderr:\n{}".format(
+                    LOG.info("The command `{}` succeeded with stdout:\n{}\nstderr:\n{}".format(
                         display_command, stdout.decode(), stderr.decode()
                     ))
         except Exception as e:
