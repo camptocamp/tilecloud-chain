@@ -1241,7 +1241,7 @@ def _safe_generator(generator, time_message=None):
             if tile is None:
                 continue
             if time_message:
-                logger.info("{} in {}".format(time_message, str(datetime.now() - n)))
+                logger.debug("{} in {}".format(time_message, str(datetime.now() - n)))
         except GeneratorExit:  # pragma: no cover
             raise
         except SystemExit:  # pragma: no cover
