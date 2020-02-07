@@ -1,107 +1,16 @@
+---
 version: 2.1
-
 jobs:
   build:
-    working_directory: ~/tilecloud-chain
-    docker:
-      - image: circleci/python:3.6.4
-
+    machine: true
     steps:
-      - checkout
-
-      - run:
-          name: Fix permissions
-          command: |
-            sudo chown -R circleci:circleci /usr/local/bin /usr/local/lib/python3.6/site-packages
-
-      - restore_cache:  # ensure this step occurs *before* installing dependencies
-          keys:
-            - pipdeps-{{ checksum "dev-requirements.txt" }}
-            - pipdeps-
-      - run:
-          name: Install dependencies
-          command: |
-            set -e
-            sudo pip install --requirement=dev-requirements.txt
-            touch tilecloud_chain/OpenLayers.js
-      - save_cache:
-          key: pipdeps-{{ checksum "dev-requirements.txt" }}
-          paths:
-            - ".venv"
-            - "/usr/local/bin"
-            - "/usr/local/lib/python3.6/site-packages"
-
-      - setup_remote_docker
-
-      - run:
-          name: Build
-          command: |
-            set -e
-            flake8 tilecloud_chain
-            vvv-validate-rst README.rst
-            vvv-validate-rst CHANGES.rst
-            python setup.py --long-description > PYPI.rst
-            vvv-validate-rst PYPI.rst
-            docker build --tag camptocamp/tilecloud-chain:latest .
-            git --no-pager diff --check `git log --oneline | tail -1 | cut --fields=1 --delimiter=' '`
-
-      - run:
-          name: Test
-          command: |
-            set -e
-            docker-compose -p tilecloud -f test-docker-compose.yml up -d
-
-            # Wait for DB to be up
-            while ! docker exec tilecloud_test_1 psql -h db -p 5432 -U postgres -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests
-            do
-              echo "Waiting for DB to be UP"
-              sleep 1
-            done
-
-            docker-compose -p tilecloud -f test-docker-compose.yml exec test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
-
-            docker-compose -p tilecloud -f test-docker-compose.yml down
-
-      - run:
-          name: Don't publish for PRs from forks
-          command: '[ -n "$AES_IV" ] && true || circleci step halt'
-
-      - run:
-          name: Decrypt secrets
-          command: |
-            set -e
-            openssl aes-256-cbc -K $AES_KEY -iv $AES_IV -in .circleci/dockercfg.enc -out ~/.dockercfg -d
-            openssl aes-256-cbc -K $AES_KEY -iv $AES_IV -in .circleci/pypirc.enc -out ~/.pypirc -d
-
-      - run:
-          name: Deploy
-          command: |
-            set -e
-            .circleci/deploy
-
+      - run: echo Disabled
 workflows:
   version: 2
-  push:
-    jobs: &jobs
-      - build
-
-  tag_push:
+  workflow:
     jobs:
       - build:
           filters:
-            tags:
-              only: /^\d+\.\d+\.\d+/
-            branches:
-              ignore: /.*/
-
-  nightly:
-    triggers:
-      - schedule:
-          cron: 0 0 * * *
-          filters:
             branches:
               only:
-                - master
-                - /^\d+\.\d+$/
-    jobs:
-      - build
+                - none

@@ -25,26 +25,22 @@ function publish_pypi {
     twine upload dist/*.whl
 }
 
-if [[ -n "${CIRCLE_PULL_REQUEST}" ]]
-then
-    echo "Not deploying image for pull requests"
-    exit 0
-fi
-
-if [[ "${CIRCLE_BRANCH}" == "master" ]]
+if [[ "${GITHUB_REF}" == "refs/heads/master" ]]
 then
   publish_docker latest
-elif [[ -n "${CIRCLE_TAG}" ]]
+elif [[ "${GITHUB_REF}" =~ "^refs/tags/.*" ]]
 then
-  publish_docker "${CIRCLE_TAG}"
-  if [[ "${CIRCLE_TAG}" == `python3 setup.py --version` ]]
+  GIT_TAG=$(echo "${GITHUB_REF}"|sed 's|^refs/tags/||g')
+  publish_docker "${GIT_TAG}"
+  if [[ "${GIT_TAG}" == `python3 setup.py --version` ]]
   then
-    echo "Uploading version ${CIRCLE_TAG} to pypi"
-    publish_pypi "${CIRCLE_TAG}"
+    echo "Uploading version ${GIT_TAG} to pypi"
+    publish_pypi "${GIT_TAG}"
   fi
-elif [[ -n "${CIRCLE_BRANCH}" ]]
+elif [[ "${GITHUB_REF}" =~ "^refs/heads/.*" ]]
 then
-  publish_docker "${CIRCLE_BRANCH}"
+  GIT_BRANCH=$(echo "${GITHUB_REF}"|sed 's|^refs/heads/||g')
+  publish_docker "${GIT_BRANCH}"
 else
   echo "Not deploying image"
 fi
