@@ -25,10 +25,13 @@ function publish_pypi {
     twine upload dist/*.whl
 }
 
-if [[ "${GITHUB_REF}" == "refs/heads/master" ]]
+if [ "$1" ]
+then
+  publish_docker "$1"
+elif [[ "${GITHUB_REF}" == "refs/heads/master" ]]
 then
   publish_docker latest
-elif [[ "${GITHUB_REF}" =~ "^refs/tags/.*" ]]
+elif [[ "${GITHUB_REF}" =~ ^refs/tags/.* ]]
 then
   GIT_TAG=$(echo "${GITHUB_REF}"|sed 's|^refs/tags/||g')
   publish_docker "${GIT_TAG}"
@@ -37,7 +40,7 @@ then
     echo "Uploading version ${GIT_TAG} to pypi"
     publish_pypi "${GIT_TAG}"
   fi
-elif [[ "${GITHUB_REF}" =~ "^refs/heads/.*" ]]
+elif [[ "${GITHUB_REF}" =~ ^refs/heads/.* ]]
 then
   GIT_BRANCH=$(echo "${GITHUB_REF}"|sed 's|^refs/heads/||g')
   publish_docker "${GIT_BRANCH}"
