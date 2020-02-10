@@ -49,7 +49,7 @@ jobs:
           name: Test
           command: |
             set -e
-            docker-compose -p tilecloud -f test-docker-compose.yml up -d
+            docker-compose -p tilecloud -f test-docker-compose.yaml up -d
 
             # Wait for DB to be up
             while ! docker exec tilecloud_test_1 psql -h db -p 5432 -U postgres -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests
