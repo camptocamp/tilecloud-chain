@@ -214,6 +214,7 @@ class Server:
                 )
             path = path[1:]  # remove type
 
+        if path:
             if len(path) == 2 and path[0] == '1.0.0' and path[1].lower() == 'wmtscapabilities.xml':
                 params['SERVICE'] = 'WMTS'
                 params['VERSION'] = '1.0.0'
@@ -531,9 +532,9 @@ class PyramidView():
 
         if 'path' in self.request.matchdict:
             path = self.request.matchdict['path']
-        if not path:
-            for param, value in self.request.params.items():
-                params[param.upper()] = value
+
+        for param, value in self.request.params.items():
+            params[param.upper()] = value
 
         return self.server.serve(path, params, request=self.request)
 
