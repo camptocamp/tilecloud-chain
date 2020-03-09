@@ -52,7 +52,7 @@ MAP
     TYPE POINT
     CONNECTIONTYPE postgis
     CONNECTION "user=postgres password=postgres dbname=tests host=db"
-    DATA "the_geom FROM (SELECT * FROM tests.point WHERE name='%POINT_NAME%') AS foo USING UNIQUE gid"
+    DATA "the_geom FROM (SELECT * FROM tests.point WHERE name='%POINT_NAME%') AS foo USING unique gid"
     TEMPLATE fooOnlyForWMSGetFeatureInfo # For GetFeatureInfo
     STATUS ON
     METADATA
