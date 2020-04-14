@@ -1210,9 +1210,8 @@ class TilesFileStore(TileStore):
                     tilecoord = parse_tilecoord(line)
                 except ValueError as e:  # pragma: no cover
                     logger.error(
-                        "A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{}".format(
-                            line, repr(e), exc_info=True
-                        ),
+                        "A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{}".format(line, repr(e)),
+                        exc_info=True,
                     )
                     continue
 
