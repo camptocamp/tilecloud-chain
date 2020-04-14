@@ -531,7 +531,7 @@ class TileGeneration:
             position = (
                 options.near
                 if options.near is not None
-                else [(layer["bbox"][0] + layer["bbox"][2]) / 2, (layer["bbox"][1] + layer["bbox"][3]) / 2,]
+                else [(layer["bbox"][0] + layer["bbox"][2]) / 2, (layer["bbox"][1] + layer["bbox"][3]) / 2]
             )
             bbox = layer["grid_ref"]["bbox"]
             diff = [position[0] - bbox[0], position[1] - bbox[1]]
