@@ -20,14 +20,14 @@ from math import ceil, sqrt
 import boto3
 import psycopg2
 import yaml
-from c2cwsgiutils import sentry, stats
 from PIL import Image
+from pykwalify.core import Core
+from pykwalify.errors import NotMappingError, NotSequenceError, SchemaError
 from shapely.geometry import Polygon
 from shapely.ops import cascaded_union
 from shapely.wkb import loads as loads_wkb
 
-from pykwalify.core import Core
-from pykwalify.errors import NotMappingError, NotSequenceError, SchemaError
+from c2cwsgiutils import sentry, stats
 from tilecloud import BoundingPyramid, Tile, TileCoord, TileStore, consume
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
 from tilecloud.filter.logger import Logger
@@ -42,92 +42,101 @@ from tilecloud.store.sqs import SQSTileStore, maybe_stop
 from tilecloud_chain.multitilestore import MultiTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
-logger = logging.getLogger('tilecloud_chain')
+logger = logging.getLogger("tilecloud_chain")
 
 
 def add_comon_options(
-        parser, tile_pyramid=True, no_geom=True,
-        near=True, time=True, dimensions=False, cache=True):
+    parser, tile_pyramid=True, no_geom=True, near=True, time=True, dimensions=False, cache=True
+):
     parser.add_argument(
-        '-c', '--config', default=os.environ.get('TILEGENERATION_CONFIGFILE', 'tilegeneration/config.yaml'),
-        help='path to the configuration file', metavar="FILE"
+        "-c",
+        "--config",
+        default=os.environ.get("TILEGENERATION_CONFIGFILE", "tilegeneration/config.yaml"),
+        help="path to the configuration file",
+        metavar="FILE",
     )
-    parser.add_argument(
-        '-l', '--layer', metavar="NAME",
-        help='the layer to generate'
-    )
+    parser.add_argument("-l", "--layer", metavar="NAME", help="the layer to generate")
     if tile_pyramid:
         parser.add_argument(
-            '-b', '--bbox', nargs=4, type=float, metavar=('MINX', 'MINY', 'MAXX', 'MAXY'),
-            help='restrict to specified bounding box'
+            "-b",
+            "--bbox",
+            nargs=4,
+            type=float,
+            metavar=("MINX", "MINY", "MAXX", "MAXY"),
+            help="restrict to specified bounding box",
         )
         parser.add_argument(
-            '-z', '--zoom',
-            help='restrict to specified zoom level, or a zooms range (2-5), or a zooms list (2,4,5)'
+            "-z",
+            "--zoom",
+            help="restrict to specified zoom level, or a zooms range (2-5), or a zooms list (2,4,5)",
         )
         parser.add_argument(
-            '-t', '--test', type=int,
-            help='test with generating N tiles, and add log messages', metavar="N"
+            "-t", "--test", type=int, help="test with generating N tiles, and add log messages", metavar="N"
         )
         if near:
             parser.add_argument(
-                '--near', type=float, nargs=2, metavar=('X', 'Y'),
-                help='This option is a good replacement of --bbox, to used with '
-                '--time or --test and --zoom, implies --no-geom. '
-                'It automatically measure a bbox around the X Y position that corresponds to the metatiles.'
+                "--near",
+                type=float,
+                nargs=2,
+                metavar=("X", "Y"),
+                help="This option is a good replacement of --bbox, to used with "
+                "--time or --test and --zoom, implies --no-geom. "
+                "It automatically measure a bbox around the X Y position that corresponds to the metatiles.",
             )
         if time:
             parser.add_argument(
-                '--time', '--measure-generation-time',
-                dest='time', metavar="N", type=int,
-                help='Measure the generation time by creating N tiles to warm-up, '
-                'N tile to do the measure and N tiles to slow-down'
+                "--time",
+                "--measure-generation-time",
+                dest="time",
+                metavar="N",
+                type=int,
+                help="Measure the generation time by creating N tiles to warm-up, "
+                "N tile to do the measure and N tiles to slow-down",
             )
     if no_geom:
         parser.add_argument(
-            '--no-geom', default=True, action="store_false", dest="geom",
-            help="Don't the geometry available in the SQL"
+            "--no-geom",
+            default=True,
+            action="store_false",
+            dest="geom",
+            help="Don't the geometry available in the SQL",
         )
     if dimensions:
         parser.add_argument(
-            '--dimensions', nargs='+', metavar='DIMENSION=VALUE', default=[],
-            help='overwrite the dimensions values specified in the config file'
+            "--dimensions",
+            nargs="+",
+            metavar="DIMENSION=VALUE",
+            default=[],
+            help="overwrite the dimensions values specified in the config file",
         )
     if cache:
-        parser.add_argument(
-            '--cache',
-            dest='cache', metavar="NAME",
-            help='The cache name to use'
-        )
+        parser.add_argument("--cache", dest="cache", metavar="NAME", help="The cache name to use")
     parser.add_argument(
-        '--logging-configuration-file',
-        help='Configuration file for Python logging.',
-        default='/app/production.ini'
+        "--logging-configuration-file",
+        help="Configuration file for Python logging.",
+        default="/app/production.ini",
     )
+    parser.add_argument("-q", "--quiet", default=False, action="store_true", help="Display only errors.")
+    parser.add_argument("-v", "--verbose", default=False, action="store_true", help="Display info message.")
     parser.add_argument(
-        '-q', '--quiet', default=False, action="store_true",
-        help='Display only errors.'
-    )
-    parser.add_argument(
-        '-v', '--verbose', default=False, action="store_true",
-        help='Display info message.'
-    )
-    parser.add_argument(
-        '-d', '--debug', default=False, action="store_true",
-        help='Display debug message, and stop on first error.'
+        "-d",
+        "--debug",
+        default=False,
+        action="store_true",
+        help="Display debug message, and stop on first error.",
     )
 
 
 def get_tile_matrix_identifier(grid, resolution=None, zoom=None):
-    if grid is None or grid['matrix_identifier'] == 'zoom':
+    if grid is None or grid["matrix_identifier"] == "zoom":
         return str(zoom)
     else:
         if resolution is None:
-            resolution = grid['resolutions'][zoom]
+            resolution = grid["resolutions"][zoom]
         if int(resolution) == resolution:
             return str(int(resolution))
         else:
-            return str(resolution).replace('.', '_')
+            return str(resolution).replace(".", "_")
 
 
 class TileGeneration:
@@ -138,54 +147,52 @@ class TileGeneration:
     duration = 0
     error = 0
 
-    def __init__(
-        self, config_file, options=None, layer_name=None, base_config=None, configure_logging=True
-    ):
+    def __init__(self, config_file, options=None, layer_name=None, base_config=None, configure_logging=True):
         self._close_actions = []
         self._layers_geoms = {}
         self.error_files_ = {}
 
         if options is not None:
-            if not hasattr(options, 'bbox'):
+            if not hasattr(options, "bbox"):
                 options.bbox = None
-            if not hasattr(options, 'zoom'):
+            if not hasattr(options, "zoom"):
                 options.zoom = None
-            if not hasattr(options, 'test'):
+            if not hasattr(options, "test"):
                 options.test = None
-            if not hasattr(options, 'near'):
+            if not hasattr(options, "near"):
                 options.near = None
-            if not hasattr(options, 'time'):
+            if not hasattr(options, "time"):
                 options.time = None
-            if not hasattr(options, 'geom'):
+            if not hasattr(options, "geom"):
                 options.geom = True
 
         if configure_logging:
-            self._configure_logging(options, '%(levelname)s:%(name)s:%(funcName)s:%(message)s')
+            self._configure_logging(options, "%(levelname)s:%(name)s:%(funcName)s:%(message)s")
 
         with open(config_file) as f:
             self.config = {}
             self.config.update({} if base_config is None else base_config)
             self.config.update(yaml.safe_load(f))
         self.options = options
-        if 'defaults' in self.config:
-            del self.config['defaults']
+        if "defaults" in self.config:
+            del self.config["defaults"]
         # generate base structure
-        if 'cost' in self.config:
-            if 's3' not in self.config['cost']:
-                self.config['cost']['s3'] = {}
-            if 'cloudfront' not in self.config['cost']:
-                self.config['cost']['cloudfront'] = {}
-            if 'sqs' not in self.config['cost']:
-                self.config['cost']['sqs'] = {}
-        if 'generation' not in self.config:
-            self.config['generation'] = {}
-        for gname, grid in sorted(self.config.get('grids', {}).items()):
+        if "cost" in self.config:
+            if "s3" not in self.config["cost"]:
+                self.config["cost"]["s3"] = {}
+            if "cloudfront" not in self.config["cost"]:
+                self.config["cost"]["cloudfront"] = {}
+            if "sqs" not in self.config["cost"]:
+                self.config["cost"]["sqs"] = {}
+        if "generation" not in self.config:
+            self.config["generation"] = {}
+        for gname, grid in sorted(self.config.get("grids", {}).items()):
             if grid is not None:
                 grid["name"] = gname
-        for cname, cache in sorted(self.config.get('caches', {}).items()):
+        for cname, cache in sorted(self.config.get("caches", {}).items()):
             if cache is not None:
                 cache["name"] = cname
-        for lname, layer in sorted(self.config.get('layers', {}).items()):
+        for lname, layer in sorted(self.config.get("layers", {}).items()):
             if layer is not None:
                 layer["name"] = lname
 
@@ -193,133 +200,143 @@ class TileGeneration:
             source_data=self.config,
             schema_data=yaml.safe_load(pkgutil.get_data("tilecloud_chain", "schema.yaml")),
         )
-        path_ = ''
+        path_ = ""
         try:
             self.config = c.validate()
 
-            for name, cache in self.config['caches'].items():
-                if cache['type'] == 's3':
+            for name, cache in self.config["caches"].items():
+                if cache["type"] == "s3":
                     c = Core(
                         source_data=cache,
                         schema_data=yaml.safe_load(
-                            pkgutil.get_data("tilecloud_chain", "schema-cache-s3.yaml")),
+                            pkgutil.get_data("tilecloud_chain", "schema-cache-s3.yaml")
+                        ),
                     )
-                    path_ = 'caches/{}'.format(name)
-                    self.config['caches'][name] = c.validate()
-            for name, layer in self.config['layers'].items():
+                    path_ = "caches/{}".format(name)
+                    self.config["caches"][name] = c.validate()
+            for name, layer in self.config["layers"].items():
                 c = Core(
                     source_data=layer,
                     schema_data=yaml.safe_load(
-                        pkgutil.get_data("tilecloud_chain", "schema-layer-{}.yaml".format(layer['type']))
+                        pkgutil.get_data("tilecloud_chain", "schema-layer-{}.yaml".format(layer["type"]))
                     ),
                 )
-                path_ = 'layers/{}'.format(name)
-                self.config['layers'][name] = c.validate()
+                path_ = "layers/{}".format(name)
+                self.config["layers"][name] = c.validate()
 
         except SchemaError:
-            logger.error("The config file '{}' is invalid.\n{}".format(
-                config_file,
-                "\n".join(sorted([
-                    " - {}: {}".format(
-                        os.path.join('/', path_, re.sub('^/', '', error.path)),
-                        re.sub(" Path: '{path}'", '', error.msg).format(**error.__dict__)
-                    )
-                    for error in c.errors
-                ]))
-            ))
+            logger.error(
+                "The config file '{}' is invalid.\n{}".format(
+                    config_file,
+                    "\n".join(
+                        sorted(
+                            [
+                                " - {}: {}".format(
+                                    os.path.join("/", path_, re.sub("^/", "", error.path)),
+                                    re.sub(" Path: '{path}'", "", error.msg).format(**error.__dict__),
+                                )
+                                for error in c.errors
+                            ]
+                        )
+                    ),
+                )
+            )
             exit(1)
         except NotSequenceError as e:  # pragma: no cover
-            logger.error("The config file '{}' is invalid.\n - {}".format(
-                config_file, e.msg
-            ))
+            logger.error("The config file '{}' is invalid.\n - {}".format(config_file, e.msg))
             exit(1)
         except NotMappingError as e:  # pragma: no cover
-            logger.error("The config file '{}' is invalid.\n - {}".format(
-                config_file, e.msg
-            ))
+            logger.error("The config file '{}' is invalid.\n - {}".format(config_file, e.msg))
             exit(1)
 
         error = False
-        self.grids = self.config['grids']
+        self.grids = self.config["grids"]
         for gname, grid in sorted(self.grids.items()):
-            if 'resolution_scale' in grid:
-                scale = grid['resolution_scale']
-                for r in grid['resolutions']:
+            if "resolution_scale" in grid:
+                scale = grid["resolution_scale"]
+                for r in grid["resolutions"]:
                     if r * scale % 1 != 0.0:
                         logger.error(
-                            "The resolution {} * resolution_scale {} is not an integer.".format(
-                                r, scale
-                            )
+                            "The resolution {} * resolution_scale {} is not an integer.".format(r, scale)
                         )
                         error = True
             else:
-                grid['resolution_scale'] = self._resolution_scale(grid['resolutions'])
+                grid["resolution_scale"] = self._resolution_scale(grid["resolutions"])
 
             srs = int(grid["srs"].split(":")[1])
-            if 'proj4_literal' not in grid:
+            if "proj4_literal" not in grid:
                 if srs == 3857:  # pragma: no cover
-                    grid['proj4_literal'] = '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 ' \
-                        '+x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over'
+                    grid["proj4_literal"] = (
+                        "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 "
+                        "+x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over"
+                    )
                 elif srs == 21781:
-                    grid['proj4_literal'] = \
-                        '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 ' \
-                        '+x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 ' \
-                        '+units=m +no_defs'
+                    grid["proj4_literal"] = (
+                        "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 "
+                        "+x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 "
+                        "+units=m +no_defs"
+                    )
                 elif srs == 2056:  # pragma: no cover
-                    grid['proj4_literal'] = \
-                        '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 ' \
-                        '+x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 ' \
-                        '+units=m +no_defs'
+                    grid["proj4_literal"] = (
+                        "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 "
+                        "+x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 "
+                        "+units=m +no_defs"
+                    )
                 else:  # pragma: no cover
-                    grid['proj4_literal'] = '+init={}'.format(grid['srs'])
+                    grid["proj4_literal"] = "+init={}".format(grid["srs"])
 
-            scale = grid['resolution_scale']
-            grid['obj'] = FreeTileGrid(
-                resolutions=[r * scale for r in grid['resolutions']],
-                scale=scale,
-                max_extent=grid['bbox'],
-                tile_size=grid['tile_size']) if not error else None
+            scale = grid["resolution_scale"]
+            grid["obj"] = (
+                FreeTileGrid(
+                    resolutions=[r * scale for r in grid["resolutions"]],
+                    scale=scale,
+                    max_extent=grid["bbox"],
+                    tile_size=grid["tile_size"],
+                )
+                if not error
+                else None
+            )
 
-        self.layers = self.config['layers']
+        self.layers = self.config["layers"]
         for lname, layer in sorted(self.layers.items()):
-            layer['grid_ref'] = self.grids[layer['grid']] if not error else None
+            layer["grid_ref"] = self.grids[layer["grid"]] if not error else None
             self.layers[lname] = layer
-            if 'geoms' not in layer:
-                layer['geoms'] = []
-            if 'params' not in layer and layer['type'] == 'wms':
-                layer['params'] = {}
-            if 'headers' not in layer and layer['type'] == 'wms':
-                layer['headers'] = {
-                    'Cache-Control': 'no-cache, no-store',
-                    'Pragma': 'no-cache',
+            if "geoms" not in layer:
+                layer["geoms"] = []
+            if "params" not in layer and layer["type"] == "wms":
+                layer["params"] = {}
+            if "headers" not in layer and layer["type"] == "wms":
+                layer["headers"] = {
+                    "Cache-Control": "no-cache, no-store",
+                    "Pragma": "no-cache",
                 }
-            if 'dimensions' not in layer:
-                layer['dimensions'] = []
-            if layer['type'] == 'mapnik' and \
-                    layer['output_format'] == 'grid' and \
-                    layer.get('meta', False):  # pragma: no cover
-                logger.error("The layer '{}' is of type Mapnik/Grid, that can't support matatiles.".format(
-                    lname
-                ))
+            if "dimensions" not in layer:
+                layer["dimensions"] = []
+            if (
+                layer["type"] == "mapnik" and layer["output_format"] == "grid" and layer.get("meta", False)
+            ):  # pragma: no cover
+                logger.error(
+                    "The layer '{}' is of type Mapnik/Grid, that can't support matatiles.".format(lname)
+                )
                 error = True
 
-        self.caches = self.config['caches']
-        self.metadata = self.config.get('metadata')
-        self.provider = self.config.get('provider')
+        self.caches = self.config["caches"]
+        self.metadata = self.config.get("metadata")
+        self.provider = self.config.get("provider")
 
         if error:
             exit(1)
 
-        if configure_logging and 'log_format' in self.config.get('generation', {}):
-            self._configure_logging(options, self.config['generation']['log_format'])
+        if configure_logging and "log_format" in self.config.get("generation", {}):
+            self._configure_logging(options, self.config["generation"]["log_format"])
 
         if options is not None and options.zoom is not None:
             error_message = (
                 "The zoom argument '%s' has incorrect format, "
                 "it can be a single value, a range (3-9), a list of values (2,5,7)."
             ) % options.zoom
-            if options.zoom.find('-') >= 0:
-                r = options.zoom.split('-')
+            if options.zoom.find("-") >= 0:
+                r = options.zoom.split("-")
                 if len(r) != 2:  # pragma: no cover
                     logger.error(error_message)
                     error = True
@@ -328,9 +345,9 @@ class TileGeneration:
                 except ValueError:  # pragma: no cover
                     logger.error(error_message, exc_info=True)
                     error = True
-            elif options.zoom.find(',') >= 0:
+            elif options.zoom.find(",") >= 0:
                 try:
-                    options.zoom = [int(z) for z in options.zoom.split(',')]
+                    options.zoom = [int(z) for z in options.zoom.split(",")]
                 except ValueError:  # pragma: no cover
                     logger.error(error_message, exc_info=True)
                     error = True
@@ -377,10 +394,13 @@ class TileGeneration:
 
     @staticmethod
     def _configure_logging(options, format_):
-        if os.environ.get('CI', 'FALSE') == 'TRUE':
+        if os.environ.get("CI", "FALSE") == "TRUE":
             pass
-        elif options is not None and options.logging_configuration_file \
-                and os.path.exists(options.logging_configuration_file):  # pragma: nocover
+        elif (
+            options is not None
+            and options.logging_configuration_file
+            and os.path.exists(options.logging_configuration_file)
+        ):  # pragma: nocover
             logging.config.fileConfig(options.logging_configuration_file, defaults=dict(os.environ))
         else:  # pragma: nocover
             level = logging.WARNING
@@ -392,38 +412,26 @@ class TileGeneration:
             elif options is not None and options.debug:
                 level = logging.DEBUG
                 other_level = logging.INFO
-            logging.config.dictConfig({
-                'version': 1,
-                'disable_existing_loggers': False,  # Without that, existing loggers are silent
-                'loggers': {
-                    'tilecloud': {
-                        'level': level
+            logging.config.dictConfig(
+                {
+                    "version": 1,
+                    "disable_existing_loggers": False,  # Without that, existing loggers are silent
+                    "loggers": {"tilecloud": {"level": level}, "tilecloud_chain": {"level": level}},
+                    "root": {"level": other_level, "handlers": [os.environ.get("LOG_TYPE", "console")]},
+                    "handlers": {
+                        "console": {
+                            "class": "logging.StreamHandler",
+                            "formatter": "default",
+                            "stream": "ext://sys.stdout",
+                        },
+                        "json": {
+                            "class": "c2cwsgiutils.pyramid_logging.JsonLogHandler",
+                            "stream": "ext://sys.stdout",
+                        },
                     },
-                    'tilecloud_chain': {
-                        'level': level
-                    }
-                },
-                'root': {
-                    'level': other_level,
-                    'handlers': [os.environ.get('LOG_TYPE', 'console')]
-                },
-                'handlers': {
-                    'console': {
-                        'class': 'logging.StreamHandler',
-                        'formatter': 'default',
-                        'stream': 'ext://sys.stdout'
-                    },
-                    'json': {
-                        'class': 'c2cwsgiutils.pyramid_logging.JsonLogHandler',
-                        'stream': 'ext://sys.stdout'
-                    },
-                },
-                'formatters': {
-                    'default': {
-                        'format': format_
-                    }
+                    "formatters": {"default": {"format": format_}},
                 }
-            })
+            )
         sentry.init()
 
     def get_all_dimensions(self, layer):
@@ -431,76 +439,65 @@ class TileGeneration:
 
         options_dimensions = {}
         for opt_dim in self.options.dimensions:
-            opt_dim = opt_dim.split('=')
+            opt_dim = opt_dim.split("=")
             if len(opt_dim) != 2:  # pragma: no cover
-                exit(
-                    'the DIMENSIONS option should be like this '
-                    'DATE=2013 VERSION=13.'
-                )
+                exit("the DIMENSIONS option should be like this " "DATE=2013 VERSION=13.")
             options_dimensions[opt_dim[0]] = opt_dim[1]
 
         all_dimensions = [
-            [
-                (dim['name'], d)
-                for d in dim['generate']
-            ]
-            for dim in layer['dimensions']
-            if dim['name'] not in options_dimensions
+            [(dim["name"], d) for d in dim["generate"]]
+            for dim in layer["dimensions"]
+            if dim["name"] not in options_dimensions
         ]
         all_dimensions += [[p] for p in options_dimensions.items()]
-        return [{}] if len(all_dimensions) == 0 else[dict(d) for d in product(*all_dimensions)]
+        return [{}] if len(all_dimensions) == 0 else [dict(d) for d in product(*all_dimensions)]
 
     def get_store(self, cache, layer, read_only=False):
-        grid = layer['grid_ref'] if 'grid_ref' in layer else None
+        grid = layer["grid_ref"] if "grid_ref" in layer else None
         layout = WMTSTileLayout(
-            layer=layer['name'],
-            url=cache['folder'],
-            style=layer['wmts_style'],
-            format='.' + layer['extension'],
-            dimensions_name=[dimension['name'] for dimension in layer['dimensions']],
-            tile_matrix_set=layer['grid'],
+            layer=layer["name"],
+            url=cache["folder"],
+            style=layer["wmts_style"],
+            format="." + layer["extension"],
+            dimensions_name=[dimension["name"] for dimension in layer["dimensions"]],
+            tile_matrix_set=layer["grid"],
             tile_matrix=lambda z: get_tile_matrix_identifier(grid, zoom=z),
-            request_encoding='REST',
+            request_encoding="REST",
         )
         # store
-        if cache['type'] == 's3':
+        if cache["type"] == "s3":
             # on s3
             cache_tilestore = S3TileStore(
-                cache['bucket'], layout,
-                s3_host=cache.get('host'),
-                cache_control=cache.get('cache_control'))  # pragma: no cover
-        elif cache['type'] == 'mbtiles':
+                cache["bucket"], layout, s3_host=cache.get("host"), cache_control=cache.get("cache_control")
+            )  # pragma: no cover
+        elif cache["type"] == "mbtiles":
             metadata = {}
-            for dimension in layer['dimensions']:
-                metadata['dimension_' + dimension['name']] = dimension['default']
+            for dimension in layer["dimensions"]:
+                metadata["dimension_" + dimension["name"]] = dimension["default"]
             # on mbtiles file
-            filename = layout.filename(
-                TileCoord(0, 0, 0), metadata=metadata
-            ).replace('/0/0/0', '') + '.mbtiles'
+            filename = (
+                layout.filename(TileCoord(0, 0, 0), metadata=metadata).replace("/0/0/0", "") + ".mbtiles"
+            )
             if not os.path.exists(os.path.dirname(filename)):
                 os.makedirs(os.path.dirname(filename))
             cache_tilestore = MBTilesTileStore(
-                sqlite3.connect(filename),
-                content_type=layer['mime_type'],
-                tilecoord_in_topleft=True,
+                sqlite3.connect(filename), content_type=layer["mime_type"], tilecoord_in_topleft=True,
             )
-        elif cache['type'] == 'bsddb':
+        elif cache["type"] == "bsddb":
             metadata = {}
-            for dimension in layer['dimensions']:
-                metadata['dimension_' + dimension['name']] = dimension['default']
+            for dimension in layer["dimensions"]:
+                metadata["dimension_" + dimension["name"]] = dimension["default"]
             import bsddb3 as bsddb
             from tilecloud.store.bsddb import BSDDBTileStore
 
             # on bsddb file
-            filename = layout.filename(
-                TileCoord(0, 0, 0), metadata=metadata
-            ).replace('/0/0/0', '') + '.bsddb'
+            filename = layout.filename(TileCoord(0, 0, 0), metadata=metadata).replace("/0/0/0", "") + ".bsddb"
             if not os.path.exists(os.path.dirname(filename)):
                 os.makedirs(os.path.dirname(filename))
             db = bsddb.hashopen(
                 filename,
                 # and os.path.exists(filename) to avoid error on non existing file
-                'r' if read_only and os.path.exists(filename) else 'c'
+                "r" if read_only and os.path.exists(filename) else "c",
             )
 
             class Close:
@@ -512,147 +509,149 @@ class TileGeneration:
 
             self._close_actions.append(Close(db))
 
-            cache_tilestore = BSDDBTileStore(
-                db, content_type=layer['mime_type'],
-            )
-        elif cache['type'] == 'filesystem':
+            cache_tilestore = BSDDBTileStore(db, content_type=layer["mime_type"],)
+        elif cache["type"] == "filesystem":
             # on filesystem
-            cache_tilestore = FilesystemTileStore(
-                layout,
-                content_type=layer['mime_type'],
-            )
+            cache_tilestore = FilesystemTileStore(layout, content_type=layer["mime_type"],)
         else:
-            exit('unknown cache type: ' + cache['type'])  # pragma: no cover
+            exit("unknown cache type: " + cache["type"])  # pragma: no cover
 
         return cache_tilestore
 
     def init_layer(self, layer, options):
-        self.create_log_tiles_error(layer['name'])
+        self.create_log_tiles_error(layer["name"])
 
         if options.near is not None or (
-                options.time is not None and 'bbox' in layer and options.zoom is not None
+            options.time is not None and "bbox" in layer and options.zoom is not None
         ):  # pragma: no cover
             if options.zoom is None or len(options.zoom) != 1:  # pragma: no cover
-                exit('Option --near needs the option --zoom with one value.')
+                exit("Option --near needs the option --zoom with one value.")
             if not (options.time is not None or options.test is not None):  # pragma: no cover
-                exit('Option --near needs the option --time or --test.')
-            position = options.near if options.near is not None else [
-                (layer['bbox'][0] + layer['bbox'][2]) / 2,
-                (layer['bbox'][1] + layer['bbox'][3]) / 2,
-            ]
-            bbox = layer['grid_ref']['bbox']
+                exit("Option --near needs the option --time or --test.")
+            position = (
+                options.near
+                if options.near is not None
+                else [(layer["bbox"][0] + layer["bbox"][2]) / 2, (layer["bbox"][1] + layer["bbox"][3]) / 2,]
+            )
+            bbox = layer["grid_ref"]["bbox"]
             diff = [position[0] - bbox[0], position[1] - bbox[1]]
-            resolution = layer['grid_ref']['resolutions'][options.zoom[0]]
-            mt_to_m = layer['meta_size'] * layer['grid_ref']['tile_size'] * resolution
+            resolution = layer["grid_ref"]["resolutions"][options.zoom[0]]
+            mt_to_m = layer["meta_size"] * layer["grid_ref"]["tile_size"] * resolution
             mt = [float(d) / mt_to_m for d in diff]
 
             nb_tile = options.time * 3 if options.time is not None else options.test
-            nb_mt = nb_tile / (layer['meta_size'] ** 2)
+            nb_mt = nb_tile / (layer["meta_size"] ** 2)
             nb_sqrt_mt = ceil(sqrt(nb_mt))
 
             mt_origin = [round(m - nb_sqrt_mt / 2) for m in mt]
-            self.init_geom([
-                bbox[0] + mt_origin[0] * mt_to_m,
-                bbox[1] + mt_origin[1] * mt_to_m,
-                bbox[0] + (mt_origin[0] + nb_sqrt_mt) * mt_to_m,
-                bbox[1] + (mt_origin[1] + nb_sqrt_mt) * mt_to_m,
-            ])
+            self.init_geom(
+                [
+                    bbox[0] + mt_origin[0] * mt_to_m,
+                    bbox[1] + mt_origin[1] * mt_to_m,
+                    bbox[0] + (mt_origin[0] + nb_sqrt_mt) * mt_to_m,
+                    bbox[1] + (mt_origin[1] + nb_sqrt_mt) * mt_to_m,
+                ]
+            )
         elif options.bbox is not None:
             self.init_geom(layer, options.bbox)
-        elif 'bbox' in layer:
-            self.init_geom(layer, layer['bbox'])
+        elif "bbox" in layer:
+            self.init_geom(layer, layer["bbox"])
         else:
-            self.init_geom(layer, layer['grid_ref']['bbox'])
+            self.init_geom(layer, layer["grid_ref"]["bbox"])
 
     def get_grid(self, layer, name=None):
         if name is None:
-            name = layer['grid']
+            name = layer["grid"]
 
         return self.grids[name]
 
     def get_tilesstore(self, cache_name):
         cache = self.caches[cache_name]
-        cache_tilestore = TimedTileStoreWrapper(MultiTileStore({
-            lname: self.get_store(cache, layer)
-            for lname, layer in self.layers.items()
-        }), stats_name='store')
+        cache_tilestore = TimedTileStoreWrapper(
+            MultiTileStore({lname: self.get_store(cache, layer) for lname, layer in self.layers.items()}),
+            stats_name="store",
+        )
         return cache_tilestore
 
     def init_geom(self, layer, extent=None):
         self.geoms = self.get_geoms(layer, extent)
 
     def get_geoms(self, layer, extent=None):
-        if layer['name'] in self._layers_geoms:  # pragma: no cover
+        if layer["name"] in self._layers_geoms:  # pragma: no cover
             # already build
-            return self._layers_geoms[layer['name']]
+            return self._layers_geoms[layer["name"]]
 
         layer_geoms = {}
-        self._layers_geoms[layer['name']] = layer_geoms
+        self._layers_geoms[layer["name"]] = layer_geoms
         if extent:
-            geom = Polygon((
-                (extent[0], extent[1]),
-                (extent[0], extent[3]),
-                (extent[2], extent[3]),
-                (extent[2], extent[1]),
-            ))
-            for z, r in enumerate(layer['grid_ref']['resolutions']):
+            geom = Polygon(
+                (
+                    (extent[0], extent[1]),
+                    (extent[0], extent[3]),
+                    (extent[2], extent[3]),
+                    (extent[2], extent[1]),
+                )
+            )
+            for z, r in enumerate(layer["grid_ref"]["resolutions"]):
                 layer_geoms[z] = geom
 
-        if self.options is None or (
-            self.options.near is None and self.options.geom
-        ):
-            for g in layer['geoms']:
-                with stats.timer_context(['geoms_get', layer['name']]):
-                    connection = psycopg2.connect(g['connection'])
+        if self.options is None or (self.options.near is None and self.options.geom):
+            for g in layer["geoms"]:
+                with stats.timer_context(["geoms_get", layer["name"]]):
+                    connection = psycopg2.connect(g["connection"])
                     cursor = connection.cursor()
-                    sql = 'SELECT ST_AsBinary(geom) FROM (SELECT {}) AS g'.format(g['sql'])
-                    logger.info('Execute SQL: {}.'.format(sql))
+                    sql = "SELECT ST_AsBinary(geom) FROM (SELECT {}) AS g".format(g["sql"])
+                    logger.info("Execute SQL: {}.".format(sql))
                     cursor.execute(sql)
                     geoms = [loads_wkb(bytes(r[0])) for r in cursor.fetchall()]
                     geom = cascaded_union(geoms)
                     if extent:
-                        geom = geom.intersection(Polygon((
-                            (extent[0], extent[1]),
-                            (extent[0], extent[3]),
-                            (extent[2], extent[3]),
-                            (extent[2], extent[1]),
-                        )))
-                    for z, r in enumerate(layer['grid_ref']['resolutions']):
-                        if ('min_resolution' not in g or g['min_resolution'] <= r) and \
-                                ('max_resolution' not in g or g['max_resolution'] >= r):
+                        geom = geom.intersection(
+                            Polygon(
+                                (
+                                    (extent[0], extent[1]),
+                                    (extent[0], extent[3]),
+                                    (extent[2], extent[3]),
+                                    (extent[2], extent[1]),
+                                )
+                            )
+                        )
+                    for z, r in enumerate(layer["grid_ref"]["resolutions"]):
+                        if ("min_resolution" not in g or g["min_resolution"] <= r) and (
+                            "max_resolution" not in g or g["max_resolution"] >= r
+                        ):
                             layer_geoms[z] = geom
                     cursor.close()
                     connection.close()
         return layer_geoms
 
     def add_local_process_filter(self):  # pragma: no cover
-        self.ifilter(LocalProcessFilter(
-            self.config["generation"]["number_process"],
-            self.options.local_process_number
-        ))
+        self.ifilter(
+            LocalProcessFilter(self.config["generation"]["number_process"], self.options.local_process_number)
+        )
 
     @staticmethod
     def get_geoms_filter(layer, grid, geoms):
         return IntersectGeometryFilter(
             grid=grid,
             geoms=geoms,
-            px_buffer=(
-                layer['px_buffer'] + layer['meta_buffer'] if layer.get('meta', False) else 0
-            )
+            px_buffer=(layer["px_buffer"] + layer["meta_buffer"] if layer.get("meta", False) else 0),
         )
 
     def add_geom_filter(self, layer):
-        self.ifilter(self.get_geoms_filter(
-            layer=layer,
-            grid=self.get_grid(layer),
-            geoms=self.geoms,
-        ), "Intersect with geom")
+        self.ifilter(
+            self.get_geoms_filter(layer=layer, grid=self.get_grid(layer), geoms=self.geoms,),
+            "Intersect with geom",
+        )
 
     def add_logger(self):
-        if not self.options.quiet and \
-                not self.options.verbose and \
-                not self.options.debug and \
-                os.environ.get('FRONTEND') != 'noninteractive':
+        if (
+            not self.options.quiet
+            and not self.options.verbose
+            and not self.options.debug
+            and os.environ.get("FRONTEND") != "noninteractive"
+        ):
+
             def log_tiles(tile):
                 variables = dict()
                 variables.update(tile.__dict__)
@@ -660,22 +659,22 @@ class TileGeneration:
                 sys.stdout.write("{tilecoord} {metadata}                         \r".format(**variables))
                 sys.stdout.flush()
                 return tile
+
             self.imap(log_tiles)
         elif not self.options.quiet:
-            self.imap(Logger(logger, logging.INFO, '%(tilecoord)s, %(formated_metadata)s'))
+            self.imap(Logger(logger, logging.INFO, "%(tilecoord)s, %(formated_metadata)s"))
 
     def add_metatile_splitter(self):
         assert self.tilestream is not None
 
         splitters = {}
         for lname, layer in self.layers.items():
-            if layer.get('meta'):
+            if layer.get("meta"):
                 splitters[lname] = MetaTileSplitterTileStore(
-                    layer['mime_type'],
-                    layer['grid_ref']['tile_size'],
-                    layer['meta_buffer'])
+                    layer["mime_type"], layer["grid_ref"]["tile_size"], layer["meta_buffer"]
+                )
 
-        store = TimedTileStoreWrapper(MultiTileStore(splitters), stats_name='splitter')
+        store = TimedTileStoreWrapper(MultiTileStore(splitters), stats_name="splitter")
 
         def meta_get(tilestream):  # pragma: no cover
             for metatile in tilestream:
@@ -686,15 +685,10 @@ class TileGeneration:
         self.tilestream = meta_get(self.tilestream)  # pragma: no cover
 
     def create_log_tiles_error(self, layer):
-        if 'error_file' in self.config['generation']:
+        if "error_file" in self.config["generation"]:
             now = datetime.now()
-            time = now.strftime('%d-%m-%Y %H:%M:%S')
-            error_file = open(
-                self.config['generation']['error_file'].format(
-                    layer=layer, datetime=now
-                ),
-                'a'
-            )
+            time = now.strftime("%d-%m-%Y %H:%M:%S")
+            error_file = open(self.config["generation"]["error_file"].format(layer=layer, datetime=now), "a")
             error_file.write("# [{}] Start the layer '{}' generation\n".format(time, layer))
             self.error_files_[layer] = error_file
             return error_file
@@ -704,49 +698,51 @@ class TileGeneration:
             file_.close()
 
     def get_log_tiles_error_file(self, layer):
-        return self.error_files_[layer] if layer in self.error_files_ else \
-            self.create_log_tiles_error(layer)
+        return self.error_files_[layer] if layer in self.error_files_ else self.create_log_tiles_error(layer)
 
     def log_tiles_error(self, tile=None, message=None):
-        if 'error_file' in self.config['generation']:
-            time = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
-            if self.get_log_tiles_error_file(tile.metadata.get('layer')) is None:  # pragma: no cover
+        if "error_file" in self.config["generation"]:
+            time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+            if self.get_log_tiles_error_file(tile.metadata.get("layer")) is None:  # pragma: no cover
                 raise Exception("Missing error file")
 
-            tilecoord = "" \
-                if tile.tilecoord is None \
-                else "{} {} ".format(tile.tilecoord, tile.formated_metadata)
+            tilecoord = (
+                "" if tile.tilecoord is None else "{} {} ".format(tile.tilecoord, tile.formated_metadata)
+            )
             message = "" if message is None else " {}".format(message)
 
-            self.get_log_tiles_error_file(tile.metadata.get('layer')).write('{}# [{}]{}\n'.format(
-                tilecoord, time, message.replace('\n', ' ')
-            ))
+            self.get_log_tiles_error_file(tile.metadata.get("layer")).write(
+                "{}# [{}]{}\n".format(tilecoord, time, message.replace("\n", " "))
+            )
 
     def add_error_filters(self, queue_store=None, daemon=False):
         assert self.tilestream is not None
 
-        self.imap(LogErrors(
-            logger, logging.ERROR,
-            "Error in tile: %(tilecoord)s, %(formated_metadata)s, %(error)r"
-        ))
+        self.imap(
+            LogErrors(logger, logging.ERROR, "Error in tile: %(tilecoord)s, %(formated_metadata)s, %(error)r")
+        )
 
         if stats.BACKENDS:
+
             def add_stats(tile):
                 if tile and tile.error:
-                    stats.increment_counter(['error', tile.metadata.get('layer', 'None')])
+                    stats.increment_counter(["error", tile.metadata.get("layer", "None")])
                 return tile
+
             self.imap(add_stats)
 
-        if 'error_file' in self.config['generation']:
+        if "error_file" in self.config["generation"]:
 
             def do(tile):
                 if tile and tile.error:
                     self.log_tiles_error(tile=tile, message=repr(tile.error))
                 return tile
+
             self.imap(do)
-        if self.config['generation']['maxconsecutive_errors'] > 0 and not daemon:
-            self.tilestream = map(MaximumConsecutiveErrors(
-                self.config['generation']['maxconsecutive_errors']), self.tilestream)
+        if self.config["generation"]["maxconsecutive_errors"] > 0 and not daemon:
+            self.tilestream = map(
+                MaximumConsecutiveErrors(self.config["generation"]["maxconsecutive_errors"]), self.tilestream
+            )
 
         def drop_count(tile):
             if tile and tile.error:
@@ -755,16 +751,15 @@ class TileGeneration:
                 self.error += 1
                 return False
             return True
+
         self.ifilter(drop_count)
 
     def init_tilecoords(self, layer):
-        resolutions = layer['grid_ref']['resolutions']
+        resolutions = layer["grid_ref"]["resolutions"]
 
         if self.options.time is not None and self.options.zoom is None:
-            if 'min_resolution_seed' in layer:  # pragma: no cover
-                self.options.zoom = [resolutions.index(
-                    layer['min_resolution_seed']
-                )]
+            if "min_resolution_seed" in layer:  # pragma: no cover
+                self.options.zoom = [resolutions.index(layer["min_resolution_seed"])]
             else:
                 self.options.zoom = [len(resolutions) - 1]
 
@@ -774,39 +769,34 @@ class TileGeneration:
                 if zoom > zoom_max:
                     logger.warning(
                         "zoom %i is greater than the maximum zoom %i"
-                        " of grid %s of layer %s, ignored." % (
-                            zoom, zoom_max, layer['grid'], layer['name']
-                        )
+                        " of grid %s of layer %s, ignored." % (zoom, zoom_max, layer["grid"], layer["name"])
                     )
             self.options.zoom = [z for z in self.options.zoom if z <= zoom_max]
 
-        if 'min_resolution_seed' in layer:
+        if "min_resolution_seed" in layer:
             if self.options.zoom is None:
                 self.options.zoom = []
                 for z, resolution in enumerate(resolutions):
-                    if resolution >= layer['min_resolution_seed']:
+                    if resolution >= layer["min_resolution_seed"]:
                         self.options.zoom.append(z)
             else:
                 for zoom in self.options.zoom:
                     resolution = resolutions[zoom]
-                    if resolution < layer['min_resolution_seed']:
+                    if resolution < layer["min_resolution_seed"]:
                         logger.warning(
                             "zoom %i corresponds to resolution %s is smaller"
-                            " than the 'min_resolution_seed' %s of layer %s, ignored." %
-                            (
-                                zoom, resolution, layer['min_resolution_seed'], layer['name']
-                            )
+                            " than the 'min_resolution_seed' %s of layer %s, ignored."
+                            % (zoom, resolution, layer["min_resolution_seed"], layer["name"])
                         )
                 self.options.zoom = [
-                    z for z in self.options.zoom if
-                    resolutions[z] >= layer['min_resolution_seed']
+                    z for z in self.options.zoom if resolutions[z] >= layer["min_resolution_seed"]
                 ]
 
         if self.options.zoom is None:
             self.options.zoom = [z for z, r in enumerate(resolutions)]
 
         # fill the bounding pyramid
-        tilegrid = layer['grid_ref']['obj']
+        tilegrid = layer["grid_ref"]["obj"]
         bounding_pyramid = BoundingPyramid(tilegrid=tilegrid)
         for zoom in self.options.zoom:
             if zoom in self.geoms:
@@ -816,25 +806,25 @@ class TileGeneration:
                     logger.warning("bounds empty for zoom {}".format(zoom))
                 else:
                     minx, miny, maxx, maxy = extent
-                    px_buffer = layer['px_buffer']
+                    px_buffer = layer["px_buffer"]
                     m_buffer = px_buffer * resolutions[zoom]
                     minx -= m_buffer
                     miny -= m_buffer
                     maxx += m_buffer
                     maxy += m_buffer
-                    bounding_pyramid.add(tilegrid.tilecoord(
-                        zoom,
-                        max(minx, tilegrid.max_extent[0]),
-                        max(miny, tilegrid.max_extent[1]),
-                    ))
-                    bounding_pyramid.add(tilegrid.tilecoord(
-                        zoom,
-                        min(maxx, tilegrid.max_extent[2]),
-                        min(maxy, tilegrid.max_extent[3]),
-                    ))
+                    bounding_pyramid.add(
+                        tilegrid.tilecoord(
+                            zoom, max(minx, tilegrid.max_extent[0]), max(miny, tilegrid.max_extent[1]),
+                        )
+                    )
+                    bounding_pyramid.add(
+                        tilegrid.tilecoord(
+                            zoom, min(maxx, tilegrid.max_extent[2]), min(maxy, tilegrid.max_extent[3]),
+                        )
+                    )
 
-        if layer.get('meta', False):
-            self.set_tilecoords(bounding_pyramid.metatilecoords(layer['meta_size']), layer)
+        if layer.get("meta", False):
+            self.set_tilecoords(bounding_pyramid.metatilecoords(layer["meta_size"]), layer)
         else:
             self.set_tilecoords(bounding_pyramid, layer)
 
@@ -853,9 +843,8 @@ class TileGeneration:
         assert tilecoords is not None
 
         self.tilestream = self._tilestream(
-            tilecoords,
-            {'layer': layer['name']},
-            self.get_all_dimensions(layer))
+            tilecoords, {"layer": layer["name"]}, self.get_all_dimensions(layer)
+        )
 
     def set_store(self, store):  # pragma: no cover
         self.tilestream = store.list()
@@ -865,14 +854,14 @@ class TileGeneration:
         self.imap(count)
         return count
 
-    def process(self, name=None, key='post_process'):
+    def process(self, name=None, key="post_process"):
         processes = {}
         for lname, layer in self.layers.items():
             name_ = name
             if name_ is None:
                 name_ = layer.get(key)
             if name_ is not None:
-                processes[lname] = Process(self.config['process'][name_], self.options)
+                processes[lname] = Process(self.config["process"][name_], self.options)
         if processes:
             self.imap(MultiAction(processes))
 
@@ -919,8 +908,7 @@ class TileGeneration:
     def consume(self, test=None, force=False):
         assert self.tilestream is not None
 
-        if hasattr(self.options, 'daemon') and self.options.daemon and \
-                not self.options.debug and not force:
+        if hasattr(self.options, "daemon") and self.options.daemon and not self.options.debug and not force:
             while True:
                 try:
                     self.consume(test, True)
@@ -975,8 +963,7 @@ class HashDropper:
         self.count = count
 
     def __call__(self, tile):
-        if len(tile.data) != self.size or \
-                sha1(tile.data).hexdigest() != self.sha1code:
+        if len(tile.data) != self.size or sha1(tile.data).hexdigest() != self.sha1code:
             return tile
         else:
             if self.store is not None:
@@ -986,7 +973,7 @@ class HashDropper:
                 else:
                     self.store.delete_one(tile)
             logger.info("The tile {} {} is dropped".format(tile.tilecoord, tile.formated_metadata))
-            if hasattr(tile, 'metatile'):
+            if hasattr(tile, "metatile"):
                 tile.metatile.elapsed_togenerate -= 1
                 if tile.metatile.elapsed_togenerate == 0 and self.queue_store is not None:
                     self.queue_store.delete_one(tile.metatile)  # pragma: no cover
@@ -1008,7 +995,7 @@ class MultiAction:
         self.actions = actions
 
     def __call__(self, tile):
-        layer = tile.metadata['layer']
+        layer = tile.metadata["layer"]
         if layer in self.actions:
             action = self.actions[layer]
             return action(tile)
@@ -1037,18 +1024,22 @@ class HashLogger:
             elif px != ref:
                 exit("Error: image is not uniform.")
 
-        print("""Tile: {} {}
+        print(
+            """Tile: {} {}
     {}:
         size: {}
         hash: {}""".format(
-            tile.tilecoord, tile.formated_metadata, self.block, len(tile.data),
-            sha1(tile.data).hexdigest()
-        ))
+                tile.tilecoord,
+                tile.formated_metadata,
+                self.block,
+                len(tile.data),
+                sha1(tile.data).hexdigest(),
+            )
+        )
         return tile
 
 
 class LocalProcessFilter:  # pragma: no cover
-
     def __init__(self, nb_process, process_nb):
         self.nb_process = nb_process
         self.process_nb = int(process_nb)
@@ -1062,7 +1053,6 @@ class LocalProcessFilter:  # pragma: no cover
 
 
 class IntersectGeometryFilter:
-
     def __init__(self, grid, geoms=None, px_buffer=0):
         self.grid = grid
         self.geoms = geoms
@@ -1070,10 +1060,7 @@ class IntersectGeometryFilter:
 
     def filter_tilecoord(self, tilecoord):
         return self.bbox_polygon(
-            self.grid['obj'].extent(
-                tilecoord,
-                self.grid['resolutions'][tilecoord.z] * self.px_buffer
-            )
+            self.grid["obj"].extent(tilecoord, self.grid["resolutions"][tilecoord.z] * self.px_buffer)
         ).intersects(self.geoms[tilecoord.z])
 
     def __call__(self, tile):
@@ -1081,12 +1068,7 @@ class IntersectGeometryFilter:
 
     @staticmethod
     def bbox_polygon(bbox):
-        return Polygon((
-            (bbox[0], bbox[1]),
-            (bbox[0], bbox[3]),
-            (bbox[2], bbox[3]),
-            (bbox[2], bbox[1])
-        ))
+        return Polygon(((bbox[0], bbox[1]), (bbox[0], bbox[3]), (bbox[2], bbox[3]), (bbox[2], bbox[1])))
 
 
 class DropEmpty:
@@ -1099,19 +1081,23 @@ class DropEmpty:
 
     def __call__(self, tile):
         if not tile or not tile.data:  # pragma: no cover
-            logger.error("The tile: {tilecoord}{formated_metadata} is empty".format(**{
-                'tilecoord': tile.tilecoord if tile else 'not defined',
-                'formated_metadata': ' ' + tile.formated_metadata if tile else '',
-            }))
-            if 'error_file' in self.gene.config['generation'] and tile:
-                self.gene.log_tiles_error(tile=tile, message='The tile is empty')
+            logger.error(
+                "The tile: {tilecoord}{formated_metadata} is empty".format(
+                    **{
+                        "tilecoord": tile.tilecoord if tile else "not defined",
+                        "formated_metadata": " " + tile.formated_metadata if tile else "",
+                    }
+                )
+            )
+            if "error_file" in self.gene.config["generation"] and tile:
+                self.gene.log_tiles_error(tile=tile, message="The tile is empty")
             return None
         else:
             return tile
 
 
 def quote(arg):
-    if ' ' in arg:
+    if " " in arg:
         if "'" in arg:
             if '"' in arg:
                 return "'{}'".format(arg.replace("'", "\\'"))
@@ -1119,22 +1105,22 @@ def quote(arg):
                 return '"{}"'.format(arg)
         else:
             return "'{}'".format(arg)
-    elif arg == '':
+    elif arg == "":
         return "''"
     else:
         return arg
 
 
 def parse_tilecoord(string_representation):
-    parts = string_representation.split(':')
-    coords = [int(v) for v in parts[0].split('/')]
+    parts = string_representation.split(":")
+    coords = [int(v) for v in parts[0].split("/")]
     if len(coords) != 3:  # pragma: no cover
         raise ValueError("Wrong number of coordinates")
     z, x, y = coords
     if len(parts) == 1:
         tilecoord = TileCoord(z, x, y)
     elif len(parts) == 2:
-        meta = parts[1].split('/')
+        meta = parts[1].split("/")
         if len(meta) != 2:  # pragma: no cover
             raise ValueError("No one '/' in meta coordinates")
         tilecoord = TileCoord(z, x, y, int(meta[0]))
@@ -1151,51 +1137,54 @@ class Process:
     def __call__(self, tile):
         if tile and tile.data:
             fd_in, name_in = tempfile.mkstemp()
-            with open(name_in, 'wb') as file_in:
+            with open(name_in, "wb") as file_in:
                 file_in.write(tile.data)
 
             for cmd in self.config:
                 args = []
-                if not self.options.verbose and \
-                        not self.options.debug and \
-                        not self.options.quiet and \
-                        'default' in cmd['arg']:
-                    args.append(cmd['arg']['default'])
-                if self.options.verbose and 'verbose' in cmd['arg']:
-                    args.append(cmd['arg']['verbose'])
-                if self.options.debug and 'debug' in cmd['arg']:
-                    args.append(cmd['arg']['debug'])
-                if self.options.quiet and 'quiet' in cmd['arg']:
-                    args.append(cmd['arg']['quiet'])
+                if (
+                    not self.options.verbose
+                    and not self.options.debug
+                    and not self.options.quiet
+                    and "default" in cmd["arg"]
+                ):
+                    args.append(cmd["arg"]["default"])
+                if self.options.verbose and "verbose" in cmd["arg"]:
+                    args.append(cmd["arg"]["verbose"])
+                if self.options.debug and "debug" in cmd["arg"]:
+                    args.append(cmd["arg"]["debug"])
+                if self.options.quiet and "quiet" in cmd["arg"]:
+                    args.append(cmd["arg"]["quiet"])
 
-                if cmd['need_out']:
+                if cmd["need_out"]:
                     fd_out, name_out = tempfile.mkstemp()
                     os.unlink(name_out)
                 else:  # pragma: no cover
                     name_out = name_in
 
-                command = cmd['cmd'] % {
-                    'in': name_in,
-                    'out': name_out,
-                    'args': ' '.join(args),
-                    'x': tile.tilecoord.x,
-                    'y': tile.tilecoord.y,
-                    'z': tile.tilecoord.z
+                command = cmd["cmd"] % {
+                    "in": name_in,
+                    "out": name_out,
+                    "args": " ".join(args),
+                    "x": tile.tilecoord.x,
+                    "y": tile.tilecoord.y,
+                    "z": tile.tilecoord.z,
                 }
-                logger.info('process: {}'.format(command))
+                logger.info("process: {}".format(command))
                 code = subprocess.call(command, shell=True)
                 if code != 0:  # pragma: no cover
                     tile.error = "Command '{}' on tile {} return error code {}".format(
-                        command, tile.tilecoord, code)
+                        command, tile.tilecoord, code
+                    )
                     tile.data = None
                     return tile
 
-                if cmd['need_out']:
+                if cmd["need_out"]:
                     os.close(fd_in)
                     name_in = name_out
                     fd_in = fd_out
 
-            with open(name_in, 'rb') as file_out:
+            with open(name_in, "rb") as file_out:
                 tile.data = file_out.read()
             os.close(fd_in)
 
@@ -1215,18 +1204,20 @@ class TilesFileStore(TileStore):
             line = self.tiles_file.readline()
             if not line:
                 return
-            line = line.split('#')[0].strip()
-            if line != '':
+            line = line.split("#")[0].strip()
+            if line != "":
                 try:
                     tilecoord = parse_tilecoord(line)
                 except ValueError as e:  # pragma: no cover
-                    logger.error("A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{}".format(
-                        line, repr(e), exc_info=True)
+                    logger.error(
+                        "A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{}".format(
+                            line, repr(e), exc_info=True
+                        ),
                     )
                     continue
 
                 for dimensions in self.all_dimensions:
-                    metadata = {'layer': self.layer}
+                    metadata = {"layer": self.layer}
                     for k, v in dimensions.items():
                         metadata["dimension_" + k] = v
                     yield Tile(tilecoord, metadata=metadata)
@@ -1269,26 +1260,33 @@ def _await_message(queue):  # pragma: no cover
 
 
 def get_queue_store(config, daemon):
-    if 'redis' in config:
+    if "redis" in config:
         # Create a Redis queue
-        conf = config['redis']
+        conf = config["redis"]
         return TimedTileStoreWrapper(
-            RedisTileStore(conf['url'], name=conf['queue'], stop_if_empty=not daemon,
-                           timeout=conf['timeout'], pending_timeout=conf['pending_timeout'],
-                           max_retries=conf['max_retries'], max_errors_age=conf['max_errors_age'],
-                           max_errors_nb=conf['max_errors_nb']),
-            stats_name='redis')
+            RedisTileStore(
+                conf["url"],
+                name=conf["queue"],
+                stop_if_empty=not daemon,
+                timeout=conf["timeout"],
+                pending_timeout=conf["pending_timeout"],
+                max_retries=conf["max_retries"],
+                max_errors_age=conf["max_errors_age"],
+                max_errors_nb=conf["max_errors_nb"],
+            ),
+            stats_name="redis",
+        )
     else:
         # Create a SQS queue
         return TimedTileStoreWrapper(
-            SQSTileStore(_get_sqs_queue(config),
-                         on_empty=_await_message if daemon else maybe_stop),
-            stats_name='SQS')  # pragma: no cover
+            SQSTileStore(_get_sqs_queue(config), on_empty=_await_message if daemon else maybe_stop),
+            stats_name="SQS",
+        )  # pragma: no cover
 
 
 def _get_sqs_queue(config):  # pragma: no cover
-    if 'sqs' not in config:
+    if "sqs" not in config:
         exit("The config hasn't any configured queue")
-    sqs = boto3.resource('sqs', region_name=config['sqs']['region'])
-    queue = sqs.get_queue_by_name(QueueName=config['sqs']['queue'])
+    sqs = boto3.resource("sqs", region_name=config["sqs"]["region"])
+    queue = sqs.get_queue_by_name(QueueName=config["sqs"]["queue"])
     return queue
