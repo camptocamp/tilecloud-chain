@@ -325,11 +325,11 @@ The additional value needed by the WMS is the URL of the server and the ``layers
 
 The previously defined ``mime_type`` is also used in the WMS requests.
 
-To customise the request you also have the attributes ``params``, ``headers``
+To customize the request you also have the attributes ``params``, ``headers``
 and ``generate_salt``.
 In ``params`` you can specify additional parameter of the WMS request,
 in ``headers`` you can modify the request headers. In ``version``, you can change the WMS version. See the
-`Proxy/cache issue`_ for additional informations.
+`Proxy/cache issue`_ for additional information.
 
 
 Mapnik layers
@@ -399,9 +399,9 @@ The process is a set of names processes, and each one has a list of commands dec
         optipng:  # the process command
         -   cmd: optipng %(args)s -q -zc9 -zm8 -zs3 -f5 -o %(out)s %(in)s  # the command line
             need_out: true  # if false the command rewrite the input file, default to false
-            arg:  # argument used with the defferant log switches, all default to ''
+            arg:  # argument used with the deferent log switches, all default to ''
                 default: '-q' # the argument used by default
-                quiet: '-q' # the arbument used in quiet mode
+                quiet: '-q' # the argument used in quiet mode
                 verbose: '-v' # the argument used in verbose mode
                 debug: '-log /tmp/optipng.log' # the argument user in debug mode
 
@@ -415,7 +415,7 @@ The ``cmd`` can have the following optional argument:
 Logging
 -------
 
-Tile logs can be saved to a PostgresQL database with this configuration:
+Tile logs can be saved to a PostgreSQL database with this configuration:
 
 ..code:: yaml
 
@@ -426,7 +426,7 @@ Tile logs can be saved to a PostgresQL database with this configuration:
             port: 5432
             table: tilecloud_logs
 
-PostgresQL authentication can be specified with the ``PGUSER`` and ``PGPASSWORD`` environment variables.
+PostgreSQL authentication can be specified with the ``PGUSER`` and ``PGPASSWORD`` environment variables.
 If the database is not reachable, the process will wait until it is.
 
 
@@ -449,7 +449,7 @@ The Apache configuration look like this (default values):
         # Expires header in hours
         expires: 8
 
-        # Headers added to the ressponces
+        # Headers added to the responses
         headers:
             Cache-Control: max-age=864000, public
 
