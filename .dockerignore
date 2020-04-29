@@ -2,7 +2,7 @@
 !setup.py
 !requirements.txt
 !README.md
-!CHANGES.rst
+!CHANGES.md
 !MANIFEST.in
 !tilecloud_chain/*
 !docker/run

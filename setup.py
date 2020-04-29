@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, "README.md")) as r:
-    with open(os.path.join(here, "CHANGES.rst")) as c:
+    with open(os.path.join(here, "CHANGES.md")) as c:
         README = r.read() + "\n\n" + c.read()
 
 install_requires = [

@@ -1,5 +1,5 @@
 include README.md
-include CHANGES.rst
+include CHANGES.md
 include requirements.txt
 include production.ini
 recursive-include tilecloud_chain/scaffolds/create *
