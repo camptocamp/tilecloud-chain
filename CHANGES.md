@@ -89,4 +89,3 @@ layers:
 2.  Add debug option (`--debug`), please use it to report issue.
 3.  Now the `sql` request can return a set of geometries in a column names geom but the syntax change a little
     bit =&gt; `<column> AS geom FROM <table>`
-
