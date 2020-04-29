@@ -39,7 +39,6 @@ jobs:
       - name: Build
         run: |
           flake8 tilecloud_chain
-          vvv-validate-rst README.rst
           vvv-validate-rst CHANGES.rst
           python setup.py --long-description > PYPI.rst
           vvv-validate-rst PYPI.rst

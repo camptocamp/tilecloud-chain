@@ -1,7 +1,7 @@
 *
 !setup.py
 !requirements.txt
-!README.rst
+!README.md
 !CHANGES.rst
 !MANIFEST.in
 !tilecloud_chain/*
