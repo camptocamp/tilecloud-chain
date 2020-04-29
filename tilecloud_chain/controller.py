@@ -416,7 +416,7 @@ def _generate_apache_config(gene):
     ProxyPass {location!s}/ {tiles_url!s}
     ProxyPassReverse {location!s}/ {tiles_url!s}
     """.format(
-                        **{"location": gene.config["apache"]["location"], "tiles_url": tiles_url,}
+                        **{"location": gene.config["apache"]["location"], "tiles_url": tiles_url}
                     )
                 )
             elif cache["type"] == "filesystem":
