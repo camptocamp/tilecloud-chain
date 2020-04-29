@@ -1,10 +1,6 @@
 TileCloud Chain
 ===============
 
-![image](https://secure.travis-ci.org/camptocamp/tilecloud-chain.svg?branch=master)
-
-![image](https://coveralls.io/repos/camptocamp/tilecloud-chain/badge.png?branch=master)
-
 The goal of TileCloud Chain is to provide tools around tile generation on a chain like:
 
 Source: WMS, Mapnik.
@@ -24,9 +20,9 @@ Features:
 -   Generate OpenLayers example page.
 -   Generate the Apache configuration.
 -   Obtain the hash of an empty tile.
--   In future, measure tile generation speed.
+-   In the future, measure tile generation speed.
 -   Calculate cost and generation time.
--   In future, manage the AWS hosts that generate tiles.
+-   In the future, manage the AWS hosts that generate tiles.
 -   Delete empty tiles.
 -   Copy files between caches.
 -   Be able to use an SQS queue to dispatch the generation.
@@ -145,11 +141,11 @@ In all case `http_url` or `http_urls` can include all attributes of this cache a
 
 -   Read performance: similar, eventually the MBTiles is 10% faster.
 -   Write performance: The Berkley DB is largely faster, about 10 times.
--   List the tiles: the MBTiles is largely faster but we usually don't need it.
+-   List the tiles: the MBTiles is largely faster, but we usually don't need it.
 
 ### Configure layers
 
-First of all, all the attributes in `layer_default` are copied in all the layers to define the default values.
+First, all the attributes in `layer_default` are copied in all the layers to define the default values.
 
 We have two `type` of layer: `wms` or `mapnik`.
 
@@ -261,19 +257,19 @@ It's preferable to use simple geometries, too complex geometries can slow down t
 #### Legends
 
 To be able to generate legends with `generate_controller --generate-legend-images` you should have
-`legend_mime` and `legend_extention` in the layer configuration.
+`legend_mime` and `legend_extension` in the layer configuration.
 
 for example:
 
 ``` {.sourceCode .yaml}
 legend_mime: image/png
-legend_extention: png
+legend_extension: png
 ```
 
 Then it will create a legend image per layer and per zoom level named
-`.../1.0.0/{{layer}}/{{wmts_style}}/legend{{zoom}}.{{legend_extention}}` only if she is different than the
+`.../1.0.0/{{layer}}/{{wmts_style}}/legend{{zoom}}.{{legend_extension}}` only if she is different from the
 previous zoom level. If we have only one legend image it still stores in the file named
-`legend0.{{legend_extention}}`.
+`legend0.{{legend_extension}}`.
 
 When we do `generate_controller --generate-wmts-capabilities` we will at first parse the legend images to
 generate a layer configuration like this:
@@ -379,7 +375,7 @@ Tile logs can be saved to a PostgreSQL database with this configuration:
 
 > logging:
 >
-> :   
+> :
 >
 >     database:
 >
@@ -417,7 +413,7 @@ parameter `tiles_url` in the cache.
 
 For the last zoom levels we can use MapCache.
 
-To select the levels we generate the tiles an witch one we serve them using MapCache we have an option
+To select the levels we switch from pre-generate the tiles to generate tiles on runtime by using MapCache
 'min\_resolution\_seed' in the layer configuration.
 
 The MapCache configuration look like this (default values):
@@ -447,7 +443,7 @@ generation:
     error_file: <path>
 ```
 
-The tiles that in error will be append to the file, ant the tiles can be regenerated with
+The tiles that's in error will be append to the file, ant the tiles can be regenerated with
 `generate_tiles --layer <layer> --tiles <path>`.
 
 The `<path>` can be `/tmp/error_{layer}_{datetime:%Y-%m-%d_%H:%M:%S}` to have one file per layer and per run.
@@ -497,7 +493,7 @@ Amazon services
 
 ### Authentication
 
-To be authenticated by Amazon you should set those environment variable before running a command:
+To be authenticated by Amazon you should set those environments variable before running a command:
 
     export AWS_ACCESS_KEY_ID=...
     export AWS_SECRET_ACCESS_KEY=...
@@ -619,7 +615,7 @@ There two ways to serve the tiles, with Apache configuration, or with an interna
 
 The advantage of the internal server are:
 
--   Can distribute Mbtiles or Berkley DB.
+-   Can distribute MBTiles or Berkley DB.
 -   Return `204 No Content` HTTP code in place of `404 Not Found` (or `403 Forbidden` for s3).
 -   Can be used in KVP mode.
 -   Can have zone per layer where are the tiles, otherwise it redirect on mapcache.
@@ -687,7 +683,7 @@ Commands
 
 ### Available commands
 
--   `generate_controller` generate the annexe files like capabilities, legend, OpenLayers test page, MapCache
+-   `generate_controller` generate the annex files like capabilities, legend, OpenLayers test page, MapCache
     configuration, Apache configuration.
 -   `generate_tiles` generate the tiles.
 -   `generate_copy` copy the tiles from a cache to an other.

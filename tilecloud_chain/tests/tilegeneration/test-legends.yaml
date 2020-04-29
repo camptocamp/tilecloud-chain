@@ -17,7 +17,7 @@ defaults:
         grid: swissgrid
         type: wms
         legend_mime: image/png
-        legend_extention: png
+        legend_extension: png
         wmts_style: default
         mime_type: image/png
         extension: png

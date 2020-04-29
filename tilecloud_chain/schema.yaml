@@ -155,7 +155,7 @@ mapping:
                                 href:
                                     type: str
                     legend_mime: *mime_type
-                    legend_extention:
+                    legend_extension:
                         type: str
                         pattern: '^[a-zA-Z0-9]+$'
                     # Post process
