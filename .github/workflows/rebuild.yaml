@@ -16,8 +16,9 @@ jobs:
       fail-fast: false
       matrix:
         branch:
-          - 1.12
-          - 1.13
+          - '1.12'
+          - '1.13'
+          - '1.14'
 
     env:
       REDIS_URL: redis://localhost:6379
