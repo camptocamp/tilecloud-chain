@@ -52,16 +52,13 @@ class LogThread(threading.Thread):
 
     def run(self):
         try:
-            display_command = ' '.join([shlex.quote(arg) for arg in self.command])
+            display_command = " ".join([shlex.quote(arg) for arg in self.command])
             LOG.info("Run the command `{}`".format(display_command))
             env = {}
             env.update(os.environ)
-            env['FRONTEND'] = 'noninteractive'
+            env["FRONTEND"] = "noninteractive"
             with subprocess.Popen(
-                self.command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env=env,
+                self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env,
             ) as process:
                 stdout, stderr = process.communicate()
                 if process.returncode != 0:
@@ -71,9 +68,11 @@ class LogThread(threading.Thread):
                         )
                     )
                 else:
-                    LOG.info("The command `{}` succeeded with stdout:\n{}\nstderr:\n{}".format(
-                        display_command, stdout.decode(), stderr.decode()
-                    ))
+                    LOG.info(
+                        "The command `{}` succeeded with stdout:\n{}\nstderr:\n{}".format(
+                            display_command, stdout.decode(), stderr.decode()
+                        )
+                    )
         except Exception as e:
             LOG.error(str(e))
             raise e
@@ -84,35 +83,35 @@ class Admin:
         self.request = request
 
         tilecloud_chain.server.init_tilegeneration(
-            self.request.registry.settings['tilegeneration_configfile']
+            self.request.registry.settings["tilegeneration_configfile"]
         )
         self.gene = tilecloud_chain.server.tilegeneration
 
-    @view_config(route_name='admin', renderer='tilecloud_chain:templates/admin_index.html')
+    @view_config(route_name="admin", renderer="tilecloud_chain:templates/admin_index.html")
     def index(self):
         return {
-            'secret': self.request.params.get('secret'),
-            'auth': is_auth(self.request),
-            'commands': self.gene.config.get('server', {}).get('predefined_commands', []),
-            'status': get_status(self.gene),
-            'run_url': self.request.route_url('admin_run')
+            "secret": self.request.params.get("secret"),
+            "auth": is_auth(self.request),
+            "commands": self.gene.config.get("server", {}).get("predefined_commands", []),
+            "status": get_status(self.gene),
+            "run_url": self.request.route_url("admin_run"),
         }
 
-    @view_config(route_name='admin_run')
+    @view_config(route_name="admin_run")
     def run(self):
         auth_view(self.request)
 
-        if 'command' not in self.request.POST:
+        if "command" not in self.request.POST:
             raise pyramid.httpexceptions.HTTPBadRequest("The POST argument 'command' is required")
 
-        command = shlex.split(self.request.POST['command'])
+        command = shlex.split(self.request.POST["command"])
 
-        if command[0] not in self.gene.config.get('server', {}).get('allowed_commands', [
-            'generate_tiles', 'generate_controller'
-        ]):
+        if command[0] not in self.gene.config.get("server", {}).get(
+            "allowed_commands", ["generate_tiles", "generate_controller"]
+        ):
             raise pyramid.httpexceptions.HTTPBadRequest(
                 "The given executable '{}' is not allowed".format(command[0])
             )
         lt = LogThread(command)
         lt.start()
-        return pyramid.httpexceptions.HTTPFound(self.request.route_url('admin'))
+        return pyramid.httpexceptions.HTTPFound(self.request.route_url("admin"))

@@ -22,48 +22,60 @@ class TestError(CompareCase):
     def tearDownClass(cls):  # noqa
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-    @log_capture('tilecloud_chain')
+    @log_capture("tilecloud_chain")
     @attr(general=True)
     def test_resolution(self, l):
         self.run_cmd(
-            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_resolutions.yaml',
-            main_func=controller.main)
-        l.check(
-            ('tilecloud_chain', 'ERROR', "The resolution 0.1 * resolution_scale 5 is not an integer."),
+            cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_resolutions.yaml",
+            main_func=controller.main,
         )
+        l.check(("tilecloud_chain", "ERROR", "The resolution 0.1 * resolution_scale 5 is not an integer."),)
 
-    @log_capture('tilecloud_chain')
+    @log_capture("tilecloud_chain")
     @attr(general=True)
     def test_mapnik_grid_meta(self, l):
         self.run_cmd(
-            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_mapnik_grid_meta.yaml',
-            main_func=controller.main)
-        l.check((
-            'tilecloud_chain', 'ERROR',
-            "The layer 'b' is of type Mapnik/Grid, that can't support matatiles."
-        ))
+            cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_mapnik_grid_meta.yaml",
+            main_func=controller.main,
+        )
+        l.check(
+            (
+                "tilecloud_chain",
+                "ERROR",
+                "The layer 'b' is of type Mapnik/Grid, that can't support matatiles.",
+            )
+        )
 
-    @log_capture('tilecloud_chain')
+    @log_capture("tilecloud_chain")
     @attr(general=True)
     def test_exists(self, l):
         self.run_cmd(
-            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_exists.yaml',
-            main_func=controller.main)
+            cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_exists.yaml",
+            main_func=controller.main,
+        )
         l.check(
-            ('tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_exists.yaml' is invalid.
+            (
+                "tilecloud_chain",
+                "ERROR",
+                """The config file 'tilegeneration/wrong_exists.yaml' is invalid.
  - /: Cannot find required key 'caches'.
  - /: Cannot find required key 'grids'.
- - /: Cannot find required key 'layers'."""),
+ - /: Cannot find required key 'layers'.""",
+            ),
         )
 
-    @log_capture('tilecloud_chain')
+    @log_capture("tilecloud_chain")
     @attr(general=True)
     def test_type(self, l):
         self.run_cmd(
-            cmd='.build/venv/bin/generate_controller -v -c tilegeneration/wrong_type.yaml',
-            main_func=controller.main)
-        l.check((
-            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_type.yaml' is invalid.
+            cmd=".build/venv/bin/generate_controller -v -c tilegeneration/wrong_type.yaml",
+            main_func=controller.main,
+        )
+        l.check(
+            (
+                "tilecloud_chain",
+                "ERROR",
+                """The config file 'tilegeneration/wrong_type.yaml' is invalid.
  - /grids/swissgrid!/name: Value 'swissgrid!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
  - /grids/swissgrid!: Cannot find required key 'bbox'.
  - /grids/swissgrid!: Cannot find required key 'resolutions'.
@@ -97,86 +109,124 @@ class TestError(CompareCase):
  - /layers/hi!/wmts_style: Value 'yo!' does not match pattern '^[a-zA-Z0-9_\-\+~\.]+$'.
  - /layers/hi!: Cannot find required key 'extension'.
  - /layers/hi!: Cannot find required key 'grid'.
- - /layers/hi!: Cannot find required key 'mime_type'.""" # noqa
-        ))
+ - /layers/hi!: Cannot find required key 'mime_type'.""",  # noqa
+            )
+        )
 
-    @log_capture('tilecloud_chain')
+    @log_capture("tilecloud_chain")
     @attr(general=True)
     def test_zoom_errors(self, l):
         self.run_cmd(
-            cmd='.build/venv/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10',
-            main_func=generate.main)
+            cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10",
+            main_func=generate.main,
+        )
         l.check(
-            ('tilecloud_chain', 'INFO', 'Execute SQL: SELECT ST_AsBinary(geom) FROM (SELECT the_geom AS geom '
-             'FROM tests.point) AS g.'),
-            ('tilecloud_chain', 'WARNING', "zoom 10 is greater than the maximum "
-             "zoom 4 of grid swissgrid_5 of layer point, ignored."),
-            ('tilecloud_chain', 'WARNING', "zoom 4 corresponds to resolution 5 "
-             "is smaller than the 'min_resolution_seed' 10 of layer point, ignored."),
+            (
+                "tilecloud_chain",
+                "INFO",
+                "Execute SQL: SELECT ST_AsBinary(geom) FROM (SELECT the_geom AS geom "
+                "FROM tests.point) AS g.",
+            ),
+            (
+                "tilecloud_chain",
+                "WARNING",
+                "zoom 10 is greater than the maximum " "zoom 4 of grid swissgrid_5 of layer point, ignored.",
+            ),
+            (
+                "tilecloud_chain",
+                "WARNING",
+                "zoom 4 corresponds to resolution 5 "
+                "is smaller than the 'min_resolution_seed' 10 of layer point, ignored.",
+            ),
         )
 
-    @log_capture('tilecloud_chain')
+    @log_capture("tilecloud_chain")
     @attr(general=True)
     def test_wrong_srs_auth(self, l):
         self.run_cmd(
-            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_srs_auth.yaml',
-            main_func=controller.main)
-        l.check((
-            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs_auth.yaml' is invalid.
- - /grids/swissgrid_01/srs: Value 'toto:21781' does not match pattern '^EPSG:[0-9]+$'."""  # noqa
-        ))
+            cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs_auth.yaml",
+            main_func=controller.main,
+        )
+        l.check(
+            (
+                "tilecloud_chain",
+                "ERROR",
+                """The config file 'tilegeneration/wrong_srs_auth.yaml' is invalid.
+ - /grids/swissgrid_01/srs: Value 'toto:21781' does not match pattern '^EPSG:[0-9]+$'.""",  # noqa
+            )
+        )
 
-    @log_capture('tilecloud_chain')
+    @log_capture("tilecloud_chain")
     @attr(general=True)
     def test_wrong_srs_id(self, l):
         self.run_cmd(
-            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_srs_id.yaml',
-            main_func=controller.main)
-        l.check((
-            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs_id.yaml' is invalid.
- - /grids/swissgrid_01/srs: Value 'EPSG:21781a' does not match pattern '^EPSG:[0-9]+$'."""  # noqa
-        ))
+            cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs_id.yaml",
+            main_func=controller.main,
+        )
+        l.check(
+            (
+                "tilecloud_chain",
+                "ERROR",
+                """The config file 'tilegeneration/wrong_srs_id.yaml' is invalid.
+ - /grids/swissgrid_01/srs: Value 'EPSG:21781a' does not match pattern '^EPSG:[0-9]+$'.""",  # noqa
+            )
+        )
 
-    @log_capture('tilecloud_chain')
+    @log_capture("tilecloud_chain")
     @attr(general=True)
     def test_wrong_srs(self, l):
         self.run_cmd(
-            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_srs.yaml',
-            main_func=controller.main)
-        l.check((
-            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_srs.yaml' is invalid.
- - /grids/swissgrid_01/srs: Value 'EPSG21781' does not match pattern '^EPSG:[0-9]+$'."""
-        ))
+            cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs.yaml",
+            main_func=controller.main,
+        )
+        l.check(
+            (
+                "tilecloud_chain",
+                "ERROR",
+                """The config file 'tilegeneration/wrong_srs.yaml' is invalid.
+ - /grids/swissgrid_01/srs: Value 'EPSG21781' does not match pattern '^EPSG:[0-9]+$'.""",
+            )
+        )
 
-    @log_capture('tilecloud_chain')
+    @log_capture("tilecloud_chain")
     @attr(general=True)
     def test_wrong_map(self, l):
         self.run_cmd(
-            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_map.yaml',
-            main_func=controller.main)
-        l.check((
-            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_map.yaml' is invalid.
+            cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_map.yaml",
+            main_func=controller.main,
+        )
+        l.check(
+            (
+                "tilecloud_chain",
+                "ERROR",
+                """The config file 'tilegeneration/wrong_map.yaml' is invalid.
  - /: Cannot find required key 'caches'.
  - /: Cannot find required key 'grids'.
  - /layers/test/empty_tile_detection: Value 'test' is not a dict. """
-            """Value path: '/layers/test/empty_tile_detection'
+                """Value path: '/layers/test/empty_tile_detection'
  - /layers/test: Cannot find required key 'extension'.
  - /layers/test: Cannot find required key 'grid'.
  - /layers/test: Cannot find required key 'mime_type'.
- - /layers/test: Cannot find required key 'wmts_style'."""
-        ))
+ - /layers/test: Cannot find required key 'wmts_style'.""",
+            )
+        )
 
-    @log_capture('tilecloud_chain')
+    @log_capture("tilecloud_chain")
     @attr(general=True)
     def test_wrong_sequence(self, l):
         self.run_cmd(
-            cmd='.build/venv/bin/generate_controller -c tilegeneration/wrong_sequence.yaml',
-            main_func=controller.main)
-        l.check((
-            'tilecloud_chain', 'ERROR', """The config file 'tilegeneration/wrong_sequence.yaml' is invalid.
+            cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_sequence.yaml",
+            main_func=controller.main,
+        )
+        l.check(
+            (
+                "tilecloud_chain",
+                "ERROR",
+                """The config file 'tilegeneration/wrong_sequence.yaml' is invalid.
  - /: Cannot find required key 'caches'.
  - /: Cannot find required key 'layers'.
  - /grids/test/resolutions: Value 'b'test'' is not a list. Value path: '/grids/test/resolutions'
  - /grids/test: Cannot find required key 'bbox'.
- - /grids/test: Cannot find required key 'srs'."""
-        ))
+ - /grids/test: Cannot find required key 'srs'.""",
+            )
+        )

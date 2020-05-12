@@ -22,16 +22,18 @@ class TestConfig(CompareCase):
     def tearDownClass(cls):  # noqa
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-    @log_capture('tilecloud_chain')
+    @log_capture("tilecloud_chain")
     @attr(general=True)
     def test_int_grid(self, l):
         self.run_cmd(
-            cmd='.build/venv/bin/generate_controller -c tilegeneration/test-int-grid.yaml --dump-config',
-            main_func=controller.main)
+            cmd=".build/venv/bin/generate_controller -c tilegeneration/test-int-grid.yaml --dump-config",
+            main_func=controller.main,
+        )
         l.check(
             (
-                'tilecloud_chain', 'INFO',
-                'Execute SQL: SELECT ST_AsBinary(geom) FROM '
-                '(SELECT the_geom AS geom FROM tests.point) AS g.'
+                "tilecloud_chain",
+                "INFO",
+                "Execute SQL: SELECT ST_AsBinary(geom) FROM "
+                "(SELECT the_geom AS geom FROM tests.point) AS g.",
             ),
         )

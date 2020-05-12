@@ -12,7 +12,8 @@ from tilecloud_chain import controller, generate, server
 from tilecloud_chain.server import PyramidView, app_factory
 from tilecloud_chain.tests import CompareCase
 
-CAPABILITIES = r"""<\?xml version="1.0" encoding="UTF-8"\?>
+CAPABILITIES = (
+    r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -75,7 +76,7 @@ CAPABILITIES = r"""<\?xml version="1.0" encoding="UTF-8"\?>
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/wmts/1.0.0/point_hash/default/{DATE}/""" \
+                   template="http://wmts1/tiles/wmts/1.0.0/point_hash/default/{DATE}/"""
     r"""{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -135,6 +136,7 @@ CAPABILITIES = r"""<\?xml version="1.0" encoding="UTF-8"\?>
     </TileMatrixSet>
   </Contents>
 </Capabilities>"""
+)
 
 
 class TestServe(CompareCase):
@@ -144,27 +146,27 @@ class TestServe(CompareCase):
     @classmethod
     def setUpClass(cls):  # noqa
         os.chdir(os.path.dirname(__file__))
-        if os.path.exists('/tmp/tiles'):
-            shutil.rmtree('/tmp/tiles')
+        if os.path.exists("/tmp/tiles"):
+            shutil.rmtree("/tmp/tiles")
 
     @classmethod
     def tearDownClass(cls):  # noqa
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-        if os.path.exists('/tmp/tiles'):
-            shutil.rmtree('/tmp/tiles')
+        if os.path.exists("/tmp/tiles"):
+            shutil.rmtree("/tmp/tiles")
 
     @attr(general=True)
-    @log_capture('tilecloud_chain', level=30)
+    @log_capture("tilecloud_chain", level=30)
     def test_serve_kvp(self, l):
         self.assert_tiles_generated(
-            cmd='.build/venv/bin/generate_tiles -d -c tilegeneration/test-nosns.yaml '
-                '-l point_hash --zoom 1',
+            cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-nosns.yaml "
+            "-l point_hash --zoom 1",
             main_func=generate.main,
             directory="/tmp/tiles/",
-            tiles_pattern='1.0.0/%s',
+            tiles_pattern="1.0.0/%s",
             tiles=[
-                ('point_hash/default/2012/swissgrid_5/1/11/14.png'),
-                ('point_hash/default/2012/swissgrid_5/1/15/8.png'),
+                ("point_hash/default/2012/swissgrid_5/1/11/14.png"),
+                ("point_hash/default/2012/swissgrid_5/1/15/8.png"),
             ],
             regex=True,
             expected=r"""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
@@ -183,14 +185,14 @@ Size per tile: 4[0-9][0-9] o
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
-            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-nosns.yaml',
+            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-nosns.yaml",
             main_func=controller.main,
             directory="/tmp/tiles/",
-            tiles_pattern='1.0.0/%s',
+            tiles_pattern="1.0.0/%s",
             tiles=[
-                ('WMTSCapabilities.xml'),
-                ('point_hash/default/2012/swissgrid_5/1/11/14.png'),
-                ('point_hash/default/2012/swissgrid_5/1/15/8.png'),
+                ("WMTSCapabilities.xml"),
+                ("point_hash/default/2012/swissgrid_5/1/11/14.png"),
+                ("point_hash/default/2012/swissgrid_5/1/15/8.png"),
             ],
         )
 
@@ -198,69 +200,69 @@ Size per tile: 4[0-9][0-9] o
         server.tilegeneration = None
         request = DummyRequest()
         request.registry.settings = {
-            'tilegeneration_configfile': 'tilegeneration/test-nosns.yaml',
+            "tilegeneration_configfile": "tilegeneration/test-nosns.yaml",
         }
         request.params = {
-            'Service': 'WMTS',
-            'Version': '1.0.0',
-            'Request': 'GetTile',
-            'Format': 'image/png',
-            'Layer': 'point_hash',
-            'Style': 'default',
-            'TileMatrixSet': 'swissgrid_5',
-            'TileMatrix': '1',
-            'TileRow': '11',
-            'TileCol': '14',
+            "Service": "WMTS",
+            "Version": "1.0.0",
+            "Request": "GetTile",
+            "Format": "image/png",
+            "Layer": "point_hash",
+            "Style": "default",
+            "TileMatrixSet": "swissgrid_5",
+            "TileMatrix": "1",
+            "TileRow": "11",
+            "TileCol": "14",
         }
         serve = PyramidView(request)
         serve()
-        self.assertEqual(request.response.headers['Content-Type'], 'image/png')
-        self.assertEqual(request.response.headers['Cache-Control'], 'max-age=28800')
+        self.assertEqual(request.response.headers["Content-Type"], "image/png")
+        self.assertEqual(request.response.headers["Cache-Control"], "max-age=28800")
 
-        request.params['TileRow'] = '12'
+        request.params["TileRow"] = "12"
         assert isinstance(serve(), HTTPNoContent)
 
-        request.params['TileRow'] = '11'
-        request.params['Service'] = 'test'
+        request.params["TileRow"] = "11"
+        request.params["Service"] = "test"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.params['Service'] = 'WMTS'
-        request.params['Request'] = 'test'
+        request.params["Service"] = "WMTS"
+        request.params["Request"] = "test"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.params['Request'] = 'GetTile'
-        request.params['Version'] = '0.9'
+        request.params["Request"] = "GetTile"
+        request.params["Version"] = "0.9"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.params['Version'] = '1.0.0'
-        request.params['Format'] = 'image/jpeg'
+        request.params["Version"] = "1.0.0"
+        request.params["Format"] = "image/jpeg"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.params['Format'] = 'image/png'
-        request.params['Layer'] = 'test'
+        request.params["Format"] = "image/png"
+        request.params["Layer"] = "test"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.params['Layer'] = 'point_hash'
-        request.params['Style'] = 'test'
+        request.params["Layer"] = "point_hash"
+        request.params["Style"] = "test"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.params['Style'] = 'default'
-        request.params['TileMatrixSet'] = 'test'
+        request.params["Style"] = "default"
+        request.params["TileMatrixSet"] = "test"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.params['TileMatrixSet'] = 'swissgrid_5'
-        del request.params['Service']
+        request.params["TileMatrixSet"] = "swissgrid_5"
+        del request.params["Service"]
         self.assertRaises(HTTPBadRequest, serve)
 
         request.params = {
-            'Service': 'WMTS',
-            'Version': '1.0.0',
-            'Request': 'GetCapabilities',
+            "Service": "WMTS",
+            "Version": "1.0.0",
+            "Request": "GetCapabilities",
         }
         PyramidView(request)()
-        self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
+        self.assertEqual(request.response.headers["Content-Type"], "application/xml")
         self.assert_result_equals(
-            request.response.body.decode('utf-8'),
+            request.response.body.decode("utf-8"),
             regex=True,
             expected=r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
@@ -682,23 +684,21 @@ Size per tile: 4[0-9][0-9] o
       </TileMatrix>
     </TileMatrixSet>
   </Contents>
-</Capabilities>"""
+</Capabilities>""",
         )
 
         l.check()
 
     @attr(general=True)
-    @log_capture('tilecloud_chain', level=30)
+    @log_capture("tilecloud_chain", level=30)
     def test_mbtiles_rest(self, l):
         self.assert_tiles_generated(
-            cmd='.build/venv/bin/generate_tiles -d -c tilegeneration/test-serve.yaml'
-                ' -l point_hash --zoom 1',
+            cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-serve.yaml"
+            " -l point_hash --zoom 1",
             main_func=generate.main,
             directory="/tmp/tiles/mbtiles/",
-            tiles_pattern='1.0.0/%s',
-            tiles=[
-                ('point_hash/default/2012/swissgrid_5.png.mbtiles')
-            ],
+            tiles_pattern="1.0.0/%s",
+            tiles=[("point_hash/default/2012/swissgrid_5.png.mbtiles")],
             regex=True,
             expected=r"""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
@@ -716,98 +716,81 @@ Size per tile: 4[0-9][0-9] o
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
-            cmd='.build/venv/bin/generate_controller -d --capabilities -c tilegeneration/test-serve.yaml',
+            cmd=".build/venv/bin/generate_controller -d --capabilities -c tilegeneration/test-serve.yaml",
             main_func=controller.main,
             directory="/tmp/tiles/mbtiles/",
-            tiles_pattern='1.0.0/%s',
-            tiles=[
-                ('WMTSCapabilities.xml'),
-                ('point_hash/default/2012/swissgrid_5.png.mbtiles')
-            ],
+            tiles_pattern="1.0.0/%s",
+            tiles=[("WMTSCapabilities.xml"), ("point_hash/default/2012/swissgrid_5.png.mbtiles")],
         )
 
         server.pyramid_server = None
         server.tilegeneration = None
         request = DummyRequest()
         request.registry.settings = {
-            'tilegeneration_configfile': 'tilegeneration/test-serve.yaml',
+            "tilegeneration_configfile": "tilegeneration/test-serve.yaml",
         }
         request.matchdict = {
-            'path': [
-                'wmts', '1.0.0', 'point_hash', 'default', '2012', 'swissgrid_5', '1', '11', '14.png'
-            ]
+            "path": ["wmts", "1.0.0", "point_hash", "default", "2012", "swissgrid_5", "1", "11", "14.png"]
         }
         serve = PyramidView(request)
         serve()
-        self.assertEqual(request.response.headers['Content-Type'], 'image/png')
-        self.assertEqual(request.response.headers['Cache-Control'], 'max-age=28800')
+        self.assertEqual(request.response.headers["Content-Type"], "image/png")
+        self.assertEqual(request.response.headers["Cache-Control"], "max-age=28800")
 
-        request.matchdict['path'][7] = '12'
+        request.matchdict["path"][7] = "12"
         response = serve()
         assert isinstance(response, HTTPNoContent)
-        assert response.headers['Cache-Control'] == 'max-age=28800'
+        assert response.headers["Cache-Control"] == "max-age=28800"
 
-        request.matchdict['path'][7] = '11'
-        request.matchdict['path'][1] = '0.9'
+        request.matchdict["path"][7] = "11"
+        request.matchdict["path"][1] = "0.9"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'][1] = '1.0.0'
-        request.matchdict['path'][8] = '14.jpeg'
+        request.matchdict["path"][1] = "1.0.0"
+        request.matchdict["path"][8] = "14.jpeg"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'][8] = '14.png'
-        request.matchdict['path'][2] = 'test'
+        request.matchdict["path"][8] = "14.png"
+        request.matchdict["path"][2] = "test"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'][2] = 'point_hash'
-        request.matchdict['path'][3] = 'test'
+        request.matchdict["path"][2] = "point_hash"
+        request.matchdict["path"][3] = "test"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'][3] = 'default'
-        request.matchdict['path'][5] = 'test'
+        request.matchdict["path"][3] = "default"
+        request.matchdict["path"][5] = "test"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'] = [
-            'wmts', 'point_hash', 'default', 'swissgrid_5', '1', '14', '11.png'
-        ]
+        request.matchdict["path"] = ["wmts", "point_hash", "default", "swissgrid_5", "1", "14", "11.png"]
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'] = [
-            'wmts', '1.0.0', 'WMTSCapabilities.xml'
-        ]
+        request.matchdict["path"] = ["wmts", "1.0.0", "WMTSCapabilities.xml"]
         PyramidView(request)()
-        self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
+        self.assertEqual(request.response.headers["Content-Type"], "application/xml")
         self.assert_result_equals(
-            request.response.body.decode('utf-8'),
-            CAPABILITIES,
-            regex=True,
+            request.response.body.decode("utf-8"), CAPABILITIES, regex=True,
         )
 
-        request.matchdict['path'] = [
-            'static', '1.0.0', 'WMTSCapabilities.xml'
-        ]
+        request.matchdict["path"] = ["static", "1.0.0", "WMTSCapabilities.xml"]
         PyramidView(request)()
-        self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
+        self.assertEqual(request.response.headers["Content-Type"], "application/xml")
         self.assert_result_equals(
-            request.response.body.decode('utf-8'),
-            CAPABILITIES,
-            regex=True,
+            request.response.body.decode("utf-8"), CAPABILITIES, regex=True,
         )
 
         l.check()
 
     @attr(general=True)
-    @log_capture('tilecloud_chain', level=30)
+    @log_capture("tilecloud_chain", level=30)
     def test_bsddb_rest(self, l):
         self.assert_tiles_generated(
-            cmd='.build/venv/bin/generate_tiles -d -c tilegeneration/test-bsddb.yaml'
-                ' -l point_hash --zoom 1',
+            cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-bsddb.yaml"
+            " -l point_hash --zoom 1",
             main_func=generate.main,
             directory="/tmp/tiles/bsddb/",
-            tiles_pattern='1.0.0/%s',
-            tiles=[
-                ('point_hash/default/2012/swissgrid_5.png.bsddb')
-            ],
+            tiles_pattern="1.0.0/%s",
+            tiles=[("point_hash/default/2012/swissgrid_5.png.bsddb")],
             regex=True,
             expected=r"""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
@@ -825,113 +808,98 @@ Size per tile: 4[0-9][0-9] o
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
-            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-bsddb.yaml',
+            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-bsddb.yaml",
             main_func=controller.main,
             directory="/tmp/tiles/bsddb/",
-            tiles_pattern='1.0.0/%s',
-            tiles=[
-                ('WMTSCapabilities.xml'),
-                ('point_hash/default/2012/swissgrid_5.png.bsddb')
-            ],
+            tiles_pattern="1.0.0/%s",
+            tiles=[("WMTSCapabilities.xml"), ("point_hash/default/2012/swissgrid_5.png.bsddb")],
         )
 
         server.pyramid_server = None
         server.tilegeneration = None
         request = DummyRequest()
         request.registry.settings = {
-            'tilegeneration_configfile': 'tilegeneration/test-bsddb.yaml',
+            "tilegeneration_configfile": "tilegeneration/test-bsddb.yaml",
         }
         request.matchdict = {
-            'path': [
-                'wmts', '1.0.0', 'point_hash', 'default', '2012', 'swissgrid_5', '1', '11', '14.png'
-            ]
+            "path": ["wmts", "1.0.0", "point_hash", "default", "2012", "swissgrid_5", "1", "11", "14.png"]
         }
         serve = PyramidView(request)
         serve()
-        self.assertEqual(request.response.headers['Content-Type'], 'image/png')
-        self.assertEqual(request.response.headers['Cache-Control'], 'max-age=28800')
+        self.assertEqual(request.response.headers["Content-Type"], "image/png")
+        self.assertEqual(request.response.headers["Cache-Control"], "max-age=28800")
 
-        request.matchdict['path'][7] = '12'
+        request.matchdict["path"][7] = "12"
         assert isinstance(serve(), HTTPNoContent)
 
-        request.matchdict['path'][7] = '11'
-        request.matchdict['path'][1] = '0.9'
+        request.matchdict["path"][7] = "11"
+        request.matchdict["path"][1] = "0.9"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'][1] = '1.0.0'
-        request.matchdict['path'][8] = '14.jpeg'
+        request.matchdict["path"][1] = "1.0.0"
+        request.matchdict["path"][8] = "14.jpeg"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'][8] = '14.png'
-        request.matchdict['path'][2] = 'test'
+        request.matchdict["path"][8] = "14.png"
+        request.matchdict["path"][2] = "test"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'][2] = 'point_hash'
-        request.matchdict['path'][3] = 'test'
+        request.matchdict["path"][2] = "point_hash"
+        request.matchdict["path"][3] = "test"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'][3] = 'default'
-        request.matchdict['path'][5] = 'test'
+        request.matchdict["path"][3] = "default"
+        request.matchdict["path"][5] = "test"
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'] = [
-            'wmts', 'point_hash', 'default', 'swissgrid_5', '1', '14', '11.png'
-        ]
+        request.matchdict["path"] = ["wmts", "point_hash", "default", "swissgrid_5", "1", "14", "11.png"]
         self.assertRaises(HTTPBadRequest, serve)
 
-        request.matchdict['path'] = [
-            'wmts', '1.0.0', 'WMTSCapabilities.xml'
-        ]
+        request.matchdict["path"] = ["wmts", "1.0.0", "WMTSCapabilities.xml"]
         PyramidView(request)()
-        self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
+        self.assertEqual(request.response.headers["Content-Type"], "application/xml")
         self.assert_result_equals(
-            request.response.body.decode('utf-8'),
-            CAPABILITIES,
-            regex=True,
+            request.response.body.decode("utf-8"), CAPABILITIES, regex=True,
         )
 
-        request.matchdict['path'] = [
-            'static', '1.0.0', 'WMTSCapabilities.xml'
-        ]
+        request.matchdict["path"] = ["static", "1.0.0", "WMTSCapabilities.xml"]
         PyramidView(request)()
-        self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
+        self.assertEqual(request.response.headers["Content-Type"], "application/xml")
         self.assert_result_equals(
-            request.response.body.decode('utf-8'),
-            CAPABILITIES,
-            regex=True,
+            request.response.body.decode("utf-8"), CAPABILITIES, regex=True,
         )
 
         l.check()
 
     @attr(general=True)
-    @log_capture('tilecloud_chain', level=30)
+    @log_capture("tilecloud_chain", level=30)
     def test_serve_gfi(self, l):
         server.pyramid_server = None
         server.tilegeneration = None
         request = DummyRequest()
         request.registry.settings = {
-            'tilegeneration_configfile': 'tilegeneration/test-serve.yaml',
+            "tilegeneration_configfile": "tilegeneration/test-serve.yaml",
         }
         request.params = {
-            'Service': 'WMTS',
-            'Version': '1.0.0',
-            'Request': 'GetFeatureInfo',
-            'Format': 'image/png',
-            'Info_Format': 'application/vnd.ogc.gml',
-            'Layer': 'point_hash',
-            'Query_Layer': 'point_hash',
-            'Style': 'default',
-            'TileMatrixSet': 'swissgrid_5',
-            'TileMatrix': '1',
-            'TileRow': '11',
-            'TileCol': '14',
-            'I': '114',
-            'J': '111',
+            "Service": "WMTS",
+            "Version": "1.0.0",
+            "Request": "GetFeatureInfo",
+            "Format": "image/png",
+            "Info_Format": "application/vnd.ogc.gml",
+            "Layer": "point_hash",
+            "Query_Layer": "point_hash",
+            "Style": "default",
+            "TileMatrixSet": "swissgrid_5",
+            "TileMatrix": "1",
+            "TileRow": "11",
+            "TileCol": "14",
+            "I": "114",
+            "J": "111",
         }
         serve = PyramidView(request)
         serve()
         self.assert_result_equals(
-            request.response.body.decode('utf-8'),
+            request.response.body.decode("utf-8"),
             """<?xml version="1.0" encoding="UTF-8"?>
 
 <msGMLOutput
@@ -939,40 +907,50 @@ Size per tile: 4[0-9][0-9] o
     xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 </msGMLOutput>
-""")
+""",
+        )
 
         server.pyramid_server = None
         server.tilegeneration = None
         request = DummyRequest()
         request.registry.settings = {
-            'tilegeneration_configfile': 'tilegeneration/test-serve.yaml',
+            "tilegeneration_configfile": "tilegeneration/test-serve.yaml",
         }
         request.matchdict = {
-            'path': [
-                'wmts', '1.0.0', 'point_hash', 'default', '2012', 'swissgrid_5',
-                '1', '11', '14', '114', '111.xml'
+            "path": [
+                "wmts",
+                "1.0.0",
+                "point_hash",
+                "default",
+                "2012",
+                "swissgrid_5",
+                "1",
+                "11",
+                "14",
+                "114",
+                "111.xml",
             ]
         }
         request.params = {
-            'Service': 'WMTS',
-            'Version': '1.0.0',
-            'Request': 'GetFeatureInfo',
-            'Format': 'image/png',
-            'Info_Format': 'application/vnd.ogc.gml',
-            'Layer': 'point_hash',
-            'Query_Layer': 'point_hash',
-            'Style': 'default',
-            'TileMatrixSet': 'swissgrid_5',
-            'TileMatrix': '1',
-            'TileRow': '14',
-            'TileCol': '11',
-            'I': '114',
-            'J': '111',
+            "Service": "WMTS",
+            "Version": "1.0.0",
+            "Request": "GetFeatureInfo",
+            "Format": "image/png",
+            "Info_Format": "application/vnd.ogc.gml",
+            "Layer": "point_hash",
+            "Query_Layer": "point_hash",
+            "Style": "default",
+            "TileMatrixSet": "swissgrid_5",
+            "TileMatrix": "1",
+            "TileRow": "14",
+            "TileCol": "11",
+            "I": "114",
+            "J": "111",
         }
         serve = PyramidView(request)
         serve()
         self.assert_result_equals(
-            request.response.body.decode('utf-8'),
+            request.response.body.decode("utf-8"),
             """<?xml version="1.0" encoding="UTF-8"?>
 
 <msGMLOutput
@@ -980,20 +958,19 @@ Size per tile: 4[0-9][0-9] o
     xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 </msGMLOutput>
-""")
+""",
+        )
 
     @attr(general=True)
-    @log_capture('tilecloud_chain', level=30)
+    @log_capture("tilecloud_chain", level=30)
     def test_wsgi(self, l):
         self.assert_tiles_generated(
-            cmd='.build/venv/bin/generate_tiles -d -c tilegeneration/test-serve.yaml '
-                '-l point_hash --zoom 1',
+            cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-serve.yaml "
+            "-l point_hash --zoom 1",
             main_func=generate.main,
             directory="/tmp/tiles/mbtiles/",
-            tiles_pattern='1.0.0/%s',
-            tiles=[
-                ('point_hash/default/2012/swissgrid_5.png.mbtiles')
-            ],
+            tiles_pattern="1.0.0/%s",
+            tiles=[("point_hash/default/2012/swissgrid_5.png.mbtiles")],
             regex=True,
             expected=r"""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
 Nb generated metatiles: 1
@@ -1011,19 +988,16 @@ Size per tile: 4[0-9][0-9] o
         )
         # use delete to don't delete the repository
         self.assert_tiles_generated_deleted(
-            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-serve.yaml',
+            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-serve.yaml",
             main_func=controller.main,
             directory="/tmp/tiles/mbtiles/",
-            tiles_pattern='1.0.0/%s',
-            tiles=[
-                ('WMTSCapabilities.xml'),
-                ('point_hash/default/2012/swissgrid_5.png.mbtiles')
-            ],
+            tiles_pattern="1.0.0/%s",
+            tiles=[("WMTSCapabilities.xml"), ("point_hash/default/2012/swissgrid_5.png.mbtiles")],
         )
 
         server.pyramid_server = None
         server.tilegeneration = None
-        serve = app_factory({}, configfile='tilegeneration/test-serve.yaml')
+        serve = app_factory({}, configfile="tilegeneration/test-serve.yaml")
 
         global code, headers
         code = None
@@ -1035,25 +1009,34 @@ Size per tile: 4[0-9][0-9] o
             headers = {}
             for key, value in p_headers:
                 headers[key] = value
-        result = serve({
-            'QUERY_STRING': '&'.join(['{}={}'.format(*item) for item in {
-                'Service': 'WMTS',
-                'Version': '1.0.0',
-                'Request': 'GetFeatureInfo',
-                'Format': 'image/png',
-                'Info_Format': 'application/vnd.ogc.gml',
-                'Layer': 'point_hash',
-                'Query_Layer': 'point_hash',
-                'Style': 'default',
-                'TileMatrixSet': 'swissgrid_5',
-                'TileMatrix': '1',
-                'TileRow': '11',
-                'TileCol': '14',
-                'I': '114',
-                'J': '111',
-            }.items()])
-        }, start_response)
-        self.assertEqual(code, '200 OK')
+
+        result = serve(
+            {
+                "QUERY_STRING": "&".join(
+                    [
+                        "{}={}".format(*item)
+                        for item in {
+                            "Service": "WMTS",
+                            "Version": "1.0.0",
+                            "Request": "GetFeatureInfo",
+                            "Format": "image/png",
+                            "Info_Format": "application/vnd.ogc.gml",
+                            "Layer": "point_hash",
+                            "Query_Layer": "point_hash",
+                            "Style": "default",
+                            "TileMatrixSet": "swissgrid_5",
+                            "TileMatrix": "1",
+                            "TileRow": "11",
+                            "TileCol": "14",
+                            "I": "114",
+                            "J": "111",
+                        }.items()
+                    ]
+                )
+            },
+            start_response,
+        )
+        self.assertEqual(code, "200 OK")
         self.assert_result_equals(
             result[0].decode("utf-8"),
             """<?xml version="1.0" encoding="UTF-8"?>
@@ -1063,12 +1046,16 @@ Size per tile: 4[0-9][0-9] o
     xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 </msGMLOutput>
-""")
+""",
+        )
 
-        result = serve({
-            'QUERY_STRING': '',
-            'PATH_INFO': '/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/14/11/114/111.xml'
-        }, start_response)
+        result = serve(
+            {
+                "QUERY_STRING": "",
+                "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/14/11/114/111.xml",
+            },
+            start_response,
+        )
         self.assert_result_equals(
             result[0].decode("utf-8"),
             """<?xml version="1.0" encoding="UTF-8"?>
@@ -1078,49 +1065,41 @@ Size per tile: 4[0-9][0-9] o
     xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 </msGMLOutput>
-""")
+""",
+        )
 
-        serve({
-            'QUERY_STRING': '',
-            'PATH_INFO': '/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png'
-        }, start_response)
-        self.assertEqual(code, '204 No Content')
+        serve(
+            {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png"},
+            start_response,
+        )
+        self.assertEqual(code, "204 No Content")
 
-        serve({
-            'QUERY_STRING': '',
-            'PATH_INFO': '/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png'
-        }, start_response)
-        self.assertEqual(code, '200 OK')
-        self.assertEqual(headers['Cache-Control'], 'max-age=28800')
+        serve(
+            {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png"},
+            start_response,
+        )
+        self.assertEqual(code, "200 OK")
+        self.assertEqual(headers["Cache-Control"], "max-age=28800")
 
-        result = serve({
-            'QUERY_STRING': '',
-            'PATH_INFO': '/wmts/1.0.0/WMTSCapabilities.xml'
-        }, start_response)
-        self.assertEqual(code, '200 OK')
+        result = serve({"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/WMTSCapabilities.xml"}, start_response)
+        self.assertEqual(code, "200 OK")
         self.assert_result_equals(
-            result[0].decode("utf-8"),
-            CAPABILITIES,
-            regex=True,
+            result[0].decode("utf-8"), CAPABILITIES, regex=True,
         )
 
     @attr(general=True)
-    @log_capture('tilecloud_chain', level=30)
+    @log_capture("tilecloud_chain", level=30)
     def test_ondemend_wmtscapabilities(self, l):
         server.pyramid_server = None
         server.tilegeneration = None
         request = DummyRequest()
         request.registry.settings = {
-            'tilegeneration_configfile': 'tilegeneration/test-serve-wmtscapabilities.yaml',
+            "tilegeneration_configfile": "tilegeneration/test-serve-wmtscapabilities.yaml",
         }
-        request.matchdict['path'] = [
-            'wmts', '1.0.0', 'WMTSCapabilities.xml'
-        ]
+        request.matchdict["path"] = ["wmts", "1.0.0", "WMTSCapabilities.xml"]
         PyramidView(request)()
-        self.assertEqual(request.response.headers['Content-Type'], 'application/xml')
+        self.assertEqual(request.response.headers["Content-Type"], "application/xml")
         self.assert_result_equals(
-            request.response.body.decode('utf-8'),
-            CAPABILITIES,
-            regex=True,
+            request.response.body.decode("utf-8"), CAPABILITIES, regex=True,
         )
         l.check()
