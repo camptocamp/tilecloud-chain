@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 
 from setuptools import find_packages, setup
 
@@ -29,6 +28,7 @@ setup(
         "Amazon cloud services."
     ),
     long_description=README,
+    long_description_content_type="text/markdown",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
