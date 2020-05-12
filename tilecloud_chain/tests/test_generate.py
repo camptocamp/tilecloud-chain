@@ -4,12 +4,12 @@ import os
 import shutil
 from itertools import product
 
-from testfixtures import log_capture
 from nose.plugins.attrib import attr
 
-from tilecloud_chain.tests import CompareCase
-from tilecloud_chain import generate, controller
+from testfixtures import log_capture
 from tilecloud.store.redis import RedisTileStore
+from tilecloud_chain import controller, generate
+from tilecloud_chain.tests import CompareCase
 
 
 class TestGenerate(CompareCase):
@@ -30,7 +30,7 @@ class TestGenerate(CompareCase):
 
     @log_capture("tilecloud_chain", level=30)
     @attr(general=True)
-    def test_get_hash(self, l):
+    def test_get_hash(self, log_capture):
         for d in ("-d", ""):
             self.assert_cmd_equals(
                 cmd=".build/venv/bin/generate_tiles {} --get-hash 4/0/0 "
@@ -47,11 +47,11 @@ class TestGenerate(CompareCase):
 """,
             )
 
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_get_wrong_hash(self, l):
+    def test_get_wrong_hash(self, log_capture):
         for d in ("-d", "-q"):
             self.assert_cmd_exit_equals(
                 cmd=".build/venv/bin/generate_tiles {} --get-hash 0/7/5 "
@@ -59,11 +59,11 @@ class TestGenerate(CompareCase):
                 main_func=generate.main,
                 expected="""Error: image is not uniform.""",
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_get_bbox(self, l):
+    def test_get_bbox(self, log_capture):
         for d in ("-d", ""):
             self.assert_cmd_equals(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -86,12 +86,12 @@ class TestGenerate(CompareCase):
                 expected="""Tile bounds: [425120,342320,427680,344880]
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_hash_mapnik(self, l):
+    def test_hash_mapnik(self, log_capture):
         for d in ("-d", ""):
             self.assert_cmd_equals(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -103,11 +103,11 @@ class TestGenerate(CompareCase):
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_hash_mapnik_grid(self, l):
+    def test_hash_mapnik_grid(self, log_capture):
         for d in ("-d", ""):
             self.assert_cmd_equals(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -123,11 +123,11 @@ empty_tile_detection:
     hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_test_all(self, l):
+    def test_test_all(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles {} -c tilegeneration/test-nosns.yaml -t 1".format(d),
@@ -160,11 +160,11 @@ Size per tile: [45][0-9][0-9] o
 
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_test_dimensions(self, l):
+    def test_test_dimensions(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml -t 1 "
@@ -198,11 +198,11 @@ Size per tile: [45][0-9][0-9] o
 
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_multigeom(self, l):
+    def test_multigeom(self, log_capture):
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-multigeom.yaml",
             main_func=generate.main,
@@ -274,11 +274,11 @@ Size per tile: [79][0-9][0-9] o
 
 """,
         )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_zoom_identifier(self, l):
+    def test_zoom_identifier(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -346,11 +346,11 @@ Size per tile: 676 o
 
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_empty_bbox(self, l):
+    def test_empty_bbox(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml "
@@ -372,7 +372,7 @@ Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 """,
             )
         # second time for the debug mode
-        l.check(
+        log_capture.check(
             ("tilecloud_chain", "WARNING", "bounds empty for zoom 0"),
             ("tilecloud_chain", "WARNING", "bounds empty for zoom 1"),
             ("tilecloud_chain", "WARNING", "bounds empty for zoom 2"),
@@ -385,7 +385,7 @@ Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_zoom(self, l):
+    def test_zoom(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -409,11 +409,11 @@ Size per tile: 4[0-9][0-9] o
 
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_zoom_range(self, l):
+    def test_zoom_range(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -444,11 +444,11 @@ Size per tile: 4[0-9][0-9] o
 
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_no_zoom(self, l):
+    def test_no_zoom(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=(
@@ -482,11 +482,11 @@ Size per tile: 4[0-9][0-9] o
 
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_py_buffer(self, l):
+    def test_py_buffer(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml "
@@ -494,7 +494,7 @@ Size per tile: 4[0-9][0-9] o
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/point_px_buffer/default/2012/swissgrid_5/%i/%i/%i.png",
-                tiles=[(0, 5, 7), (0, 7, 4), (1, 11, 14), (1, 15, 8), (2, 29, 35), (2, 39, 21),],
+                tiles=[(0, 5, 7), (0, 7, 4), (1, 11, 14), (1, 15, 8), (2, 29, 35), (2, 39, 21)],
                 regex=True,
                 expected=r"""The tile generation of layer 'point_px_buffer \(DATE=2012\)' is finish
 Nb generated metatiles: 10
@@ -510,11 +510,11 @@ Size per tile: 4[0-9][0-9] o
 
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_zoom_list(self, l):
+    def test_zoom_list(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=(
@@ -547,11 +547,11 @@ Size per tile: 4[0-9][0-9] o
 
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_layer_bbox(self, l):
+    def test_layer_bbox(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -638,11 +638,11 @@ Size per tile: [89][0-9][0-9] o
 
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_hash_generation(self, l):
+    def test_hash_generation(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -666,12 +666,12 @@ Size per tile: [45][0-9][0-9] o
 
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_mapnik(self, l):
+    def test_mapnik(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -693,12 +693,12 @@ Size per tile: 823 o
 
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_mapnik_grid(self, l):
+    def test_mapnik_grid(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -738,12 +738,12 @@ Size per tile: 385 o
                     ', "                ", "                ", "                ", "                "'
                     ', "                ", "                ", "                "]}',
                 )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @attr(nopy3=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_mapnik_grid_drop(self, l):
+    def test_mapnik_grid_drop(self, log_capture):
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -765,32 +765,32 @@ Size per tile: 384 o
 
 """,
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_not_authorised_user(self, l):
+    def test_not_authorised_user(self, log_capture):
         for d in ("-d", "-q"):
             self.assert_cmd_exit_equals(
                 cmd=".build/venv/bin/generate_tiles {} " "-c tilegeneration/test-authorised.yaml".format(d),
                 main_func=generate.main,
                 expected="""not authorised, authorised user is: www-data.""",
             )
-        l.check()
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_verbose(self, l):
+    def test_verbose(self, log_capture):
         for d in ("-d", ""):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_tiles {} "
                 "-c tilegeneration/test-nosns.yaml -t 2 -v -l polygon".format(d),
                 main_func=generate.main,
             )
-        l.check()
+        log_capture.check()
 
     @log_capture("tilecloud_chain", level=30)
-    def test_time(self, l):
+    def test_time(self, log_capture):
         for d in ("-d", ""):
             self.assert_cmd_equals(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -807,10 +807,10 @@ size: 862
                 regex=True,
                 empty_err=True,
             )
-        l.check()
+        log_capture.check()
 
     @log_capture("tilecloud_chain", level=30)
-    def test_time_layer_bbox(self, l):
+    def test_time_layer_bbox(self, log_capture):
         for d in ("-d", ""):
             self.assert_cmd_equals(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -827,17 +827,17 @@ size: 1010
                 regex=True,
                 empty_err=True,
             )
-        l.check()
+        log_capture.check()
 
     #    @attr(general=True)
     #    @log_capture('tilecloud_chain', level=30)
-    #    def test_daemonize(self, l):
+    #    def test_daemonize(self, log_capture):
     #        self.assert_cmd_equals(
     #            cmd='.build/venv/bin/generate_tiles %s -c tilegeneration/test.yaml -t 1 --daemonize' % d,
     #            main_func=generate.main,
     #            expected=r"""Daemonize with pid [0-9]*.""",
     #            regex=True)
-    #        l.check()
+    #        log_capture.check()
 
     def _touch(self, tiles_pattern, tiles):
         for tile in tiles:

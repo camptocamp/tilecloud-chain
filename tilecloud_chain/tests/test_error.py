@@ -2,12 +2,11 @@
 
 import os
 
-from testfixtures import log_capture
-
 from nose.plugins.attrib import attr
 
-from tilecloud_chain.tests import CompareCase
+from testfixtures import log_capture
 from tilecloud_chain import controller, generate
+from tilecloud_chain.tests import CompareCase
 
 
 class TestError(CompareCase):
@@ -24,21 +23,26 @@ class TestError(CompareCase):
 
     @log_capture("tilecloud_chain")
     @attr(general=True)
-    def test_resolution(self, l):
+    def test_resolution(self, log_capture):
         self.run_cmd(
             cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_resolutions.yaml",
             main_func=controller.main,
         )
-        l.check(("tilecloud_chain", "ERROR", "The resolution 0.1 * resolution_scale 5 is not an integer."),)
+        log_capture.check(
+            ("tilecloud_chain", "ERROR", "The resolution 0.1 * resolution_scale 5 is not an integer."),
+        )
+        log_capture.check(
+            ("tilecloud_chain", "ERROR", "The resolution 0.1 * resolution_scale 5 is not an integer."),
+        )
 
     @log_capture("tilecloud_chain")
     @attr(general=True)
-    def test_mapnik_grid_meta(self, l):
+    def test_mapnik_grid_meta(self, log_capture):
         self.run_cmd(
             cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_mapnik_grid_meta.yaml",
             main_func=controller.main,
         )
-        l.check(
+        log_capture.check(
             (
                 "tilecloud_chain",
                 "ERROR",
@@ -48,12 +52,12 @@ class TestError(CompareCase):
 
     @log_capture("tilecloud_chain")
     @attr(general=True)
-    def test_exists(self, l):
+    def test_exists(self, log_capture):
         self.run_cmd(
             cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_exists.yaml",
             main_func=controller.main,
         )
-        l.check(
+        log_capture.check(
             (
                 "tilecloud_chain",
                 "ERROR",
@@ -66,12 +70,12 @@ class TestError(CompareCase):
 
     @log_capture("tilecloud_chain")
     @attr(general=True)
-    def test_type(self, l):
+    def test_type(self, log_capture):
         self.run_cmd(
             cmd=".build/venv/bin/generate_controller -v -c tilegeneration/wrong_type.yaml",
             main_func=controller.main,
         )
-        l.check(
+        log_capture.check(
             (
                 "tilecloud_chain",
                 "ERROR",
@@ -115,12 +119,12 @@ class TestError(CompareCase):
 
     @log_capture("tilecloud_chain")
     @attr(general=True)
-    def test_zoom_errors(self, l):
+    def test_zoom_errors(self, log_capture):
         self.run_cmd(
             cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10",
             main_func=generate.main,
         )
-        l.check(
+        log_capture.check(
             (
                 "tilecloud_chain",
                 "INFO",
@@ -142,12 +146,12 @@ class TestError(CompareCase):
 
     @log_capture("tilecloud_chain")
     @attr(general=True)
-    def test_wrong_srs_auth(self, l):
+    def test_wrong_srs_auth(self, log_capture):
         self.run_cmd(
             cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs_auth.yaml",
             main_func=controller.main,
         )
-        l.check(
+        log_capture.check(
             (
                 "tilecloud_chain",
                 "ERROR",
@@ -158,12 +162,12 @@ class TestError(CompareCase):
 
     @log_capture("tilecloud_chain")
     @attr(general=True)
-    def test_wrong_srs_id(self, l):
+    def test_wrong_srs_id(self, log_capture):
         self.run_cmd(
             cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs_id.yaml",
             main_func=controller.main,
         )
-        l.check(
+        log_capture.check(
             (
                 "tilecloud_chain",
                 "ERROR",
@@ -174,12 +178,12 @@ class TestError(CompareCase):
 
     @log_capture("tilecloud_chain")
     @attr(general=True)
-    def test_wrong_srs(self, l):
+    def test_wrong_srs(self, log_capture):
         self.run_cmd(
             cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs.yaml",
             main_func=controller.main,
         )
-        l.check(
+        log_capture.check(
             (
                 "tilecloud_chain",
                 "ERROR",
@@ -190,12 +194,12 @@ class TestError(CompareCase):
 
     @log_capture("tilecloud_chain")
     @attr(general=True)
-    def test_wrong_map(self, l):
+    def test_wrong_map(self, log_capture):
         self.run_cmd(
             cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_map.yaml",
             main_func=controller.main,
         )
-        l.check(
+        log_capture.check(
             (
                 "tilecloud_chain",
                 "ERROR",
@@ -213,12 +217,12 @@ class TestError(CompareCase):
 
     @log_capture("tilecloud_chain")
     @attr(general=True)
-    def test_wrong_sequence(self, l):
+    def test_wrong_sequence(self, log_capture):
         self.run_cmd(
             cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_sequence.yaml",
             main_func=controller.main,
         )
-        l.check(
+        log_capture.check(
             (
                 "tilecloud_chain",
                 "ERROR",

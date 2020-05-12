@@ -1,10 +1,12 @@
-from nose.plugins.attrib import attr
 import os
+
+from nose.plugins.attrib import attr
+from pyramid.testing import DummyRequest
+
 from testfixtures import log_capture
 from tilecloud_chain import server
-from tilecloud_chain.tests import CompareCase
 from tilecloud_chain.server import PyramidView
-from pyramid.testing import DummyRequest
+from tilecloud_chain.tests import CompareCase
 
 
 class TestMapcache(CompareCase):
@@ -14,12 +16,12 @@ class TestMapcache(CompareCase):
 
     @attr(general=True, mapcache=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_internal(self, l):
+    def test_internal(self, log_capture):
         self._do_test("test-internal-mapcache.yaml")
 
     @attr(general=True, mapcache=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_external(self, l):
+    def test_external(self, log_capture):
         self._do_test("test-external-mapcache.yaml")
 
     def _do_test(self, config):

@@ -34,7 +34,7 @@ class TestExpireTiles(CompareCase):
 
     @log_capture("tilecloud_chain", level=30)
     @attr(general=True)
-    def test_expire_tiles(self, l):
+    def test_expire_tiles(self, log_capture):
         geom = (
             "MULTIPOLYGON((("
             "537956.702147466 151362.192371584,"
@@ -136,11 +136,11 @@ class TestExpireTiles(CompareCase):
             "738075.945018921 5862567.19460037)))",
         )
 
-        l.check()
+        log_capture.check()
 
     @log_capture("tilecloud_chain", level=30)
     @attr(general=True)
-    def test_expire_tiles_empty(self, l):
+    def test_expire_tiles_empty(self, log_capture):
         self.assert_cmd_equals(
             cmd=[
                 ".build/venv/bin/import_expiretiles",

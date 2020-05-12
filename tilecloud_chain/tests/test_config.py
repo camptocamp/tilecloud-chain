@@ -2,12 +2,11 @@
 
 import os
 
-from testfixtures import log_capture
-
 from nose.plugins.attrib import attr
 
-from tilecloud_chain.tests import CompareCase
+from testfixtures import log_capture
 from tilecloud_chain import controller
+from tilecloud_chain.tests import CompareCase
 
 
 class TestConfig(CompareCase):
@@ -24,12 +23,12 @@ class TestConfig(CompareCase):
 
     @log_capture("tilecloud_chain")
     @attr(general=True)
-    def test_int_grid(self, l):
+    def test_int_grid(self, log_capture):
         self.run_cmd(
             cmd=".build/venv/bin/generate_controller -c tilegeneration/test-int-grid.yaml --dump-config",
             main_func=controller.main,
         )
-        l.check(
+        log_capture.check(
             (
                 "tilecloud_chain",
                 "INFO",

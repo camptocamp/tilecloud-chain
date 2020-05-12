@@ -73,7 +73,8 @@ def main():
     )
     #    if 'cloudfront' in gene.config['cost']:
     #        print('CloudFront: %0.2f [$/month]' % ()
-    #            gene.config['cost']['cloudfront']['get'] * gene.config['cost']['request_per_layers'] / 10000.0 +
+    #            gene.config['cost']['cloudfront']['get'] *
+    #            gene.config['cost']['request_per_layers'] / 10000.0 +
     #            gene.config['cost']['cloudfront']['download'] *
     #            gene.config['cost']['request_per_layers'] * tile_size)
     sys.exit(0)

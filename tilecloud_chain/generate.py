@@ -11,8 +11,8 @@ from datetime import datetime
 from getpass import getuser
 
 import boto3
-from c2cwsgiutils import stats
 
+from c2cwsgiutils import stats
 from tilecloud import TileCoord
 from tilecloud.filter.logger import Logger
 from tilecloud.layout.wms import WMSTileLayout
@@ -394,7 +394,7 @@ class Generate:
         if layer["type"] == "wms":
             params = layer["params"].copy()
             if "STYLES" not in params:
-                params["STYLES"] = ",".join(layer["wmts_style"] for l in layer["layers"].split(","))
+                params["STYLES"] = ",".join(layer["wmts_style"] for _ in layer["layers"].split(","))
             if layer["generate_salt"]:
                 params["SALT"] = str(random.randint(0, 999999))
 

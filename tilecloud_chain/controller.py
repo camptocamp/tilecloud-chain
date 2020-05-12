@@ -289,7 +289,7 @@ def _generate_legend_images(gene):
                 previous_hash = None
                 for zoom, resolution in enumerate(layer["grid_ref"]["resolutions"]):
                     legends = []
-                    for l in layer["layers"].split(","):
+                    for wmslayer in layer["layers"].split(","):
                         response = session.get(
                             layer["url"]
                             + "?"
@@ -298,7 +298,7 @@ def _generate_legend_images(gene):
                                     "SERVICE": "WMS",
                                     "VERSION": layer["version"],
                                     "REQUEST": "GetLegendGraphic",
-                                    "LAYER": l,
+                                    "LAYER": wmslayer,
                                     "FORMAT": layer["legend_mime"],
                                     "TRANSPARENT": "TRUE" if layer["legend_mime"] == "image/png" else "FALSE",
                                     "STYLE": layer["wmts_style"],
@@ -311,7 +311,7 @@ def _generate_legend_images(gene):
                         except Exception:  # pragma: nocover
                             logger.warning(
                                 "Unable to read legend image for layer '{}'-'{}', resolution '{}': {}".format(
-                                    layer["name"], l, resolution, response.content
+                                    layer["name"], wmslayer, resolution, response.content
                                 ),
                                 exc_info=True,
                             )

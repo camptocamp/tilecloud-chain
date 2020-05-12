@@ -5,8 +5,8 @@ import shutil
 
 from nose.plugins.attrib import attr
 
-from tilecloud_chain.tests import CompareCase
 from tilecloud_chain import controller
+from tilecloud_chain.tests import CompareCase
 
 
 class TestController(CompareCase):
@@ -1325,7 +1325,8 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value>"""
+                    """<value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1339,7 +1340,8 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value>"""
+                    """<value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1353,7 +1355,8 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value>"""
+                    """<value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1367,7 +1370,8 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value>"""
+                    """<value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1379,7 +1383,8 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value>"""
+                    """<value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1393,7 +1398,8 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value>"""
+                    """<value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1405,7 +1411,8 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value>"""
+                    """<value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1419,7 +1426,8 @@ class TestController(CompareCase):
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->
       <dimensions>
-        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value><value>2012</value></dimension>
+        <dimension type="values" name="DATE" default="2012"><value>2005</value><value>2010</value>"""
+                    """<value>2012</value></dimension>
       </dimensions>
    </tileset>
 
@@ -1696,8 +1704,8 @@ grids:
     bbox: [420000, 30000, 900000, 350000]
     matrix_identifier: resolution
     name: swissgrid_01
-    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000"""
-        """ +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 """
+        """+y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 10
     resolutions: [1, 0.2, 0.1]
     srs: EPSG:21781
@@ -1707,8 +1715,8 @@ grids:
     bbox: [420000, 30000, 900000, 350000]
     matrix_identifier: resolution
     name: swissgrid_025
-    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000"""
-        """ +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 """
+        """+y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 4
     resolutions: [0.25]
     srs: EPSG:21781
@@ -1718,8 +1726,8 @@ grids:
     bbox: [420000, 30000, 900000, 350000]
     matrix_identifier: resolution
     name: swissgrid_2_5
-    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000"""
-        """ +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 """
+        """+y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 2
     resolutions: [2.5]
     srs: EPSG:21781
@@ -1729,8 +1737,8 @@ grids:
     bbox: [420000, 30000, 900000, 350000]
     matrix_identifier: zoom
     name: swissgrid_5
-    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000"""
-        """ +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 """
+        """+y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 1
     resolutions: [100, 50, 20, 10, 5]
     srs: EPSG:21781
@@ -2252,7 +2260,7 @@ OpenLayers.Request.GET({
             main_func=controller.main,
             directory="/tmp/tiles/",
             tiles_pattern="1.0.0/%s/default/legend%i.png",
-            tiles=[("point", 0), ("line", 0), ("line", 2), ("polygon", 0), ("all", 0), ("all", 2),],
+            tiles=[("point", 0), ("line", 0), ("line", 2), ("polygon", 0), ("all", 0), ("all", 2)],
         )
 
         self.assert_main_equals(
