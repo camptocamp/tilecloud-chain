@@ -26,7 +26,7 @@ class MapnikDropActionTileStore(MapnikTileStore):
                 else:
                     self.store.delete_one(tile)
             logger.info("The tile {} {} is dropped".format(tile.tilecoord, tile.formated_metadata))
-            if hasattr(tile, 'metatile'):  # pragma: no cover
+            if hasattr(tile, "metatile"):  # pragma: no cover
                 tile.metatile.elapsed_togenerate -= 1
                 if tile.metatile.elapsed_togenerate == 0 and self.queue_store is not None:
                     self.queue_store.delete_one(tile.metatile)
