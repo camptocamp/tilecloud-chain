@@ -3,7 +3,6 @@
 import logging
 import os
 import random
-import re
 import socket
 import sys
 from argparse import ArgumentParser
@@ -38,9 +37,7 @@ logger = logging.getLogger(__name__)
 
 
 class Generate:
-    _re_rm_xml_tag = re.compile("(<[^>]*>|\n)")
-
-    def __init__(self, options, gene):
+    def __init__(self, options, gene, server=False):
         self._count_metatiles = None
         self._count_metatiles_dropped = None
         self._count_tiles = None
@@ -51,17 +48,34 @@ class Generate:
         self._options = options
         self._gene = gene
 
+        if hasattr(self._options, "get_hash") and self._options.get_hash is not None:
+            self._options.role = "hash"
+            self._options.test = 1
+
+        self._generate_init()
+        if self._options.role != "master" and not server:
+            self._generate_tiles()
+
     def gene(self, layer=None):
+        if self._count_tiles is not None:
+            self._count_tiles.nb = 0
+        if self._count_tiles_dropped is not None:
+            self._count_tiles_dropped.nb = 0
+        if self._count_tiles_stored is not None:
+            self._count_tiles_stored.nb = 0
+            self._count_tiles_stored.size = 0
+        if self._count_metatiles is not None:
+            self._count_metatiles.nb = 0
+        if self._count_metatiles_dropped is not None:
+            self._count_metatiles_dropped.nb = 0
+        self._gene.error = 0
+
         if self._options.role != "slave" and not self._options.get_hash and not self._options.get_bbox:
             self._gene.init_layer(layer, self._options)
 
-        self._generate_init()
         if self._options.role != "slave":
             self._generate_queue(layer)
-            if self._options.role != "master":
-                self._generate_tiles()
-        else:
-            self._generate_tiles()
+
         self.generate_consume()
         self.generate_resume(layer)
 
@@ -72,6 +86,27 @@ class Generate:
 
         if self._options.role in ("master", "slave"):
             self._queue_tilestore = get_queue_store(self._gene.config, self._options.daemon)
+
+        if self._options.role in ("local", "master"):
+            self._gene.add_geom_filter()
+
+        if self._options.role in ("local", "master") and "logging" in self._gene.config:
+            self._gene.imap(
+                DatabaseLoggerInit(
+                    self._gene.config["logging"], self._options is not None and self._options.daemon,
+                )
+            )
+
+        if self._options.local_process_number is not None:  # pragma: no cover
+            self._gene.add_local_process_filter()
+
+        # At this stage, the tilestream contains metatiles that intersect geometry
+        self._gene.add_logger()
+
+        if self._options.role == "master":  # pragma: no cover
+            # Put the metatiles into the SQS or Redis queue
+            self._gene.put(self._queue_tilestore)
+            self._count_tiles = self._gene.counter()
 
         if self._options.role in ("local", "slave"):
             self._cache_tilestore = self._gene.get_tilesstore(self._options.cache)
@@ -96,10 +131,6 @@ class Generate:
                 )
                 exit(1)
 
-        if self._options.get_hash:
-            self._options.role = "hash"
-            self._options.test = 1
-
         if self._options.tiles:
             self._gene.set_store(
                 TilesFileStore(self._options.tiles, layer["name"], self._gene.get_all_dimensions(layer))
@@ -108,17 +139,6 @@ class Generate:
         elif self._options.role in ("local", "master"):
             # Generate a stream of metatiles
             self._gene.init_tilecoords(layer)
-            self._gene.add_geom_filter(layer)
-
-        if self._options.role in ("local", "master") and "logging" in self._gene.config:
-            self._gene.imap(
-                DatabaseLoggerInit(
-                    self._gene.config["logging"], self._options is not None and self._options.daemon,
-                )
-            )
-
-        if self._options.local_process_number is not None:  # pragma: no cover
-            self._gene.add_local_process_filter()
 
         elif self._options.role == "hash":
             try:
@@ -130,22 +150,13 @@ class Generate:
             except ValueError as e:  # pragma: no cover
                 exit("Tile '{}' is not in the format 'z/x/y'\n{}".format(self._options.get_hash, repr(e)))
 
-        # At this stage, the tilestream contains metatiles that intersect geometry
-        self._gene.add_logger()
-
-        self._count_metatiles = self._gene.counter()
-
-        if self._options.role == "master":  # pragma: no cover
-            # Put the metatiles into the SQS or Redis queue
-            self._gene.put(self._queue_tilestore)
-            self._count_tiles = self._gene.counter()
-
     def _generate_tiles(self):
         if self._options.role in ("slave", "server"):
             # Get the metatiles from the SQS/Redis queue
             self._gene.set_store(self._queue_tilestore)  # pragma: no cover
-            self._gene.ifilter(lambda tile: "layer" in tile.metadata)
-            self._count_metatiles = self._gene.counter()
+            self._gene.imap(lambda tile: tile if "layer" in tile.metadata else None)
+
+        self._count_metatiles = self._gene.counter()
 
         self._gene.get(
             TimedTileStoreWrapper(
@@ -157,38 +168,24 @@ class Generate:
             "Get tile",
         )
 
-        def wrong_content_type_to_error(tile):
-            if (
-                tile is not None
-                and tile.content_type is not None
-                and not tile.content_type.startswith("image/")
-            ):
-                if tile.content_type.startswith("application/vnd.ogc.se_xml"):
-                    tile.error = "WMS server error: {}".format((self._re_rm_xml_tag.sub("", tile.error)))
-                elif tile.content_type.startswith("text/"):
-                    tile.error = "WMS server error: {}".format(tile.error)
-                else:  # pragma: no cover
-                    tile.error = "{} is not an image format, error: {}".format(tile.content_type, tile.error)
-            return tile
-
-        self._gene.imap(wrong_content_type_to_error)
         if self._options.role in ("local", "slave") and "logging" in self._gene.config:
             self._gene.imap(
                 DatabaseLogger(
                     self._gene.config["logging"], self._options is not None and self._options.daemon
                 )
             )
-            self._gene.add_error_filters(
+            self._gene.init(
                 self._queue_tilestore if "error_file" in self._gene.config["generation"] else None,
                 self._options.daemon,
             )
         else:
-            self._gene.add_error_filters(daemon=self._options.daemon)
+            self._gene.init(daemon=self._options.daemon)
 
         if self._options.role == "hash":
             self._gene.imap(HashLogger("empty_metatile_detection"))
         elif not self._options.near:
             droppers = {}
+            assert self._cache_tilestore is not None
             for lname, layer in self._gene.layers.items():
                 if "empty_metatile_detection" in layer:
                     empty_tile = layer["empty_metatile_detection"]
@@ -205,10 +202,10 @@ class Generate:
         def add_elapsed_togenerate(metatile):
             if metatile is not None:
                 metatile.elapsed_togenerate = metatile.tilecoord.n ** 2
-                return True
-            return False  # pragma: no cover
+                return metatile
+            return None  # pragma: no cover
 
-        self._gene.ifilter(add_elapsed_togenerate)
+        self._gene.imap(add_elapsed_togenerate)
 
         # Split the metatile image into individual tiles
         self._gene.add_metatile_splitter()
@@ -221,6 +218,7 @@ class Generate:
         if self._options.role == "hash":
             self._gene.imap(HashLogger("empty_tile_detection"))
         elif not self._options.near:
+            assert self._cache_tilestore is not None
             droppers = {}
             for lname, layer in self._gene.layers.items():
                 if "empty_tile_detection" in layer:
@@ -248,7 +246,6 @@ class Generate:
 
                 self._gene.imap(log_size)
 
-            self._gene.ifilter(lambda tile: tile is not None)
             self._gene.put(self._cache_tilestore, "Store the tile")
 
         if self._options.role == "slave":  # pragma: no cover
@@ -260,9 +257,9 @@ class Generate:
                         self._queue_tilestore.delete_one(tile.metatile)
                 else:
                     self._queue_tilestore.delete_one(tile)
-                return True
+                return tile
 
-            self._gene.ifilter(delete_from_store)
+            self._gene.imap(delete_from_store)
 
         if self._options.role in ("local", "slave") and "logging" in self._gene.config:
             self._gene.imap(
@@ -270,7 +267,7 @@ class Generate:
                     self._gene.config["logging"], self._options is not None and self._options.daemon
                 )
             )
-        self._gene.add_error_filters(daemon=self._options.daemon)
+        self._gene.init(daemon=self._options.daemon)
 
     def generate_consume(self):
         if self._options.time is not None:
@@ -483,7 +480,7 @@ def main():
         "--role",
         default="local",
         choices=("local", "master", "slave"),
-        help="local/master/slave, master to file the queue and " "slave to generate the tiles",
+        help="local/master/slave, master to file the queue and slave to generate the tiles",
     )
     parser.add_argument(
         "--local-process-number", default=None, help="The number of process that we run in parallel"
@@ -501,7 +498,7 @@ def main():
     if options.detach:
         detach()  # pragma: no cover
 
-    gene = TileGeneration(options.config, options)
+    gene = TileGeneration(options.config, options, multi_thread=options.get_hash is None)
 
     if (
         options.get_hash is None

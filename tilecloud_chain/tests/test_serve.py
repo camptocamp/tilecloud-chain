@@ -3,10 +3,10 @@
 import os
 import shutil
 
+from nose.plugins.attrib import attr
 from pyramid.httpexceptions import HTTPBadRequest, HTTPNoContent
 from pyramid.testing import DummyRequest
 
-from nose.plugins.attrib import attr
 from testfixtures import log_capture
 from tilecloud_chain import controller, generate, server
 from tilecloud_chain.server import PyramidView, app_factory
@@ -691,7 +691,12 @@ Size per tile: 4[0-9][0-9] o
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_mbtiles_rest(self, l):
+    def test_mbtiles_rest(self, log_capture):
+        tile_mbt = os.environ["TILE_NB_THREAD"]
+        metatile_mbt = os.environ["METATILE_NB_THREAD"]
+        os.environ["TILE_NB_THREAD"] = "1"
+        os.environ["METATILE_NB_THREAD"] = "1"
+
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-serve.yaml"
             " -l point_hash --zoom 1",
@@ -779,7 +784,10 @@ Size per tile: 4[0-9][0-9] o
             request.response.body.decode("utf-8"), CAPABILITIES, regex=True,
         )
 
-        l.check()
+        os.environ["TILE_NB_THREAD"] = tile_mbt
+        os.environ["METATILE_NB_THREAD"] = metatile_mbt
+
+        log_capture.check()
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
@@ -872,8 +880,7 @@ Size per tile: 4[0-9][0-9] o
         l.check()
 
     @attr(general=True)
-    @log_capture("tilecloud_chain", level=30)
-    def test_serve_gfi(self, l):
+    def test_serve_gfi(self):
         server.pyramid_server = None
         server.tilegeneration = None
         request = DummyRequest()
@@ -962,8 +969,12 @@ Size per tile: 4[0-9][0-9] o
         )
 
     @attr(general=True)
-    @log_capture("tilecloud_chain", level=30)
-    def test_wsgi(self, l):
+    def test_wsgi(self):
+        tile_mbt = os.environ["TILE_NB_THREAD"]
+        metatile_mbt = os.environ["METATILE_NB_THREAD"]
+        os.environ["TILE_NB_THREAD"] = "1"
+        os.environ["METATILE_NB_THREAD"] = "1"
+
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-serve.yaml "
             "-l point_hash --zoom 1",
@@ -1086,6 +1097,9 @@ Size per tile: 4[0-9][0-9] o
         self.assert_result_equals(
             result[0].decode("utf-8"), CAPABILITIES, regex=True,
         )
+
+        os.environ["TILE_NB_THREAD"] = tile_mbt
+        os.environ["METATILE_NB_THREAD"] = metatile_mbt
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)

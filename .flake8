@@ -1,3 +1,5 @@
 [flake8]
 max-line-length=110
-ignore = F823,W503
+# W503 Line break occurred before a binary operator
+# E203 whitespace before ':'
+ignore = W503,E203

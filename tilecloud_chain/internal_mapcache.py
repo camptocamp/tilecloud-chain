@@ -2,20 +2,23 @@ import contextlib
 import datetime
 import json
 import logging
+import os
 import queue
 import struct
 import threading
 
 import redis
-
 import redlock
-from tilecloud import Tile, TileStore, consume
+
+from tilecloud import Tile, TileStore
+from tilecloud_chain import Run
 from tilecloud_chain.generate import Generate
 
 MAX_GENERATION_TIME = 60
 RETRY_DELAY = 0.05
 LOG = logging.getLogger(__name__)
 lock = threading.Lock()
+executing_lock = threading.Lock()
 generator = None
 
 
@@ -25,9 +28,12 @@ class FakeOptions:
     near = True
     time = False
     daemon = True
+    local_process_number = None
 
 
 class InputStore(TileStore):
+    run = True
+
     def __init__(self):
         super(InputStore, self).__init__()
         self._queue = queue.Queue()
@@ -36,10 +42,8 @@ class InputStore(TileStore):
         return self._queue.get()
 
     def list(self):
-        while True:
-            tile = self.get_one()
-            yield tile
-            tile.metadata["lock"].release()
+        while self.run:
+            yield self.get_one()
 
     def put_one(self, tile):
         self._queue.put(tile)
@@ -64,7 +68,7 @@ def _encode_tile(tile):
 
 class RedisStore(TileStore):
     def __init__(self, url, prefix, expiration, **kwargs):
-        super(RedisStore, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._redis = redis.Redis.from_url(url)
         self._prefix = prefix
         self._expiration = expiration
@@ -76,10 +80,10 @@ class RedisStore(TileStore):
         key = self._get_key(tile)
         data = self._redis.get(key)
         if data is None:
-            LOG.warning("Tile not found: %s/%s", tile.metadata["layer"], tile.tilecoord)
+            LOG.debug("Tile not found: %s/%s", tile.metadata["layer"], tile.tilecoord)
             return None
         _decode_tile(data, tile)
-        LOG.warning("Tile found: %s/%s", tile.metadata["layer"], tile.tilecoord)
+        LOG.debug("Tile found: %s/%s", tile.metadata["layer"], tile.tilecoord)
         return tile
 
     def put(self, tiles):
@@ -90,7 +94,7 @@ class RedisStore(TileStore):
     def put_one(self, tile):
         key = self._get_key(tile)
         self._redis.set(key, _encode_tile(tile), ex=self._expiration)
-        LOG.warning("Tile saved: %s/%s", tile.metadata["layer"], tile.tilecoord)
+        LOG.info("Tile saved: %s/%s", tile.metadata["layer"], tile.tilecoord)
         return tile
 
     def delete_one(self, tile):
@@ -117,13 +121,24 @@ class RedisStore(TileStore):
 
 
 class GeneratorThread(threading.Thread):
-    def __init__(self, index, tilegeneration, input_store, cache_store):
-        super(GeneratorThread, self).__init__(name="Generation thread #" + str(index), daemon=True)
-        self._generator = Generate(FakeOptions(), tilegeneration)
-        self._generator.server_init(input_store, cache_store)
+    def __init__(self, index, generator):
+        super().__init__(name="Generation thread #" + str(index), daemon=True)
+        self._generator = generator
 
     def run(self):
-        consume(self._generator._gene.tilestream, n=None)
+        LOG.info("Start internal mapcache generator")
+        try:
+            run = Run(self._generator._gene, self._generator._gene.functions_metatiles)
+            while True:
+                with executing_lock:
+                    tile = next(self._generator._gene.tilestream)
+                if tile is not None:
+                    run(tile)
+                    tile.metadata["lock"].release()
+        except StopIteration:
+            pass
+        finally:
+            LOG.info("End internal mapcache generator")
 
 
 class Generator:
@@ -133,9 +148,20 @@ class Generator:
         self._cache_store = RedisStore(
             redis_config["url"], redis_config["prefix"], redis_config["expiration"]
         )
-        for i in range(10):
-            thread = GeneratorThread(i, tilegeneration, self._input_store, self._cache_store)
+        self.threads = []
+        generator = Generate(FakeOptions(), tilegeneration, server=True)
+        generator.server_init(self._input_store, self._cache_store)
+        for i in range(int(os.environ.get("SERVER_NB_THREAD", 10))):
+            thread = GeneratorThread(i, generator)
             thread.start()
+            self.threads.append(thread)
+
+    def __del__(self):
+        self.stop()
+
+    def stop(self):
+        self._input_store.run = False
+        self._input_store.put_one(None)
 
     def read_from_cache(self, tile):
         return self._cache_store.get_one(tile)
@@ -198,3 +224,7 @@ def fetch(server, tilegeneration, layer, tile, kwargs):
     if tile.content_type:
         response_headers["Content-Type"] = tile.content_type
     return server.response(fetched_tile.data, headers=response_headers, **kwargs)
+
+
+def stop(tilegeneration):
+    _get_generator(tilegeneration).stop()

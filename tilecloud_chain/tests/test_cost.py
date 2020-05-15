@@ -155,7 +155,7 @@ S3 get: %(get)s [$/month]
     @attr(general=True)
     def test_cost_line_count(self):
         self.assert_cmd_equals(
-            cmd=".build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l line --cost-algo count",
+            cmd=".build/venv/bin/generate_cost -d -c tilegeneration/test-fix.yaml -l line --cost-algo count",
             main_func=cost.main,
             expected="\n".join(
                 [

@@ -29,10 +29,10 @@ class Copy:
         source_tilestore = gene.get_tilesstore(source)
         dest_tilestore = gene.get_tilesstore(dest)
         gene.init_tilecoords(layer)
-        gene.add_geom_filter(layer)
+        gene.add_geom_filter()
         gene.add_logger()
         gene.get(source_tilestore, "Get the tiles")
-        gene.ifilter(DropEmpty(gene))
+        gene.imap(DropEmpty(gene))
         # Discard tiles with certain content
         if "empty_tile_detection" in layer:
             empty_tile = layer["empty_tile_detection"]
@@ -46,10 +46,9 @@ class Copy:
         if options.process:
             gene.process(options.process)
 
-        gene.ifilter(DropEmpty(gene))
+        gene.imap(DropEmpty(gene))
         self.count = gene.counter(size=True)
         gene.put(dest_tilestore, "Store the tiles")
-        gene.add_error_filters()
         gene.consume()
         if not options.quiet:
             print(
@@ -108,7 +107,7 @@ def process():
 
     options = parser.parse_args()
 
-    gene = TileGeneration(options.config, options)
+    gene = TileGeneration(options.config, options, multi_thread=False)
 
     copy = Copy()
     if options.layer:  # pragma: no cover

@@ -829,3 +829,13 @@ To run the tests:
 ``` {.sourceCode .bash}
 docker-compose -p tilecloud exec test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
 ```
+
+Environement variables
+----------------------
+
+* TILE_NB_THREAD: Default is 2, The number of thread used to generate the tiles (If we use metatiles)
+* METATILE_NB_THREAD: Default is 25, The number of thread used to generate the meta tiles (If we use
+  metatiles, also to generate the tiles)
+* SERVER_NB_THREAD: Default to 10, The number of thread used to generate the meta tiles in the server.
+* TILE_QUEUE_SIZE: Default to 2, The queue size just after the redis queue
+* TILE_CHUNK_SIZE: Default is 1, The chunk size to process the tiles after the metatiles.

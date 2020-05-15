@@ -2,14 +2,14 @@
 
 import os
 import shutil
-from itertools import product
+from itertools import product, repeat
 
-from testfixtures import log_capture
 from nose.plugins.attrib import attr
 
-from tilecloud_chain.tests import CompareCase
-from tilecloud_chain import generate, controller
+from testfixtures import log_capture
 from tilecloud.store.redis import RedisTileStore
+from tilecloud_chain import controller, generate
+from tilecloud_chain.tests import CompareCase
 
 
 class TestGenerate(CompareCase):
@@ -134,19 +134,27 @@ empty_tile_detection:
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png",
-                tiles=[("line", 0, 7, 4), ("polygon", 0, 5, 4)],
+                tiles=[
+                    ("line", 0, 5, 6),
+                    ("line", 0, 5, 7),
+                    ("line", 0, 6, 5),
+                    ("line", 0, 6, 6),
+                    ("line", 0, 7, 4),
+                    ("line", 0, 7, 5),
+                    ("polygon", 0, 5, 4),
+                ],
                 regex=True,
                 expected=r"""The tile generation of layer 'line \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
-Nb generated tiles: 40
-Nb tiles dropped: 39
-Nb tiles stored: 1
+Nb generated tiles: 64
+Nb tiles dropped: 58
+Nb tiles stored: 6
 Nb tiles in error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: 733 o
+Total size: 3.6 Kio
 Time per tile: [0-9]+ ms
-Size per tile: 733 o
+Size per tile: 619 o
 
 The tile generation of layer 'polygon \(DATE=2012\)' is finish
 Nb generated tiles: 1
@@ -172,19 +180,27 @@ Size per tile: [45][0-9][0-9] o
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/%s/default/2013/swissgrid_5/%i/%i/%i.png",
-                tiles=[("line", 0, 7, 4), ("polygon", 0, 5, 4)],
+                tiles=[
+                    ("line", 0, 5, 6),
+                    ("line", 0, 5, 7),
+                    ("line", 0, 6, 5),
+                    ("line", 0, 6, 6),
+                    ("line", 0, 7, 4),
+                    ("line", 0, 7, 5),
+                    ("polygon", 0, 5, 4),
+                ],
                 regex=True,
                 expected=r"""The tile generation of layer 'line \(DATE=2013\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
-Nb generated tiles: 40
-Nb tiles dropped: 39
-Nb tiles stored: 1
+Nb generated tiles: 64
+Nb tiles dropped: 58
+Nb tiles stored: 6
 Nb tiles in error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: 733 o
+Total size: 3.6 Kio
 Time per tile: [0-9]+ ms
-Size per tile: 733 o
+Size per tile: 619 o
 
 The tile generation of layer 'polygon \(DATE=2013\)' is finish
 Nb generated tiles: 1
@@ -278,7 +294,16 @@ Size per tile: [79][0-9][0-9] o
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_zoom_identifier(self, l):
+    def test_zoom_identifier(self, log_capture):
+        xy = list(product(range(585, 592), range(429, 432)))
+        x = [e[0] for e in xy]
+        y = [e[1] for e in xy]
+        xy2 = list(product(range(2929, 2936), range(2148, 2152)))
+        x2 = [e[0] for e in xy2]
+        y2 = [e[1] for e in xy2]
+        xy3 = list(product(range(5859, 5864), range(4296, 4304)))
+        x3 = [e[0] for e in xy3]
+        y3 = [e[1] for e in xy3]
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles {} "
@@ -286,19 +311,19 @@ Size per tile: [79][0-9][0-9] o
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png",
-                tiles=[("polygon2", "1", 585, 429)],
+                tiles=list(zip(repeat("polygon2", len(x)), repeat("1", len(x)), x, y)),
                 regex=True,
                 expected=r"""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
-Nb generated tiles: 42
-Nb tiles dropped: 41
-Nb tiles stored: 1
+Nb generated tiles: 64
+Nb tiles dropped: 43
+Nb tiles stored: 21
 Nb tiles in error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: 389 o
+Total size: 16 Kio
 Time per tile: [0-9]+ ms
-Size per tile: 389 o
+Size per tile: 788 o
 
 """,
             )
@@ -308,19 +333,19 @@ Size per tile: 389 o
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png",
-                tiles=[("polygon2", "0_2", 2929, 2148)],
+                tiles=list(zip(repeat("polygon2", len(x2)), repeat("0_2", len(x2)), x2, y2)),
                 regex=True,
                 expected=r"""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
-Nb generated tiles: 34
-Nb tiles dropped: 33
-Nb tiles stored: 1
+Nb generated tiles: 64
+Nb tiles dropped: 36
+Nb tiles stored: 28
 Nb tiles in error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: 517 o
+Total size: 22 Kio
 Time per tile: [0-9]+ ms
-Size per tile: 517 o
+Size per tile: 806 o
 
 """,
             )
@@ -330,19 +355,19 @@ Size per tile: 517 o
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png",
-                tiles=[("polygon2", "0_1", 5859, 4296)],
+                tiles=list(zip(repeat("polygon2", len(x3)), repeat("0_1", len(x3)), x3, y3)),
                 regex=True,
                 expected=r"""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
-Nb generated tiles: 4
-Nb tiles dropped: 3
-Nb tiles stored: 1
+Nb generated tiles: 64
+Nb tiles dropped: 24
+Nb tiles stored: 40
 Nb tiles in error: 0
 Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: 676 o
+Total size: 32 Kio
 Time per tile: [0-9]+ ms
-Size per tile: 676 o
+Size per tile: 818 o
 
 """,
             )
@@ -452,7 +477,7 @@ Size per tile: 4[0-9][0-9] o
         for d in ("-d", ""):
             self.assert_tiles_generated(
                 cmd=(
-                    ".build/venv/bin/generate_tiles {} " "-c tilegeneration/test-nosns.yaml -l point_hash"
+                    ".build/venv/bin/generate_tiles {} -c tilegeneration/test-nosns.yaml -l point_hash"
                 ).format(d),
                 main_func=generate.main,
                 directory="/tmp/tiles/",
@@ -772,7 +797,7 @@ Size per tile: 384 o
     def test_not_authorised_user(self, l):
         for d in ("-d", "-q"):
             self.assert_cmd_exit_equals(
-                cmd=".build/venv/bin/generate_tiles {} " "-c tilegeneration/test-authorised.yaml".format(d),
+                cmd=".build/venv/bin/generate_tiles {} -c tilegeneration/test-authorised.yaml".format(d),
                 main_func=generate.main,
                 expected="""not authorised, authorised user is: www-data.""",
             )
@@ -914,6 +939,11 @@ Size per tile: 4[0-9][0-9] o
 
     @attr(general=True)
     def test_error_file(self):
+        tile_mbt = os.environ["TILE_NB_THREAD"]
+        metatile_mbt = os.environ["METATILE_NB_THREAD"]
+        os.environ["TILE_NB_THREAD"] = "1"
+        os.environ["METATILE_NB_THREAD"] = "1"
+
         if os.path.exists("error.list"):
             os.remove("error.list")
         self.assert_main_except_equals(
@@ -964,6 +994,9 @@ Size per tile: [45][0-9][0-9] o
 
 """,
         )
+
+        os.environ["TILE_NB_THREAD"] = tile_mbt
+        os.environ["METATILE_NB_THREAD"] = metatile_mbt
 
     @attr(general=True)
     def test_multy(self):
