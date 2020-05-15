@@ -2258,8 +2258,8 @@ OpenLayers.Request.GET({
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends.yaml --legends",
             main_func=controller.main,
-            directory="/tmp/tiles/",
-            tiles_pattern="1.0.0/%s/default/legend%i.png",
+            directory="/tmp/tiles/1.0.0/",
+            tiles_pattern="%s/default/legend%i.png",
             tiles=[("point", 0), ("line", 0), ("line", 2), ("polygon", 0), ("all", 0), ("all", 2)],
         )
 

@@ -57,11 +57,17 @@ test:
   environment:
     CI: "TRUE"
     PGPASSWORD: postgres
+    TILE_NB_THREAD: 2
+    METATILE_NB_THREAD: 2
+    SERVER_NB_THREAD: 2
   command:
     - sleep
-    - "3600"
+    - infinity
   links:
     - db
     - mapcache
     - mapserver
     - redis
+  volumes:
+    - ./tilecloud_chain:/app/tilecloud_chain
+    # - ../tilecloud/tilecloud:/usr/local/lib/python3.7/dist-packages/tilecloud

@@ -5,8 +5,8 @@ import sys
 from argparse import ArgumentParser
 from datetime import timedelta
 
-from tilecloud import Tile, TileStore, consume
-from tilecloud_chain import TileGeneration, add_comon_options
+from tilecloud import Tile, TileStore
+from tilecloud_chain import Run, TileGeneration, add_comon_options
 from tilecloud_chain.format import duration_format
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,9 @@ def main():
     )
 
     options = parser.parse_args()
-    gene = TileGeneration(options.config, options, layer_name=options.layer, base_config={"cost": {}})
+    gene = TileGeneration(
+        options.config, options, layer_name=options.layer, base_config={"cost": {}}, multi_thread=False
+    )
 
     all_size = 0
     tile_size = 0
@@ -98,16 +100,16 @@ def _calculate_cost(gene, layer, options):
             if meta:
                 size = tile_size * layer["meta_size"] * resolution
                 meta_buffer = size * 0.7 + m_buffer
-                meta_geom = gene.geoms[zoom].buffer(meta_buffer, 1)
+                meta_geom = gene.geoms[layer["name"]][zoom].buffer(meta_buffer, 1)
                 nb_metatiles[zoom] = int(round(meta_geom.area / size ** 2))
             size = tile_size * resolution
             tile_buffer = size * 0.7 + m_buffer
-            geom = gene.geoms[zoom].buffer(tile_buffer, 1)
+            geom = gene.geoms[layer["name"]][zoom].buffer(tile_buffer, 1)
             nb_tiles[zoom] = int(round(geom.area / size ** 2))
 
     elif options.cost_algo == "count":
         gene.init_tilecoords(layer)
-        gene.add_geom_filter(layer)
+        gene.add_geom_filter()
 
         if meta:
 
@@ -128,10 +130,10 @@ def _calculate_cost(gene, layer, options):
                         for tilecoord in metatile.tilecoord:
                             yield Tile(tilecoord)
 
-            gene.tilestream = MetaTileSplitter().get(gene.tilestream)
+            gene.add_metatile_splitter(MetaTileSplitter())
 
             # Only keep tiles that intersect geometry
-            gene.add_geom_filter(layer)
+            gene.add_geom_filter()
 
         def count_tile(tile):
             if tile:
@@ -144,7 +146,10 @@ def _calculate_cost(gene, layer, options):
 
         gene.imap(count_tile)
 
-        consume(gene.tilestream, None)
+        run = Run(gene, gene.functions_metatiles)
+        for tile in gene.tilestream:
+            tile.metadata["layer"] = layer["name"]
+            run(tile)
 
     times = {}
     print("")
