@@ -16,24 +16,25 @@ class TestController(CompareCase):
     @classmethod
     def setUpClass(cls):  # noqa
         os.chdir(os.path.dirname(__file__))
-        if os.path.exists('/tmp/tiles'):
-            shutil.rmtree('/tmp/tiles')
+        if os.path.exists("/tmp/tiles"):
+            shutil.rmtree("/tmp/tiles")
 
     @classmethod
     def tearDownClass(cls):  # noqa
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-        if os.path.exists('/tmp/tiles'):
-            shutil.rmtree('/tmp/tiles')
+        if os.path.exists("/tmp/tiles"):
+            shutil.rmtree("/tmp/tiles")
 
     @attr(general=True)
     def test_capabilities(self):
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml',
+            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml",
             main_func=controller.main,
             regex=True,
-            expected=[[
-                '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
-                r"""<\?xml version="1.0" encoding="UTF-8"\?>
+            expected=[
+                [
+                    "/tmp/tiles/1.0.0/WMTSCapabilities.xml",
+                    r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -118,7 +119,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/all/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -140,7 +141,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/line/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -162,7 +163,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/mapnik/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -184,7 +185,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="application/utfgrid" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/mapnik_grid/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -206,7 +207,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="application/utfgrid" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/mapnik_grid_drop/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -228,7 +229,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/point/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -250,7 +251,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/point_hash/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -272,7 +273,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/point_hash_no_meta/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -294,7 +295,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/point_px_buffer/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -316,7 +317,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/polygon/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -338,7 +339,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/polygon2/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_01</TileMatrixSet>
       </TileMatrixSetLink>
@@ -453,9 +454,13 @@ class TestController(CompareCase):
       </TileMatrix>
     </TileMatrixSet>
   </Contents>
-</Capabilities>"""]])
+</Capabilities>""",
+                ]
+            ],
+        )
 
-    MULTIHOST_CAPABILITIES = r"""<\?xml version="1.0" encoding="UTF-8"\?>
+    MULTIHOST_CAPABILITIES = (
+        r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -553,14 +558,14 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/all/default/""" \
-                r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts1/tiles/1.0.0/all/default/"""
+        r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/all/default/""" \
-                r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts2/tiles/1.0.0/all/default/"""
+        r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/all/default/""" \
-                r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts3/tiles/1.0.0/all/default/"""
+        r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -581,14 +586,14 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/line/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts1/tiles/1.0.0/line/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/line/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts2/tiles/1.0.0/line/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/line/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts3/tiles/1.0.0/line/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -609,14 +614,14 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/mapnik/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts1/tiles/1.0.0/mapnik/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/mapnik/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts2/tiles/1.0.0/mapnik/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/mapnik/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts3/tiles/1.0.0/mapnik/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -637,14 +642,14 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="application/utfgrid" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/mapnik_grid/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+                   template="http://wmts1/tiles/1.0.0/mapnik_grid/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <ResourceURL format="application/utfgrid" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/mapnik_grid/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+                   template="http://wmts2/tiles/1.0.0/mapnik_grid/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <ResourceURL format="application/utfgrid" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/mapnik_grid/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+                   template="http://wmts3/tiles/1.0.0/mapnik_grid/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -665,14 +670,14 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="application/utfgrid" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/mapnik_grid_drop/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+                   template="http://wmts1/tiles/1.0.0/mapnik_grid_drop/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <ResourceURL format="application/utfgrid" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/mapnik_grid_drop/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+                   template="http://wmts2/tiles/1.0.0/mapnik_grid_drop/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <ResourceURL format="application/utfgrid" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/mapnik_grid_drop/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+                   template="http://wmts3/tiles/1.0.0/mapnik_grid_drop/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -693,14 +698,14 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/point/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts1/tiles/1.0.0/point/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/point/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts2/tiles/1.0.0/point/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/point/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts3/tiles/1.0.0/point/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -721,14 +726,14 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/point_hash/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts1/tiles/1.0.0/point_hash/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/point_hash/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts2/tiles/1.0.0/point_hash/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/point_hash/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts3/tiles/1.0.0/point_hash/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -749,14 +754,14 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/point_hash_no_meta/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts1/tiles/1.0.0/point_hash_no_meta/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/point_hash_no_meta/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts2/tiles/1.0.0/point_hash_no_meta/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/point_hash_no_meta/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts3/tiles/1.0.0/point_hash_no_meta/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -777,14 +782,14 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/point_px_buffer/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts1/tiles/1.0.0/point_px_buffer/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/point_px_buffer/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts2/tiles/1.0.0/point_px_buffer/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/point_px_buffer/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts3/tiles/1.0.0/point_px_buffer/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -805,14 +810,14 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/polygon/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts1/tiles/1.0.0/polygon/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/polygon/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts2/tiles/1.0.0/polygon/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/polygon/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts3/tiles/1.0.0/polygon/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -833,14 +838,14 @@ class TestController(CompareCase):
         <Value>2012</Value>
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts1/tiles/1.0.0/polygon2/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts1/tiles/1.0.0/polygon2/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts2/tiles/1.0.0/polygon2/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts2/tiles/1.0.0/polygon2/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <ResourceURL format="image/png" resourceType="tile"
-                   template="http://wmts3/tiles/1.0.0/polygon2/default/""" \
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                   template="http://wmts3/tiles/1.0.0/polygon2/default/"""
+        """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_01</TileMatrixSet>
       </TileMatrixSetLink>
@@ -956,25 +961,28 @@ class TestController(CompareCase):
     </TileMatrixSet>
   </Contents>
 </Capabilities>"""
+    )
 
     @attr(general=True)
     def test_multi_host_capabilities(self):
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml '
-            '--cache multi_host',
+            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml "
+            "--cache multi_host",
             main_func=controller.main,
             regex=True,
-            expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
+            expected=[["/tmp/tiles/1.0.0/WMTSCapabilities.xml", self.MULTIHOST_CAPABILITIES]],
+        )
 
     @attr(general=True)
     def test_capabilities_slash(self):
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-capabilities.yaml',
+            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-capabilities.yaml",
             main_func=controller.main,
             regex=True,
-            expected=[[
-                '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
-                r"""<\?xml version="1.0" encoding="UTF-8"\?>
+            expected=[
+                [
+                    "/tmp/tiles/1.0.0/WMTSCapabilities.xml",
+                    r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -1022,7 +1030,7 @@ class TestController(CompareCase):
       <Format>image/png</Format>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/no_dim/default/"""
-                """{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -1042,7 +1050,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/one/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -1068,7 +1076,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/two/default/"""
-                """{DATE}/{LEVEL}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{DATE}/{LEVEL}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -1099,26 +1107,33 @@ class TestController(CompareCase):
       </TileMatrix>
     </TileMatrixSet>
   </Contents>
-</Capabilities>"""]])
+</Capabilities>""",
+                ]
+            ],
+        )
 
     @attr(general=True)
     def test_multi_url_capabilities(self):
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml '
-            '--cache multi_url',
+            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml "
+            "--cache multi_url",
             main_func=controller.main,
             regex=True,
-            expected=[['/tmp/tiles/1.0.0/WMTSCapabilities.xml', self.MULTIHOST_CAPABILITIES]])
+            expected=[["/tmp/tiles/1.0.0/WMTSCapabilities.xml", self.MULTIHOST_CAPABILITIES]],
+        )
 
     @attr(general=True)
     def test_mapcache(self):
         self.assert_main_equals(
             cmd=(
-                '.build/venv/bin/generate_controller --mapcache --mapcache-version 1.6 '
-                '-c tilegeneration/test-fix.yaml'
+                ".build/venv/bin/generate_controller --mapcache --mapcache-version 1.6 "
+                "-c tilegeneration/test-fix.yaml"
             ),
             main_func=controller.main,
-            expected=[['mapcache.xml', u"""<?xml version="1.0" encoding="UTF-8"?>
+            expected=[
+                [
+                    "mapcache.xml",
+                    """<?xml version="1.0" encoding="UTF-8"?>
 <mapcache>
     <cache name="default" type="memcache">
        <server>
@@ -1429,14 +1444,20 @@ class TestController(CompareCase):
    <default_format>image/jpeg</default_format>
    <errors>report</errors>
    <lock_dir>/tmp</lock_dir>
-</mapcache>"""]])  # noqa: E501
+</mapcache>""",
+                ]
+            ],
+        )  # noqa: E501
 
     @attr(general=True)
     def test_mapcache2(self):
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --mapcache -c tilegeneration/test-nodim.yaml',
+            cmd=".build/venv/bin/generate_controller --mapcache -c tilegeneration/test-nodim.yaml",
             main_func=controller.main,
-            expected=[['mapcache.xml', u"""<?xml version="1.0" encoding="UTF-8"?>
+            expected=[
+                [
+                    "mapcache.xml",
+                    """<?xml version="1.0" encoding="UTF-8"?>
 <mapcache>
     <cache name="default" type="memcache">
        <server>
@@ -1507,16 +1528,20 @@ class TestController(CompareCase):
    <default_format>image/jpeg</default_format>
    <errors>report</errors>
    <lock_dir>/tmp</lock_dir>
-</mapcache>"""]])
+</mapcache>""",
+                ]
+            ],
+        )
 
     @attr(general=True)
     def test_apache(self):
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --apache -c tilegeneration/test-fix.yaml',
+            cmd=".build/venv/bin/generate_controller --apache -c tilegeneration/test-fix.yaml",
             main_func=controller.main,
-            expected=[[
-                'tiles.conf',
-                r"""
+            expected=[
+                [
+                    "tiles.conf",
+                    r"""
 <Location /tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
@@ -1526,28 +1551,41 @@ class TestController(CompareCase):
 Alias /tiles /tmp/tiles/
 
 RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/"""
-                r"""4/(.*)$ /mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
+                    r"""4/(.*)$ /mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
 RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/"""
-                r"""4/(.*)$ /mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
+                    r"""4/(.*)$ /mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
 
 MapCacheAlias /mapcache "%s"
-""" % (os.path.abspath('mapcache.xml'))]])
+"""
+                    % (os.path.abspath("mapcache.xml")),
+                ]
+            ],
+        )
 
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --apache -c tilegeneration/test-serve.yaml',
+            cmd=".build/venv/bin/generate_controller --apache -c tilegeneration/test-serve.yaml",
             main_func=controller.main,
-            expected=[['tiles.conf', u"""
+            expected=[
+                [
+                    "tiles.conf",
+                    """
 MapCacheAlias /mapcache "{}"
-""".format((os.path.abspath('mapcache.xml')))]])
+""".format(
+                        (os.path.abspath("mapcache.xml"))
+                    ),
+                ]
+            ],
+        )
 
     @attr(general=True)
     def test_apache_s3(self):
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --cache s3 --apache -c tilegeneration/test-fix.yaml',
+            cmd=".build/venv/bin/generate_controller --cache s3 --apache -c tilegeneration/test-fix.yaml",
             main_func=controller.main,
-            expected=[[
-                'tiles.conf',
-                r"""
+            expected=[
+                [
+                    "tiles.conf",
+                    r"""
 <Location /tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
@@ -1562,22 +1600,27 @@ ProxyPass /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
 ProxyPassReverse /tiles/ http://s3-eu-west-1.amazonaws.com/tiles/tiles/
 
 RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/"""
-                r"""4/(.*)$ /mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
+                    r"""4/(.*)$ /mapcache/wmts/1.0.0/point/$1/$2/$3/4/$4 [PT]
 RewriteRule ^/tiles/1.0.0/point_hash/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/"""
-                r"""4/(.*)$ /mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
+                    r"""4/(.*)$ /mapcache/wmts/1.0.0/point_hash/$1/$2/$3/4/$4 [PT]
 
 MapCacheAlias /mapcache "%s"
-""" % (os.path.abspath('mapcache.xml'))]])
+"""
+                    % (os.path.abspath("mapcache.xml")),
+                ]
+            ],
+        )
 
     @attr(general=True)
     def test_apache_s3_tilesurl(self):
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --apache '
-                '-c tilegeneration/test-apache-s3-tilesurl.yaml',
+            cmd=".build/venv/bin/generate_controller --apache "
+            "-c tilegeneration/test-apache-s3-tilesurl.yaml",
             main_func=controller.main,
-            expected=[[
-                'tiles.conf',
-                r"""
+            expected=[
+                [
+                    "tiles.conf",
+                    r"""
 <Location /tiles>
     ExpiresActive on
     ExpiresDefault "now plus 8 hours"
@@ -1592,12 +1635,17 @@ ProxyPass /tiles/ http://tiles.example.com/
 ProxyPassReverse /tiles/ http://tiles.example.com/
 
 RewriteRule ^/tiles/1.0.0/point/([a-zA-Z0-9_\-\+~\.]+)/([a-zA-Z0-9_\-\+~\.]+)/4/(.*)$ """
-                r"""/mapcache/wmts/1.0.0/point/$1/$2/4/$3 [PT]
+                    r"""/mapcache/wmts/1.0.0/point/$1/$2/4/$3 [PT]
 
 MapCacheAlias /mapcache "%s"
-""" % (os.path.abspath('mapcache.xml'))]])
+"""
+                    % (os.path.abspath("mapcache.xml")),
+                ]
+            ],
+        )
 
-    CONFIG = u"""
+    CONFIG = (
+        """
 apache: {config_file: tiles.conf, expires: 8, location: /tiles}
 caches:
   local:
@@ -1648,8 +1696,8 @@ grids:
     bbox: [420000, 30000, 900000, 350000]
     matrix_identifier: resolution
     name: swissgrid_01
-    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000""" \
-    u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000"""
+        """ +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 10
     resolutions: [1, 0.2, 0.1]
     srs: EPSG:21781
@@ -1659,8 +1707,8 @@ grids:
     bbox: [420000, 30000, 900000, 350000]
     matrix_identifier: resolution
     name: swissgrid_025
-    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000""" \
-        u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000"""
+        """ +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 4
     resolutions: [0.25]
     srs: EPSG:21781
@@ -1670,8 +1718,8 @@ grids:
     bbox: [420000, 30000, 900000, 350000]
     matrix_identifier: resolution
     name: swissgrid_2_5
-    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000""" \
-        u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000"""
+        """ +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 2
     resolutions: [2.5]
     srs: EPSG:21781
@@ -1681,8 +1729,8 @@ grids:
     bbox: [420000, 30000, 900000, 350000]
     matrix_identifier: zoom
     name: swissgrid_5
-    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000""" \
-        u""" +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000"""
+        """ +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 1
     resolutions: [100, 50, 20, 10, 5]
     srs: EPSG:21781
@@ -1982,29 +2030,34 @@ metadata:
 provider:
   contact:
     info:
-      address: {area: BE, city: Berne, country: Switzerland, delivery: Address delivery, """ \
-        u"""email: info@example.com, postal_code: 3000}
+      address: {area: BE, city: Berne, country: Switzerland, delivery: Address delivery, """
+        """email: info@example.com, postal_code: 3000}
       phone: {fax: +41 11 222 33 44, voice: +41 11 222 33 44}
     name: The contact name
     position: The position name
   name: The provider name
   url: The provider URL"""
+    )
 
     @attr(general=True)
     def test_config(self):
         self.assert_cmd_yaml_equals(
-            cmd='.build/venv/bin/generate_controller --dump-config -c tilegeneration/test-fix.yaml',
-            main_func=controller.main, expected=self.CONFIG)
+            cmd=".build/venv/bin/generate_controller --dump-config -c tilegeneration/test-fix.yaml",
+            main_func=controller.main,
+            expected=self.CONFIG,
+        )
 
     @attr(general=True)
     def test_config_line(self):
         self.assert_cmd_yaml_equals(
-            cmd='.build/venv/bin/generate_controller -l line --dump-config -c tilegeneration/test-fix.yaml',
-            main_func=controller.main, expected=self.CONFIG)
+            cmd=".build/venv/bin/generate_controller -l line --dump-config -c tilegeneration/test-fix.yaml",
+            main_func=controller.main,
+            expected=self.CONFIG,
+        )
 
     @attr(general=True)
     def test_openlayers(self):
-        html = u"""<!DOCTYPE html>
+        html = """<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -2034,7 +2087,7 @@ provider:
 </body>
 </html>
 """
-        js = u"""var callback = function(infoLookup) {
+        js = """var callback = function(infoLookup) {
     var msg = "";
     if (infoLookup) {
         var info;
@@ -2149,67 +2202,67 @@ OpenLayers.Request.GET({
     }
 });"""
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml',
+            cmd=".build/venv/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml",
             main_func=controller.main,
             expected=[
-                ['/tmp/tiles/index.html', html],
-                ['/tmp/tiles/wmts.js', js % 'http://wmts1/tiles/1.0.0/WMTSCapabilities.xml']
-            ]
+                ["/tmp/tiles/index.html", html],
+                ["/tmp/tiles/wmts.js", js % "http://wmts1/tiles/1.0.0/WMTSCapabilities.xml"],
+            ],
         )
 
         self.assert_main_equals(
             cmd=(
-                '.build/venv/bin/generate_controller --openlayers '
-                '-c tilegeneration/test-fix.yaml --cache multi_host'
+                ".build/venv/bin/generate_controller --openlayers "
+                "-c tilegeneration/test-fix.yaml --cache multi_host"
             ),
             main_func=controller.main,
             expected=[
-                ['/tmp/tiles/index.html', html],
-                ['/tmp/tiles/wmts.js', js % 'http://wmts1/tiles/1.0.0/WMTSCapabilities.xml']
-            ]
+                ["/tmp/tiles/index.html", html],
+                ["/tmp/tiles/wmts.js", js % "http://wmts1/tiles/1.0.0/WMTSCapabilities.xml"],
+            ],
         )
 
         self.assert_main_equals(
             cmd=(
-                '.build/venv/bin/generate_controller --openlayers '
-                '-c tilegeneration/test-fix.yaml --cache multi_url'
+                ".build/venv/bin/generate_controller --openlayers "
+                "-c tilegeneration/test-fix.yaml --cache multi_url"
             ),
             main_func=controller.main,
             expected=[
-                ['/tmp/tiles/index.html', html],
-                ['/tmp/tiles/wmts.js', js % 'http://wmts1/tiles/1.0.0/WMTSCapabilities.xml']
-            ]
+                ["/tmp/tiles/index.html", html],
+                ["/tmp/tiles/wmts.js", js % "http://wmts1/tiles/1.0.0/WMTSCapabilities.xml"],
+            ],
         )
 
     @attr(general=True)
     def test_quote(self):
         from tilecloud_chain import quote
+
         self.assertEqual(quote("abc"), "abc")
         self.assertEqual(quote("a b c"), "'a b c'")
         self.assertEqual(quote("'a b c'"), "\"'a b c'\"")
-        self.assertEqual(quote('"a b c"'), '\'"a b c"\'')
+        self.assertEqual(quote('"a b c"'), "'\"a b c\"'")
         self.assertEqual(quote("a\" b' c"), "'a\" b\\' c'")
         self.assertEqual(quote(""), "''")
 
     @attr(general=True)
     def test_legends(self):
         self.assert_tiles_generated(
-            cmd='.build/venv/bin/generate_controler -c tilegeneration/test-legends.yaml --legends',
+            cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends.yaml --legends",
             main_func=controller.main,
             directory="/tmp/tiles/",
-            tiles_pattern='1.0.0/%s/default/legend%i.png',
-            tiles=[
-                ('point', 0), ('line', 0), ('line', 2), ('polygon', 0), ('all', 0), ('all', 2),
-            ]
+            tiles_pattern="1.0.0/%s/default/legend%i.png",
+            tiles=[("point", 0), ("line", 0), ("line", 2), ("polygon", 0), ("all", 0), ("all", 2),],
         )
 
         self.assert_main_equals(
-            cmd='.build/venv/bin/generate_controller --capabilities -c tilegeneration/test-legends.yaml',
+            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-legends.yaml",
             main_func=controller.main,
             regex=True,
-            expected=[[
-                '/tmp/tiles/1.0.0/WMTSCapabilities.xml',
-                r"""<\?xml version="1.0" encoding="UTF-8"\?>
+            expected=[
+                [
+                    "/tmp/tiles/1.0.0/WMTSCapabilities.xml",
+                    r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -2254,9 +2307,9 @@ OpenLayers.Request.GET({
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/all/default/legend0.png" """
-                """width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
+                    """width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/all/default/legend2.png" """
-                """width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
+                    """width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -2268,7 +2321,7 @@ OpenLayers.Request.GET({
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/all/default/"""
-                r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -2280,9 +2333,9 @@ OpenLayers.Request.GET({
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend0.png" """
-                r"""width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
+                    r"""width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend2.png" """
-                r"""width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
+                    r"""width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -2294,7 +2347,7 @@ OpenLayers.Request.GET({
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/line/default/"""
-                r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -2306,7 +2359,7 @@ OpenLayers.Request.GET({
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/point/default/legend0.png" """
-                """width="[0-9]*" height="[0-9]*" />
+                    """width="[0-9]*" height="[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -2318,7 +2371,7 @@ OpenLayers.Request.GET({
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/point/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -2330,7 +2383,7 @@ OpenLayers.Request.GET({
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/polygon/default/legend0.png" """
-                """width="[0-9]*" height="[0-9]*" />
+                    """width="[0-9]*" height="[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -2342,7 +2395,7 @@ OpenLayers.Request.GET({
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/polygon/default/"""
-                """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -2400,4 +2453,7 @@ OpenLayers.Request.GET({
       </TileMatrix>
     </TileMatrixSet>
   </Contents>
-</Capabilities>"""]])
+</Capabilities>""",
+                ]
+            ],
+        )
