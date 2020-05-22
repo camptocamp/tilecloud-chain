@@ -46,7 +46,7 @@ redis:
     - allkeys-lru
 
 test:
-  image: camptocamp/tilecloud-chain:latest
+  image: camptocamp/tilecloud-chain
   working_dir: /app
   environment:
     CI: "TRUE"

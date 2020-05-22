@@ -820,7 +820,7 @@ Run the tests
 Setup your environment:
 
 ``` {.sourceCode .bash}
-docker build --tag camptocamp/tilecloud-chain:latest .
+docker build --tag camptocamp/tilecloud-chain .
 docker-compose -p tilecloud up
 ```
 
