@@ -119,7 +119,7 @@ class TestError(CompareCase):
             cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10",
             main_func=generate.main,
         )
-        log_capture.check_present(
+        l.check_present(
             (
                 "tilecloud_chain",
                 "INFO",

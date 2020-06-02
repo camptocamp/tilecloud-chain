@@ -5,7 +5,6 @@ import time
 from nose.plugins.attrib import attr
 from pyramid.testing import DummyRequest
 
-from testfixtures import log_capture
 from tilecloud_chain import internal_mapcache, server
 from tilecloud_chain.server import PyramidView
 from tilecloud_chain.tests import CompareCase

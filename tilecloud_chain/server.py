@@ -33,13 +33,13 @@ import os
 import types
 from urllib.parse import parse_qs, urlencode
 
-from c2cwsgiutils import health_check
-import c2cwsgiutils.pyramid
-from pyramid.config import Configurator
 import requests
+from pyramid.config import Configurator
 
-from tilecloud import Tile, TileCoord
+import c2cwsgiutils.pyramid
 import tilecloud.store.s3
+from c2cwsgiutils import health_check
+from tilecloud import Tile, TileCoord
 from tilecloud_chain import TileGeneration, controller, internal_mapcache
 
 logger = logging.getLogger(__name__)
@@ -151,7 +151,7 @@ class Server:
                 self.max_zoom_seed[layer_name] = 999999
 
             # Build stores
-            store_defs = [{"ref": [layer_name], "dimensions": {},}]
+            store_defs = [{"ref": [layer_name], "dimensions": {}}]
             for dimension in layer["dimensions"]:
                 new_store_defs = []
                 for store_def in store_defs:
@@ -160,7 +160,7 @@ class Server:
                         dimensions.update(store_def["dimensions"])
                         dimensions[dimension["name"]] = value
                         new_store_defs.append(
-                            {"ref": store_def["ref"] + [value], "dimensions": dimensions,}
+                            {"ref": store_def["ref"] + [value], "dimensions": dimensions}
                         )
                 store_defs = new_store_defs
             for store_def in store_defs:

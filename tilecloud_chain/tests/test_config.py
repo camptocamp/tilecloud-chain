@@ -2,12 +2,11 @@
 
 import os
 
-from testfixtures import log_capture
-
 from nose.plugins.attrib import attr
 
-from tilecloud_chain.tests import CompareCase
+from testfixtures import log_capture
 from tilecloud_chain import controller
+from tilecloud_chain.tests import CompareCase
 
 
 class TestConfig(CompareCase):

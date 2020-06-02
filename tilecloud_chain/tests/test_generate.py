@@ -294,7 +294,7 @@ Size per tile: [79][0-9][0-9] o
 
     @attr(general=True)
     @log_capture("tilecloud_chain", level=30)
-    def test_zoom_identifier(self, log_capture):
+    def test_zoom_identifier(self, l):
         xy = list(product(range(585, 592), range(429, 432)))
         x = [e[0] for e in xy]
         y = [e[1] for e in xy]
@@ -519,7 +519,7 @@ Size per tile: 4[0-9][0-9] o
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/point_px_buffer/default/2012/swissgrid_5/%i/%i/%i.png",
-                tiles=[(0, 5, 7), (0, 7, 4), (1, 11, 14), (1, 15, 8), (2, 29, 35), (2, 39, 21),],
+                tiles=[(0, 5, 7), (0, 7, 4), (1, 11, 14), (1, 15, 8), (2, 29, 35), (2, 39, 21)],
                 regex=True,
                 expected=r"""The tile generation of layer 'point_px_buffer \(DATE=2012\)' is finish
 Nb generated metatiles: 10

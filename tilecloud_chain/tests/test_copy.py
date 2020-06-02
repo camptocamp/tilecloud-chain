@@ -6,7 +6,6 @@ import shutil
 import requests
 from nose.plugins.attrib import attr
 
-from testfixtures import log_capture
 from tilecloud_chain import copy_
 from tilecloud_chain.tests import CompareCase
 

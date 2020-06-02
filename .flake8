@@ -2,4 +2,7 @@
 max-line-length=110
 # W503 Line break occurred before a binary operator
 # E203 whitespace before ':'
-ignore = W503,E203
+# E741 ambiguous variable name 'l'
+# E501 line too long (115 > 110 characters)
+# RST304 Unknown interpreted text role "class".
+ignore = W503,E203,E741,E501,RST304
