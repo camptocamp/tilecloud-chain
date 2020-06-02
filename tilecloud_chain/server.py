@@ -52,7 +52,7 @@ def init_tilegeneration(config_file):
     global tilegeneration
     if tilegeneration is None:
         logger.info("Config file: '{}'".format(config_file))
-        tilegeneration = TileGeneration(config_file, configure_logging=False)
+        tilegeneration = TileGeneration(config_file, configure_logging=False, multi_thread=False)
 
 
 class Server:
@@ -134,9 +134,11 @@ class Server:
                 self.filters[layer_name] = tilegeneration.get_geoms_filter(
                     layer=layer,
                     grid=layer["grid_ref"],
-                    geoms=tilegeneration.get_geoms(
-                        layer, extent=layer["bbox"] if "bbox" in layer else layer["grid_ref"]["bbox"],
-                    ),
+                    geoms={
+                        layer_name: tilegeneration.get_geoms(
+                            layer, extent=layer["bbox"] if "bbox" in layer else layer["grid_ref"]["bbox"],
+                        )
+                    },
                 )
 
             if "min_resolution_seed" in layer:
@@ -384,7 +386,7 @@ class Server:
                 if meta_size != 1
                 else tile.tilecoord
             )
-            if not layer_filter.filter_tilecoord(meta_tilecoord):  # pragma: no cover
+            if not layer_filter.filter_tilecoord(meta_tilecoord, layer["name"]):  # pragma: no cover
                 return self._map_cache(layer, tile, params, kwargs)
 
         store_ref = "/".join([params["LAYER"]] + list(dimensions))
@@ -530,12 +532,14 @@ pyramid_server = None
 class PyramidView:
     def __init__(self, request):
         self.request = request
+
         global pyramid_server
 
         init_tilegeneration(request.registry.settings["tilegeneration_configfile"])
 
         if pyramid_server is None:
             pyramid_server = PyramidServer()
+
         self.server = pyramid_server
 
     def __call__(self):

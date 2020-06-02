@@ -6,7 +6,6 @@ import shutil
 import requests
 from nose.plugins.attrib import attr
 
-from testfixtures import log_capture
 from tilecloud_chain import copy_
 from tilecloud_chain.tests import CompareCase
 
@@ -29,8 +28,7 @@ class TestGenerate(CompareCase):
             shutil.rmtree("/tmp/tiles")
 
     @attr(general=True)
-    @log_capture("tilecloud_chain", level=30)
-    def test_copy(self, log_capture):
+    def test_copy(self):
         with open("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png", "w") as f:
             f.write("test image")
 
@@ -53,17 +51,11 @@ Size per tile: 10(.0)? o
                 else "",
                 empty_err=True,
             )
-        log_capture.check(
-            ("tilecloud_chain", "ERROR", "The tile: not defined is empty"),
-            ("tilecloud_chain", "ERROR", "The tile: not defined is empty"),
-            ("tilecloud_chain", "ERROR", "The tile: not defined is empty"),
-        )
         with open("/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png", "r") as f:
             self.assertEqual(f.read(), "test image")
 
     @attr(general=True)
-    @log_capture("tilecloud_chain", level=30)
-    def test_process(self, log_capture):
+    def test_process(self):
         for d in ("-vd", "-q", "-v", ""):
             response = requests.get(
                 "http://mapserver:8080/mapserv?STYLES=default&SERVICE=WMS&FORMAT=\
@@ -97,8 +89,3 @@ Size per tile: 103(.0)? o
             )
             statinfo = os.stat("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png",)
             self.assertEqual(statinfo.st_size, 103)
-        log_capture.check(
-            ("tilecloud_chain", "ERROR", "The tile: not defined is empty"),
-            ("tilecloud_chain", "ERROR", "The tile: not defined is empty"),
-            ("tilecloud_chain", "ERROR", "The tile: not defined is empty"),
-        )

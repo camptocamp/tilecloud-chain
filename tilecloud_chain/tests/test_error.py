@@ -124,7 +124,7 @@ class TestError(CompareCase):
             cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10",
             main_func=generate.main,
         )
-        log_capture.check(
+        log_capture.check_present(
             (
                 "tilecloud_chain",
                 "INFO",
@@ -134,7 +134,7 @@ class TestError(CompareCase):
             (
                 "tilecloud_chain",
                 "WARNING",
-                "zoom 10 is greater than the maximum " "zoom 4 of grid swissgrid_5 of layer point, ignored.",
+                "zoom 10 is greater than the maximum zoom 4 of grid swissgrid_5 of layer point, ignored.",
             ),
             (
                 "tilecloud_chain",

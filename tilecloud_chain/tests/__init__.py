@@ -5,11 +5,13 @@ import os
 import re
 import shutil
 import sys
+import traceback
 from io import StringIO
 from logging import config
 
 from unittest2 import TestCase
 
+DIFF = 200
 log = logging.getLogger("tests")
 
 config.dictConfig({"version": 1, "loggers": {"pykwalify": {"level": "WARN"}}})
@@ -29,7 +31,7 @@ class CompareCase(TestCase):
                     else:
                         self.assertEqual(test[0].strip(), test[1].strip())
                 except AssertionError as e:
-                    for i in range(max(0, n - 20), min(len(result), n + 21)):
+                    for i in range(max(0, n - DIFF), min(len(result), n + DIFF + 1)):
                         if i == n:
                             print("> {} {}".format(i, result[i]))
                             log.info("> {} {}".format(i, result[i]))
@@ -80,8 +82,13 @@ class CompareCase(TestCase):
             sys.argv = re.sub(" +", " ", cmd).split(" ")
         try:
             main_func()
+        # except SystemExit as e:
+        #     assert e.code in (None, 0)
         except SystemExit:
             pass
+        except Exception:
+            assert False, traceback.format_exc()
+
         if expected:
             for expect in expected:
                 with open(expect[0], "r") as f:
@@ -102,8 +109,8 @@ class CompareCase(TestCase):
     def assert_yaml_equals(self, result, expected):
         import yaml
 
-        expected = yaml.dump(yaml.load(expected), width=120)
-        result = yaml.dump(yaml.load(result), width=120)
+        expected = yaml.dump(yaml.safe_load(expected), width=120)
+        result = yaml.dump(yaml.safe_load(result), width=120)
         self.assert_result_equals(result=result, expected=expected)
 
     def assert_cmd_yaml_equals(self, cmd, main_func, **kargs):
