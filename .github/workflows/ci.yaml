@@ -30,7 +30,7 @@ jobs:
         run: |
           (cd tilecloud_chain && flake8)
           python setup.py --long-description > PYPI.md
-          docker build --tag camptocamp/tilecloud-chain:latest .
+          docker build --tag camptocamp/tilecloud-chain .
           git --no-pager diff --check `git log --oneline | tail -1 | cut --fields=1 --delimiter=' '`
 
       - name: Test

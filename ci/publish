@@ -7,7 +7,7 @@ function publish_docker {
     docker_version=`echo "${version}" | sed -e 's/[\/:]/_/g'`
 
     echo "Deploying image to docker hub for tag ${docker_version}"
-    docker tag "${NAME}:latest" "${NAME}:${docker_version}"
+    docker tag "${NAME}" "${NAME}:${docker_version}"
     docker push "${NAME}:${docker_version}"
 }
 

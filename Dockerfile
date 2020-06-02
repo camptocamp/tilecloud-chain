@@ -18,8 +18,6 @@ RUN \
     ${DEV_PACKAGES} && \
   cd /app && \
   python3 -m pip install --disable-pip-version-check --no-cache-dir -r requirements.txt && \
-  mkdir /fonts && \
-  mkdir /project && \
   apt remove --purge --autoremove --yes ${DEV_PACKAGES} binutils && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /root/.cache/* && \
@@ -40,6 +38,6 @@ COPY . /app/
 
 RUN \
   cd /app && \
-  pip install --editable=. && \
+  python3 -m pip install --disable-pip-version-check --no-deps --no-cache-dir --editable=. && \
   mv docker/run /usr/bin/ && \
   python3 -m compileall -q /app/tilecloud_chain
