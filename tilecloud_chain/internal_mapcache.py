@@ -2,32 +2,38 @@ import contextlib
 import datetime
 import json
 import logging
+import os
 import queue
 import struct
 import threading
 
 import redis
-
 import redlock
-from tilecloud import Tile, TileStore, consume
+
+from tilecloud import Tile, TileStore
+from tilecloud_chain import Run
 from tilecloud_chain.generate import Generate
 
 MAX_GENERATION_TIME = 60
 RETRY_DELAY = 0.05
 LOG = logging.getLogger(__name__)
 lock = threading.Lock()
+executing_lock = threading.Lock()
 generator = None
 
 
 class FakeOptions:
-    role = 'server'
+    role = "server"
     debug = False
     near = True
     time = False
     daemon = True
+    local_process_number = None
 
 
 class InputStore(TileStore):
+    run = True
+
     def __init__(self):
         super(InputStore, self).__init__()
         self._queue = queue.Queue()
@@ -36,10 +42,8 @@ class InputStore(TileStore):
         return self._queue.get()
 
     def list(self):
-        while True:
-            tile = self.get_one()
-            yield tile
-            tile.metadata['lock'].release()
+        while self.run:
+            yield self.get_one()
 
     def put_one(self, tile):
         self._queue.put(tile)
@@ -49,39 +53,37 @@ class InputStore(TileStore):
 
 
 def _decode_tile(data, tile):
-    image_len = struct.unpack('q', data[:8])[0]
-    tile.data = data[8:(image_len + 8)]
-    other = json.loads((data[(8 + image_len):]).decode('utf-8'))
-    tile.content_encoding = other['content_encoding']
-    tile.content_type = other['content_type']
+    image_len = struct.unpack("q", data[:8])[0]
+    tile.data = data[8 : (image_len + 8)]
+    other = json.loads((data[(8 + image_len) :]).decode("utf-8"))
+    tile.content_encoding = other["content_encoding"]
+    tile.content_type = other["content_type"]
 
 
 def _encode_tile(tile):
-    other = {
-        'content_encoding': tile.content_encoding,
-        'content_type': tile.content_type
-    }
-    data = struct.pack('q', len(tile.data)) + tile.data + json.dumps(other).encode('utf-8')
+    other = {"content_encoding": tile.content_encoding, "content_type": tile.content_type}
+    data = struct.pack("q", len(tile.data)) + tile.data + json.dumps(other).encode("utf-8")
     return data
 
 
 class RedisStore(TileStore):
     def __init__(self, url, prefix, expiration, **kwargs):
-        super(RedisStore, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._redis = redis.Redis.from_url(url)
         self._prefix = prefix
         self._expiration = expiration
-        self._redis_lock = redlock.Redlock([self._redis], retry_count=MAX_GENERATION_TIME / RETRY_DELAY,
-                                           retry_delay=RETRY_DELAY)
+        self._redis_lock = redlock.Redlock(
+            [self._redis], retry_count=MAX_GENERATION_TIME / RETRY_DELAY, retry_delay=RETRY_DELAY
+        )
 
     def get_one(self, tile):
         key = self._get_key(tile)
         data = self._redis.get(key)
         if data is None:
-            LOG.warning("Tile not found: %s/%s", tile.metadata['layer'], tile.tilecoord)
+            LOG.debug("Tile not found: %s/%s", tile.metadata["layer"], tile.tilecoord)
             return None
         _decode_tile(data, tile)
-        LOG.warning("Tile found: %s/%s", tile.metadata['layer'], tile.tilecoord)
+        LOG.debug("Tile found: %s/%s", tile.metadata["layer"], tile.tilecoord)
         return tile
 
     def put(self, tiles):
@@ -92,7 +94,7 @@ class RedisStore(TileStore):
     def put_one(self, tile):
         key = self._get_key(tile)
         self._redis.set(key, _encode_tile(tile), ex=self._expiration)
-        LOG.warning("Tile saved: %s/%s", tile.metadata['layer'], tile.tilecoord)
+        LOG.info("Tile saved: %s/%s", tile.metadata["layer"], tile.tilecoord)
         return tile
 
     def delete_one(self, tile):
@@ -100,8 +102,13 @@ class RedisStore(TileStore):
         self._redis.delete(key)
 
     def _get_key(self, tile):
-        return "%s_%s_%d_%d_%d" % (self._prefix, tile.metadata['layer'], tile.tilecoord.z,
-                                   tile.tilecoord.x, tile.tilecoord.y)
+        return "%s_%s_%d_%d_%d" % (
+            self._prefix,
+            tile.metadata["layer"],
+            tile.tilecoord.z,
+            tile.tilecoord.x,
+            tile.tilecoord.y,
+        )
 
     @contextlib.contextmanager
     def lock(self, tile):
@@ -114,34 +121,57 @@ class RedisStore(TileStore):
 
 
 class GeneratorThread(threading.Thread):
-    def __init__(self, index, tilegeneration, input_store, cache_store):
-        super(GeneratorThread, self).__init__(name="Generation thread #" + str(index), daemon=True)
-        self._generator = Generate(FakeOptions(), tilegeneration)
-        self._generator.server_init(input_store, cache_store)
+    def __init__(self, index, generator):
+        super().__init__(name="Generation thread #" + str(index), daemon=True)
+        self._generator = generator
 
     def run(self):
-        consume(self._generator._gene.tilestream, n=None)
+        LOG.info("Start internal mapcache generator")
+        try:
+            run = Run(self._generator._gene, self._generator._gene.functions_metatiles)
+            while True:
+                with executing_lock:
+                    tile = next(self._generator._gene.tilestream)
+                if tile is not None:
+                    run(tile)
+                    tile.metadata["lock"].release()
+        except StopIteration:
+            pass
+        finally:
+            LOG.info("End internal mapcache generator")
 
 
-class Generator():
+class Generator:
     def __init__(self, tilegeneration):
         self._input_store = InputStore()
-        redis_config = tilegeneration.config['redis']
-        self._cache_store = RedisStore(redis_config['url'], redis_config['prefix'],
-                                       redis_config['expiration'])
-        for i in range(10):
-            thread = GeneratorThread(i, tilegeneration, self._input_store, self._cache_store)
+        redis_config = tilegeneration.config["redis"]
+        self._cache_store = RedisStore(
+            redis_config["url"], redis_config["prefix"], redis_config["expiration"]
+        )
+        self.threads = []
+        generator = Generate(FakeOptions(), tilegeneration, server=True)
+        generator.server_init(self._input_store, self._cache_store)
+        for i in range(int(os.environ.get("SERVER_NB_THREAD", 10))):
+            thread = GeneratorThread(i, generator)
             thread.start()
+            self.threads.append(thread)
+
+    def __del__(self):
+        self.stop()
+
+    def stop(self):
+        self._input_store.run = False
+        self._input_store.put_one(None)
 
     def read_from_cache(self, tile):
         return self._cache_store.get_one(tile)
 
     def compute_tile(self, tile):
-        tile.metadata['lock'] = threading.Lock()
-        tile.metadata['lock'].acquire()
+        tile.metadata["lock"] = threading.Lock()
+        tile.metadata["lock"].acquire()
         self._input_store.put_one(tile)
-        tile.metadata['lock'].acquire()
-        del tile.metadata['lock']
+        tile.metadata["lock"].acquire()
+        del tile.metadata["lock"]
 
     @contextlib.contextmanager
     def lock(self, tile):
@@ -169,9 +199,10 @@ def fetch(server, tilegeneration, layer, tile, kwargs):
     fetched_tile = generator.read_from_cache(tile)
     if fetched_tile is None:
         meta_tile = tile
-        if layer.get('meta', False):
-            meta_tile = Tile(tilecoord=tile.tilecoord.metatilecoord(layer.get('meta_size', 1)),
-                             metadata=tile.metadata)
+        if layer.get("meta", False):
+            meta_tile = Tile(
+                tilecoord=tile.tilecoord.metatilecoord(layer.get("meta_size", 1)), metadata=tile.metadata
+            )
 
         with generator.lock(meta_tile):
             fetched_tile = generator.read_from_cache(tile)
@@ -182,14 +213,18 @@ def fetch(server, tilegeneration, layer, tile, kwargs):
                 assert fetched_tile is not None
 
     response_headers = {
-        'Expires': (datetime.datetime.utcnow() + datetime.timedelta(hours=server.expires_hours)).isoformat(),
-        'Cache-Control': "max-age={}".format((3600 * server.expires_hours)),
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET',
-        'Tile-Backend': 'WMS'
+        "Expires": (datetime.datetime.utcnow() + datetime.timedelta(hours=server.expires_hours)).isoformat(),
+        "Cache-Control": "max-age={}".format((3600 * server.expires_hours)),
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET",
+        "Tile-Backend": "WMS",
     }
     if tile.content_encoding:
-        response_headers['Content-Encoding'] = tile.content_encoding
+        response_headers["Content-Encoding"] = tile.content_encoding
     if tile.content_type:
-        response_headers['Content-Type'] = tile.content_type
+        response_headers["Content-Type"] = tile.content_type
     return server.response(fetched_tile.data, headers=response_headers, **kwargs)
+
+
+def stop(tilegeneration):
+    _get_generator(tilegeneration).stop()

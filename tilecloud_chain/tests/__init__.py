@@ -5,39 +5,33 @@ import os
 import re
 import shutil
 import sys
+import traceback
 from io import StringIO
 from logging import config
 
 from unittest2 import TestCase
 
+DIFF = 200
 log = logging.getLogger("tests")
 
-config.dictConfig({
-    "version": 1,
-    "loggers": {
-        "pykwalify": {
-            "level": "WARN"
-        }
-    }
-})
+config.dictConfig({"version": 1, "loggers": {"pykwalify": {"level": "WARN"}}})
 
 
 class CompareCase(TestCase):
-
     def assert_result_equals(self, result, expected, regex=False):
-        expected = expected.split('\n')
-        result = re.sub(u'\n[^\n]*\r', u'\n', result)
-        result = re.sub(u'^[^\n]*\r', u'', result)
-        result = result.split('\n')
+        expected = expected.split("\n")
+        result = re.sub("\n[^\n]*\r", "\n", result)
+        result = re.sub("^[^\n]*\r", "", result)
+        result = result.split("\n")
         for n, test in enumerate(zip(expected, result)):
-            if test[0] != 'PASS...':
+            if test[0] != "PASS...":
                 try:
                     if regex:
-                        self.assertRegexpMatches(test[1].strip(), '^{}$'.format(test[0].strip()))
+                        self.assertRegexpMatches(test[1].strip(), "^{}$".format(test[0].strip()))
                     else:
                         self.assertEqual(test[0].strip(), test[1].strip())
                 except AssertionError as e:
-                    for i in range(max(0, n - 20), min(len(result), n + 21)):
+                    for i in range(max(0, n - DIFF), min(len(result), n + DIFF + 1)):
                         if i == n:
                             print("> {} {}".format(i, result[i]))
                             log.info("> {} {}".format(i, result[i]))
@@ -62,18 +56,18 @@ class CompareCase(TestCase):
     def assert_cmd_equals(self, cmd, main_func, empty_err=False, **kargs):
         out, err = self.run_cmd(cmd, main_func)
         if empty_err:
-            self.assertEqual(err, '')
+            self.assertEqual(err, "")
         if isinstance(out, bytes):
-            out = out.decode('utf-8')
+            out = out.decode("utf-8")
         else:
             out = str(out)
         self.assert_result_equals(result=out, **kargs)
 
     def assert_cmd_exit_equals(self, cmd, main_func, expected):
-        sys.argv = re.sub(' +', ' ', cmd).split(' ')
+        sys.argv = re.sub(" +", " ", cmd).split(" ")
         try:
             main_func()
-            assert("exit() not called.")
+            assert "exit() not called."
         except SystemExit as e:
             self.assertEqual(str(e), expected)
 
@@ -85,32 +79,38 @@ class CompareCase(TestCase):
         if type(cmd) == list:
             sys.argv = cmd
         else:
-            sys.argv = re.sub(' +', ' ', cmd).split(' ')
+            sys.argv = re.sub(" +", " ", cmd).split(" ")
         try:
             main_func()
+        # except SystemExit as e:
+        #     assert e.code in (None, 0)
         except SystemExit:
             pass
+        except Exception:
+            assert False, traceback.format_exc()
+
         if expected:
             for expect in expected:
-                with open(expect[0], 'r') as f:
+                with open(expect[0], "r") as f:
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
     def assert_main_except_equals(self, cmd, main_func, expected, **kargs):
-        sys.argv = cmd.split(' ')
+        sys.argv = cmd.split(" ")
         try:
             main_func()
-            assert("exit() not called.")
+            assert "exit() not called."
         except Exception:
             pass
         if expected:
             for expect in expected:
-                with open(expect[0], 'r') as f:
+                with open(expect[0], "r") as f:
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
     def assert_yaml_equals(self, result, expected):
         import yaml
-        expected = yaml.dump(yaml.load(expected), width=120)
-        result = yaml.dump(yaml.load(result), width=120)
+
+        expected = yaml.dump(yaml.safe_load(expected), width=120)
+        result = yaml.dump(yaml.safe_load(result), width=120)
         self.assert_result_equals(result=result, expected=expected)
 
     def assert_cmd_yaml_equals(self, cmd, main_func, **kargs):
@@ -126,7 +126,7 @@ class CompareCase(TestCase):
 
         self.assert_tiles_generated_deleted(directory=directory, **kargs)
 
-    def assert_tiles_generated_deleted(self, directory, tiles_pattern, tiles, expected='', **kargs):
+    def assert_tiles_generated_deleted(self, directory, tiles_pattern, tiles, expected="", **kargs):
         self.assert_cmd_equals(expected=expected, **kargs)
         count = 0
         for path, dirs, files in os.walk(directory):
@@ -142,4 +142,4 @@ class CompareCase(TestCase):
             self.assertTrue(os.path.exists(directory + tiles_pattern % tile))
 
     def assert_files_generated(self, **kargs):
-        self.assert_tiles_generated(tiles_pattern='%s', **kargs)
+        self.assert_tiles_generated(tiles_pattern="%s", **kargs)

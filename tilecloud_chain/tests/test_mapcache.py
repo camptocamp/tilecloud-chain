@@ -1,10 +1,13 @@
-from nose.plugins.attrib import attr
 import os
-from testfixtures import log_capture
-from tilecloud_chain import server
-from tilecloud_chain.tests import CompareCase
-from tilecloud_chain.server import PyramidView
+import threading
+import time
+
+from nose.plugins.attrib import attr
 from pyramid.testing import DummyRequest
+
+from tilecloud_chain import internal_mapcache, server
+from tilecloud_chain.server import PyramidView
+from tilecloud_chain.tests import CompareCase
 
 
 class TestMapcache(CompareCase):
@@ -13,43 +16,50 @@ class TestMapcache(CompareCase):
         os.chdir(os.path.dirname(__file__))
 
     @attr(general=True, mapcache=True)
-    @log_capture('tilecloud_chain', level=30)
-    def test_internal(self, l):
+    def test_internal(self):
+        assert threading.active_count() == 1, ", ".join([str(t) for t in threading.enumerate()])
+
         self._do_test("test-internal-mapcache.yaml")
 
+        internal_mapcache.stop(server.tilegeneration)
+        time.sleep(0.1)
+        assert threading.active_count() == 1, ", ".join([str(t) for t in threading.enumerate()])
+
     @attr(general=True, mapcache=True)
-    @log_capture('tilecloud_chain', level=30)
-    def test_external(self, l):
+    def test_external(self):
         self._do_test("test-external-mapcache.yaml")
+
+        assert threading.active_count() == 1, ", ".join([str(t) for t in threading.enumerate()])
 
     def _do_test(self, config):
         server.pyramid_server = None
         server.tilegeneration = None
         request = DummyRequest()
         request.registry.settings = {
-            'tilegeneration_configfile': 'tilegeneration/' + config,
+            "tilegeneration_configfile": "tilegeneration/" + config,
         }
         request.params = {
-            'Service': 'WMTS',
-            'Version': '1.0.0',
-            'Request': 'GetTile',
-            'Format': 'image/png',
-            'Layer': 'point',
-            'Style': 'default',
-            'TileMatrixSet': 'swissgrid_5',
-            'TileMatrix': '4',
-            'TileRow': '11',
-            'TileCol': '14',
+            "Service": "WMTS",
+            "Version": "1.0.0",
+            "Request": "GetTile",
+            "Format": "image/png",
+            "Layer": "point",
+            "Style": "default",
+            "TileMatrixSet": "swissgrid_5",
+            "TileMatrix": "4",
+            "TileRow": "11",
+            "TileCol": "14",
         }
         serve = PyramidView(request)
         serve()
-        self.assertEqual(request.response.headers['Content-Type'], 'image/png')
-        self.assertEqual(request.response.headers['Cache-Control'], 'max-age=28800')
+        self.assertEqual(request.response.headers["Content-Type"], "image/png")
+        self.assertEqual(request.response.headers["Cache-Control"], "max-age=28800")
 
-        request.params['TileRow'] = '16'
+        request.params["TileRow"] = "16"
         serve()
-        self.assertEqual(request.response.headers['Content-Type'], 'image/png')
-        self.assertEqual(request.response.headers['Cache-Control'], 'max-age=28800')
+        self.assertEqual(request.response.headers["Content-Type"], "image/png")
+        self.assertEqual(request.response.headers["Cache-Control"], "max-age=28800")
+
         # request on mapserver:
         # GET /mapserv?VERSION=1.1.1&REQUEST=GetMap&SERVICE=WMS&STYLES=&
         #     BBOX=429600.000000%2c328880.000000%2c441120.000000%2c340400.000000&WIDTH=2304&HEIGHT=2304&

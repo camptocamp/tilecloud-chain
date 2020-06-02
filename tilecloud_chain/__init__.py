@@ -4,18 +4,22 @@ import logging
 import logging.config
 import os
 import pkgutil
+import queue
 import re
 import sqlite3
 import subprocess
 import sys
 import tempfile
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from fractions import Fraction
 from hashlib import sha1
 from io import BytesIO
 from itertools import product
 from math import ceil, sqrt
+from threading import Lock, Thread
 
 import boto3
 import psycopg2
@@ -42,7 +46,7 @@ from tilecloud.store.sqs import SQSTileStore, maybe_stop
 from tilecloud_chain.multitilestore import MultiTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
-logger = logging.getLogger("tilecloud_chain")
+logger = logging.getLogger(__name__)
 
 
 def add_comon_options(
@@ -139,18 +143,101 @@ def get_tile_matrix_identifier(grid, resolution=None, zoom=None):
             return str(resolution).replace(".", "_")
 
 
+class Run:
+    _re_rm_xml_tag = re.compile("(<[^>]*>|\n)")
+
+    def __init__(self, gene, functions, queue_store=None):
+        self.gene = gene
+        self.functions = functions
+        self.safe = gene.options is None or not gene.options.debug
+        daemon = gene.options is not None and hasattr(gene.options, "daemon") and gene.options.daemon
+        self.max_consecutive_errors = (
+            MaximumConsecutiveErrors(gene.config["generation"]["maxconsecutive_errors"])
+            if not daemon
+            else None
+        )
+        self.queue_store = queue_store
+        self.error = 0
+        self.error_lock = Lock()
+        self.error_logger = LogErrors(
+            logger, logging.ERROR, "Error in tile: %(tilecoord)s, %(formated_metadata)s, %(error)r"
+        )
+
+    def __call__(self, tile):
+        if tile is None:
+            return
+
+        tilecoord = tile.tilecoord
+        logger.debug("[%s] Metadata: %s", tilecoord, tile.metadata)
+        for func in self.functions:
+            try:
+                logger.debug("[%s] Run: %s", tilecoord, func)
+                n = datetime.now()
+                if self.safe:
+                    try:
+                        tile = func(tile)
+                    except Exception as e:
+                        logger.exception("[%s] Fail to process function %s", tilecoord, func)
+                        tile.error = e
+                else:
+                    tile = func(tile)
+                if hasattr(func, "time_message") and func.time_message is not None:
+                    logger.debug("[%s] %s in %s", tilecoord, func.time_message, str(datetime.now() - n))
+                if tile is None:
+                    logger.debug("[%s] Drop", tilecoord)
+                    return
+                if tile.error:
+                    if tile.content_type and tile.content_type.startswith("application/vnd.ogc.se_xml"):
+                        tile.error = "WMS server error: {}".format((self._re_rm_xml_tag.sub("", tile.error)))
+                    if stats.BACKENDS:
+                        stats.increment_counter(["error", tile.metadata.get("layer", "None")])
+
+                    if "error_file" in self.gene.config["generation"]:
+                        self.gene.log_tiles_error(tile=tile, message=repr(tile.error))
+
+                    if self.max_consecutive_errors is not None:
+                        self.max_consecutive_errors(tile)
+
+                    if self.queue_store is not None:
+                        self.queue_store.delete_one(tile)
+                    with self.error_lock:
+                        self.error += 1
+                    return
+            except Exception:
+                logger.exception("Run error")
+                raise
+
+        if self.max_consecutive_errors is not None:
+            self.max_consecutive_errors(tile)
+
+
 class TileGeneration:
     _geom = None
 
-    geoms = None
     tilestream = None
     duration = 0
     error = 0
+    queue_store = None
 
-    def __init__(self, config_file, options=None, layer_name=None, base_config=None, configure_logging=True):
+    def __init__(
+        self,
+        config_file,
+        options=None,
+        layer_name=None,
+        base_config=None,
+        configure_logging=True,
+        multi_thread=True,
+    ):
+        self.geoms = {}
         self._close_actions = []
         self._layers_geoms = {}
+        self.error_lock = Lock()
         self.error_files_ = {}
+        self.functions_tiles = []
+        self.functions_metatiles = []
+        self.functions = self.functions_metatiles
+        self.metatilesplitter_thread_pool = None
+        self.multi_thread = multi_thread
 
         if options is not None:
             if not hasattr(options, "bbox"):
@@ -364,6 +451,10 @@ class TileGeneration:
         if layer_name and not error:
             self.init_layer(self.layers[layer_name], options)
 
+    def init(self, queue_store=None, daemon=False):
+        self.queue_store = queue_store
+        self.daemon = daemon
+
     @staticmethod
     def _primefactors(x):
         factorlist = []
@@ -441,7 +532,7 @@ class TileGeneration:
         for opt_dim in self.options.dimensions:
             opt_dim = opt_dim.split("=")
             if len(opt_dim) != 2:  # pragma: no cover
-                exit("the DIMENSIONS option should be like this " "DATE=2013 VERSION=13.")
+                exit("the DIMENSIONS option should be like this DATE=2013 VERSION=13.")
             options_dimensions[opt_dim[0]] = opt_dim[1]
 
         all_dimensions = [
@@ -574,7 +665,7 @@ class TileGeneration:
         return cache_tilestore
 
     def init_geom(self, layer, extent=None):
-        self.geoms = self.get_geoms(layer, extent)
+        self.geoms[layer["name"]] = self.get_geoms(layer, extent)
 
     def get_geoms(self, layer, extent=None):
         if layer["name"] in self._layers_geoms:  # pragma: no cover
@@ -626,7 +717,7 @@ class TileGeneration:
         return layer_geoms
 
     def add_local_process_filter(self):  # pragma: no cover
-        self.ifilter(
+        self.imap(
             LocalProcessFilter(self.config["generation"]["number_process"], self.options.local_process_number)
         )
 
@@ -638,15 +729,23 @@ class TileGeneration:
             px_buffer=(layer["px_buffer"] + layer["meta_buffer"] if layer.get("meta", False) else 0),
         )
 
-    def add_geom_filter(self, layer):
-        self.ifilter(
-            self.get_geoms_filter(layer=layer, grid=self.get_grid(layer), geoms=self.geoms,),
+    def add_geom_filter(self):
+        self.imap(
+            MultiAction(
+                {
+                    layer_name: self.get_geoms_filter(
+                        layer=layer, grid=self.get_grid(layer), geoms=self.geoms
+                    )
+                    for layer_name, layer in self.layers.items()
+                }
+            ),
             "Intersect with geom",
         )
 
     def add_logger(self):
         if (
-            not self.options.quiet
+            self.options is not None
+            and not self.options.quiet
             and not self.options.verbose
             and not self.options.debug
             and os.environ.get("FRONTEND") != "noninteractive"
@@ -661,28 +760,57 @@ class TileGeneration:
                 return tile
 
             self.imap(log_tiles)
-        elif not self.options.quiet:
+        elif self.options is None or not self.options.quiet:
             self.imap(Logger(logger, logging.INFO, "%(tilecoord)s, %(formated_metadata)s"))
 
-    def add_metatile_splitter(self):
-        assert self.tilestream is not None
+    def add_metatile_splitter(self, store=None):
+        assert self.functions != self.functions_tiles, "add_metatile_splitter should not be called twice"
+        if store is None:
+            splitters = {}
+            for lname, layer in self.layers.items():
+                if layer.get("meta"):
+                    splitters[lname] = MetaTileSplitterTileStore(
+                        layer["mime_type"], layer["grid_ref"]["tile_size"], layer["meta_buffer"]
+                    )
 
-        splitters = {}
-        for lname, layer in self.layers.items():
-            if layer.get("meta"):
-                splitters[lname] = MetaTileSplitterTileStore(
-                    layer["mime_type"], layer["grid_ref"]["tile_size"], layer["meta_buffer"]
-                )
+            store = TimedTileStoreWrapper(MultiTileStore(splitters), stats_name="splitter")
 
-        store = TimedTileStoreWrapper(MultiTileStore(splitters), stats_name="splitter")
+        run = Run(self, self.functions_tiles, self.queue_store)
+        nb_thread = int(os.environ.get("TILE_NB_THREAD", "1"))
+        if nb_thread == 1 or not self.multi_thread:
 
-        def meta_get(tilestream):  # pragma: no cover
-            for metatile in tilestream:
+            def meta_get(metatile):  # pragma: no cover
                 substream = store.get((metatile,))
-                for tile in substream:
-                    yield tile
 
-        self.tilestream = meta_get(self.tilestream)  # pragma: no cover
+                if self.options is not None and hasattr(self.options, "role") and self.options.role == "hash":
+                    run(next(substream))
+                else:
+                    for tile in substream:
+                        tile.metadata.update(metatile.metadata)
+                        run(tile)
+                with self.error_lock:
+                    self.error += run.error
+                return metatile
+
+        else:
+
+            def meta_get(metatile):  # pragma: no cover
+                if self.metatilesplitter_thread_pool is None:
+                    self.metatilesplitter_thread_pool = ThreadPoolExecutor(nb_thread)
+
+                substream = store.get((metatile,))
+
+                for _ in self.metatilesplitter_thread_pool.map(
+                    run, substream, chunksize=int(os.environ.get("TILE_CHUNK_SIZE", "1"))
+                ):
+                    pass
+
+                with self.error_lock:
+                    self.error += run.error
+                return metatile
+
+        self.imap(meta_get)
+        self.functions = self.functions_tiles
 
     def create_log_tiles_error(self, layer):
         if "error_file" in self.config["generation"]:
@@ -714,45 +842,6 @@ class TileGeneration:
             self.get_log_tiles_error_file(tile.metadata.get("layer")).write(
                 "{}# [{}]{}\n".format(tilecoord, time, message.replace("\n", " "))
             )
-
-    def add_error_filters(self, queue_store=None, daemon=False):
-        assert self.tilestream is not None
-
-        self.imap(
-            LogErrors(logger, logging.ERROR, "Error in tile: %(tilecoord)s, %(formated_metadata)s, %(error)r")
-        )
-
-        if stats.BACKENDS:
-
-            def add_stats(tile):
-                if tile and tile.error:
-                    stats.increment_counter(["error", tile.metadata.get("layer", "None")])
-                return tile
-
-            self.imap(add_stats)
-
-        if "error_file" in self.config["generation"]:
-
-            def do(tile):
-                if tile and tile.error:
-                    self.log_tiles_error(tile=tile, message=repr(tile.error))
-                return tile
-
-            self.imap(do)
-        if self.config["generation"]["maxconsecutive_errors"] > 0 and not daemon:
-            self.tilestream = map(
-                MaximumConsecutiveErrors(self.config["generation"]["maxconsecutive_errors"]), self.tilestream
-            )
-
-        def drop_count(tile):
-            if tile and tile.error:
-                if queue_store is not None:
-                    queue_store.delete_one(tile)
-                self.error += 1
-                return False
-            return True
-
-        self.ifilter(drop_count)
 
     def init_tilecoords(self, layer):
         resolutions = layer["grid_ref"]["resolutions"]
@@ -795,12 +884,13 @@ class TileGeneration:
         if self.options.zoom is None:
             self.options.zoom = [z for z, r in enumerate(resolutions)]
 
-        # fill the bounding pyramid
+        # Fill the bounding pyramid
         tilegrid = layer["grid_ref"]["obj"]
         bounding_pyramid = BoundingPyramid(tilegrid=tilegrid)
+        geoms = self.geoms[layer["name"]]
         for zoom in self.options.zoom:
-            if zoom in self.geoms:
-                extent = self.geoms[zoom].bounds
+            if zoom in geoms:
+                extent = geoms[zoom].bounds
 
                 if len(extent) == 0:
                     logger.warning("bounds empty for zoom {}".format(zoom))
@@ -866,59 +956,101 @@ class TileGeneration:
             self.imap(MultiAction(processes))
 
     def get(self, store, time_message=None):
-        assert self.tilestream is not None
         assert store is not None
-
-        self.tilestream = store.get(self.tilestream)
-        if self.options is None or not self.options.debug:
-            self.tilestream = _safe_generator(self.tilestream, time_message)
+        self.imap(store.get_one, time_message)
 
     def put(self, store, time_message=None):
-        assert self.tilestream is not None
         assert store is not None
 
-        self.tilestream = store.put(self.tilestream)
-        if self.options is None or not self.options.debug:
-            self.tilestream = _safe_generator(self.tilestream, time_message)
+        def put_internal(tile):
+            store.put_one(tile)
+            return tile
+
+        self.imap(put_internal, time_message)
 
     def delete(self, store, time_message=None):
-        assert self.tilestream is not None
         assert store is not None
 
-        self.tilestream = store.delete(self.tilestream)
-        if not self.options.debug:
-            self.tilestream = _safe_generator(self.tilestream, time_message)
+        def delete_internal(tile):
+            store.delete_one(tile)
+            return tile
 
-    def imap(self, tile_filter, time_message=None):
+        self.imap(delete_internal, time_message)
+
+    def imap(self, func, time_message=None):
+        assert func is not None
+
+        class Func:
+            def __init__(self, func, time_message):
+                self.func = func
+                self.time_message = time_message
+
+            def __call__(self, tile):
+                return self.func(tile)
+
+            def __str__(self):
+                return str(func)
+
+        self.functions.append(Func(func, time_message))
+
+    def consume(self, test=None):
         assert self.tilestream is not None
-        assert tile_filter is not None
-
-        self.tilestream = map(tile_filter, self.tilestream)
-        if self.options is None or not self.options.debug:
-            self.tilestream = _safe_generator(self.tilestream, time_message)
-
-    def ifilter(self, tile_filter, time_message=None):
-        assert self.tilestream is not None
-        assert tile_filter is not None
-
-        self.tilestream = filter(tile_filter, self.tilestream)
-        if self.options is None or not self.options.debug:
-            self.tilestream = _safe_generator(self.tilestream, time_message)
-
-    def consume(self, test=None, force=False):
-        assert self.tilestream is not None
-
-        if hasattr(self.options, "daemon") and self.options.daemon and not self.options.debug and not force:
-            while True:
-                try:
-                    self.consume(test, True)
-                except KeyboardInterrupt:
-                    sys.exit()
+        assert threading.active_count() == 1, ", ".join([str(t) for t in threading.enumerate()])
 
         test = self.options.test if test is None else test
 
         start = datetime.now()
-        consume(self.tilestream, test)
+
+        run = Run(self, self.functions_metatiles)
+
+        if test is None:
+            buffer = queue.Queue(int(os.environ.get("TILE_QUEUE_SIZE", "2")))
+            end = False
+
+            nb_thread = int(os.environ.get("METATILE_NB_THREAD", "1"))
+
+            if nb_thread == 1 or not self.multi_thread:
+                consume(map(run, self.tilestream), None)
+            else:
+
+                def target():
+                    logger.debug("Start run")
+                    while not end or not buffer.empty():
+                        try:
+                            run(buffer.get(timeout=1))
+                        except queue.Empty:
+                            pass
+                    logger.debug("End run")
+
+                threads = [Thread(target=target, name="Run {}".format(i)) for i in range(nb_thread)]
+                for thread in threads:
+                    thread.start()
+
+                for tile in self.tilestream:
+                    buffer.put(tile)
+
+                end = True
+
+                for thread in threads:
+                    thread.join(30)
+
+            if self.metatilesplitter_thread_pool is not None:
+                self.metatilesplitter_thread_pool.shutdown()
+                self.metatilesplitter_thread_pool = None
+
+            assert buffer.empty(), buffer.qsize()
+
+        else:
+            for _ in range(test):
+                run(next(self.tilestream))
+
+        if self.metatilesplitter_thread_pool is not None:
+            self.metatilesplitter_thread_pool.shutdown()
+            self.metatilesplitter_thread_pool = None
+
+        assert threading.active_count() == 1, ", ".join([str(t) for t in threading.enumerate()])
+
+        self.error += run.error
         self.duration = datetime.now() - start
         for ca in self._close_actions:
             ca()
@@ -927,9 +1059,11 @@ class TileGeneration:
 class Count:
     def __init__(self):
         self.nb = 0
+        self.lock = Lock()
 
     def __call__(self, tile=None):
-        self.nb += 1
+        with self.lock:
+            self.nb += 1
         return tile
 
 
@@ -937,11 +1071,13 @@ class CountSize:
     def __init__(self):
         self.nb = 0
         self.size = 0
+        self.lock = Lock()
 
     def __call__(self, tile=None):
         if tile and tile.data:
-            self.nb += 1
-            self.size += len(tile.data)
+            with self.lock:
+                self.nb += 1
+                self.size += len(tile.data)
         return tile
 
 
@@ -998,8 +1134,15 @@ class MultiAction:
         layer = tile.metadata["layer"]
         if layer in self.actions:
             action = self.actions[layer]
+            logger.debug("[%s] Run action %s.", tile.tilecoord, action)
             return action(tile)
         else:
+            logger.debug(
+                "[%s] Action not found for layer %s, in [%s].",
+                tile.tilecoord,
+                layer,
+                ", ".join(self.actions.keys()),
+            )
             return tile
 
 
@@ -1054,17 +1197,19 @@ class LocalProcessFilter:  # pragma: no cover
 
 class IntersectGeometryFilter:
     def __init__(self, grid, geoms=None, px_buffer=0):
+        assert grid is not None
+        assert geoms is not None
         self.grid = grid
         self.geoms = geoms
         self.px_buffer = px_buffer
 
-    def filter_tilecoord(self, tilecoord):
+    def filter_tilecoord(self, tilecoord, layer_name):
         return self.bbox_polygon(
             self.grid["obj"].extent(tilecoord, self.grid["resolutions"][tilecoord.z] * self.px_buffer)
-        ).intersects(self.geoms[tilecoord.z])
+        ).intersects(self.geoms[layer_name][tilecoord.z])
 
     def __call__(self, tile):
-        return tile if self.filter_tilecoord(tile.tilecoord) else None
+        return tile if self.filter_tilecoord(tile.tilecoord, tile.metadata["layer"]) else None
 
     @staticmethod
     def bbox_polygon(bbox):
@@ -1143,17 +1288,17 @@ class Process:
             for cmd in self.config:
                 args = []
                 if (
-                    not self.options.verbose
+                    self.options is None
+                    or not self.options.verbose
                     and not self.options.debug
                     and not self.options.quiet
-                    and "default" in cmd["arg"]
-                ):
+                ) and "default" in cmd["arg"]:
                     args.append(cmd["arg"]["default"])
-                if self.options.verbose and "verbose" in cmd["arg"]:
+                if self.options is not None and self.options.verbose and "verbose" in cmd["arg"]:
                     args.append(cmd["arg"]["verbose"])
-                if self.options.debug and "debug" in cmd["arg"]:
+                if self.options is not None and self.options.debug and "debug" in cmd["arg"]:
                     args.append(cmd["arg"]["debug"])
-                if self.options.quiet and "quiet" in cmd["arg"]:
+                if self.options is not None and self.options.quiet and "quiet" in cmd["arg"]:
                     args.append(cmd["arg"]["quiet"])
 
                 if cmd["need_out"]:
@@ -1220,33 +1365,6 @@ class TilesFileStore(TileStore):
                     for k, v in dimensions.items():
                         metadata["dimension_" + k] = v
                     yield Tile(tilecoord, metadata=metadata)
-
-
-def _safe_generator(generator, time_message=None):
-    while True:  # will exit when next(generator) raises StopIteration
-        tile = None
-        try:
-            n = datetime.now()
-            tile = next(generator)
-            if tile is None:
-                continue
-            if time_message:
-                logger.debug("{} in {}".format(time_message, str(datetime.now() - n)))
-        except GeneratorExit:  # pragma: no cover
-            raise
-        except SystemExit:  # pragma: no cover
-            raise
-        except KeyboardInterrupt:  # pragma: no cover
-            exit("User interrupt")
-        except StopIteration:
-            return
-        except RuntimeError as e:
-            if isinstance(e.__cause__, StopIteration):
-                # since python 3.7, a StopIteration is wrapped in a RuntimeError (PEP 479)
-                return
-            else:
-                raise
-        yield tile
 
 
 def _await_message(queue):  # pragma: no cover
