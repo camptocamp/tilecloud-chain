@@ -1313,7 +1313,7 @@ class Process:
                     "y": tile.tilecoord.y,
                     "z": tile.tilecoord.z,
                 }
-                logger.info("process: %s", command)
+                logger.debug("[%s] process: %s", tile.tilecoord, command)
                 code = subprocess.call(command, shell=True)
                 if code != 0:  # pragma: no cover
                     tile.error = "Command '{}' on tile {} return error code {}".format(
@@ -1380,19 +1380,26 @@ def get_queue_store(config, daemon):
     if "redis" in config:
         # Create a Redis queue
         conf = config["redis"]
-        return TimedTileStoreWrapper(
-            RedisTileStore(
-                conf["url"],
-                name=conf["queue"],
-                stop_if_empty=not daemon,
-                timeout=conf["timeout"],
-                pending_timeout=conf["pending_timeout"],
-                max_retries=conf["max_retries"],
-                max_errors_age=conf["max_errors_age"],
-                max_errors_nb=conf["max_errors_nb"],
-            ),
-            stats_name="redis",
+        tilestore_kwargs = dict(
+            name=conf["queue"],
+            stop_if_empty=not daemon,
+            timeout=conf["timeout"],
+            pending_timeout=conf["pending_timeout"],
+            max_retries=conf["max_retries"],
+            max_errors_age=conf["max_errors_age"],
+            max_errors_nb=conf["max_errors_nb"],
+            connection_kwargs={},
         )
+        if "socket_timeout" in conf:
+            tilestore_kwargs["connection_kwargs"]["socket_timeout"] = conf["socket_timeout"]
+        if "db" in conf:
+            tilestore_kwargs["connection_kwargs"]["db"] = conf["db"]
+        if "url" in conf:
+            tilestore_kwargs["url"] = conf["url"]
+        else:
+            tilestore_kwargs["sentinels"] = conf["sentinels"]
+            tilestore_kwargs["service_name"] = conf.get("service_name", "mymaster")
+        return TimedTileStoreWrapper(RedisTileStore(**tilestore_kwargs), stats_name="redis")
     else:
         # Create a SQS queue
         return TimedTileStoreWrapper(

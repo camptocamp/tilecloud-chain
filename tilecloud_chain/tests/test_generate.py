@@ -1032,7 +1032,7 @@ Size per tile: 498 o
 
     @attr(general=True)
     def test_redis(self):
-        RedisTileStore("redis://redis:6379/").delete_all()
+        RedisTileStore(sentinels=[["redis_sentinel", 26379]]).delete_all()
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-redis.yaml --role master -l point",
             main_func=generate.main,
