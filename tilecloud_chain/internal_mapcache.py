@@ -7,7 +7,7 @@ import queue
 import struct
 import threading
 
-import redis
+import redis.sentinel
 import redlock
 
 from tilecloud import Tile, TileStore
@@ -67,18 +67,30 @@ def _encode_tile(tile):
 
 
 class RedisStore(TileStore):
-    def __init__(self, url, prefix, expiration, **kwargs):
+    def __init__(self, config, **kwargs):
         super().__init__(**kwargs)
-        self._redis = redis.Redis.from_url(url)
-        self._prefix = prefix
-        self._expiration = expiration
+
+        connection_kwargs = {}
+        if "socket_timeout" in config:
+            connection_kwargs["socket_timeout"] = config["socket_timeout"]
+        if "db" in config:
+            connection_kwargs["db"] = config["db"]
+        if "url" in config:
+            self._master = redis.Redis.from_url(config["url"], **connection_kwargs)
+            self._slave = self._master
+        else:
+            sentinel = redis.sentinel.Sentinel(config["sentinels"], **connection_kwargs)
+            self._master = sentinel.master_for(config.get("service_name", "mymaster"))
+            self._slave = sentinel.slave_for(config.get("service_name", "mymaster"))
+        self._prefix = config['prefix']
+        self._expiration = config['expiration']
         self._redis_lock = redlock.Redlock(
-            [self._redis], retry_count=MAX_GENERATION_TIME / RETRY_DELAY, retry_delay=RETRY_DELAY
+            [self._master], retry_count=MAX_GENERATION_TIME / RETRY_DELAY, retry_delay=RETRY_DELAY
         )
 
     def get_one(self, tile):
         key = self._get_key(tile)
-        data = self._redis.get(key)
+        data = self._slave.get(key)
         if data is None:
             LOG.debug("Tile not found: %s/%s", tile.metadata["layer"], tile.tilecoord)
             return None
@@ -93,13 +105,13 @@ class RedisStore(TileStore):
 
     def put_one(self, tile):
         key = self._get_key(tile)
-        self._redis.set(key, _encode_tile(tile), ex=self._expiration)
+        self._master.set(key, _encode_tile(tile), ex=self._expiration)
         LOG.info("Tile saved: %s/%s", tile.metadata["layer"], tile.tilecoord)
         return tile
 
     def delete_one(self, tile):
         key = self._get_key(tile)
-        self._redis.delete(key)
+        self._master.delete(key)
 
     def _get_key(self, tile):
         return "%s_%s_%d_%d_%d" % (
@@ -145,9 +157,7 @@ class Generator:
     def __init__(self, tilegeneration):
         self._input_store = InputStore()
         redis_config = tilegeneration.config["redis"]
-        self._cache_store = RedisStore(
-            redis_config["url"], redis_config["prefix"], redis_config["expiration"]
-        )
+        self._cache_store = RedisStore(redis_config)
         self.threads = []
         generator = Generate(FakeOptions(), tilegeneration, server=True)
         generator.server_init(self._input_store, self._cache_store)
