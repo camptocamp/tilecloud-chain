@@ -649,7 +649,8 @@ class TileGeneration:
         ), "Intersect with geom")
 
     def add_logger(self):
-        if not self.options.quiet and \
+        if self.options is not None and \
+                not self.options.quiet and \
                 not self.options.verbose and \
                 not self.options.debug and \
                 os.environ.get('FRONTEND') != 'noninteractive':
@@ -661,7 +662,7 @@ class TileGeneration:
                 sys.stdout.flush()
                 return tile
             self.imap(log_tiles)
-        elif not self.options.quiet:
+        elif self.options is None or not self.options.quiet:
             self.imap(Logger(logger, logging.INFO, '%(tilecoord)s, %(formated_metadata)s'))
 
     def add_metatile_splitter(self):
@@ -1156,16 +1157,17 @@ class Process:
 
             for cmd in self.config:
                 args = []
-                if not self.options.verbose and \
+                if self.options is None \
+                        or not self.options.verbose and \
                         not self.options.debug and \
                         not self.options.quiet and \
                         'default' in cmd['arg']:
                     args.append(cmd['arg']['default'])
-                if self.options.verbose and 'verbose' in cmd['arg']:
+                if self.options is not None and self.options.verbose and 'verbose' in cmd['arg']:
                     args.append(cmd['arg']['verbose'])
-                if self.options.debug and 'debug' in cmd['arg']:
+                if self.options is not None and self.options.debug and 'debug' in cmd['arg']:
                     args.append(cmd['arg']['debug'])
-                if self.options.quiet and 'quiet' in cmd['arg']:
+                if self.options is not None and self.options.quiet and 'quiet' in cmd['arg']:
                     args.append(cmd['arg']['quiet'])
 
                 if cmd['need_out']:
