@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import collections
 import logging
 import logging.config
 import os
@@ -150,7 +151,7 @@ class Run:
         self.gene = gene
         self.functions = functions
         self.safe = gene.options is None or not gene.options.debug
-        daemon = gene.options is not None and hasattr(gene.options, "daemon") and gene.options.daemon
+        daemon = gene.options is not None and getattr(gene.options, "daemon", False)
         self.max_consecutive_errors = (
             MaximumConsecutiveErrors(gene.config["generation"]["maxconsecutive_errors"])
             if not daemon
@@ -181,7 +182,7 @@ class Run:
                         tile.error = e
                 else:
                     tile = func(tile)
-                if hasattr(func, "time_message") and func.time_message is not None:
+                if getattr(func, "time_message", None) is not None:
                     logger.debug("[%s] %s in %s", tilecoord, func.time_message, str(datetime.now() - n))
                 if tile is None:
                     logger.debug("[%s] Drop", tilecoord)
@@ -239,19 +240,21 @@ class TileGeneration:
         self.metatilesplitter_thread_pool = None
         self.multi_thread = multi_thread
 
-        if options is not None:
-            if not hasattr(options, "bbox"):
-                options.bbox = None
-            if not hasattr(options, "zoom"):
-                options.zoom = None
-            if not hasattr(options, "test"):
-                options.test = None
-            if not hasattr(options, "near"):
-                options.near = None
-            if not hasattr(options, "time"):
-                options.time = None
-            if not hasattr(options, "geom"):
-                options.geom = True
+        self.options = options or collections.namedtuple(
+            "Options", ["verbose", "debug", "quiet", "bbox", "zoom", "test", "near", "time", "geom"]
+        )(False, False, False, None, None, None, None, None, True)
+        if not hasattr(self.options, "bbox"):
+            self.options.bbox = None
+        if not hasattr(self.options, "zoom"):
+            self.options.zoom = None
+        if not hasattr(self.options, "test"):
+            self.options.test = None
+        if not hasattr(self.options, "near"):
+            self.options.near = None
+        if not hasattr(self.options, "time"):
+            self.options.time = None
+        if not hasattr(self.options, "geom"):
+            self.options.geom = True
 
         if configure_logging:
             self._configure_logging(options, "%(levelname)s:%(name)s:%(funcName)s:%(message)s")
@@ -260,10 +263,9 @@ class TileGeneration:
             self.config = {}
             self.config.update({} if base_config is None else base_config)
             self.config.update(yaml.safe_load(f))
-        self.options = options
         if "defaults" in self.config:
             del self.config["defaults"]
-        # generate base structure
+        # Generate base structure
         if "cost" in self.config:
             if "s3" not in self.config["cost"]:
                 self.config["cost"]["s3"] = {}
@@ -686,7 +688,7 @@ class TileGeneration:
             for z, r in enumerate(layer["grid_ref"]["resolutions"]):
                 layer_geoms[z] = geom
 
-        if self.options is None or (self.options.near is None and self.options.geom):
+        if self.options.near is None and self.options.geom:
             for g in layer["geoms"]:
                 with stats.timer_context(["geoms_get", layer["name"]]):
                     connection = psycopg2.connect(g["connection"])
@@ -716,11 +718,6 @@ class TileGeneration:
                     connection.close()
         return layer_geoms
 
-    def add_local_process_filter(self):  # pragma: no cover
-        self.imap(
-            LocalProcessFilter(self.config["generation"]["number_process"], self.options.local_process_number)
-        )
-
     @staticmethod
     def get_geoms_filter(layer, grid, geoms):
         return IntersectGeometryFilter(
@@ -744,8 +741,7 @@ class TileGeneration:
 
     def add_logger(self):
         if (
-            self.options is not None
-            and not self.options.quiet
+            not self.options.quiet
             and not self.options.verbose
             and not self.options.debug
             and os.environ.get("FRONTEND") != "noninteractive"
@@ -760,7 +756,7 @@ class TileGeneration:
                 return tile
 
             self.imap(log_tiles)
-        elif self.options is None or not self.options.quiet:
+        elif not self.options.quiet:
             self.imap(Logger(logger, logging.INFO, "%(tilecoord)s, %(formated_metadata)s"))
 
     def add_metatile_splitter(self, store=None):
@@ -782,7 +778,7 @@ class TileGeneration:
             def meta_get(metatile):  # pragma: no cover
                 substream = store.get((metatile,))
 
-                if self.options is not None and hasattr(self.options, "role") and self.options.role == "hash":
+                if getattr(self.options, "role", "") == "hash":
                     run(next(substream))
                 else:
                     for tile in substream:
@@ -1288,17 +1284,14 @@ class Process:
             for cmd in self.config:
                 args = []
                 if (
-                    self.options is None
-                    or not self.options.verbose
-                    and not self.options.debug
-                    and not self.options.quiet
+                    not self.options.verbose and not self.options.debug and not self.options.quiet
                 ) and "default" in cmd["arg"]:
                     args.append(cmd["arg"]["default"])
-                if self.options is not None and self.options.verbose and "verbose" in cmd["arg"]:
+                if self.options.verbose and "verbose" in cmd["arg"]:
                     args.append(cmd["arg"]["verbose"])
-                if self.options is not None and self.options.debug and "debug" in cmd["arg"]:
+                if self.options.debug and "debug" in cmd["arg"]:
                     args.append(cmd["arg"]["debug"])
-                if self.options is not None and self.options.quiet and "quiet" in cmd["arg"]:
+                if self.options.quiet and "quiet" in cmd["arg"]:
                     args.append(cmd["arg"]["quiet"])
 
                 if cmd["need_out"]:
