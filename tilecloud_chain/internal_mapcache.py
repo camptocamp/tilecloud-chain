@@ -1,3 +1,4 @@
+import collections
 import contextlib
 import datetime
 import json
@@ -20,15 +21,6 @@ LOG = logging.getLogger(__name__)
 lock = threading.Lock()
 executing_lock = threading.Lock()
 generator = None
-
-
-class FakeOptions:
-    role = "server"
-    debug = False
-    near = True
-    time = False
-    daemon = True
-    local_process_number = None
 
 
 class InputStore(TileStore):
@@ -149,7 +141,14 @@ class Generator:
             redis_config["url"], redis_config["prefix"], redis_config["expiration"]
         )
         self.threads = []
-        generator = Generate(FakeOptions(), tilegeneration, server=True)
+        generator = Generate(
+            collections.namedtuple(
+                "Options",
+                ["verbose", "debug", "quiet", "role", "near", "time", "daemon", "local_process_number"],
+            )(False, False, False, "server", True, False, True, None),
+            tilegeneration,
+            server=True,
+        )
         generator.server_init(self._input_store, self._cache_store)
         for i in range(int(os.environ.get("SERVER_NB_THREAD", 10))):
             thread = GeneratorThread(i, generator)

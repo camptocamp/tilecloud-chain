@@ -20,6 +20,7 @@ from tilecloud_chain import (
     Count,
     HashDropper,
     HashLogger,
+    LocalProcessFilter,
     MultiAction,
     MultiTileStore,
     TileGeneration,
@@ -48,7 +49,7 @@ class Generate:
         self._options = options
         self._gene = gene
 
-        if hasattr(self._options, "get_hash") and self._options.get_hash is not None:
+        if getattr(self._options, "get_hash", None) is not None:
             self._options.role = "hash"
             self._options.test = 1
 
@@ -97,8 +98,8 @@ class Generate:
                 )
             )
 
-        if self._options.local_process_number is not None:  # pragma: no cover
-            self._gene.add_local_process_filter()
+        if self._options.local_process_number is not None:
+            self.add_local_process_filter()
 
         # At this stage, the tilestream contains metatiles that intersect geometry
         self._gene.add_logger()
@@ -110,6 +111,11 @@ class Generate:
 
         if self._options.role in ("local", "slave"):
             self._cache_tilestore = self._gene.get_tilesstore(self._options.cache)
+
+    def add_local_process_filter(self):  # pragma: no cover
+        self._gene.imap(
+            LocalProcessFilter(self.config["generation"]["number_process"], self.options.local_process_number)
+        )
 
     def _generate_queue(self, layer):
         assert layer is not None
