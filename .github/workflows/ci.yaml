@@ -28,7 +28,8 @@ jobs:
 
       - name: Build
         run: |
-          (cd tilecloud_chain && flake8)
+          python3 -m pip install --user --requirement=requirements.txt
+          prospector
           python setup.py --long-description > PYPI.md
           docker build --tag camptocamp/tilecloud-chain .
           git --no-pager diff --check `git log --oneline | tail -1 | cut --fields=1 --delimiter=' '`

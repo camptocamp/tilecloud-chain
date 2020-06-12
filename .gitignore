@@ -4,3 +4,6 @@
 /dist
 /.build
 /tilecloud_chain/OpenLayers.js
+/.mypy_cache/
+/PYPI.md
+/tilecloud_chain.egg-info/
