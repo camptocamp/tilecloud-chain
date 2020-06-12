@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 
+from argparse import ArgumentParser
+from datetime import datetime
+from getpass import getuser
 import logging
 import os
 import random
 import socket
 import sys
-from argparse import ArgumentParser
-from datetime import datetime
-from getpass import getuser
+from typing import Optional
 
 import boto3
-
 from c2cwsgiutils import stats
-from tilecloud import TileCoord
+
+from tilecloud import TileCoord, TileStore
 from tilecloud.filter.logger import Logger
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.store.url import URLTileStore
@@ -128,14 +129,14 @@ class Generate:
                         *default_int(layer["grid_ref"]["obj"].extent(tilecoord))
                     )
                 )
-                exit()
+                sys.exit()
             except ValueError:  # pragma: no cover
                 logger.error(
                     "Tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n",
                     self._options.get_bbox,
                     exc_info=True,
                 )
-                exit(1)
+                sys.exit(1)
 
         if self._options.tiles:
             self._gene.set_store(
@@ -154,7 +155,7 @@ class Generate:
                 else:
                     self._gene.set_tilecoords([TileCoord(z, x, y)], layer)
             except ValueError as e:  # pragma: no cover
-                exit("Tile '{}' is not in the format 'z/x/y'\n{}".format(self._options.get_hash, repr(e)))
+                sys.exit("Tile '{}' is not in the format 'z/x/y'\n{}".format(self._options.get_hash, repr(e)))
 
     def _generate_tiles(self):
         if self._options.role in ("slave", "server"):
@@ -393,7 +394,9 @@ class Generate:
                 ),
             )
 
-    def _get_tilestore_for_layer(self, layer):
+    def _get_tilestore_for_layer(  # pylint: disable=inconsistent-return-statements
+        self, layer
+    ) -> Optional[TileStore]:
         if layer["type"] == "wms":
             params = layer["params"].copy()
             if "STYLES" not in params:
@@ -418,8 +421,10 @@ class Generate:
             )
         elif layer["type"] == "mapnik":  # pragma: no cover
             try:
-                from tilecloud.store.mapnik_ import MapnikTileStore
-                from tilecloud_chain.mapnik_ import MapnikDropActionTileStore
+                from tilecloud.store.mapnik_ import MapnikTileStore  # pylint: disable=import-outside-toplevel
+                from tilecloud_chain.mapnik_ import (  # pylint: disable=import-outside-toplevel
+                    MapnikDropActionTileStore,
+                )
             except ImportError:
                 if os.environ.get("CI", "FALSE") == "FALSE":  # pragma nocover
                     logger.error("Mapnik is not available", exc_info=True)
@@ -450,6 +455,7 @@ class Generate:
                     output_format=layer["output_format"],
                     proj4_literal=grid["proj4_literal"],
                 )
+        return None
 
     def server_init(self, input_store, cache_store):
         self._queue_tilestore = input_store
@@ -467,7 +473,7 @@ def detach():  # pragma: no cover
             # exit parent
             sys.exit(0)
     except OSError as e:
-        exit("fork #1 failed: {} ({})\n".format(e.errno, e.strerror))
+        sys.exit("fork #1 failed: {} ({})\n".format(e.errno, e.strerror))
 
 
 def main():
@@ -512,13 +518,15 @@ def main():
         and "authorised_user" in gene.config["generation"]
         and gene.config["generation"]["authorised_user"] != getuser()
     ):
-        exit("not authorised, authorised user is: {}.".format(gene.config["generation"]["authorised_user"]))
+        sys.exit(
+            "not authorised, authorised user is: {}.".format(gene.config["generation"]["authorised_user"])
+        )
 
     if options.cache is None:
         options.cache = gene.config["generation"]["default_cache"]
 
     if options.tiles is not None and options.role not in ["local", "master"]:  # pragma: no cover
-        exit("The --tiles option work only with role local or master")
+        sys.exit("The --tiles option work only with role local or master")
 
     try:
         generate = Generate(options, gene)
@@ -527,11 +535,11 @@ def main():
         elif options.layer:
             generate.gene(gene.layers[options.layer])
         elif options.get_bbox:  # pragma: no cover
-            exit("With --get-bbox option you need to specify a layer")
+            sys.exit("With --get-bbox option you need to specify a layer")
         elif options.get_hash:  # pragma: no cover
-            exit("With --get-hash option you need to specify a layer")
+            sys.exit("With --get-hash option you need to specify a layer")
         elif options.tiles:  # pragma: no cover
-            exit("With --tiles option you need to specify a layer")
+            sys.exit("With --tiles option you need to specify a layer")
         else:
             for layer in gene.config["generation"].get("default_layers", gene.layers.keys()):
                 generate.gene(gene.layers[layer])

@@ -51,7 +51,13 @@ logger = logging.getLogger(__name__)
 
 
 def add_comon_options(
-    parser, tile_pyramid=True, no_geom=True, near=True, time=True, dimensions=False, cache=True
+    parser,
+    tile_pyramid=True,
+    no_geom=True,
+    near=True,
+    time=True,  # pylint: disable=redefined-outer-name
+    dimensions=False,
+    cache=True,
 ):
     parser.add_argument(
         "-c",
@@ -219,6 +225,7 @@ class TileGeneration:
     duration = 0
     error = 0
     queue_store = None
+    daemon = False
 
     def __init__(
         self,
@@ -315,28 +322,27 @@ class TileGeneration:
 
         except SchemaError:
             logger.error(
-                "The config file '{}' is invalid.\n{}".format(
-                    config_file,
-                    "\n".join(
-                        sorted(
-                            [
-                                " - {}: {}".format(
-                                    os.path.join("/", path_, re.sub("^/", "", error.path)),
-                                    re.sub(" Path: '{path}'", "", error.msg).format(**error.__dict__),
-                                )
-                                for error in c.errors
-                            ]
-                        )
-                    ),
-                )
+                "The config file '%s' is invalid.\n%s",
+                config_file,
+                "\n".join(
+                    sorted(
+                        [
+                            " - {}: {}".format(
+                                os.path.join("/", path_, re.sub("^/", "", error.path)),
+                                re.sub(" Path: '{path}'", "", error.msg).format(**error.__dict__),
+                            )
+                            for error in c.errors
+                        ]
+                    )
+                ),
             )
-            exit(1)
+            sys.exit(1)
         except NotSequenceError as e:  # pragma: no cover
-            logger.error("The config file '{}' is invalid.\n - {}".format(config_file, e.msg))
-            exit(1)
+            logger.error("The config file '%s' is invalid.\n - %s", config_file, e.msg)
+            sys.exit(1)
         except NotMappingError as e:  # pragma: no cover
-            logger.error("The config file '{}' is invalid.\n - {}".format(config_file, e.msg))
-            exit(1)
+            logger.error("The config file '%s' is invalid.\n - %s", config_file, e.msg)
+            sys.exit(1)
 
         error = False
         self.grids = self.config["grids"]
@@ -345,9 +351,7 @@ class TileGeneration:
                 scale = grid["resolution_scale"]
                 for r in grid["resolutions"]:
                     if r * scale % 1 != 0.0:
-                        logger.error(
-                            "The resolution {} * resolution_scale {} is not an integer.".format(r, scale)
-                        )
+                        logger.error("The resolution %s * resolution_scale %s is not an integer.", r, scale)
                         error = True
             else:
                 grid["resolution_scale"] = self._resolution_scale(grid["resolutions"])
@@ -404,9 +408,7 @@ class TileGeneration:
             if (
                 layer["type"] == "mapnik" and layer["output_format"] == "grid" and layer.get("meta", False)
             ):  # pragma: no cover
-                logger.error(
-                    "The layer '{}' is of type Mapnik/Grid, that can't support matatiles.".format(lname)
-                )
+                logger.error("The layer '%s' is of type Mapnik/Grid, that can't support matatiles.", lname)
                 error = True
 
         self.caches = self.config["caches"]
@@ -414,7 +416,7 @@ class TileGeneration:
         self.provider = self.config.get("provider")
 
         if error:
-            exit(1)
+            sys.exit(1)
 
         if configure_logging and "log_format" in self.config.get("generation", {}):
             self._configure_logging(options, self.config["generation"]["log_format"])
@@ -448,7 +450,7 @@ class TileGeneration:
                     error = True
 
         if error:  # pragma: no cover
-            exit(1)
+            sys.exit(1)
 
         if layer_name and not error:
             self.init_layer(self.layers[layer_name], options)
@@ -534,7 +536,7 @@ class TileGeneration:
         for opt_dim in self.options.dimensions:
             opt_dim = opt_dim.split("=")
             if len(opt_dim) != 2:  # pragma: no cover
-                exit("the DIMENSIONS option should be like this DATE=2013 VERSION=13.")
+                sys.exit("the DIMENSIONS option should be like this DATE=2013 VERSION=13.")
             options_dimensions[opt_dim[0]] = opt_dim[1]
 
         all_dimensions = [
@@ -580,8 +582,8 @@ class TileGeneration:
             metadata = {}
             for dimension in layer["dimensions"]:
                 metadata["dimension_" + dimension["name"]] = dimension["default"]
-            import bsddb3 as bsddb
-            from tilecloud.store.bsddb import BSDDBTileStore
+            import bsddb3 as bsddb  # pylint: disable=import-outside-toplevel,import-error
+            from tilecloud.store.bsddb import BSDDBTileStore  # pylint: disable=import-outside-toplevel
 
             # on bsddb file
             filename = layout.filename(TileCoord(0, 0, 0), metadata=metadata).replace("/0/0/0", "") + ".bsddb"
@@ -607,7 +609,7 @@ class TileGeneration:
             # on filesystem
             cache_tilestore = FilesystemTileStore(layout, content_type=layer["mime_type"],)
         else:
-            exit("unknown cache type: " + cache["type"])  # pragma: no cover
+            sys.exit("unknown cache type: " + cache["type"])  # pragma: no cover
 
         return cache_tilestore
 
@@ -618,9 +620,9 @@ class TileGeneration:
             options.time is not None and "bbox" in layer and options.zoom is not None
         ):  # pragma: no cover
             if options.zoom is None or len(options.zoom) != 1:  # pragma: no cover
-                exit("Option --near needs the option --zoom with one value.")
+                sys.exit("Option --near needs the option --zoom with one value.")
             if not (options.time is not None or options.test is not None):  # pragma: no cover
-                exit("Option --near needs the option --time or --test.")
+                sys.exit("Option --near needs the option --time or --test.")
             position = (
                 options.near
                 if options.near is not None
@@ -694,7 +696,7 @@ class TileGeneration:
                     connection = psycopg2.connect(g["connection"])
                     cursor = connection.cursor()
                     sql = "SELECT ST_AsBinary(geom) FROM (SELECT {}) AS g".format(g["sql"])
-                    logger.info("Execute SQL: {}.".format(sql))
+                    logger.info("Execute SQL: %s.", sql)
                     cursor.execute(sql)
                     geoms = [loads_wkb(bytes(r[0])) for r in cursor.fetchall()]
                     geom = cascaded_union(geoms)
@@ -808,12 +810,12 @@ class TileGeneration:
         self.imap(meta_get)
         self.functions = self.functions_tiles
 
-    def create_log_tiles_error(self, layer):
+    def create_log_tiles_error(self, layer):  # pylint: disable=inconsistent-return-statements
         if "error_file" in self.config["generation"]:
             now = datetime.now()
-            time = now.strftime("%d-%m-%Y %H:%M:%S")
+            time_ = now.strftime("%d-%m-%Y %H:%M:%S")
             error_file = open(self.config["generation"]["error_file"].format(layer=layer, datetime=now), "a")
-            error_file.write("# [{}] Start the layer '{}' generation\n".format(time, layer))
+            error_file.write("# [{}] Start the layer '{}' generation\n".format(time_, layer))
             self.error_files_[layer] = error_file
             return error_file
 
@@ -826,7 +828,7 @@ class TileGeneration:
 
     def log_tiles_error(self, tile=None, message=None):
         if "error_file" in self.config["generation"]:
-            time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+            time_ = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
             if self.get_log_tiles_error_file(tile.metadata.get("layer")) is None:  # pragma: no cover
                 raise Exception("Missing error file")
 
@@ -836,7 +838,7 @@ class TileGeneration:
             message = "" if message is None else " {}".format(message)
 
             self.get_log_tiles_error_file(tile.metadata.get("layer")).write(
-                "{}# [{}]{}\n".format(tilecoord, time, message.replace("\n", " "))
+                "{}# [{}]{}\n".format(tilecoord, time_, message.replace("\n", " "))
             )
 
     def init_tilecoords(self, layer):
@@ -853,8 +855,11 @@ class TileGeneration:
             for zoom in self.options.zoom:
                 if zoom > zoom_max:
                     logger.warning(
-                        "zoom %i is greater than the maximum zoom %i"
-                        " of grid %s of layer %s, ignored." % (zoom, zoom_max, layer["grid"], layer["name"])
+                        "zoom %i is greater than the maximum zoom %i" " of grid %s of layer %s, ignored.",
+                        zoom,
+                        zoom_max,
+                        layer["grid"],
+                        layer["name"],
                     )
             self.options.zoom = [z for z in self.options.zoom if z <= zoom_max]
 
@@ -870,8 +875,11 @@ class TileGeneration:
                     if resolution < layer["min_resolution_seed"]:
                         logger.warning(
                             "zoom %i corresponds to resolution %s is smaller"
-                            " than the 'min_resolution_seed' %s of layer %s, ignored."
-                            % (zoom, resolution, layer["min_resolution_seed"], layer["name"])
+                            " than the 'min_resolution_seed' %s of layer %s, ignored.",
+                            zoom,
+                            resolution,
+                            layer["min_resolution_seed"],
+                            layer["name"],
                         )
                 self.options.zoom = [
                     z for z in self.options.zoom if resolutions[z] >= layer["min_resolution_seed"]
@@ -889,7 +897,7 @@ class TileGeneration:
                 extent = geoms[zoom].bounds
 
                 if len(extent) == 0:
-                    logger.warning("bounds empty for zoom {}".format(zoom))
+                    logger.warning("bounds empty for zoom %s", zoom)
                 else:
                     minx, miny, maxx, maxy = extent
                     px_buffer = layer["px_buffer"]
@@ -1104,7 +1112,7 @@ class HashDropper:
                         self.store.delete_one(Tile(tilecoord, metadata=tile.metadata))
                 else:
                     self.store.delete_one(tile)
-            logger.info("The tile {} {} is dropped".format(tile.tilecoord, tile.formated_metadata))
+            logger.info("The tile %s %s is dropped", tile.tilecoord, tile.formated_metadata)
             if hasattr(tile, "metatile"):
                 tile.metatile.elapsed_togenerate -= 1
                 if tile.metatile.elapsed_togenerate == 0 and self.queue_store is not None:
@@ -1161,7 +1169,7 @@ class HashLogger:
             if ref is None:
                 ref = px
             elif px != ref:
-                exit("Error: image is not uniform.")
+                sys.exit("Error: image is not uniform.")
 
         print(
             """Tile: {} {}
@@ -1223,12 +1231,9 @@ class DropEmpty:
     def __call__(self, tile):
         if not tile or not tile.data:  # pragma: no cover
             logger.error(
-                "The tile: {tilecoord}{formated_metadata} is empty".format(
-                    **{
-                        "tilecoord": tile.tilecoord if tile else "not defined",
-                        "formated_metadata": " " + tile.formated_metadata if tile else "",
-                    }
-                )
+                "The tile: %s%s is empty",
+                tile.tilecoord if tile else "not defined",
+                " " + tile.formated_metadata if tile else "",
             )
             if "error_file" in self.gene.config["generation"] and tile:
                 self.gene.log_tiles_error(tile=tile, message="The tile is empty")
@@ -1308,7 +1313,7 @@ class Process:
                     "y": tile.tilecoord.y,
                     "z": tile.tilecoord.z,
                 }
-                logger.info("process: {}".format(command))
+                logger.info("process: %s", command)
                 code = subprocess.call(command, shell=True)
                 if code != 0:  # pragma: no cover
                     tile.error = "Command '{}' on tile {} return error code {}".format(
@@ -1331,6 +1336,7 @@ class Process:
 
 class TilesFileStore(TileStore):
     def __init__(self, tiles_file, layer, all_dimensions):
+        super().__init__()
         assert isinstance(layer, str)
 
         self.tiles_file = open(tiles_file)
@@ -1348,7 +1354,9 @@ class TilesFileStore(TileStore):
                     tilecoord = parse_tilecoord(line)
                 except ValueError as e:  # pragma: no cover
                     logger.error(
-                        "A tile '{}' is not in the format 'z/x/y' or z/x/y:+n/+n\n{}".format(line, repr(e)),
+                        "A tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n\n%s",
+                        line,
+                        repr(e),
                         exc_info=True,
                     )
                     continue
@@ -1360,8 +1368,7 @@ class TilesFileStore(TileStore):
                     yield Tile(tilecoord, metadata=metadata)
 
 
-def _await_message(queue):  # pragma: no cover
-    del queue
+def _await_message(_):  # pragma: no cover
     try:
         # Just sleep, the SQSTileStore will try again after that...
         time.sleep(10)
@@ -1396,7 +1403,6 @@ def get_queue_store(config, daemon):
 
 def _get_sqs_queue(config):  # pragma: no cover
     if "sqs" not in config:
-        exit("The config hasn't any configured queue")
+        sys.exit("The config hasn't any configured queue")
     sqs = boto3.resource("sqs", region_name=config["sqs"]["region"])
-    queue = sqs.get_queue_by_name(QueueName=config["sqs"]["queue"])
-    return queue
+    return sqs.get_queue_by_name(QueueName=config["sqs"]["queue"])

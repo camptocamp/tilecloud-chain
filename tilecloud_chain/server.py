@@ -33,25 +33,26 @@ import os
 import types
 from urllib.parse import parse_qs, urlencode
 
-import requests
-from pyramid.config import Configurator
-
-import c2cwsgiutils.pyramid
-import tilecloud.store.s3
 from c2cwsgiutils import health_check
+import c2cwsgiutils.pyramid
+from pyramid.config import Configurator
+from pyramid.httpexceptions import exception_response
+from pyramid_mako import add_mako_renderer
+import requests
+
 from tilecloud import Tile, TileCoord
+import tilecloud.store.s3
 from tilecloud_chain import TileGeneration, controller, internal_mapcache
 
 logger = logging.getLogger(__name__)
-
 
 tilegeneration = None
 
 
 def init_tilegeneration(config_file):
-    global tilegeneration
+    global tilegeneration  # pylint: disable=global-statement
     if tilegeneration is None:
-        logger.info("Config file: '{}'".format(config_file))
+        logger.info("Config file: '%s'", config_file)
         tilegeneration = TileGeneration(config_file, configure_logging=False, multi_thread=False)
 
 
@@ -60,7 +61,7 @@ class Server:
         self.filters = {}
         self.max_zoom_seed = {}
 
-        global tilegeneration
+        global tilegeneration  # pylint: disable=global-statement
 
         self.expires_hours = tilegeneration.config["server"]["expires"]
         self.static_allow_extension = tilegeneration.config["server"].get(
@@ -84,6 +85,7 @@ class Server:
                     body.close()
 
             def _get(self, path, **kwargs):
+                del kwargs
                 key_name = os.path.join("{folder}".format(**self.cache), path)
                 try:
                     return self._read(key_name)
@@ -184,7 +186,9 @@ class Server:
 
         if path:
             if tuple(path[: len(self.static_path)]) == tuple(self.static_path):
-                body, mime = self._get("/".join(path[len(self.static_path) :]), **kwargs)
+                body, mime = self._get(  # pylint: disable=not-callable
+                    "/".join(path[len(self.static_path) :]), **kwargs
+                )
                 if mime is not None:
                     return self.response(
                         body,
@@ -270,7 +274,7 @@ class Server:
         if params["REQUEST"] == "GetCapabilities":
             if "wmtscapabilities_file" in self.cache:
                 wmtscapabilities_file = self.cache["wmtscapabilities_file"]
-                body, mime = self._get(wmtscapabilities_file, **kwargs)
+                body, mime = self._get(wmtscapabilities_file, **kwargs)  # pylint: disable=not-callable
             else:
                 body = controller.get_wmts_capabilities(tilegeneration, self.cache).encode("utf-8")
                 mime = "application/xml"
@@ -429,7 +433,7 @@ class Server:
                 self.mapcache_baseurl + "?" + urlencode(params), headers=self.mapcache_header, **kwargs
             )
         else:
-            global tilegeneration
+            global tilegeneration  # pylint: disable=global-statement
             return internal_mapcache.fetch(self, tilegeneration, layer, tile, kwargs)
 
     def forward(self, url, headers=None, no_cache=False, **kwargs):
@@ -496,8 +500,6 @@ def app_factory(
 
 class PyramidServer(Server):
     def error(self, code, message=None, **kwargs):
-        from pyramid.httpexceptions import exception_response
-
         headers = {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET",
@@ -533,7 +535,7 @@ class PyramidView:
     def __init__(self, request):
         self.request = request
 
-        global pyramid_server
+        global pyramid_server  # pylint: disable=global-statement
 
         init_tilegeneration(request.registry.settings["tilegeneration_configfile"])
 
@@ -556,14 +558,12 @@ class PyramidView:
 
 
 def main(global_config, **settings):
-    from pyramid_mako import add_mako_renderer
-
     del global_config  # unused
 
     config = Configurator(settings=settings)
 
     init_tilegeneration(settings["tilegeneration_configfile"])
-    global tilegeneration
+    global tilegeneration  # pylint: disable=global-statement
 
     config.include(c2cwsgiutils.pyramid.includeme)
     health_check.HealthCheck(config)

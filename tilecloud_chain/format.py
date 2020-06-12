@@ -13,6 +13,7 @@ def size_format(number):
             else:
                 return "{:.0f} {}".format(number, unit)
         number /= 1024.0
+    return "{:.0f} Tio".format(number)
 
 
 def duration_format(duration):

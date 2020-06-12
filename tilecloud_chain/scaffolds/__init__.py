@@ -5,8 +5,8 @@ class Create(Template):  # pragma: no cover
     _template_dir = "create"
     summary = "Template used to create a standalone TileCloud-chain project"
 
-    def post(self, *args, **kargs):
-        super(Create, self).post(*args, **kargs)
+    def post(self, command, output_dir, vars):  # pylint: disable=redefined-builtin
+        super().post(command, output_dir, vars)
         print(
             """
 Welcome to TileCloud chain.

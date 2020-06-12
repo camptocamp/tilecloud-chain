@@ -20,22 +20,22 @@ RETRY_DELAY = 0.05
 LOG = logging.getLogger(__name__)
 lock = threading.Lock()
 executing_lock = threading.Lock()
-generator = None
+_generator = None
 
 
 class InputStore(TileStore):
     run = True
 
     def __init__(self):
-        super(InputStore, self).__init__()
+        super().__init__()
         self._queue = queue.Queue()
 
-    def get_one(self):
+    def get_one(self, _):
         return self._queue.get()
 
     def list(self):
         while self.run:
-            yield self.get_one()
+            yield self.get_one(None)
 
     def put_one(self, tile):
         self._queue.put(tile)
@@ -120,10 +120,13 @@ class GeneratorThread(threading.Thread):
     def run(self):
         LOG.info("Start internal mapcache generator")
         try:
-            run = Run(self._generator._gene, self._generator._gene.functions_metatiles)
+            run = Run(
+                self._generator._gene,  # pylint: disable=protected-access
+                self._generator._gene.functions_metatiles,  # pylint: disable=protected-access
+            )
             while True:
                 with executing_lock:
-                    tile = next(self._generator._gene.tilestream)
+                    tile = next(self._generator._gene.tilestream)  # pylint: disable=protected-access
                 if tile is not None:
                     run(tile)
                     tile.metadata["lock"].release()
@@ -179,18 +182,18 @@ class Generator:
 
 
 def _get_generator(tilegeneration):
-    global generator
-    if generator is None:
+    global _generator  # pylint: disable=global-statement
+    if _generator is None:
         return _init_generator(tilegeneration)
-    return generator
+    return _generator
 
 
 def _init_generator(tilegeneration):
-    global generator, lock
+    global _generator, lock  # pylint: disable=global-statement
     with lock:
-        if generator is None:
-            generator = Generator(tilegeneration)
-        return generator
+        if _generator is None:
+            _generator = Generator(tilegeneration)
+        return _generator
 
 
 def fetch(server, tilegeneration, layer, tile, kwargs):
