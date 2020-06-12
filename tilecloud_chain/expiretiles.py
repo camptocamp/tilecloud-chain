@@ -104,7 +104,7 @@ def main():
         connection.commit()
         cursor.close()
         connection.close()
-        exit(0)
+        sys.exit(0)
     geom = cascaded_union(geoms)
     if geom.geom_type == "Polygon":
         geom = MultiPolygon((geom,))

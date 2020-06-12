@@ -1,25 +1,26 @@
 # -*- coding: utf-8 -*-
 
-import logging
-import math
-import os
-import pkgutil
-import sys
 from argparse import ArgumentParser
 from copy import copy
 from hashlib import sha1
 from io import BytesIO
+import logging
+import math
 from math import exp, log
+import os
+import pkgutil
+import sys
+from typing import Dict, Optional
 from urllib.parse import urlencode, urljoin
 
+from PIL import Image
+from bottle import jinja2_template
+from c2cwsgiutils import stats
 import requests
 import yaml
-from bottle import jinja2_template
-from PIL import Image
 
-import tilecloud.store.s3
-from c2cwsgiutils import stats
 from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
+import tilecloud.store.s3
 from tilecloud_chain import TileGeneration, add_comon_options, get_queue_store, get_tile_matrix_identifier
 
 logger = logging.getLogger(__name__)
@@ -165,12 +166,10 @@ def _get(path, cache):
 def _validate_generate_wmts_capabilities(cache, exit_):
     if "http_url" not in cache and "http_urls" not in cache:  # pragma: no cover
         logger.error(
-            "The attribute 'http_url' or 'http_urls' is required in the object cache[{}].".format(
-                cache["name"]
-            )
+            "The attribute 'http_url' or 'http_urls' is required in the object cache[%s].", cache["name"]
         )
         if exit_:
-            exit(1)
+            sys.exit(1)
         return False
     return True
 
@@ -207,6 +206,7 @@ def get_wmts_capabilities(gene, cache, exit_=False):
             int=int,
             sorted=sorted,
         )
+    return None
 
 
 def _get_base_urls(cache):
@@ -227,7 +227,7 @@ def _get_base_urls(cache):
 
 def _fill_legend(gene, cache, server, base_urls):
     for layer in gene.layers.values():
-        previous_legend = None
+        previous_legend: Optional[Dict] = None
         previous_resolution = None
         if "legend_mime" in layer and "legend_extension" in layer and "legends" not in layer:
             layer["legends"] = []
@@ -251,7 +251,9 @@ def _fill_legend(gene, cache, server, base_urls):
                     layer["legends"].append(new_legend)
                     if previous_legend is not None:
                         middle_res = exp((log(previous_resolution) + log(resolution)) / 2)
-                        previous_legend["min_resolution"] = middle_res
+                        previous_legend[  # pylint: disable=unsupported-assignment-operation
+                            "min_resolution"
+                        ] = middle_res
                         new_legend["max_resolution"] = middle_res
                     try:
                         pil_img = Image.open(BytesIO(img))
@@ -259,8 +261,7 @@ def _fill_legend(gene, cache, server, base_urls):
                         new_legend["height"] = pil_img.size[1]
                     except Exception:  # pragma: nocover
                         logger.warning(
-                            "Unable to read legend image '{}', with '{}'".format(path, repr(img)),
-                            exc_info=True,
+                            "Unable to read legend image '%s', with '%s'", path, repr(img), exc_info=True,
                         )
                     previous_legend = new_legend
                 previous_resolution = resolution
@@ -310,9 +311,11 @@ def _generate_legend_images(gene):
                             legends.append(Image.open(BytesIO(response.content)))
                         except Exception:  # pragma: nocover
                             logger.warning(
-                                "Unable to read legend image for layer '{}'-'{}', resolution '{}': {}".format(
-                                    layer["name"], wmslayer, resolution, response.content
-                                ),
+                                "Unable to read legend image for layer '%s'-'%s', resolution '%s': %s",
+                                layer["name"],
+                                wmslayer,
+                                resolution,
+                                response.content,
                                 exc_info=True,
                             )
                     width = max(i.size[0] for i in legends)
@@ -546,5 +549,5 @@ def get_status(gene):
     kind = "redis" if "redis" in gene.config else "sqs"
     stats_prefix = [kind, gene.config[kind]["queue"]]
     with stats.timer_context(stats_prefix + ["get_stats"]):
-        status = store.get_status()
-    return [name + ": " + str(value) for name, value in status.items()]
+        status_ = store.get_status()
+    return [name + ": " + str(value) for name, value in status_.items()]

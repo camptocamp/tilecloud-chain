@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import sys
 import time
 
 import psycopg2
+
 from c2cwsgiutils import stats
 
 logger = logging.getLogger(__name__)
 
 
-class DatabaseLoggerCommon(object):  # pragma: no cover
+class DatabaseLoggerCommon:  # pragma: no cover
     def __init__(self, config, daemon):
         db_params = config["database"]
         while True:
@@ -27,7 +29,7 @@ class DatabaseLoggerCommon(object):  # pragma: no cover
                     logger.warning("Failed connecting to the database. Will try again in 1s", exc_info=True)
                     time.sleep(1)
                 else:
-                    exit("Cannot connect to the database: " + str(e))
+                    sys.exit("Cannot connect to the database: " + str(e))
         if "." in db_params["table"]:
             schema, table = db_params["table"].split(".")
         else:
@@ -55,7 +57,7 @@ class DatabaseLoggerCommon(object):  # pragma: no cover
                     self.connection.commit()
                 except psycopg2.DatabaseError:
                     logging.error("Unable to create table %s.%s", schema, table, exc_info=1)
-                    exit(1)
+                    sys.exit(1)
             else:
                 try:
                     cursor.execute(
@@ -65,7 +67,7 @@ class DatabaseLoggerCommon(object):  # pragma: no cover
                     )
                 except psycopg2.DatabaseError:
                     logging.error("Unable to insert logging data into %s.%s", schema, table, exc_info=1)
-                    exit(1)
+                    sys.exit(1)
                 finally:
                     self.connection.rollback()
 

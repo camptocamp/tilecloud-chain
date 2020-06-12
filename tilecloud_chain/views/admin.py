@@ -34,13 +34,13 @@ import subprocess
 import threading
 from typing import List
 
-from c2cwsgiutils.auth import auth_view, is_auth
 import pyramid.httpexceptions
 import pyramid.request
 from pyramid.view import view_config
 
-from tilecloud_chain.controller import get_status
 import tilecloud_chain.server
+from c2cwsgiutils.auth import auth_view, is_auth
+from tilecloud_chain.controller import get_status
 
 LOG = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class LogThread(threading.Thread):
     def run(self):
         try:
             display_command = " ".join([shlex.quote(arg) for arg in self.command])
-            LOG.info("Run the command `{}`".format(display_command))
+            LOG.info("Run the command `%s`", display_command)
             env = {}
             env.update(os.environ)
             env["FRONTEND"] = "noninteractive"
@@ -63,19 +63,22 @@ class LogThread(threading.Thread):
                 stdout, stderr = process.communicate()
                 if process.returncode != 0:
                     LOG.error(
-                        "The command `{}` exited with an error code: {}\nstdout:\n{}\nstderr:\n{}".format(
-                            display_command, process.returncode, stdout.decode(), stderr.decode()
-                        )
+                        "The command `%s` exited with an error code: %s\nstdout:\n%s\nstderr:\n%s",
+                        display_command,
+                        process.returncode,
+                        stdout.decode(),
+                        stderr.decode(),
                     )
                 else:
                     LOG.info(
-                        "The command `{}` succeeded with stdout:\n{}\nstderr:\n{}".format(
-                            display_command, stdout.decode(), stderr.decode()
-                        )
+                        "The command `%s` succeeded with stdout:\n%s\nstderr:\n%s",
+                        display_command,
+                        stdout.decode(),
+                        stderr.decode(),
                     )
-        except Exception as e:
-            LOG.error(str(e))
-            raise e
+        except Exception as exception:
+            LOG.error(str(exception))
+            raise exception
 
 
 class Admin:
@@ -112,6 +115,6 @@ class Admin:
             raise pyramid.httpexceptions.HTTPBadRequest(
                 "The given executable '{}' is not allowed".format(command[0])
             )
-        lt = LogThread(command)
-        lt.start()
+        log_thread = LogThread(command)
+        log_thread.start()
         return pyramid.httpexceptions.HTTPFound(self.request.route_url("admin"))
