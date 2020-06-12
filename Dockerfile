@@ -1,7 +1,7 @@
 FROM camptocamp/c2cwsgiutils:3-full
 MAINTAINER Stéphane Brunner <stephane.brunner@camptocamp.com>
 
-COPY requirements.txt /app/
+COPY requirements.txt requirements-extra.txt /app/
 RUN \
   DEV_PACKAGES="python3.7-dev build-essential libgeos-dev libmapnik-dev libdb-dev" && \
   apt-get update && \
@@ -17,7 +17,7 @@ RUN \
     optipng \
     ${DEV_PACKAGES} && \
   cd /app && \
-  python3 -m pip install --disable-pip-version-check --no-cache-dir -r requirements.txt && \
+  python3 -m pip install --disable-pip-version-check --no-cache-dir --requirement=requirements.txt --requirement=requirements-extra.txt && \
   apt remove --purge --autoremove --yes ${DEV_PACKAGES} binutils && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /root/.cache/* && \
