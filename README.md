@@ -809,9 +809,17 @@ Build it:
 
 ``` {.sourceCode .bash}
 git submodule update --recursive
-virtualenv --python=python3 .build/venv
+python3 -m venv .build/venv
+.build/venv/bin/pip install -r requirements.txt
 .build/venv/bin/pip install -e .
 .build/venv/bin/pip install -r dev-requirements.txt
+```
+
+Run prospector
+--------------
+
+``` {.sourceCode .bash}
+.build/venv/bin/prospector
 ```
 
 Run the tests
@@ -820,6 +828,7 @@ Run the tests
 Setup your environment:
 
 ``` {.sourceCode .bash}
+touch tilecloud_chain/OpenLayers.js
 docker build --tag camptocamp/tilecloud-chain .
 docker-compose -p tilecloud up
 ```
@@ -830,8 +839,8 @@ To run the tests:
 docker-compose -p tilecloud exec test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
 ```
 
-Environement variables
-----------------------
+Environment variables
+---------------------
 
 * TILE_NB_THREAD: Default is 2, The number of thread used to generate the tiles (If we use metatiles)
 * METATILE_NB_THREAD: Default is 25, The number of thread used to generate the meta tiles (If we use
