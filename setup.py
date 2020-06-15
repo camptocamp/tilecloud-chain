@@ -57,7 +57,7 @@ setup(
             "generate_process = tilecloud_chain.copy_:process",
             "import_expiretiles = tilecloud_chain.expiretiles:main",
         ],
-        "pyramid.scaffold": ["tilecloud_chain = tilecloud_chain.scaffolds:Create",],
-        "paste.app_factory": ["main = tilecloud_chain.server:main",],
+        "pyramid.scaffold": ["tilecloud_chain = tilecloud_chain.scaffolds:Create"],
+        "paste.app_factory": ["main = tilecloud_chain.server:main"],
     },
 )

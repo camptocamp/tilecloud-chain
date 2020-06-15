@@ -1,0 +1,38 @@
+---
+
+strictness: veryhigh
+
+pylint:
+  options:
+    max-line-length: 110
+  disable:
+    - too-many-statements
+    - too-many-branches
+    - no-else-return
+    - no-else-break
+    - invalid-name
+    - too-many-instance-attributes
+    - too-many-locals
+    - too-many-return-statements
+    - too-many-boolean-expressions
+    - too-many-arguments
+    - too-many-nested-blocks
+    - too-many-lines
+    - too-many-public-methods
+    - too-few-public-methods
+    - broad-except
+    - abstract-method
+    - wrong-import-order
+    - duplicate-string-formatting-argument
+
+pep8:
+  options:
+    max-line-length: 110
+  disable:
+    - E203
+
+mypy:
+  run: true
+
+mccabe:
+  run: false

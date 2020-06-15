@@ -1,6 +1,4 @@
 coverage==5.1
-flake8==3.8.3 # lint
-pep8==1.7.1 # lint
-pep8-naming==0.10.0 # Lint
-pyflakes==2.2.0 # lint
+mypy==0.770
+prospector==1.2.0
 twine==3.1.1
