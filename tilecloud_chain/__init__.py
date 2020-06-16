@@ -19,7 +19,6 @@ import subprocess
 import sys
 import tempfile
 import threading
-from threading import Lock, Thread
 import time
 
 from PIL import Image
@@ -165,7 +164,7 @@ class Run:
         )
         self.queue_store = queue_store
         self.error = 0
-        self.error_lock = Lock()
+        self.error_lock = threading.Lock()
         self.error_logger = LogErrors(
             logger, logging.ERROR, "Error in tile: %(tilecoord)s, %(formated_metadata)s, %(error)r"
         )
@@ -239,7 +238,7 @@ class TileGeneration:
         self.geoms = {}
         self._close_actions = []
         self._layers_geoms = {}
-        self.error_lock = Lock()
+        self.error_lock = threading.Lock()
         self.error_files_ = {}
         self.functions_tiles = []
         self.functions_metatiles = []
@@ -1027,7 +1026,7 @@ class TileGeneration:
                             pass
                     logger.debug("End run")
 
-                threads = [Thread(target=target, name="Run {}".format(i)) for i in range(nb_thread)]
+                threads = [threading.Thread(target=target, name="Run {}".format(i)) for i in range(nb_thread)]
                 for thread in threads:
                     thread.start()
 
@@ -1064,7 +1063,7 @@ class TileGeneration:
 class Count:
     def __init__(self):
         self.nb = 0
-        self.lock = Lock()
+        self.lock = threading.Lock()
 
     def __call__(self, tile=None):
         with self.lock:
@@ -1076,7 +1075,7 @@ class CountSize:
     def __init__(self):
         self.nb = 0
         self.size = 0
-        self.lock = Lock()
+        self.lock = threading.Lock()
 
     def __call__(self, tile=None):
         if tile and tile.data:
