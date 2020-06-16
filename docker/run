@@ -1,10 +1,9 @@
 #!/usr/bin/python
 
 import os
-import sys
 import stat
 import subprocess
-import tempfile
+import sys
 
 if 'GROUP_ID' not in os.environ:
     exit('The GROUP_ID environment variable is required')
