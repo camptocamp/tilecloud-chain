@@ -9,5 +9,5 @@ PyYAML==5.3.1
 redlock-py==1.0.8
 Shapely==1.7.0
 testfixtures==6.14.1
-tilecloud==1.4.3
+tilecloud==1.5.0
 unittest2==1.1.0
