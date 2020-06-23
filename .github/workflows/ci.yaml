@@ -35,18 +35,18 @@ jobs:
 
       - name: Test
         run: |
-          docker-compose --project-name=tilecloud --file=test-docker-compose.yaml up -d
+          docker-compose up -d
 
           # Wait for DB to be up
-          while ! docker exec tilecloud_test_1 psql -h db -p 5432 -U postgres -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests
+          while ! docker-compose exec -T test psql -h db -p 5432 -U postgres -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests
           do
             echo "Waiting for DB to be UP"
             sleep 1
           done
 
-          docker-compose --project-name=tilecloud --file=test-docker-compose.yaml exec -T test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
+          docker-compose exec -T test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
 
-          docker-compose --project-name=tilecloud --file=test-docker-compose.yaml down
+          docker-compose down
 
       - uses: camptocamp/initialise-gopass-summon-action@v1
         with:

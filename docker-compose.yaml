@@ -1,63 +1,81 @@
-db:
-  image: camptocamp/postgres:9.6
-  environment:
-    POSTGRES_USER: postgres
-    POSTGRES_PASSWORD: postgres
-    POSTGRES_DB: tests
-  volumes:
-    - ./docker/test-db:/docker-entrypoint-initdb.d:ro
+version: '2.2'
 
-mapserver:
-  image: camptocamp/mapserver:7.4
-  volumes:
-    - ./docker/mapfile-docker:/etc/mapserver:ro
-  links:
-    - db:db
-  user: www-data
+services:
 
-mapcache:
-  image: camptocamp/mapcache:1.6
-  volumes:
-    - ./docker/mapcache-docker:/etc/mapcache:ro
-  links:
-    - mapserver:mapserver
-    - memcached:memcached
-  user: www-data
+  db:
+    image: camptocamp/postgres:9.6
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tests
+    volumes:
+      - ./docker/test-db:/docker-entrypoint-initdb.d:ro
 
-memcached:
-  image: memcached:1.5
-  user: www-data
-  command:
-    - memcached
-    - --memory-limit=512
+  mapserver:
+    image: camptocamp/mapserver:7.4
+    environment:
+      MS_DEBUGLEVEL: "5"
+      MAPSERVER_CATCH_SEGV: "1"
+    volumes:
+      - ./docker/mapfile-docker:/etc/mapserver:ro
+    links:
+      - db:db
+    user: www-data
 
-redis:
-  image: redis:5
-  user: www-data
-  command:
-    - redis-server
-    - --save
-    - ''
-    - --appendonly
-    - 'no'
-    - --maxmemory
-    - 512mb
-    - --maxmemory-policy
-    - allkeys-lru
+  mapcache:
+    image: camptocamp/mapcache:1.6
+    volumes:
+      - ./docker/mapcache-docker:/etc/mapcache:ro
+    links:
+      - mapserver:mapserver
+      - memcached:memcached
+    user: www-data
 
-test:
-  image: camptocamp/tilecloud-chain:latest
-  working_dir: /app
-  environment:
-    CI: "TRUE"
-  command:
-    - sleep
-    - "3600"
-  links:
-    - db
-    - mapcache
-    - mapserver
-    - redis
-  volumes:
-    - ./tilecloud_chain:/app/tilecloud_chain
-    # - ../tilecloud/tilecloud:/usr/local/lib/python3.7/dist-packages/tilecloud
+  memcached:
+    image: memcached:1.5
+    user: www-data
+    command:
+      - memcached
+      - --memory-limit=512
+
+
+  redis_master:
+    image: redis:5
+
+
+  redis_slave:
+    image: redis:5
+    command: redis-server --slaveof redis_master 6379
+    depends_on:
+      - redis_master
+
+
+  redis_sentinel:
+    image: camptocamp/c2cwsgiutils-redis-sentinel:5
+    environment:
+      - MASTER_NAME=mymaster
+      - QUORUM=1
+      - MASTER=redis_master
+    depends_on:
+      - redis_master
+
+  test:
+    image: camptocamp/tilecloud-chain:latest
+    working_dir: /app
+    environment:
+      CI: "TRUE"
+      PGPASSWORD: postgres
+      TILE_NB_THREAD: 2
+      METATILE_NB_THREAD: 2
+      SERVER_NB_THREAD: 2
+    command:
+      - sleep
+      - infinity
+    links:
+      - db
+      - mapcache
+      - mapserver
+      - redis_sentinel
+    volumes:
+      - ./tilecloud_chain:/app/tilecloud_chain
+      # - ../tilecloud/tilecloud:/usr/local/lib/python3.7/dist-packages/tilecloud

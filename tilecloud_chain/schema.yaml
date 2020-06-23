@@ -278,8 +278,21 @@ mapping:
         mapping:
             url:
                 type: str
-                required: true
                 pattern: ^redis://[^:]+:[^:]+$
+            sentinels:
+                type: seq
+                sequence:
+                -   type: seq
+                    sequence:
+                    -   type: str
+                    -   type: int
+            service_name:
+                type: str
+                default: mymaster
+            socket_timeout:
+                type: int
+            db:
+                type: int
             queue:
                 type: str
                 default: tilecloud
