@@ -70,4 +70,6 @@ server:
     mapcache_base: http://mapcache:8080/
 
 redis:
-    url: redis://redis:6379
+    sentinels:
+      - - redis_sentinel
+        - 26379
