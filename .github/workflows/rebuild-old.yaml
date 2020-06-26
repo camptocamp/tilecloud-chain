@@ -16,7 +16,8 @@ jobs:
       fail-fast: false
       matrix:
         branch:
-          - '1.14'
+          - '1.12'
+          - '1.13'
 
     env:
       REDIS_URL: redis://localhost:6379
@@ -40,22 +41,17 @@ jobs:
           python setup.py --long-description > PYPI.md
           docker build --tag camptocamp/tilecloud-chain .
           git --no-pager diff --check `git log --oneline | tail -1 | cut --fields=1 --delimiter=' '`
-
       - name: Test
         run: |
-          docker-compose up -d
-
+          docker-compose --project-name=tilecloud --file=test-docker-compose.yaml up -d
           # Wait for DB to be up
-          while ! docker-compose exec -T test psql -h db -p 5432 -U postgres -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests
+          while ! docker exec tilecloud_test_1 psql -h db -p 5432 -U postgres -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests
           do
             echo "Waiting for DB to be UP"
             sleep 1
           done
-
-          docker-compose exec -T test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
-
-          docker-compose down
-
+          docker-compose --project-name=tilecloud --file=test-docker-compose.yaml exec -T test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
+          docker-compose --project-name=tilecloud --file=test-docker-compose.yaml down
       - uses: camptocamp/initialise-gopass-summon-action@v1
         with:
           ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
@@ -73,6 +69,5 @@ jobs:
               TOKEN: !var gs/ci/dockerhub/token
             ' bash -c 'envsubst < ci/docker-config.json.tmpl > ~/.docker/config.json'
         if: github.repository == 'camptocamp/tilecloud-chain'
-
       - name: Publish
         run: ci/publish ${{ matrix.branch }}
