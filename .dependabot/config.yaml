@@ -1,5 +1,4 @@
 ---
-
 version: 1
 update_configs:
   - package_manager: python
@@ -15,38 +14,6 @@ update_configs:
     ignored_updates:
       - match:
           dependency_name: none
-  - package_manager: python
-    directory: /
-    update_schedule: live
-    target_branch: "1.11"
-    allowed_updates:
-      - match:
-          dependency_type: all
-          update_type: security
-  - package_manager: python
-    directory: /
-    update_schedule: live
-    target_branch: "1.12"
-    allowed_updates:
-      - match:
-          dependency_type: all
-          update_type: security
-  - package_manager: python
-    directory: /
-    update_schedule: live
-    target_branch: "1.13"
-    allowed_updates:
-      - match:
-          dependency_type: all
-          update_type: security
-  - package_manager: python
-    directory: /
-    update_schedule: live
-    target_branch: "1.14"
-    allowed_updates:
-      - match:
-          dependency_type: all
-          update_type: security
 
   - package_manager: docker
     directory: /
