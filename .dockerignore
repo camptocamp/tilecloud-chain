@@ -1,10 +1,13 @@
 *
 !setup.py
+!setup.cfg
 !requirements.txt
-!requirements-extra.txt
+!Pipfile
+!Pipfile.lock
 !README.md
 !CHANGES.md
 !MANIFEST.in
 !tilecloud_chain/*
 !docker/run
 !production.ini
+!.prospector.yaml

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from itertools import product, repeat
 import os
 import shutil
-from itertools import product, repeat
 
 from nose.plugins.attrib import attr
-
 from testfixtures import log_capture
+
 from tilecloud.store.redis import RedisTileStore
 from tilecloud_chain import controller, generate
 from tilecloud_chain.tests import CompareCase
