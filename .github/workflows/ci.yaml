@@ -8,7 +8,7 @@ jobs:
   main:
     runs-on: ubuntu-20.04
     name: Continuous integration
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     env:
       REDIS_URL: redis://localhost:6379
