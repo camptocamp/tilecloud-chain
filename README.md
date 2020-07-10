@@ -29,6 +29,13 @@ Features:
 -   Post processing the generated tiles.
 -   ...
 
+Legacy features:
+
+-   bsddb support
+-   sqlite (mbtiles) support
+-   mapnik support (should be updated for Python3)
+-   mapcache (replaced by internal mapcache)
+
 Get it
 ------
 
