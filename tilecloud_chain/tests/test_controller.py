@@ -3,8 +3,6 @@
 import os
 import shutil
 
-from nose.plugins.attrib import attr
-
 from tilecloud_chain import controller
 from tilecloud_chain.tests import CompareCase
 
@@ -25,7 +23,6 @@ class TestController(CompareCase):
         if os.path.exists("/tmp/tiles"):
             shutil.rmtree("/tmp/tiles")
 
-    @attr(general=True)
     def test_capabilities(self):
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml",
@@ -963,7 +960,6 @@ class TestController(CompareCase):
 </Capabilities>"""
     )
 
-    @attr(general=True)
     def test_multi_host_capabilities(self):
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml "
@@ -973,7 +969,6 @@ class TestController(CompareCase):
             expected=[["/tmp/tiles/1.0.0/WMTSCapabilities.xml", self.MULTIHOST_CAPABILITIES]],
         )
 
-    @attr(general=True)
     def test_capabilities_slash(self):
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-capabilities.yaml",
@@ -1112,7 +1107,6 @@ class TestController(CompareCase):
             ],
         )
 
-    @attr(general=True)
     def test_multi_url_capabilities(self):
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml "
@@ -1122,7 +1116,6 @@ class TestController(CompareCase):
             expected=[["/tmp/tiles/1.0.0/WMTSCapabilities.xml", self.MULTIHOST_CAPABILITIES]],
         )
 
-    @attr(general=True)
     def test_mapcache(self):
         self.assert_main_equals(
             cmd=(
@@ -1457,7 +1450,6 @@ class TestController(CompareCase):
             ],
         )  # noqa: E501
 
-    @attr(general=True)
     def test_mapcache2(self):
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --mapcache -c tilegeneration/test-nodim.yaml",
@@ -1541,7 +1533,6 @@ class TestController(CompareCase):
             ],
         )
 
-    @attr(general=True)
     def test_apache(self):
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --apache -c tilegeneration/test-fix.yaml",
@@ -1585,7 +1576,6 @@ MapCacheAlias /mapcache "{}"
             ],
         )
 
-    @attr(general=True)
     def test_apache_s3(self):
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --cache s3 --apache -c tilegeneration/test-fix.yaml",
@@ -1619,7 +1609,6 @@ MapCacheAlias /mapcache "%s"
             ],
         )
 
-    @attr(general=True)
     def test_apache_s3_tilesurl(self):
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --apache "
@@ -2047,7 +2036,6 @@ provider:
   url: The provider URL"""
     )
 
-    @attr(general=True)
     def test_config(self):
         self.assert_cmd_yaml_equals(
             cmd=".build/venv/bin/generate_controller --dump-config -c tilegeneration/test-fix.yaml",
@@ -2055,7 +2043,6 @@ provider:
             expected=self.CONFIG,
         )
 
-    @attr(general=True)
     def test_config_line(self):
         self.assert_cmd_yaml_equals(
             cmd=".build/venv/bin/generate_controller -l line --dump-config -c tilegeneration/test-fix.yaml",
@@ -2063,7 +2050,6 @@ provider:
             expected=self.CONFIG,
         )
 
-    @attr(general=True)
     def test_openlayers(self):
         html = """<!DOCTYPE html>
 <html>
@@ -2242,7 +2228,6 @@ OpenLayers.Request.GET({
             ],
         )
 
-    @attr(general=True)
     def test_quote(self):
         from tilecloud_chain import quote
 
@@ -2253,7 +2238,6 @@ OpenLayers.Request.GET({
         self.assertEqual(quote("a\" b' c"), "'a\" b\\' c'")
         self.assertEqual(quote(""), "''")
 
-    @attr(general=True)
     def test_legends(self):
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends.yaml --legends",

@@ -24,6 +24,8 @@ jobs:
           github-gopass-ci-token: ${{secrets.GITHUB_GOPASS_CI_TOKEN}}
         if: github.repository == 'camptocamp/tilecloud-chain'
 
+      - run: touch tilecloud_chain/OpenLayers.js
+
       - name: Build
         run: |
           python setup.py --long-description > PYPI.md
@@ -42,7 +44,7 @@ jobs:
             sleep 1
           done
 
-          docker-compose exec -T test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
+          docker-compose exec -T test pytest
 
           docker-compose down
 

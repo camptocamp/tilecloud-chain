@@ -4,7 +4,6 @@ import os
 import shutil
 
 import requests
-from nose.plugins.attrib import attr
 
 from tilecloud_chain import copy_
 from tilecloud_chain.tests import CompareCase
@@ -27,7 +26,6 @@ class TestGenerate(CompareCase):
         if os.path.exists("/tmp/tiles"):
             shutil.rmtree("/tmp/tiles")
 
-    @attr(general=True)
     def test_copy(self):
         with open("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png", "w") as f:
             f.write("test image")
@@ -54,7 +52,6 @@ Size per tile: 10(.0)? o
         with open("/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png", "r") as f:
             self.assertEqual(f.read(), "test image")
 
-    @attr(general=True)
     def test_process(self):
         for d in ("-vd", "-q", "-v", ""):
             response = requests.get(
