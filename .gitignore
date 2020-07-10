@@ -1,9 +1,10 @@
 *.py[co]
-.*.swp
-.*.swp.!sync
 /dist
 /.build
 /tilecloud_chain/OpenLayers.js
 /.mypy_cache/
 /PYPI.md
 /tilecloud_chain.egg-info/
+/tilecloud_chain/tests/error.list
+/tilecloud_chain/tests/mapcache.xml
+/tilecloud_chain/tests/tiles.conf
