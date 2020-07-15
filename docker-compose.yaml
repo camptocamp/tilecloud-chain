@@ -1,7 +1,6 @@
 version: '2.2'
 
 services:
-
   db:
     image: camptocamp/postgres:9.6
     environment:
@@ -14,8 +13,8 @@ services:
   mapserver:
     image: camptocamp/mapserver:7.4
     environment:
-      MS_DEBUGLEVEL: "5"
-      MAPSERVER_CATCH_SEGV: "1"
+      MS_DEBUGLEVEL: '5'
+      MAPSERVER_CATCH_SEGV: '1'
     volumes:
       - ./docker/mapfile-docker:/etc/mapserver:ro
     links:
@@ -38,17 +37,14 @@ services:
       - memcached
       - --memory-limit=512
 
-
   redis_master:
     image: redis:5
-
 
   redis_slave:
     image: redis:5
     command: redis-server --slaveof redis_master 6379
     depends_on:
       - redis_master
-
 
   redis_sentinel:
     image: camptocamp/c2cwsgiutils-redis-sentinel:5
@@ -60,10 +56,10 @@ services:
       - redis_master
 
   test:
-    image: camptocamp/tilecloud-chain
+    image: camptocamp/tilecloud-chain:tests
     working_dir: /app
     environment:
-      CI: "TRUE"
+      CI: 'TRUE'
       PGPASSWORD: postgres
       TILE_NB_THREAD: 2
       METATILE_NB_THREAD: 2

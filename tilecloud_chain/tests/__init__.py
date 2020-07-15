@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 
+from io import StringIO
 import logging
+from logging import config
 import os
 import re
 import shutil
 import sys
 import traceback
-from io import StringIO
-from logging import config
-
-from unittest2 import TestCase
+from unittest import TestCase
 
 DIFF = 200
 log = logging.getLogger("tests")

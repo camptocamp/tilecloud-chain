@@ -2,8 +2,6 @@
 
 import os
 
-from nose.plugins.attrib import attr
-
 from tilecloud_chain import cost
 from tilecloud_chain.tests import CompareCase
 
@@ -42,7 +40,6 @@ S3 get: %(get)s [$/month]
 """
     # CloudFront: %(cloudfront)s [$/month]
 
-    @attr(general=True)
     def test_cost_point(self):
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l point",
@@ -77,7 +74,6 @@ S3 get: %(get)s [$/month]
             ),
         )
 
-    @attr(general=True)
     def test_cost_point_count(self):
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l point --cost-algo count",
@@ -112,7 +108,6 @@ S3 get: %(get)s [$/month]
             ),
         )
 
-    @attr(general=True)
     def test_cost_line(self):
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l line",
@@ -151,7 +146,6 @@ S3 get: %(get)s [$/month]
             ),
         )
 
-    @attr(general=True)
     def test_cost_line_count(self):
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_cost -d -c tilegeneration/test-fix.yaml -l line --cost-algo count",
@@ -190,7 +184,6 @@ S3 get: %(get)s [$/month]
             ),
         )
 
-    @attr(general=True)
     def test_cost_polygon(self):
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l polygon",
@@ -224,7 +217,6 @@ S3 get: %(get)s [$/month]
             ),
         )
 
-    @attr(general=True)
     def test_cost_polygon_count(self):
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml "
@@ -259,7 +251,6 @@ S3 get: %(get)s [$/month]
             ),
         )
 
-    @attr(general=True)
     def test_cost_default(self):
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml",
@@ -320,7 +311,6 @@ S3 get: %(get)s [$/month]
             ),
         )
 
-    @attr(general=True)
     def test_cost_polygon2(self):
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l polygon2",
@@ -352,7 +342,6 @@ S3 get: %(get)s [$/month]
             ),
         )
 
-    @attr(general=True)
     def test_cost_nometa(self):
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l all",
@@ -386,7 +375,6 @@ S3 get: %(get)s [$/month]
             ),
         )
 
-    @attr(general=True)
     def test_cost_layer_bbox(self):
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l all --cost-algo count",
@@ -420,7 +408,6 @@ S3 get: %(get)s [$/month]
             ),
         )
 
-    @attr(general=True)
     def test_cost_no_geom(self):
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l point --no-geom",
@@ -455,7 +442,6 @@ S3 get: %(get)s [$/month]
             ),
         )
 
-    @attr(general=True)
     def test_cost_sqs_nometa(self):
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_cost -c tilegeneration/test.yaml -l point_hash_no_meta",

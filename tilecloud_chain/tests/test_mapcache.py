@@ -2,8 +2,8 @@ import os
 import threading
 import time
 
-from nose.plugins.attrib import attr
 from pyramid.testing import DummyRequest
+import pytest
 
 from tilecloud_chain import internal_mapcache, server
 from tilecloud_chain.server import PyramidView
@@ -15,7 +15,7 @@ class TestMapcache(CompareCase):
     def setUpClass(cls):  # noqa
         os.chdir(os.path.dirname(__file__))
 
-    @attr(general=True, mapcache=True)
+    @pytest.mark.skip(reason="Don't test mapcache")
     def test_internal(self):
         assert threading.active_count() == 1, ", ".join([str(t) for t in threading.enumerate()])
 
@@ -25,7 +25,7 @@ class TestMapcache(CompareCase):
         time.sleep(0.1)
         assert threading.active_count() == 1, ", ".join([str(t) for t in threading.enumerate()])
 
-    @attr(general=True, mapcache=True)
+    @pytest.mark.skip(reason="Don't test mapcache")
     def test_external(self):
         self._do_test("test-external-mapcache.yaml")
 
