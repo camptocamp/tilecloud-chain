@@ -28,7 +28,6 @@ RUN \
   pipenv install --system --clear && \
   python3 -m compileall /usr/local/lib/python3.8 /usr/lib/python3.8 -q \
   -x '/usr/local/lib/python3.8/dist-packages/pipenv/' && \
-  strip /usr/local/lib/python3.8/dist-packages/lxml/*.so && \
   strip /usr/local/lib/python3.8/dist-packages/shapely/*/*.so && \
   apt remove --purge --autoremove --yes ${DEV_PACKAGES} binutils && \
   apt clean && \
