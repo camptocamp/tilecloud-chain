@@ -4,7 +4,7 @@ url = "https://pypi.org/simple/"
 verify_ssl = true
 
 [packages]
-c2cwsgiutils = "==4.0.0"
+c2cwsgiutils = "==4.0.1"
 pykwalify = "==1.7.0"
 pyramid-mako = "==1.1.0"
 python-dateutil = "==2.8.1"
@@ -13,6 +13,16 @@ tilecloud = "==1.5.0"
 Jinja2 = "==2.11.2"
 PyYAML = "==5.3.1"
 Shapely = "==1.7.0"
+gunicorn = "==20.0.4"  # c2cwsgiutils
+objgraph = "==3.4.1"  # c2cwsgiutils
+psycopg2 = "==2.8.5"  # c2cwsgiutils
+pyramid-tm = "==2.4"  # c2cwsgiutils
+sentry-sdk = "==0.16.1"  # c2cwsgiutils
+sqlalchemy = "==1.3.18"  # c2cwsgiutils
+transaction = "==3.0.0"  # c2cwsgiutils
+ujson = "==3.0.0"  # c2cwsgiutils
+cornice = "==5.0.1"  # c2cwsgiutils
+"zope.sqlalchemy" = "==1.3"  # c2cwsgiutils
 
 [dev-packages]
 coverage = "==5.2"
