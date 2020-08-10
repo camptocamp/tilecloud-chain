@@ -9,7 +9,7 @@ jobs:
   main:
     runs-on: ubuntu-18.04
     name: Audit
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     strategy:
       fail-fast: false
