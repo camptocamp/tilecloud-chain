@@ -1,3 +1,0 @@
-[submodule "openlayers"]
-	path = openlayers
-	url = git://github.com/sbrunner/openlayers.git
