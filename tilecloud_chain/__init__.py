@@ -24,6 +24,7 @@ from threading import Lock, Thread
 import boto3
 import psycopg2
 import yaml
+from c2cwsgiutils import sentry, stats
 from PIL import Image
 from pykwalify.core import Core
 from pykwalify.errors import NotMappingError, NotSequenceError, SchemaError
@@ -31,7 +32,6 @@ from shapely.geometry import Polygon
 from shapely.ops import cascaded_union
 from shapely.wkb import loads as loads_wkb
 
-from c2cwsgiutils import sentry, stats
 from tilecloud import BoundingPyramid, Tile, TileCoord, TileStore, consume
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
 from tilecloud.filter.logger import Logger
@@ -1388,7 +1388,8 @@ def get_queue_store(config, daemon):
             max_retries=conf["max_retries"],
             max_errors_age=conf["max_errors_age"],
             max_errors_nb=conf["max_errors_nb"],
-            connection_kwargs={},
+            connection_kwargs=conf.get("connection_kwargs"),
+            sentinel_kwargs=conf.get("sentinel_kwargs"),
         )
         if "socket_timeout" in conf:
             tilestore_kwargs["connection_kwargs"]["socket_timeout"] = conf["socket_timeout"]
