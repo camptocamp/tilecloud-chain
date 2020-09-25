@@ -30,8 +30,6 @@ from pykwalify.errors import NotMappingError, NotSequenceError, SchemaError
 from shapely.geometry import Polygon
 from shapely.ops import cascaded_union
 from shapely.wkb import loads as loads_wkb
-import yaml
-
 from tilecloud import BoundingPyramid, Tile, TileCoord, TileStore, consume
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
 from tilecloud.filter.logger import Logger
@@ -43,6 +41,8 @@ from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.store.redis import RedisTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.sqs import SQSTileStore, maybe_stop
+import yaml
+
 from tilecloud_chain.multitilestore import MultiTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
@@ -1388,7 +1388,8 @@ def get_queue_store(config, daemon):
             max_retries=conf["max_retries"],
             max_errors_age=conf["max_errors_age"],
             max_errors_nb=conf["max_errors_nb"],
-            connection_kwargs={},
+            connection_kwargs=conf.get("connection_kwargs"),
+            sentinel_kwargs=conf.get("sentinel_kwargs"),
         )
         if "socket_timeout" in conf:
             tilestore_kwargs["connection_kwargs"]["socket_timeout"] = conf["socket_timeout"]
