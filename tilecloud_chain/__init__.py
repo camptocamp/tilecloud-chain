@@ -1388,7 +1388,7 @@ def get_queue_store(config, daemon):
             max_retries=conf["max_retries"],
             max_errors_age=conf["max_errors_age"],
             max_errors_nb=conf["max_errors_nb"],
-            connection_kwargs=conf.get("connection_kwargs"),
+            connection_kwargs=conf.get("connection_kwargs", {}),
             sentinel_kwargs=conf.get("sentinel_kwargs"),
         )
         if "socket_timeout" in conf:
