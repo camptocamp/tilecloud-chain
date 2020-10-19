@@ -54,6 +54,8 @@ jobs:
 
       - name: Check Python package
         run: |
+          sudo rm /etc/apt/sources.list.d/*.list
+          sudo apt update
           sudo apt install --yes python3-setuptools python3-wheel
           python3 -m pip install --requirement=requirements-publish.txt
           python3 ./setup.py bdist_wheel
