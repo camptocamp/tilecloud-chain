@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import collections
 import datetime
 import logging
 import mimetypes
@@ -51,8 +52,26 @@ tilegeneration = None
 def init_tilegeneration(config_file):
     global tilegeneration
     if tilegeneration is None:
-        logger.info("Config file: '{}'".format(config_file))
-        tilegeneration = TileGeneration(config_file, configure_logging=False, multi_thread=False)
+        logger.info("Config file: '%s'", config_file)
+        log_level = os.environ.get("TILE_SERVER_LOGLEVEL")
+        tilegeneration = TileGeneration(
+            config_file,
+            collections.namedtuple(
+                "Options", ["verbose", "debug", "quiet", "bbox", "zoom", "test", "near", "time", "geom"],
+            )(
+                log_level == "verbose",
+                log_level == "debug",
+                log_level == "quiet",
+                None,
+                None,
+                None,
+                None,
+                None,
+                True,
+            ),
+            configure_logging=False,
+            multi_thread=False,
+        )
 
 
 class Server:
@@ -159,9 +178,7 @@ class Server:
                         dimensions = {}
                         dimensions.update(store_def["dimensions"])
                         dimensions[dimension["name"]] = value
-                        new_store_defs.append(
-                            {"ref": store_def["ref"] + [value], "dimensions": dimensions}
-                        )
+                        new_store_defs.append({"ref": store_def["ref"] + [value], "dimensions": dimensions})
                 store_defs = new_store_defs
             for store_def in store_defs:
                 self.stores["/".join(store_def["ref"])] = tilegeneration.get_store(

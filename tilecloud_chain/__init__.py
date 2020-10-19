@@ -49,6 +49,16 @@ from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 logger = logging.getLogger(__name__)
 
 
+def formated_metadata(tile):
+    metadata = dict(tile.metadata)
+    if "tiles" in metadata:
+        metadata["tiles"] = metadata["tiles"].keys()
+    return " ".join(["{}={}".format(k, metadata[k]) for k in sorted(metadata.keys())])
+
+
+setattr(Tile, "formated_metadata", property(formated_metadata))
+
+
 def add_comon_options(
     parser, tile_pyramid=True, no_geom=True, near=True, time=True, dimensions=False, cache=True
 ):
@@ -167,8 +177,11 @@ class Run:
         if tile is None:
             return
 
+        if "tiles" in tile.metadata:
+            tile.metadata["tiles"][tile.tilecoord] = tile
+
         tilecoord = tile.tilecoord
-        logger.debug("[%s] Metadata: %s", tilecoord, tile.metadata)
+        logger.debug("[%s] Metadata: %s", tilecoord, tile.formated_metadata)
         for func in self.functions:
             try:
                 logger.debug("[%s] Run: %s", tilecoord, func)
@@ -755,7 +768,10 @@ class TileGeneration:
                 variables = dict()
                 variables.update(tile.__dict__)
                 variables.update(tile.tilecoord.__dict__)
-                sys.stdout.write("{tilecoord} {metadata}                         \r".format(**variables))
+                variables["formated_metadata"] = tile.formated_metadata
+                sys.stdout.write(
+                    "{tilecoord} {formated_metadata}                         \r".format(**variables)
+                )
                 sys.stdout.flush()
                 return tile
 
