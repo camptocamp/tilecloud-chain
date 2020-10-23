@@ -74,8 +74,8 @@ class RedisStore(TileStore):
             sentinel = redis.sentinel.Sentinel(config["sentinels"], **connection_kwargs)
             self._master = sentinel.master_for(config.get("service_name", "mymaster"))
             self._slave = sentinel.slave_for(config.get("service_name", "mymaster"))
-        self._prefix = config['prefix']
-        self._expiration = config['expiration']
+        self._prefix = config["prefix"]
+        self._expiration = config["expiration"]
         self._redis_lock = redlock.Redlock(
             [self._master], retry_count=MAX_GENERATION_TIME / RETRY_DELAY, retry_delay=RETRY_DELAY
         )
@@ -154,11 +154,21 @@ class Generator:
         redis_config = tilegeneration.config["redis"]
         self._cache_store = RedisStore(redis_config)
         self.threads = []
+        log_level = os.environ.get("TILE_MAPCACHE_LOGLEVEL")
         generator = Generate(
             collections.namedtuple(
                 "Options",
                 ["verbose", "debug", "quiet", "role", "near", "time", "daemon", "local_process_number"],
-            )(False, False, False, "server", True, False, True, None),
+            )(
+                log_level == "verbose",
+                log_level == "debug",
+                log_level == "quiet",
+                "server",
+                True,
+                False,
+                True,
+                None,
+            ),
             tilegeneration,
             server=True,
         )
@@ -210,6 +220,8 @@ def fetch(server, tilegeneration, layer, tile, kwargs):
     generator = _get_generator(tilegeneration)
     fetched_tile = generator.read_from_cache(tile)
     if fetched_tile is None:
+
+        tile.metadata.setdefault("tiles", {})
         meta_tile = tile
         if layer.get("meta", False):
             meta_tile = Tile(
@@ -220,9 +232,8 @@ def fetch(server, tilegeneration, layer, tile, kwargs):
             fetched_tile = generator.read_from_cache(tile)
             if fetched_tile is None:
                 generator.compute_tile(meta_tile)
-
-                fetched_tile = generator.read_from_cache(tile)
-                assert fetched_tile is not None
+                # Don't fetch the just generated tile
+                fetched_tile = meta_tile.metadata["tiles"][tile.tilecoord]
 
     response_headers = {
         "Expires": (datetime.datetime.utcnow() + datetime.timedelta(hours=server.expires_hours)).isoformat(),
