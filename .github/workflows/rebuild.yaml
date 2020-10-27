@@ -1,10 +1,9 @@
 ---
-
 name: Rebuild
 
 on:
   schedule:
-    - cron: "30 2 * * *"
+    - cron: '30 2 * * *'
 
 jobs:
   rebuild:
@@ -16,7 +15,9 @@ jobs:
       fail-fast: false
       matrix:
         branch:
+          - master
           - '1.14'
+          - '1.15'
 
     env:
       REDIS_URL: redis://localhost:6379
