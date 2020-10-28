@@ -7,7 +7,7 @@ on:
 
 jobs:
   rebuild:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     name: Rebuild
     timeout-minutes: 15
 
@@ -29,12 +29,11 @@ jobs:
         with:
           ref: ${{ matrix.branch }}
 
-      - run: |
-          sudo rm /etc/apt/sources.list.d/*.list
-          sudo apt update
-          sudo apt install python3-wheel python3-setuptools
-
-      - run: python3 -m pip install --requirement=dev-requirements.txt
+      - uses: camptocamp/initialise-gopass-summon-action@v1
+        with:
+          ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
+          github-gopass-ci-token: ${{secrets.GOPASS_CI_GITHUB_TOKEN}}
+        if: github.repository == 'camptocamp/tilecloud-chain'
 
       - run: touch tilecloud_chain/OpenLayers.js
 
@@ -59,11 +58,16 @@ jobs:
 
           docker-compose down
 
-      - uses: camptocamp/initialise-gopass-summon-action@v1
-        with:
-          ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
-          github-gopass-ci-token: ${{secrets.GITHUB_GOPASS_CI_TOKEN}}
-        if: github.repository == 'camptocamp/tilecloud-chain'
+      - run: docker-compose logs
+        if: failure()
+
+      - run: |
+          sudo rm /etc/apt/sources.list.d/*.list
+          sudo apt update
+          sudo apt install python3-wheel python3-setuptools
+
+      - run: python3 -m pip install --requirement=requirements-publish.txt
+
       - run: |
           summon --yaml '
               USERNAME: !var gs/ci/pypi/username
