@@ -1,4 +1,4 @@
-FROM camptocamp/c2cwsgiutils:3-full
+FROM camptocamp/c2cwsgiutils:3-full as tests
 MAINTAINER Stéphane Brunner <stephane.brunner@camptocamp.com>
 
 COPY requirements.txt /app/
