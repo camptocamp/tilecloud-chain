@@ -41,7 +41,7 @@ jobs:
         run: |
           python setup.py --long-description > PYPI.md
           docker build --tag=camptocamp/tilecloud-chain:tests --target=tests .
-          docker build --tag camptocamp/tilecloud-chain .
+          docker build --tag=camptocamp/tilecloud-chain .
           git --no-pager diff --check `git log --oneline | tail -1 | cut --fields=1 --delimiter=' '`
 
       - name: Test
@@ -55,7 +55,8 @@ jobs:
             sleep 1
           done
 
-          docker-compose exec -T test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
+          # nosetests is for version 1.14
+          docker-compose exec -T test pytest || docker-compose exec -T test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
 
           docker-compose down
 
@@ -65,7 +66,7 @@ jobs:
       - run: |
           sudo rm /etc/apt/sources.list.d/*.list
           sudo apt update
-          sudo apt install python3-wheel python3-setuptools
+          sudo apt install --yes python3-wheel python3-setuptools
 
       - run: python3 -m pip install --requirement=requirements-publish.txt
 
