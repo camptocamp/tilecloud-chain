@@ -1,15 +1,14 @@
 ---
-
-name: Rebuild
+name: Rebuild old
 
 on:
   schedule:
-    - cron: "30 2 * * *"
+    - cron: '30 2 * * *'
 
 jobs:
   rebuild:
     runs-on: ubuntu-18.04
-    name: Rebuild
+    name: Rebuild old
     timeout-minutes: 15
 
     strategy:
