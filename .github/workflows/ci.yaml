@@ -68,7 +68,7 @@ jobs:
             ' bash -c 'envsubst < ci/pypirc.tmpl > ~/.pypirc'
         if: github.repository == 'camptocamp/tilecloud-chain'
       - run: |
-          mkdir  ~/.docker
+          mkdir -p ~/.docker
           summon --yaml '
               TOKEN: !var gs/ci/dockerhub/token
             ' bash -c 'envsubst < ci/docker-config.json.tmpl > ~/.docker/config.json'
