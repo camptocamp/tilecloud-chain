@@ -1,5 +1,5 @@
 ---
-name: Rebuild
+name: Rebuild 1.14
 
 on:
   schedule:
@@ -7,16 +7,15 @@ on:
 
 jobs:
   rebuild:
-    runs-on: ubuntu-20.04
-    name: Rebuild
-    timeout-minutes: 20
+    runs-on: ubuntu-18.04
+    name: Rebuild 1.14
+    timeout-minutes: 15
 
     strategy:
       fail-fast: false
       matrix:
         branch:
-          - master
-          - '1.15'
+          - '1.14'
 
     env:
       REDIS_URL: redis://localhost:6379
@@ -28,19 +27,19 @@ jobs:
         with:
           ref: ${{ matrix.branch }}
 
-      - uses: camptocamp/initialise-gopass-summon-action@v1
-        with:
-          ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
-          github-gopass-ci-token: ${{secrets.GOPASS_CI_GITHUB_TOKEN}}
-        if: github.repository == 'camptocamp/tilecloud-chain'
+      - run: |
+          sudo rm /etc/apt/sources.list.d/*.list
+          sudo apt update
+          sudo apt install python3-wheel python3-setuptools
+
+      - run: python3 -m pip install --requirement=dev-requirements.txt
 
       - run: touch tilecloud_chain/OpenLayers.js
 
       - name: Build
         run: |
           python setup.py --long-description > PYPI.md
-          docker build --tag=camptocamp/tilecloud-chain:tests --target=tests .
-          docker build --tag=camptocamp/tilecloud-chain .
+          docker build --tag camptocamp/tilecloud-chain .
           git --no-pager diff --check `git log --oneline | tail -1 | cut --fields=1 --delimiter=' '`
 
       - name: Test
@@ -54,21 +53,15 @@ jobs:
             sleep 1
           done
 
-          # nosetests is for version 1.14
-          docker-compose exec -T test pytest || docker-compose exec -T test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
+          docker-compose exec -T test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
 
           docker-compose down
 
-      - run: docker-compose logs
-        if: failure()
-
-      - run: |
-          sudo rm /etc/apt/sources.list.d/*.list
-          sudo apt update
-          sudo apt install --yes python3-wheel python3-setuptools
-
-      - run: python3 -m pip install --requirement=requirements-publish.txt
-
+      - uses: camptocamp/initialise-gopass-summon-action@v1
+        with:
+          ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
+          github-gopass-ci-token: ${{secrets.GITHUB_GOPASS_CI_TOKEN}}
+        if: github.repository == 'camptocamp/tilecloud-chain'
       - run: |
           summon --yaml '
               USERNAME: !var gs/ci/pypi/username
@@ -76,7 +69,7 @@ jobs:
             ' bash -c 'envsubst < ci/pypirc.tmpl > ~/.pypirc'
         if: github.repository == 'camptocamp/tilecloud-chain'
       - run: |
-          mkdir -p ~/.docker
+          mkdir  ~/.docker
           summon --yaml '
               TOKEN: !var gs/ci/dockerhub/token
             ' bash -c 'envsubst < ci/docker-config.json.tmpl > ~/.docker/config.json'
