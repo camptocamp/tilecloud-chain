@@ -21,18 +21,17 @@ jobs:
     env:
       REDIS_URL: redis://localhost:6379
       PATH: /bin:/usr/bin:/usr/local/bin:/home/runner/.local/bin
-      SUMMON_PROVIDER: /usr/local/bin/gopass
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         with:
           ref: ${{ matrix.branch }}
 
-      - uses: camptocamp/initialise-gopass-summon-action@v1
+      - uses: camptocamp/initialise-gopass-summon-action@v2
         with:
           ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
           github-gopass-ci-token: ${{secrets.GOPASS_CI_GITHUB_TOKEN}}
-        if: github.repository == 'camptocamp/tilecloud-chain'
+          patterns: pypi docker
 
       - run: touch tilecloud_chain/OpenLayers.js
 
@@ -68,19 +67,6 @@ jobs:
           sudo apt install --yes python3-wheel python3-setuptools
 
       - run: python3 -m pip install --requirement=requirements-publish.txt
-
-      - run: |
-          summon --yaml '
-              USERNAME: !var gs/ci/pypi/username
-              PASSWORD: !var gs/ci/pypi/password
-            ' bash -c 'envsubst < ci/pypirc.tmpl > ~/.pypirc'
-        if: github.repository == 'camptocamp/tilecloud-chain'
-      - run: |
-          mkdir -p ~/.docker
-          summon --yaml '
-              TOKEN: !var gs/ci/dockerhub/token
-            ' bash -c 'envsubst < ci/docker-config.json.tmpl > ~/.docker/config.json'
-        if: github.repository == 'camptocamp/tilecloud-chain'
 
       - name: Publish
         run: ci/publish ${{ matrix.branch }}

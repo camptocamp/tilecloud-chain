@@ -21,10 +21,9 @@ jobs:
     env:
       REDIS_URL: redis://localhost:6379
       PATH: /bin:/usr/bin:/usr/local/bin:/home/runner/.local/bin
-      SUMMON_PROVIDER: /usr/local/bin/gopass
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         with:
           ref: ${{ matrix.branch }}
 
@@ -53,22 +52,12 @@ jobs:
           done
           docker-compose --project-name=tilecloud --file=test-docker-compose.yaml exec -T test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
           docker-compose --project-name=tilecloud --file=test-docker-compose.yaml down
-      - uses: camptocamp/initialise-gopass-summon-action@v1
+
+      - uses: camptocamp/initialise-gopass-summon-action@v2
         with:
           ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
           github-gopass-ci-token: ${{secrets.GOPASS_CI_GITHUB_TOKEN}}
-        if: github.repository == 'camptocamp/tilecloud-chain'
-      - run: |
-          summon --yaml '
-              USERNAME: !var gs/ci/pypi/username
-              PASSWORD: !var gs/ci/pypi/password
-            ' bash -c 'envsubst < ci/pypirc.tmpl > ~/.pypirc'
-        if: github.repository == 'camptocamp/tilecloud-chain'
-      - run: |
-          mkdir -p ~/.docker
-          summon --yaml '
-              TOKEN: !var gs/ci/dockerhub/token
-            ' bash -c 'envsubst < ci/docker-config.json.tmpl > ~/.docker/config.json'
+          patterns: pypi docker
         if: github.repository == 'camptocamp/tilecloud-chain'
       - name: Publish
         run: ci/publish ${{ matrix.branch }}
