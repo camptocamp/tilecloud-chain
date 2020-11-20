@@ -14,10 +14,9 @@ jobs:
     env:
       REDIS_URL: redis://localhost:6379
       PATH: /bin:/usr/bin:/usr/local/bin:/home/runner/.local/bin
-      SUMMON_PROVIDER: /usr/local/bin/gopass
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
       - run: sudo apt update
       - run: sudo apt install python3-wheel python3-setuptools
@@ -48,23 +47,24 @@ jobs:
 
           docker-compose down
 
-      - uses: camptocamp/initialise-gopass-summon-action@v1
+      - uses: camptocamp/initialise-gopass-summon-action@v2
         with:
           ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
-          github-gopass-ci-token: ${{secrets.GITHUB_GOPASS_CI_TOKEN}}
+          github-gopass-ci-token: ${{secrets.GOPASS_CI_GITHUB_TOKEN}}
+          patterns: pypi docker
         if: github.repository == 'camptocamp/tilecloud-chain'
-      - run: |
-          summon --yaml '
-              USERNAME: !var gs/ci/pypi/username
-              PASSWORD: !var gs/ci/pypi/password
-            ' bash -c 'envsubst < ci/pypirc.tmpl > ~/.pypirc'
-        if: github.repository == 'camptocamp/tilecloud-chain'
-      - run: |
-          mkdir -p ~/.docker
-          summon --yaml '
-              TOKEN: !var gs/ci/dockerhub/token
-            ' bash -c 'envsubst < ci/docker-config.json.tmpl > ~/.docker/config.json'
-        if: github.repository == 'camptocamp/tilecloud-chain'
+
+      - run: docker-compose logs
+        if: failure()
+
+      - name: Check Python package
+        run: |
+          sudo rm /etc/apt/sources.list.d/*.list
+          sudo apt update
+          sudo apt install --yes python3-setuptools python3-wheel
+          python3 -m pip install --requirement=requirements-publish.txt
+          python3 ./setup.py bdist_wheel
+          twine check dist/*
 
       - name: Publish
         run: ci/publish
