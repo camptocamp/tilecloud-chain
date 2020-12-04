@@ -19,10 +19,9 @@ jobs:
 
     env:
       REDIS_URL: redis://localhost:6379
-      PATH: /bin:/usr/bin:/usr/local/bin:/home/runner/.local/bin
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
         with:
           ref: ${{ matrix.branch }}
 
@@ -31,6 +30,16 @@ jobs:
           ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
           github-gopass-ci-token: ${{secrets.GOPASS_CI_GITHUB_TOKEN}}
           patterns: pypi docker
+
+      - run: |
+          sudo rm /etc/apt/sources.list.d/*.list
+          sudo apt update
+          sudo apt install --yes python3-wheel
+
+      - run: sudo python3 -m pip install --requirement=ci/requirements.txt
+
+      - name: Checks
+        run: c2cciutils-checks
 
       - run: touch tilecloud_chain/OpenLayers.js
 
@@ -68,4 +77,4 @@ jobs:
       - run: python3 -m pip install --requirement=requirements-publish.txt
 
       - name: Publish
-        run: ci/publish ${{ matrix.branch }}
+        run: c2cciutils-publish --type=rebuild --branch=${{ matrix.branch }}

@@ -70,5 +70,6 @@ jobs:
               TOKEN: !var gs/ci/dockerhub/token
             ' bash -c 'envsubst < ci/docker-config.json.tmpl > ~/.docker/config.json'
         if: github.repository == 'camptocamp/tilecloud-chain'
+
       - name: Publish
-        run: ci/publish ${{ matrix.branch }}
+        run: c2cciutils-publish --type=rebuild --branch=${{ matrix.branch }}

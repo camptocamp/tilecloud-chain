@@ -82,4 +82,4 @@ jobs:
         if: github.repository == 'camptocamp/tilecloud-chain'
 
       - name: Publish
-        run: ci/publish ${{ matrix.branch }}
+        run: c2cciutils-publish --type=rebuild --branch=${{ matrix.branch }}
