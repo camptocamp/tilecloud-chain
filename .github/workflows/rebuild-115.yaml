@@ -61,11 +61,6 @@ jobs:
       - run: docker-compose logs
         if: failure()
 
-      - run: |
-          sudo rm /etc/apt/sources.list.d/*.list
-          sudo apt update
-          sudo apt install --yes python3-wheel python3-setuptools
-
       - run: python3 -m pip install --requirement=requirements-publish.txt
 
       - run: |

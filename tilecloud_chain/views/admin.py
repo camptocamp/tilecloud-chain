@@ -34,13 +34,13 @@ import subprocess
 import threading
 from typing import List
 
+from c2cwsgiutils.auth import auth_view, is_auth
 import pyramid.httpexceptions
 import pyramid.request
 from pyramid.view import view_config
 
-import tilecloud_chain.server
-from c2cwsgiutils.auth import auth_view, is_auth
 from tilecloud_chain.controller import get_status
+import tilecloud_chain.server
 
 LOG = logging.getLogger(__name__)
 
@@ -58,7 +58,10 @@ class LogThread(threading.Thread):
             env.update(os.environ)
             env["FRONTEND"] = "noninteractive"
             with subprocess.Popen(
-                self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env,
+                self.command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=env,
             ) as process:
                 stdout, stderr = process.communicate()
                 if process.returncode != 0:

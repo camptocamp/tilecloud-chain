@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import sys
 from argparse import ArgumentParser
+import sys
 
 import psycopg2
 from shapely.geometry import MultiPolygon, Polygon
@@ -16,19 +16,33 @@ def main():
         description="Used to import the osm2pgsql expire-tiles file to Postgres", prog=sys.argv[0]
     )
     parser.add_argument(
-        "--buffer", type=float, default=0.0, help="Extent buffer to the tiles [m], default is 0",
+        "--buffer",
+        type=float,
+        default=0.0,
+        help="Extent buffer to the tiles [m], default is 0",
     )
     parser.add_argument(
-        "--simplify", type=float, default=0.0, help="Simplify the result geometry [m], default is 0",
+        "--simplify",
+        type=float,
+        default=0.0,
+        help="Simplify the result geometry [m], default is 0",
     )
     parser.add_argument(
-        "--create", default=False, action="store_true", help="create the table if not exists",
+        "--create",
+        default=False,
+        action="store_true",
+        help="create the table if not exists",
     )
     parser.add_argument(
-        "--delete", default=False, action="store_true", help="empty the table",
+        "--delete",
+        default=False,
+        action="store_true",
+        help="empty the table",
     )
     parser.add_argument(
-        "file", metavar="FILE", help="The osm2pgsql expire-tiles file",
+        "file",
+        metavar="FILE",
+        help="The osm2pgsql expire-tiles file",
     )
     parser.add_argument(
         "connection",
@@ -39,7 +53,9 @@ def main():
         ),
     )
     parser.add_argument(
-        "table", metavar="TABLE", help="The PostgreSQL table to fill",
+        "table",
+        metavar="TABLE",
+        help="The PostgreSQL table to fill",
     )
     parser.add_argument(
         "--schema",
@@ -85,7 +101,9 @@ def main():
         cursor.execute('DELETE FROM "{}"'.format((options.table)))
 
     geoms = []
-    grid = QuadTileGrid(max_extent=(-20037508.34, -20037508.34, 20037508.34, 20037508.34),)
+    grid = QuadTileGrid(
+        max_extent=(-20037508.34, -20037508.34, 20037508.34, 20037508.34),
+    )
     with open(options.file, "r") as f:
         for coord in f:
             extent = grid.extent(parse_tilecoord(coord), options.buffer)

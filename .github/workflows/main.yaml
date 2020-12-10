@@ -24,7 +24,8 @@ jobs:
           patterns: pypi docker
         if: github.repository == 'camptocamp/tilecloud-chain'
 
-      - run: sudo python3 -m pip install --requirement=ci/requirements.txt
+      - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
+      - run: python3 -m pip install --user --requirement=ci/requirements.txt
 
       - name: Checks
         run: c2cciutils-checks

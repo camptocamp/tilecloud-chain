@@ -58,7 +58,8 @@ def init_tilegeneration(config_file):
         tilegeneration = TileGeneration(
             config_file,
             collections.namedtuple(
-                "Options", ["verbose", "debug", "quiet", "bbox", "zoom", "test", "near", "time", "geom"],
+                "Options",
+                ["verbose", "debug", "quiet", "bbox", "zoom", "test", "near", "time", "geom"],
             )(
                 log_level == "verbose",
                 log_level == "debug",
@@ -157,7 +158,8 @@ class Server:
                     grid=layer["grid_ref"],
                     geoms={
                         layer_name: tilegeneration.get_geoms(
-                            layer, extent=layer["bbox"] if "bbox" in layer else layer["grid_ref"]["bbox"],
+                            layer,
+                            extent=layer["bbox"] if "bbox" in layer else layer["grid_ref"]["bbox"],
                         )
                     },
                 )
@@ -590,10 +592,14 @@ def main(global_config, **settings):
     add_mako_renderer(config, ".html")
 
     config.add_route(
-        "admin", "/{}/".format(tilegeneration.config["server"]["admin_path"]), request_method="GET",
+        "admin",
+        "/{}/".format(tilegeneration.config["server"]["admin_path"]),
+        request_method="GET",
     )
     config.add_route(
-        "admin_run", "/{}/run".format(tilegeneration.config["server"]["admin_path"]), request_method="POST",
+        "admin_run",
+        "/{}/run".format(tilegeneration.config["server"]["admin_path"]),
+        request_method="POST",
     )
 
     config.add_route("tiles", "/*path", request_method="GET")

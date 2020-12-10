@@ -38,23 +38,23 @@ Release 0.7
     > -   sql: <column> AS geom FROM <table>
     > ```
     >
-    > More informations in the **Configure geom/sql** chapter.
+    > More information in the **Configure geom/sql** chapter.
 
 2.  Update from `optparse` to `argparse`, and some argument refactoring, use `--help` to see the new version.
 3.  Add support of Blackbery DB (`bsddb`).
 4.  The tile `server` is completely rewrite, now it support all cache, `REST` and `KVP` interface,
-    `GetFeatureInfo` request, and it can be used as a pyramid view or as a `WSGI` server. More informations in
+    `GetFeatureInfo` request, and it can be used as a pyramid view or as a `WSGI` server. More information in
     the **istribute the tiles** chapter.
 5.  Add three strategy to bypass the proxy/cache: Use the headers `Cache-Control: no-cache, no-store`,
     `Pragma: no-cache` (default). Use localhost in the URL and the header `Host: <host_name>` (recommended).
-    Add a `SALT` random argument (if the above don't work). More informations in the **Proxy/cache issue**
+    Add a `SALT` random argument (if the above don't work). More information in the **Proxy/cache issue**
     chapter.
 6.  Improve the dimensions usage by adding it ti the WMS requests, And add a `--dimensions` argument of
     `generate_tiles` to change the dimensions values.
 7.  Extract generate\_cost and generate\_amazon from generate\_controler.
 8.  Now we can creates legends, see the **Legends** chapter.
 9.  Now the tiles generation display generation statistics at the ends.
-10. The EC2 configuration is moved in a separate structure, see README for more informations.
+10. The EC2 configuration is moved in a separate structure, see README for more information.
 
 Release 0.6
 -----------

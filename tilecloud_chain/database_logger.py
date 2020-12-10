@@ -4,9 +4,8 @@ import logging
 import sys
 import time
 
-import psycopg2
-
 from c2cwsgiutils import stats
+import psycopg2
 
 logger = logging.getLogger(__name__)
 
