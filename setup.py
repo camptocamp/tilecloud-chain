@@ -3,7 +3,7 @@
 import os
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.rst')) as r:
@@ -35,6 +35,7 @@ setup(
         "Amazon cloud services."
     ),
     long_description=README,
+    long_description_content_type="text/markdown",
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
