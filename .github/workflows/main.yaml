@@ -6,23 +6,31 @@ on:
 
 jobs:
   main:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     name: Continuous integration
     timeout-minutes: 15
     if: "!startsWith(github.event.head_commit.message, '[skip ci] ')"
 
     env:
       REDIS_URL: redis://localhost:6379
-      PATH: /bin:/usr/bin:/usr/local/bin:/home/runner/.local/bin
-      SUMMON_PROVIDER: /usr/local/bin/gopass
 
     steps:
       - uses: actions/checkout@v1
 
-      - run: sudo apt update
-      - run: sudo apt install python3-wheel python3-setuptools
+      - uses: camptocamp/initialise-gopass-summon-action@v2
+        with:
+          ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
+          github-gopass-ci-token: ${{secrets.GOPASS_CI_GITHUB_TOKEN}}
+          patterns: pypi docker
+        if: github.repository == 'camptocamp/tilecloud-chain'
+
+      - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
+      - run: python3 -m pip install --user --requirement=ci/requirements.txt
 
       - run: python3 -m pip install --requirement=dev-requirements.txt
+
+      - name: Checks
+        run: c2cciutils-checks
 
       - run: touch tilecloud_chain/OpenLayers.js
 
@@ -51,23 +59,5 @@ jobs:
 
           docker-compose --project-name=tilecloud --file=test-docker-compose.yaml down
 
-      - uses: camptocamp/initialise-gopass-summon-action@v1
-        with:
-          ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
-          github-gopass-ci-token: ${{secrets.GITHUB_GOPASS_CI_TOKEN}}
-        if: github.repository == 'camptocamp/tilecloud-chain'
-      - run: |
-          summon --yaml '
-              USERNAME: !var gs/ci/pypi/username
-              PASSWORD: !var gs/ci/pypi/password
-            ' bash -c 'envsubst < ci/pypirc.tmpl > ~/.pypirc'
-        if: github.repository == 'camptocamp/tilecloud-chain'
-      - run: |
-          mkdir -p ~/.docker
-          summon --yaml '
-              TOKEN: !var gs/ci/dockerhub/token
-            ' bash -c 'envsubst < ci/docker-config.json.tmpl > ~/.docker/config.json'
-        if: github.repository == 'camptocamp/tilecloud-chain'
-
       - name: Publish
-        run: ci/publish
+        run: c2cciutils-publish
