@@ -11,7 +11,7 @@ RUN \
   node-carto \
   optipng \
   postgresql-client-12 net-tools iputils-ping \
-  python3-pip python3-setuptools python3-wheel && \
+  python3-pip && \
   apt clean && \
   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /root/.cache/*
 

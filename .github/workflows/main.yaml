@@ -13,7 +13,6 @@ jobs:
 
     env:
       REDIS_URL: redis://localhost:6379
-      PATH: /bin:/usr/bin:/usr/local/bin:/home/runner/.local/bin
 
     steps:
       - uses: actions/checkout@v2
@@ -24,6 +23,12 @@ jobs:
           github-gopass-ci-token: ${{secrets.GOPASS_CI_GITHUB_TOKEN}}
           patterns: pypi docker
         if: github.repository == 'camptocamp/tilecloud-chain'
+
+      - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
+      - run: python3 -m pip install --user --requirement=ci/requirements.txt
+
+      - name: Checks
+        run: c2cciutils-checks
 
       - run: touch tilecloud_chain/OpenLayers.js
 
@@ -54,12 +59,9 @@ jobs:
 
       - name: Check Python package
         run: |
-          sudo rm /etc/apt/sources.list.d/*.list
-          sudo apt update
-          sudo apt install --yes python3-setuptools python3-wheel
           python3 -m pip install --requirement=requirements-publish.txt
           python3 ./setup.py bdist_wheel
           twine check dist/*
 
       - name: Publish
-        run: ci/publish
+        run: c2cciutils-publish

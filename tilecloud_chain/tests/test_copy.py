@@ -62,7 +62,9 @@ image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
             response.raise_for_status()
             with open("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png", "wb") as out:
                 out.write(response.content)
-            statinfo = os.stat("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png",)
+            statinfo = os.stat(
+                "/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png",
+            )
             self.assertEqual(statinfo.st_size, 755)
 
             self.assert_cmd_equals(
@@ -84,5 +86,7 @@ Size per tile: 103(.0)? o
                 else "",
                 empty_err=True,
             )
-            statinfo = os.stat("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png",)
+            statinfo = os.stat(
+                "/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png",
+            )
             self.assertEqual(statinfo.st_size, 103)

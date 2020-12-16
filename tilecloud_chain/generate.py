@@ -95,7 +95,8 @@ class Generate:
         if self._options.role in ("local", "master") and "logging" in self._gene.config:
             self._gene.imap(
                 DatabaseLoggerInit(
-                    self._gene.config["logging"], self._options is not None and self._options.daemon,
+                    self._gene.config["logging"],
+                    self._options is not None and self._options.daemon,
                 )
             )
 

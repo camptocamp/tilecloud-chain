@@ -31,7 +31,9 @@ class TestExpireTiles(CompareCase):
         os.remove("/tmp/expired")
         os.remove("/tmp/expired-empty")
 
-    def test_expire_tiles(self,):
+    def test_expire_tiles(
+        self,
+    ):
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             geom = (
                 "MULTIPOLYGON((("

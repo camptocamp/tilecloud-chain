@@ -772,14 +772,18 @@ class TestServe(CompareCase):
             PyramidView(request)()
             self.assertEqual(request.response.headers["Content-Type"], "application/xml")
             self.assert_result_equals(
-                request.response.body.decode("utf-8"), CAPABILITIES, regex=True,
+                request.response.body.decode("utf-8"),
+                CAPABILITIES,
+                regex=True,
             )
 
             request.matchdict["path"] = ["static", "1.0.0", "WMTSCapabilities.xml"]
             PyramidView(request)()
             self.assertEqual(request.response.headers["Content-Type"], "application/xml")
             self.assert_result_equals(
-                request.response.body.decode("utf-8"), CAPABILITIES, regex=True,
+                request.response.body.decode("utf-8"),
+                CAPABILITIES,
+                regex=True,
             )
 
             os.environ["TILE_NB_THREAD"] = tile_mbt
@@ -865,14 +869,18 @@ class TestServe(CompareCase):
             PyramidView(request)()
             self.assertEqual(request.response.headers["Content-Type"], "application/xml")
             self.assert_result_equals(
-                request.response.body.decode("utf-8"), CAPABILITIES, regex=True,
+                request.response.body.decode("utf-8"),
+                CAPABILITIES,
+                regex=True,
             )
 
             request.matchdict["path"] = ["static", "1.0.0", "WMTSCapabilities.xml"]
             PyramidView(request)()
             self.assertEqual(request.response.headers["Content-Type"], "application/xml")
             self.assert_result_equals(
-                request.response.body.decode("utf-8"), CAPABILITIES, regex=True,
+                request.response.body.decode("utf-8"),
+                CAPABILITIES,
+                regex=True,
             )
 
             log_capture.check()
@@ -1091,7 +1099,9 @@ Size per tile: 4[0-9][0-9] o
         result = serve({"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/WMTSCapabilities.xml"}, start_response)
         self.assertEqual(code, "200 OK")
         self.assert_result_equals(
-            result[0].decode("utf-8"), CAPABILITIES, regex=True,
+            result[0].decode("utf-8"),
+            CAPABILITIES,
+            regex=True,
         )
 
         os.environ["TILE_NB_THREAD"] = tile_mbt
@@ -1109,6 +1119,8 @@ Size per tile: 4[0-9][0-9] o
             PyramidView(request)()
             self.assertEqual(request.response.headers["Content-Type"], "application/xml")
             self.assert_result_equals(
-                request.response.body.decode("utf-8"), CAPABILITIES, regex=True,
+                request.response.body.decode("utf-8"),
+                CAPABILITIES,
+                regex=True,
             )
             log_capture.check()

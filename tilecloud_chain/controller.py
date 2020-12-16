@@ -261,7 +261,10 @@ def _fill_legend(gene, cache, server, base_urls):
                         new_legend["height"] = pil_img.size[1]
                     except Exception:  # pragma: nocover
                         logger.warning(
-                            "Unable to read legend image '%s', with '%s'", path, repr(img), exc_info=True,
+                            "Unable to read legend image '%s', with '%s'",
+                            path,
+                            repr(img),
+                            exc_info=True,
                         )
                     previous_legend = new_legend
                 previous_resolution = resolution

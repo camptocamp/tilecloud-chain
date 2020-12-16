@@ -24,7 +24,7 @@ setup(
     version="1.16.0",
     description=(
         "Tools to generate tiles from WMS or Mapnik, to S3, "
-        "Berkley DB, MBTiles, or local filesystem in WMTS layout using "
+        "Berkeley DB, MBTiles, or local filesystem in WMTS layout using "
         "Amazon cloud services."
     ),
     long_description=README,

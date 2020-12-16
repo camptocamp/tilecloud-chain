@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from argparse import ArgumentParser
 import logging
 import sys
-from argparse import ArgumentParser
 
 from tilecloud_chain import Count, DropEmpty, HashDropper, TileGeneration, add_comon_options
 from tilecloud_chain.format import duration_format, size_format

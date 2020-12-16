@@ -30,6 +30,8 @@ from pykwalify.errors import NotMappingError, NotSequenceError, SchemaError
 from shapely.geometry import Polygon
 from shapely.ops import cascaded_union
 from shapely.wkb import loads as loads_wkb
+import yaml
+
 from tilecloud import BoundingPyramid, Tile, TileCoord, TileStore, consume
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
 from tilecloud.filter.logger import Logger
@@ -41,8 +43,6 @@ from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.store.redis import RedisTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.sqs import SQSTileStore, maybe_stop
-import yaml
-
 from tilecloud_chain.multitilestore import MultiTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
@@ -588,13 +588,16 @@ class TileGeneration:
             if not os.path.exists(os.path.dirname(filename)):
                 os.makedirs(os.path.dirname(filename))
             cache_tilestore = MBTilesTileStore(
-                sqlite3.connect(filename), content_type=layer["mime_type"], tilecoord_in_topleft=True,
+                sqlite3.connect(filename),
+                content_type=layer["mime_type"],
+                tilecoord_in_topleft=True,
             )
         elif cache["type"] == "bsddb":
             metadata = {}
             for dimension in layer["dimensions"]:
                 metadata["dimension_" + dimension["name"]] = dimension["default"]
             import bsddb3 as bsddb  # pylint: disable=import-outside-toplevel,import-error
+
             from tilecloud.store.bsddb import BSDDBTileStore  # pylint: disable=import-outside-toplevel
 
             # on bsddb file
@@ -616,10 +619,16 @@ class TileGeneration:
 
             self._close_actions.append(Close(db))
 
-            cache_tilestore = BSDDBTileStore(db, content_type=layer["mime_type"],)
+            cache_tilestore = BSDDBTileStore(
+                db,
+                content_type=layer["mime_type"],
+            )
         elif cache["type"] == "filesystem":
             # on filesystem
-            cache_tilestore = FilesystemTileStore(layout, content_type=layer["mime_type"],)
+            cache_tilestore = FilesystemTileStore(
+                layout,
+                content_type=layer["mime_type"],
+            )
         else:
             sys.exit("unknown cache type: " + cache["type"])  # pragma: no cover
 
@@ -924,12 +933,16 @@ class TileGeneration:
                     maxy += m_buffer
                     bounding_pyramid.add(
                         tilegrid.tilecoord(
-                            zoom, max(minx, tilegrid.max_extent[0]), max(miny, tilegrid.max_extent[1]),
+                            zoom,
+                            max(minx, tilegrid.max_extent[0]),
+                            max(miny, tilegrid.max_extent[1]),
                         )
                     )
                     bounding_pyramid.add(
                         tilegrid.tilecoord(
-                            zoom, min(maxx, tilegrid.max_extent[2]), min(maxy, tilegrid.max_extent[3]),
+                            zoom,
+                            min(maxx, tilegrid.max_extent[2]),
+                            min(maxy, tilegrid.max_extent[3]),
                         )
                     )
 

@@ -7,7 +7,7 @@ Source: WMS, Mapnik.
 
 Optionally using an SQS queue, AWS host, SNS topic.
 
-Destination in WMTS layout, on S3, on Berkley DB (`bsddb`), on MBTiles, or on local filesystem.
+Destination in WMTS layout, on S3, on Berkeley DB (`bsddb`), on MBTiles, or on local filesystem.
 
 Features:
 
@@ -144,10 +144,10 @@ needed to generate the capabilities. We can specify:
 
 In all case `http_url` or `http_urls` can include all attributes of this cache as `%(attribute)s`.
 
-#### MBTiles vs Berkley DB (`bsddb`)
+#### MBTiles vs Berkeley DB (`bsddb`)
 
 -   Read performance: similar, eventually the MBTiles is 10% faster.
--   Write performance: The Berkley DB is largely faster, about 10 times.
+-   Write performance: The Berkeley DB is largely faster, about 10 times.
 -   List the tiles: the MBTiles is largely faster, but we usually don't need it.
 
 ### Configure layers
@@ -622,7 +622,7 @@ There two ways to serve the tiles, with Apache configuration, or with an interna
 
 The advantage of the internal server are:
 
--   Can distribute MBTiles or Berkley DB.
+-   Can distribute MBTiles or Berkeley DB.
 -   Return `204 No Content` HTTP code in place of `404 Not Found` (or `403 Forbidden` for s3).
 -   Can be used in KVP mode.
 -   Can have zone per layer where are the tiles, otherwise it redirect on mapcache.
@@ -790,7 +790,7 @@ The following commands can be used to know the time and cost to do generation:
 
 `--verbose` or `-v`: used to display info messages.
 
-`--debug` or `-d`: used to display debug message, pleas use this option to report issue. With the debug mode
+`--debug` or `-d`: used to display debug message, please use this option to report issue. With the debug mode
 we don't catch exceptions, and we don't log time messages.
 
 `--test <n>` or `-t <n>`: used to generate only `<n>` tiles, useful for test.

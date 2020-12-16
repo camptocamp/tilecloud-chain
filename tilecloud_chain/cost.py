@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import logging
-import sys
 from argparse import ArgumentParser
 from datetime import timedelta
+import logging
+import sys
 
 from tilecloud import Tile, TileStore
 from tilecloud_chain import Run, TileGeneration, add_comon_options
