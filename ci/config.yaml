@@ -1,0 +1,9 @@
+checks:
+  black: False
+  isort: False
+  codespell: False
+  versions: False
+  required_workflows:
+    audit.yaml: False
+    clean.yaml: False
+    dependabot-auto-merge.yaml: False
