@@ -27,11 +27,18 @@ jobs:
         with:
           ref: ${{ matrix.branch }}
 
-      - uses: camptocamp/initialise-gopass-summon-action@v1
+      - uses: camptocamp/initialise-gopass-summon-action@v2
         with:
           ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
           github-gopass-ci-token: ${{secrets.GOPASS_CI_GITHUB_TOKEN}}
+          patterns: pypi docker
         if: github.repository == 'camptocamp/tilecloud-chain'
+
+      - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
+      - run: python3 -m pip install --user --requirement=ci/requirements.txt
+
+      - name: Checks
+        run: c2cciutils-checks
 
       - run: touch tilecloud_chain/OpenLayers.js
 
@@ -62,19 +69,6 @@ jobs:
         if: failure()
 
       - run: python3 -m pip install --requirement=requirements-publish.txt
-
-      - run: |
-          summon --yaml '
-              USERNAME: !var gs/ci/pypi/username
-              PASSWORD: !var gs/ci/pypi/password
-            ' bash -c 'envsubst < ci/pypirc.tmpl > ~/.pypirc'
-        if: github.repository == 'camptocamp/tilecloud-chain'
-      - run: |
-          mkdir -p ~/.docker
-          summon --yaml '
-              TOKEN: !var gs/ci/dockerhub/token
-            ' bash -c 'envsubst < ci/docker-config.json.tmpl > ~/.docker/config.json'
-        if: github.repository == 'camptocamp/tilecloud-chain'
 
       - name: Publish
         run: c2cciutils-publish --type=rebuild --branch=${{ matrix.branch }}

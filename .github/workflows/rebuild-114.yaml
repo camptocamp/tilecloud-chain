@@ -7,7 +7,7 @@ on:
 
 jobs:
   rebuild:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     name: Rebuild 1.14
     timeout-minutes: 15
 
@@ -27,12 +27,20 @@ jobs:
         with:
           ref: ${{ matrix.branch }}
 
-      - run: |
-          sudo rm /etc/apt/sources.list.d/*.list
-          sudo apt update
-          sudo apt install python3-wheel python3-setuptools
+      - uses: camptocamp/initialise-gopass-summon-action@v2
+        with:
+          ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
+          github-gopass-ci-token: ${{secrets.GOPASS_CI_GITHUB_TOKEN}}
+          patterns: pypi docker
+        if: github.repository == 'camptocamp/tilecloud-chain'
+
+      - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
+      - run: python3 -m pip install --user --requirement=ci/requirements.txt
 
       - run: python3 -m pip install --requirement=dev-requirements.txt
+
+      - name: Checks
+        run: c2cciutils-checks
 
       - run: touch tilecloud_chain/OpenLayers.js
 
@@ -56,24 +64,6 @@ jobs:
           docker-compose exec -T test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
 
           docker-compose down
-
-      - uses: camptocamp/initialise-gopass-summon-action@v1
-        with:
-          ci-gpg-private-key: ${{secrets.CI_GPG_PRIVATE_KEY}}
-          github-gopass-ci-token: ${{secrets.GOPASS_CI_GITHUB_TOKEN}}
-        if: github.repository == 'camptocamp/tilecloud-chain'
-      - run: |
-          summon --yaml '
-              USERNAME: !var gs/ci/pypi/username
-              PASSWORD: !var gs/ci/pypi/password
-            ' bash -c 'envsubst < ci/pypirc.tmpl > ~/.pypirc'
-        if: github.repository == 'camptocamp/tilecloud-chain'
-      - run: |
-          mkdir -p ~/.docker
-          summon --yaml '
-              TOKEN: !var gs/ci/dockerhub/token
-            ' bash -c 'envsubst < ci/docker-config.json.tmpl > ~/.docker/config.json'
-        if: github.repository == 'camptocamp/tilecloud-chain'
 
       - name: Publish
         run: c2cciutils-publish --type=rebuild --branch=${{ matrix.branch }}
