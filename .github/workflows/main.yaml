@@ -57,11 +57,5 @@ jobs:
       - run: docker-compose logs
         if: failure()
 
-      - name: Check Python package
-        run: |
-          python3 -m pip install --requirement=requirements-publish.txt
-          python3 ./setup.py bdist_wheel
-          twine check dist/*
-
       - name: Publish
         run: c2cciutils-publish
