@@ -249,10 +249,11 @@
         },
         "msrest": {
             "hashes": [
-                "sha256:55f8c3940bc5dc609f8cf9fcd639444716cc212a943606756272e0d0017bbb5b",
-                "sha256:87aa64948c3ef3dbf6f6956d2240493e68d714e4621b92b65b3c4d5808297929"
+                "sha256:114293965a9f62afb61fb7c3bd08a528f04245198fc10cfc21fe294deb272361",
+                "sha256:8f5b47e90e0a78a3345784da854352fa1a8a890d4ec60a87371c9f9850ec3f42"
             ],
-            "version": "==0.6.19"
+            "index": "pypi",
+            "version": "==0.6.20"
         },
         "oauthlib": {
             "hashes": [
