@@ -40,7 +40,6 @@
                 "sha256:423a1a9502bd7bc5db8c6e64f9374f64d8ac18e6b870278a9ff65f59d268cd58",
                 "sha256:80dd615a34c7e2c73606070a9358f7b5c1cb0c9989348306c1c9ddff45bb6ebe"
             ],
-            "index": "pypi",
             "version": "==1.19.60"
         },
         "bottle": {
@@ -250,10 +249,11 @@
         },
         "msrest": {
             "hashes": [
-                "sha256:114293965a9f62afb61fb7c3bd08a528f04245198fc10cfc21fe294deb272361",
-                "sha256:8f5b47e90e0a78a3345784da854352fa1a8a890d4ec60a87371c9f9850ec3f42"
+                "sha256:72661bc7bedc2dc2040e8f170b6e9ef226ee6d3892e01affd4d26b06474d68d8",
+                "sha256:c840511c845330e96886011a236440fafc2c9aff7b2df9c0a92041ee2dee3782"
             ],
-            "version": "==0.6.20"
+            "index": "pypi",
+            "version": "==0.6.21"
         },
         "oauthlib": {
             "hashes": [
