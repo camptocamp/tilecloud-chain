@@ -233,7 +233,15 @@ def fetch(server, tilegeneration, layer, tile, kwargs):
             if fetched_tile is None:
                 generator.compute_tile(meta_tile)
                 # Don't fetch the just generated tile
-                fetched_tile = meta_tile.metadata["tiles"][tile.tilecoord]
+                try:
+                    fetched_tile = meta_tile.metadata["tiles"][tile.tilecoord]
+                except KeyError:
+                    LOG.exception(
+                        "Try to get the tile '%s', from the available: '%s'",
+                        tile.tilecoord,
+                        ", ".join([str(e) for e in meta_tile.metadata["tiles"].keys()])
+                    )
+                    raise
 
     response_headers = {
         "Expires": (datetime.datetime.utcnow() + datetime.timedelta(hours=server.expires_hours)).isoformat(),
