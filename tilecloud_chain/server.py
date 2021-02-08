@@ -31,6 +31,7 @@ import datetime
 import logging
 import mimetypes
 import os
+import time
 import types
 from urllib.parse import parse_qs, urlencode
 
@@ -92,7 +93,19 @@ class Server:
         ]
 
         if self.cache["type"] == "s3":  # pragma: no cover
-            self.s3_client = tilecloud.store.s3.get_client(self.cache.get("host"))
+            error = None
+            success = False
+            for n in range(10):
+                time.sleep(n * 10)
+                try:
+                    self.s3_client = tilecloud.store.s3.get_client(self.cache.get("host"))
+                    success = True
+                    break
+                except KeyError as e:
+                    error = e
+            if not success:
+                raise error
+
             bucket = self.cache["bucket"]
 
             def _read(self, key_name):
