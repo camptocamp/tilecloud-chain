@@ -21,10 +21,8 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - run: echo "$ECHO"
-        env:
-          ECHO: ${{ toJson(github) }}
       - name: Auto merge
         uses: ridedott/dependabot-auto-merge-action@master
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_LOGIN: dependabot-preview[bot]
