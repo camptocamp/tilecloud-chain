@@ -14,6 +14,7 @@ from typing import Dict, Optional
 from urllib.parse import urlencode, urljoin
 
 from PIL import Image
+import botocore.exceptions
 from bottle import jinja2_template
 from c2cwsgiutils import stats
 import requests
@@ -153,8 +154,14 @@ def _get(path, cache):
         client = tilecloud.store.s3.get_client(cache.get("host"))
         key_name = os.path.join("{folder!s}".format(**cache), path)
         bucket = cache["bucket"]
-        response = client.get_object(Bucket=bucket, Key=key_name)
-        return response["Body"].read()
+        try:
+            response = client.get_object(Bucket=bucket, Key=key_name)
+            return response["Body"].read()
+        except botocore.exceptions.ClientError as ex:
+            if ex.response["Error"]["Code"] == "NoSuchKey":
+                return None
+            else:
+                raise
     else:
         p = os.path.join(cache["folder"], path)
         if not os.path.isfile(p):  # pragma: no cover
