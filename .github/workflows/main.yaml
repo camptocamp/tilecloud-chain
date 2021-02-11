@@ -30,8 +30,6 @@ jobs:
       - name: Checks
         run: c2cciutils-checks
 
-      - run: touch tilecloud_chain/OpenLayers.js
-
       - name: Build
         run: |
           python setup.py --long-description > PYPI.md

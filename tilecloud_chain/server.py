@@ -35,6 +35,7 @@ import time
 import types
 from urllib.parse import parse_qs, urlencode
 
+import botocore.exceptions
 from c2cwsgiutils import health_check
 import c2cwsgiutils.pyramid
 from pyramid.config import Configurator
@@ -110,12 +111,18 @@ class Server:
             bucket = self.cache["bucket"]
 
             def _read(self, key_name):
-                response = self.s3_client.get_object(Bucket=bucket, Key=key_name)
-                body = response["Body"]
                 try:
-                    return body.read(), response.get("ContentType")
-                finally:
-                    body.close()
+                    response = self.s3_client.get_object(Bucket=bucket, Key=key_name)
+                    body = response["Body"]
+                    try:
+                        return body.read(), response.get("ContentType")
+                    finally:
+                        body.close()
+                except botocore.exceptions.ClientError as ex:
+                    if ex.response["Error"]["Code"] == "NoSuchKey":
+                        return self.error(404, key_name + " not found"), None
+                    else:
+                        raise
 
             def _get(self, path, **kwargs):
                 del kwargs

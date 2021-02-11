@@ -101,6 +101,7 @@ class Admin:
             "commands": self.gene.config.get("server", {}).get("predefined_commands", []),
             "status": get_status(self.gene),
             "run_url": self.request.route_url("admin_run"),
+            "static_path": self.gene.config.get("server", {}).get("static_path", "static"),
         }
 
     @view_config(route_name="admin_run")
