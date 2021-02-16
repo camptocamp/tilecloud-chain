@@ -232,6 +232,11 @@ def fetch(server, tilegeneration, layer, tile, kwargs):
             fetched_tile = generator.read_from_cache(tile)
             if fetched_tile is None:
                 generator.compute_tile(meta_tile)
+
+                if meta_tile.error:
+                    LOG.error("Tile '%s' in error: %s", meta_tile.tilecoord, meta_tile.error)
+                    return server.error(500, "Error while generate the tile, see logs for details")
+
                 # Don't fetch the just generated tile
                 try:
                     fetched_tile = meta_tile.metadata["tiles"][tile.tilecoord]
@@ -239,7 +244,7 @@ def fetch(server, tilegeneration, layer, tile, kwargs):
                     LOG.exception(
                         "Try to get the tile '%s', from the available: '%s'",
                         tile.tilecoord,
-                        ", ".join([str(e) for e in meta_tile.metadata["tiles"].keys()])
+                        ", ".join([str(e) for e in meta_tile.metadata["tiles"].keys()]),
                     )
                     raise
 
