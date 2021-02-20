@@ -30,7 +30,8 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:62f06cd1e7a78d8aaa4e527c327653e9a6c1af415b59836048a90c28a27e5f09"
+                "sha256:62f06cd1e7a78d8aaa4e527c327653e9a6c1af415b59836048a90c28a27e5f09",
+                "sha256:bbc47e6f83372d9a18483895e7116ea50e8da32ffb62e8afc0a6e2323f964ed9"
             ],
             "version": "==1.17.12"
         },
@@ -39,7 +40,6 @@
                 "sha256:39a92315a17a6f8bc1914dbb020f52e929f18e5b99a4fa1c5d8785f913427ed8",
                 "sha256:e576e1697ad9dc794961ed1ba51bdea7e0574ec27981c888482955f4be5cc4e8"
             ],
-            "index": "pypi",
             "version": "==1.20.12"
         },
         "bottle": {
@@ -409,10 +409,11 @@
         },
         "pyramid": {
             "hashes": [
-                "sha256:4d7f557b19932b4f719b6e1a81c96aebd49b990124e10175ea2b866e976e6a66",
-                "sha256:fe1bd1140e6b79fe07f0053981d49be2dc66656cc8b481dd7ffcaa872fc25467"
+                "sha256:75c99ea954ed0812c594d123e4dbfba33f9d3cb5123bdfe65176d4a8c66d1bcc",
+                "sha256:aa38a839a1d43d3fe32704341be08b288ddc55fbd9bc19b5d97d1107ae496912"
             ],
-            "version": "==1.10.5"
+            "index": "pypi",
+            "version": "==1.10.6"
         },
         "pyramid-mako": {
             "hashes": [
