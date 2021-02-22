@@ -30,17 +30,18 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:62f06cd1e7a78d8aaa4e527c327653e9a6c1af415b59836048a90c28a27e5f09",
-                "sha256:bbc47e6f83372d9a18483895e7116ea50e8da32ffb62e8afc0a6e2323f964ed9"
+                "sha256:27e9eb7d03ace9602777d0e808901812dfbb0c8c3e9454ab10e7ad1656a86a2d",
+                "sha256:58823abe27f3ab76761e6ba421ceed9f6011da2267d1622547efb358be507896"
             ],
-            "version": "==1.17.12"
+            "version": "==1.17.13"
         },
         "botocore": {
             "hashes": [
-                "sha256:39a92315a17a6f8bc1914dbb020f52e929f18e5b99a4fa1c5d8785f913427ed8",
-                "sha256:e576e1697ad9dc794961ed1ba51bdea7e0574ec27981c888482955f4be5cc4e8"
+                "sha256:84d44036b1c174d4973c58387acefd851e71fed3ae8cc818b76b817556b59156",
+                "sha256:9ae7785f8d5150b720a4b5ddde7b4b4da447da1d084375fc5de61f8b0ae46023"
             ],
-            "version": "==1.20.12"
+            "index": "pypi",
+            "version": "==1.20.13"
         },
         "bottle": {
             "hashes": [
@@ -130,11 +131,16 @@
         },
         "cryptography": {
             "hashes": [
+                "sha256:066bc53f052dfeda2f2d7c195cf16fb3e5ff13e1b6b7415b468514b40b381a5b",
+                "sha256:0923ba600d00718d63a3976f23cab19aef10c1765038945628cd9be047ad0336",
                 "sha256:2d32223e5b0ee02943f32b19245b61a62db83a882f0e76cc564e1cec60d48f87",
+                "sha256:4169a27b818de4a1860720108b55a2801f32b6ae79e7f99c00d79f2a2822eeb7",
                 "sha256:57ad77d32917bc55299b16d3b996ffa42a1c73c6cfa829b14043c561288d2799",
                 "sha256:5ecf2bcb34d17415e89b546dbb44e73080f747e504273e4d4987630493cded1b",
+                "sha256:600cf9bfe75e96d965509a4c0b2b183f74a4fa6f5331dcb40fb7b77b7c2484df",
                 "sha256:66b57a9ca4b3221d51b237094b0303843b914b7d5afd4349970bb26518e350b0",
                 "sha256:93cfe5b7ff006de13e1e89830810ecbd014791b042cbe5eec253be11ac2b28f3",
+                "sha256:9e98b452132963678e3ac6c73f7010fe53adf72209a32854d55690acac3f6724",
                 "sha256:df186fcbf86dc1ce56305becb8434e4b6b7504bc724b71ad7a3239e0c9d14ef2",
                 "sha256:fec7fb46b10da10d9e1d078d1ff8ed9e05ae14f431fdbd11145edd0550b9a964"
             ],
@@ -412,7 +418,6 @@
                 "sha256:9ad975d336cfe315ab80b3c9b9f4b3af3bc08fe05f7e057265eb1eb1dcdfc48e",
                 "sha256:e9aa8b30921657352f58b3198999ecf448f8e31d994762ce3271bfafa4473e12"
             ],
-            "index": "pypi",
             "version": "==1.10.7"
         },
         "pyramid-mako": {
