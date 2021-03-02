@@ -4,8 +4,7 @@
 
 | Version | Supported Until |
 | ------- | --------------- |
-| <= 1.11 | Unsupported     |
-| 1.12    | Best effort     |
+| <= 1.12 | Unsupported     |
 | 1.13    | 30/06/2022      |
-| 1.14    | Best effort     |
-| 1.15    | Best effort     |
+| 1.14    | Unsupported     |
+| 1.15    | To be defined   |
