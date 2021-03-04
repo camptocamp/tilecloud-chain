@@ -23,9 +23,9 @@ RUN \
   DEBIAN_FRONTEND=noninteractive apt install --assume-yes --no-install-recommends \
   ${DEV_PACKAGES} && \
   cd /app/ && \
-  python3 -m pip install --disable-pip-version-check --no-cache-dir --no-deps \
+  python3 -m pip install --disable-pip-version-check --no-cache-dir \
   --requirement=/app/requirements.txt && \
-  pipenv install --system --clear && \
+  pipenv sync --system --clear && \
   python3 -m compileall /usr/local/lib/python3.8 /usr/lib/python3.8 -q \
   -x '/usr/local/lib/python3.8/dist-packages/pipenv/' && \
   strip /usr/local/lib/python3.8/dist-packages/shapely/*/*.so && \
@@ -95,7 +95,7 @@ RUN \
 
 FROM runner as tests
 
-RUN (cd /app/ && pipenv install --dev --system --clear)
+RUN (cd /app/ && pipenv sync --dev --system --clear)
 RUN (cd /app/ && prospector)
 
 FROM runner
