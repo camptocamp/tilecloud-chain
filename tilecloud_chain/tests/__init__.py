@@ -10,10 +10,17 @@ import sys
 import traceback
 from unittest import TestCase
 
+import yaml
+
 DIFF = 200
 log = logging.getLogger("tests")
 
 config.dictConfig({"version": 1, "loggers": {"pykwalify": {"level": "WARN"}}})
+
+
+class NoAliasDumper(yaml.SafeDumper):
+    def ignore_aliases(self, data):
+        return True
 
 
 class CompareCase(TestCase):
@@ -106,10 +113,10 @@ class CompareCase(TestCase):
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
     def assert_yaml_equals(self, result, expected):
-        import yaml
-
-        expected = yaml.dump(yaml.safe_load(expected), width=120)
-        result = yaml.dump(yaml.safe_load(result), width=120)
+        expected = yaml.dump(
+            yaml.safe_load(expected), width=120, default_flow_style=False, Dumper=NoAliasDumper
+        )
+        result = yaml.dump(yaml.safe_load(result), width=120, default_flow_style=False, Dumper=NoAliasDumper)
         self.assert_result_equals(result=result, expected=expected)
 
     def assert_cmd_yaml_equals(self, cmd, main_func, **kargs):

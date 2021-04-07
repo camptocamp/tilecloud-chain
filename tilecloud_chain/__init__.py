@@ -7,6 +7,7 @@ from fractions import Fraction
 from hashlib import sha1
 from io import BytesIO
 from itertools import product
+import json
 import logging
 import logging.config
 from math import ceil, sqrt
@@ -24,9 +25,8 @@ import time
 from PIL import Image
 import boto3
 from c2cwsgiutils import sentry, stats
+import jsonschema
 import psycopg2
-from pykwalify.core import Core
-from pykwalify.errors import NotMappingError, NotSequenceError, SchemaError
 from shapely.geometry import Polygon
 from shapely.ops import cascaded_union
 from shapely.wkb import loads as loads_wkb
@@ -148,7 +148,7 @@ def add_comon_options(
 
 
 def get_tile_matrix_identifier(grid, resolution=None, zoom=None):
-    if grid is None or grid["matrix_identifier"] == "zoom":
+    if grid is None or grid.get("matrix_identifier", "zoom") == "zoom":
         return str(zoom)
     else:
         if resolution is None:
@@ -168,7 +168,7 @@ class Run:
         self.safe = gene.options is None or not gene.options.debug
         daemon = gene.options is not None and getattr(gene.options, "daemon", False)
         self.max_consecutive_errors = (
-            MaximumConsecutiveErrors(gene.config["generation"]["maxconsecutive_errors"])
+            MaximumConsecutiveErrors(gene.config["generation"].get("maxconsecutive_errors", 10))
             if not daemon
             else None
         )
@@ -282,6 +282,9 @@ class TileGeneration:
             self.config = {}
             self.config.update({} if base_config is None else base_config)
             self.config.update(yaml.safe_load(f))
+
+        self.validate_config(config_file)
+
         if "defaults" in self.config:
             del self.config["defaults"]
         # Generate base structure
@@ -303,58 +306,6 @@ class TileGeneration:
         for lname, layer in sorted(self.config.get("layers", {}).items()):
             if layer is not None:
                 layer["name"] = lname
-
-        c = Core(
-            source_data=self.config,
-            schema_data=yaml.safe_load(pkgutil.get_data("tilecloud_chain", "schema.yaml")),
-        )
-        path_ = ""
-        try:
-            self.config = c.validate()
-
-            for name, cache in self.config["caches"].items():
-                if cache["type"] == "s3":
-                    c = Core(
-                        source_data=cache,
-                        schema_data=yaml.safe_load(
-                            pkgutil.get_data("tilecloud_chain", "schema-cache-s3.yaml")
-                        ),
-                    )
-                    path_ = "caches/{}".format(name)
-                    self.config["caches"][name] = c.validate()
-            for name, layer in self.config["layers"].items():
-                c = Core(
-                    source_data=layer,
-                    schema_data=yaml.safe_load(
-                        pkgutil.get_data("tilecloud_chain", "schema-layer-{}.yaml".format(layer["type"]))
-                    ),
-                )
-                path_ = "layers/{}".format(name)
-                self.config["layers"][name] = c.validate()
-
-        except SchemaError:
-            logger.error(
-                "The config file '%s' is invalid.\n%s",
-                config_file,
-                "\n".join(
-                    sorted(
-                        [
-                            " - {}: {}".format(
-                                os.path.join("/", path_, re.sub("^/", "", error.path)),
-                                re.sub(" Path: '{path}'", "", error.msg).format(**error.__dict__),
-                            )
-                            for error in c.errors
-                        ]
-                    )
-                ),
-            )
-            sys.exit(1)
-        except NotSequenceError as e:  # pragma: no cover
-            logger.error("The config file '%s' is invalid.\n - %s", config_file, e.msg)
-            sys.exit(1)
-        except NotMappingError as e:  # pragma: no cover
-            logger.error("The config file '%s' is invalid.\n - %s", config_file, e.msg)
-            sys.exit(1)
 
         error = False
         self.grids = self.config["grids"]
@@ -396,7 +347,7 @@ class TileGeneration:
                     resolutions=[r * scale for r in grid["resolutions"]],
                     scale=scale,
                     max_extent=grid["bbox"],
-                    tile_size=grid["tile_size"],
+                    tile_size=grid.get("tile_size", 256),
                 )
                 if not error
                 else None
@@ -408,9 +359,9 @@ class TileGeneration:
             self.layers[lname] = layer
             if "geoms" not in layer:
                 layer["geoms"] = []
-            if "params" not in layer and layer["type"] == "wms":
+            if "params" not in layer and layer.get("type", "wms") == "wms":
                 layer["params"] = {}
-            if "headers" not in layer and layer["type"] == "wms":
+            if "headers" not in layer and layer.get("type", "wms") == "wms":
                 layer["headers"] = {
                     "Cache-Control": "no-cache, no-store",
                     "Pragma": "no-cache",
@@ -418,7 +369,9 @@ class TileGeneration:
             if "dimensions" not in layer:
                 layer["dimensions"] = []
             if (
-                layer["type"] == "mapnik" and layer["output_format"] == "grid" and layer.get("meta", False)
+                layer.get("type", "wms") == "mapnik"
+                and layer.get("output_format", "png") == "grid"
+                and layer.get("meta", False)
             ):  # pragma: no cover
                 logger.error("The layer '%s' is of type Mapnik/Grid, that can't support matatiles.", lname)
                 error = True
@@ -431,7 +384,12 @@ class TileGeneration:
             sys.exit(1)
 
         if configure_logging and "log_format" in self.config.get("generation", {}):
-            self._configure_logging(options, self.config["generation"]["log_format"])
+            self._configure_logging(
+                options,
+                self.config["generation"].get(
+                    "log_format", "%(levelname)s:%(name)s:%(funcName)s:%(message)s"
+                ),
+            )
 
         if options is not None and options.zoom is not None:
             error_message = (
@@ -466,6 +424,20 @@ class TileGeneration:
 
         if layer_name and not error:
             self.init_layer(self.layers[layer_name], options)
+
+    def validate_config(self, config_file):
+        validator = jsonschema.Draft7Validator(
+            schema=json.loads(pkgutil.get_data("tilecloud_chain", "schema.json"))
+        )
+        errors = sorted(
+            [
+                f' - {".".join([str(i) for i in e.path] if e.path else "/")}: {e.message}'
+                for e in validator.iter_errors(self.config)
+            ]
+        )
+        if errors:
+            logger.error("The config file '%s' is invalid.\n%s", config_file, "\n".join(errors))
+            sys.exit(1)
 
     def init(self, queue_store=None, daemon=False):
         self.queue_store = queue_store
@@ -563,7 +535,7 @@ class TileGeneration:
         grid = layer["grid_ref"] if "grid_ref" in layer else None
         layout = WMTSTileLayout(
             layer=layer["name"],
-            url=cache["folder"],
+            url=cache.get("folder", ""),
             style=layer["wmts_style"],
             format="." + layer["extension"],
             dimensions_name=[dimension["name"] for dimension in layer["dimensions"]],
@@ -575,7 +547,10 @@ class TileGeneration:
         if cache["type"] == "s3":
             # on s3
             cache_tilestore = S3TileStore(
-                cache["bucket"], layout, s3_host=cache.get("host"), cache_control=cache.get("cache_control")
+                cache["bucket"],
+                layout,
+                s3_host=cache.get("host", "s3-eu-west-1.amazonaws.com"),
+                cache_control=cache.get("cache_control"),
             )  # pragma: no cover
         elif cache["type"] == "mbtiles":
             metadata = {}
@@ -652,11 +627,11 @@ class TileGeneration:
             bbox = layer["grid_ref"]["bbox"]
             diff = [position[0] - bbox[0], position[1] - bbox[1]]
             resolution = layer["grid_ref"]["resolutions"][options.zoom[0]]
-            mt_to_m = layer["meta_size"] * layer["grid_ref"]["tile_size"] * resolution
+            mt_to_m = layer.get("meta_size", 5) * layer["grid_ref"].get("tile_size", 256) * resolution
             mt = [float(d) / mt_to_m for d in diff]
 
             nb_tile = options.time * 3 if options.time is not None else options.test
-            nb_mt = nb_tile / (layer["meta_size"] ** 2)
+            nb_mt = nb_tile / (layer.get("meta_size", 5) ** 2)
             nb_sqrt_mt = ceil(sqrt(nb_mt))
 
             mt_origin = [round(m - nb_sqrt_mt / 2) for m in mt]
@@ -746,7 +721,9 @@ class TileGeneration:
         return IntersectGeometryFilter(
             grid=grid,
             geoms=geoms,
-            px_buffer=(layer["px_buffer"] + layer["meta_buffer"] if layer.get("meta", False) else 0),
+            px_buffer=(
+                layer.get("px_buffer", 0) + layer.get("meta_buffer", 128) if layer.get("meta", False) else 0
+            ),
         )
 
     def add_geom_filter(self):
@@ -790,9 +767,11 @@ class TileGeneration:
         if store is None:
             splitters = {}
             for lname, layer in self.layers.items():
-                if layer.get("meta"):
+                if layer.get("meta", False):
                     splitters[lname] = MetaTileSplitterTileStore(
-                        layer["mime_type"], layer["grid_ref"]["tile_size"], layer["meta_buffer"]
+                        layer["mime_type"],
+                        layer["grid_ref"].get("tile_size", 256),
+                        layer.get("meta_buffer", 128),
                     )
 
             store = TimedTileStoreWrapper(MultiTileStore(splitters), stats_name="splitter")
@@ -925,7 +904,7 @@ class TileGeneration:
                     logger.warning("bounds empty for zoom %s", zoom)
                 else:
                     minx, miny, maxx, maxy = extent
-                    px_buffer = layer["px_buffer"]
+                    px_buffer = layer.get("px_buffer", 0)
                     m_buffer = px_buffer * resolutions[zoom]
                     minx -= m_buffer
                     miny -= m_buffer
@@ -947,7 +926,7 @@ class TileGeneration:
                     )
 
         if layer.get("meta", False):
-            self.set_tilecoords(bounding_pyramid.metatilecoords(layer["meta_size"]), layer)
+            self.set_tilecoords(bounding_pyramid.metatilecoords(layer.get("meta_size", 5)), layer)
         else:
             self.set_tilecoords(bounding_pyramid, layer)
 
@@ -1328,7 +1307,7 @@ class Process:
                 if self.options.quiet and "quiet" in cmd["arg"]:
                     args.append(cmd["arg"]["quiet"])
 
-                if cmd["need_out"]:
+                if cmd.get("need_out", False):
                     fd_out, name_out = tempfile.mkstemp()
                     os.unlink(name_out)
                 else:  # pragma: no cover
@@ -1351,7 +1330,7 @@ class Process:
                     tile.data = None
                     return tile
 
-                if cmd["need_out"]:
+                if cmd.get("need_out", False):
                     os.close(fd_in)
                     name_in = name_out
                     fd_in = fd_out
@@ -1410,13 +1389,13 @@ def get_queue_store(config, daemon):
         # Create a Redis queue
         conf = config["redis"]
         tilestore_kwargs = dict(
-            name=conf["queue"],
+            name=conf.get("queue", "tilecloud"),
             stop_if_empty=not daemon,
-            timeout=conf["timeout"],
-            pending_timeout=conf["pending_timeout"],
-            max_retries=conf["max_retries"],
-            max_errors_age=conf["max_errors_age"],
-            max_errors_nb=conf["max_errors_nb"],
+            timeout=conf.get("timeout", 5),
+            pending_timeout=conf.get("pending_timeout", 300),
+            max_retries=conf.get("max_retries", 5),
+            max_errors_age=conf.get("max_errors_age", 86400),
+            max_errors_nb=conf.get("max_errors_nb", 100),
             connection_kwargs=conf.get("connection_kwargs", {}),
             sentinel_kwargs=conf.get("sentinel_kwargs"),
         )
@@ -1441,5 +1420,5 @@ def get_queue_store(config, daemon):
 def _get_sqs_queue(config):  # pragma: no cover
     if "sqs" not in config:
         sys.exit("The config hasn't any configured queue")
-    sqs = boto3.resource("sqs", region_name=config["sqs"]["region"])
-    return sqs.get_queue_by_name(QueueName=config["sqs"]["queue"])
+    sqs = boto3.resource("sqs", region_name=config["sqs"].get("region", "eu-west-1"))
+    return sqs.get_queue_by_name(QueueName=config["sqs"].get("queue", "tilecloud"))

@@ -63,10 +63,8 @@ caches:
         folder: tiles
 
 defaults:
-    layer: &layer
+    base_layer: &base_layer
         grid: swissgrid_5
-        type: wms
-        url: http://mapserver:8080/mapserv
         wmts_style: default
         mime_type: image/png
         extension: png
@@ -87,20 +85,24 @@ defaults:
             metatile_generation_time: 30
             # [ko]
             tile_size: 20
+    mapserver_layer: &mapserver_layer
+        <<: *base_layer
+        type: wms
+        url: http://mapserver:8080/mapserv
 
 layers:
     point:
-        <<: *layer
+        <<: *mapserver_layer
         layers: point
         geoms:
         -   sql: the_geom AS geom FROM tests.point
             connection: user=postgres password=postgres dbname=tests host=db
         min_resolution_seed: 10
     point_error:
-        <<: *layer
+        <<: *mapserver_layer
         layers: point_error
     point_px_buffer:
-        <<: *layer
+        <<: *mapserver_layer
         layers: point
         px_buffer: 100
         geoms:
@@ -113,7 +115,7 @@ layers:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     point_hash:
-        <<: *layer
+        <<: *mapserver_layer
         layers: point
         geoms:
         -   sql: the_geom AS geom FROM tests.point
@@ -126,14 +128,14 @@ layers:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     point_hash_no_meta:
-        <<: *layer
+        <<: *mapserver_layer
         layers: point
         meta: off
         empty_tile_detection:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     line:
-        <<: *layer
+        <<: *mapserver_layer
         layers: line
         geoms:
         -   sql: the_geom AS geom FROM tests.line
@@ -145,7 +147,7 @@ layers:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     polygon:
-        <<: *layer
+        <<: *mapserver_layer
         layers: polygon
         meta: off
         geoms:
@@ -158,7 +160,7 @@ layers:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     polygon2:
-        <<: *layer
+        <<: *mapserver_layer
         layers: polygon
         grid: swissgrid_01
         geoms:
@@ -171,12 +173,12 @@ layers:
             size: 334
             hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
     all:
-        <<: *layer
+        <<: *mapserver_layer
         layers: point,line,polygon
         meta: off
         bbox: [550000.0, 170000.0, 560000.0, 180000.0]
     mapnik:
-        <<: *layer
+        <<: *base_layer
         type: mapnik
         mapfile: mapfile/test.mapnik
         meta: off
@@ -186,9 +188,8 @@ layers:
         -   sql: the_geom AS geom FROM tests.polygon
             connection: user=postgres password=postgres dbname=tests host=db
         wms_url: http://mapserver:8080/mapserv
-        info_formats: [text/xml]
     mapnik_grid:
-        <<: *layer
+        <<: *base_layer
         type: mapnik
         mapfile: mapfile/test.mapnik
         meta: off
@@ -208,7 +209,7 @@ layers:
             polygon:
             - name
     mapnik_grid_drop:
-        <<: *layer
+        <<: *base_layer
         type: mapnik
         mapfile: mapfile/test.mapnik
         meta: off

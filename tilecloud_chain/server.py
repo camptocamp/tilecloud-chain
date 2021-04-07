@@ -85,13 +85,15 @@ class Server:
 
         global tilegeneration  # pylint: disable=global-statement
 
-        self.expires_hours = tilegeneration.config["server"]["expires"]
+        self.expires_hours = tilegeneration.config["server"].get("expires", 8)
         self.static_allow_extension = tilegeneration.config["server"].get(
             "static_allow_extension", ["jpeg", "png", "xml", "js", "html", "css"]
         )
 
         self.cache = tilegeneration.caches[
-            tilegeneration.config["server"].get("cache", tilegeneration.config["generation"]["default_cache"])
+            tilegeneration.config["server"].get(
+                "cache", tilegeneration.config["generation"].get("default_cache", "default")
+            )
         ]
 
         if self.cache["type"] == "s3":  # pragma: no cover
@@ -100,7 +102,9 @@ class Server:
             for n in range(10):
                 time.sleep(n * 10)
                 try:
-                    self.s3_client = tilecloud.store.s3.get_client(self.cache.get("host"))
+                    self.s3_client = tilecloud.store.s3.get_client(
+                        self.cache.get("host", "s3-eu-west-1.amazonaws.com")
+                    )
                     success = True
                     break
                 except KeyError as e:
@@ -126,7 +130,7 @@ class Server:
 
             def _get(self, path, **kwargs):
                 del kwargs
-                key_name = os.path.join("{folder}".format(**self.cache), path)
+                key_name = os.path.join(self.cache.get("folder", ""), path)
                 try:
                     return self._read(key_name)
                 except Exception:
@@ -136,7 +140,7 @@ class Server:
             self._read = types.MethodType(_read, self)
 
         else:
-            folder = self.cache["folder"] or ""
+            folder = self.cache.get("folder", "")
 
             def _get(self, path, **kwargs):
                 if path.split(".")[-1] not in self.static_allow_extension:  # pragma: no cover
@@ -152,19 +156,21 @@ class Server:
         # Get capabilities or other static files
         self._get = types.MethodType(_get, self)
 
-        if tilegeneration.config["server"]["mapcache_internal"]:
+        if tilegeneration.config["server"].get("mapcache_internal", False):
             self.mapcache_baseurl = None
             self.mapcache_header = {}
         else:
-            mapcache_base = tilegeneration.config["server"]["mapcache_base"].rstrip("/")
-            mapcache_location = tilegeneration.config["mapcache"]["location"].strip("/")
+            mapcache_base = (
+                tilegeneration.config["server"].get("mapcache_base", "http://localhost/").rstrip("/")
+            )
+            mapcache_location = tilegeneration.config["mapcache"].get("location", "/mapcache").strip("/")
             if mapcache_location == "":
                 self.mapcache_baseurl = mapcache_base + "/wmts"
             else:
                 self.mapcache_baseurl = "{}/{}/wmts".format(mapcache_base, mapcache_location)
             self.mapcache_header = tilegeneration.config["server"].get("mapcache_headers", {})
 
-        geoms_redirect = tilegeneration.config["server"]["geoms_redirect"]
+        geoms_redirect = tilegeneration.config["server"].get("geoms_redirect", False)
 
         self.layers = tilegeneration.config["server"].get("layers", tilegeneration.layers.keys())
         self.stores = {}
@@ -209,8 +215,8 @@ class Server:
                     self.cache, layer, read_only=True
                 )
 
-        self.wmts_path = tilegeneration.config["server"]["wmts_path"]
-        self.static_path = tilegeneration.config["server"]["static_path"].split("/")
+        self.wmts_path = tilegeneration.config["server"].get("wmts_path", "wmts")
+        self.static_path = tilegeneration.config["server"].get("static_path", "static").split("/")
 
     def __call__(self, environ, start_response):
         params = {}
@@ -387,15 +393,15 @@ class Server:
                     + urlencode(
                         {
                             "SERVICE": "WMS",
-                            "VERSION": layer["version"],
+                            "VERSION": layer.get("version", "1.1.1"),
                             "REQUEST": "GetFeatureInfo",
                             "LAYERS": layer["layers"],
                             "QUERY_LAYERS": layer["query_layers"],
                             "STYLES": params["STYLE"],
                             "FORMAT": params["FORMAT"],
                             "INFO_FORMAT": params["INFO_FORMAT"],
-                            "WIDTH": layer["grid_ref"]["tile_size"],
-                            "HEIGHT": layer["grid_ref"]["tile_size"],
+                            "WIDTH": layer["grid_ref"].get("tile_size", 256),
+                            "HEIGHT": layer["grid_ref"].get("tile_size", 256),
                             "SRS": layer["grid_ref"]["srs"],
                             "BBOX": layer["grid_ref"]["obj"].extent(tile.tilecoord),
                             "X": params["I"],
@@ -613,12 +619,12 @@ def main(global_config, **settings):
 
     config.add_route(
         "admin",
-        "/{}/".format(tilegeneration.config["server"]["admin_path"]),
+        "/{}/".format(tilegeneration.config["server"].get("admin_path", "admin")),
         request_method="GET",
     )
     config.add_route(
         "admin_run",
-        "/{}/run".format(tilegeneration.config["server"]["admin_path"]),
+        "/{}/run".format(tilegeneration.config["server"].get("admin_path", "admin")),
         request_method="POST",
     )
 

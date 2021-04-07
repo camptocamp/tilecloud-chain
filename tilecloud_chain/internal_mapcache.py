@@ -74,8 +74,8 @@ class RedisStore(TileStore):
             sentinel = redis.sentinel.Sentinel(config["sentinels"], **connection_kwargs)
             self._master = sentinel.master_for(config.get("service_name", "mymaster"))
             self._slave = sentinel.slave_for(config.get("service_name", "mymaster"))
-        self._prefix = config["prefix"]
-        self._expiration = config["expiration"]
+        self._prefix = config.get("prefix", "tilecloud_cache")
+        self._expiration = config.get("expiration", 28800)
         self._redis_lock = redlock.Redlock(
             [self._master], retry_count=MAX_GENERATION_TIME / RETRY_DELAY, retry_delay=RETRY_DELAY
         )
@@ -225,7 +225,7 @@ def fetch(server, tilegeneration, layer, tile, kwargs):
         meta_tile = tile
         if layer.get("meta", False):
             meta_tile = Tile(
-                tilecoord=tile.tilecoord.metatilecoord(layer.get("meta_size", 1)), metadata=tile.metadata
+                tilecoord=tile.tilecoord.metatilecoord(layer.get("meta_size", 5)), metadata=tile.metadata
             )
 
         with generator.lock(meta_tile):

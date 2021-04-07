@@ -116,7 +116,9 @@ class Generate:
 
     def add_local_process_filter(self):  # pragma: no cover
         self._gene.imap(
-            LocalProcessFilter(self.config["generation"]["number_process"], self.options.local_process_number)
+            LocalProcessFilter(
+                self.config["generation"].get("number_process", 1), self.options.local_process_number
+            )
         )
 
     def _generate_queue(self, layer):
@@ -151,8 +153,8 @@ class Generate:
         elif self._options.role == "hash":
             try:
                 z, x, y = (int(v) for v in self._options.get_hash.split("/"))
-                if layer.get("meta"):
-                    self._gene.set_tilecoords([TileCoord(z, x, y, layer["meta_size"])], layer)
+                if layer.get("meta", False):
+                    self._gene.set_tilecoords([TileCoord(z, x, y, layer.get("meta_size", 5))], layer)
                 else:
                     self._gene.set_tilecoords([TileCoord(z, x, y)], layer)
             except ValueError as e:  # pragma: no cover
@@ -318,7 +320,7 @@ class Generate:
                         ""
                         if (
                             (len(all_dimensions) == 1 and len(all_dimensions[0]) == 0)
-                            or layer["type"] != "wms"
+                            or layer.get("type", "wms") != "wms"
                         )
                         else " ({})".format(
                             " - ".join(
@@ -334,7 +336,7 @@ class Generate:
                 message = ["The tile generation is finish"]
             if self._options.role == "master":  # pragma: no cover
                 message.append("Nb of generated jobs: {}".format(self._count_tiles.nb))
-            elif layer.get("meta") if layer is not None else self._options.role == "slave":
+            elif layer.get("meta", False) if layer is not None else self._options.role == "slave":
                 message += [
                     "Nb generated metatiles: {}".format(self._count_metatiles.nb),
                     "Nb metatiles dropped: {}".format(self._count_metatiles_dropped.nb),
@@ -376,7 +378,9 @@ class Generate:
             self._options.role != "hash" and self._options.time is None and "sns" in self._gene.config
         ):  # pragma: no cover
             if "region" in self._gene.config["sns"]:
-                sns_client = boto3.client("sns", region_name=self._gene.config["sns"]["region"])
+                sns_client = boto3.client(
+                    "sns", region_name=self._gene.config["sns"].get("region", "eu-west-1")
+                )
             else:
                 sns_client = boto3.client("sns")
             sns_message = [message[0]]
@@ -396,11 +400,11 @@ class Generate:
             )
 
     def _get_tilestore_for_layer(self, layer) -> Optional[TileStore]:
-        if layer["type"] == "wms":
+        if layer.get("type", "wms") == "wms":
             params = layer["params"].copy()
             if "STYLES" not in params:
                 params["STYLES"] = ",".join(layer["wmts_style"] for _ in layer["layers"].split(","))
-            if layer["generate_salt"]:
+            if layer.get("generate_salt", False):
                 params["SALT"] = str(random.randint(0, 999999))
 
             # Get the metatile image from the WMS server
@@ -411,14 +415,14 @@ class Generate:
                         layers=layer["layers"],
                         srs=layer["grid_ref"]["srs"],
                         format=layer["mime_type"],
-                        border=layer["meta_buffer"] if layer.get("meta", False) else 0,
+                        border=layer.get("meta_buffer", 128) if layer.get("meta", False) else 0,
                         tilegrid=self._gene.get_grid(layer)["obj"],
                         params=params,
                     ),
                 ),
                 headers=layer["headers"],
             )
-        elif layer["type"] == "mapnik":  # pragma: no cover
+        elif layer.get("type", "wms") == "mapnik":  # pragma: no cover
             try:
                 from tilecloud.store.mapnik_ import MapnikTileStore  # pylint: disable=import-outside-toplevel
                 from tilecloud_chain.mapnik_ import (  # pylint: disable=import-outside-toplevel
@@ -430,16 +434,16 @@ class Generate:
                 return None
 
             grid = self._gene.get_grid(layer)
-            if layer["output_format"] == "grid":
+            if layer.get("output_format", "png") == "grid":
                 return MapnikDropActionTileStore(
                     tilegrid=grid["obj"],
                     mapfile=layer["mapfile"],
-                    image_buffer=layer["meta_buffer"] if layer.get("meta") else 0,
-                    data_buffer=layer["data_buffer"],
-                    output_format=layer["output_format"],
-                    resolution=layer["resolution"],
+                    image_buffer=layer.get("meta_buffer", 128) if layer.get("meta", False) else 0,
+                    data_buffer=layer.get("data_buffer", 128),
+                    output_format=layer.get("output_format", "png"),
+                    resolution=layer.get("resolution", 4),
                     layers_fields=layer["layers_fields"],
-                    drop_empty_utfgrid=layer["drop_empty_utfgrid"],
+                    drop_empty_utfgrid=layer.get("drop_empty_utfgrid", False),
                     store=self._cache_tilestore,
                     queue_store=self._queue_tilestore,
                     count=[self._count_tiles, self._count_tiles_dropped],
@@ -449,9 +453,9 @@ class Generate:
                 return MapnikTileStore(
                     tilegrid=grid["obj"],
                     mapfile=layer["mapfile"],
-                    image_buffer=layer["meta_buffer"] if layer.get("meta") else 0,
-                    data_buffer=layer["data_buffer"],
-                    output_format=layer["output_format"],
+                    image_buffer=layer.get("meta_buffer", 128) if layer.get("meta", False) else 0,
+                    data_buffer=layer.get("data_buffer", 128),
+                    output_format=layer.get("output_format", "png"),
                     proj4_literal=grid["proj4_literal"],
                 )
         return None
@@ -522,7 +526,7 @@ def main():
         )
 
     if options.cache is None:
-        options.cache = gene.config["generation"]["default_cache"]
+        options.cache = gene.config["generation"].get("default_cache", "default")
 
     if options.tiles is not None and options.role not in ["local", "master"]:  # pragma: no cover
         sys.exit("The --tiles option work only with role local or master")
