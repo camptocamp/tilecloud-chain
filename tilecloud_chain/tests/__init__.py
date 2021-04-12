@@ -33,7 +33,7 @@ class CompareCase(TestCase):
             if test[0] != "PASS...":
                 try:
                     if regex:
-                        self.assertRegexpMatches(test[1].strip(), "^{}$".format(test[0].strip()))
+                        self.assertRegex(test[1].strip(), "^{}$".format(test[0].strip()))
                     else:
                         self.assertEqual(test[0].strip(), test[1].strip())
                 except AssertionError as e:
