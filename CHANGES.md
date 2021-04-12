@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Release 1.16
+------------
+
+1.  Change the config validator who is a little bit more strict.
+
 Release 1.4
 -----------
 
