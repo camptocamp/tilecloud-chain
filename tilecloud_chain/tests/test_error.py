@@ -25,6 +25,7 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_resolutions.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 ("tilecloud_chain", "ERROR", "The resolution 0.1 * resolution_scale 5 is not an integer."),
@@ -38,6 +39,7 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_mapnik_grid_meta.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
@@ -52,6 +54,7 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_exists.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
@@ -69,6 +72,7 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -v -c tilegeneration/wrong_type.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
@@ -145,6 +149,7 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs_auth.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
@@ -160,6 +165,7 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs_id.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
@@ -175,6 +181,7 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
@@ -190,6 +197,7 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_map.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
@@ -213,6 +221,7 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_sequence.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (

@@ -47,12 +47,12 @@ class CompareCase(TestCase):
                     raise e
         self.assertEqual(len(expected), len(result), repr(result))
 
-    def run_cmd(self, cmd, main_func):
+    def run_cmd(self, cmd, main_func, get_error=False):
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
         old_stderr = sys.stderr
         sys.stderr = mystderr = StringIO()
-        self.assert_main_equals(cmd, main_func, [])
+        self.assert_main_equals(cmd, main_func, [], get_error)
         sys.stdout = old_stdout
         sys.stderr = old_stderr
         log.info(mystdout.getvalue())
@@ -77,7 +77,7 @@ class CompareCase(TestCase):
         except SystemExit as e:
             self.assertEqual(str(e), expected)
 
-    def assert_main_equals(self, cmd, main_func, expected=None, **kargs):
+    def assert_main_equals(self, cmd, main_func, expected=None, get_error=False, **kargs):
         if expected:
             for expect in expected:
                 if os.path.exists(expect[0]):
@@ -88,25 +88,39 @@ class CompareCase(TestCase):
             sys.argv = re.sub(" +", " ", cmd).split(" ")
         try:
             main_func()
-        # except SystemExit as e:
-        #     assert e.code in (None, 0)
-        except SystemExit:
-            pass
+            assert get_error is False
+        except SystemExit as e:
+            if get_error:
+                assert e.code not in (None, 0), str(e)
+            else:
+                assert e.code in (None, 0), str(e)
+        except AssertionError:
+            raise
         except Exception:
-            assert False, traceback.format_exc()
+            assert get_error is True
+            # TODO
+            # assert False, traceback.format_exc()
 
         if expected:
             for expect in expected:
                 with open(expect[0], "r") as f:
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
-    def assert_main_except_equals(self, cmd, main_func, expected, **kargs):
+    def assert_main_except_equals(self, cmd, main_func, expected, get_error=False, **kargs):
         sys.argv = cmd.split(" ")
         try:
             main_func()
-            assert "exit() not called."
+            assert get_error is False
+        except SystemExit as e:
+            if get_error:
+                assert e.code not in (None, 0), str(e)
+            else:
+                assert e.code in (None, 0), str(e)
+        except AssertionError:
+            raise
         except Exception:
-            pass
+            assert False, traceback.format_exc()
+
         if expected:
             for expect in expected:
                 with open(expect[0], "r") as f:

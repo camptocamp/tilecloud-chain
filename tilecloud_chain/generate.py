@@ -14,6 +14,7 @@ import boto3
 from c2cwsgiutils import stats
 
 from tilecloud import TileCoord, TileStore
+import tilecloud.filter.error
 from tilecloud.filter.logger import Logger
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.store.url import URLTileStore
@@ -546,6 +547,9 @@ def main():
         else:
             for layer in gene.config["generation"].get("default_layers", gene.layers.keys()):
                 generate.gene(gene.layers[layer])
+    except tilecloud.filter.error.TooManyErrors as e:
+        logger.error("Too many errors: %s", str(e))
+        sys.exit(1)
     finally:
         gene.close()
 
