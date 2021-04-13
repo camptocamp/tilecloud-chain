@@ -11,4 +11,4 @@ include tilecloud_chain/layer-switcher-minimize.png
 include tilecloud_chain/openlayer.js
 include tilecloud_chain/openlayer.html
 include tilecloud_chain/*.jinja
-include tilecloud_chain/schema*.yaml
+include tilecloud_chain/schema.json
