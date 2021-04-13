@@ -316,7 +316,7 @@ Configure Apache (deprecated)
 
 To generate the Apache configuration we use the command:
 
-.. prompt::
+.. prompt:: bash
 
     generate-controller --generate-apache-config
 
@@ -363,7 +363,7 @@ The MapCache configuration look like this (default values):
 
 To generate the MapCache configuration we use the command:
 
-.. prompt::
+.. prompt:: bash
 
     generate-controller --generate-mapcache-config
 
@@ -429,7 +429,7 @@ Authentication
 
 To be authenticated by Amazon you should set those environments variable before running a command:
 
-.. prompt::
+.. prompt:: bash
 
     export AWS_ACCESS_KEY_ID=...
     export AWS_SECRET_ACCESS_KEY=...
@@ -473,20 +473,20 @@ The queue should be used only by one layer.
 
 To use the SQS queue we should first fill the queue:
 
-.. prompt::
+.. prompt:: bash
 
     generate-tiles --role master --layer <a_layer>
 
 And then generate the tiles present in the SQS queue:
 
-.. prompt::
+.. prompt:: bash
 
     generate-tiles --role slave --layer <a_layer>
 
 For the slave to keep listening when the queue is empty and be able to support more than one layer, you must
 enable the daemon mode and must not specify the layer:
 
-.. prompt::
+.. prompt:: bash
 
     generate-tiles --role slave --daemon
 
@@ -569,7 +569,7 @@ The advantage of the internal server are:
 
 To generate the Apache configuration we use the command:
 
-.. prompt::
+.. prompt:: bash
 
     generate-controller --generate-apache-config
 
@@ -654,61 +654,61 @@ Generate tiles
 
 Generate all the tiles:
 
-.. prompt::
+.. prompt:: bash
 
     generate-tiles
 
 Generate a specific layer:
 
-.. prompt::
+.. prompt:: bash
 
     generate-tiles --layer <a_layer>
 
 Generate a specific zoom:
 
-.. prompt::
+.. prompt:: bash
 
     generate-tiles --zoom 5
 
 Generate a specific zoom range:
 
-.. prompt::
+.. prompt:: bash
 
     generate-tiles --zoom 2-8
 
 Generate a specific some zoom levels:
 
-.. prompt::
+.. prompt:: bash
 
     generate-tiles --zoom 2,4,7
 
 Generate tiles from an (error) tiles file:
 
-.. prompt::
+.. prompt:: bash
 
     generate-tiles --layer <a_layer> --tiles <z/x/y>
 
 Generate tiles on a bbox:
 
-.. prompt::
+.. prompt:: bash
 
     generate-tiles --bbox <MINX> <MINY> <MAXX> <MAXY>
 
 Generate a tiles near a tile coordinate (useful for test):
 
-.. prompt::
+.. prompt:: bash
 
     generate-tiles --near <X> <Y>
 
 Generate a tiles in a different cache than the default one:
 
-.. prompt::
+.. prompt:: bash
 
     generate-tiles --cache <a_cache>
 
 And don't forget to generate the WMTS Capabilities:
 
-.. prompt::
+.. prompt:: bash
 
     generate-controller --capabilities
 
@@ -717,7 +717,7 @@ OpenLayers test page
 
 To generate a test page use:
 
-.. prompt::
+.. prompt:: bash
 
     generate-controller --openlayers
 
@@ -755,7 +755,7 @@ Layer configuration (default values):
 
 The following commands can be used to know the time and cost to do generation:
 
-.. prompt::
+.. prompt:: bash
 
     generate-controller --cost
 
