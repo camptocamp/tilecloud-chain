@@ -5,7 +5,6 @@ verify_ssl = true
 
 [packages]
 c2cwsgiutils = "==4.1.1"
-pykwalify = "==1.7.0"
 pyramid-mako = "==1.1.0"
 python-dateutil = "==2.8.1"
 redlock-py = "==1.0.8"
@@ -24,6 +23,7 @@ transaction = "==3.0.1"  # c2cwsgiutils
 ujson = "==4.0.2"  # c2cwsgiutils
 cornice = "==5.1.0"  # c2cwsgiutils
 "zope.sqlalchemy" = "==1.3"  # c2cwsgiutils
+jsonschema = "==3.2.0"
 
 [dev-packages]
 coverage = "==5.5"
@@ -31,3 +31,4 @@ testfixtures = "==6.17.1"
 pytest = "==6.2.2"
 mypy = "==0.812"
 prospector = "==1.3.1"
+flake8 = "==3.8.0"

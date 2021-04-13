@@ -10,10 +10,17 @@ import sys
 import traceback
 from unittest import TestCase
 
+import yaml
+
 DIFF = 200
 log = logging.getLogger("tests")
 
 config.dictConfig({"version": 1, "loggers": {"pykwalify": {"level": "WARN"}}})
+
+
+class NoAliasDumper(yaml.SafeDumper):
+    def ignore_aliases(self, data):
+        return True
 
 
 class CompareCase(TestCase):
@@ -26,7 +33,7 @@ class CompareCase(TestCase):
             if test[0] != "PASS...":
                 try:
                     if regex:
-                        self.assertRegexpMatches(test[1].strip(), "^{}$".format(test[0].strip()))
+                        self.assertRegex(test[1].strip(), "^{}$".format(test[0].strip()))
                     else:
                         self.assertEqual(test[0].strip(), test[1].strip())
                 except AssertionError as e:
@@ -40,12 +47,12 @@ class CompareCase(TestCase):
                     raise e
         self.assertEqual(len(expected), len(result), repr(result))
 
-    def run_cmd(self, cmd, main_func):
+    def run_cmd(self, cmd, main_func, get_error=False):
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
         old_stderr = sys.stderr
         sys.stderr = mystderr = StringIO()
-        self.assert_main_equals(cmd, main_func, [])
+        self.assert_main_equals(cmd, main_func, [], get_error)
         sys.stdout = old_stdout
         sys.stderr = old_stderr
         log.info(mystdout.getvalue())
@@ -70,7 +77,7 @@ class CompareCase(TestCase):
         except SystemExit as e:
             self.assertEqual(str(e), expected)
 
-    def assert_main_equals(self, cmd, main_func, expected=None, **kargs):
+    def assert_main_equals(self, cmd, main_func, expected=None, get_error=False, **kargs):
         if expected:
             for expect in expected:
                 if os.path.exists(expect[0]):
@@ -81,10 +88,36 @@ class CompareCase(TestCase):
             sys.argv = re.sub(" +", " ", cmd).split(" ")
         try:
             main_func()
-        # except SystemExit as e:
-        #     assert e.code in (None, 0)
-        except SystemExit:
-            pass
+            assert get_error is False
+        except SystemExit as e:
+            if get_error:
+                assert e.code not in (None, 0), str(e)
+            else:
+                assert e.code in (None, 0), str(e)
+        except AssertionError:
+            raise
+        except Exception:
+            assert get_error is True
+            # TODO
+            # assert False, traceback.format_exc()
+
+        if expected:
+            for expect in expected:
+                with open(expect[0], "r") as f:
+                    self.assert_result_equals(f.read(), expect[1], **kargs)
+
+    def assert_main_except_equals(self, cmd, main_func, expected, get_error=False, **kargs):
+        sys.argv = cmd.split(" ")
+        try:
+            main_func()
+            assert get_error is False
+        except SystemExit as e:
+            if get_error:
+                assert e.code not in (None, 0), str(e)
+            else:
+                assert e.code in (None, 0), str(e)
+        except AssertionError:
+            raise
         except Exception:
             assert False, traceback.format_exc()
 
@@ -93,23 +126,11 @@ class CompareCase(TestCase):
                 with open(expect[0], "r") as f:
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
-    def assert_main_except_equals(self, cmd, main_func, expected, **kargs):
-        sys.argv = cmd.split(" ")
-        try:
-            main_func()
-            assert "exit() not called."
-        except Exception:
-            pass
-        if expected:
-            for expect in expected:
-                with open(expect[0], "r") as f:
-                    self.assert_result_equals(f.read(), expect[1], **kargs)
-
     def assert_yaml_equals(self, result, expected):
-        import yaml
-
-        expected = yaml.dump(yaml.safe_load(expected), width=120)
-        result = yaml.dump(yaml.safe_load(result), width=120)
+        expected = yaml.dump(
+            yaml.safe_load(expected), width=120, default_flow_style=False, Dumper=NoAliasDumper
+        )
+        result = yaml.dump(yaml.safe_load(result), width=120, default_flow_style=False, Dumper=NoAliasDumper)
         self.assert_result_equals(result=result, expected=expected)
 
     def assert_cmd_yaml_equals(self, cmd, main_func, **kargs):

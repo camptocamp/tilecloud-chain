@@ -920,6 +920,7 @@ Size per tile: 4[0-9][0-9] o
             cmd=".build/venv/bin/generate_tiles -q -c tilegeneration/test-nosns.yaml -l point_error",
             main_func=generate.main,
             regex=True,
+            get_error=True,
             expected=[
                 [
                     "error.list",

@@ -1641,163 +1641,220 @@ MapCacheAlias /mapcache "%s"
             ],
         )
 
-    CONFIG = (
-        """
-apache: {config_file: tiles.conf, expires: 8, location: /tiles}
+    CONFIG = """apache:
+  config_file: tiles.conf
 caches:
   local:
     folder: /tmp/tiles
-    http_url: 'http://wmts1/tiles/'
+    http_url: http://wmts1/tiles/
     name: local
     type: filesystem
     wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   mbtiles:
     folder: /tmp/tiles/mbtiles
-    http_url: 'http://wmts1/tiles/'
+    http_url: http://wmts1/tiles/
     name: mbtiles
     type: mbtiles
   multi_host:
     folder: /tmp/tiles
-    hosts: [wmts1, wmts2, wmts3]
+    hosts:
+    - wmts1
+    - wmts2
+    - wmts3
     http_url: http://%(host)s/tiles/
     name: multi_host
     type: filesystem
   multi_url:
     folder: /tmp/tiles
-    http_urls: ['http://wmts1/tiles/', 'http://wmts2/tiles/', 'http://wmts3/tiles/']
+    http_urls:
+    - http://wmts1/tiles/
+    - http://wmts2/tiles/
+    - http://wmts3/tiles/
     name: multi_url
     type: filesystem
   s3:
     bucket: tiles
+    cache_control: public, max-age=14400
     folder: tiles
     host: s3-eu-west-1.amazonaws.com
-    http_url: 'https://%(host)s/%(bucket)s/%(folder)s/'
+    http_url: https://%(host)s/%(bucket)s/%(folder)s/
     name: s3
-    region: eu-west-1
     type: s3
-    cache_control: 'public, max-age=14400'
 cost:
-  cloudfront: {download: 0.12, get: 0.009}
+  cloudfront: {}
   request_per_layers: 10000000
-  s3: {download: 0.12, get: 0.01, put: 0.01, storage: 0.125}
-  sqs: {request: 0.01}
+  s3: {}
+  sqs: {}
 generation:
   default_cache: local
-  default_layers: [line, polygon]
+  default_layers:
+  - line
+  - polygon
   error_file: error.list
-  log_format: '%(levelname)s:%(name)s:%(funcName)s:%(message)s'
   maxconsecutive_errors: 2
-  number_process: 1
 grids:
-  swissgrid_01: &id005
-    bbox: [420000, 30000, 900000, 350000]
+  swissgrid_01:
+    bbox:
+    - 420000
+    - 30000
+    - 900000
+    - 350000
     matrix_identifier: resolution
     name: swissgrid_01
-    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 """
-        """+y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel
+      +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 10
-    resolutions: [1, 0.2, 0.1]
+    resolutions:
+    - 1
+    - 0.2
+    - 0.1
     srs: EPSG:21781
     tile_size: 256
-    unit: m
   swissgrid_025:
-    bbox: [420000, 30000, 900000, 350000]
+    bbox:
+    - 420000
+    - 30000
+    - 900000
+    - 350000
     matrix_identifier: resolution
     name: swissgrid_025
-    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 """
-        """+y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel
+      +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 4
-    resolutions: [0.25]
+    resolutions:
+    - 0.25
     srs: EPSG:21781
     tile_size: 256
-    unit: m
   swissgrid_2_5:
-    bbox: [420000, 30000, 900000, 350000]
+    bbox:
+    - 420000
+    - 30000
+    - 900000
+    - 350000
     matrix_identifier: resolution
     name: swissgrid_2_5
-    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 """
-        """+y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel
+      +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 2
-    resolutions: [2.5]
+    resolutions:
+    - 2.5
     srs: EPSG:21781
     tile_size: 256
-    unit: m
-  swissgrid_5: &id003
-    bbox: [420000, 30000, 900000, 350000]
-    matrix_identifier: zoom
+  swissgrid_5:
+    bbox:
+    - 420000
+    - 30000
+    - 900000
+    - 350000
     name: swissgrid_5
-    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 """
-        """+y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
+    proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel
+      +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 1
-    resolutions: [100, 50, 20, 10, 5]
+    resolutions:
+    - 100
+    - 50
+    - 20
+    - 10
+    - 5
     srs: EPSG:21781
     tile_size: 256
-    unit: m
 layers:
   all:
-    bbox: [550000.0, 170000.0, 560000.0, 180000.0]
-    cost: &id001 {metatile_generation_time: 30, tile_generation_time: 30, tile_size: 20,
-    tileonly_generation_time: 60}
-    dimensions: &id002
+    bbox:
+    - 550000.0
+    - 170000.0
+    - 560000.0
+    - 180000.0
+    cost:
+      metatile_generation_time: 30
+      tile_generation_time: 30
+      tile_size: 20
+      tileonly_generation_time: 60
+    dimensions:
     - default: '2012'
+      generate:
+      - '2012'
       name: DATE
-      generate: ['2012']
-      values: ['2005', '2010', '2012']
+      values:
+      - '2005'
+      - '2010'
+      - '2012'
     extension: png
-    generate_salt: false
     geoms: []
     grid: swissgrid_5
-    grid_ref: *id003
-    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
+    headers:
+      Cache-Control: no-cache, no-store
+      Pragma: no-cache
     layers: point,line,polygon
     meta: false
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: all
-    params: &id004 {}
-    px_buffer: 0.0
+    params: {}
     type: wms
     url: http://mapserver:8080/mapserv
-    version: 1.1.1
     wmts_style: default
   line:
-    cost: *id001
-    dimensions: *id002
-    empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
-    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
+    cost:
+      metatile_generation_time: 30
+      tile_generation_time: 30
+      tile_size: 20
+      tileonly_generation_time: 60
+    dimensions:
+    - default: '2012'
+      generate:
+      - '2012'
+      name: DATE
+      values:
+      - '2005'
+      - '2010'
+      - '2012'
+    empty_metatile_detection:
+      hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+      size: 20743
+    empty_tile_detection:
+      hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+      size: 334
     extension: png
-    generate_salt: false
     geoms:
-    - sql: the_geom AS geom FROM tests.line
-      connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgres password=postgres dbname=tests host=db
+      sql: the_geom AS geom FROM tests.line
     grid: swissgrid_5
-    grid_ref: *id003
-    headers: {Cache-Control: 'no-cache'}
+    headers:
+      Cache-Control: no-cache
     layers: line
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: line
-    params: {PARAM: value}
-    px_buffer: 0.0
+    params:
+      PARAM: value
     type: wms
     url: http://mapserver:8080/mapserv
-    version: 1.1.1
     wmts_style: default
   mapnik:
-    cost: *id001
+    cost:
+      metatile_generation_time: 30
+      tile_generation_time: 30
+      tile_size: 20
+      tileonly_generation_time: 60
     data_buffer: 128
-    dimensions: *id002
-    drop_empty_utfgrid: false
+    dimensions:
+    - default: '2012'
+      generate:
+      - '2012'
+      name: DATE
+      values:
+      - '2005'
+      - '2010'
+      - '2012'
     extension: png
     geoms:
     - connection: user=postgres password=postgres dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
-    grid_ref: *id003
-    layers: __all__
     mapfile: mapfile/test.mapnik
     meta: false
     meta_buffer: 128
@@ -1805,28 +1862,36 @@ layers:
     mime_type: image/png
     name: mapnik
     output_format: png
-    params: *id004
-    px_buffer: 0.0
-    resolution: 4
     type: mapnik
     wmts_style: default
   mapnik_grid:
-    cost: *id001
+    cost:
+      metatile_generation_time: 30
+      tile_generation_time: 30
+      tile_size: 20
+      tileonly_generation_time: 60
     data_buffer: 128
-    dimensions: *id002
-    drop_empty_utfgrid: false
+    dimensions:
+    - default: '2012'
+      generate:
+      - '2012'
+      name: DATE
+      values:
+      - '2005'
+      - '2010'
+      - '2012'
     extension: json
     geoms:
-    - sql: the_geom AS geom FROM tests.polygon
-      connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgres password=postgres dbname=tests host=db
+      sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
-    grid_ref: *id003
-    layers: __all__
-    drop_empty_utfgrid: false
     layers_fields:
-      line: [name]
-      point: [name]
-      polygon: [name]
+      line:
+      - name
+      point:
+      - name
+      polygon:
+      - name
     mapfile: mapfile/test.mapnik
     meta: false
     meta_buffer: 128
@@ -1834,26 +1899,34 @@ layers:
     mime_type: application/utfgrid
     name: mapnik_grid
     output_format: grid
-    params: *id004
-    px_buffer: 0.0
     resolution: 16
     type: mapnik
     wmts_style: default
   mapnik_grid_drop:
-    cost: *id001
+    cost:
+      metatile_generation_time: 30
+      tile_generation_time: 30
+      tile_size: 20
+      tileonly_generation_time: 60
     data_buffer: 128
-    dimensions: *id002
-    drop_empty_utfgrid: false
+    dimensions:
+    - default: '2012'
+      generate:
+      - '2012'
+      name: DATE
+      values:
+      - '2005'
+      - '2010'
+      - '2012'
+    drop_empty_utfgrid: true
     extension: json
     geoms:
-    - sql: the_geom AS geom FROM tests.polygon
-      connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgres password=postgres dbname=tests host=db
+      sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
-    grid_ref: *id003
-    layers: __all__
-    drop_empty_utfgrid: true
     layers_fields:
-      point: [name]
+      point:
+      - name
     mapfile: mapfile/test.mapnik
     meta: false
     meta_buffer: 0
@@ -1861,22 +1934,32 @@ layers:
     mime_type: application/utfgrid
     name: mapnik_grid_drop
     output_format: grid
-    params: *id004
-    px_buffer: 0.0
     resolution: 16
     type: mapnik
     wmts_style: default
   point:
-    cost: *id001
-    dimensions: *id002
+    cost:
+      metatile_generation_time: 30
+      tile_generation_time: 30
+      tile_size: 20
+      tileonly_generation_time: 60
+    dimensions:
+    - default: '2012'
+      generate:
+      - '2012'
+      name: DATE
+      values:
+      - '2005'
+      - '2010'
+      - '2012'
     extension: png
-    generate_salt: false
     geoms:
-    - sql: the_geom AS geom FROM tests.point
-      connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgres password=postgres dbname=tests host=db
+      sql: the_geom AS geom FROM tests.point
     grid: swissgrid_5
-    grid_ref: *id003
-    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
+    headers:
+      Cache-Control: no-cache, no-store
+      Pragma: no-cache
     layers: point
     meta: true
     meta_buffer: 128
@@ -1884,47 +1967,39 @@ layers:
     mime_type: image/png
     min_resolution_seed: 10
     name: point
-    params: *id004
-    px_buffer: 0.0
+    params: {}
     type: wms
     url: http://mapserver:8080/mapserv
-    version: 1.1.1
-    wmts_style: default
-  point_hash_no_meta:
-    cost: *id001
-    dimensions: *id002
-    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
-    extension: png
-    generate_salt: false
-    geoms: []
-    grid: swissgrid_5
-    grid_ref: *id003
-    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
-    layers: point
-    meta: false
-    meta_buffer: 128
-    meta_size: 8
-    mime_type: image/png
-    name: point_hash_no_meta
-    params: *id004
-    px_buffer: 0.0
-    type: wms
-    url: http://mapserver:8080/mapserv
-    version: 1.1.1
     wmts_style: default
   point_hash:
-    cost: *id001
-    dimensions: *id002
-    empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
-    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
+    cost:
+      metatile_generation_time: 30
+      tile_generation_time: 30
+      tile_size: 20
+      tileonly_generation_time: 60
+    dimensions:
+    - default: '2012'
+      generate:
+      - '2012'
+      name: DATE
+      values:
+      - '2005'
+      - '2010'
+      - '2012'
+    empty_metatile_detection:
+      hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+      size: 20743
+    empty_tile_detection:
+      hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+      size: 334
     extension: png
-    generate_salt: false
     geoms:
-    - sql: the_geom AS geom FROM tests.point
-      connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgres password=postgres dbname=tests host=db
+      sql: the_geom AS geom FROM tests.point
     grid: swissgrid_5
-    grid_ref: *id003
-    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
+    headers:
+      Cache-Control: no-cache, no-store
+      Pragma: no-cache
     layers: point
     meta: true
     meta_buffer: 128
@@ -1932,109 +2007,200 @@ layers:
     mime_type: image/png
     min_resolution_seed: 10
     name: point_hash
-    params: *id004
-    px_buffer: 0.0
+    params: {}
     type: wms
     url: http://mapserver:8080/mapserv
-    version: 1.1.1
+    wmts_style: default
+  point_hash_no_meta:
+    cost:
+      metatile_generation_time: 30
+      tile_generation_time: 30
+      tile_size: 20
+      tileonly_generation_time: 60
+    dimensions:
+    - default: '2012'
+      generate:
+      - '2012'
+      name: DATE
+      values:
+      - '2005'
+      - '2010'
+      - '2012'
+    empty_tile_detection:
+      hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+      size: 334
+    extension: png
+    geoms: []
+    grid: swissgrid_5
+    headers:
+      Cache-Control: no-cache, no-store
+      Pragma: no-cache
+    layers: point
+    meta: false
+    meta_buffer: 128
+    meta_size: 8
+    mime_type: image/png
+    name: point_hash_no_meta
+    params: {}
+    type: wms
+    url: http://mapserver:8080/mapserv
     wmts_style: default
   point_px_buffer:
-    cost: *id001
-    dimensions: *id002
-    empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
-    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
+    cost:
+      metatile_generation_time: 30
+      tile_generation_time: 30
+      tile_size: 20
+      tileonly_generation_time: 60
+    dimensions:
+    - default: '2012'
+      generate:
+      - '2012'
+      name: DATE
+      values:
+      - '2005'
+      - '2010'
+      - '2012'
+    empty_metatile_detection:
+      hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+      size: 20743
+    empty_tile_detection:
+      hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+      size: 334
     extension: png
-    generate_salt: false
     geoms:
-    - sql: the_geom AS geom FROM tests.point
-      connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgres password=postgres dbname=tests host=db
+      sql: the_geom AS geom FROM tests.point
     grid: swissgrid_5
-    grid_ref: *id003
-    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
+    headers:
+      Cache-Control: no-cache, no-store
+      Pragma: no-cache
     layers: point
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: point_px_buffer
-    params: *id004
+    params: {}
     px_buffer: 100
     type: wms
     url: http://mapserver:8080/mapserv
-    version: 1.1.1
     wmts_style: default
   polygon:
-    cost: *id001
-    dimensions: *id002
-    empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
-    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
+    cost:
+      metatile_generation_time: 30
+      tile_generation_time: 30
+      tile_size: 20
+      tileonly_generation_time: 60
+    dimensions:
+    - default: '2012'
+      generate:
+      - '2012'
+      name: DATE
+      values:
+      - '2005'
+      - '2010'
+      - '2012'
+    empty_metatile_detection:
+      hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+      size: 20743
+    empty_tile_detection:
+      hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+      size: 334
     extension: png
-    generate_salt: false
     geoms:
-    - sql: the_geom AS geom FROM tests.polygon
-      connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgres password=postgres dbname=tests host=db
+      sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
-    grid_ref: *id003
-    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
+    headers:
+      Cache-Control: no-cache, no-store
+      Pragma: no-cache
     layers: polygon
     meta: false
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: polygon
-    params: *id004
-    px_buffer: 0.0
+    params: {}
     type: wms
     url: http://mapserver:8080/mapserv
-    version: 1.1.1
     wmts_style: default
   polygon2:
-    cost: *id001
-    dimensions: *id002
-    empty_metatile_detection: {hash: 01062bb3b25dcead792d7824f9a7045f0dd92992, size: 20743}
-    empty_tile_detection: {hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8, size: 334}
+    cost:
+      metatile_generation_time: 30
+      tile_generation_time: 30
+      tile_size: 20
+      tileonly_generation_time: 60
+    dimensions:
+    - default: '2012'
+      generate:
+      - '2012'
+      name: DATE
+      values:
+      - '2005'
+      - '2010'
+      - '2012'
+    empty_metatile_detection:
+      hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+      size: 20743
+    empty_tile_detection:
+      hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+      size: 334
     extension: png
-    generate_salt: false
     geoms:
-    - sql: the_geom AS geom FROM tests.polygon
-      connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgres password=postgres dbname=tests host=db
+      sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_01
-    grid_ref: *id005
-    headers: {Cache-Control: 'no-cache, no-store', Pragma: no-cache}
+    headers:
+      Cache-Control: no-cache, no-store
+      Pragma: no-cache
     layers: polygon
     meta: true
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     name: polygon2
-    params: *id004
-    px_buffer: 0.0
+    params: {}
     type: wms
     url: http://mapserver:8080/mapserv
-    version: 1.1.1
     wmts_style: default
-mapcache: {config_file: mapcache.xml, memcache_host: memcached, memcache_port: 11211, location: /mapcache}
-openlayers: {center_x: 600000, center_y: 200000, srs: 'EPSG:21781'}
-sqs: {queue: sqs_point, region: eu-west-1}
-sns: {region: eu-west-1, topic: 'arn:aws:sns:eu-west-1:your-account-id:tilecloud'}
+mapcache:
+  config_file: mapcache.xml
+  memcache_host: memcached
 metadata:
   abstract: Some abstract
   access_constraints: None
   fees: None
-  keywords: [some, keywords]
-  servicetype: OGC WMTS
+  keywords:
+  - some
+  - keywords
   title: Some title
+openlayers:
+  center_x: 600000
+  center_y: 200000
+  srs: EPSG:21781
 provider:
   contact:
     info:
-      address: {area: BE, city: Berne, country: Switzerland, delivery: Address delivery, """
-        """email: info@example.com, postal_code: 3000}
-      phone: {fax: +41 11 222 33 44, voice: +41 11 222 33 44}
+      address:
+        area: BE
+        city: Berne
+        country: Switzerland
+        delivery: Address delivery
+        email: info@example.com
+        postal_code: 3000
+      phone:
+        fax: +41 11 222 33 44
+        voice: +41 11 222 33 44
     name: The contact name
     position: The position name
   name: The provider name
-  url: The provider URL"""
-    )
+  url: The provider URL
+sns:
+  region: eu-west-1
+  topic: arn:aws:sns:eu-west-1:your-account-id:tilecloud
+sqs:
+  queue: sqs_point
+    """
 
     def test_config(self):
         self.assert_cmd_yaml_equals(

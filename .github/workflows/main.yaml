@@ -30,6 +30,9 @@ jobs:
       - name: Checks
         run: c2cciutils-checks
 
+      - run: sudo npm install --global json-schema-spell-checker
+      - run: json-schema-spell-checker --fields=description,title --spelling=.spelling --ignore-numbers tilecloud_chain/schema.json
+
       - name: Build
         run: |
           python setup.py --long-description > PYPI.md

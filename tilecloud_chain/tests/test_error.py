@@ -25,6 +25,7 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_resolutions.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 ("tilecloud_chain", "ERROR", "The resolution 0.1 * resolution_scale 5 is not an integer."),
@@ -38,6 +39,7 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_mapnik_grid_meta.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
@@ -52,15 +54,16 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_exists.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
                     "tilecloud_chain",
                     "ERROR",
                     """The config file 'tilegeneration/wrong_exists.yaml' is invalid.
- - /: Cannot find required key 'caches'.
- - /: Cannot find required key 'grids'.
- - /: Cannot find required key 'layers'.""",
+ - /: 'caches' is a required property
+ - /: 'grids' is a required property
+ - /: 'layers' is a required property""",
                 ),
             )
 
@@ -69,46 +72,49 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -v -c tilegeneration/wrong_type.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
                     "tilecloud_chain",
                     "ERROR",
                     """The config file 'tilegeneration/wrong_type.yaml' is invalid.
- - /grids/swissgrid!/name: Value 'swissgrid!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
- - /grids/swissgrid!: Cannot find required key 'bbox'.
- - /grids/swissgrid!: Cannot find required key 'resolutions'.
- - /grids/swissgrid!: Cannot find required key 'srs'.
- - /grids/swissgrid_1/bbox/0: Value 'a' is not of type 'number'.
- - /grids/swissgrid_1/bbox/1: Value 'b' is not of type 'number'.
- - /grids/swissgrid_1/bbox/2: Value 'c' is not of type 'number'.
- - /grids/swissgrid_1/resolution_scale: Value '5.5' is not of type 'int'.
- - /grids/swissgrid_1/srs: Value '['EPSG:21781']' is not of type 'str'.
- - /grids/swissgrid_2/srs: Value '{}' is not of type 'str'.
- - /grids/swissgrid_3/srs: Value 'epsg:21781' does not match pattern '^EPSG:[0-9]+$'.
- - /grids/swissgrid_3: Cannot find required key 'bbox'.
- - /grids/swissgrid_3: Cannot find required key 'resolutions'.
- - /grids/swissgrid_4/srs: Value 'epsg21781' does not match pattern '^EPSG:[0-9]+$'.
- - /grids/swissgrid_4: Cannot find required key 'bbox'.
- - /grids/swissgrid_4: Cannot find required key 'resolutions'.
- - /grids/swissgrid_5: Cannot find required key 'bbox'.
- - /grids/swissgrid_5: Cannot find required key 'resolutions'.
- - /grids/swissgrid_5: Cannot find required key 'srs'.
- - /grids/swissgrid_6: Value 'None' is not a dict. Value path: '/grids/swissgrid_6'
- - /layers/hi!/dimensions/0/default: Value '2010!' does not match pattern '^[a-zA-Z0-9_\-\+~\.]+$'.
- - /layers/hi!/dimensions/0/generate/0: Value '2012!' does not match pattern '^[a-zA-Z0-9_\-\+~\.]+$'.
- - /layers/hi!/dimensions/0/name: Value 'DATE!' does not match pattern '^(?!(?i)(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\-~\.]+$'.
- - /layers/hi!/dimensions/0/values/0: Value '2005!' does not match pattern '^[a-zA-Z0-9_\-\+~\.]+$'.
- - /layers/hi!/dimensions/0/values/1: Value '2010!' does not match pattern '^[a-zA-Z0-9_\-\+~\.]+$'.
- - /layers/hi!/dimensions/0/values/2: Value '2012!' does not match pattern '^[a-zA-Z0-9_\-\+~\.]+$'.
- - /layers/hi!/dimensions/1/default: Value '1' is not of type 'str'.
- - /layers/hi!/dimensions/1/generate/0: Value '1' is not of type 'str'.
- - /layers/hi!/dimensions/1/values/0: Value '1' is not of type 'str'.
- - /layers/hi!/name: Value 'hi!' does not match pattern '^[a-zA-Z0-9_\-~\.]+$'.
- - /layers/hi!/wmts_style: Value 'yo!' does not match pattern '^[a-zA-Z0-9_\-\+~\.]+$'.
- - /layers/hi!: Cannot find required key 'extension'.
- - /layers/hi!: Cannot find required key 'grid'.
- - /layers/hi!: Cannot find required key 'mime_type'.""",  # noqa
+ - grids.swissgrid!: 'bbox' is a required property
+ - grids.swissgrid!: 'resolutions' is a required property
+ - grids.swissgrid!: 'srs' is a required property
+ - grids.swissgrid_1.bbox.0: 'a' is not of type 'number'
+ - grids.swissgrid_1.bbox.1: 'b' is not of type 'number'
+ - grids.swissgrid_1.bbox.2: 'c' is not of type 'number'
+ - grids.swissgrid_1.resolution_scale: 5.5 is not of type 'integer'
+ - grids.swissgrid_1.srs: ['EPSG:21781'] is not of type 'string'
+ - grids.swissgrid_2.srs: {} is not of type 'string'
+ - grids.swissgrid_3.srs: 'epsg:21781' does not match '^EPSG:[0-9]+$'
+ - grids.swissgrid_3: 'bbox' is a required property
+ - grids.swissgrid_3: 'resolutions' is a required property
+ - grids.swissgrid_4.srs: 'epsg21781' does not match '^EPSG:[0-9]+$'
+ - grids.swissgrid_4: 'bbox' is a required property
+ - grids.swissgrid_4: 'resolutions' is a required property
+ - grids.swissgrid_5: 'bbox' is a required property
+ - grids.swissgrid_5: 'resolutions' is a required property
+ - grids.swissgrid_5: 'srs' is a required property
+ - grids.swissgrid_6: None is not of type 'object'
+ - grids: 'swissgrid!' does not match '^[a-zA-Z0-9_\\\\-~\\\\.]+$'
+ - layers.hi!.dimensions.0.default: '2010!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$'
+ - layers.hi!.dimensions.0.generate.0: '2012!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$'
+ - layers.hi!.dimensions.0.name: 'DATE!' does not match '^(?!(?i)(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\\\\-~\\\\.]+$'
+ - layers.hi!.dimensions.0.values.0: '2005!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$'
+ - layers.hi!.dimensions.0.values.1: '2010!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$'
+ - layers.hi!.dimensions.0.values.2: '2012!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$'
+ - layers.hi!.dimensions.1.default: 1 is not of type 'string'
+ - layers.hi!.dimensions.1.generate.0: 1 is not of type 'string'
+ - layers.hi!.dimensions.1.values.0: 1 is not of type 'string'
+ - layers.hi!.wmts_style: 'yo!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$'
+ - layers.hi!: 'extension' is a required property
+ - layers.hi!: 'grid' is a required property
+ - layers.hi!: 'layers' is a required property
+ - layers.hi!: 'mime_type' is a required property
+ - layers.hi!: 'url' is a required property
+ - layers: 'hi!' does not match '^[a-zA-Z0-9_\\\\-~\\\\.]+$'""",  # noqa
                 )
             )
 
@@ -143,13 +149,14 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs_auth.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
                     "tilecloud_chain",
                     "ERROR",
                     """The config file 'tilegeneration/wrong_srs_auth.yaml' is invalid.
- - /grids/swissgrid_01/srs: Value 'toto:21781' does not match pattern '^EPSG:[0-9]+$'.""",  # noqa
+ - grids.swissgrid_01.srs: 'toto:21781' does not match '^EPSG:[0-9]+$'""",  # noqa
                 )
             )
 
@@ -158,13 +165,14 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs_id.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
                     "tilecloud_chain",
                     "ERROR",
                     """The config file 'tilegeneration/wrong_srs_id.yaml' is invalid.
- - /grids/swissgrid_01/srs: Value 'EPSG:21781a' does not match pattern '^EPSG:[0-9]+$'.""",  # noqa
+ - grids.swissgrid_01.srs: 'EPSG:21781a' does not match '^EPSG:[0-9]+$'""",  # noqa
                 )
             )
 
@@ -173,13 +181,14 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
                     "tilecloud_chain",
                     "ERROR",
                     """The config file 'tilegeneration/wrong_srs.yaml' is invalid.
- - /grids/swissgrid_01/srs: Value 'EPSG21781' does not match pattern '^EPSG:[0-9]+$'.""",
+ - grids.swissgrid_01.srs: 'EPSG21781' does not match '^EPSG:[0-9]+$'""",
                 )
             )
 
@@ -188,20 +197,22 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_map.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
                     "tilecloud_chain",
                     "ERROR",
                     """The config file 'tilegeneration/wrong_map.yaml' is invalid.
- - /: Cannot find required key 'caches'.
- - /: Cannot find required key 'grids'.
- - /layers/test/empty_tile_detection: Value 'test' is not a dict. """
-                    """Value path: '/layers/test/empty_tile_detection'
- - /layers/test: Cannot find required key 'extension'.
- - /layers/test: Cannot find required key 'grid'.
- - /layers/test: Cannot find required key 'mime_type'.
- - /layers/test: Cannot find required key 'wmts_style'.""",
+ - /: 'caches' is a required property
+ - /: 'grids' is a required property
+ - layers.test.empty_tile_detection: 'test' is not of type 'object'
+ - layers.test: 'extension' is a required property
+ - layers.test: 'grid' is a required property
+ - layers.test: 'layers' is a required property
+ - layers.test: 'mime_type' is a required property
+ - layers.test: 'url' is a required property
+ - layers.test: 'wmts_style' is a required property""",
                 )
             )
 
@@ -210,16 +221,17 @@ class TestError(CompareCase):
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_sequence.yaml",
                 main_func=controller.main,
+                get_error=True,
             )
             log_capture.check(
                 (
                     "tilecloud_chain",
                     "ERROR",
                     """The config file 'tilegeneration/wrong_sequence.yaml' is invalid.
- - /: Cannot find required key 'caches'.
- - /: Cannot find required key 'layers'.
- - /grids/test/resolutions: Value 'b'test'' is not a list. Value path: '/grids/test/resolutions'
- - /grids/test: Cannot find required key 'bbox'.
- - /grids/test: Cannot find required key 'srs'.""",
+ - /: 'caches' is a required property
+ - /: 'layers' is a required property
+ - grids.test.resolutions: 'test' is not of type 'array'
+ - grids.test: 'bbox' is a required property
+ - grids.test: 'srs' is a required property""",
                 )
             )

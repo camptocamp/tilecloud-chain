@@ -95,7 +95,7 @@ def main():
         sys.exit(0)
 
     if options.cache is None:
-        options.cache = gene.config["generation"]["default_cache"]
+        options.cache = gene.config["generation"].get("default_cache", "default")
 
     if options.dump_config:
         for layer in gene.config["layers"].values():
@@ -104,6 +104,10 @@ def main():
         for grid in gene.config["grids"].values():
             if "obj" in grid:
                 del grid["obj"]
+
+        for layer in gene.config["layers"].values():
+            if "grid_ref" in layer:
+                del layer["grid_ref"]
         print(yaml.dump(gene.config))
         sys.exit(0)
 
@@ -125,8 +129,8 @@ def main():
 
 def _send(data, path, mime_type, cache):
     if cache["type"] == "s3":  # pragma: no cover
-        client = tilecloud.store.s3.get_client(cache.get("host"))
-        key_name = os.path.join("{folder!s}".format(**cache), path)
+        client = tilecloud.store.s3.get_client(cache.get("host", "s3-eu-west-1.amazonaws.com"))
+        key_name = os.path.join(cache.get("folder", ""), path)
         bucket = cache["bucket"]
         client.put_object(
             ACL="public-read",
@@ -140,7 +144,7 @@ def _send(data, path, mime_type, cache):
         if isinstance(data, str):
             data = data.encode("utf-8")
 
-        folder = cache["folder"] or ""
+        folder = cache.get("folder", "")
         filename = os.path.join(folder, path)
         directory = os.path.dirname(filename)
         if not os.path.exists(directory):
@@ -151,8 +155,8 @@ def _send(data, path, mime_type, cache):
 
 def _get(path, cache):
     if cache["type"] == "s3":  # pragma: no cover
-        client = tilecloud.store.s3.get_client(cache.get("host"))
-        key_name = os.path.join("{folder!s}".format(**cache), path)
+        client = tilecloud.store.s3.get_client(cache.get("host", "s3-eu-west-1.amazonaws.com"))
+        key_name = os.path.join("{folder}".format(**cache), path)
         bucket = cache["bucket"]
         try:
             response = client.get_object(Bucket=bucket, Key=key_name)
@@ -163,7 +167,7 @@ def _get(path, cache):
             else:
                 raise
     else:
-        p = os.path.join(cache["folder"], path)
+        p = os.path.join(cache.get("folder", ""), path)
         if not os.path.isfile(p):  # pragma: no cover
             return None
         with open(p, "rb") as file:
@@ -196,12 +200,12 @@ def get_wmts_capabilities(gene, cache, exit_=False):
                 base_urls[0],
                 (
                     server.get("wmts_path", "wmts") + "/1.0.0/WMTSCapabilities.xml"
-                    if server
+                    if server is not None
                     else cache.get("wmtscapabilities_file", "1.0.0/WMTSCapabilities.xml")
                 ),
             ),
             base_urls=base_urls,
-            base_url_postfix=(server.get("wmts_path", "wmts") + "/") if server else "",
+            base_url_postfix=(server.get("wmts_path", "wmts") + "/") if server is not None else "",
             get_tile_matrix_identifier=get_tile_matrix_identifier,
             server=server is not None,
             has_metadata=gene.metadata is not None,
@@ -294,7 +298,7 @@ def _generate_legend_images(gene):
 
     for layer in gene.layers.values():
         if "legend_mime" in layer and "legend_extension" in layer:
-            if layer["type"] == "wms":
+            if layer.get("type", "wms") == "wms":
                 session = requests.session()
                 session.headers.update(layer["headers"])
                 previous_hash = None
@@ -307,7 +311,7 @@ def _generate_legend_images(gene):
                             + urlencode(
                                 {
                                     "SERVICE": "WMS",
-                                    "VERSION": layer["version"],
+                                    "VERSION": layer.get("version", "1.1.1"),
                                     "REQUEST": "GetLegendGraphic",
                                     "LAYER": wmslayer,
                                     "FORMAT": layer["legend_mime"],
@@ -353,7 +357,7 @@ def _generate_legend_images(gene):
 
 def _generate_mapcache_config(gene, version):
     for layer in gene.layers.values():
-        if layer["type"] == "wms" or "wms_url" in layer:
+        if layer.get("type", "wms") == "wms" or "wms_url" in layer:
             params = {}
             params.update(layer.get("params", {}))
             if "FORMAT" not in params:
@@ -375,7 +379,7 @@ def _generate_mapcache_config(gene, version):
         sorted=sorted,
     )
 
-    with open(gene.config["mapcache"]["config_file"], "w") as f:
+    with open(gene.config["mapcache"].get("config_file", "apache/mapcache.xml"), "w") as f:
         f.write(config)
 
 
@@ -383,24 +387,24 @@ def _generate_apache_config(gene):
     cache = gene.caches[gene.options.cache]
     use_server = "server" in gene.config
 
-    with open(gene.config["apache"]["config_file"], "w") as f:
+    with open(gene.config["apache"].get("config_file", "apache/tiles.conf"), "w") as f:
 
-        folder = cache["folder"]
+        folder = cache.get("folder", "")
         if folder and folder[-1] != "/":
             folder += "/"
 
         if not use_server:
             f.write(
                 """
-    <Location {location!s}>
+    <Location {location}>
         ExpiresActive on
         ExpiresDefault "now plus {expires} hours"
-    {headers!s}
+    {headers}
     </Location>
     """.format(
                     **{
-                        "location": gene.config["apache"]["location"],
-                        "expires": gene.config["apache"]["expires"],
+                        "location": gene.config["apache"].get("location", "/tiles"),
+                        "expires": gene.config["apache"].get("expires", 8),
                         "headers": "".join(
                             [
                                 '    Header set {} "{}"'.format(*h)
@@ -416,20 +420,27 @@ def _generate_apache_config(gene):
                 tiles_url = (
                     (cache["tiles_url"] % cache)
                     if "tiles_url" in cache
-                    else "http://s3-{region!s}.amazonaws.com/{bucket!s}/{folder!s}".format(
-                        **{"region": cache["region"], "bucket": cache["bucket"], "folder": folder}
+                    else "http://s3-{region}.amazonaws.com/{bucket}/{folder}".format(
+                        **{
+                            "region": cache.get("region", "eu-west-1"),
+                            "bucket": cache["bucket"],
+                            "folder": folder,
+                        }
                     )
                 )
                 f.write(
                     """
-    <Proxy {tiles_url!s}*>
+    <Proxy {tiles_url}*>
         Order deny,allow
         Allow from all
     </Proxy>
-    ProxyPass {location!s}/ {tiles_url!s}
-    ProxyPassReverse {location!s}/ {tiles_url!s}
+    ProxyPass {location}/ {tiles_url}
+    ProxyPassReverse {location}/ {tiles_url}
     """.format(
-                        **{"location": gene.config["apache"]["location"], "tiles_url": tiles_url}
+                        **{
+                            "location": gene.config["apache"].get("location", "/tiles"),
+                            "tiles_url": tiles_url,
+                        }
                     )
                 )
             elif cache["type"] == "filesystem":
@@ -438,7 +449,7 @@ def _generate_apache_config(gene):
     Alias {location!s} {files_folder!s}
     """.format(
                         **{
-                            "location": gene.config["apache"]["location"],
+                            "location": gene.config["apache"].get("location", "/tiles"),
                             "files_folder": folder,
                             "headers": "".join(
                                 [
@@ -476,8 +487,8 @@ def _generate_apache_config(gene):
                             " "
                             "[PT]\n"
                             % {
-                                "tiles_location": gene.config["apache"]["location"],
-                                "mapcache_location": gene.config["mapcache"]["location"],
+                                "tiles_location": gene.config["apache"].get("location", "/tiles"),
+                                "mapcache_location": gene.config["mapcache"].get("location", "/mapcache"),
                                 "layer": layer["name"],
                                 "token_regex": token_regex,
                                 "dimensions_re": "".join(["/" + token_regex for e in range(dim)]),
@@ -494,8 +505,10 @@ def _generate_apache_config(gene):
     MapCacheAlias {mapcache_location!s} "{mapcache_config!s}"
     """.format(
                     **{
-                        "mapcache_location": gene.config["mapcache"]["location"],
-                        "mapcache_config": os.path.abspath(gene.config["mapcache"]["config_file"]),
+                        "mapcache_location": gene.config["mapcache"].get("location", "/mapcache"),
+                        "mapcache_config": os.path.abspath(
+                            gene.config["mapcache"].get("config_file", "apache/mapcache.xml")
+                        ),
                     }
                 )
             )
@@ -531,10 +544,10 @@ def _generate_openlayers(gene):
         layers=[
             {
                 "name": name,
-                "grid": layer["type"] == "mapnik" and layer["output_format"] == "grid",
+                "grid": layer.get("type", "wms") == "mapnik" and layer.get("output_format", "png") == "grid",
                 "maxExtent": layer["grid_ref"]["bbox"],
-                "resolution": layer["resolution"]
-                if layer["type"] == "mapnik" and layer["output_format"] == "grid"
+                "resolution": layer.get("resolution", 4)
+                if layer.get("type", "wms") == "mapnik" and layer.get("output_format", "png") == "grid"
                 else None,
             }
             for name, layer in sorted(gene.layers.items())
@@ -558,7 +571,7 @@ def status(gene):  # pragma: no cover
 def get_status(gene):
     store = get_queue_store(gene.config, False)
     kind = "redis" if "redis" in gene.config else "sqs"
-    stats_prefix = [kind, gene.config[kind]["queue"]]
+    stats_prefix = [kind, gene.config[kind].get("queue", "tilecloud")]
     with stats.timer_context(stats_prefix + ["get_stats"]):
         status_ = store.get_status()
     return [name + ": " + str(value) for name, value in status_.items()]

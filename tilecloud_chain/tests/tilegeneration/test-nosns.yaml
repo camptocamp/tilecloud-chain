@@ -68,10 +68,8 @@ caches:
         wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
 
 defaults:
-    layer: &layer
+    all_layer: &all_layer
         grid: swissgrid_5
-        type: wms
-        url: http://mapserver:8080/mapserv
         wmts_style: default
         mime_type: image/png
         extension: png
@@ -92,6 +90,10 @@ defaults:
             metatile_generation_time: 30
             # [ko]
             tile_size: 20
+    layer: &layer
+        <<: *all_layer
+        type: wms
+        url: http://mapserver:8080/mapserv
 
 layers:
     point:
@@ -182,7 +184,7 @@ layers:
         meta: off
         bbox: [550000.0, 170000.0, 560000.0, 180000.0]
     mapnik:
-        <<: *layer
+        <<: *all_layer
         type: mapnik
         mapfile: mapfile/test.mapnik
         meta: off
@@ -192,7 +194,7 @@ layers:
         -   sql: the_geom AS geom FROM tests.polygon
             connection: user=postgres password=postgres dbname=tests host=db
     mapnik_grid:
-        <<: *layer
+        <<: *all_layer
         type: mapnik
         mapfile: mapfile/test.mapnik
         meta: off
@@ -212,7 +214,7 @@ layers:
             polygon:
             - name
     mapnik_grid_drop:
-        <<: *layer
+        <<: *all_layer
         type: mapnik
         mapfile: mapfile/test.mapnik
         meta: off

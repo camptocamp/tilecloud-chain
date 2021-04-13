@@ -18,7 +18,7 @@ class DatabaseLoggerCommon:  # pragma: no cover
                 self.connection = psycopg2.connect(
                     dbname=db_params["dbname"],
                     host=db_params.get("host"),
-                    port=db_params.get("port"),
+                    port=db_params.get("port", 5432),
                     user=db_params.get("user"),
                     password=db_params.get("password"),
                 )
