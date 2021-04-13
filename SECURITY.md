@@ -8,3 +8,4 @@
 | 1.13    | 30/06/2022      |
 | 1.14    | Unsupported     |
 | 1.15    | To be defined   |
+| 1.16    | Best effort     |
