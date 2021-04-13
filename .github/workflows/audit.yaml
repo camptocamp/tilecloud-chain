@@ -17,6 +17,7 @@ jobs:
         branch:
           - '1.13'
           - '1.15'
+          - '1.16'
           - master
 
     steps:
