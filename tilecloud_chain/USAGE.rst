@@ -791,6 +791,6 @@ Environment variables
 -  ``TILE_NB_THREAD``: Default is ``2``, The number of thread used to generate the tiles (If we use meta tiles)
 -  ``METATILE_NB_THREAD``: Default is ``25``, The number of thread used to generate the meta tiles (If we use
    meta tiles, also to generate the tiles)
--  ``SERVER_NB_THREAD: Default to ``10``, The number of thread used to generate the meta tiles in the server.
+-  ``SERVER_NB_THREAD``: Default to ``10``, The number of thread used to generate the meta tiles in the server.
 -  ``TILE_QUEUE_SIZE``: Default to ``2``, The queue size just after the Redis queue
 -  ``TILE_CHUNK_SIZE``: Default is ``1``, The chunk size to process the tiles after the meta tiles.
