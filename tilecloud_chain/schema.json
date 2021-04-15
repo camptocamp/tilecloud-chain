@@ -428,7 +428,7 @@
                     },
                     "sql": {
                         "title": "SQL",
-                        "description": "The SQL query that get the geometry in geom e.-g. 'the_geom AS geom FROM my_table'",
+                        "description": "The SQL query that get the geometry in geom e.g. 'the_geom AS geom FROM my_table'",
                         "type": "string"
                     },
                     "min_resolution": {
