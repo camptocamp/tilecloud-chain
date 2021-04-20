@@ -97,7 +97,8 @@ class CompareCase(TestCase):
         sys.argv = cmd.split(" ")
         try:
             main_func()
-            assert "exit() not called."
+        except SystemExit:
+            pass
         except Exception:
             pass
         if expected:
