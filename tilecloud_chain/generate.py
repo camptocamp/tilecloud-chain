@@ -95,7 +95,8 @@ class Generate:
         if self._options.role in ("local", "master") and "logging" in self._gene.config:
             self._gene.imap(
                 DatabaseLoggerInit(
-                    self._gene.config["logging"], self._options is not None and self._options.daemon,
+                    self._gene.config["logging"],
+                    self._options is not None and self._options.daemon,
                 )
             )
 
@@ -475,74 +476,84 @@ def detach():  # pragma: no cover
 
 
 def main():
-    stats.init_backends({})
-    parser = ArgumentParser(description="Used to generate the tiles", prog=sys.argv[0])
-    add_comon_options(parser, dimensions=True)
-    parser.add_argument(
-        "--get-hash", metavar="TILE", help="get the empty tiles hash, use the specified TILE z/x/y"
-    )
-    parser.add_argument(
-        "--get-bbox",
-        metavar="TILE",
-        help="get the bbox of a tile, use the specified TILE z/x/y, or z/x/y:+n/+n for metatiles",
-    )
-    parser.add_argument(
-        "--role",
-        default="local",
-        choices=("local", "master", "slave"),
-        help="local/master/slave, master to file the queue and slave to generate the tiles",
-    )
-    parser.add_argument(
-        "--local-process-number", default=None, help="The number of process that we run in parallel"
-    )
-    parser.add_argument("--detach", default=False, action="store_true", help="run detached from the terminal")
-    parser.add_argument("--daemon", default=False, action="store_true", help="run continuously as a daemon")
-    parser.add_argument(
-        "--tiles",
-        metavar="FILE",
-        help="Generate the tiles from a tiles file, use the format z/x/y, or z/x/y:+n/+n for metatiles",
-    )
-
-    options = parser.parse_args()
-
-    if options.detach:
-        detach()  # pragma: no cover
-
-    gene = TileGeneration(options.config, options, multi_thread=options.get_hash is None)
-
-    if (
-        options.get_hash is None
-        and options.get_bbox is None
-        and "authorised_user" in gene.config["generation"]
-        and gene.config["generation"]["authorised_user"] != getuser()
-    ):
-        sys.exit(
-            "not authorised, authorised user is: {}.".format(gene.config["generation"]["authorised_user"])
+    try:
+        stats.init_backends({})
+        parser = ArgumentParser(description="Used to generate the tiles", prog=sys.argv[0])
+        add_comon_options(parser, dimensions=True)
+        parser.add_argument(
+            "--get-hash", metavar="TILE", help="get the empty tiles hash, use the specified TILE z/x/y"
+        )
+        parser.add_argument(
+            "--get-bbox",
+            metavar="TILE",
+            help="get the bbox of a tile, use the specified TILE z/x/y, or z/x/y:+n/+n for metatiles",
+        )
+        parser.add_argument(
+            "--role",
+            default="local",
+            choices=("local", "master", "slave"),
+            help="local/master/slave, master to file the queue and slave to generate the tiles",
+        )
+        parser.add_argument(
+            "--local-process-number", default=None, help="The number of process that we run in parallel"
+        )
+        parser.add_argument(
+            "--detach", default=False, action="store_true", help="run detached from the terminal"
+        )
+        parser.add_argument(
+            "--daemon", default=False, action="store_true", help="run continuously as a daemon"
+        )
+        parser.add_argument(
+            "--tiles",
+            metavar="FILE",
+            help="Generate the tiles from a tiles file, use the format z/x/y, or z/x/y:+n/+n for metatiles",
         )
 
-    if options.cache is None:
-        options.cache = gene.config["generation"]["default_cache"]
+        options = parser.parse_args()
 
-    if options.tiles is not None and options.role not in ["local", "master"]:  # pragma: no cover
-        sys.exit("The --tiles option work only with role local or master")
+        if options.detach:
+            detach()  # pragma: no cover
 
-    try:
-        generate = Generate(options, gene)
-        if options.role == "slave":
-            generate.gene()
-        elif options.layer:
-            generate.gene(gene.layers[options.layer])
-        elif options.get_bbox:  # pragma: no cover
-            sys.exit("With --get-bbox option you need to specify a layer")
-        elif options.get_hash:  # pragma: no cover
-            sys.exit("With --get-hash option you need to specify a layer")
-        elif options.tiles:  # pragma: no cover
-            sys.exit("With --tiles option you need to specify a layer")
-        else:
-            for layer in gene.config["generation"].get("default_layers", gene.layers.keys()):
-                generate.gene(gene.layers[layer])
-    finally:
-        gene.close()
+        gene = TileGeneration(options.config, options, multi_thread=options.get_hash is None)
+
+        if (
+            options.get_hash is None
+            and options.get_bbox is None
+            and "authorised_user" in gene.config["generation"]
+            and gene.config["generation"]["authorised_user"] != getuser()
+        ):
+            sys.exit(
+                "not authorised, authorised user is: {}.".format(gene.config["generation"]["authorised_user"])
+            )
+
+        if options.cache is None:
+            options.cache = gene.config["generation"]["default_cache"]
+
+        if options.tiles is not None and options.role not in ["local", "master"]:  # pragma: no cover
+            sys.exit("The --tiles option work only with role local or master")
+
+        try:
+            generate = Generate(options, gene)
+            if options.role == "slave":
+                generate.gene()
+            elif options.layer:
+                generate.gene(gene.layers[options.layer])
+            elif options.get_bbox:  # pragma: no cover
+                sys.exit("With --get-bbox option you need to specify a layer")
+            elif options.get_hash:  # pragma: no cover
+                sys.exit("With --get-hash option you need to specify a layer")
+            elif options.tiles:  # pragma: no cover
+                sys.exit("With --tiles option you need to specify a layer")
+            else:
+                for layer in gene.config["generation"].get("default_layers", gene.layers.keys()):
+                    generate.gene(gene.layers[layer])
+        finally:
+            gene.close()
+    except SystemExit:
+        raise
+    except:  # pylint: disable=bare-except
+        logger.exception("Exit with exception")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

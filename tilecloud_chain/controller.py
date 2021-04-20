@@ -28,99 +28,105 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    stats.init_backends({})
-    parser = ArgumentParser(
-        description="Used to generate the contextual file like the capabilities, the legends, "
-        "the Apache and MapCache configuration",
-        prog=sys.argv[0],
-    )
-    add_comon_options(parser, tile_pyramid=False, no_geom=False)
-    parser.add_argument(
-        "--status", default=False, action="store_true", help="Display the SQS queue status and exit"
-    )
-    parser.add_argument(
-        "--capabilities",
-        "--generate-wmts-capabilities",
-        default=False,
-        action="store_true",
-        help="Generate the WMTS Capabilities",
-    )
-    parser.add_argument(
-        "--legends",
-        "--generate-legend-images",
-        default=False,
-        action="store_true",
-        dest="legends",
-        help="Generate the legend images",
-    )
-    parser.add_argument(
-        "--openlayers",
-        "--generate-openlayers-testpage",
-        default=False,
-        action="store_true",
-        dest="openlayers",
-        help="Generate openlayers test page",
-    )
-    parser.add_argument(
-        "--mapcache",
-        "--generate-mapcache-config",
-        default=False,
-        action="store_true",
-        dest="mapcache",
-        help="Generate MapCache configuration file",
-    )
-    parser.add_argument(
-        "--mapcache-version", default="1.4", choices=("1.4", "1.6"), help="The used version of MapCache"
-    )
-    parser.add_argument(
-        "--apache",
-        "--generate-apache-config",
-        default=False,
-        action="store_true",
-        dest="apache",
-        help="Generate Apache configuration file",
-    )
-    parser.add_argument(
-        "--dump-config",
-        default=False,
-        action="store_true",
-        help="Dump the used config with default values and exit",
-    )
+    try:
+        stats.init_backends({})
+        parser = ArgumentParser(
+            description="Used to generate the contextual file like the capabilities, the legends, "
+            "the Apache and MapCache configuration",
+            prog=sys.argv[0],
+        )
+        add_comon_options(parser, tile_pyramid=False, no_geom=False)
+        parser.add_argument(
+            "--status", default=False, action="store_true", help="Display the SQS queue status and exit"
+        )
+        parser.add_argument(
+            "--capabilities",
+            "--generate-wmts-capabilities",
+            default=False,
+            action="store_true",
+            help="Generate the WMTS Capabilities",
+        )
+        parser.add_argument(
+            "--legends",
+            "--generate-legend-images",
+            default=False,
+            action="store_true",
+            dest="legends",
+            help="Generate the legend images",
+        )
+        parser.add_argument(
+            "--openlayers",
+            "--generate-openlayers-testpage",
+            default=False,
+            action="store_true",
+            dest="openlayers",
+            help="Generate openlayers test page",
+        )
+        parser.add_argument(
+            "--mapcache",
+            "--generate-mapcache-config",
+            default=False,
+            action="store_true",
+            dest="mapcache",
+            help="Generate MapCache configuration file",
+        )
+        parser.add_argument(
+            "--mapcache-version", default="1.4", choices=("1.4", "1.6"), help="The used version of MapCache"
+        )
+        parser.add_argument(
+            "--apache",
+            "--generate-apache-config",
+            default=False,
+            action="store_true",
+            dest="apache",
+            help="Generate Apache configuration file",
+        )
+        parser.add_argument(
+            "--dump-config",
+            default=False,
+            action="store_true",
+            help="Dump the used config with default values and exit",
+        )
 
-    options = parser.parse_args()
-    gene = TileGeneration(options.config, options, layer_name=options.layer)
+        options = parser.parse_args()
+        gene = TileGeneration(options.config, options, layer_name=options.layer)
 
-    if options.status:  # pragma: no cover
-        status(gene)
-        sys.exit(0)
+        if options.status:  # pragma: no cover
+            status(gene)
+            sys.exit(0)
 
-    if options.cache is None:
-        options.cache = gene.config["generation"]["default_cache"]
+        if options.cache is None:
+            options.cache = gene.config["generation"]["default_cache"]
 
-    if options.dump_config:
-        for layer in gene.config["layers"].values():
-            gene.init_layer(layer, options)
-        _validate_generate_wmts_capabilities(gene.caches[options.cache], True)
-        for grid in gene.config["grids"].values():
-            if "obj" in grid:
-                del grid["obj"]
-        print(yaml.dump(gene.config))
-        sys.exit(0)
+        if options.dump_config:
+            for layer in gene.config["layers"].values():
+                gene.init_layer(layer, options)
+            _validate_generate_wmts_capabilities(gene.caches[options.cache], True)
+            for grid in gene.config["grids"].values():
+                if "obj" in grid:
+                    del grid["obj"]
+            print(yaml.dump(gene.config))
+            sys.exit(0)
 
-    if options.legends:
-        _generate_legend_images(gene)
+        if options.legends:
+            _generate_legend_images(gene)
 
-    if options.capabilities:
-        _generate_wmts_capabilities(gene)
+        if options.capabilities:
+            _generate_wmts_capabilities(gene)
 
-    if options.mapcache:
-        _generate_mapcache_config(gene, options.mapcache_version)
+        if options.mapcache:
+            _generate_mapcache_config(gene, options.mapcache_version)
 
-    if options.apache:
-        _generate_apache_config(gene)
+        if options.apache:
+            _generate_apache_config(gene)
 
-    if options.openlayers:
-        _generate_openlayers(gene)
+        if options.openlayers:
+            _generate_openlayers(gene)
+    except SystemExit:
+        raise
+    except:  # pylint: disable=bare-except
+        logger.exception("Exit with exception")
+        sys.exit(1)
 
 
 def _send(data, path, mime_type, cache):
