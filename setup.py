@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import os
+import site
+import sys
 
 from setuptools import find_packages, setup
+
+site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, "README.md")) as r:

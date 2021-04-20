@@ -76,47 +76,63 @@ Size per tile: {} o
 
 
 def main():
-    parser = ArgumentParser(description="Used to copy the tiles from a cache to an other", prog=sys.argv[0])
-    add_comon_options(parser, near=False, time=False, dimensions=True, cache=False)
-    parser.add_argument("--process", dest="process", metavar="NAME", help="The process name to do")
-    parser.add_argument("source", metavar="SOURCE", help="The source cache")
-    parser.add_argument("dest", metavar="DEST", help="The destination cache")
-
-    options = parser.parse_args()
-
-    gene = TileGeneration(options.config, options)
-
-    if options.layer:  # pragma: no cover
-        copy = Copy()
-        copy.copy(options, gene, options.layer, options.source, options.dest, "copy")
-    else:
-        layers = (
-            gene.config["generation"]["default_layers"]
-            if "default_layers" in gene.config["generation"]
-            else gene.config["layers"].keys()
+    try:
+        parser = ArgumentParser(
+            description="Used to copy the tiles from a cache to an other", prog=sys.argv[0]
         )
-        for layer in layers:
+        add_comon_options(parser, near=False, time=False, dimensions=True, cache=False)
+        parser.add_argument("--process", dest="process", metavar="NAME", help="The process name to do")
+        parser.add_argument("source", metavar="SOURCE", help="The source cache")
+        parser.add_argument("dest", metavar="DEST", help="The destination cache")
+
+        options = parser.parse_args()
+
+        gene = TileGeneration(options.config, options)
+
+        if options.layer:  # pragma: no cover
             copy = Copy()
-            copy.copy(options, gene, layer, options.source, options.dest, "copy")
+            copy.copy(options, gene, options.layer, options.source, options.dest, "copy")
+        else:
+            layers = (
+                gene.config["generation"]["default_layers"]
+                if "default_layers" in gene.config["generation"]
+                else gene.config["layers"].keys()
+            )
+            for layer in layers:
+                copy = Copy()
+                copy.copy(options, gene, layer, options.source, options.dest, "copy")
+    except SystemExit:
+        raise
+    except:  # pylint: disable=bare-except
+        logger.exception("Exit with exception")
+        sys.exit(1)
 
 
 def process():
-    parser = ArgumentParser(description="Used to copy the tiles from a cache to an other", prog=sys.argv[0])
-    add_comon_options(parser, near=False, time=False, dimensions=True)
-    parser.add_argument("process", metavar="PROCESS", help="The process name to do")
-
-    options = parser.parse_args()
-
-    gene = TileGeneration(options.config, options, multi_thread=False)
-
-    copy = Copy()
-    if options.layer:  # pragma: no cover
-        copy.copy(options, gene, options.layer, options.cache, options.cache, "process")
-    else:
-        layers_name = (
-            gene.config["generation"]["default_layers"]
-            if "default_layers" in gene.config.get("generation", {})
-            else gene.layers.keys()
+    try:
+        parser = ArgumentParser(
+            description="Used to copy the tiles from a cache to an other", prog=sys.argv[0]
         )
-        for layer in layers_name:
-            copy.copy(options, gene, layer, options.cache, options.cache, "process")
+        add_comon_options(parser, near=False, time=False, dimensions=True)
+        parser.add_argument("process", metavar="PROCESS", help="The process name to do")
+
+        options = parser.parse_args()
+
+        gene = TileGeneration(options.config, options, multi_thread=False)
+
+        copy = Copy()
+        if options.layer:  # pragma: no cover
+            copy.copy(options, gene, options.layer, options.cache, options.cache, "process")
+        else:
+            layers_name = (
+                gene.config["generation"]["default_layers"]
+                if "default_layers" in gene.config.get("generation", {})
+                else gene.layers.keys()
+            )
+            for layer in layers_name:
+                copy.copy(options, gene, layer, options.cache, options.cache, "process")
+    except SystemExit:
+        raise
+    except:  # pylint: disable=bare-except
+        logger.exception("Exit with exception")
+        sys.exit(1)
