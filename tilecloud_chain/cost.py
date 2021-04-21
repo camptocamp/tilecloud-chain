@@ -13,75 +13,80 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    parser = ArgumentParser(description="Used to calculate the generation cost", prog=sys.argv[0])
-    add_comon_options(parser, tile_pyramid=False, dimensions=True)
-    parser.add_argument(
-        "--cost-algo",
-        "--calculate-cost-algorithm",
-        default="area",
-        dest="cost_algo",
-        choices=("area", "count"),
-        help="The algorithm use to calculate the cost default base on the 'area' "
-        "of the generation geometry, can also be 'count', to be base on number of tiles to generate.",
-    )
-
-    options = parser.parse_args()
-    gene = TileGeneration(
-        options.config, options, layer_name=options.layer, base_config={"cost": {}}, multi_thread=False
-    )
-
-    all_size = 0
-    tile_size = 0
-    all_tiles = 0
-    if options.layer:
-        layer = gene.layers[options.layer]
-        (all_size, all_time, all_price, all_tiles) = _calculate_cost(gene, layer, options)
-        tile_size = layer["cost"]["tile_size"] / (1024.0 * 1024)
-    else:
-        all_time = timedelta()
-        all_price = 0
-        for layer_name in gene.config["generation"]["default_layers"]:
-            print("")
-            print("===== {} =====".format(layer_name))
-            layer = gene.layers[layer_name]
-            gene.init_layer(layer, options)
-            (size, time, price, tiles) = _calculate_cost(gene, layer, options)
-            tile_size += layer["cost"]["tile_size"] / (1024.0 * 1024)
-            all_time += time
-            all_price += price
-            all_size += size
-            all_tiles += tiles
-
-        print("")
-        print("===== GLOBAL =====")
-        print("Total number of tiles: {}".format(all_tiles))
-        print("Total generation time: {} [d h:mm:ss]".format((duration_format(all_time))))
-        print("Total generation cost: {0:0.2f} [$]".format(all_price))
-    print("")
-    print(
-        "S3 Storage: {0:0.2f} [$/month]".format(
-            all_size * gene.config["cost"]["s3"].get("storage", 0.125) / (1024.0 * 1024 * 1024)
+    try:
+        parser = ArgumentParser(description="Used to calculate the generation cost", prog=sys.argv[0])
+        add_comon_options(parser, tile_pyramid=False, dimensions=True)
+        parser.add_argument(
+            "--cost-algo",
+            "--calculate-cost-algorithm",
+            default="area",
+            dest="cost_algo",
+            choices=("area", "count"),
+            help="The algorithm use to calculate the cost default base on the 'area' "
+            "of the generation geometry, can also be 'count', to be base on number of tiles to generate.",
         )
-    )
-    print(
-        "S3 get: {0:0.2f} [$/month]".format(
-            (
-                gene.config["cost"]["s3"].get("get", 0.01)
-                * gene.config["cost"].get("request_per_layers", 10000000)
-                / 10000.0
-                + gene.config["cost"]["s3"].get("download", 0.12)
-                * gene.config["cost"].get("request_per_layers", 10000000)
-                * tile_size
+
+        options = parser.parse_args()
+        gene = TileGeneration(
+            options.config, options, layer_name=options.layer, base_config={"cost": {}}, multi_thread=False
+        )
+
+        all_size = 0
+        tile_size = 0
+        all_tiles = 0
+        if options.layer:
+            layer = gene.layers[options.layer]
+            (all_size, all_time, all_price, all_tiles) = _calculate_cost(gene, layer, options)
+            tile_size = layer["cost"]["tile_size"] / (1024.0 * 1024)
+        else:
+            all_time = timedelta()
+            all_price = 0
+            for layer_name in gene.config["generation"]["default_layers"]:
+                print("")
+                print("===== {} =====".format(layer_name))
+                layer = gene.layers[layer_name]
+                gene.init_layer(layer, options)
+                (size, time, price, tiles) = _calculate_cost(gene, layer, options)
+                tile_size += layer["cost"]["tile_size"] / (1024.0 * 1024)
+                all_time += time
+                all_price += price
+                all_size += size
+                all_tiles += tiles
+
+            print("")
+            print("===== GLOBAL =====")
+            print("Total number of tiles: {}".format(all_tiles))
+            print("Total generation time: {} [d h:mm:ss]".format((duration_format(all_time))))
+            print("Total generation cost: {0:0.2f} [$]".format(all_price))
+        print("")
+        print(
+            "S3 Storage: {0:0.2f} [$/month]".format(
+                all_size * gene.config["cost"]["s3"].get("storage", 0.125) / (1024.0 * 1024 * 1024)
             )
         )
-    )
-    #    if 'cloudfront' in gene.config['cost']:
-    #        print('CloudFront: %0.2f [$/month]' % ()
-    #            gene.config['cost']['cloudfront']['get'] *
-    #            gene.config['cost'].get("request_per_layers", 10000000) / 10000.0 +
-    #            gene.config['cost']['cloudfront']['download'] *
-    #            gene.config['cost'].get("request_per_layers", 10000000) * tile_size)
-    sys.exit(0)
+        print(
+            "S3 get: {0:0.2f} [$/month]".format(
+                (
+                    gene.config["cost"]["s3"].get("get", 0.01)
+                    * gene.config["cost"].get("request_per_layers", 10000000)
+                    / 10000.0
+                    + gene.config["cost"]["s3"].get("download", 0.12)
+                    * gene.config["cost"].get("request_per_layers", 10000000)
+                    * tile_size
+                )
+            )
+        )
+        #    if 'cloudfront' in gene.config['cost']:
+        #        print('CloudFront: %0.2f [$/month]' % ()
+        #            gene.config['cost']['cloudfront']['get'] *
+        #            gene.config['cost'].get("request_per_layers", 10000000) / 10000.0 +
+        #            gene.config['cost']['cloudfront']['download'] *
+        #            gene.config['cost'].get("request_per_layers", 10000000) * tile_size)
+    except SystemExit:
+        raise
+    except:  # pylint: disable=bare-except
+        logger.exception("Exit with exception")
+        sys.exit(1)
 
 
 def _calculate_cost(gene, layer, options):
