@@ -18,7 +18,7 @@ objgraph = "==3.5.0"  # c2cwsgiutils
 psycopg2 = "==2.8.6"  # c2cwsgiutils
 pyramid-tm = "==2.4"  # c2cwsgiutils
 sentry-sdk = "==1.0.0"  # c2cwsgiutils
-sqlalchemy = "==1.4.10"  # c2cwsgiutils
+sqlalchemy = "==1.4.11"  # c2cwsgiutils
 transaction = "==3.0.1"  # c2cwsgiutils
 ujson = "==4.0.2"  # c2cwsgiutils
 cornice = "==5.2.0"  # c2cwsgiutils
