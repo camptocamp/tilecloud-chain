@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "502ddd05b73573255f4a387e42155bc038c0db46ec88e9ee6a1a9d4e167982ea"
+            "sha256": "3653cfd1a8ead4ccf3f009e175102e4eadf71d553c63119ad22e05ae0ef405cd"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -37,17 +37,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:9caec835fdf9c3336068a28004bb6a6ffab14a75d2466dfe6e279946f409fe8f",
-                "sha256:ccbc640b6c7b27626f87fbd6d73872ec697290065e8f473b6a3def472dd9253f"
+                "sha256:81208442ab55c5d96a39d3b4a018dc174949f800bc2c34efd7c32a75f6ad90c7",
+                "sha256:d072aa2559fa3b7af30287a417a659d2fb6d2b786f58bdbf19e61fffa12c9c40"
             ],
-            "version": "==1.17.56"
+            "version": "==1.17.59"
         },
         "botocore": {
             "hashes": [
-                "sha256:134a7b1d21030b6323b6094226d0cc898a8f2a2b5d27e1e5c0a0071372eab68d",
-                "sha256:367a7eaee80fdf7718f50461432ac2c4bd73363835a1ad011f99fdc592ba775d"
+                "sha256:0a930847caea829f84dfca798764504be2e1fde3637e06a533001ec95b921d19",
+                "sha256:c392944132ae03610777d0a764bbf47a169e442b93cfa7e64cb7b9ea578c773b"
             ],
-            "version": "==1.20.56"
+            "version": "==1.20.59"
         },
         "bottle": {
             "hashes": [
@@ -210,6 +210,7 @@
         },
         "gunicorn": {
             "hashes": [
+                "sha256:9dcc4547dbb1cb284accfb15ab5667a0e5d1881cc443e0677b4882a4067a807e",
                 "sha256:e0a968b5ba15f8a328fdfd7ab1fcb5af4470c28aaf7e55df02a99bc13138e6e8"
             ],
             "index": "pypi",
@@ -656,10 +657,10 @@
         },
         "tilecloud": {
             "hashes": [
-                "sha256:07e94751608eaf35fc36e8e08ee6c5f5974ea74582c5bd9d0dd3d373cd2aff77"
+                "sha256:1657a9a637bee959e84636f03903310500494c1b31ffe40ae13997d3d9356559"
             ],
             "index": "pypi",
-            "version": "==1.5.2"
+            "version": "==1.6.0"
         },
         "transaction": {
             "hashes": [
