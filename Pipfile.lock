@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "094b69387bd14b6d5e3a189e3143ec88cd24c50673398510990ab2a662a1b6d5"
+            "sha256": "648e4112a13a47ca8ad3dc98c48de168b553d5fd96bfc259d63412a5a6b14303"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -657,10 +657,10 @@
         },
         "tilecloud": {
             "hashes": [
-                "sha256:07e94751608eaf35fc36e8e08ee6c5f5974ea74582c5bd9d0dd3d373cd2aff77"
+                "sha256:66e2454d766fb7972f437d6c07ba9b529737fd1187a0b3a56b2c6749cfd36af5"
             ],
             "index": "pypi",
-            "version": "==1.5.2"
+            "version": "==1.6.1"
         },
         "transaction": {
             "hashes": [
