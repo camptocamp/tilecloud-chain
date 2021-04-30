@@ -207,9 +207,7 @@ class Run:
                     return
                 if tile.error:
                     if tile.content_type and tile.content_type.startswith("application/vnd.ogc.se_xml"):
-                        tile.error = "WMS server error: {}".format(
-                            self._re_rm_xml_tag.sub("", tile.data.decode())
-                        )
+                        tile.error = "WMS server error: {}".format(self._re_rm_xml_tag.sub("", tile.error))
                     if stats.BACKENDS:
                         stats.increment_counter(["error", tile.metadata.get("layer", "None")])
 
