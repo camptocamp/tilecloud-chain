@@ -1,4 +1,4 @@
-FROM osgeo/gdal:ubuntu-small-3.3.0 as runner
+FROM osgeo/gdal:ubuntu-small-3.3.0 as base
 LABEL maintainer "info@camptocamp.org"
 
 RUN \
@@ -84,19 +84,25 @@ ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
 
 EXPOSE 8080
 
-WORKDIR /etc/tilegeneration/
+WORKDIR /app/
+
+FROM base as runner
 
 COPY . /app/
 
 RUN \
-  cd /app && \
   python3 -m pip install --disable-pip-version-check --no-deps --no-cache-dir --editable=. && \
   mv docker/run /usr/bin/ && \
   python3 -m compileall -q /app/tilecloud_chain
 
-FROM runner as tests
+WORKDIR /etc/tilegeneration/
 
-RUN (cd /app/ && pipenv sync --dev --system --clear)
-RUN (cd /app/ && prospector)
+FROM base as tests
+
+RUN pipenv sync --dev --system --clear
+
+COPY . /app/
+RUN pipenv sync --dev --system --clear && \
+  prospector
 
 FROM runner
