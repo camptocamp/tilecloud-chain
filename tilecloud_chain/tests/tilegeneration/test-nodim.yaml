@@ -1,44 +1,42 @@
 grids:
-    swissgrid_5:
-        resolutions: [100, 50, 20, 10, 5]
-        bbox: [420000, 30000, 900000, 350000]
-        tile_size: 256
-        srs: EPSG:21781
+  swissgrid_5:
+    resolutions: [100, 50, 20, 10, 5]
+    bbox: [420000, 30000, 900000, 350000]
+    tile_size: 256
+    srs: EPSG:21781
 
 caches:
-    s3:
-        type: s3
-        http_url: https://%(host)s/%(bucket)s/%(folder)s/
-        host: s3-eu-west-1.amazonaws.com
-        bucket: tiles
-        folder: tiles
+  s3:
+    type: s3
+    http_url: https://%(host)s/%(bucket)s/%(folder)s/
+    host: s3-eu-west-1.amazonaws.com
+    bucket: tiles
+    folder: tiles
 
 defaults:
-    layer: &layer
-        grid: swissgrid_5
-        type: wms
-        url: http://mapserver:8080/mapserv
-        headers:
-            Host: example.com
-            Cache-Control: no-cache, no-store
-            Pragma: no-cache
-        wmts_style: default
-        mime_type: image/png
-        extension: png
-        meta: on
-        meta_size: 8
-        meta_buffer: 128
-        extension: png
-        mime_type: image/png
+  layer: &layer
+    grid: swissgrid_5
+    type: wms
+    url: http://mapserver:8080/mapserv
+    headers:
+      Host: example.com
+      Cache-Control: no-cache, no-store
+      Pragma: no-cache
+    wmts_style: default
+    mime_type: image/png
+    extension: png
+    meta: true
+    meta_size: 8
+    meta_buffer: 128
 
 layers:
-    nodim:
-        <<: *layer
-        layers: default
+  nodim:
+    <<: *layer
+    layers: default
 
 mapcache:
-    config_file: mapcache.xml
-    memcache_host: memcached
+  config_file: mapcache.xml
+  memcache_host: memcached
 
 apache:
-    config_file: tiles.conf
+  config_file: tiles.conf

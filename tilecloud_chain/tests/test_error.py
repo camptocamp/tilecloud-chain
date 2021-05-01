@@ -9,7 +9,7 @@ from tilecloud_chain.tests import CompareCase
 
 
 class TestError(CompareCase):
-    def setUp(self):  # noqa
+    def setUp(self) -> None:  # noqa
         self.maxDiff = None
 
     @classmethod
@@ -20,7 +20,7 @@ class TestError(CompareCase):
     def tearDownClass(cls):  # noqa
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-    def test_resolution(self):
+    def test_resolution(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_resolutions.yaml",
@@ -34,7 +34,7 @@ class TestError(CompareCase):
                 ("tilecloud_chain", "ERROR", "The resolution 0.1 * resolution_scale 5 is not an integer."),
             )
 
-    def test_mapnik_grid_meta(self):
+    def test_mapnik_grid_meta(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_mapnik_grid_meta.yaml",
@@ -49,7 +49,7 @@ class TestError(CompareCase):
                 )
             )
 
-    def test_exists(self):
+    def test_exists(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_exists.yaml",
@@ -60,14 +60,14 @@ class TestError(CompareCase):
                 (
                     "tilecloud_chain",
                     "ERROR",
-                    """The config file 'tilegeneration/wrong_exists.yaml' is invalid.
- - /: 'caches' is a required property
- - /: 'grids' is a required property
- - /: 'layers' is a required property""",
+                    "The config file is invalid:\n"
+                    "-- tilegeneration/wrong_exists.yaml /: 'caches' is a required property (rule: required)\n"
+                    "-- tilegeneration/wrong_exists.yaml /: 'grids' is a required property (rule: required)\n"
+                    "-- tilegeneration/wrong_exists.yaml /: 'layers' is a required property (rule: required)",
                 ),
             )
 
-    def test_type(self):
+    def test_type(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -v -c tilegeneration/wrong_type.yaml",
@@ -78,47 +78,60 @@ class TestError(CompareCase):
                 (
                     "tilecloud_chain",
                     "ERROR",
-                    """The config file 'tilegeneration/wrong_type.yaml' is invalid.
- - grids.swissgrid!: 'bbox' is a required property
- - grids.swissgrid!: 'resolutions' is a required property
- - grids.swissgrid!: 'srs' is a required property
- - grids.swissgrid_1.bbox.0: 'a' is not of type 'number'
- - grids.swissgrid_1.bbox.1: 'b' is not of type 'number'
- - grids.swissgrid_1.bbox.2: 'c' is not of type 'number'
- - grids.swissgrid_1.resolution_scale: 5.5 is not of type 'integer'
- - grids.swissgrid_1.srs: ['EPSG:21781'] is not of type 'string'
- - grids.swissgrid_2.srs: {} is not of type 'string'
- - grids.swissgrid_3.srs: 'epsg:21781' does not match '^EPSG:[0-9]+$'
- - grids.swissgrid_3: 'bbox' is a required property
- - grids.swissgrid_3: 'resolutions' is a required property
- - grids.swissgrid_4.srs: 'epsg21781' does not match '^EPSG:[0-9]+$'
- - grids.swissgrid_4: 'bbox' is a required property
- - grids.swissgrid_4: 'resolutions' is a required property
- - grids.swissgrid_5: 'bbox' is a required property
- - grids.swissgrid_5: 'resolutions' is a required property
- - grids.swissgrid_5: 'srs' is a required property
- - grids.swissgrid_6: None is not of type 'object'
- - grids: 'swissgrid!' does not match '^[a-zA-Z0-9_\\\\-~\\\\.]+$'
- - layers.hi!.dimensions.0.default: '2010!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$'
- - layers.hi!.dimensions.0.generate.0: '2012!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$'
- - layers.hi!.dimensions.0.name: 'DATE!' does not match '^(?!(?i)(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\\\\-~\\\\.]+$'
- - layers.hi!.dimensions.0.values.0: '2005!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$'
- - layers.hi!.dimensions.0.values.1: '2010!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$'
- - layers.hi!.dimensions.0.values.2: '2012!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$'
- - layers.hi!.dimensions.1.default: 1 is not of type 'string'
- - layers.hi!.dimensions.1.generate.0: 1 is not of type 'string'
- - layers.hi!.dimensions.1.values.0: 1 is not of type 'string'
- - layers.hi!.wmts_style: 'yo!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$'
- - layers.hi!: 'extension' is a required property
- - layers.hi!: 'grid' is a required property
- - layers.hi!: 'layers' is a required property
- - layers.hi!: 'mime_type' is a required property
- - layers.hi!: 'url' is a required property
- - layers: 'hi!' does not match '^[a-zA-Z0-9_\\\\-~\\\\.]+$'""",  # noqa
+                    """The config file is invalid:
+-- tilegeneration/wrong_type.yaml:10:14 grids.swissgrid_2.srs: ordereddict() is not of type 'string' (rule: properties.grids.additionalProperties.properties.srs.type)
+-- tilegeneration/wrong_type.yaml:12:9 grids.swissgrid_3.srs: 'epsg:21781' does not match '^EPSG:[0-9]+$' (rule: properties.grids.additionalProperties.properties.srs.pattern)
+-- tilegeneration/wrong_type.yaml:12:9 grids.swissgrid_3: 'bbox' is a required property (rule: properties.grids.additionalProperties.required)
+-- tilegeneration/wrong_type.yaml:12:9 grids.swissgrid_3: 'resolutions' is a required property (rule: properties.grids.additionalProperties.required)
+-- tilegeneration/wrong_type.yaml:14:9 grids.swissgrid_4.srs: 'epsg21781' does not match '^EPSG:[0-9]+$' (rule: properties.grids.additionalProperties.properties.srs.pattern)
+-- tilegeneration/wrong_type.yaml:14:9 grids.swissgrid_4: 'bbox' is a required property (rule: properties.grids.additionalProperties.required)
+-- tilegeneration/wrong_type.yaml:14:9 grids.swissgrid_4: 'resolutions' is a required property (rule: properties.grids.additionalProperties.required)
+-- tilegeneration/wrong_type.yaml:15:18 grids.swissgrid_5: 'bbox' is a required property (rule: properties.grids.additionalProperties.required)
+-- tilegeneration/wrong_type.yaml:15:18 grids.swissgrid_5: 'resolutions' is a required property (rule: properties.grids.additionalProperties.required)
+-- tilegeneration/wrong_type.yaml:15:18 grids.swissgrid_5: 'srs' is a required property (rule: properties.grids.additionalProperties.required)
+-- tilegeneration/wrong_type.yaml:17:17 grids.swissgrid!: 'bbox' is a required property (rule: properties.grids.additionalProperties.required)
+-- tilegeneration/wrong_type.yaml:17:17 grids.swissgrid!: 'resolutions' is a required property (rule: properties.grids.additionalProperties.required)
+-- tilegeneration/wrong_type.yaml:17:17 grids.swissgrid!: 'srs' is a required property (rule: properties.grids.additionalProperties.required)
+-- tilegeneration/wrong_type.yaml:22:5 layers: 'hi!' does not match '^[a-zA-Z0-9_\\\\-~\\\\.]+$' (rule: properties.layers.propertyNames.pattern)
+-- tilegeneration/wrong_type.yaml:23:9 layers.hi!.wmts_style: 'yo!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.0.properties.wmts_style.pattern)
+-- tilegeneration/wrong_type.yaml:23:9 layers.hi!.wmts_style: 'yo!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.1.properties.wmts_style.pattern)
+-- tilegeneration/wrong_type.yaml:23:9 layers.hi!: 'extension' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
+-- tilegeneration/wrong_type.yaml:23:9 layers.hi!: 'extension' is a required property (rule: properties.layers.additionalProperties.anyOf.1.required)
+-- tilegeneration/wrong_type.yaml:23:9 layers.hi!: 'grid' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
+-- tilegeneration/wrong_type.yaml:23:9 layers.hi!: 'grid' is a required property (rule: properties.layers.additionalProperties.anyOf.1.required)
+-- tilegeneration/wrong_type.yaml:23:9 layers.hi!: 'layers' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
+-- tilegeneration/wrong_type.yaml:23:9 layers.hi!: 'mime_type' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
+-- tilegeneration/wrong_type.yaml:23:9 layers.hi!: 'mime_type' is a required property (rule: properties.layers.additionalProperties.anyOf.1.required)
+-- tilegeneration/wrong_type.yaml:23:9 layers.hi!: 'url' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
+-- tilegeneration/wrong_type.yaml:25:13 layers.hi!.dimensions.0.default: '2010!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.0.properties.dimensions.items.properties.default.pattern)
+-- tilegeneration/wrong_type.yaml:25:13 layers.hi!.dimensions.0.default: '2010!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.1.properties.dimensions.items.properties.default.pattern)
+-- tilegeneration/wrong_type.yaml:25:13 layers.hi!.dimensions.0.name: 'DATE!' does not match '^(?!(?i)(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\\\\-~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.0.properties.dimensions.items.properties.name.pattern)
+-- tilegeneration/wrong_type.yaml:25:13 layers.hi!.dimensions.0.name: 'DATE!' does not match '^(?!(?i)(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\\\\-~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.1.properties.dimensions.items.properties.name.pattern)
+-- tilegeneration/wrong_type.yaml:27:23 layers.hi!.dimensions.0.generate.0: '2012!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.0.properties.dimensions.items.properties.generate.items.pattern)
+-- tilegeneration/wrong_type.yaml:27:23 layers.hi!.dimensions.0.generate.0: '2012!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.1.properties.dimensions.items.properties.generate.items.pattern)
+-- tilegeneration/wrong_type.yaml:28:21 layers.hi!.dimensions.0.values.0: '2005!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.0.properties.dimensions.items.properties.values.items.pattern)
+-- tilegeneration/wrong_type.yaml:28:21 layers.hi!.dimensions.0.values.0: '2005!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.1.properties.dimensions.items.properties.values.items.pattern)
+-- tilegeneration/wrong_type.yaml:28:21 layers.hi!.dimensions.0.values.1: '2010!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.0.properties.dimensions.items.properties.values.items.pattern)
+-- tilegeneration/wrong_type.yaml:28:21 layers.hi!.dimensions.0.values.1: '2010!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.1.properties.dimensions.items.properties.values.items.pattern)
+-- tilegeneration/wrong_type.yaml:28:21 layers.hi!.dimensions.0.values.2: '2012!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.0.properties.dimensions.items.properties.values.items.pattern)
+-- tilegeneration/wrong_type.yaml:28:21 layers.hi!.dimensions.0.values.2: '2012!' does not match '^[a-zA-Z0-9_\\\\-\\\\+~\\\\.]+$' (rule: properties.layers.additionalProperties.anyOf.1.properties.dimensions.items.properties.values.items.pattern)
+-- tilegeneration/wrong_type.yaml:29:13 layers.hi!.dimensions.1.default: 1 is not of type 'string' (rule: properties.layers.additionalProperties.anyOf.0.properties.dimensions.items.properties.default.type)
+-- tilegeneration/wrong_type.yaml:29:13 layers.hi!.dimensions.1.default: 1 is not of type 'string' (rule: properties.layers.additionalProperties.anyOf.1.properties.dimensions.items.properties.default.type)
+-- tilegeneration/wrong_type.yaml:2:5 grids.swissgrid_6: None is not of type 'object' (rule: properties.grids.additionalProperties.type)
+-- tilegeneration/wrong_type.yaml:2:5 grids: 'swissgrid!' does not match '^[a-zA-Z0-9_\\\\-~\\\\.]+$' (rule: properties.grids.propertyNames.pattern)
+-- tilegeneration/wrong_type.yaml:31:23 layers.hi!.dimensions.1.generate.0: 1 is not of type 'string' (rule: properties.layers.additionalProperties.anyOf.0.properties.dimensions.items.properties.generate.items.type)
+-- tilegeneration/wrong_type.yaml:31:23 layers.hi!.dimensions.1.generate.0: 1 is not of type 'string' (rule: properties.layers.additionalProperties.anyOf.1.properties.dimensions.items.properties.generate.items.type)
+-- tilegeneration/wrong_type.yaml:32:21 layers.hi!.dimensions.1.values.0: 1 is not of type 'string' (rule: properties.layers.additionalProperties.anyOf.0.properties.dimensions.items.properties.values.items.type)
+-- tilegeneration/wrong_type.yaml:32:21 layers.hi!.dimensions.1.values.0: 1 is not of type 'string' (rule: properties.layers.additionalProperties.anyOf.1.properties.dimensions.items.properties.values.items.type)
+-- tilegeneration/wrong_type.yaml:3:9 grids.swissgrid_1.resolution_scale: 5.5 is not of type 'integer' (rule: properties.grids.additionalProperties.properties.resolution_scale.type)
+-- tilegeneration/wrong_type.yaml:5:15 grids.swissgrid_1.bbox.0: 'a' is not of type 'number' (rule: properties.grids.additionalProperties.properties.bbox.items.type)
+-- tilegeneration/wrong_type.yaml:5:15 grids.swissgrid_1.bbox.1: 'b' is not of type 'number' (rule: properties.grids.additionalProperties.properties.bbox.items.type)
+-- tilegeneration/wrong_type.yaml:5:15 grids.swissgrid_1.bbox.2: 'c' is not of type 'number' (rule: properties.grids.additionalProperties.properties.bbox.items.type)
+-- tilegeneration/wrong_type.yaml:6:14 grids.swissgrid_1.srs: ['EPSG:21781'] is not of type 'string' (rule: properties.grids.additionalProperties.properties.srs.type)""",  # noqa
                 )
             )
 
-    def test_zoom_errors(self):
+    def test_zoom_errors(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
                 cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10",
@@ -144,7 +157,7 @@ class TestError(CompareCase):
                 ),
             )
 
-    def test_wrong_srs_auth(self):
+    def test_wrong_srs_auth(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs_auth.yaml",
@@ -155,12 +168,12 @@ class TestError(CompareCase):
                 (
                     "tilecloud_chain",
                     "ERROR",
-                    """The config file 'tilegeneration/wrong_srs_auth.yaml' is invalid.
- - grids.swissgrid_01.srs: 'toto:21781' does not match '^EPSG:[0-9]+$'""",  # noqa
+                    """The config file is invalid:
+-- tilegeneration/wrong_srs_auth.yaml:3:9 grids.swissgrid_01.srs: 'toto:21781' does not match '^EPSG:[0-9]+$' (rule: properties.grids.additionalProperties.properties.srs.pattern)""",  # noqa
                 )
             )
 
-    def test_wrong_srs_id(self):
+    def test_wrong_srs_id(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs_id.yaml",
@@ -171,12 +184,12 @@ class TestError(CompareCase):
                 (
                     "tilecloud_chain",
                     "ERROR",
-                    """The config file 'tilegeneration/wrong_srs_id.yaml' is invalid.
- - grids.swissgrid_01.srs: 'EPSG:21781a' does not match '^EPSG:[0-9]+$'""",  # noqa
+                    """The config file is invalid:
+-- tilegeneration/wrong_srs_id.yaml:3:9 grids.swissgrid_01.srs: 'EPSG:21781a' does not match '^EPSG:[0-9]+$' (rule: properties.grids.additionalProperties.properties.srs.pattern)""",  # noqa
                 )
             )
 
-    def test_wrong_srs(self):
+    def test_wrong_srs(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs.yaml",
@@ -187,12 +200,12 @@ class TestError(CompareCase):
                 (
                     "tilecloud_chain",
                     "ERROR",
-                    """The config file 'tilegeneration/wrong_srs.yaml' is invalid.
- - grids.swissgrid_01.srs: 'EPSG21781' does not match '^EPSG:[0-9]+$'""",
+                    """The config file is invalid:
+-- tilegeneration/wrong_srs.yaml:3:9 grids.swissgrid_01.srs: 'EPSG21781' does not match '^EPSG:[0-9]+$' (rule: properties.grids.additionalProperties.properties.srs.pattern)""",
                 )
             )
 
-    def test_wrong_map(self):
+    def test_wrong_map(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_map.yaml",
@@ -203,20 +216,25 @@ class TestError(CompareCase):
                 (
                     "tilecloud_chain",
                     "ERROR",
-                    """The config file 'tilegeneration/wrong_map.yaml' is invalid.
- - /: 'caches' is a required property
- - /: 'grids' is a required property
- - layers.test.empty_tile_detection: 'test' is not of type 'object'
- - layers.test: 'extension' is a required property
- - layers.test: 'grid' is a required property
- - layers.test: 'layers' is a required property
- - layers.test: 'mime_type' is a required property
- - layers.test: 'url' is a required property
- - layers.test: 'wmts_style' is a required property""",
+                    """The config file is invalid:
+-- tilegeneration/wrong_map.yaml /: 'caches' is a required property (rule: required)
+-- tilegeneration/wrong_map.yaml /: 'grids' is a required property (rule: required)
+-- tilegeneration/wrong_map.yaml:3:9 layers.test.empty_tile_detection: 'test' is not of type 'object' (rule: properties.layers.additionalProperties.anyOf.0.properties.empty_tile_detection.type)
+-- tilegeneration/wrong_map.yaml:3:9 layers.test.empty_tile_detection: 'test' is not of type 'object' (rule: properties.layers.additionalProperties.anyOf.1.properties.empty_tile_detection.type)
+-- tilegeneration/wrong_map.yaml:3:9 layers.test: 'extension' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
+-- tilegeneration/wrong_map.yaml:3:9 layers.test: 'extension' is a required property (rule: properties.layers.additionalProperties.anyOf.1.required)
+-- tilegeneration/wrong_map.yaml:3:9 layers.test: 'grid' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
+-- tilegeneration/wrong_map.yaml:3:9 layers.test: 'grid' is a required property (rule: properties.layers.additionalProperties.anyOf.1.required)
+-- tilegeneration/wrong_map.yaml:3:9 layers.test: 'layers' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
+-- tilegeneration/wrong_map.yaml:3:9 layers.test: 'mime_type' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
+-- tilegeneration/wrong_map.yaml:3:9 layers.test: 'mime_type' is a required property (rule: properties.layers.additionalProperties.anyOf.1.required)
+-- tilegeneration/wrong_map.yaml:3:9 layers.test: 'url' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
+-- tilegeneration/wrong_map.yaml:3:9 layers.test: 'wmts_style' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
+-- tilegeneration/wrong_map.yaml:3:9 layers.test: 'wmts_style' is a required property (rule: properties.layers.additionalProperties.anyOf.1.required)""",
                 )
             )
 
-    def test_wrong_sequence(self):
+    def test_wrong_sequence(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_sequence.yaml",
@@ -227,11 +245,11 @@ class TestError(CompareCase):
                 (
                     "tilecloud_chain",
                     "ERROR",
-                    """The config file 'tilegeneration/wrong_sequence.yaml' is invalid.
- - /: 'caches' is a required property
- - /: 'layers' is a required property
- - grids.test.resolutions: 'test' is not of type 'array'
- - grids.test: 'bbox' is a required property
- - grids.test: 'srs' is a required property""",
+                    """The config file is invalid:
+-- tilegeneration/wrong_sequence.yaml /: 'caches' is a required property (rule: required)
+-- tilegeneration/wrong_sequence.yaml /: 'layers' is a required property (rule: required)
+-- tilegeneration/wrong_sequence.yaml:3:9 grids.test.resolutions: 'test' is not of type 'array' (rule: properties.grids.additionalProperties.properties.resolutions.type)
+-- tilegeneration/wrong_sequence.yaml:3:9 grids.test: 'bbox' is a required property (rule: properties.grids.additionalProperties.required)
+-- tilegeneration/wrong_sequence.yaml:3:9 grids.test: 'srs' is a required property (rule: properties.grids.additionalProperties.required)""",
                 )
             )

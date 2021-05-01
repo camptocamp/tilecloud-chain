@@ -10,7 +10,7 @@ from tilecloud_chain.tests import CompareCase
 
 
 class TestGenerate(CompareCase):
-    def setUp(self):  # noqa
+    def setUp(self) -> None:  # noqa
         self.maxDiff = None
 
     @classmethod
@@ -26,7 +26,7 @@ class TestGenerate(CompareCase):
         if os.path.exists("/tmp/tiles"):
             shutil.rmtree("/tmp/tiles")
 
-    def test_copy(self):
+    def test_copy(self) -> None:
         with open("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png", "w") as f:
             f.write("test image")
 
@@ -52,7 +52,7 @@ Size per tile: 10(.0)? o
         with open("/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png", "r") as f:
             self.assertEqual(f.read(), "test image")
 
-    def test_process(self):
+    def test_process(self) -> None:
         for d in ("-vd", "-q", "-v", ""):
             response = requests.get(
                 "http://mapserver:8080/mapserv?STYLES=default&SERVICE=WMS&FORMAT=\

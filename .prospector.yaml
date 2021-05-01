@@ -2,14 +2,9 @@
 strictness: veryhigh
 
 pylint:
-  options:
-    max-line-length: 110
   disable:
     - too-many-statements
     - too-many-branches
-    - no-else-return
-    - no-else-break
-    - invalid-name
     - too-many-instance-attributes
     - too-many-locals
     - too-many-return-statements
@@ -19,17 +14,21 @@ pylint:
     - too-many-lines
     - too-many-public-methods
     - too-few-public-methods
+    - wrong-import-order # done by isore
+    - line-too-long # done by black
+    - no-else-return
+    - no-else-break
+    - invalid-name
     - broad-except
     - abstract-method
-    - wrong-import-order
     - duplicate-string-formatting-argument
+    - cyclic-import
 
 pep8:
-  options:
-    max-line-length: 110
   disable:
     - E203 # Whitespace before ':'
     - E722 # Do not use bare 'except'
+    - E501 # Line too long
 
 mypy:
   run: true

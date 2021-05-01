@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 import logging
+import os
 import sys
+from typing import cast
 
 from tilecloud_chain import Count, DropEmpty, HashDropper, TileGeneration, add_comon_options
+import tilecloud_chain.configuration
 from tilecloud_chain.format import duration_format, size_format
 
 logger = logging.getLogger(__name__)
@@ -13,22 +16,38 @@ logger = logging.getLogger(__name__)
 class Copy:
     count = None
 
-    def copy(self, options, gene, layer, source, destination, task_name):
+    def copy(
+        self,
+        options: Namespace,
+        gene: TileGeneration,
+        layer: str,
+        source: str,
+        destination: str,
+        task_name: str,
+    ) -> None:
         if gene.layers[layer]["type"] == "wms":
             self._copy(options, gene, layer, source, destination, task_name)
-        else:  # pragma: no cover
+        else:
             self._copy(options, gene, layer, source, destination, task_name)
 
-    def _copy(self, options, gene, layer_name, source, dest, task_name):
+    def _copy(
+        self,
+        options: Namespace,
+        gene: TileGeneration,
+        layer_name: str,
+        source: str,
+        dest: str,
+        task_name: str,
+    ) -> None:
         # disable metatiles
         layer = gene.layers[layer_name]
-        del layer["meta"]
+        cast(tilecloud_chain.configuration.LayerWms, layer)["meta"] = False
         count_tiles_dropped = Count()
 
-        gene.init_layer(layer, options)
+        gene.init_layer(layer_name, options)
         source_tilestore = gene.get_tilesstore(source)
         dest_tilestore = gene.get_tilesstore(dest)
-        gene.init_tilecoords(layer)
+        gene.init_tilecoords(layer_name)
         gene.add_geom_filter()
         gene.add_logger()
         gene.get(source_tilestore, "Get the tiles")
@@ -47,7 +66,7 @@ class Copy:
             gene.process(options.process)
 
         gene.imap(DropEmpty(gene))
-        self.count = gene.counter(size=True)
+        self.count = gene.counter_size()
         gene.put(dest_tilestore, "Store the tiles")
         gene.consume()
         if not options.quiet:
@@ -62,7 +81,7 @@ Time per tile: {} ms
 Size per tile: {} o
 """.format(
                     task_name,
-                    layer["name"],
+                    layer_name,
                     task_name,
                     self.count.nb,
                     count_tiles_dropped.nb,
@@ -75,7 +94,7 @@ Size per tile: {} o
             )
 
 
-def main():
+def main() -> None:
     try:
         parser = ArgumentParser(
             description="Used to copy the tiles from a cache to an other", prog=sys.argv[0]
@@ -89,7 +108,7 @@ def main():
 
         gene = TileGeneration(options.config, options)
 
-        if options.layer:  # pragma: no cover
+        if options.layer:
             copy = Copy()
             copy.copy(options, gene, options.layer, options.source, options.dest, "copy")
         else:
@@ -105,10 +124,12 @@ def main():
         raise
     except:  # pylint: disable=bare-except
         logger.exception("Exit with exception")
+        if os.environ.get("TESTS", "false").lower() == "true":
+            raise
         sys.exit(1)
 
 
-def process():
+def process() -> None:
     try:
         parser = ArgumentParser(
             description="Used to copy the tiles from a cache to an other", prog=sys.argv[0]
@@ -121,7 +142,7 @@ def process():
         gene = TileGeneration(options.config, options, multi_thread=False)
 
         copy = Copy()
-        if options.layer:  # pragma: no cover
+        if options.layer:
             copy.copy(options, gene, options.layer, options.cache, options.cache, "process")
         else:
             layers_name = (

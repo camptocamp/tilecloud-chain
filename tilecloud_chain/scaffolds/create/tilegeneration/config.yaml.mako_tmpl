@@ -63,7 +63,7 @@ defaults:
         #        # all the available values in the WMTS capabilities
         #        values: ['2012']
         # the meta tiles definition [default to off]
-        meta: on
+        meta: true
         # the meta tiles size [default to 8]
         meta_size: 8
         # the meta tiles buffer [default to 128]

@@ -5,6 +5,15 @@
     "title": "TileCloud-chain configuration",
     "additionalProperties": false,
     "definitions": {
+        "headers": {
+            "title": "Headers",
+            "description": "The headers that we send to the WMS backend",
+            "type": "object",
+            "additionalProperties": {
+                "description": "The header value",
+                "type": "string"
+            }
+        },
         "grid": {
             "title": "Grid",
             "description": "The WMTS grid definition, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-grids",
@@ -48,27 +57,24 @@
                 "unit": {
                     "title": "Unit",
                     "description": "The projection unit, default to 'm'",
-                    "type": "string"
+                    "type": "string",
+                    "default": "m"
                 },
                 "tile_size": {
                     "title": "Tile size",
                     "description": "The tile size in pixel, default to 256",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 256
                 },
                 "matrix_identifier": {
                     "title": "Matrix identifier",
                     "description": "The identifier to use in the tiles URL, recommend to be resolution (default)",
                     "type": "string",
-                    "enum": ["zoom", "resolution"]
+                    "enum": ["zoom", "resolution"],
+                    "default": "zoom"
                 }
             },
             "required": ["resolutions", "bbox", "srs"]
-        },
-        "cache_type": {
-            "title": "Cache type",
-            "description": "The cache type, s3, filesystem, mbtiles or bsddb",
-            "type": "string",
-            "enum": ["s3", "filesystem", "mbtiles", "bsddb"]
         },
         "cache_wmtscapabilities_file": {
             "title": "Cache WMST capabilities file",
@@ -98,14 +104,17 @@
         "cache_folder": {
             "title": "Cache folder",
             "description": "The root folder of the cache, default to ''",
-            "type": "string"
+            "type": "string",
+            "default": ""
         },
         "cache_filesystem": {
+            "title": "Cache filesystem",
+            "type": "object",
             "additionalProperties": {
                 "type": "string"
             },
             "properties": {
-                "type": { "$ref": "#/definitions/cache_type" },
+                "type": { "const": "filesystem" },
                 "wmtscapabilities_file": { "$ref": "#/definitions/cache_wmtscapabilities_file" },
                 "http_url": { "$ref": "#/definitions/cache_http_url" },
                 "hosts": { "$ref": "#/definitions/cache_hosts" },
@@ -114,11 +123,13 @@
             }
         },
         "cache_s3": {
+            "title": "Cache S3",
+            "type": "object",
             "additionalProperties": {
                 "type": "string"
             },
             "properties": {
-                "type": { "$ref": "#/definitions/cache_type" },
+                "type": { "const": "s3" },
                 "wmtscapabilities_file": { "$ref": "#/definitions/cache_wmtscapabilities_file" },
                 "http_url": { "$ref": "#/definitions/cache_http_url" },
                 "hosts": { "$ref": "#/definitions/cache_hosts" },
@@ -145,16 +156,19 @@
                     "title": "Cache control",
                     "description": "The Cache-Control used to store tiles on S3",
                     "type": "string"
-                }
+                },
+                "folder": { "$ref": "#/definitions/cache_folder" }
             },
             "required": ["bucket"]
         },
         "cache_mbtiles": {
+            "title": "Cache MBtiles",
+            "type": "object",
             "additionalProperties": {
                 "type": "string"
             },
             "properties": {
-                "type": { "$ref": "#/definitions/cache_type" },
+                "type": { "const": "mbtiles" },
                 "wmtscapabilities_file": {
                     "$ref": "#/definitions/cache_wmtscapabilities_file"
                 },
@@ -165,11 +179,13 @@
             }
         },
         "cache_bsddb": {
+            "title": "Cache BSDDB",
+            "type": "object",
             "additionalProperties": {
                 "type": "string"
             },
             "properties": {
-                "type": { "$ref": "#/definitions/cache_type" },
+                "type": { "const": "bsddb" },
                 "wmtscapabilities_file": {
                     "$ref": "#/definitions/cache_wmtscapabilities_file"
                 },
@@ -182,49 +198,20 @@
         "cache": {
             "title": "Cache",
             "description": "The tiles cache definition, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-caches",
-            "type": "object",
-            "if": {
-                "properties": { "type": { "const": "filesystem" } }
-            },
-            "then": {
-                "$ref": "#/definitions/cache_filesystem"
-            },
-            "else": {
-                "if": {
-                    "properties": { "type": { "const": "s3" } }
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/cache_filesystem"
                 },
-                "then": {
+                {
                     "$ref": "#/definitions/cache_s3"
                 },
-                "else": {
-                    "if": {
-                        "properties": { "type": { "const": "mbtiles" } }
-                    },
-                    "then": {
-                        "$ref": "#/definitions/cache_mbtiles"
-                    },
-                    "else": {
-                        "if": {
-                            "properties": { "type": { "const": "bsddb" } }
-                        },
-                        "then": {
-                            "$ref": "#/definitions/cache_bsddb"
-                        },
-                        "else": {
-                            "properties": {
-                                "type": { "$ref": "#/definitions/cache_type" }
-                            }
-                        },
-                        "required": ["type"]
-                    }
+                {
+                    "$ref": "#/definitions/cache_mbtiles"
+                },
+                {
+                    "$ref": "#/definitions/cache_bsddb"
                 }
-            }
-        },
-        "layer_type": {
-            "title": "Layer type",
-            "description": "The layer type, wms or mapnik",
-            "type": "string",
-            "enum": ["wms", "mapnik"]
+            ]
         },
         "layer_title": {
             "title": "Layer title",
@@ -254,12 +241,14 @@
         "layer_px_buffer": {
             "title": "Layer pixel buffer",
             "description": "The buffer in pixel used to calculate geometry intersection, default to 0",
-            "type": "number"
+            "type": "integer",
+            "default": 0
         },
         "layer_meta": {
             "title": "Layer meta",
             "description": "Used meta-tiles, default to False, see see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles",
-            "type": "boolean"
+            "type": "boolean",
+            "default": false
         },
         "layer_meta_size": {
             "title": "Layer meta size",
@@ -492,29 +481,35 @@
                 "tileonly_generation_time": {
                     "title": "tile only generation time",
                     "description": "The time to generate a tile without meta-tile",
-                    "type": "number"
+                    "type": "number",
+                    "default": 40
                 },
                 "tile_generation_time": {
                     "title": "tile generation time",
                     "description": "The time to generate a tile from the meta-tile",
-                    "type": "number"
+                    "type": "number",
+                    "default": 30
                 },
                 "metatile_generation_time": {
                     "title": "Meta tile generation time",
                     "description": "The time to generate a meta-tile",
-                    "type": "number"
+                    "type": "number",
+                    "default": 30
                 },
                 "tile_size": {
                     "title": "Tile size",
                     "description": "The tile mean size in bytes",
-                    "type": "number"
+                    "type": "number",
+                    "default": 20
                 }
             }
         },
         "layer_wms": {
+            "title": "Layer WMS",
+            "type": "object",
             "additionalProperties": false,
             "properties": {
-                "type": { "$ref": "#/definitions/layer_type" },
+                "type": { "const": "wms" },
                 "title": {
                     "$ref": "#/definitions/layer_title"
                 },
@@ -534,10 +529,12 @@
                     "$ref": "#/definitions/layer_meta"
                 },
                 "meta_size": {
-                    "$ref": "#/definitions/layer_meta_size"
+                    "$ref": "#/definitions/layer_meta_size",
+                    "default": 5
                 },
                 "meta_buffer": {
-                    "$ref": "#/definitions/layer_meta_buffer"
+                    "$ref": "#/definitions/layer_meta_buffer",
+                    "default": 128
                 },
                 "layers": {
                     "$ref": "#/definitions/layer_layers"
@@ -614,13 +611,7 @@
                     }
                 },
                 "headers": {
-                    "title": "Headers",
-                    "description": "The headers that we send to the WMS backend",
-                    "type": "object",
-                    "additionalProperties": {
-                        "description": "The header value",
-                        "type": "string"
-                    }
+                    "$ref": "#/definitions/headers"
                 },
                 "version": {
                     "title": "Version",
@@ -631,9 +622,11 @@
             "required": ["layers", "url", "grid", "wmts_style", "mime_type", "extension"]
         },
         "layer_mapnik": {
+            "title": "Layer Mapnik",
+            "type": "object",
             "additionalProperties": false,
             "properties": {
-                "type": { "$ref": "#/definitions/layer_type" },
+                "type": { "const": "mapnik" },
                 "title": {
                     "$ref": "#/definitions/layer_title"
                 },
@@ -653,13 +646,16 @@
                     "$ref": "#/definitions/layer_meta"
                 },
                 "meta_size": {
-                    "$ref": "#/definitions/layer_meta_size"
+                    "$ref": "#/definitions/layer_meta_size",
+                    "default": 1
                 },
                 "meta_buffer": {
-                    "$ref": "#/definitions/layer_meta_buffer"
+                    "$ref": "#/definitions/layer_meta_buffer",
+                    "default": 0
                 },
                 "layers": {
-                    "$ref": "#/definitions/layer_layers"
+                    "$ref": "#/definitions/layer_layers",
+                    "default": "__all__"
                 },
                 "wmts_style": {
                     "$ref": "#/definitions/layer_wmts_style"
@@ -749,30 +745,17 @@
         "layer": {
             "title": "Layer",
             "description": "The layer definition, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-layers",
-            "type": "object",
-            "if": {
-                "properties": { "type": { "const": "wms" } }
-            },
-            "then": {
-                "$ref": "#definitions/layer_wms"
-            },
-            "else": {
-                "if": {
-                    "properties": { "type": { "const": "mapnik" } }
+            "anyOf": [
+                {
+                    "$ref": "#definitions/layer_wms"
                 },
-                "then": {
+                {
                     "$ref": "#definitions/layer_mapnik"
-                },
-                "else": {
-                    "properties": {
-                        "type": { "$ref": "#/definitions/layer_type" }
-                    },
-                    "required": ["type"]
                 }
-            }
+            ]
         },
         "process": {
-            "title": "Process",
+            "title": "Process command",
             "description": "A command",
             "type": "array",
             "items": {
@@ -787,7 +770,8 @@
                     "need_out": {
                         "title": "Need out",
                         "description": "The command will generate an output in a file, default to False",
-                        "type": "boolean"
+                        "type": "boolean",
+                        "default": false
                     },
                     "arg": {
                         "title": "Argument",
@@ -830,7 +814,8 @@
                 "default_cache": {
                     "title": "Default cache",
                     "description": "The default cache name to be used, default do 'default'",
-                    "type": "string"
+                    "type": "string",
+                    "default": "default"
                 },
                 "default_layers": {
                     "title": "Default layers",
@@ -843,7 +828,8 @@
                 "log_format": {
                     "title": "Log format",
                     "description": "The logging format, default to '%(levelname)s:%(name)s:%(funcName)s:%(message)s'",
-                    "type": "string"
+                    "type": "string",
+                    "default": "%(levelname)s:%(name)s:%(funcName)s:%(message)s"
                 },
                 "authorised_user": {
                     "title": "Authorised user",
@@ -853,7 +839,8 @@
                 "maxconsecutive_errors": {
                     "title": "Max consecutive errors",
                     "description": "The maximum number of consecutive errors, default to 10",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 10
                 },
                 "error_file": {
                     "title": "Error file",
@@ -863,7 +850,8 @@
                 "number_process": {
                     "title": "Number process",
                     "description": "Number of process used to generate the tiles, default to 1",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 1
                 }
             }
         },
@@ -905,10 +893,19 @@
                         "additionalItems": false
                     }
                 },
+                "connection_kwargs": {
+                    "description": "The Redis connection arguments",
+                    "type": "object"
+                },
+                "sentinel_kwargs": {
+                    "description": "The Redis sentinel arguments",
+                    "type": "object"
+                },
                 "service_name": {
                     "title": "Service name",
                     "description": "The service name, default to 'mymaster'",
-                    "type": "string"
+                    "type": "string",
+                    "default": "mymaster"
                 },
                 "socket_timeout": {
                     "title": "Socket timeout",
@@ -922,42 +919,50 @@
                 "queue": {
                     "title": "Queue",
                     "description": "The queue name",
-                    "type": "string"
+                    "type": "string",
+                    "default": "tilecloud"
                 },
                 "timeout": {
                     "title": "Timeout",
                     "description": "The timeout, default to 5",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 5
                 },
                 "pending_timeout": {
                     "title": "Pending timeout",
                     "description": "The pending timeout, default to 300",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 300
                 },
                 "max_retries": {
                     "title": "Max retries",
                     "description": "The max retries, default to 5",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 5
                 },
                 "max_errors_age": {
                     "title": "Max errors age",
                     "description": "The max error age, default to 86400 (1 day)",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 86400
                 },
                 "max_errors_nb": {
                     "title": "Max errors number",
                     "description": "The max error number, default to 100",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 100
                 },
                 "prefix": {
                     "title": "Prefix",
                     "description": "The prefix, default to 'tilecloud_cache'",
-                    "type": "string"
+                    "type": "string",
+                    "default": "tilecloud_cache"
                 },
                 "expiration": {
                     "title": "Expiration",
                     "description": "The meta-tile in queue expiration, default to 28800 (8 hours)",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 28800
                 }
             }
         },
@@ -973,7 +978,7 @@
                     "type": "string"
                 },
                 "layers": {
-                    "title": "Layers",
+                    "title": "WMS Layers",
                     "description": "Layers available in the server, default to all layers",
                     "type": "array",
                     "items": {
@@ -983,25 +988,23 @@
                 "geoms_redirect": {
                     "title": "Geometries redirect",
                     "description": "Take care on the geometries, default to False",
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": false
                 },
                 "mapcache_internal": {
                     "title": "Mapcache internal",
                     "description": "Use internal mapcache, default to False",
-                    "type": "boolean"
+                    "type": "boolean",
+                    "default": false
                 },
                 "mapcache_base": {
                     "title": "Mapcache base",
                     "description": "The base URL, default to 'http://localhost/' (deprecated)",
-                    "type": "string"
+                    "type": "string",
+                    "default": "http://localhost/"
                 },
                 "mapcache_headers": {
-                    "title": "Mapcache headers",
-                    "description": "The headers send to mapcahe (deprecated)",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
+                    "$ref": "#/definitions/headers"
                 },
                 "static_allow_extension": {
                     "title": "Static allow extension",
@@ -1014,22 +1017,26 @@
                 "wmts_path": {
                     "title": "WMTS path",
                     "description": "The sub-path for the WMTS, default to 'wmts'",
-                    "type": "string"
+                    "type": "string",
+                    "default": "wmts"
                 },
                 "static_path": {
                     "title": "Static path",
                     "description": "The sub-path for the static files, default to 'static'",
-                    "type": "string"
+                    "type": "string",
+                    "default": "static"
                 },
                 "admin_path": {
                     "title": "Admin path",
                     "description": "The sub-path for the admin, default to 'admin'",
-                    "type": "string"
+                    "type": "string",
+                    "default": "admin"
                 },
                 "expires": {
                     "title": "Expires",
                     "description": "The browser cache expiration, default to 8 (hours)",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 8
                 },
                 "predefined_commands": {
                     "title": "Predefined commands",
@@ -1071,10 +1078,11 @@
                 "request_per_layers": {
                     "title": "Request per layers",
                     "description": "Tile request per hours, default to 10 000 000",
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 10000000
                 },
                 "s3": {
-                    "title": "S3",
+                    "title": "S3 cost",
                     "description": "The S3 cost",
                     "type": "object",
                     "additionalProperties": false,
@@ -1082,27 +1090,31 @@
                         "storage": {
                             "title": "Storage",
                             "description": "The storage cost in $ / Gio / month",
-                            "type": "number"
+                            "type": "number",
+                            "default": 0.125
                         },
                         "put": {
                             "title": "Put",
                             "description": "The cost of put in $ per 10 000 requests",
-                            "type": "number"
+                            "type": "number",
+                            "default": 0.01
                         },
                         "get": {
                             "title": "Get",
                             "description": "The cost of get in $ per 10 000 requests",
-                            "type": "number"
+                            "type": "number",
+                            "default": 0.01
                         },
                         "download": {
                             "title": "Download",
                             "description": "The cost of download in $ per Gio",
-                            "type": "number"
+                            "type": "number",
+                            "default": 0.12
                         }
                     }
                 },
                 "cloudfront": {
-                    "title": "CloudFront",
+                    "title": "CloudFront cost",
                     "description": "The CloudFront cost",
                     "type": "object",
                     "additionalProperties": false,
@@ -1110,17 +1122,19 @@
                         "get": {
                             "title": "Get",
                             "description": "The cost of get in $ per 10 000 requests",
-                            "type": "number"
+                            "type": "number",
+                            "default": 0.009
                         },
                         "download": {
                             "title": "Download",
                             "description": "The cost of download in $ per Gio",
-                            "type": "number"
+                            "type": "number",
+                            "default": 0.12
                         }
                     }
                 },
                 "sqs": {
-                    "title": "SQS",
+                    "title": "SQS cost",
                     "description": "The SQS cost, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sqs",
                     "type": "object",
                     "additionalProperties": false,
@@ -1128,7 +1142,8 @@
                         "request": {
                             "title": "Request",
                             "description": "The cost of request in $ per 1 000 000 requests",
-                            "type": "number"
+                            "type": "number",
+                            "default": 0.01
                         }
                     }
                 }
@@ -1153,7 +1168,8 @@
                 "servicetype": {
                     "title": "Service type",
                     "description": "The service type, default is 'OGC WMTS'",
-                    "type": "string"
+                    "type": "string",
+                    "default": "OGC WMTS"
                 },
                 "keywords": {
                     "title": "Keywords",
@@ -1293,7 +1309,8 @@
                         "port": {
                             "title": "Port",
                             "description": "The port, default is 5432",
-                            "type": "integer"
+                            "type": "integer",
+                            "default": 5432
                         },
                         "dbname": {
                             "title": "Database",
@@ -1415,13 +1432,19 @@
             "additionalProperties": false,
             "properties": {
                 "location": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "/tiles"
                 },
                 "config_file": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "apache/tiles.conf"
                 },
                 "expires": {
-                    "type": "integer"
+                    "type": "integer",
+                    "default": 8
+                },
+                "headers": {
+                    "$ref": "#/definitions/headers"
                 }
             }
         },
@@ -1432,14 +1455,20 @@
             "additionalProperties": false,
             "properties": {
                 "config_file": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "apache/mapcache.xml"
                 },
                 "memcache_host": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "localhost"
                 },
-                "memcache_port": {},
+                "memcache_port": {
+                    "type": ["number", "string"],
+                    "default": 11211
+                },
                 "location": {
-                    "type": "string"
+                    "type": "string",
+                    "default": "/mapcache"
                 }
             }
         },
@@ -1453,20 +1482,22 @@
                     "title": "SRS",
                     "description": "The projection code",
                     "type": "string",
-                    "pattern": "^EPSG:[0-9]+$"
+                    "pattern": "^EPSG:[0-9]+$",
+                    "default": "EPSG:2056"
                 },
                 "center_x": {
                     "title": "Center x",
                     "description": "The center easting",
-                    "type": "number"
+                    "type": "number",
+                    "default": 2600000
                 },
                 "center_y": {
                     "title": "Center y",
                     "description": "The center northing",
-                    "type": "number"
+                    "type": "number",
+                    "default": 1200000
                 }
-            },
-            "required": ["srs"]
+            }
         },
         "server": {
             "$ref": "#/definitions/server"

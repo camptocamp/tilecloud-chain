@@ -11,3 +11,4 @@
 !docker/run
 !production.ini
 !.prospector.yaml
+!jsonschema-gentypes.yaml

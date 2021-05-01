@@ -102,7 +102,6 @@ FROM base as tests
 RUN pipenv sync --dev --system --clear
 
 COPY . /app/
-RUN pipenv sync --dev --system --clear && \
-  prospector
+RUN prospector --output-format=pylint
 
 FROM runner

@@ -25,7 +25,7 @@ defaults:
             default: '2012'
             generate: ['2012']
             values: ['2005', '2010', '2012']
-        meta: on
+        meta: true
         meta_size: 8
         meta_buffer: 128
 

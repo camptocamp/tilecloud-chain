@@ -1,46 +1,44 @@
-Changelog
-=========
+# Changelog
 
-Release 1.16
-------------
+## Release 1.17
+
+1. Change the validator and parser => duplicate key generate an error: on/off are no more considered as boolean.
+
+## Release 1.16
 
 1.  Change the config validator who is a little bit more strict.
 
-Release 1.4
------------
+## Release 1.4
 
 1.  Add optional `metadata` section to the config file. See the scaffolds for example.
 
-Release 0.9
------------
+## Release 0.9
 
 1.  Correct some error with slash.
 2.  Better error handling.
 3.  Be able to have one error file per layer.
 
-Release 0.8
------------
+## Release 0.8
 
 1.  Correct some error with slash.
 2.  Add `pre_hash_post_process` and `post_process`.
 3.  Add copy command.
 
-Release 0.7
------------
+## Release 0.7
 
 1.  Support of deferent geoms per layers, requires configuration changes, old version:
 
-    > ``` {.sourceCode .yaml}
+    > ```yaml
     > connection: user=www-data password=www-data dbname=<db> host=localhost
     > sql: <column> AS geom FROM <table>
     > ```
     >
     > to new version:
     >
-    > ``` {.sourceCode .yaml}
+    > ```yaml
     > connection: user=www-data password=www-data dbname=<db> host=localhost
     > geoms:
-    > -   sql: <column> AS geom FROM <table>
+    >     - sql: <column> AS geom FROM <table>
     > ```
     >
     > More information in the **Configure geom/sql** chapter.
@@ -56,13 +54,12 @@ Release 0.7
     chapter.
 6.  Improve the dimensions usage by adding it ti the WMS requests, And add a `--dimensions` argument of
     `generate_tiles` to change the dimensions values.
-7.  Extract generate\_cost and generate\_amazon from generate\_controler.
+7.  Extract generate_cost and generate_amazon from generate_controler.
 8.  Now we can creates legends, see the **Legends** chapter.
 9.  Now the tiles generation display generation statistics at the ends.
 10. The EC2 configuration is moved in a separate structure, see README for more information.
 
-Release 0.6
------------
+## Release 0.6
 
 1.  Now the apache configuration can be generated with
     `.build/venv/bin/generate_controller --generate-apache-config`, it support `filesystem` `cache` and
@@ -76,12 +73,11 @@ Release 0.6
 8.  Add an config option `generation:error_file` and a command option `--tiles` to store and regenerate
     errored tiles.
 
-Release 0.5
------------
+## Release 0.5
 
 1.  SQS config change:
 
-``` {.sourceCode .yaml}
+```yaml
 layers:
     layer_name:
         sqs:

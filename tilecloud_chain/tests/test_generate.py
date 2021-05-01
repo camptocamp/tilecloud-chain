@@ -3,6 +3,7 @@
 from itertools import product, repeat
 import os
 import shutil
+from typing import List, Tuple
 
 import pytest
 from testfixtures import LogCapture
@@ -13,7 +14,7 @@ from tilecloud_chain.tests import CompareCase
 
 
 class TestGenerate(CompareCase):
-    def setUp(self):  # noqa
+    def setUp(self) -> None:  # noqa
         self.maxDiff = None
 
     @classmethod
@@ -28,7 +29,7 @@ class TestGenerate(CompareCase):
         if os.path.exists("/tmp/tiles"):
             shutil.rmtree("/tmp/tiles")
 
-    def test_get_hash(self):
+    def test_get_hash(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             for d in ("-d", ""):
                 self.assert_cmd_equals(
@@ -48,7 +49,7 @@ class TestGenerate(CompareCase):
 
             log_capture.check()
 
-    def test_get_wrong_hash(self):
+    def test_get_wrong_hash(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             for d in ("-d", "-q"):
                 self.assert_cmd_exit_equals(
@@ -59,7 +60,7 @@ class TestGenerate(CompareCase):
                 )
             log_capture.check()
 
-    def test_get_bbox(self):
+    def test_get_bbox(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
@@ -101,7 +102,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_hash_mapnik_grid(self):
+    def test_hash_mapnik_grid(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
@@ -120,7 +121,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_test_all(self):
+    def test_test_all(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
@@ -164,7 +165,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_test_dimensions(self):
+    def test_test_dimensions(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
@@ -209,7 +210,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_multigeom(self):
+    def test_multigeom(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-multigeom.yaml",
@@ -284,7 +285,7 @@ class TestGenerate(CompareCase):
             )
             log_capture.check()
 
-    def test_zoom_identifier(self):
+    def test_zoom_identifier(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             xy = list(product(range(585, 592), range(429, 432)))
             x = [e[0] for e in xy]
@@ -364,7 +365,7 @@ class TestGenerate(CompareCase):
                 )
             log_capture.check()
 
-    def test_empty_bbox(self):
+    def test_empty_bbox(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
@@ -394,7 +395,7 @@ class TestGenerate(CompareCase):
                     ("tilecloud_chain", "WARNING", "bounds empty for zoom 3"),
                 )
 
-    def test_zoom(self):
+    def test_zoom(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
@@ -421,7 +422,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_zoom_range(self):
+    def test_zoom_range(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
@@ -455,7 +456,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_no_zoom(self):
+    def test_no_zoom(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
@@ -492,7 +493,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_py_buffer(self):
+    def test_py_buffer(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
@@ -519,7 +520,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_zoom_list(self):
+    def test_zoom_list(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
@@ -555,7 +556,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_layer_bbox(self):
+    def test_layer_bbox(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
@@ -645,7 +646,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_hash_generation(self):
+    def test_hash_generation(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
@@ -768,7 +769,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_not_authorised_user(self):
+    def test_not_authorised_user(self) -> None:
         for d in ("-d", "-q"):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_exit_equals(
@@ -778,7 +779,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_verbose(self):
+    def test_verbose(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.run_cmd(
@@ -788,7 +789,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_time(self):
+    def test_time(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
@@ -808,7 +809,7 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    def test_time_layer_bbox(self):
+    def test_time_layer_bbox(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
@@ -837,7 +838,7 @@ class TestGenerate(CompareCase):
     #             regex=True)
     #         log_capture.check()
 
-    def _touch(self, tiles_pattern, tiles):
+    def _touch(self, tiles_pattern: str, tiles: List[Tuple[int, int]]) -> None:
         for tile in tiles:
             path = tiles_pattern % tile
             directory = os.path.dirname(path)
@@ -846,7 +847,7 @@ class TestGenerate(CompareCase):
             with open(path, "w"):
                 pass
 
-    def test_delete_meta(self):
+    def test_delete_meta(self) -> None:
         for d in ("-d", ""):
             if os.path.exists("/tmp/tiles/"):
                 shutil.rmtree("/tmp/tiles/")
@@ -877,7 +878,7 @@ Size per tile: 4[0-9][0-9] o
 """,
             )
 
-    def test_delete_no_meta(self):
+    def test_delete_no_meta(self) -> None:
         for d in ("-d", ""):
             if os.path.exists("/tmp/tiles/"):
                 shutil.rmtree("/tmp/tiles/")
@@ -908,7 +909,7 @@ Size per tile: 4[0-9][0-9] o
 """,
             )
 
-    def test_error_file(self):
+    def test_error_file(self) -> None:
         tile_mbt = os.environ["TILE_NB_THREAD"]
         metatile_mbt = os.environ["METATILE_NB_THREAD"]
         os.environ["TILE_NB_THREAD"] = "1"
@@ -969,7 +970,7 @@ Size per tile: [45][0-9][0-9] o
         os.environ["TILE_NB_THREAD"] = tile_mbt
         os.environ["METATILE_NB_THREAD"] = metatile_mbt
 
-    def test_multy(self):
+    def test_multy(self) -> None:
         for d in ("-v", ""):
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles {} -c tilegeneration/test-multidim.yaml".format(d),
@@ -1000,7 +1001,7 @@ Size per tile: 498 o
 """,
             )
 
-    def test_redis(self):
+    def test_redis(self) -> None:
         RedisTileStore(sentinels=[["redis_sentinel", 26379]]).delete_all()
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-redis.yaml --role master -l point",

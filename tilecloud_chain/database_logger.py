@@ -7,18 +7,21 @@ import time
 from c2cwsgiutils import stats
 import psycopg2
 
+from tilecloud import Tile
+import tilecloud_chain.configuration
+
 logger = logging.getLogger(__name__)
 
 
-class DatabaseLoggerCommon:  # pragma: no cover
-    def __init__(self, config, daemon):
+class DatabaseLoggerCommon:
+    def __init__(self, config: tilecloud_chain.configuration.Logging, daemon: bool):
         db_params = config["database"]
         while True:
             try:
                 self.connection = psycopg2.connect(
                     dbname=db_params["dbname"],
                     host=db_params.get("host"),
-                    port=db_params.get("port", 5432),
+                    port=db_params.get("port"),
                     user=db_params.get("user"),
                     password=db_params.get("password"),
                 )
@@ -55,7 +58,7 @@ class DatabaseLoggerCommon:  # pragma: no cover
                     )
                     self.connection.commit()
                 except psycopg2.DatabaseError:
-                    logging.error("Unable to create table %s.%s", schema, table, exc_info=1)
+                    logging.exception("Unable to create table %s.%s", schema, table)
                     sys.exit(1)
             else:
                 try:
@@ -65,7 +68,7 @@ class DatabaseLoggerCommon:  # pragma: no cover
                         ("test_layer", -1, "test", "-1x-1"),
                     )
                 except psycopg2.DatabaseError:
-                    logging.error("Unable to insert logging data into %s.%s", schema, table, exc_info=1)
+                    logging.exception("Unable to insert logging data into %s.%s", schema, table)
                     sys.exit(1)
                 finally:
                     self.connection.rollback()
@@ -73,21 +76,21 @@ class DatabaseLoggerCommon:  # pragma: no cover
         self.full_table = "{}.{}".format(schema, table)
 
 
-class DatabaseLoggerInit(DatabaseLoggerCommon):  # pragma: no cover
-    def __init__(self, config, daemon):
-        super(DatabaseLoggerInit, self).__init__(config, daemon)
+class DatabaseLoggerInit(DatabaseLoggerCommon):
+    def __init__(self, config: tilecloud_chain.configuration.Logging, daemon: bool) -> None:
+        super().__init__(config, daemon)
 
         with self.connection.cursor() as cursor:
             cursor.execute("SELECT COALESCE(MAX(run), 0) + 1 FROM {}".format(self.full_table))
             (self.run,) = cursor.fetchone()
 
-    def __call__(self, tile):
+    def __call__(self, tile: Tile) -> Tile:
         tile.metadata["run"] = self.run
         return tile
 
 
-class DatabaseLogger(DatabaseLoggerCommon):  # pragma: no cover
-    def __call__(self, tile):
+class DatabaseLogger(DatabaseLoggerCommon):
+    def __call__(self, tile: Tile) -> Tile:
         if tile is None:
             logger.warning("The tile is None")
             return None

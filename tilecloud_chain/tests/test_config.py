@@ -9,7 +9,7 @@ from tilecloud_chain.tests import CompareCase
 
 
 class TestConfig(CompareCase):
-    def setUp(self):  # noqa
+    def setUp(self) -> None:  # noqa
         self.maxDiff = None
 
     @classmethod
@@ -20,17 +20,10 @@ class TestConfig(CompareCase):
     def tearDownClass(cls):  # noqa
         os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-    def test_int_grid(self):
+    def test_int_grid(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
                 cmd=".build/venv/bin/generate_controller -c tilegeneration/test-int-grid.yaml --dump-config",
                 main_func=controller.main,
             )
-            log_capture.check(
-                (
-                    "tilecloud_chain",
-                    "INFO",
-                    "Execute SQL: SELECT ST_AsBinary(geom) FROM "
-                    "(SELECT the_geom AS geom FROM tests.point) AS g.",
-                ),
-            )
+            log_capture.check()
