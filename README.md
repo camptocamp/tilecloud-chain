@@ -39,7 +39,7 @@ Legacy features:
 
 ### With Docker
 
-```{.sourceCode .bash}
+```bash
 # Login to docker hub
 docker login
 docker pull camptocamp/tilecloud-chain
@@ -66,7 +66,7 @@ docker run -ti \
 
 To share the home folder you should add the arguments:
 
-```{.sourceCode .bash}
+```bash
 --volume=${HOME}:${HOME} \
 --env=HOME=${HOME} \
 ```
@@ -97,7 +97,7 @@ Only the latest release is supported and version &lt; 1.11 contains security iss
 
 Build it:
 
-```{.sourceCode .bash}
+```bash
 git submodule update --recursive
 python3 -m venv .build/venv
 .build/venv/bin/pip install -r requirements.txt
@@ -107,7 +107,7 @@ python3 -m venv .build/venv
 
 ## Run prospector
 
-```{.sourceCode .bash}
+```bash
 .build/venv/bin/prospector
 ```
 
@@ -115,7 +115,7 @@ python3 -m venv .build/venv
 
 Setup your environment:
 
-```{.sourceCode .bash}
+```
 touch tilecloud_chain/OpenLayers.js
 docker build --tag camptocamp/tilecloud-chain .
 docker-compose -p tilecloud up
@@ -123,7 +123,7 @@ docker-compose -p tilecloud up
 
 To run the tests:
 
-```{.sourceCode .bash}
+```bash
 docker-compose -p tilecloud exec test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
 ```
 
@@ -135,8 +135,7 @@ As documentation you can read the `https://github.com/camptocamp/tilecloud-chain
 
 You can add that in your workspace configuration to use the JSON schema:
 
-.. code:: json
-
+```json
     {
         "yaml.schemas": {
             "../tilecloud-chain/tilecloud_chain/schema.json": [
@@ -144,3 +143,4 @@ You can add that in your workspace configuration to use the JSON schema:
             ]
         }
     }
+```
