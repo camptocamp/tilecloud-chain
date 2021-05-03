@@ -7,3 +7,4 @@ checks:
     audit.yaml: False
     clean.yaml: False
     dependabot-auto-merge.yaml: False
+  dependabot_config: False
