@@ -10,6 +10,7 @@ RUN \
   fonts-dejavu \
   node-carto \
   optipng \
+  jpegoptim \
   postgresql-client-12 net-tools iputils-ping \
   python3-pip && \
   apt clean && \
