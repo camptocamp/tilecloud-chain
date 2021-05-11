@@ -1,5 +1,4 @@
 ---
-
 strictness: veryhigh
 
 pylint:
@@ -29,7 +28,8 @@ pep8:
   options:
     max-line-length: 110
   disable:
-    - E203
+    - E203 # Whitespace before ':'
+    - E722 # Do not use bare 'except'
 
 mypy:
   run: true
