@@ -634,10 +634,10 @@
         },
         "tilecloud": {
             "hashes": [
-                "sha256:07e94751608eaf35fc36e8e08ee6c5f5974ea74582c5bd9d0dd3d373cd2aff77"
+                "sha256:37f7a76222f85d1cd2174f81f4d2ff5c9b92328c9940de7d29d6945f225fdc4e"
             ],
             "index": "pypi",
-            "version": "==1.5.2"
+            "version": "==1.6.2"
         },
         "transaction": {
             "hashes": [
