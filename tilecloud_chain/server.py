@@ -80,143 +80,149 @@ def init_tilegeneration(config_file):
 
 class Server:
     def __init__(self):
-        self.filters = {}
-        self.max_zoom_seed = {}
+        try:
+            self.filters = {}
+            self.max_zoom_seed = {}
 
-        global tilegeneration  # pylint: disable=global-statement
+            global tilegeneration  # pylint: disable=global-statement
 
-        self.expires_hours = tilegeneration.config["server"].get("expires", 8)
-        self.static_allow_extension = tilegeneration.config["server"].get(
-            "static_allow_extension", ["jpeg", "png", "xml", "js", "html", "css"]
-        )
-
-        self.cache = tilegeneration.caches[
-            tilegeneration.config["server"].get(
-                "cache", tilegeneration.config["generation"].get("default_cache", "default")
+            self.expires_hours = tilegeneration.config["server"].get("expires", 8)
+            self.static_allow_extension = tilegeneration.config["server"].get(
+                "static_allow_extension", ["jpeg", "png", "xml", "js", "html", "css"]
             )
-        ]
 
-        if self.cache["type"] == "s3":  # pragma: no cover
-            error = None
-            success = False
-            for n in range(10):
-                time.sleep(n * 10)
-                try:
-                    self.s3_client = tilecloud.store.s3.get_client(
-                        self.cache.get("host", "s3-eu-west-1.amazonaws.com")
-                    )
-                    success = True
-                    break
-                except KeyError as e:
-                    error = e
-            if not success:
-                raise error
+            self.cache = tilegeneration.caches[
+                tilegeneration.config["server"].get(
+                    "cache", tilegeneration.config["generation"].get("default_cache", "default")
+                )
+            ]
 
-            bucket = self.cache["bucket"]
-
-            def _read(self, key_name):
-                try:
-                    response = self.s3_client.get_object(Bucket=bucket, Key=key_name)
-                    body = response["Body"]
+            if self.cache["type"] == "s3":  # pragma: no cover
+                error = None
+                success = False
+                for n in range(10):
+                    time.sleep(n * 10)
                     try:
-                        return body.read(), response.get("ContentType")
-                    finally:
-                        body.close()
-                except botocore.exceptions.ClientError as ex:
-                    if ex.response["Error"]["Code"] == "NoSuchKey":
-                        return self.error(404, key_name + " not found"), None
-                    else:
-                        raise
-
-            def _get(self, path, **kwargs):
-                del kwargs
-                key_name = os.path.join(self.cache.get("folder", ""), path)
-                try:
-                    return self._read(key_name)
-                except Exception:
-                    self.s3_client = tilecloud.store.s3.get_client(self.cache.get("host"))
-                    return self._read(key_name)
-
-            self._read = types.MethodType(_read, self)
-
-        else:
-            folder = self.cache.get("folder", "")
-
-            def _get(self, path, **kwargs):
-                if path.split(".")[-1] not in self.static_allow_extension:  # pragma: no cover
-                    return self.error(403, "Extension not allowed", **kwargs), None
-                p = os.path.join(folder, path)
-                if not os.path.isfile(p):  # pragma: no cover
-                    return self.error(404, path + " not found", **kwargs), None
-                with open(p, "rb") as file:
-                    data = file.read()
-                mime = mimetypes.guess_type(p)
-                return data, mime[0]
-
-        # Get capabilities or other static files
-        self._get = types.MethodType(_get, self)
-
-        if tilegeneration.config["server"].get("mapcache_internal", False):
-            self.mapcache_baseurl = None
-            self.mapcache_header = {}
-        else:
-            mapcache_base = (
-                tilegeneration.config["server"].get("mapcache_base", "http://localhost/").rstrip("/")
-            )
-            mapcache_location = tilegeneration.config["mapcache"].get("location", "/mapcache").strip("/")
-            if mapcache_location == "":
-                self.mapcache_baseurl = mapcache_base + "/wmts"
-            else:
-                self.mapcache_baseurl = "{}/{}/wmts".format(mapcache_base, mapcache_location)
-            self.mapcache_header = tilegeneration.config["server"].get("mapcache_headers", {})
-
-        geoms_redirect = tilegeneration.config["server"].get("geoms_redirect", False)
-
-        self.layers = tilegeneration.config["server"].get("layers", tilegeneration.layers.keys())
-        self.stores = {}
-        for layer_name in self.layers:
-            layer = tilegeneration.layers[layer_name]
-
-            # Build geoms redirect
-            if geoms_redirect:
-                self.filters[layer_name] = tilegeneration.get_geoms_filter(
-                    layer=layer,
-                    grid=layer["grid_ref"],
-                    geoms={
-                        layer_name: tilegeneration.get_geoms(
-                            layer,
-                            extent=layer["bbox"] if "bbox" in layer else layer["grid_ref"]["bbox"],
+                        self.s3_client = tilecloud.store.s3.get_client(
+                            self.cache.get("host", "s3-eu-west-1.amazonaws.com")
                         )
-                    },
-                )
+                        success = True
+                        break
+                    except KeyError as e:
+                        error = e
+                if not success:
+                    raise error
 
-            if "min_resolution_seed" in layer:
-                max_zoom_seed = -1
-                for zoom, resolution in enumerate(layer["grid_ref"]["resolutions"]):
-                    if resolution > layer["min_resolution_seed"]:
-                        max_zoom_seed = zoom
-                self.max_zoom_seed[layer_name] = max_zoom_seed
+                bucket = self.cache["bucket"]
+
+                def _read(self, key_name):
+                    try:
+                        response = self.s3_client.get_object(Bucket=bucket, Key=key_name)
+                        body = response["Body"]
+                        try:
+                            return body.read(), response.get("ContentType")
+                        finally:
+                            body.close()
+                    except botocore.exceptions.ClientError as ex:
+                        if ex.response["Error"]["Code"] == "NoSuchKey":
+                            return self.error(404, key_name + " not found"), None
+                        else:
+                            raise
+
+                def _get(self, path, **kwargs):
+                    del kwargs
+                    key_name = os.path.join(self.cache.get("folder", ""), path)
+                    try:
+                        return self._read(key_name)
+                    except Exception:
+                        self.s3_client = tilecloud.store.s3.get_client(self.cache.get("host"))
+                        return self._read(key_name)
+
+                self._read = types.MethodType(_read, self)
+
             else:
-                self.max_zoom_seed[layer_name] = 999999
+                folder = self.cache.get("folder", "")
 
-            # Build stores
-            store_defs = [{"ref": [layer_name], "dimensions": {}}]
-            for dimension in layer["dimensions"]:
-                new_store_defs = []
-                for store_def in store_defs:
-                    for value in dimension["values"]:
-                        dimensions = {}
-                        dimensions.update(store_def["dimensions"])
-                        dimensions[dimension["name"]] = value
-                        new_store_defs.append({"ref": store_def["ref"] + [value], "dimensions": dimensions})
-                store_defs = new_store_defs
-            for store_def in store_defs:
-                self.stores["/".join(store_def["ref"])] = tilegeneration.get_store(
-                    self.cache, layer, read_only=True
+                def _get(self, path, **kwargs):
+                    if path.split(".")[-1] not in self.static_allow_extension:  # pragma: no cover
+                        return self.error(403, "Extension not allowed", **kwargs), None
+                    p = os.path.join(folder, path)
+                    if not os.path.isfile(p):  # pragma: no cover
+                        return self.error(404, path + " not found", **kwargs), None
+                    with open(p, "rb") as file:
+                        data = file.read()
+                    mime = mimetypes.guess_type(p)
+                    return data, mime[0]
+
+            # Get capabilities or other static files
+            self._get = types.MethodType(_get, self)
+
+            if tilegeneration.config["server"].get("mapcache_internal", False):
+                self.mapcache_baseurl = None
+                self.mapcache_header = {}
+            else:
+                mapcache_base = (
+                    tilegeneration.config["server"].get("mapcache_base", "http://localhost/").rstrip("/")
                 )
+                mapcache_location = tilegeneration.config["mapcache"].get("location", "/mapcache").strip("/")
+                if mapcache_location == "":
+                    self.mapcache_baseurl = mapcache_base + "/wmts"
+                else:
+                    self.mapcache_baseurl = "{}/{}/wmts".format(mapcache_base, mapcache_location)
+                self.mapcache_header = tilegeneration.config["server"].get("mapcache_headers", {})
 
-        self.wmts_path = tilegeneration.config["server"].get("wmts_path", "wmts")
-        self.static_path = tilegeneration.config["server"].get("static_path", "static").split("/")
+            geoms_redirect = tilegeneration.config["server"].get("geoms_redirect", False)
+
+            self.layers = tilegeneration.config["server"].get("layers", tilegeneration.layers.keys())
+            self.stores = {}
+            for layer_name in self.layers:
+                layer = tilegeneration.layers[layer_name]
+
+                # Build geoms redirect
+                if geoms_redirect:
+                    self.filters[layer_name] = tilegeneration.get_geoms_filter(
+                        layer=layer,
+                        grid=layer["grid_ref"],
+                        geoms={
+                            layer_name: tilegeneration.get_geoms(
+                                layer,
+                                extent=layer["bbox"] if "bbox" in layer else layer["grid_ref"]["bbox"],
+                            )
+                        },
+                    )
+
+                if "min_resolution_seed" in layer:
+                    max_zoom_seed = -1
+                    for zoom, resolution in enumerate(layer["grid_ref"]["resolutions"]):
+                        if resolution > layer["min_resolution_seed"]:
+                            max_zoom_seed = zoom
+                    self.max_zoom_seed[layer_name] = max_zoom_seed
+                else:
+                    self.max_zoom_seed[layer_name] = 999999
+
+                # Build stores
+                store_defs = [{"ref": [layer_name], "dimensions": {}}]
+                for dimension in layer["dimensions"]:
+                    new_store_defs = []
+                    for store_def in store_defs:
+                        for value in dimension["values"]:
+                            dimensions = {}
+                            dimensions.update(store_def["dimensions"])
+                            dimensions[dimension["name"]] = value
+                            new_store_defs.append(
+                                {"ref": store_def["ref"] + [value], "dimensions": dimensions}
+                            )
+                    store_defs = new_store_defs
+                for store_def in store_defs:
+                    self.stores["/".join(store_def["ref"])] = tilegeneration.get_store(
+                        self.cache, layer, read_only=True
+                    )
+
+            self.wmts_path = tilegeneration.config["server"].get("wmts_path", "wmts")
+            self.static_path = tilegeneration.config["server"].get("static_path", "static").split("/")
+        except Exception:
+            logger.exception("Initialization error")
+            raise
 
     def __call__(self, environ, start_response):
         params = {}
