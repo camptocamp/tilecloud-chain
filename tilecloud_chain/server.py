@@ -74,6 +74,7 @@ def init_tilegeneration(config_file):
             ),
             configure_logging=False,
             multi_thread=False,
+            maxconsecutive_errors=False,
         )
 
 

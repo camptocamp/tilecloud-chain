@@ -20,6 +20,7 @@ import sys
 import tempfile
 import threading
 import time
+from typing import Any, Dict, List
 
 from PIL import Image
 import boto3
@@ -169,7 +170,7 @@ class Run:
         daemon = gene.options is not None and getattr(gene.options, "daemon", False)
         self.max_consecutive_errors = (
             MaximumConsecutiveErrors(gene.config["generation"]["maxconsecutive_errors"])
-            if not daemon
+            if not daemon and gene.maxconsecutive_errors
             else None
         )
         self.queue_store = queue_store
@@ -247,33 +248,37 @@ class TileGeneration:
         base_config=None,
         configure_logging=True,
         multi_thread=True,
+        maxconsecutive_errors: bool = True,
     ):
-        self.geoms = {}
-        self._close_actions = []
-        self._layers_geoms = {}
+        self.geoms: Dict[str, Any] = {}
+        self._close_actions: List[Any] = []
+        self._layers_geoms: Dict[str, Any] = {}
         self.error_lock = threading.Lock()
-        self.error_files_ = {}
-        self.functions_tiles = []
-        self.functions_metatiles = []
+        self.error_files_: Dict[str, Any] = {}
+        self.functions_tiles: List[Any] = []
+        self.functions_metatiles: List[Any] = []
         self.functions = self.functions_metatiles
         self.metatilesplitter_thread_pool = None
         self.multi_thread = multi_thread
+        self.maxconsecutive_errors = maxconsecutive_errors
 
-        self.options = options or collections.namedtuple(
+        self.options = options or collections.namedtuple(  # type: ignore
             "Options", ["verbose", "debug", "quiet", "bbox", "zoom", "test", "near", "time", "geom"]
-        )(False, False, False, None, None, None, None, None, True)
+        )(
+            False, False, False, None, None, None, None, None, True  # type: ignore
+        )
         if not hasattr(self.options, "bbox"):
-            self.options.bbox = None
+            self.options.bbox = None  # type: ignore
         if not hasattr(self.options, "zoom"):
-            self.options.zoom = None
+            self.options.zoom = None  # type: ignore
         if not hasattr(self.options, "test"):
-            self.options.test = None
+            self.options.test = None  # type: ignore
         if not hasattr(self.options, "near"):
-            self.options.near = None
+            self.options.near = None  # type: ignore
         if not hasattr(self.options, "time"):
-            self.options.time = None
+            self.options.time = None  # type: ignore
         if not hasattr(self.options, "geom"):
-            self.options.geom = True
+            self.options.geom = True  # type: ignore
 
         if configure_logging:
             self._configure_logging(options, "%(levelname)s:%(name)s:%(funcName)s:%(message)s")
@@ -304,30 +309,31 @@ class TileGeneration:
             if layer is not None:
                 layer["name"] = lname
 
-        c = Core(
-            source_data=self.config,
-            schema_data=yaml.safe_load(pkgutil.get_data("tilecloud_chain", "schema.yaml")),
-        )
+        schema_data = pkgutil.get_data("tilecloud_chain", "schema.yaml")
+        assert schema_data
+        c = Core(source_data=self.config, schema_data=yaml.safe_load(schema_data))
         path_ = ""
         try:
             self.config = c.validate()
 
             for name, cache in self.config["caches"].items():
                 if cache["type"] == "s3":
+                    schema_data = pkgutil.get_data("tilecloud_chain", "schema-cache-s3.yaml")
+                    assert schema_data
                     c = Core(
                         source_data=cache,
-                        schema_data=yaml.safe_load(
-                            pkgutil.get_data("tilecloud_chain", "schema-cache-s3.yaml")
-                        ),
+                        schema_data=yaml.safe_load(schema_data),
                     )
                     path_ = "caches/{}".format(name)
                     self.config["caches"][name] = c.validate()
             for name, layer in self.config["layers"].items():
+                schema_data = pkgutil.get_data(
+                    "tilecloud_chain", "schema-layer-{}.yaml".format(layer["type"])
+                )
+                assert schema_data
                 c = Core(
                     source_data=layer,
-                    schema_data=yaml.safe_load(
-                        pkgutil.get_data("tilecloud_chain", "schema-layer-{}.yaml".format(layer["type"]))
-                    ),
+                    schema_data=yaml.safe_load(schema_data),
                 )
                 path_ = "layers/{}".format(name)
                 self.config["layers"][name] = c.validate()
