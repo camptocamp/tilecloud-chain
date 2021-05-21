@@ -4,7 +4,7 @@ url = "https://pypi.org/simple/"
 verify_ssl = true
 
 [packages]
-c2cwsgiutils = "==4.1.1"
+c2cwsgiutils = "==4.1.2"
 pyramid-mako = "==1.1.0"
 python-dateutil = "==2.8.1"
 redlock-py = "==1.0.8"
