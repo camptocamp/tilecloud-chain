@@ -169,7 +169,7 @@ class Run:
         daemon = gene.options is not None and getattr(gene.options, "daemon", False)
         self.max_consecutive_errors = (
             MaximumConsecutiveErrors(gene.config["generation"]["maxconsecutive_errors"])
-            if not daemon
+            if not daemon and gene.maxconsecutive_errors
             else None
         )
         self.queue_store = queue_store
@@ -247,6 +247,7 @@ class TileGeneration:
         base_config=None,
         configure_logging=True,
         multi_thread=True,
+        maxconsecutive_errors: bool = True,
     ):
         self.geoms = {}
         self._close_actions = []
@@ -258,6 +259,7 @@ class TileGeneration:
         self.functions = self.functions_metatiles
         self.metatilesplitter_thread_pool = None
         self.multi_thread = multi_thread
+        self.maxconsecutive_errors = maxconsecutive_errors
 
         self.options = options or collections.namedtuple(
             "Options", ["verbose", "debug", "quiet", "bbox", "zoom", "test", "near", "time", "geom"]
