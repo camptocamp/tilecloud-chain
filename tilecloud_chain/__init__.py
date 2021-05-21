@@ -21,6 +21,7 @@ import sys
 import tempfile
 import threading
 import time
+from typing import Any, Dict, List
 
 from PIL import Image
 import boto3
@@ -249,33 +250,35 @@ class TileGeneration:
         multi_thread=True,
         maxconsecutive_errors: bool = True,
     ):
-        self.geoms = {}
-        self._close_actions = []
-        self._layers_geoms = {}
+        self.geoms: Dict[str, Any] = {}
+        self._close_actions: List[Any] = []
+        self._layers_geoms: Dict[str, Any] = {}
         self.error_lock = threading.Lock()
-        self.error_files_ = {}
-        self.functions_tiles = []
-        self.functions_metatiles = []
+        self.error_files_: Dict[str, Any] = {}
+        self.functions_tiles: List[Any] = []
+        self.functions_metatiles: List[Any] = []
         self.functions = self.functions_metatiles
         self.metatilesplitter_thread_pool = None
         self.multi_thread = multi_thread
         self.maxconsecutive_errors = maxconsecutive_errors
 
-        self.options = options or collections.namedtuple(
+        self.options = options or collections.namedtuple(  # type: ignore
             "Options", ["verbose", "debug", "quiet", "bbox", "zoom", "test", "near", "time", "geom"]
-        )(False, False, False, None, None, None, None, None, True)
+        )(
+            False, False, False, None, None, None, None, None, True  # type: ignore
+        )
         if not hasattr(self.options, "bbox"):
-            self.options.bbox = None
+            self.options.bbox = None  # type: ignore
         if not hasattr(self.options, "zoom"):
-            self.options.zoom = None
+            self.options.zoom = None  # type: ignore
         if not hasattr(self.options, "test"):
-            self.options.test = None
+            self.options.test = None  # type: ignore
         if not hasattr(self.options, "near"):
-            self.options.near = None
+            self.options.near = None  # type: ignore
         if not hasattr(self.options, "time"):
-            self.options.time = None
+            self.options.time = None  # type: ignore
         if not hasattr(self.options, "geom"):
-            self.options.geom = True
+            self.options.geom = True  # type: ignore
 
         if configure_logging:
             self._configure_logging(options, "%(levelname)s:%(name)s:%(funcName)s:%(message)s")
