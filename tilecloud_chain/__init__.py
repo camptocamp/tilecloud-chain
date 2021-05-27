@@ -209,6 +209,7 @@ class Run:
                 if tile.error:
                     if tile.content_type and tile.content_type.startswith("application/vnd.ogc.se_xml"):
                         tile.error = "WMS server error: {}".format((self._re_rm_xml_tag.sub("", tile.error)))
+                    logger.warning("Error with tile %s:\n%s", tile.tilecoord, tile.error)
                     if stats.BACKENDS:
                         stats.increment_counter(["error", tile.metadata.get("layer", "None")])
 
@@ -1015,7 +1016,7 @@ class TileGeneration:
                 return self.func(tile)
 
             def __str__(self):
-                return str(func)
+                return f"Func: {self.func}"
 
         self.functions.append(Func(func, time_message))
 
@@ -1324,7 +1325,7 @@ class Process:
                 if cmd["need_out"]:
                     fd_out, name_out = tempfile.mkstemp()
                     os.unlink(name_out)
-                else:  # pragma: no cover
+                else:
                     name_out = name_in
 
                 command = cmd["cmd"] % {
@@ -1336,10 +1337,12 @@ class Process:
                     "z": tile.tilecoord.z,
                 }
                 logger.debug("[%s] process: %s", tile.tilecoord, command)
-                code = subprocess.call(command, shell=True)
-                if code != 0:  # pragma: no cover
-                    tile.error = "Command '{}' on tile {} return error code {}".format(
-                        command, tile.tilecoord, code
+                result = subprocess.run(  # pylint: disable=subprocess-run-check
+                    command, shell=True, capture_output=True
+                )
+                if result.returncode != 0:
+                    tile.error = "Command '{}' on tile {} return error code {}:\n{}\n{}".format(
+                        command, tile.tilecoord, result.returncode, result.stderr, result.stdout
                     )
                     tile.data = None
                     return tile

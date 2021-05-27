@@ -77,3 +77,6 @@ class TimedTileStoreWrapper(TileStore):
 
     def get_cheap_bounding_pyramid(self):
         return self._tile_store.get_cheap_bounding_pyramid()
+
+    def __str__(self):
+        return f"tilecloud_chain.timedtilestore.TimedTileStoreWrapper: {self._tile_store}"
