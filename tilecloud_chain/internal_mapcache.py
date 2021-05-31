@@ -9,14 +9,12 @@ import struct
 import threading
 
 import redis.sentinel
-import redlock
 
 from tilecloud import Tile, TileStore
 from tilecloud_chain import Run
 from tilecloud_chain.generate import Generate
 
 MAX_GENERATION_TIME = 60
-RETRY_DELAY = 0.05
 LOG = logging.getLogger(__name__)
 lock = threading.Lock()
 executing_lock = threading.Lock()
@@ -76,9 +74,6 @@ class RedisStore(TileStore):
             self._slave = sentinel.slave_for(config.get("service_name", "mymaster"))
         self._prefix = config.get("prefix", "tilecloud_cache")
         self._expiration = config.get("expiration", 28800)
-        self._redis_lock = redlock.Redlock(
-            [self._master], retry_count=MAX_GENERATION_TIME / RETRY_DELAY, retry_delay=RETRY_DELAY
-        )
 
     def get_one(self, tile):
         key = self._get_key(tile)
@@ -117,11 +112,8 @@ class RedisStore(TileStore):
     @contextlib.contextmanager
     def lock(self, tile):
         key = self._get_key(tile) + "_l"
-        lock_ = self._redis_lock.lock(key, MAX_GENERATION_TIME * 1000)
-        try:
+        with self._master.lock(key, timeout=MAX_GENERATION_TIME):
             yield
-        finally:
-            self._redis_lock.unlock(lock_)
 
 
 class GeneratorThread(threading.Thread):
