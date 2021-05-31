@@ -7,7 +7,6 @@ verify_ssl = true
 c2cwsgiutils = "==4.1.2"
 pyramid-mako = "==1.1.0"
 python-dateutil = "==2.8.1"
-redlock-py = "==1.0.8"
 tilecloud = "==1.6.2"
 Jinja2 = "==2.11.3"
 PyYAML = "==5.4.1"
