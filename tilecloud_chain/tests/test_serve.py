@@ -140,7 +140,7 @@ CAPABILITIES = (
 
 
 class TestServe(CompareCase):
-    def setUp(self):  # noqa
+    def setUp(self) -> None:  # noqa
         self.maxDiff = None
 
     @classmethod
@@ -155,7 +155,7 @@ class TestServe(CompareCase):
         if os.path.exists("/tmp/tiles"):
             shutil.rmtree("/tmp/tiles")
 
-    def test_serve_kvp(self):
+    def test_serve_kvp(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-nosns.yaml "
@@ -688,7 +688,7 @@ class TestServe(CompareCase):
 
             log_capture.check()
 
-    def test_mbtiles_rest(self):
+    def test_mbtiles_rest(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             tile_mbt = os.environ["TILE_NB_THREAD"]
             metatile_mbt = os.environ["METATILE_NB_THREAD"]
@@ -885,7 +885,7 @@ class TestServe(CompareCase):
 
             log_capture.check()
 
-    def test_serve_gfi(self):
+    def test_serve_gfi(self) -> None:
         server.pyramid_server = None
         server.tilegeneration = None
         request = DummyRequest()
@@ -973,7 +973,7 @@ class TestServe(CompareCase):
 """,
         )
 
-    def test_wsgi(self):
+    def test_wsgi(self) -> None:
         tile_mbt = os.environ["TILE_NB_THREAD"]
         metatile_mbt = os.environ["METATILE_NB_THREAD"]
         os.environ["TILE_NB_THREAD"] = "1"
@@ -1107,7 +1107,7 @@ Size per tile: 4[0-9][0-9] o
         os.environ["TILE_NB_THREAD"] = tile_mbt
         os.environ["METATILE_NB_THREAD"] = metatile_mbt
 
-    def test_ondemend_wmtscapabilities(self):
+    def test_ondemend_wmtscapabilities(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             server.pyramid_server = None
             server.tilegeneration = None

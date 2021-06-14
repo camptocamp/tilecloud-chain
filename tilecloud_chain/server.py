@@ -32,7 +32,7 @@ import logging
 import mimetypes
 import os
 import time
-import types
+from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, Union, cast
 from urllib.parse import parse_qs, urlencode
 
 import botocore.exceptions
@@ -40,30 +40,40 @@ from c2cwsgiutils import health_check
 import c2cwsgiutils.pyramid
 from pyramid.config import Configurator
 from pyramid.httpexceptions import exception_response
+import pyramid.response
+from pyramid.router import Router
+from pyramid.testing import DummyRequest
 from pyramid_mako import add_mako_renderer
 import requests
+from typing_extensions import TypedDict
 
 from tilecloud import Tile, TileCoord
 import tilecloud.store.s3
 from tilecloud_chain import TileGeneration, controller, internal_mapcache
+import tilecloud_chain.configuration
 
 logger = logging.getLogger(__name__)
 
 tilegeneration = None
 
 
-def init_tilegeneration(config_file):
+class StoreDefinition(TypedDict):
+    ref: List[str]
+    dimensions: Dict[str, str]
+
+
+def init_tilegeneration(config_file: str) -> None:
     global tilegeneration  # pylint: disable=global-statement
     if tilegeneration is None:
         logger.info("Config file: '%s'", config_file)
         log_level = os.environ.get("TILE_SERVER_LOGLEVEL")
         tilegeneration = TileGeneration(
             config_file,
-            collections.namedtuple(
+            collections.namedtuple(  # type: ignore
                 "Options",
-                ["verbose", "debug", "quiet", "bbox", "zoom", "test", "near", "time", "geom"],
+                ["verbose", "debug", "quiet", "bbox", "zoom", "test", "near", "time", "geom", "ignore_error"],
             )(
-                log_level == "verbose",
+                log_level == "verbose",  # type: ignore
                 log_level == "debug",
                 log_level == "quiet",
                 None,
@@ -72,6 +82,7 @@ def init_tilegeneration(config_file):
                 None,
                 None,
                 True,
+                False,
             ),
             configure_logging=False,
             multi_thread=False,
@@ -79,92 +90,76 @@ def init_tilegeneration(config_file):
         )
 
 
-class Server:
-    def __init__(self):
+Response = TypeVar("Response")
+
+
+class Server(Generic[Response]):
+    def __init__(self) -> None:
         try:
             self.filters = {}
             self.max_zoom_seed = {}
 
             global tilegeneration  # pylint: disable=global-statement
+            assert tilegeneration
 
-            self.expires_hours = tilegeneration.config["server"].get("expires", 8)
+            self.expires_hours = tilegeneration.config["server"]["expires"]
             self.static_allow_extension = tilegeneration.config["server"].get(
                 "static_allow_extension", ["jpeg", "png", "xml", "js", "html", "css"]
             )
 
-            self.cache = tilegeneration.caches[
-                tilegeneration.config["server"].get(
-                    "cache", tilegeneration.config["generation"].get("default_cache", "default")
-                )
-            ]
+            self.cache_name = tilegeneration.config["server"].get(
+                "cache", tilegeneration.config["generation"]["default_cache"]
+            )
+            self.cache = tilegeneration.caches[self.cache_name]
 
-            if self.cache["type"] == "s3":  # pragma: no cover
+            if self.cache["type"] == "s3":
+                cache_s3 = cast(tilecloud_chain.configuration.CacheS3, self.cache)
                 error = None
                 success = False
                 for n in range(10):
                     time.sleep(n * 10)
                     try:
-                        self.s3_client = tilecloud.store.s3.get_client(
-                            self.cache.get("host", "s3-eu-west-1.amazonaws.com")
-                        )
+                        self.s3_client = tilecloud.store.s3.get_client(cache_s3.get("host"))
                         success = True
                         break
                     except KeyError as e:
                         error = e
-                if not success:
+                if not success and error:
                     raise error
 
-                bucket = self.cache["bucket"]
-
-                def _read(self, key_name):
-                    try:
-                        response = self.s3_client.get_object(Bucket=bucket, Key=key_name)
-                        body = response["Body"]
-                        try:
-                            return body.read(), response.get("ContentType")
-                        finally:
-                            body.close()
-                    except botocore.exceptions.ClientError as ex:
-                        if ex.response["Error"]["Code"] == "NoSuchKey":
-                            return self.error(404, key_name + " not found"), None
-                        else:
-                            raise
-
-                def _get(self, path, **kwargs):
-                    del kwargs
-                    key_name = os.path.join(self.cache.get("folder", ""), path)
-                    try:
-                        return self._read(key_name)
-                    except Exception:
-                        self.s3_client = tilecloud.store.s3.get_client(self.cache.get("host"))
-                        return self._read(key_name)
-
-                self._read = types.MethodType(_read, self)
-
-            else:
-                folder = self.cache.get("folder", "")
-
-                def _get(self, path, **kwargs):
-                    if path.split(".")[-1] not in self.static_allow_extension:  # pragma: no cover
-                        return self.error(403, "Extension not allowed", **kwargs), None
-                    p = os.path.join(folder, path)
-                    if not os.path.isfile(p):  # pragma: no cover
-                        return self.error(404, path + " not found", **kwargs), None
-                    with open(p, "rb") as file:
-                        data = file.read()
-                    mime = mimetypes.guess_type(p)
-                    return data, mime[0]
-
-            # Get capabilities or other static files
-            self._get = types.MethodType(_get, self)
-
-            if tilegeneration.config["server"].get("mapcache_internal", False):
+            if tilegeneration.config["server"]["mapcache_internal"]:
                 self.mapcache_baseurl = None
                 self.mapcache_header = {}
             else:
-                mapcache_base = (
-                    tilegeneration.config["server"].get("mapcache_base", "http://localhost/").rstrip("/")
-                )
+                mapcache_base = tilegeneration.config["server"]["mapcache_base"].rstrip("/")
+                mapcache_location = tilegeneration.config["mapcache"]["location"].strip("/")
+                if mapcache_location == "":
+                    self.mapcache_baseurl = mapcache_base + "/wmts"
+                else:
+                    self.mapcache_baseurl = "{}/{}/wmts".format(mapcache_base, mapcache_location)
+                self.mapcache_header = tilegeneration.config["server"].get("mapcache_headers", {})
+
+            geoms_redirect = tilegeneration.config["server"]["geoms_redirect"]
+
+            self.layers = tilegeneration.config["server"].get("layers", tilegeneration.layers.keys())
+            self.stores: Dict[str, tilecloud.TileStore] = {}
+            for layer_name in tilegeneration.layers.keys():
+                layer = tilegeneration.layers[layer_name]
+
+                # Build geoms redirect
+                if geoms_redirect:
+                    self.filters[layer_name] = tilegeneration.get_geoms_filter(
+                        layer=layer,
+                        grid_name=layer["grid"],
+                        geoms={
+                            layer_name: tilegeneration.get_geoms(
+                                layer_name,
+                                extent=layer["bbox"]
+                                if "bbox" in layer
+                                else tilegeneration.config["grids"][layer["grid"]]["bbox"],
+                            )
+                        },
+                    )
                 mapcache_location = tilegeneration.config["mapcache"].get("location", "/mapcache").strip("/")
                 if mapcache_location == "":
                     self.mapcache_baseurl = mapcache_base + "/wmts"
@@ -172,29 +167,11 @@ class Server:
                     self.mapcache_baseurl = "{}/{}/wmts".format(mapcache_base, mapcache_location)
                 self.mapcache_header = tilegeneration.config["server"].get("mapcache_headers", {})
 
-            geoms_redirect = tilegeneration.config["server"].get("geoms_redirect", False)
-
-            self.layers = tilegeneration.config["server"].get("layers", tilegeneration.layers.keys())
-            self.stores = {}
-            for layer_name in self.layers:
-                layer = tilegeneration.layers[layer_name]
-
-                # Build geoms redirect
-                if geoms_redirect:
-                    self.filters[layer_name] = tilegeneration.get_geoms_filter(
-                        layer=layer,
-                        grid=layer["grid_ref"],
-                        geoms={
-                            layer_name: tilegeneration.get_geoms(
-                                layer,
-                                extent=layer["bbox"] if "bbox" in layer else layer["grid_ref"]["bbox"],
-                            )
-                        },
-                    )
-
                 if "min_resolution_seed" in layer:
                     max_zoom_seed = -1
-                    for zoom, resolution in enumerate(layer["grid_ref"]["resolutions"]):
+                    for zoom, resolution in enumerate(
+                        tilegeneration.config["grids"][layer["grid"]]["resolutions"]
+                    ):
                         if resolution > layer["min_resolution_seed"]:
                             max_zoom_seed = zoom
                     self.max_zoom_seed[layer_name] = max_zoom_seed
@@ -202,12 +179,12 @@ class Server:
                     self.max_zoom_seed[layer_name] = 999999
 
                 # Build stores
-                store_defs = [{"ref": [layer_name], "dimensions": {}}]
+                store_defs: List[StoreDefinition] = [{"ref": [layer_name], "dimensions": {}}]
                 for dimension in layer["dimensions"]:
-                    new_store_defs = []
+                    new_store_defs: List[StoreDefinition] = []
                     for store_def in store_defs:
                         for value in dimension["values"]:
-                            dimensions = {}
+                            dimensions: Dict[str, str] = {}
                             dimensions.update(store_def["dimensions"])
                             dimensions[dimension["name"]] = value
                             new_store_defs.append(
@@ -216,16 +193,60 @@ class Server:
                     store_defs = new_store_defs
                 for store_def in store_defs:
                     self.stores["/".join(store_def["ref"])] = tilegeneration.get_store(
-                        self.cache, layer, read_only=True
+                        self.cache, layer_name, read_only=True
                     )
 
-            self.wmts_path = tilegeneration.config["server"].get("wmts_path", "wmts")
-            self.static_path = tilegeneration.config["server"].get("static_path", "static").split("/")
+            self.wmts_path = tilegeneration.config["server"]["wmts_path"]
+            self.static_path = tilegeneration.config["server"]["static_path"].split("/")
         except Exception:
             logger.exception("Initialization error")
             raise
 
-    def __call__(self, environ, start_response):
+    def _read(self, key_name: str, headers: Dict[str, str], **kwargs: Any) -> Response:
+        try:
+            cache_s3 = cast(tilecloud_chain.configuration.CacheS3, self.cache)
+            bucket = cache_s3
+            response = self.s3_client.get_object(Bucket=bucket, Key=key_name)
+            body = response["Body"]
+            try:
+                headers["Content-Type"] = response.get("ContentType")
+                return self.response(body.read(), headers, **kwargs)
+            finally:
+                body.close()
+        except botocore.exceptions.ClientError as ex:
+            if ex.response["Error"]["Code"] == "NoSuchKey":
+                return self.error(404, key_name + " not found")
+            else:
+                raise
+
+    def _get(self, path: str, headers: Dict[str, str], **kwargs: Any) -> Response:
+        """
+        Get capabilities or other static files
+        """
+        if self.cache["type"] == "s3":
+            cache_s3 = cast(tilecloud_chain.configuration.CacheS3, self.cache)
+            key_name = os.path.join(cache_s3["folder"], path)
+            try:
+                return self._read(key_name, headers, **kwargs)
+            except Exception:
+                self.s3_client = tilecloud.store.s3.get_client(cache_s3.get("host"))
+                return self._read(key_name, headers, **kwargs)
+        else:
+            cache_filesystem = cast(tilecloud_chain.configuration.CacheFilesystem, self.cache)
+            folder = cache_filesystem["folder"] or ""
+            if path.split(".")[-1] not in self.static_allow_extension:
+                return self.error(403, "Extension not allowed", **kwargs)
+            p = os.path.join(folder, path)
+            if not os.path.isfile(p):
+                return self.error(404, path + " not found", **kwargs)
+            with open(p, "rb") as file:
+                data = file.read()
+            content_type = mimetypes.guess_type(p)[0]
+            if content_type:
+                headers["Content-Type"] = content_type
+            return self.response(data, headers, **kwargs)
+
+    def __call__(self, environ: Dict[str, str], start_response: bytes) -> Response:
         params = {}
         for key, value in parse_qs(environ["QUERY_STRING"], True).items():
             params[key.upper()] = value[0]
@@ -234,32 +255,26 @@ class Server:
 
         return self.serve(path, params, start_response=start_response)
 
-    def serve(self, path, params, **kwargs):
+    def serve(self, path: Optional[List[str]], params: Dict[str, str], **kwargs: Any) -> Response:
         dimensions = []
         metadata = {}
+        assert tilegeneration
 
         if path:
             if tuple(path[: len(self.static_path)]) == tuple(self.static_path):
-                body, mime = self._get(  # pylint: disable=not-callable
-                    "/".join(path[len(self.static_path) :]), **kwargs
+                return self._get(  # pylint: disable=not-callable
+                    "/".join(path[len(self.static_path) :]),
+                    {
+                        "Expires": (
+                            datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
+                        ).isoformat(),
+                        "Cache-Control": "max-age={}".format((3600 * self.expires_hours)),
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Methods": "GET",
+                    },
+                    **kwargs,
                 )
-                if mime is not None:
-                    return self.response(
-                        body,
-                        {
-                            "Content-Type": mime,
-                            "Expires": (
-                                datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
-                            ).isoformat(),
-                            "Cache-Control": "max-age={}".format((3600 * self.expires_hours)),
-                            "Access-Control-Allow-Origin": "*",
-                            "Access-Control-Allow-Methods": "GET",
-                        },
-                        **kwargs,
-                    )
-                else:  # pragma: no cover
-                    return body
-            elif len(path) >= 1 and path[0] != self.wmts_path:  # pragma: no cover
+            elif len(path) >= 1 and path[0] != self.wmts_path:
                 return self.error(
                     404,
                     "Type '{}' don't exists, allows values: '{}' or '{}'".format(
@@ -284,7 +299,9 @@ class Server:
                 params["STYLE"] = path[2]
 
                 if params["LAYER"] in self.layers:
-                    layer = tilegeneration.layers[params["LAYER"]]
+                    layer = cast(
+                        tilecloud_chain.configuration.LayerWms, tilegeneration.layers[params["LAYER"]]
+                    )
                 else:
                     return self.error(400, "Wrong Layer '{}'".format(params["LAYER"]), **kwargs)
 
@@ -296,7 +313,7 @@ class Server:
                     index += 1
 
                 last = path[-1].split(".")
-                if len(path) < index + 4:  # pragma: no cover
+                if len(path) < index + 4:
                     return self.error(400, "Not enough path", **kwargs)
                 params["TILEMATRIXSET"] = path[index]
                 params["TILEMATRIX"] = path[index + 1]
@@ -304,7 +321,7 @@ class Server:
                 if len(path) == index + 4:
                     params["REQUEST"] = "GetTile"
                     params["TILECOL"] = last[0]
-                    if last[1] != layer["extension"]:  # pragma: no cover
+                    if last[1] != layer["extension"]:
                         return self.error(400, "Wrong extension '{}'".format(last[1]), **kwargs)
                 elif len(path) == index + 6:
                     params["REQUEST"] = "GetFeatureInfo"
@@ -312,7 +329,7 @@ class Server:
                     params["I"] = path[index + 4]
                     params["J"] = last[0]
                     params["INFO_FORMAT"] = layer.get("info_formats", ["application/vnd.ogc.gml"])[0]
-                else:  # pragma: no cover
+                else:
                     return self.error(400, "Wrong path length", **kwargs)
 
                 params["FORMAT"] = layer["mime_type"]
@@ -326,28 +343,23 @@ class Server:
             return self.error(400, "Wrong Version '{}'".format(params["VERSION"]), **kwargs)
 
         if params["REQUEST"] == "GetCapabilities":
+            headers = {
+                "Content-Type": "application/xml",
+                "Expires": (
+                    datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
+                ).isoformat(),
+                "Cache-Control": "max-age={}".format((3600 * self.expires_hours)),
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET",
+            }
             if "wmtscapabilities_file" in self.cache:
                 wmtscapabilities_file = self.cache["wmtscapabilities_file"]
-                body, mime = self._get(wmtscapabilities_file, **kwargs)  # pylint: disable=not-callable
+                return self._get(wmtscapabilities_file, headers, **kwargs)  # pylint: disable=not-callable
             else:
-                body = controller.get_wmts_capabilities(tilegeneration, self.cache).encode("utf-8")
-                mime = "application/xml"
-            if mime is not None:
-                return self.response(
-                    body,
-                    headers={
-                        "Content-Type": "application/xml",
-                        "Expires": (
-                            datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
-                        ).isoformat(),
-                        "Cache-Control": "max-age={}".format((3600 * self.expires_hours)),
-                        "Access-Control-Allow-Origin": "*",
-                        "Access-Control-Allow-Methods": "GET",
-                    },
-                    **kwargs,
-                )
-            else:  # pragma: no cover
-                return body
+                body = controller.get_wmts_capabilities(tilegeneration, self.cache_name)
+                assert body
+                headers["Content-Type"] = "application/xml"
+                return self.response(body.encode("utf-8"), headers=headers, **kwargs)
 
         if (
             "FORMAT" not in params
@@ -356,12 +368,12 @@ class Server:
             or "TILEMATRIX" not in params
             or "TILEROW" not in params
             or "TILECOL" not in params
-        ):  # pragma: no cover
+        ):
             return self.error(400, "Not all required parameters are present", **kwargs)
 
         if not path:
             if params["LAYER"] in self.layers:
-                layer = tilegeneration.layers[params["LAYER"]]
+                layer = cast(tilecloud_chain.configuration.LayerWms, tilegeneration.layers[params["LAYER"]])
             else:
                 return self.error(400, "Wrong Layer '{}'".format(params["LAYER"]), **kwargs)
 
@@ -379,7 +391,7 @@ class Server:
         if params["TILEMATRIXSET"] != layer["grid"]:
             return self.error(400, "Wrong TileMatrixSet '{}'".format(params["TILEMATRIXSET"]), **kwargs)
 
-        metadata["layer"] = layer["name"]
+        metadata["layer"] = params["LAYER"]
         tile = Tile(
             TileCoord(
                 # TODO fix for matrix_identifier = resolution
@@ -391,7 +403,7 @@ class Server:
         )
 
         if params["REQUEST"] == "GetFeatureInfo":
-            if "I" not in params or "J" not in params or "INFO_FORMAT" not in params:  # pragma: no cover
+            if "I" not in params or "J" not in params or "INFO_FORMAT" not in params:
                 return self.error(400, "Not all required parameters are present", **kwargs)
             if "query_layers" in layer:
                 return self.forward(
@@ -407,10 +419,10 @@ class Server:
                             "STYLES": params["STYLE"],
                             "FORMAT": params["FORMAT"],
                             "INFO_FORMAT": params["INFO_FORMAT"],
-                            "WIDTH": layer["grid_ref"].get("tile_size", 256),
-                            "HEIGHT": layer["grid_ref"].get("tile_size", 256),
-                            "SRS": layer["grid_ref"]["srs"],
-                            "BBOX": layer["grid_ref"]["obj"].extent(tile.tilecoord),
+                            "WIDTH": tilegeneration.config["grids"][layer["grid"]]["tile_size"],
+                            "HEIGHT": tilegeneration.config["grids"][layer["grid"]]["tile_size"],
+                            "SRS": tilegeneration.config["grids"][layer["grid"]]["srs"],
+                            "BBOX": tilegeneration.grid_obj[layer["grid"]].extent(tile.tilecoord),
                             "X": params["I"],
                             "Y": params["J"],
                         }
@@ -418,8 +430,8 @@ class Server:
                     no_cache=True,
                     **kwargs,
                 )
-            else:  # pragma: no cover
-                return self.error(400, "Layer '{}' not queryable".format(layer["name"]), **kwargs)
+            else:
+                return self.error(400, "Layer '{}' not queryable".format(params["LAYER"]), **kwargs)
 
         if params["REQUEST"] != "GetTile":
             return self.error(400, "Wrong Request '{}'".format(params["REQUEST"]), **kwargs)
@@ -427,47 +439,49 @@ class Server:
         if params["FORMAT"] != layer["mime_type"]:
             return self.error(400, "Wrong Format '{}'".format(params["FORMAT"]), **kwargs)
 
-        if tile.tilecoord.z > self.max_zoom_seed[layer["name"]]:  # pragma: no cover
+        if tile.tilecoord.z > self.max_zoom_seed[params["LAYER"]]:
             return self._map_cache(layer, tile, params, kwargs)
 
-        if layer["name"] in self.filters:
-            layer_filter = self.filters[layer["name"]]
+        if params["LAYER"] in self.filters:
+            layer_filter = self.filters[params["LAYER"]]
             meta_size = layer["meta_size"]
             meta_tilecoord = (
                 TileCoord(
                     # TODO fix for matrix_identifier = resolution
                     tile.tilecoord.z,
-                    tile.tilecoord.x / meta_size * meta_size,
-                    tile.tilecoord.y / meta_size * meta_size,
+                    round(tile.tilecoord.x / meta_size * meta_size),
+                    round(tile.tilecoord.y / meta_size * meta_size),
                     meta_size,
                 )
                 if meta_size != 1
                 else tile.tilecoord
             )
-            if not layer_filter.filter_tilecoord(meta_tilecoord, layer["name"]):  # pragma: no cover
+            if not layer_filter.filter_tilecoord(meta_tilecoord, params["LAYER"]):
                 return self._map_cache(layer, tile, params, kwargs)
 
         store_ref = "/".join([params["LAYER"]] + list(dimensions))
-        if store_ref in self.stores:  # pragma: no cover
+        if store_ref in self.stores:
             store = self.stores[store_ref]
-        else:  # pragma: no cover
+        else:
             return self.error(
                 400,
                 "No store found for layer '{}' and dimensions {}".format(
-                    layer["name"], ", ".join(dimensions)
+                    params["LAYER"], ", ".join(dimensions)
                 ),
                 **kwargs,
             )
 
-        tile = store.get_one(tile)
-        if tile:
-            if tile.error:
-                return self.error(500, tile.error, **kwargs)
+        tile2 = store.get_one(tile)
+        if tile2:
+            if tile2.error:
+                return self.error(500, tile2.error, **kwargs)
 
+            assert tile2.data
+            assert tile2.content_type
             return self.response(
-                tile.data,
+                tile2.data,
                 headers={
-                    "Content-Type": tile.content_type,
+                    "Content-Type": tile2.content_type,
                     "Expires": (
                         datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
                     ).isoformat(),
@@ -481,16 +495,27 @@ class Server:
         else:
             return self.error(204, **kwargs)
 
-    def _map_cache(self, layer, tile, params, kwargs):
+    def _map_cache(
+        self,
+        layer: tilecloud_chain.configuration.Layer,
+        tile: Optional[Tile],
+        params: Dict[str, str],
+        kwargs: Dict[str, Any],
+    ) -> Response:
         if self.mapcache_baseurl is not None:
             return self.forward(
                 self.mapcache_baseurl + "?" + urlencode(params), headers=self.mapcache_header, **kwargs
             )
         else:
             global tilegeneration  # pylint: disable=global-statement
+            assert tilegeneration
+            assert tile
+
             return internal_mapcache.fetch(self, tilegeneration, layer, tile, kwargs)
 
-    def forward(self, url, headers=None, no_cache=False, **kwargs):
+    def forward(
+        self, url: str, headers: Optional[Any] = None, no_cache: bool = False, **kwargs: Any
+    ) -> Response:
         if headers is None:
             headers = {}
         if no_cache:
@@ -499,11 +524,11 @@ class Server:
 
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
-            response_headers = response.headers.copy()
+            response_headers = dict(response.headers)
             if no_cache:
                 response_headers["Cache-Control"] = "no-cache, no-store"
                 response_headers["Pragma"] = "no-cache"
-            else:  # pragma: no cover
+            else:
                 response_headers["Expires"] = (
                     datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
                 ).isoformat()
@@ -511,13 +536,27 @@ class Server:
                 response_headers["Access-Control-Allow-Origin"] = "*"
                 response_headers["Access-Control-Allow-Methods"] = "GET"
             return self.response(response.content, headers=response_headers, **kwargs)
-        else:  # pragma: no cover
+        else:
             message = "The URL '{}' return '{} {}', content:\n{}".format(
                 url, response.status_code, response.reason, response.text
             )
             logger.warning(message)
             return self.error(502, message=message, **kwargs)
 
+    def error(self, code: int, message: Optional[Union[Exception, str]] = "", **kwargs: Any) -> Response:
+        raise NotImplementedError
+
+    def response(self, data: bytes, headers: Optional[Dict[str, str]] = None, **kwargs: Any) -> Response:
+        raise NotImplementedError
+
+
+if TYPE_CHECKING:
+    WsgiServerBase = Server[List[bytes]]
+else:
+    WsgiServerBase = Server
+
+
+class WsgiServer(WsgiServerBase):
     HTTP_MESSAGES = {
         204: "204 No Content",
         400: "400 Bad Request",
@@ -526,13 +565,14 @@ class Server:
         502: "502 Bad Gateway",
     }
 
-    def error(self, code, message="", **kwargs):
+    def error(self, code: int, message: Optional[Union[Exception, str]] = "", **kwargs: Any) -> List[bytes]:
+        assert message is not None
         kwargs["start_response"](self.HTTP_MESSAGES[code], [])
-        return [message]
+        return [str(message).encode()]
 
     @staticmethod
-    def response(data, headers=None, **kwargs):
-        if headers is None:  # pragma: no cover
+    def response(data: bytes, headers: Optional[Dict[str, str]] = None, **kwargs: Any) -> List[bytes]:
+        if headers is None:
             headers = {}
         headers["Content-Length"] = str(len(data))
         kwargs["start_response"]("200 OK", headers.items())
@@ -540,20 +580,28 @@ class Server:
 
 
 def app_factory(
-    global_config,
-    configfile=os.environ.get("TILEGENERATION_CONFIGFILE", "tilegeneration/config.yaml"),
-    **local_conf,
-):
+    global_config: Any,
+    configfile: str = os.environ.get("TILEGENERATION_CONFIGFILE", "tilegeneration/config.yaml"),
+    **local_conf: Any,
+) -> WsgiServer:
     del global_config
     del local_conf
 
     init_tilegeneration(configfile)
 
-    return Server()
+    return WsgiServer()
 
 
-class PyramidServer(Server):
-    def error(self, code, message=None, **kwargs):
+if TYPE_CHECKING:
+    PyramidServerBase = Server[pyramid.response.Response]
+else:
+    PyramidServerBase = Server
+
+
+class PyramidServer(PyramidServerBase):
+    def error(
+        self, code: int, message: Optional[Union[Exception, str]] = None, **kwargs: Any
+    ) -> pyramid.response.Response:
         headers = {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET",
@@ -571,22 +619,25 @@ class PyramidServer(Server):
 
         raise exception_response(code, detail=message, headers=headers)
 
-    def response(self, data, headers=None, **kwargs):
-        if headers is None:  # pragma: no cover
+    def response(
+        self, data: bytes, headers: Optional[Dict[str, str]] = None, **kwargs: Any
+    ) -> pyramid.response.Response:
+        if headers is None:
             headers = {}
-        kwargs["request"].response.headers = headers
+        request: pyramid.request.Request = kwargs["request"]
+        request.response.headers = headers
         if isinstance(data, memoryview):
-            kwargs["request"].response.body_file = data
+            request.response.body_file = data
         else:
-            kwargs["request"].response.body = data
-        return kwargs["request"].response
+            request.response.body = data
+        return request.response
 
 
 pyramid_server = None
 
 
 class PyramidView:
-    def __init__(self, request):
+    def __init__(self, request: DummyRequest) -> None:
         self.request = request
 
         global pyramid_server  # pylint: disable=global-statement
@@ -598,7 +649,7 @@ class PyramidView:
 
         self.server = pyramid_server
 
-    def __call__(self):
+    def __call__(self) -> pyramid.response.Response:
         params = {}
         path = None
 
@@ -611,13 +662,14 @@ class PyramidView:
         return self.server.serve(path, params, request=self.request)
 
 
-def main(global_config, **settings):
+def main(global_config: Any, **settings: Any) -> Router:
     del global_config  # unused
 
     config = Configurator(settings=settings)
 
     init_tilegeneration(settings["tilegeneration_configfile"])
     global tilegeneration  # pylint: disable=global-statement
+    assert tilegeneration
 
     config.include(c2cwsgiutils.pyramid.includeme)
     health_check.HealthCheck(config)
@@ -626,12 +678,12 @@ def main(global_config, **settings):
 
     config.add_route(
         "admin",
-        "/{}/".format(tilegeneration.config["server"].get("admin_path", "admin")),
+        "/{}/".format(tilegeneration.config["server"]["admin_path"]),
         request_method="GET",
     )
     config.add_route(
         "admin_run",
-        "/{}/run".format(tilegeneration.config["server"].get("admin_path", "admin")),
+        "/{}/run".format(tilegeneration.config["server"]["admin_path"]),
         request_method="POST",
     )
 

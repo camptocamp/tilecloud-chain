@@ -1,11 +1,15 @@
-from pyramid.scaffolds.template import Template  # pragma: no cover
+from typing import Dict
+
+from pyramid.scaffolds.template import Template
 
 
-class Create(Template):  # pragma: no cover
+class Create(Template):  # type: ignore
     _template_dir = "create"
     summary = "Template used to create a standalone TileCloud-chain project"
 
-    def post(self, command, output_dir, vars):  # pylint: disable=redefined-builtin
+    def post(
+        self, command: str, output_dir: str, vars: Dict[str, str]  # pylint: disable=redefined-builtin
+    ) -> None:
         super().post(command, output_dir, vars)
         print(
             """

@@ -8,6 +8,7 @@ import re
 import shutil
 import sys
 import traceback
+from typing import Any, Callable, List, Tuple, Union
 from unittest import TestCase
 
 import yaml
@@ -19,12 +20,12 @@ config.dictConfig({"version": 1, "loggers": {"pykwalify": {"level": "WARN"}}})
 
 
 class NoAliasDumper(yaml.SafeDumper):
-    def ignore_aliases(self, data):
+    def ignore_aliases(self, data: Any) -> bool:
         return True
 
 
 class CompareCase(TestCase):
-    def assert_result_equals(self, result, expected, regex=False):
+    def assert_result_equals(self, result: str, expected: str, regex: bool = False) -> None:
         expected = expected.split("\n")
         result = re.sub("\n[^\n]*\r", "\n", result)
         result = re.sub("^[^\n]*\r", "", result)
@@ -47,7 +48,9 @@ class CompareCase(TestCase):
                     raise e
         self.assertEqual(len(expected), len(result), repr(result))
 
-    def run_cmd(self, cmd, main_func, get_error=False):
+    def run_cmd(
+        self, cmd: Union[List[str], str], main_func: Callable, get_error: bool = False
+    ) -> Tuple[str, str]:
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
         old_stderr = sys.stderr
@@ -59,7 +62,9 @@ class CompareCase(TestCase):
         log.info(mystderr.getvalue())
         return mystdout.getvalue(), mystderr.getvalue()
 
-    def assert_cmd_equals(self, cmd, main_func, empty_err=False, **kargs):
+    def assert_cmd_equals(
+        self, cmd: Union[List[str], str], main_func: Callable, empty_err: bool = False, **kargs: Any
+    ) -> None:
         out, err = self.run_cmd(cmd, main_func)
         if empty_err:
             self.assertEqual(err, "")
@@ -69,7 +74,7 @@ class CompareCase(TestCase):
             out = str(out)
         self.assert_result_equals(result=out, **kargs)
 
-    def assert_cmd_exit_equals(self, cmd, main_func, expected):
+    def assert_cmd_exit_equals(self, cmd: str, main_func: Callable, expected: str) -> None:
         sys.argv = re.sub(" +", " ", cmd).split(" ")
         try:
             main_func()
@@ -77,7 +82,14 @@ class CompareCase(TestCase):
         except SystemExit as e:
             self.assertEqual(str(e), expected)
 
-    def assert_main_equals(self, cmd, main_func, expected=None, get_error=False, **kargs):
+    def assert_main_equals(
+        self,
+        cmd: Union[List[str], str],
+        main_func: Callable,
+        expected: List[List[str]] = None,
+        get_error: bool = False,
+        **kargs: Any,
+    ) -> None:
         if expected:
             for expect in expected:
                 if os.path.exists(expect[0]):
@@ -106,7 +118,9 @@ class CompareCase(TestCase):
                 with open(expect[0], "r") as f:
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
-    def assert_main_except_equals(self, cmd, main_func, expected, get_error=False, **kargs):
+    def assert_main_except_equals(
+        self, cmd: str, main_func: Callable, expected: List[List[str]], get_error: bool = False, **kargs: Any
+    ) -> None:
         sys.argv = cmd.split(" ")
         try:
             main_func()
@@ -126,27 +140,29 @@ class CompareCase(TestCase):
                 with open(expect[0], "r") as f:
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
-    def assert_yaml_equals(self, result, expected):
+    def assert_yaml_equals(self, result: str, expected: str) -> None:
         expected = yaml.dump(
             yaml.safe_load(expected), width=120, default_flow_style=False, Dumper=NoAliasDumper
         )
         result = yaml.dump(yaml.safe_load(result), width=120, default_flow_style=False, Dumper=NoAliasDumper)
         self.assert_result_equals(result=result, expected=expected)
 
-    def assert_cmd_yaml_equals(self, cmd, main_func, **kargs):
+    def assert_cmd_yaml_equals(self, cmd: str, main_func: Callable, **kargs: Any) -> None:
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
         self.assert_main_equals(cmd, main_func, [])
         sys.stdout = old_stdout
         self.assert_yaml_equals(result=mystdout.getvalue(), **kargs)
 
-    def assert_tiles_generated(self, directory, **kargs):
+    def assert_tiles_generated(self, directory: str, **kargs: Any) -> None:
         if os.path.exists(directory):
             shutil.rmtree(directory)
 
         self.assert_tiles_generated_deleted(directory=directory, **kargs)
 
-    def assert_tiles_generated_deleted(self, directory, tiles_pattern, tiles, expected="", **kargs):
+    def assert_tiles_generated_deleted(
+        self, directory: str, tiles_pattern: str, tiles: Any, expected: str = "", **kargs: Any
+    ) -> None:
         self.assert_cmd_equals(expected=expected, **kargs)
         count = 0
         for path, dirs, files in os.walk(directory):

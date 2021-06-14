@@ -2,17 +2,17 @@
 <mapcache>
     <cache name="default" type="memcache">
        <server>
-          <host>{{mapcache.get('memcache_host', 'localhost')}}</host>
-          <port>{{mapcache.get('memcache_port', 11211)}}</port>
+          <host>{{mapcache['memcache_host']}}</host>
+          <port>{{mapcache['memcache_port']}}</port>
        </server>
     </cache>
 
 {% for gridname, grid in sorted(grids.items()) %}
    <grid name="{{gridname}}">
-      <size>{{grid.get("tile_size", 256)}} {{grid.get("tile_size", 256)}}</size>
+      <size>{{grid['tile_size']}} {{grid['tile_size']}}</size>
       <extent>{{grid['bbox'][0]}} {{grid['bbox'][1]}} {{grid['bbox'][2]}} {{grid['bbox'][3]}}</extent>
       <srs>{{grid['srs']}}</srs>
-      <units>{{grid.get('unit', 'm')}}</units>
+      <units>{{grid['unit']}}</units>
       <resolutions>{% for r in grid['resolutions'] %}{{r}} {% endfor %}</resolutions>
       <origin>top-left</origin>
    </grid>
@@ -43,8 +43,8 @@ if layer['type'] == 'wms' or 'wms_url' in layer %}
       <source>{{layername}}</source>
       <cache>default</cache>
       <grid>{{layer['grid']}}</grid>{% if layer['meta'] %}
-      <metatile>{{layer['meta_size']}} {{layer.get('meta_size', 5)}}</metatile>
-      <metabuffer>{{layer.get('meta_buffer', 128)}}</metabuffer>{% endif %}
+      <metatile>{{layer['meta_size']}} {{layer['meta_size']}}</metatile>
+      <metabuffer>{{layer['meta_buffer']}}</metabuffer>{% endif %}
       <format>{{layer['mime_type']}}</format>
       <expires>3600</expires> <!-- 1 hour -->
       <auto_expire>13800</auto_expire> <!-- 4 hours -->{%

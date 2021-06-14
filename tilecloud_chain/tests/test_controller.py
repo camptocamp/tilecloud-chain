@@ -8,7 +8,7 @@ from tilecloud_chain.tests import CompareCase
 
 
 class TestController(CompareCase):
-    def setUp(self):  # noqa
+    def setUp(self) -> None:  # noqa
         self.maxDiff = None
 
     @classmethod
@@ -23,7 +23,7 @@ class TestController(CompareCase):
         if os.path.exists("/tmp/tiles"):
             shutil.rmtree("/tmp/tiles")
 
-    def test_capabilities(self):
+    def test_capabilities(self) -> None:
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml",
             main_func=controller.main,
@@ -960,7 +960,7 @@ class TestController(CompareCase):
 </Capabilities>"""
     )
 
-    def test_multi_host_capabilities(self):
+    def test_multi_host_capabilities(self) -> None:
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml "
             "--cache multi_host",
@@ -969,7 +969,7 @@ class TestController(CompareCase):
             expected=[["/tmp/tiles/1.0.0/WMTSCapabilities.xml", self.MULTIHOST_CAPABILITIES]],
         )
 
-    def test_capabilities_slash(self):
+    def test_capabilities_slash(self) -> None:
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-capabilities.yaml",
             main_func=controller.main,
@@ -1107,7 +1107,7 @@ class TestController(CompareCase):
             ],
         )
 
-    def test_multi_url_capabilities(self):
+    def test_multi_url_capabilities(self) -> None:
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml "
             "--cache multi_url",
@@ -1116,7 +1116,7 @@ class TestController(CompareCase):
             expected=[["/tmp/tiles/1.0.0/WMTSCapabilities.xml", self.MULTIHOST_CAPABILITIES]],
         )
 
-    def test_mapcache(self):
+    def test_mapcache(self) -> None:
         self.assert_main_equals(
             cmd=(
                 ".build/venv/bin/generate_controller --mapcache --mapcache-version 1.6 "
@@ -1450,7 +1450,7 @@ class TestController(CompareCase):
             ],
         )  # noqa: E501
 
-    def test_mapcache2(self):
+    def test_mapcache2(self) -> None:
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --mapcache -c tilegeneration/test-nodim.yaml",
             main_func=controller.main,
@@ -1533,7 +1533,7 @@ class TestController(CompareCase):
             ],
         )
 
-    def test_apache(self):
+    def test_apache(self) -> None:
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --apache -c tilegeneration/test-fix.yaml",
             main_func=controller.main,
@@ -1576,7 +1576,7 @@ MapCacheAlias /mapcache "{}"
             ],
         )
 
-    def test_apache_s3(self):
+    def test_apache_s3(self) -> None:
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --cache s3 --apache -c tilegeneration/test-fix.yaml",
             main_func=controller.main,
@@ -1609,7 +1609,7 @@ MapCacheAlias /mapcache "%s"
             ],
         )
 
-    def test_apache_s3_tilesurl(self):
+    def test_apache_s3_tilesurl(self) -> None:
         self.assert_main_equals(
             cmd=".build/venv/bin/generate_controller --apache "
             "-c tilegeneration/test-apache-s3-tilesurl.yaml",
@@ -1643,17 +1643,17 @@ MapCacheAlias /mapcache "%s"
 
     CONFIG = """apache:
   config_file: tiles.conf
+  expires: 8
+  location: /tiles
 caches:
   local:
     folder: /tmp/tiles
     http_url: http://wmts1/tiles/
-    name: local
     type: filesystem
     wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   mbtiles:
     folder: /tmp/tiles/mbtiles
     http_url: http://wmts1/tiles/
-    name: mbtiles
     type: mbtiles
   multi_host:
     folder: /tmp/tiles
@@ -1662,7 +1662,6 @@ caches:
     - wmts2
     - wmts3
     http_url: http://%(host)s/tiles/
-    name: multi_host
     type: filesystem
   multi_url:
     folder: /tmp/tiles
@@ -1670,7 +1669,6 @@ caches:
     - http://wmts1/tiles/
     - http://wmts2/tiles/
     - http://wmts3/tiles/
-    name: multi_url
     type: filesystem
   s3:
     bucket: tiles
@@ -1678,20 +1676,28 @@ caches:
     folder: tiles
     host: s3-eu-west-1.amazonaws.com
     http_url: https://%(host)s/%(bucket)s/%(folder)s/
-    name: s3
     type: s3
 cost:
-  cloudfront: {}
+  cloudfront:
+    download: 0.12
+    get: 0.009
   request_per_layers: 10000000
-  s3: {}
-  sqs: {}
+  s3:
+    download: 0.12
+    get: 0.01
+    put: 0.01
+    storage: 0.125
+  sqs:
+    request: 0.01
 generation:
   default_cache: local
   default_layers:
   - line
   - polygon
   error_file: error.list
+  log_format: '%(levelname)s:%(name)s:%(funcName)s:%(message)s'
   maxconsecutive_errors: 2
+  number_process: 1
 grids:
   swissgrid_01:
     bbox:
@@ -1700,7 +1706,6 @@ grids:
     - 900000
     - 350000
     matrix_identifier: resolution
-    name: swissgrid_01
     proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel
       +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 10
@@ -1710,6 +1715,7 @@ grids:
     - 0.1
     srs: EPSG:21781
     tile_size: 256
+    unit: m
   swissgrid_025:
     bbox:
     - 420000
@@ -1717,7 +1723,6 @@ grids:
     - 900000
     - 350000
     matrix_identifier: resolution
-    name: swissgrid_025
     proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel
       +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 4
@@ -1725,6 +1730,7 @@ grids:
     - 0.25
     srs: EPSG:21781
     tile_size: 256
+    unit: m
   swissgrid_2_5:
     bbox:
     - 420000
@@ -1732,7 +1738,6 @@ grids:
     - 900000
     - 350000
     matrix_identifier: resolution
-    name: swissgrid_2_5
     proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel
       +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 2
@@ -1740,13 +1745,14 @@ grids:
     - 2.5
     srs: EPSG:21781
     tile_size: 256
+    unit: m
   swissgrid_5:
     bbox:
     - 420000
     - 30000
     - 900000
     - 350000
-    name: swissgrid_5
+    matrix_identifier: zoom
     proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel
       +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 1
@@ -1758,6 +1764,7 @@ grids:
     - 5
     srs: EPSG:21781
     tile_size: 256
+    unit: m
 layers:
   all:
     bbox:
@@ -1780,7 +1787,6 @@ layers:
       - '2010'
       - '2012'
     extension: png
-    geoms: []
     grid: swissgrid_5
     headers:
       Cache-Control: no-cache, no-store
@@ -1790,8 +1796,7 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    name: all
-    params: {}
+    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
@@ -1828,9 +1833,9 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    name: line
     params:
       PARAM: value
+    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
@@ -1855,13 +1860,14 @@ layers:
     - connection: user=postgres password=postgres dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
+    layers: __all__
     mapfile: mapfile/test.mapnik
     meta: false
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    name: mapnik
     output_format: png
+    px_buffer: 0
     type: mapnik
     wmts_style: default
   mapnik_grid:
@@ -1885,6 +1891,7 @@ layers:
     - connection: user=postgres password=postgres dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
+    layers: __all__
     layers_fields:
       line:
       - name
@@ -1897,8 +1904,8 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: application/utfgrid
-    name: mapnik_grid
     output_format: grid
+    px_buffer: 0
     resolution: 16
     type: mapnik
     wmts_style: default
@@ -1924,6 +1931,7 @@ layers:
     - connection: user=postgres password=postgres dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
+    layers: __all__
     layers_fields:
       point:
       - name
@@ -1932,8 +1940,8 @@ layers:
     meta_buffer: 0
     meta_size: 8
     mime_type: application/utfgrid
-    name: mapnik_grid_drop
     output_format: grid
+    px_buffer: 0
     resolution: 16
     type: mapnik
     wmts_style: default
@@ -1966,8 +1974,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     min_resolution_seed: 10
-    name: point
-    params: {}
+    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
@@ -2006,8 +2013,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     min_resolution_seed: 10
-    name: point_hash
-    params: {}
+    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
@@ -2030,7 +2036,6 @@ layers:
       hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
       size: 334
     extension: png
-    geoms: []
     grid: swissgrid_5
     headers:
       Cache-Control: no-cache, no-store
@@ -2040,8 +2045,7 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    name: point_hash_no_meta
-    params: {}
+    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
@@ -2079,8 +2083,7 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    name: point_px_buffer
-    params: {}
+    px_buffer: 0
     px_buffer: 100
     type: wms
     url: http://mapserver:8080/mapserv
@@ -2119,8 +2122,7 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    name: polygon
-    params: {}
+    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
@@ -2158,14 +2160,15 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    name: polygon2
-    params: {}
+    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
 mapcache:
   config_file: mapcache.xml
+  location: /mapcache
   memcache_host: memcached
+  memcache_port: 11211
 metadata:
   abstract: Some abstract
   access_constraints: None
@@ -2173,6 +2176,7 @@ metadata:
   keywords:
   - some
   - keywords
+  servicetype: OGC WMTS
   title: Some title
 openlayers:
   center_x: 600000
@@ -2202,21 +2206,21 @@ sqs:
   queue: sqs_point
     """
 
-    def test_config(self):
+    def test_config(self) -> None:
         self.assert_cmd_yaml_equals(
             cmd=".build/venv/bin/generate_controller --dump-config -c tilegeneration/test-fix.yaml",
             main_func=controller.main,
             expected=self.CONFIG,
         )
 
-    def test_config_line(self):
+    def test_config_line(self) -> None:
         self.assert_cmd_yaml_equals(
             cmd=".build/venv/bin/generate_controller -l line --dump-config -c tilegeneration/test-fix.yaml",
             main_func=controller.main,
             expected=self.CONFIG,
         )
 
-    def test_openlayers(self):
+    def test_openlayers(self) -> None:
         html = """<!DOCTYPE html>
 <html>
   <head>
@@ -2394,7 +2398,7 @@ OpenLayers.Request.GET({
             ],
         )
 
-    def test_quote(self):
+    def test_quote(self) -> None:
         from tilecloud_chain import quote
 
         self.assertEqual(quote("abc"), "abc")
@@ -2404,7 +2408,7 @@ OpenLayers.Request.GET({
         self.assertEqual(quote("a\" b' c"), "'a\" b\\' c'")
         self.assertEqual(quote(""), "''")
 
-    def test_legends(self):
+    def test_legends(self) -> None:
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends.yaml --legends",
             main_func=controller.main,

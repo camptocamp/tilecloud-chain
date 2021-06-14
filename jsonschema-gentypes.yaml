@@ -1,0 +1,13 @@
+headers: |
+  """
+  Automatically generated file from a JSON schema.
+  """
+callbacks:
+  - - black
+  - - isort
+generate:
+  - source: tilecloud_chain/schema.json
+    destination: tilecloud_chain/configuration.py
+    root_name: Configuration
+    api_arguments:
+      additional_properties: Only explicit

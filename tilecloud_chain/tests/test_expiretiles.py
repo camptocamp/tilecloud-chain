@@ -10,7 +10,7 @@ from tilecloud_chain.tests import CompareCase
 
 
 class TestExpireTiles(CompareCase):
-    def setUp(self):  # noqa
+    def setUp(self) -> None:  # noqa
         self.maxDiff = None
 
     @classmethod
@@ -33,7 +33,7 @@ class TestExpireTiles(CompareCase):
 
     def test_expire_tiles(
         self,
-    ):
+    ) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             geom = (
                 "MULTIPOLYGON((("
@@ -138,7 +138,7 @@ class TestExpireTiles(CompareCase):
 
             log_capture.check()
 
-    def test_expire_tiles_empty(self):
+    def test_expire_tiles_empty(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             self.assert_cmd_equals(
                 cmd=[

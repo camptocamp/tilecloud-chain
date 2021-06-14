@@ -32,11 +32,12 @@ import os
 import shlex
 import subprocess
 import threading
-from typing import List
+from typing import Any, Dict, List
 
 from c2cwsgiutils.auth import auth_view, is_auth
 import pyramid.httpexceptions
 import pyramid.request
+import pyramid.response
 from pyramid.view import view_config
 
 from tilecloud_chain.controller import get_status
@@ -50,11 +51,11 @@ class LogThread(threading.Thread):
         super().__init__()
         self.command = command
 
-    def run(self):
+    def run(self) -> None:
         try:
             display_command = " ".join([shlex.quote(arg) for arg in self.command])
             LOG.info("Run the command `%s`", display_command)
-            env = {}
+            env: Dict[str, str] = {}
             env.update(os.environ)
             env["FRONTEND"] = "noninteractive"
             with subprocess.Popen(
@@ -93,8 +94,9 @@ class Admin:
         )
         self.gene = tilecloud_chain.server.tilegeneration
 
-    @view_config(route_name="admin", renderer="tilecloud_chain:templates/admin_index.html")
-    def index(self):
+    @view_config(route_name="admin", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore
+    def index(self) -> Dict[str, Any]:
+        assert self.gene
         return {
             "secret": self.request.params.get("secret"),
             "auth": is_auth(self.request),
@@ -104,8 +106,9 @@ class Admin:
             "static_path": self.gene.config.get("server", {}).get("static_path", "static"),
         }
 
-    @view_config(route_name="admin_run")
-    def run(self):
+    @view_config(route_name="admin_run")  # type: ignore
+    def run(self) -> pyramid.response.Response:
+        assert self.gene
         auth_view(self.request)
 
         if "command" not in self.request.POST:

@@ -1,43 +1,43 @@
 grids:
-    swissgrid:
-        resolutions: [100, 50, 20]
-        bbox: [420000, 30000, 900000, 350000]
-        tile_size: 256
-        srs: EPSG:21781
+  swissgrid:
+    resolutions: [100, 50, 20]
+    bbox: [420000, 30000, 900000, 350000]
+    tile_size: 256
+    srs: EPSG:21781
 
 caches:
-    local:
-        type: filesystem
-        http_url: http://wmts1/tiles/
-        folder: /tmp/tiles
-        wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
+  local:
+    type: filesystem
+    http_url: http://wmts1/tiles/
+    folder: /tmp/tiles
+    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
 
 layers:
-    multi:
-        url: http://mapserver:8080/mapserv
-        layers: point_multi
-        grid: swissgrid
-        type: wms
-        wmts_style: default
-        mime_type: image/png
-        extension: png
-        meta: on
-        meta_size: 8
-        meta_buffer: 128
-        dimensions:
-        -   name: POINT_NAME
-            default: point1
-            generate: [point1, point2]
-            values: [point1, point2]
-        geoms:
-        -   sql: the_geom AS geom FROM tests.point
-            connection: user=postgres password=postgres dbname=tests host=db
-        empty_metatile_detection:
-            size: 20743
-            hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
-        empty_tile_detection:
-            size: 334
-            hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+  multi:
+    url: http://mapserver:8080/mapserv
+    layers: point_multi
+    grid: swissgrid
+    type: wms
+    wmts_style: default
+    mime_type: image/png
+    extension: png
+    meta: true
+    meta_size: 8
+    meta_buffer: 128
+    dimensions:
+      - name: POINT_NAME
+        default: point1
+        generate: [point1, point2]
+        values: [point1, point2]
+    geoms:
+      - sql: the_geom AS geom FROM tests.point
+        connection: user=postgres password=postgres dbname=tests host=db
+    empty_metatile_detection:
+      size: 20743
+      hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
+    empty_tile_detection:
+      size: 334
+      hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
 
 generation:
-    default_cache: local
+  default_cache: local

@@ -59,11 +59,14 @@ services:
     image: camptocamp/tilecloud-chain:tests
     working_dir: /app
     environment:
-      CI: 'TRUE'
+      CI: 'true'
+      TESTS: 'true'
       PGPASSWORD: postgres
       TILE_NB_THREAD: 2
       METATILE_NB_THREAD: 2
       SERVER_NB_THREAD: 2
+      TILECLOUD_LOG_LEVEL: DEBUG
+      TILECLOUD_CHAIN_LOG_LEVEL: DEBUG
     command:
       - sleep
       - infinity
@@ -74,4 +77,4 @@ services:
       - redis_sentinel
     volumes:
       - ./tilecloud_chain:/app/tilecloud_chain
-      # - ../tilecloud/tilecloud:/usr/local/lib/python3.7/dist-packages/tilecloud
+      # - ../tilecloud/tilecloud:/usr/local/lib/python3.8/dist-packages/tilecloud

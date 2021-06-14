@@ -3,14 +3,14 @@
 from argparse import ArgumentParser
 from copy import copy
 from hashlib import sha1
-from io import BytesIO
+from io import BytesIO, StringIO
 import logging
 import math
 from math import exp, log
 import os
 import pkgutil
 import sys
-from typing import Dict, Optional
+from typing import List, Optional, Union, cast
 from urllib.parse import urlencode, urljoin
 
 from PIL import Image
@@ -18,16 +18,18 @@ import botocore.exceptions
 from bottle import jinja2_template
 from c2cwsgiutils import stats
 import requests
-import yaml
+import ruamel.yaml
 
 from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
+import tilecloud.store.redis
 import tilecloud.store.s3
 from tilecloud_chain import TileGeneration, add_comon_options, get_queue_store, get_tile_matrix_identifier
+import tilecloud_chain.configuration
 
 logger = logging.getLogger(__name__)
 
 
-def main():
+def main() -> None:
     try:
         stats.init_backends({})
         parser = ArgumentParser(
@@ -91,25 +93,19 @@ def main():
         options = parser.parse_args()
         gene = TileGeneration(options.config, options, layer_name=options.layer)
 
-        if options.status:  # pragma: no cover
+        if options.status:
             status(gene)
             sys.exit(0)
 
         if options.cache is None:
-            options.cache = gene.config["generation"].get("default_cache", "default")
+            options.cache = gene.config["generation"]["default_cache"]
 
         if options.dump_config:
-            for layer in gene.config["layers"].values():
-                gene.init_layer(layer, options)
-            _validate_generate_wmts_capabilities(gene.caches[options.cache], True)
-            for grid in gene.config["grids"].values():
-                if "obj" in grid:
-                    del grid["obj"]
-
-            for layer in gene.config["layers"].values():
-                if "grid_ref" in layer:
-                    del layer["grid_ref"]
-            print(yaml.dump(gene.config))
+            _validate_generate_wmts_capabilities(gene.caches[options.cache], options.cache, True)
+            yaml = ruamel.yaml.YAML()  # type: ignore
+            out = StringIO()
+            yaml.dump(gene.config, out)
+            print(out.getvalue())
             sys.exit(0)
 
         if options.legends:
@@ -130,14 +126,19 @@ def main():
         raise
     except:  # pylint: disable=bare-except
         logger.exception("Exit with exception")
+        if os.environ.get("TESTS", "false").lower() == "true":
+            raise
         sys.exit(1)
 
 
-def _send(data, path, mime_type, cache):
-    if cache["type"] == "s3":  # pragma: no cover
-        client = tilecloud.store.s3.get_client(cache.get("host", "s3-eu-west-1.amazonaws.com"))
-        key_name = os.path.join(cache.get("folder", ""), path)
-        bucket = cache["bucket"]
+def _send(
+    data: Union[bytes, str], path: str, mime_type: str, cache: tilecloud_chain.configuration.Cache
+) -> None:
+    if cache["type"] == "s3":
+        cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
+        client = tilecloud.store.s3.get_client(cache_s3.get("host"))
+        key_name = os.path.join("{folder!s}".format(**cache), path)
+        bucket = cache_s3["bucket"]
         client.put_object(
             ACL="public-read",
             Body=data,
@@ -150,7 +151,7 @@ def _send(data, path, mime_type, cache):
         if isinstance(data, str):
             data = data.encode("utf-8")
 
-        folder = cache.get("folder", "")
+        folder = cache["folder"] or ""
         filename = os.path.join(folder, path)
         directory = os.path.dirname(filename)
         if not os.path.exists(directory):
@@ -159,31 +160,35 @@ def _send(data, path, mime_type, cache):
             f.write(data)
 
 
-def _get(path, cache):
-    if cache["type"] == "s3":  # pragma: no cover
-        client = tilecloud.store.s3.get_client(cache.get("host", "s3-eu-west-1.amazonaws.com"))
+def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> Optional[bytes]:
+    if cache["type"] == "s3":
+        cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
+        client = tilecloud.store.s3.get_client(cache_s3.get("host"))
         key_name = os.path.join("{folder}".format(**cache), path)
-        bucket = cache["bucket"]
+        bucket = cache_s3["bucket"]
         try:
             response = client.get_object(Bucket=bucket, Key=key_name)
-            return response["Body"].read()
+            return cast(bytes, response["Body"].read())
         except botocore.exceptions.ClientError as ex:
             if ex.response["Error"]["Code"] == "NoSuchKey":
                 return None
             else:
                 raise
     else:
-        p = os.path.join(cache.get("folder", ""), path)
-        if not os.path.isfile(p):  # pragma: no cover
+        cache_filesystem = cast(tilecloud_chain.configuration.CacheFilesystem, cache)
+        p = os.path.join(cache_filesystem["folder"], path)
+        if not os.path.isfile(p):
             return None
         with open(p, "rb") as file:
             return file.read()
 
 
-def _validate_generate_wmts_capabilities(cache, exit_):
-    if "http_url" not in cache and "http_urls" not in cache:  # pragma: no cover
+def _validate_generate_wmts_capabilities(
+    cache: tilecloud_chain.configuration.Cache, cache_name: str, exit_: bool
+) -> bool:
+    if "http_url" not in cache and "http_urls" not in cache:
         logger.error(
-            "The attribute 'http_url' or 'http_urls' is required in the object cache[%s].", cache["name"]
+            "The attribute 'http_url' or 'http_urls' is required in the object cache[%s].", cache_name
         )
         if exit_:
             sys.exit(1)
@@ -191,48 +196,55 @@ def _validate_generate_wmts_capabilities(cache, exit_):
     return True
 
 
-def get_wmts_capabilities(gene, cache, exit_=False):
-    if _validate_generate_wmts_capabilities(cache, exit_):
+def get_wmts_capabilities(gene: TileGeneration, cache_name: str, exit_: bool = False) -> Optional[str]:
+    cache = gene.config["caches"][cache_name]
+    if _validate_generate_wmts_capabilities(cache, cache_name, exit_):
         server = gene.config.get("server")
 
         base_urls = _get_base_urls(cache)
         _fill_legend(gene, cache, server, base_urls)
 
-        return jinja2_template(
-            pkgutil.get_data("tilecloud_chain", "wmts_get_capabilities.jinja").decode("utf-8"),
-            layers=gene.layers,
-            grids=gene.grids,
-            getcapabilities=urljoin(
-                base_urls[0],
-                (
-                    server.get("wmts_path", "wmts") + "/1.0.0/WMTSCapabilities.xml"
-                    if server is not None
-                    else cache.get("wmtscapabilities_file", "1.0.0/WMTSCapabilities.xml")
+        data = pkgutil.get_data("tilecloud_chain", "wmts_get_capabilities.jinja")
+        assert data
+        return cast(
+            str,
+            jinja2_template(
+                data.decode("utf-8"),
+                layers=gene.layers,
+                layer_legends=gene.layer_legends,
+                grids=gene.grids,
+                getcapabilities=urljoin(  # type: ignore
+                    base_urls[0],
+                    (
+                        server.get("wmts_path", "wmts") + "/1.0.0/WMTSCapabilities.xml"
+                        if server is not None
+                        else cache.get("wmtscapabilities_file", "1.0.0/WMTSCapabilities.xml")
+                    ),
                 ),
+                base_urls=base_urls,
+                base_url_postfix=(server.get("wmts_path", "wmts") + "/") if server is not None else "",
+                get_tile_matrix_identifier=get_tile_matrix_identifier,
+                server=server is not None,
+                has_metadata=gene.metadata is not None,
+                metadata=gene.metadata,
+                has_provider=gene.provider is not None,
+                provider=gene.provider,
+                enumerate=enumerate,
+                ceil=math.ceil,
+                int=int,
+                sorted=sorted,
             ),
-            base_urls=base_urls,
-            base_url_postfix=(server.get("wmts_path", "wmts") + "/") if server is not None else "",
-            get_tile_matrix_identifier=get_tile_matrix_identifier,
-            server=server is not None,
-            has_metadata=gene.metadata is not None,
-            metadata=gene.metadata,
-            has_provider=gene.provider is not None,
-            provider=gene.provider,
-            enumerate=enumerate,
-            ceil=math.ceil,
-            int=int,
-            sorted=sorted,
         )
     return None
 
 
-def _get_base_urls(cache):
+def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> List[str]:
     base_urls = []
     if "http_url" in cache:
         if "hosts" in cache:
             cc = copy(cache)
             for host in cache["hosts"]:
-                cc["host"] = host
+                cc["host"] = host  # type: ignore
                 base_urls.append(cache["http_url"] % cc)
         else:
             base_urls = [cache["http_url"] % cache]
@@ -242,31 +254,38 @@ def _get_base_urls(cache):
     return base_urls
 
 
-def _fill_legend(gene, cache, server, base_urls):
-    for layer in gene.layers.values():
-        previous_legend: Optional[Dict] = None
+def _fill_legend(
+    gene: TileGeneration,
+    cache: tilecloud_chain.configuration.Cache,
+    server: Optional[tilecloud_chain.configuration.Server],
+    base_urls: List[str],
+) -> None:
+    for layer_name, layer in gene.layers.items():
+        previous_legend: Optional[tilecloud_chain.Legend] = None
         previous_resolution = None
-        if "legend_mime" in layer and "legend_extension" in layer and "legends" not in layer:
-            layer["legends"] = []
-            for zoom, resolution in enumerate(layer["grid_ref"]["resolutions"]):
+        if "legend_mime" in layer and "legend_extension" in layer and layer_name not in gene.layer_legends:
+            gene.layer_legends[layer_name] = []
+            legends = gene.layer_legends[layer_name]
+            for zoom, resolution in enumerate(gene.config["grids"][layer["grid"]]["resolutions"]):
                 path = "/".join(
                     [
                         "1.0.0",
-                        layer["name"],
+                        layer_name,
                         layer["wmts_style"],
                         "legend{}.{}".format(zoom, layer["legend_extension"]),
                     ]
                 )
                 img = _get(path, cache)
                 if img is not None:
-                    new_legend = {
+                    new_legend: tilecloud_chain.Legend = {
                         "mime_type": layer["legend_mime"],
                         "href": os.path.join(
                             base_urls[0], server.get("static_path", "static") + "/" if server else "", path
                         ),
                     }
-                    layer["legends"].append(new_legend)
+                    legends.append(new_legend)
                     if previous_legend is not None:
+                        assert previous_resolution is not None
                         middle_res = exp((log(previous_resolution) + log(resolution)) / 2)
                         previous_legend[  # pylint: disable=unsupported-assignment-operation
                             "min_resolution"
@@ -287,10 +306,11 @@ def _fill_legend(gene, cache, server, base_urls):
                 previous_resolution = resolution
 
 
-def _generate_wmts_capabilities(gene):
-    cache = gene.caches[gene.options.cache]
+def _generate_wmts_capabilities(gene: TileGeneration) -> None:
+    cache = cast(tilecloud_chain.configuration.CacheS3, gene.caches[gene.options.cache])
 
-    capabilities = get_wmts_capabilities(gene, cache, True)
+    capabilities = get_wmts_capabilities(gene, gene.options.cache, True)
+    assert capabilities is not None
     _send(
         capabilities,
         cache.get("wmtscapabilities_file", "1.0.0/WMTSCapabilities.xml"),
@@ -299,16 +319,16 @@ def _generate_wmts_capabilities(gene):
     )
 
 
-def _generate_legend_images(gene):
+def _generate_legend_images(gene: TileGeneration) -> None:
     cache = gene.caches[gene.options.cache]
 
-    for layer in gene.layers.values():
+    for layer_name, layer in gene.layers.items():
         if "legend_mime" in layer and "legend_extension" in layer:
-            if layer.get("type", "wms") == "wms":
+            if layer["type"] == "wms":
                 session = requests.session()
                 session.headers.update(layer["headers"])
                 previous_hash = None
-                for zoom, resolution in enumerate(layer["grid_ref"]["resolutions"]):
+                for zoom, resolution in enumerate(gene.config["grids"][layer["grid"]]["resolutions"]):
                     legends = []
                     for wmslayer in layer["layers"].split(","):
                         response = session.get(
@@ -317,7 +337,7 @@ def _generate_legend_images(gene):
                             + urlencode(
                                 {
                                     "SERVICE": "WMS",
-                                    "VERSION": layer.get("version", "1.1.1"),
+                                    "VERSION": layer.get("version", "1.0.0"),
                                     "REQUEST": "GetLegendGraphic",
                                     "LAYER": wmslayer,
                                     "FORMAT": layer["legend_mime"],
@@ -332,7 +352,7 @@ def _generate_legend_images(gene):
                         except Exception:  # pragma: nocover
                             logger.warning(
                                 "Unable to read legend image for layer '%s'-'%s', resolution '%s': %s",
-                                layer["name"],
+                                layer_name,
                                 wmslayer,
                                 resolution,
                                 response.content,
@@ -354,28 +374,31 @@ def _generate_legend_images(gene):
                         _send(
                             result,
                             "1.0.0/{}/{}/legend{}.{}".format(
-                                layer["name"], layer["wmts_style"], zoom, layer["legend_extension"]
+                                layer_name, layer["wmts_style"], zoom, layer["legend_extension"]
                             ),
                             layer["legend_mime"],
                             cache,
                         )
 
 
-def _generate_mapcache_config(gene, version):
+def _generate_mapcache_config(gene: TileGeneration, version: str) -> None:
     for layer in gene.layers.values():
-        if layer.get("type", "wms") == "wms" or "wms_url" in layer:
+        if layer["type"] == "wms" or "wms_url" in layer:
+            layer_wms = cast(tilecloud_chain.configuration.LayerWms, layer)
             params = {}
-            params.update(layer.get("params", {}))
+            params.update(layer_wms.get("params", {}))
             if "FORMAT" not in params:
-                params["FORMAT"] = layer["mime_type"]
-            if "LAYERS" not in layer.get("params", {}):
-                params["LAYERS"] = layer["layers"]
-            if "TRANSPARENT" not in layer.get("params", {}):
-                params["TRANSPARENT"] = "TRUE" if layer["mime_type"] == "image/png" else "FALSE"
-            layer["params"] = params
+                params["FORMAT"] = layer_wms["mime_type"]
+            if "LAYERS" not in layer_wms.get("params", {}):
+                params["LAYERS"] = layer_wms["layers"]
+            if "TRANSPARENT" not in layer_wms.get("params", {}):
+                params["TRANSPARENT"] = "TRUE" if layer_wms["mime_type"] == "image/png" else "FALSE"
+            layer_wms["params"] = params
 
+    data = pkgutil.get_data("tilecloud_chain", "mapcache_config.jinja")
+    assert data
     config = jinja2_template(
-        pkgutil.get_data("tilecloud_chain", "mapcache_config.jinja").decode("utf-8"),
+        data.decode("utf-8"),
         layers=gene.layers,
         grids=gene.grids,
         mapcache=gene.config["mapcache"],
@@ -385,17 +408,17 @@ def _generate_mapcache_config(gene, version):
         sorted=sorted,
     )
 
-    with open(gene.config["mapcache"].get("config_file", "apache/mapcache.xml"), "w") as f:
+    with open(gene.config["mapcache"]["config_file"], "w") as f:
         f.write(config)
 
 
-def _generate_apache_config(gene):
+def _generate_apache_config(gene: TileGeneration) -> None:
     cache = gene.caches[gene.options.cache]
     use_server = "server" in gene.config
 
-    with open(gene.config["apache"].get("config_file", "apache/tiles.conf"), "w") as f:
+    with open(gene.config["apache"]["config_file"], "w") as f:
 
-        folder = cache.get("folder", "")
+        folder = cache["folder"]
         if folder and folder[-1] != "/":
             folder += "/"
 
@@ -409,8 +432,8 @@ def _generate_apache_config(gene):
     </Location>
     """.format(
                     **{
-                        "location": gene.config["apache"].get("location", "/tiles"),
-                        "expires": gene.config["apache"].get("expires", 8),
+                        "location": gene.config["apache"]["location"],
+                        "expires": gene.config["apache"]["expires"],
                         "headers": "".join(
                             [
                                 '    Header set {} "{}"'.format(*h)
@@ -423,13 +446,14 @@ def _generate_apache_config(gene):
                 )
             )
             if cache["type"] == "s3":
+                cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
                 tiles_url = (
-                    (cache["tiles_url"] % cache)
+                    (cache_s3["tiles_url"] % cache)
                     if "tiles_url" in cache
                     else "http://s3-{region}.amazonaws.com/{bucket}/{folder}".format(
                         **{
-                            "region": cache.get("region", "eu-west-1"),
-                            "bucket": cache["bucket"],
+                            "region": cache_s3.get("region", "eu-west-1"),
+                            "bucket": cache_s3["bucket"],
                             "folder": folder,
                         }
                     )
@@ -443,10 +467,7 @@ def _generate_apache_config(gene):
     ProxyPass {location}/ {tiles_url}
     ProxyPassReverse {location}/ {tiles_url}
     """.format(
-                        **{
-                            "location": gene.config["apache"].get("location", "/tiles"),
-                            "tiles_url": tiles_url,
-                        }
+                        **{"location": gene.config["apache"]["location"], "tiles_url": tiles_url}
                     )
                 )
             elif cache["type"] == "filesystem":
@@ -455,7 +476,7 @@ def _generate_apache_config(gene):
     Alias {location!s} {files_folder!s}
     """.format(
                         **{
-                            "location": gene.config["apache"].get("location", "/tiles"),
+                            "location": gene.config["apache"]["location"],
                             "files_folder": folder,
                             "headers": "".join(
                                 [
@@ -474,10 +495,14 @@ def _generate_apache_config(gene):
             token_regex = r"([a-zA-Z0-9_\-\+~\.]+)"
             f.write("\n")
 
-            for _, layer in sorted(gene.config["layers"].items()):
+            for layer_name, layer in sorted(gene.config["layers"].items()):
                 if "min_resolution_seed" in layer:
-                    res = [r for r in layer["grid_ref"]["resolutions"] if r < layer["min_resolution_seed"]]
-                    dim = len(layer["dimensions"])
+                    res = [
+                        r
+                        for r in gene.config["grids"][layer["grid"]]["resolutions"]
+                        if r < layer["min_resolution_seed"]
+                    ]
+                    dim = len(layer.get("dimensions", []))
                     for r in res:
                         f.write(
                             "RewriteRule"
@@ -493,15 +518,15 @@ def _generate_apache_config(gene):
                             " "
                             "[PT]\n"
                             % {
-                                "tiles_location": gene.config["apache"].get("location", "/tiles"),
-                                "mapcache_location": gene.config["mapcache"].get("location", "/mapcache"),
-                                "layer": layer["name"],
+                                "tiles_location": gene.config["apache"]["location"],
+                                "mapcache_location": gene.config["mapcache"]["location"],
+                                "layer": layer_name,
                                 "token_regex": token_regex,
                                 "dimensions_re": "".join(["/" + token_regex for e in range(dim)]),
                                 "dimensions_rep": "".join(["/${}".format((e + 2)) for e in range(dim)]),
                                 "tilematrixset": dim + 2,
                                 "final": dim + 3,
-                                "zoom": layer["grid_ref"]["resolutions"].index(r),
+                                "zoom": gene.config["grids"][layer["grid"]]["resolutions"].index(r),
                             }
                         )
 
@@ -511,37 +536,37 @@ def _generate_apache_config(gene):
     MapCacheAlias {mapcache_location!s} "{mapcache_config!s}"
     """.format(
                     **{
-                        "mapcache_location": gene.config["mapcache"].get("location", "/mapcache"),
-                        "mapcache_config": os.path.abspath(
-                            gene.config["mapcache"].get("config_file", "apache/mapcache.xml")
-                        ),
+                        "mapcache_location": gene.config["mapcache"]["location"],
+                        "mapcache_config": os.path.abspath(gene.config["mapcache"]["config_file"]),
                     }
                 )
             )
 
 
-def _get_resource(resource):
+def _get_resource(resource: str) -> bytes:
     path = os.path.join(os.path.dirname(__file__), resource)
     with open(path, "rb") as f:
         return f.read()
 
 
-def _generate_openlayers(gene):
+def _generate_openlayers(gene: TileGeneration) -> None:
     cache = gene.caches[gene.options.cache]
 
     http_url = ""
     if "http_url" in cache and cache["http_url"]:
         if "hosts" in cache and cache["hosts"]:
             cc = copy(cache)
-            cc["host"] = cache["hosts"][0]
+            cc["host"] = cache["hosts"][0]  # type: ignore
             http_url = cache["http_url"] % cc
         else:
             http_url = cache["http_url"] % cache
     if "http_urls" in cache and cache["http_urls"]:
         http_url = cache["http_urls"][0] % cache
 
+    data = pkgutil.get_data("tilecloud_chain", "openlayers.js")
+    assert data
     js = jinja2_template(
-        pkgutil.get_data("tilecloud_chain", "openlayers.js").decode("utf-8"),
+        data.decode("utf-8"),
         srs=gene.config["openlayers"]["srs"],
         center_x=gene.config["openlayers"]["center_x"],
         center_y=gene.config["openlayers"]["center_y"],
@@ -550,19 +575,23 @@ def _generate_openlayers(gene):
         layers=[
             {
                 "name": name,
-                "grid": layer.get("type", "wms") == "mapnik" and layer.get("output_format", "png") == "grid",
-                "maxExtent": layer["grid_ref"]["bbox"],
+                "grid": layer["type"] == "mapnik"
+                and (layer.get("output_format", "png") == tilecloud_chain.configuration.OUTPUTFORMAT_GRID),
+                "maxExtent": gene.config["grids"][layer["grid"]]["bbox"],
                 "resolution": layer.get("resolution", 4)
-                if layer.get("type", "wms") == "mapnik" and layer.get("output_format", "png") == "grid"
+                if layer["type"] == "mapnik"
+                and layer.get("output_format", "png") == tilecloud_chain.configuration.OUTPUTFORMAT_GRID
                 else None,
             }
             for name, layer in sorted(gene.layers.items())
-            if layer["grid_ref"]["srs"] == gene.config["openlayers"]["srs"]
+            if gene.config["grids"][layer["grid"]]["srs"] == gene.config["openlayers"]["srs"]
         ],
         sorted=sorted,
     )
 
-    _send(pkgutil.get_data("tilecloud_chain", "openlayers.html"), "index.html", "text/html", cache)
+    html = pkgutil.get_data("tilecloud_chain", "openlayers.html")
+    assert html
+    _send(html, "index.html", "text/html", cache)
     _send(js, "wmts.js", "application/javascript", cache)
     _send(_get_resource("OpenLayers.js"), "OpenLayers.js", "application/javascript", cache)
     _send(_get_resource("OpenLayers-style.css"), "theme/default/style.css", "text/css", cache)
@@ -570,14 +599,15 @@ def _generate_openlayers(gene):
     _send(_get_resource("layer-switcher-minimize.png"), "img/layer-switcher-minimize.png", "image/png", cache)
 
 
-def status(gene):  # pragma: no cover
+def status(gene: TileGeneration) -> None:
     print("\n".join(get_status(gene)))
 
 
-def get_status(gene):
+def get_status(gene: TileGeneration) -> List[str]:
     store = get_queue_store(gene.config, False)
-    kind = "redis" if "redis" in gene.config else "sqs"
-    stats_prefix = [kind, gene.config[kind].get("queue", "tilecloud")]
+    prefix = "redis" if "redis" in gene.config else "sqs"
+    conf = gene.config["redis"] if "redis" in gene.config else gene.config["sqs"]
+    stats_prefix = [prefix, conf["queue"]]
     with stats.timer_context(stats_prefix + ["get_stats"]):
         status_ = store.get_status()
     return [name + ": " + str(value) for name, value in status_.items()]

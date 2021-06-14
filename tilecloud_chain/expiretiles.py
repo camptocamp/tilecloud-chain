@@ -14,7 +14,7 @@ from tilecloud_chain import parse_tilecoord
 logger = logging.getLogger(__name__)
 
 
-def main():
+def main() -> None:
     try:
         parser = ArgumentParser(
             description="Used to import the osm2pgsql expire-tiles file to Postgres", prog=sys.argv[0]
@@ -136,7 +136,7 @@ def main():
 
         sql_geom = "ST_GeomFromText('{}', 3857)".format(geom.wkt)
         if options.srid <= 0:
-            sql_geom = "ST_GeomFromText('{}')".format(geom.wkt)  # pragma: no cover
+            sql_geom = "ST_GeomFromText('{}')".format(geom.wkt)
         elif options.srid != 3857:
             sql_geom = "ST_Transform({}, {})".format(sql_geom, options.srid)
 

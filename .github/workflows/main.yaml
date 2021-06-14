@@ -38,26 +38,10 @@ jobs:
       - run: json-schema-spell-checker --fields=description,title --spelling=.spelling --ignore-numbers tilecloud_chain/schema.json
 
       - name: Build
-        run: |
-          python setup.py --long-description > PYPI.md
-          docker build --tag=camptocamp/tilecloud-chain:tests --target=tests .
-          docker build --tag=camptocamp/tilecloud-chain .
-          git --no-pager diff --check `git log --oneline | tail -1 | cut --fields=1 --delimiter=' '`
+        run: make build
 
-      - name: Test
-        run: |
-          docker-compose up -d
-
-          # Wait for DB to be up
-          while ! docker-compose exec -T test psql -h db -p 5432 -U postgres -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests
-          do
-            echo "Waiting for DB to be UP"
-            sleep 1
-          done
-
-          docker-compose exec -T test pytest
-
-          docker-compose down
+      - name: Tests
+        run: make tests
 
       - run: docker-compose logs
         if: failure()

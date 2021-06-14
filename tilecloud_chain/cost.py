@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from datetime import timedelta
 import logging
 import sys
+from typing import Iterable, Iterator, Tuple
 
 from tilecloud import Tile, TileStore
 from tilecloud_chain import Run, TileGeneration, add_comon_options
@@ -12,7 +13,7 @@ from tilecloud_chain.format import duration_format
 logger = logging.getLogger(__name__)
 
 
-def main():
+def main() -> None:
     try:
         parser = ArgumentParser(description="Used to calculate the generation cost", prog=sys.argv[0])
         add_comon_options(parser, tile_pyramid=False, dimensions=True)
@@ -31,12 +32,12 @@ def main():
             options.config, options, layer_name=options.layer, base_config={"cost": {}}, multi_thread=False
         )
 
-        all_size = 0
-        tile_size = 0
+        all_size: float = 0
+        tile_size: float = 0
         all_tiles = 0
         if options.layer:
             layer = gene.layers[options.layer]
-            (all_size, all_time, all_price, all_tiles) = _calculate_cost(gene, layer, options)
+            (all_size, all_time, all_price, all_tiles) = _calculate_cost(gene, options.layer, options)
             tile_size = layer["cost"]["tile_size"] / (1024.0 * 1024)
         else:
             all_time = timedelta()
@@ -45,8 +46,8 @@ def main():
                 print("")
                 print("===== {} =====".format(layer_name))
                 layer = gene.layers[layer_name]
-                gene.init_layer(layer, options)
-                (size, time, price, tiles) = _calculate_cost(gene, layer, options)
+                gene.init_layer(layer_name, options)
+                (size, time, price, tiles) = _calculate_cost(gene, layer_name, options)
                 tile_size += layer["cost"]["tile_size"] / (1024.0 * 1024)
                 all_time += time
                 all_price += price
@@ -61,17 +62,15 @@ def main():
         print("")
         print(
             "S3 Storage: {0:0.2f} [$/month]".format(
-                all_size * gene.config["cost"]["s3"].get("storage", 0.125) / (1024.0 * 1024 * 1024)
+                all_size * gene.config["cost"]["s3"]["storage"] / (1024.0 * 1024 * 1024)
             )
         )
         print(
             "S3 get: {0:0.2f} [$/month]".format(
                 (
-                    gene.config["cost"]["s3"].get("get", 0.01)
-                    * gene.config["cost"].get("request_per_layers", 10000000)
-                    / 10000.0
-                    + gene.config["cost"]["s3"].get("download", 0.12)
-                    * gene.config["cost"].get("request_per_layers", 10000000)
+                    gene.config["cost"]["s3"]["get"] * gene.config["cost"]["request_per_layers"] / 10000.0
+                    + gene.config["cost"]["s3"]["download"]
+                    * gene.config["cost"]["request_per_layers"]
                     * tile_size
                 )
             )
@@ -79,9 +78,9 @@ def main():
         #    if 'cloudfront' in gene.config['cost']:
         #        print('CloudFront: %0.2f [$/month]' % ()
         #            gene.config['cost']['cloudfront']['get'] *
-        #            gene.config['cost'].get("request_per_layers", 10000000) / 10000.0 +
+        #            gene.config['cost']['request_per_layers'] / 10000.0 +
         #            gene.config['cost']['cloudfront']['download'] *
-        #            gene.config['cost'].get("request_per_layers", 10000000) * tile_size)
+        #            gene.config['cost']['request_per_layers'] * tile_size)
     except SystemExit:
         raise
     except:  # pylint: disable=bare-except
@@ -89,38 +88,41 @@ def main():
         sys.exit(1)
 
 
-def _calculate_cost(gene, layer, options):
+def _calculate_cost(
+    gene: TileGeneration, layer_name: str, options: Namespace
+) -> Tuple[float, timedelta, float, int]:
     nb_metatiles = {}
     nb_tiles = {}
+    layer = gene.config["layers"][layer_name]
 
-    meta = layer.get("meta", False)
+    meta = layer["meta"]
     if options.cost_algo == "area":
-        tile_size = layer["grid_ref"].get("tile_size", 256)
-        for zoom, resolution in enumerate(layer["grid_ref"]["resolutions"]):
+        tile_size = gene.config["grids"][layer["grid"]]["tile_size"]
+        for zoom, resolution in enumerate(gene.config["grids"][layer["grid"]]["resolutions"]):
             if "min_resolution_seed" in layer and resolution < layer["min_resolution_seed"]:
                 continue
 
             print("Calculate zoom {}.".format(zoom))
 
-            px_buffer = layer.get("px_buffer", 0) + layer.get("meta_buffer", 128) if meta else 0
+            px_buffer = layer["px_buffer"] + layer["meta_buffer"] if meta else 0
             m_buffer = px_buffer * resolution
             if meta:
-                size = tile_size * layer.get("meta_size", 5) * resolution
+                size = tile_size * layer["meta_size"] * resolution
                 meta_buffer = size * 0.7 + m_buffer
-                meta_geom = gene.geoms[layer["name"]][zoom].buffer(meta_buffer, 1)
+                meta_geom = gene.geoms[layer_name][zoom].buffer(meta_buffer, 1)
                 nb_metatiles[zoom] = int(round(meta_geom.area / size ** 2))
             size = tile_size * resolution
             tile_buffer = size * 0.7 + m_buffer
-            geom = gene.geoms[layer["name"]][zoom].buffer(tile_buffer, 1)
+            geom = gene.geoms[layer_name][zoom].buffer(tile_buffer, 1)
             nb_tiles[zoom] = int(round(geom.area / size ** 2))
 
     elif options.cost_algo == "count":
-        gene.init_tilecoords(layer)
+        gene.init_tilecoords(layer_name)
         gene.add_geom_filter()
 
         if meta:
 
-            def count_metatile(tile):
+            def count_metatile(tile: Tile) -> Tile:
                 if tile:
                     if tile.tilecoord.z in nb_metatiles:
                         nb_metatiles[tile.tilecoord.z] += 1
@@ -132,7 +134,7 @@ def _calculate_cost(gene, layer, options):
 
             class MetaTileSplitter(TileStore):
                 @staticmethod
-                def get(tiles):
+                def get(tiles: Iterable[Tile]) -> Iterator[Tile]:
                     for metatile in tiles:
                         for tilecoord in metatile.tilecoord:
                             yield Tile(tilecoord)
@@ -142,7 +144,7 @@ def _calculate_cost(gene, layer, options):
             # Only keep tiles that intersect geometry
             gene.add_geom_filter()
 
-        def count_tile(tile):
+        def count_tile(tile: Tile) -> Tile:
             if tile:
                 if tile.tilecoord.z in nb_tiles:
                     nb_tiles[tile.tilecoord.z] += 1
@@ -154,8 +156,9 @@ def _calculate_cost(gene, layer, options):
         gene.imap(count_tile)
 
         run = Run(gene, gene.functions_metatiles)
+        assert gene.tilestream
         for tile in gene.tilestream:
-            tile.metadata["layer"] = layer["name"]
+            tile.metadata["layer"] = layer_name
             run(tile)
 
     times = {}
@@ -164,9 +167,9 @@ def _calculate_cost(gene, layer, options):
         print("{} meta tiles in zoom {}.".format(nb_metatiles[z], z))
         times[z] = layer["cost"]["metatile_generation_time"] * nb_metatiles[z]
 
-    price = 0
-    all_size = 0
-    all_time = 0
+    price: float = 0
+    all_size: float = 0
+    all_time: float = 0
     all_tiles = 0
     for z in nb_tiles:
         print("")
@@ -182,7 +185,7 @@ def _calculate_cost(gene, layer, options):
         all_time += time
         td = timedelta(milliseconds=time)
         print("Time to generate: {} [d h:mm:ss]".format((duration_format(td))))
-        c = gene.config["cost"]["s3"].get("put", 0.01) * nb_tiles[z] / 1000.0
+        c = gene.config["cost"]["s3"]["put"] * nb_tiles[z] / 1000.0
         price += c
         print("S3 PUT: {0:0.2f} [$]".format(c))
 
@@ -191,7 +194,7 @@ def _calculate_cost(gene, layer, options):
                 nb_sqs = nb_metatiles[z] * 3
             else:
                 nb_sqs = nb_tiles[z] * 3
-            c = nb_sqs * gene.config["cost"]["sqs"].get("request", 0.01) / 1000000.0
+            c = nb_sqs * gene.config["cost"]["sqs"]["request"] / 1000000.0
             price += c
             print("SQS usage: {0:0.2f} [$]".format(c))
 
