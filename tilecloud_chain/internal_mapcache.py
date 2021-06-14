@@ -9,7 +9,7 @@ import struct
 import threading
 from typing import TYPE_CHECKING, Any, Dict, Iterable, Iterator, Optional, TypeVar, cast
 
-import redis.sentinel
+import redis.sentinel  # type: ignore
 
 from tilecloud import Tile, TileCoord, TileStore
 from tilecloud_chain import Run
