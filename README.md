@@ -37,57 +37,7 @@ Legacy features:
 
 ## Get it
 
-### With Docker
-
-```bash
-# Login to docker hub
-docker login
-docker pull camptocamp/tilecloud-chain
-
-# Initialize the project
-docker run -ti \
-     --volume .:/project \
-     camptocamp/tilecloud-chain \
-     pcreate -s tilecloud_chain .
-
-# Run the commands
-DOCKER_ADRS=`ifconfig docker0 | head -n 2 | tail -n 1 | awk -F : '{print $2}' | awk '{print $1}'`
-docker run -ti \
-     --volume .:/project \
-     --add-host=db:${DOCKER_ADRS} \
-     --add-host=mapserver:${DOCKER_ADRS} \
-     --env=USER_NAME=`whoami` \
-     --env=USER_ID=`id -u` \
-     --env=GROUP_ID=`id -g` \
-     --env=UMASK=`umask` \
-     camptocamp/tilecloud-chain \
-     run <a command>
-```
-
-To share the home folder you should add the arguments:
-
-```bash
---volume=${HOME}:${HOME} \
---env=HOME=${HOME} \
-```
-
-The image also contains some tools needed to render OSM data like: `fonts-dejavu`, `node-carto`.
-
-### With pip
-
-Requirements:
-
-    pg_config and a build environment.
-
-Install:
-
-    pip install tilecloud-chain
-    pcreate -s tilecloud_chain .
-
-Edit your layers configuration in `./tilegeneration/config.yaml`.
-
-[Default configuration
-file](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/scaffolds/create/tilegeneration/config.yaml.mako_tmpl).
+Create the config file `tilegeneration/config.yaml` see as [example](https://github.com/camptocamp/tilecloud-chain/blob/master/example/tilegeneration/config.yaml).
 
 ### Support
 
@@ -115,7 +65,7 @@ python3 -m venv .build/venv
 
 Setup your environment:
 
-```
+```bash
 touch tilecloud_chain/OpenLayers.js
 docker build --tag camptocamp/tilecloud-chain .
 docker-compose -p tilecloud up
@@ -136,11 +86,11 @@ As documentation you can read the `https://github.com/camptocamp/tilecloud-chain
 You can add that in your workspace configuration to use the JSON schema:
 
 ```json
-    {
-        "yaml.schemas": {
-            "../tilecloud-chain/tilecloud_chain/schema.json": [
-                "tilecloud-chain/tilecloud_chain/tests/tilegeneration/*.yaml"
-            ]
-        }
+{
+    "yaml.schemas": {
+        "../tilecloud-chain/tilecloud_chain/schema.json": [
+            "tilecloud-chain/tilecloud_chain/tests/tilegeneration/*.yaml"
+        ]
     }
+}
 ```
