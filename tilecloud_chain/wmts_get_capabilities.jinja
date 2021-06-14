@@ -47,7 +47,7 @@
       endif %}{%
       if 'info' in provider['contact'] %}
       <ows:ContactInfo>{%
-        if 'phone' in provider['contact']['indo'] %}
+        if 'phone' in provider['contact']['info'] %}
         <ows:Phone>{%
           if 'voice' in provider['contact']['info']['phone'] %}
           <ows:Voice>{{ provider['contact']['info']['phone']['voice'] }}</ows:Voice>{%
