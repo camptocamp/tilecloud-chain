@@ -60,6 +60,10 @@ class TestController(CompareCase):
       <ows:IndividualName>The contact name</ows:IndividualName>
       <ows:PositionName>The position name</ows:PositionName>
       <ows:ContactInfo>
+        <ows:Phone>
+          <ows:Voice>\+41 11 222 33 44</ows:Voice>
+          <ows:Facsimile>\+41 11 222 33 44</ows:Facsimile>
+        </ows:Phone>
         <ows:Address>
           <ows:DeliveryPoint>Address delivery</ows:DeliveryPoint>
           <ows:City>Berne</ows:City>
@@ -482,6 +486,10 @@ class TestController(CompareCase):
       <ows:IndividualName>The contact name</ows:IndividualName>
       <ows:PositionName>The position name</ows:PositionName>
       <ows:ContactInfo>
+        <ows:Phone>
+          <ows:Voice>\+41 11 222 33 44</ows:Voice>
+          <ows:Facsimile>\+41 11 222 33 44</ows:Facsimile>
+        </ows:Phone>
         <ows:Address>
           <ows:DeliveryPoint>Address delivery</ows:DeliveryPoint>
           <ows:City>Berne</ows:City>
