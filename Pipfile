@@ -14,7 +14,7 @@ Shapely = "==1.7.1"
 cee_syslog_handler = "==0.6.0"  # c2cwsgiutils
 gunicorn = "==20.1.0"  # c2cwsgiutils
 objgraph = "==3.5.0"  # c2cwsgiutils
-psycopg2 = "==2.8.6"  # c2cwsgiutils
+psycopg2 = "==2.9.1"  # c2cwsgiutils
 pyramid-tm = "==2.4"  # c2cwsgiutils
 sentry-sdk = "==1.1.0"  # c2cwsgiutils
 sqlalchemy = "==1.4.18"  # c2cwsgiutils
