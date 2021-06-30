@@ -3,6 +3,8 @@ headers: |
   Automatically generated file from a JSON schema.
   """
 callbacks:
+  - - pyupgrade
+    - --py38-plus
   - - black
   - - isort
 generate:
