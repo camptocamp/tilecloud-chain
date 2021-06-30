@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import shutil
 
@@ -32,7 +30,7 @@ class TestGenerate(CompareCase):
 
         for d in ("-d", "-q", "-v"):
             self.assert_cmd_equals(
-                cmd=".build/venv/bin/generate_copy {} -c tilegeneration/test-copy.yaml src dst".format(d),
+                cmd=f".build/venv/bin/generate_copy {d} -c tilegeneration/test-copy.yaml src dst",
                 main_func=copy_.main,
                 regex=True,
                 expected="""The tile copy of layer 'point_hash' is finish
@@ -49,7 +47,7 @@ Size per tile: 10(.0)? o
                 else "",
                 empty_err=True,
             )
-        with open("/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png", "r") as f:
+        with open("/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png") as f:
             self.assertEqual(f.read(), "test image")
 
     def test_process(self) -> None:

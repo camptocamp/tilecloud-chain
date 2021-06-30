@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (c) 2018 by Camptocamp
 # All rights reserved.
 #
@@ -120,7 +118,7 @@ class Admin:
             "allowed_commands", ["generate_tiles", "generate_controller"]
         ):
             raise pyramid.httpexceptions.HTTPBadRequest(
-                "The given executable '{}' is not allowed".format(command[0])
+                f"The given executable '{command[0]}' is not allowed"
             )
         log_thread = LogThread(command)
         log_thread.start()

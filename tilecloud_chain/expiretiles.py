@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from argparse import ArgumentParser
 import logging
 import sys
@@ -93,7 +91,7 @@ def main() -> None:
             )
             if cursor.fetchone()[0] == 0:
                 cursor.execute(
-                    'CREATE TABLE IF NOT EXISTS "{}"."{}" (id serial)'.format(options.schema, options.table)
+                    f'CREATE TABLE IF NOT EXISTS "{options.schema}"."{options.table}" (id serial)'
                 )
                 cursor.execute(
                     "SELECT AddGeometryColumn('{}', '{}', '{}', {}, 'MULTIPOLYGON', 2)".format(
@@ -102,13 +100,13 @@ def main() -> None:
                 )
 
         if options.delete:
-            cursor.execute('DELETE FROM "{}"'.format((options.table)))
+            cursor.execute(f'DELETE FROM "{options.table}"')
 
         geoms = []
         grid = QuadTileGrid(
             max_extent=(-20037508.34, -20037508.34, 20037508.34, 20037508.34),
         )
-        with open(options.file, "r") as f:
+        with open(options.file) as f:
             for coord in f:
                 extent = grid.extent(parse_tilecoord(coord), options.buffer)
                 geoms.append(
@@ -134,13 +132,13 @@ def main() -> None:
         if options.simplify > 0:
             geom.simplify(options.simplify)
 
-        sql_geom = "ST_GeomFromText('{}', 3857)".format(geom.wkt)
+        sql_geom = f"ST_GeomFromText('{geom.wkt}', 3857)"
         if options.srid <= 0:
-            sql_geom = "ST_GeomFromText('{}')".format(geom.wkt)
+            sql_geom = f"ST_GeomFromText('{geom.wkt}')"
         elif options.srid != 3857:
-            sql_geom = "ST_Transform({}, {})".format(sql_geom, options.srid)
+            sql_geom = f"ST_Transform({sql_geom}, {options.srid})"
 
-        cursor.execute('INSERT INTO "{}" ("{}") VALUES ({})'.format(options.table, options.column, sql_geom))
+        cursor.execute(f'INSERT INTO "{options.table}" ("{options.column}") VALUES ({sql_geom})')
         connection.commit()
         cursor.close()
         connection.close()

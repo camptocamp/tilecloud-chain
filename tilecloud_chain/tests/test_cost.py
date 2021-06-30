@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 
 from tilecloud_chain import cost

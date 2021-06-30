@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import shutil
 
@@ -1578,7 +1576,7 @@ MapCacheAlias /mapcache "%s"
                     """
 MapCacheAlias /mapcache "{}"
 """.format(
-                        (os.path.abspath("mapcache.xml"))
+                        os.path.abspath("mapcache.xml")
                     ),
                 ]
             ],

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import logging
 import sys
 import time
@@ -73,7 +71,7 @@ class DatabaseLoggerCommon:
                 finally:
                     self.connection.rollback()
 
-        self.full_table = "{}.{}".format(schema, table)
+        self.full_table = f"{schema}.{table}"
 
 
 class DatabaseLoggerInit(DatabaseLoggerCommon):
@@ -81,7 +79,7 @@ class DatabaseLoggerInit(DatabaseLoggerCommon):
         super().__init__(config, daemon)
 
         with self.connection.cursor() as cursor:
-            cursor.execute("SELECT COALESCE(MAX(run), 0) + 1 FROM {}".format(self.full_table))
+            cursor.execute(f"SELECT COALESCE(MAX(run), 0) + 1 FROM {self.full_table}")
             (self.run,) = cursor.fetchone()
 
     def __call__(self, tile: Tile) -> Tile:

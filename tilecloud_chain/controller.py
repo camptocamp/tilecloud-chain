@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from argparse import ArgumentParser
 from copy import copy
 from hashlib import sha1
@@ -523,7 +521,7 @@ def _generate_apache_config(gene: TileGeneration) -> None:
                                 "layer": layer_name,
                                 "token_regex": token_regex,
                                 "dimensions_re": "".join(["/" + token_regex for e in range(dim)]),
-                                "dimensions_rep": "".join(["/${}".format((e + 2)) for e in range(dim)]),
+                                "dimensions_rep": "".join([f"/${e + 2}" for e in range(dim)]),
                                 "tilematrixset": dim + 2,
                                 "final": dim + 3,
                                 "zoom": gene.config["grids"][layer["grid"]]["resolutions"].index(r),
