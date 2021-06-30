@@ -1163,8 +1163,7 @@ class CountSize:
 
 class HashDropper:
     """
-    Create a filter to remove the tiles data where they have
-    the specified size and hash.
+    Create a filter to remove the tiles data where they have the specified size and hash.
 
     Used to drop the empty tiles.
 
@@ -1213,7 +1212,9 @@ class HashDropper:
 
 class MultiAction:
     """
-    Used to perform an action based on the tile's layer name. E.g a HashDropper or Process
+    Used to perform an action based on the tile's layer name.
+
+    E.g a HashDropper or Process
     """
 
     def __init__(self, actions: Mapping[str, Callable[[Tile], Optional[Tile]]]) -> None:

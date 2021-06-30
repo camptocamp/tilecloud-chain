@@ -219,7 +219,7 @@ class Server(Generic[Response]):
 
     def _get(self, path: str, headers: Dict[str, str], **kwargs: Any) -> Response:
         """
-        Get capabilities or other static files
+        Get capabilities or other static files.
         """
         if self.cache["type"] == "s3":
             cache_s3 = cast(tilecloud_chain.configuration.CacheS3, self.cache)
