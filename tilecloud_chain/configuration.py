@@ -24,7 +24,7 @@ class Apache(TypedDict, total=False):
     location: str
     config_file: str
     expires: int
-    headers: 'Headers'
+    headers: "Headers"
 
 
 # Argument
@@ -63,12 +63,12 @@ CacheBsddb = Union[Dict[str, str], "CacheBsddbTyped"]
 
 
 class CacheBsddbTyped(TypedDict, total=False):
-    type: Literal['bsddb']
-    wmtscapabilities_file: 'CacheWmstCapabilitiesFile'
-    http_url: 'CacheHttpUrl'
-    hosts: 'CacheHost'
-    http_urls: 'CacheHttpUrls'
-    folder: 'CacheFolder'
+    type: Literal["bsddb"]
+    wmtscapabilities_file: "CacheWmstCapabilitiesFile"
+    http_url: "CacheHttpUrl"
+    hosts: "CacheHost"
+    http_urls: "CacheHttpUrls"
+    folder: "CacheFolder"
 
 
 # Cache filesystem
@@ -82,12 +82,12 @@ CacheFilesystem = Union[Dict[str, str], "CacheFilesystemTyped"]
 
 
 class CacheFilesystemTyped(TypedDict, total=False):
-    type: Literal['filesystem']
-    wmtscapabilities_file: 'CacheWmstCapabilitiesFile'
-    http_url: 'CacheHttpUrl'
-    hosts: 'CacheHost'
-    http_urls: 'CacheHttpUrls'
-    folder: 'CacheFolder'
+    type: Literal["filesystem"]
+    wmtscapabilities_file: "CacheWmstCapabilitiesFile"
+    http_url: "CacheHttpUrl"
+    hosts: "CacheHost"
+    http_urls: "CacheHttpUrls"
+    folder: "CacheFolder"
 
 
 # Cache folder
@@ -125,12 +125,12 @@ CacheMbtiles = Union[Dict[str, str], "CacheMbtilesTyped"]
 
 
 class CacheMbtilesTyped(TypedDict, total=False):
-    type: Literal['mbtiles']
-    wmtscapabilities_file: 'CacheWmstCapabilitiesFile'
-    http_url: 'CacheHttpUrl'
-    hosts: 'CacheHost'
-    http_urls: 'CacheHttpUrls'
-    folder: 'CacheFolder'
+    type: Literal["mbtiles"]
+    wmtscapabilities_file: "CacheWmstCapabilitiesFile"
+    http_url: "CacheHttpUrl"
+    hosts: "CacheHost"
+    http_urls: "CacheHttpUrls"
+    folder: "CacheFolder"
 
 
 # Cache S3
@@ -144,17 +144,17 @@ CacheS3 = Union[Dict[str, str], "CacheS3Typed"]
 
 
 class CacheS3Typed(TypedDict, total=False):
-    type: Literal['s3']
-    wmtscapabilities_file: 'CacheWmstCapabilitiesFile'
-    http_url: 'CacheHttpUrl'
-    hosts: 'CacheHost'
-    http_urls: 'CacheHttpUrls'
+    type: Literal["s3"]
+    wmtscapabilities_file: "CacheWmstCapabilitiesFile"
+    http_url: "CacheHttpUrl"
+    hosts: "CacheHost"
+    http_urls: "CacheHttpUrls"
     tiles_url: str
     host: str
     bucket: str
-    region: 'AwsRegion'
+    region: "AwsRegion"
     cache_control: str
-    folder: 'CacheFolder'
+    folder: "CacheFolder"
 
 
 # Cache WMST capabilities file
@@ -174,22 +174,22 @@ class CloudfrontCost(TypedDict, total=False):
 # TileCloud-chain configuration
 class Configuration(TypedDict, total=False):
     defaults: Dict[str, Any]
-    grids: Dict[str, 'Grid']
-    caches: Dict[str, 'Cache']
-    layers: Dict[str, 'Layer']
-    process: Dict[str, 'ProcessCommand']
-    generation: 'Generation'
-    sqs: 'Sqs'
-    sns: 'Sns'
-    redis: 'Redis'
-    apache: 'Apache'
-    mapcache: 'Mapcache'
-    openlayers: 'Openlayers'
-    server: 'Server'
-    cost: 'Cost'
-    metadata: 'Metadata'
-    provider: 'Provider'
-    logging: 'Logging'
+    grids: Dict[str, "Grid"]
+    caches: Dict[str, "Cache"]
+    layers: Dict[str, "Layer"]
+    process: Dict[str, "ProcessCommand"]
+    generation: "Generation"
+    sqs: "Sqs"
+    sns: "Sns"
+    redis: "Redis"
+    apache: "Apache"
+    mapcache: "Mapcache"
+    openlayers: "Openlayers"
+    server: "Server"
+    cost: "Cost"
+    metadata: "Metadata"
+    provider: "Provider"
+    logging: "Logging"
 
 
 # Contact
@@ -198,7 +198,7 @@ class Configuration(TypedDict, total=False):
 class Contact(TypedDict, total=False):
     name: str
     position: str
-    info: 'Info'
+    info: "Info"
 
 
 # Cost
@@ -206,9 +206,9 @@ class Contact(TypedDict, total=False):
 # The configuration use to calculate the cast (unmaintained)
 class Cost(TypedDict, total=False):
     request_per_layers: int
-    s3: 'S3Cost'
-    cloudfront: 'CloudfrontCost'
-    sqs: 'SqsCost'
+    s3: "S3Cost"
+    cloudfront: "CloudfrontCost"
+    sqs: "SqsCost"
 
 
 # Database
@@ -247,7 +247,7 @@ class Grid(TypedDict, total=False):
     proj4_literal: str
     unit: str
     tile_size: int
-    matrix_identifier: 'MatrixIdentifier'
+    matrix_identifier: "MatrixIdentifier"
 
 
 # Headers
@@ -260,8 +260,8 @@ Headers = Dict[str, "_HeadersAdditionalproperties"]
 #
 # The information
 class Info(TypedDict, total=False):
-    phone: 'Phone'
-    address: 'Address'
+    phone: "Phone"
+    address: "Address"
 
 
 # Layer
@@ -367,35 +367,35 @@ LayerLegends = List["_LayerLegendsItem"]
 
 # Layer Mapnik
 class LayerMapnik(TypedDict, total=False):
-    type: Literal['mapnik']
-    title: 'LayerTitle'
-    grid: 'LayerGrid'
-    bbox: 'LayerBoundingBox'
-    min_resolution_seed: 'LayerMinResolutionSeed'
-    px_buffer: 'LayerPixelBuffer'
-    meta: 'LayerMeta'
-    meta_size: 'LayerMetaSize'
-    meta_buffer: 'LayerMetaBuffer'
-    layers: 'LayerLayers'
-    wmts_style: 'LayerWmtsStyle'
-    mime_type: 'LayerMimeType'
-    extension: 'LayerExtension'
-    dimensions: 'LayerDimensions'
-    legends: 'LayerLegends'
-    legend_mime: 'LayerLegendMime'
-    legend_extension: 'LayerLegendExtension'
-    pre_hash_post_process: 'LayerPreHashPostProcess'
-    post_process: 'LayerPostProcess'
-    geoms: 'LayerGeometries'
-    empty_tile_detection: 'LayerEmptyTileDetection'
-    empty_metatile_detection: 'LayerEmptyMetaTileDetection'
-    cost: 'LayerCost'
+    type: Literal["mapnik"]
+    title: "LayerTitle"
+    grid: "LayerGrid"
+    bbox: "LayerBoundingBox"
+    min_resolution_seed: "LayerMinResolutionSeed"
+    px_buffer: "LayerPixelBuffer"
+    meta: "LayerMeta"
+    meta_size: "LayerMetaSize"
+    meta_buffer: "LayerMetaBuffer"
+    layers: "LayerLayers"
+    wmts_style: "LayerWmtsStyle"
+    mime_type: "LayerMimeType"
+    extension: "LayerExtension"
+    dimensions: "LayerDimensions"
+    legends: "LayerLegends"
+    legend_mime: "LayerLegendMime"
+    legend_extension: "LayerLegendExtension"
+    pre_hash_post_process: "LayerPreHashPostProcess"
+    post_process: "LayerPostProcess"
+    geoms: "LayerGeometries"
+    empty_tile_detection: "LayerEmptyTileDetection"
+    empty_metatile_detection: "LayerEmptyMetaTileDetection"
+    cost: "LayerCost"
     mapfile: str
     data_buffer: int
-    output_format: 'OutputFormat'
+    output_format: "OutputFormat"
     wms_url: str
     resolution: int
-    layers_fields: Dict[str, '_LayersFieldsAdditionalproperties']
+    layers_fields: Dict[str, "_LayersFieldsAdditionalproperties"]
     drop_empty_utfgrid: bool
 
 
@@ -465,35 +465,35 @@ LayerTitle = str
 
 # Layer WMS
 class LayerWms(TypedDict, total=False):
-    type: Literal['wms']
-    title: 'LayerTitle'
-    grid: 'LayerGrid'
-    bbox: 'LayerBoundingBox'
-    min_resolution_seed: 'LayerMinResolutionSeed'
-    px_buffer: 'LayerPixelBuffer'
-    meta: 'LayerMeta'
-    meta_size: 'LayerMetaSize'
-    meta_buffer: 'LayerMetaBuffer'
-    layers: 'LayerLayers'
-    wmts_style: 'LayerWmtsStyle'
-    mime_type: 'LayerMimeType'
-    extension: 'LayerExtension'
-    dimensions: 'LayerDimensions'
-    legends: 'LayerLegends'
-    legend_mime: 'LayerLegendMime'
-    legend_extension: 'LayerLegendExtension'
-    pre_hash_post_process: 'LayerPreHashPostProcess'
-    post_process: 'LayerPostProcess'
-    geoms: 'LayerGeometries'
-    empty_tile_detection: 'LayerEmptyTileDetection'
-    empty_metatile_detection: 'LayerEmptyMetaTileDetection'
-    cost: 'LayerCost'
+    type: Literal["wms"]
+    title: "LayerTitle"
+    grid: "LayerGrid"
+    bbox: "LayerBoundingBox"
+    min_resolution_seed: "LayerMinResolutionSeed"
+    px_buffer: "LayerPixelBuffer"
+    meta: "LayerMeta"
+    meta_size: "LayerMetaSize"
+    meta_buffer: "LayerMetaBuffer"
+    layers: "LayerLayers"
+    wmts_style: "LayerWmtsStyle"
+    mime_type: "LayerMimeType"
+    extension: "LayerExtension"
+    dimensions: "LayerDimensions"
+    legends: "LayerLegends"
+    legend_mime: "LayerLegendMime"
+    legend_extension: "LayerLegendExtension"
+    pre_hash_post_process: "LayerPreHashPostProcess"
+    post_process: "LayerPostProcess"
+    geoms: "LayerGeometries"
+    empty_tile_detection: "LayerEmptyTileDetection"
+    empty_metatile_detection: "LayerEmptyMetaTileDetection"
+    cost: "LayerCost"
     url: str
     generate_salt: bool
     query_layers: str
     info_formats: List[str]
-    params: Dict[str, '_ParametersAdditionalproperties']
-    headers: 'Headers'
+    params: Dict[str, "_ParametersAdditionalproperties"]
+    headers: "Headers"
     version: str
 
 
@@ -509,7 +509,7 @@ LayerWmtsStyle = str
 #
 # The logging configuration to database, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#logging
 class Logging(TypedDict, total=False):
-    database: 'Database'
+    database: "Database"
 
 
 # MapCache
@@ -585,7 +585,7 @@ ProcessCommand = List["_ProcessCommandItem"]
 class Provider(TypedDict, total=False):
     name: str
     url: str
-    contact: 'Contact'
+    contact: "Contact"
 
 
 # Redis
@@ -593,7 +593,7 @@ class Provider(TypedDict, total=False):
 # The Redis configuration
 class Redis(TypedDict, total=False):
     url: str
-    sentinels: List['_SentinelsItem']
+    sentinels: List["_SentinelsItem"]
     connection_kwargs: Dict[str, Any]
     sentinel_kwargs: Dict[str, Any]
     service_name: str
@@ -628,13 +628,13 @@ class Server(TypedDict, total=False):
     geoms_redirect: bool
     mapcache_internal: bool
     mapcache_base: str
-    mapcache_headers: 'Headers'
+    mapcache_headers: "Headers"
     static_allow_extension: List[str]
     wmts_path: str
     static_path: str
     admin_path: str
     expires: int
-    predefined_commands: List['_PredefinedCommandsItem']
+    predefined_commands: List["_PredefinedCommandsItem"]
     allowed_commands: List[str]
 
 
@@ -643,7 +643,7 @@ class Server(TypedDict, total=False):
 # The Simple Notification Service configuration, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sns
 class Sns(TypedDict, total=False):
     topic: str
-    region: 'AwsRegion'
+    region: "AwsRegion"
 
 
 # SQS
@@ -651,7 +651,7 @@ class Sns(TypedDict, total=False):
 # The Simple Queue Service configuration
 class Sqs(TypedDict, total=False):
     queue: str
-    region: 'AwsRegion'
+    region: "AwsRegion"
 
 
 # SQS cost
@@ -678,9 +678,9 @@ _HeadersAdditionalproperties = str
 
 
 class _LayerDimensionsItem(TypedDict, total=False):
-    name: 'LayerDimensionName'
-    generate: List['_GenerateItem']
-    values: List['_ValuesItem']
+    name: "LayerDimensionName"
+    generate: List["_GenerateItem"]
+    values: List["_ValuesItem"]
     default: str
 
 
@@ -718,7 +718,7 @@ class _PredefinedCommandsItem(TypedDict, total=False):
 class _ProcessCommandItem(TypedDict, total=False):
     cmd: str
     need_out: bool
-    arg: 'Argument'
+    arg: "Argument"
 
 
 # A sentinel

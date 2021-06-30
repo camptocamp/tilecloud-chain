@@ -310,8 +310,8 @@ class Generate:
                         duration = (t2 - self.t1) / options.time
                         sys.stdout.write(
                             "time: {}\n".format(
-                                    (duration.days * 24 * 3600 + duration.seconds) * 1000000
-                                    + duration.microseconds
+                                (duration.days * 24 * 3600 + duration.seconds) * 1000000
+                                + duration.microseconds
                             )
                         )
                     return tile

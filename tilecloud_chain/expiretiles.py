@@ -90,9 +90,7 @@ def main() -> None:
                 )
             )
             if cursor.fetchone()[0] == 0:
-                cursor.execute(
-                    f'CREATE TABLE IF NOT EXISTS "{options.schema}"."{options.table}" (id serial)'
-                )
+                cursor.execute(f'CREATE TABLE IF NOT EXISTS "{options.schema}"."{options.table}" (id serial)')
                 cursor.execute(
                     "SELECT AddGeometryColumn('{}', '{}', '{}', {}, 'MULTIPOLYGON', 2)".format(
                         options.schema, options.table, options.column, options.srid

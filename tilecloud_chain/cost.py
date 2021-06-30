@@ -65,10 +65,10 @@ def main() -> None:
         )
         print(
             "S3 get: {:0.2f} [$/month]".format(
-                    gene.config["cost"]["s3"]["get"] * gene.config["cost"]["request_per_layers"] / 10000.0
-                    + gene.config["cost"]["s3"]["download"]
-                    * gene.config["cost"]["request_per_layers"]
-                    * tile_size
+                gene.config["cost"]["s3"]["get"] * gene.config["cost"]["request_per_layers"] / 10000.0
+                + gene.config["cost"]["s3"]["download"]
+                * gene.config["cost"]["request_per_layers"]
+                * tile_size
             )
         )
         #    if 'cloudfront' in gene.config['cost']:

@@ -117,9 +117,7 @@ class Admin:
         if command[0] not in self.gene.config.get("server", {}).get(
             "allowed_commands", ["generate_tiles", "generate_controller"]
         ):
-            raise pyramid.httpexceptions.HTTPBadRequest(
-                f"The given executable '{command[0]}' is not allowed"
-            )
+            raise pyramid.httpexceptions.HTTPBadRequest(f"The given executable '{command[0]}' is not allowed")
         log_thread = LogThread(command)
         log_thread.start()
         return pyramid.httpexceptions.HTTPFound(self.request.route_url("admin"))

@@ -892,9 +892,7 @@ class TileGeneration:
             if self.get_log_tiles_error_file(tile.metadata["layer"]) is None:
                 raise Exception("Missing error file")
 
-            tilecoord = (
-                "" if tile.tilecoord is None else f"{tile.tilecoord} {tile.formated_metadata} "
-            )
+            tilecoord = "" if tile.tilecoord is None else f"{tile.tilecoord} {tile.formated_metadata} "
             message = "" if message is None else f" {message}"
 
             io = self.get_log_tiles_error_file(tile.metadata["layer"])
