@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from argparse import ArgumentParser, Namespace
 import collections
 from concurrent.futures import ThreadPoolExecutor
@@ -72,7 +71,7 @@ def formated_metadata(tile: Tile) -> str:
     metadata = dict(tile.metadata)
     if "tiles" in metadata:
         metadata["tiles"] = metadata["tiles"].keys()  # type: ignore
-    return " ".join(["{}={}".format(k, metadata[k]) for k in sorted(metadata.keys())])
+    return " ".join([f"{k}={metadata[k]}" for k in sorted(metadata.keys())])
 
 
 setattr(Tile, "formated_metadata", property(formated_metadata))
@@ -873,7 +872,7 @@ class TileGeneration:
             now = datetime.now()
             time_ = now.strftime("%d-%m-%Y %H:%M:%S")
             error_file = open(self.config["generation"]["error_file"].format(layer=layer, datetime=now), "a")
-            error_file.write("# [{}] Start the layer '{}' generation\n".format(time_, layer))
+            error_file.write(f"# [{time_}] Start the layer '{layer}' generation\n")
             self.error_files_[layer] = error_file
             return error_file
         return None
@@ -893,10 +892,8 @@ class TileGeneration:
             if self.get_log_tiles_error_file(tile.metadata["layer"]) is None:
                 raise Exception("Missing error file")
 
-            tilecoord = (
-                "" if tile.tilecoord is None else "{} {} ".format(tile.tilecoord, tile.formated_metadata)
-            )
-            message = "" if message is None else " {}".format(message)
+            tilecoord = "" if tile.tilecoord is None else f"{tile.tilecoord} {tile.formated_metadata} "
+            message = "" if message is None else f" {message}"
 
             io = self.get_log_tiles_error_file(tile.metadata["layer"])
             assert io is not None
@@ -1105,7 +1102,7 @@ class TileGeneration:
                             pass
                     logger.debug("End run")
 
-                threads = [threading.Thread(target=target, name="Run {}".format(i)) for i in range(nb_thread)]
+                threads = [threading.Thread(target=target, name=f"Run {i}") for i in range(nb_thread)]
                 for thread in threads:
                     thread.start()
 
@@ -1166,8 +1163,7 @@ class CountSize:
 
 class HashDropper:
     """
-    Create a filter to remove the tiles data where they have
-    the specified size and hash.
+    Create a filter to remove the tiles data where they have the specified size and hash.
 
     Used to drop the empty tiles.
 
@@ -1216,7 +1212,9 @@ class HashDropper:
 
 class MultiAction:
     """
-    Used to perform an action based on the tile's layer name. E.g a HashDropper or Process
+    Used to perform an action based on the tile's layer name.
+
+    E.g a HashDropper or Process
     """
 
     def __init__(self, actions: Mapping[str, Callable[[Tile], Optional[Tile]]]) -> None:
@@ -1251,7 +1249,7 @@ class HashLogger:
         try:
             assert tile.data
             image = Image.open(BytesIO(tile.data))
-        except IOError as ex:
+        except OSError as ex:
             assert tile.data
             logger.error("%s: %s", str(ex), tile.data, exc_info=True)
             raise
@@ -1346,9 +1344,9 @@ def quote(arg: str) -> str:
             if '"' in arg:
                 return "'{}'".format(arg.replace("'", "\\'"))
             else:
-                return '"{}"'.format(arg)
+                return f'"{arg}"'
         else:
-            return "'{}'".format(arg)
+            return f"'{arg}'"
     elif arg == "":
         return "''"
     else:

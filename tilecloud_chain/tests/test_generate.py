@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from itertools import product, repeat
 import os
 import shutil
@@ -125,7 +123,7 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles {} -c tilegeneration/test-nosns.yaml -t 1".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml -t 1",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png",
@@ -723,7 +721,7 @@ class TestGenerate(CompareCase):
 
     """,
                 )
-                with open("/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/5/5.json", "r") as f:
+                with open("/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/5/5.json") as f:
                     self.assert_result_equals(
                         f.read(),
                         '{"keys": ["", "1"], "data": {"1": {"name": "polygon1"}}, "grid": ["                "'
@@ -732,7 +730,7 @@ class TestGenerate(CompareCase):
                         ', "                ", "                ", "                ", "                "'
                         ', "                ", "!!!!!!!!!!!!!!!!", "!!!!!!!!!!!!!!!!"]}',
                     )
-                with open("/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/6/5.json", "r") as f:
+                with open("/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/6/5.json") as f:
                     self.assert_result_equals(
                         f.read(),
                         '{"keys": ["1"], "data": {"1": {"name": "polygon1"}}, "grid": ["                "'
@@ -773,7 +771,7 @@ class TestGenerate(CompareCase):
         for d in ("-d", "-q"):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_exit_equals(
-                    cmd=".build/venv/bin/generate_tiles {} -c tilegeneration/test-authorised.yaml".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-authorised.yaml",
                     main_func=generate.main,
                     expected="""not authorised, authorised user is: www-data.""",
                 )
@@ -973,7 +971,7 @@ Size per tile: [45][0-9][0-9] o
     def test_multy(self) -> None:
         for d in ("-v", ""):
             self.assert_tiles_generated(
-                cmd=".build/venv/bin/generate_tiles {} -c tilegeneration/test-multidim.yaml".format(d),
+                cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-multidim.yaml",
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/multi/default/%s/swissgrid/%i/%i/%i.png",

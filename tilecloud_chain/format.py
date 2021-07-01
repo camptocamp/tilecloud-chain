@@ -12,17 +12,17 @@ def size_format(number: float) -> str:
     for unit in ["o", "Kio", "Mio", "Gio", "Tio"]:
         if number < 1024.0:
             if number < 10:
-                return "{:.1f} {}".format(number, unit)
+                return f"{number:.1f} {unit}"
             else:
-                return "{:.0f} {}".format(number, unit)
+                return f"{number:.0f} {unit}"
         number /= 1024.0
-    return "{:.0f} Tio".format(number)
+    return f"{number:.0f} Tio"
 
 
 def duration_format(duration: timedelta) -> str:
     hours, remainder = divmod(duration.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
     if duration.days > 0:
-        return "{} {}:{:02d}:{:02d}".format(duration.days, hours, minutes, seconds)
+        return f"{duration.days} {hours}:{minutes:02d}:{seconds:02d}"
     else:
-        return "{}:{:02d}:{:02d}".format(hours, minutes, seconds)
+        return f"{hours}:{minutes:02d}:{seconds:02d}"

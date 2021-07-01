@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from io import StringIO
 import logging
 from logging import config
@@ -34,17 +32,17 @@ class CompareCase(TestCase):
             if test[0] != "PASS...":
                 try:
                     if regex:
-                        self.assertRegex(test[1].strip(), "^{}$".format(test[0].strip()))
+                        self.assertRegex(test[1].strip(), f"^{test[0].strip()}$")
                     else:
                         self.assertEqual(test[0].strip(), test[1].strip())
                 except AssertionError as e:
                     for i in range(max(0, n - DIFF), min(len(result), n + DIFF + 1)):
                         if i == n:
-                            print("> {} {}".format(i, result[i]))
-                            log.info("> {} {}".format(i, result[i]))
+                            print(f"> {i} {result[i]}")
+                            log.info(f"> {i} {result[i]}")
                         else:
-                            print("  {} {}".format(i, result[i]))
-                            log.info("  {} {}".format(i, result[i]))
+                            print(f"  {i} {result[i]}")
+                            log.info(f"  {i} {result[i]}")
                     raise e
         self.assertEqual(len(expected), len(result), repr(result))
 
@@ -115,7 +113,7 @@ class CompareCase(TestCase):
 
         if expected:
             for expect in expected:
-                with open(expect[0], "r") as f:
+                with open(expect[0]) as f:
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
     def assert_main_except_equals(
@@ -137,7 +135,7 @@ class CompareCase(TestCase):
 
         if expected:
             for expect in expected:
-                with open(expect[0], "r") as f:
+                with open(expect[0]) as f:
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
     def assert_yaml_equals(self, result: str, expected: str) -> None:

@@ -21,7 +21,6 @@ class MultiTileStore(TileStore):
         :type tile: :class:`Tile`
 
         :rtype: bool
-
         """
         layer = self._get_layer(tile)
         store = self._get_store(layer)
@@ -36,7 +35,6 @@ class MultiTileStore(TileStore):
         :type tile: :class:`Tile` or ``None``
 
         :rtype: :class:`Tile` or ``None``
-
         """
         layer = self._get_layer(tile)
         store = self._get_store(layer)
@@ -49,7 +47,6 @@ class MultiTileStore(TileStore):
         Generate all the tiles in the store, but without their data.
 
         :rtype: iterator
-
         """
         # Too dangerous to list all tiles in all stores. Return an empty iterator instead
         while False:
@@ -63,7 +60,6 @@ class MultiTileStore(TileStore):
         :type tile: :class:`Tile` or ``None``
 
         :rtype: :class:`Tile` or ``None``
-
         """
         layer = self._get_layer(tile)
         store = self._get_store(layer)
@@ -78,7 +74,6 @@ class MultiTileStore(TileStore):
         :type tile: :class:`Tile` or ``None``
 
         :rtype: :class:`Tile` or ``None``
-
         """
         layer = self._get_layer(tile)
         store = self._get_store(layer)

@@ -263,7 +263,7 @@ def fetch(
 
     response_headers = {
         "Expires": (datetime.datetime.utcnow() + datetime.timedelta(hours=server.expires_hours)).isoformat(),
-        "Cache-Control": "max-age={}".format((3600 * server.expires_hours)),
+        "Cache-Control": f"max-age={3600 * server.expires_hours}",
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET",
         "Tile-Backend": "WMS",

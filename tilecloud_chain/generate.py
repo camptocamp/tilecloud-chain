@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from getpass import getuser
@@ -165,7 +163,7 @@ class Generate:
                 else:
                     self._gene.set_tilecoords([TileCoord(z, x, y)], layer_name)
             except ValueError as e:
-                sys.exit("Tile '{}' is not in the format 'z/x/y'\n{}".format(self._options.get_hash, repr(e)))
+                sys.exit(f"Tile '{self._options.get_hash}' is not in the format 'z/x/y'\n{repr(e)}")
 
     def _generate_tiles(self) -> None:
         if self._options.role in ("slave", "server"):
@@ -262,7 +260,7 @@ class Generate:
 
                 def log_size(tile: Tile) -> Tile:
                     assert tile.data is not None
-                    sys.stdout.write("size: {}\n".format(len(tile.data)))
+                    sys.stdout.write(f"size: {len(tile.data)}\n")
                     return tile
 
                 self._gene.imap(log_size)
@@ -312,10 +310,8 @@ class Generate:
                         duration = (t2 - self.t1) / options.time
                         sys.stdout.write(
                             "time: {}\n".format(
-                                (
-                                    (duration.days * 24 * 3600 + duration.seconds) * 1000000
-                                    + duration.microseconds
-                                )
+                                (duration.days * 24 * 3600 + duration.seconds) * 1000000
+                                + duration.microseconds
                             )
                         )
                     return tile
@@ -354,32 +350,32 @@ class Generate:
                 message = ["The tile generation is finish"]
             if self._options.role == "master":
                 assert self._count_tiles
-                message.append("Nb of generated jobs: {}".format(self._count_tiles.nb))
+                message.append(f"Nb of generated jobs: {self._count_tiles.nb}")
             elif layer.get("meta") if layer is not None else self._options.role == "slave":
                 assert self._count_metatiles is not None
                 assert self._count_metatiles_dropped is not None
                 message += [
-                    "Nb generated metatiles: {}".format(self._count_metatiles.nb),
-                    "Nb metatiles dropped: {}".format(self._count_metatiles_dropped.nb),
+                    f"Nb generated metatiles: {self._count_metatiles.nb}",
+                    f"Nb metatiles dropped: {self._count_metatiles_dropped.nb}",
                 ]
 
             if self._options.role != "master":
                 assert self._count_tiles is not None
                 assert self._count_tiles_dropped is not None
                 message += [
-                    "Nb generated tiles: {}".format(self._count_tiles.nb),
-                    "Nb tiles dropped: {}".format(self._count_tiles_dropped.nb),
+                    f"Nb generated tiles: {self._count_tiles.nb}",
+                    f"Nb tiles dropped: {self._count_tiles_dropped.nb}",
                 ]
                 if self._options.role in ("local", "slave"):
                     assert self._count_tiles_stored is not None
                     assert self._count_tiles is not None
                     message += [
-                        "Nb tiles stored: {}".format(self._count_tiles_stored.nb),
-                        "Nb tiles in error: {}".format(self._gene.error),
-                        "Total time: {}".format(duration_format(self._gene.duration)),
+                        f"Nb tiles stored: {self._count_tiles_stored.nb}",
+                        f"Nb tiles in error: {self._gene.error}",
+                        f"Total time: {duration_format(self._gene.duration)}",
                     ]
                     if self._count_tiles_stored.nb != 0:
-                        message.append("Total size: {}".format(size_format(self._count_tiles_stored.size)))
+                        message.append(f"Total size: {size_format(self._count_tiles_stored.size)}")
                     if self._count_tiles.nb != 0:
                         message.append(
                             "Time per tile: {:0.0f} ms".format(
@@ -409,8 +405,8 @@ class Generate:
             sns_message = [message[0]]
             sns_message += [
                 "Layer: {}".format(layer_name if layer_name is not None else "(All layers)"),
-                "Role: {}".format(self._options.role),
-                "Host: {}".format(socket.getfqdn()),
+                f"Role: {self._options.role}",
+                f"Host: {socket.getfqdn()}",
                 "Command: {}".format(" ".join([quote(arg) for arg in sys.argv])),
             ]
             sns_message += message[1:]
@@ -496,12 +492,12 @@ def detach() -> None:
     try:
         pid = os.fork()
         if pid > 0:
-            print("Detached with pid {}.".format(pid))
+            print(f"Detached with pid {pid}.")
             sys.stderr.write(str(pid))
             # exit parent
             sys.exit(0)
     except OSError as e:
-        sys.exit("fork #1 failed: {} ({})\n".format(e.errno, e.strerror))
+        sys.exit(f"fork #1 failed: {e.errno} ({e.strerror})\n")
 
 
 def main() -> None:

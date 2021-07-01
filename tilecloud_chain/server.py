@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright (c) 2013 by Stéphane Brunner
 # All rights reserved.
 #
@@ -136,7 +134,7 @@ class Server(Generic[Response]):
                 if mapcache_location == "":
                     self.mapcache_baseurl = mapcache_base + "/wmts"
                 else:
-                    self.mapcache_baseurl = "{}/{}/wmts".format(mapcache_base, mapcache_location)
+                    self.mapcache_baseurl = f"{mapcache_base}/{mapcache_location}/wmts"
                 self.mapcache_header = tilegeneration.config["server"].get("mapcache_headers", {})
 
             geoms_redirect = tilegeneration.config["server"]["geoms_redirect"]
@@ -164,7 +162,7 @@ class Server(Generic[Response]):
                 if mapcache_location == "":
                     self.mapcache_baseurl = mapcache_base + "/wmts"
                 else:
-                    self.mapcache_baseurl = "{}/{}/wmts".format(mapcache_base, mapcache_location)
+                    self.mapcache_baseurl = f"{mapcache_base}/{mapcache_location}/wmts"
                 self.mapcache_header = tilegeneration.config["server"].get("mapcache_headers", {})
 
                 if "min_resolution_seed" in layer:
@@ -221,7 +219,7 @@ class Server(Generic[Response]):
 
     def _get(self, path: str, headers: Dict[str, str], **kwargs: Any) -> Response:
         """
-        Get capabilities or other static files
+        Get capabilities or other static files.
         """
         if self.cache["type"] == "s3":
             cache_s3 = cast(tilecloud_chain.configuration.CacheS3, self.cache)
@@ -268,7 +266,7 @@ class Server(Generic[Response]):
                         "Expires": (
                             datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
                         ).isoformat(),
-                        "Cache-Control": "max-age={}".format((3600 * self.expires_hours)),
+                        "Cache-Control": f"max-age={3600 * self.expires_hours}",
                         "Access-Control-Allow-Origin": "*",
                         "Access-Control-Allow-Methods": "GET",
                     },
@@ -322,7 +320,7 @@ class Server(Generic[Response]):
                     params["REQUEST"] = "GetTile"
                     params["TILECOL"] = last[0]
                     if last[1] != layer["extension"]:
-                        return self.error(400, "Wrong extension '{}'".format(last[1]), **kwargs)
+                        return self.error(400, f"Wrong extension '{last[1]}'", **kwargs)
                 elif len(path) == index + 6:
                     params["REQUEST"] = "GetFeatureInfo"
                     params["TILECOL"] = path[index + 3]
@@ -348,7 +346,7 @@ class Server(Generic[Response]):
                 "Expires": (
                     datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
                 ).isoformat(),
-                "Cache-Control": "max-age={}".format((3600 * self.expires_hours)),
+                "Cache-Control": f"max-age={3600 * self.expires_hours}",
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "GET",
             }
@@ -485,7 +483,7 @@ class Server(Generic[Response]):
                     "Expires": (
                         datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
                     ).isoformat(),
-                    "Cache-Control": "max-age={}".format((3600 * self.expires_hours)),
+                    "Cache-Control": f"max-age={3600 * self.expires_hours}",
                     "Access-Control-Allow-Origin": "*",
                     "Access-Control-Allow-Methods": "GET",
                     "Tile-Backend": "Cache",
@@ -532,7 +530,7 @@ class Server(Generic[Response]):
                 response_headers["Expires"] = (
                     datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
                 ).isoformat()
-                response_headers["Cache-Control"] = "max-age={}".format((3600 * self.expires_hours))
+                response_headers["Cache-Control"] = f"max-age={3600 * self.expires_hours}"
                 response_headers["Access-Control-Allow-Origin"] = "*"
                 response_headers["Access-Control-Allow-Methods"] = "GET"
             return self.response(response.content, headers=response_headers, **kwargs)
@@ -612,7 +610,7 @@ class PyramidServer(PyramidServerBase):
                     "Expires": (
                         datetime.datetime.utcnow() + datetime.timedelta(hours=self.expires_hours)
                     ).isoformat(),
-                    "Cache-Control": "max-age={}".format((3600 * self.expires_hours)),
+                    "Cache-Control": f"max-age={3600 * self.expires_hours}",
                 }
             )
             return exception_response(code, detail=message, headers=headers)

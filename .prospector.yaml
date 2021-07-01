@@ -1,6 +1,9 @@
 ---
 strictness: veryhigh
 
+ignore-paths:
+  - tilecloud_chain/configuration.py
+
 pylint:
   disable:
     - too-many-statements
