@@ -110,8 +110,9 @@ class RedisStore(TileStore):
         return tile
 
     def _get_key(self, tile: Tile) -> str:
-        return "%s_%s_%d_%d_%d" % (
+        return "%s_%s_%s_%d_%d_%d" % (
             self._prefix,
+            tile.metadata["config_file"],
             tile.metadata["layer"],
             tile.tilecoord.z,
             tile.tilecoord.x,
@@ -154,7 +155,7 @@ class GeneratorThread(threading.Thread):
 class Generator:
     def __init__(self, tilegeneration: tilecloud_chain.TileGeneration) -> None:
         self._input_store = InputStore()
-        redis_config = tilegeneration.config["redis"]
+        redis_config = tilegeneration.get_main_config().config["redis"]
         self._cache_store = RedisStore(redis_config)
         self.threads = []
         log_level = os.environ.get("TILE_MAPCACHE_LOGLEVEL")
@@ -223,6 +224,7 @@ Response = TypeVar("Response")
 
 
 def fetch(
+    config: tilecloud_chain.DatedConfig,
     server: Server[Response],
     tilegeneration: tilecloud_chain.TileGeneration,
     layer: tilecloud_chain.configuration.Layer,
@@ -247,7 +249,7 @@ def fetch(
 
                 if meta_tile.error:
                     LOG.error("Tile '%s' in error: %s", meta_tile.tilecoord, meta_tile.error)
-                    return server.error(500, "Error while generate the tile, see logs for details")
+                    return server.error(config, 500, "Error while generate the tile, see logs for details")
 
                 # Don't fetch the just generated tile
                 tiles: Dict[TileCoord, Tile] = cast(Dict[TileCoord, Tile], meta_tile.metadata["tiles"])
@@ -262,8 +264,10 @@ def fetch(
                     raise
 
     response_headers = {
-        "Expires": (datetime.datetime.utcnow() + datetime.timedelta(hours=server.expires_hours)).isoformat(),
-        "Cache-Control": f"max-age={3600 * server.expires_hours}",
+        "Expires": (
+            datetime.datetime.utcnow() + datetime.timedelta(hours=server.get_expires_hours(config))
+        ).isoformat(),
+        "Cache-Control": f"max-age={3600 * server.get_expires_hours(config)}",
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET",
         "Tile-Backend": "WMS",
@@ -274,7 +278,7 @@ def fetch(
         response_headers["Content-Type"] = tile.content_type
     assert fetched_tile
     assert fetched_tile.data
-    return server.response(fetched_tile.data, headers=response_headers, **kwargs)
+    return server.response(config, fetched_tile.data, headers=response_headers, **kwargs)
 
 
 def stop(tilegeneration: tilecloud_chain.TileGeneration) -> None:

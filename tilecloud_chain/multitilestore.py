@@ -1,17 +1,24 @@
 from itertools import chain, groupby, starmap
-from typing import Dict, Iterable, Iterator, Optional
+import logging
+from typing import Callable, Dict, Iterable, Iterator, Optional, Tuple
 
 from tilecloud import Tile, TileStore
 
+logger = logging.getLogger(__name__)
+
 
 class MultiTileStore(TileStore):
-    def __init__(self, stores: Dict[str, Optional[TileStore]]) -> None:
+    def __init__(self, get_store: Callable[[str, str], Optional[TileStore]]) -> None:
         TileStore.__init__(self)
-        self._stores = stores
+        self.get_store = get_store
+        self.stores: Dict[Tuple[str, str], Optional[TileStore]] = {}
 
-    def _get_store(self, layer: Optional[str]) -> Optional[TileStore]:
-        assert layer is not None
-        return self._stores.get(layer)
+    def _get_store(self, config_file: str, layer: str) -> Optional[TileStore]:
+        store = self.stores.get((config_file, layer))
+        if store is None:
+            store = self.get_store(config_file, layer)
+            self.stores[(config_file, layer)] = store
+        return store
 
     def __contains__(self, tile: Tile) -> bool:
         """
@@ -22,8 +29,9 @@ class MultiTileStore(TileStore):
 
         :rtype: bool
         """
-        layer = self._get_layer(tile)
-        store = self._get_store(layer)
+        layer = tile.metadata["layer"]
+        config_file = tile.metadata["config_file"]
+        store = self._get_store(config_file, layer)
         assert store is not None
         return tile in store
 
@@ -36,8 +44,9 @@ class MultiTileStore(TileStore):
 
         :rtype: :class:`Tile` or ``None``
         """
-        layer = self._get_layer(tile)
-        store = self._get_store(layer)
+        layer = tile.metadata["layer"]
+        config_file = tile.metadata["config_file"]
+        store = self._get_store(config_file, layer)
         assert store is not None
         return store.delete_one(tile)
 
@@ -61,8 +70,9 @@ class MultiTileStore(TileStore):
 
         :rtype: :class:`Tile` or ``None``
         """
-        layer = self._get_layer(tile)
-        store = self._get_store(layer)
+        layer = tile.metadata["layer"]
+        config_file = tile.metadata["config_file"]
+        store = self._get_store(config_file, layer)
         assert store is not None
         return store.put_one(tile)
 
@@ -75,37 +85,37 @@ class MultiTileStore(TileStore):
 
         :rtype: :class:`Tile` or ``None``
         """
-        layer = self._get_layer(tile)
-        store = self._get_store(layer)
+        layer = tile.metadata["layer"]
+        config_file = tile.metadata["config_file"]
+        store = self._get_store(config_file, layer)
         assert store is not None
         return store.get_one(tile)
 
     def get(self, tiles: Iterable[Tile]) -> Iterator[Optional[Tile]]:
-        def apply(layer: str, tiles: Iterator[Tile]) -> Iterable[Optional[Tile]]:
-            store = self._get_store(layer)
-            return tiles if store is None else store.get(tiles)
+        def apply(key: Tuple[str, str], tiles: Iterator[Tile]) -> Iterable[Optional[Tile]]:
+            store = self._get_store(*key)
+            if store is None:
+                return tiles
+            return store.get(tiles)
 
         return chain.from_iterable(starmap(apply, groupby(tiles, self._get_layer)))
 
     def put(self, tiles: Iterable[Tile]) -> Iterator[Tile]:
-        def apply(layer: str, tiles: Iterator[Tile]) -> Iterator[Tile]:
-            store = self._get_store(layer)
+        def apply(key: Tuple[str, str], tiles: Iterator[Tile]) -> Iterator[Tile]:
+            store = self._get_store(*key)
             assert store is not None
             return store.put(tiles)
 
         return chain.from_iterable(starmap(apply, groupby(tiles, self._get_layer)))
 
     def delete(self, tiles: Iterable[Tile]) -> Iterator[Tile]:
-        def apply(layer: str, tiles: Iterator[Tile]) -> Iterator[Tile]:
-            store = self._get_store(layer)
+        def apply(key: Tuple[str, str], tiles: Iterator[Tile]) -> Iterator[Tile]:
+            store = self._get_store(*key)
             assert store is not None
             return store.delete(tiles)
 
         return chain.from_iterable(starmap(apply, groupby(tiles, self._get_layer)))
 
     @staticmethod
-    def _get_layer(tile: Optional[Tile]) -> Optional[str]:
-        if tile:
-            return tile.metadata["layer"]
-        else:
-            return None
+    def _get_layer(tile: Tile) -> Tuple[str, str]:
+        return (tile.metadata["config_file"], tile.metadata["layer"])

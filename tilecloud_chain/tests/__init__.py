@@ -14,7 +14,16 @@ import yaml
 DIFF = 200
 log = logging.getLogger("tests")
 
-config.dictConfig({"version": 1, "loggers": {"pykwalify": {"level": "WARN"}}})
+config.dictConfig(
+    {
+        "version": 1,
+        "loggers": {
+            "default": {"level": "INFO"},
+            "tilecloud": {"level": "DEBUG"},
+            "tilecloud_chain": {"level": "DEBUG"},
+        },
+    }
+)
 
 
 class NoAliasDumper(yaml.SafeDumper):
@@ -53,9 +62,17 @@ class CompareCase(TestCase):
         sys.stdout = mystdout = StringIO()
         old_stderr = sys.stderr
         sys.stderr = mystderr = StringIO()
-        self.assert_main_equals(cmd, main_func, [], get_error)
-        sys.stdout = old_stdout
-        sys.stderr = old_stderr
+        try:
+            self.assert_main_equals(cmd, main_func, [], get_error)
+        except AssertionError:
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
+            print(mystdout.getvalue())
+            print(mystderr.getvalue())
+            raise
+        finally:
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
         log.info(mystdout.getvalue())
         log.info(mystderr.getvalue())
         return mystdout.getvalue(), mystderr.getvalue()
@@ -72,13 +89,13 @@ class CompareCase(TestCase):
             out = str(out)
         self.assert_result_equals(result=out, **kargs)
 
-    def assert_cmd_exit_equals(self, cmd: str, main_func: Callable, expected: str) -> None:
+    def assert_cmd_exit_equals(self, cmd: str, main_func: Callable) -> None:
         sys.argv = re.sub(" +", " ", cmd).split(" ")
         try:
             main_func()
             assert "exit() not called."
         except SystemExit as e:
-            self.assertEqual(str(e), expected)
+            pass
 
     def assert_main_equals(
         self,
@@ -107,9 +124,9 @@ class CompareCase(TestCase):
         except AssertionError:
             raise
         except Exception:
-            assert get_error is True
-            # TODO
-            # assert False, traceback.format_exc()
+            if not get_error:
+                log.exception("Unexpected error")
+            assert get_error is True, traceback.format_exc()
 
         if expected:
             for expect in expected:

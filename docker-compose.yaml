@@ -21,22 +21,6 @@ services:
       - db:db
     user: www-data
 
-  mapcache:
-    image: camptocamp/mapcache:1.6
-    volumes:
-      - ./docker/mapcache-docker:/etc/mapcache:ro
-    links:
-      - mapserver:mapserver
-      - memcached:memcached
-    user: www-data
-
-  memcached:
-    image: memcached:1.5
-    user: www-data
-    command:
-      - memcached
-      - --memory-limit=512
-
   redis_master:
     image: redis:5
 
@@ -72,7 +56,6 @@ services:
       - infinity
     links:
       - db
-      - mapcache
       - mapserver
       - redis_sentinel
     volumes:

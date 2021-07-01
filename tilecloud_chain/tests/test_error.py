@@ -28,9 +28,6 @@ class TestError(CompareCase):
             log_capture.check(
                 ("tilecloud_chain", "ERROR", "The resolution 0.1 * resolution_scale 5 is not an integer."),
             )
-            log_capture.check(
-                ("tilecloud_chain", "ERROR", "The resolution 0.1 * resolution_scale 5 is not an integer."),
-            )
 
     def test_mapnik_grid_meta(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
@@ -45,24 +42,6 @@ class TestError(CompareCase):
                     "ERROR",
                     "The layer 'b' is of type Mapnik/Grid, that can't support matatiles.",
                 )
-            )
-
-    def test_exists(self) -> None:
-        with LogCapture("tilecloud_chain") as log_capture:
-            self.run_cmd(
-                cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_exists.yaml",
-                main_func=controller.main,
-                get_error=True,
-            )
-            log_capture.check(
-                (
-                    "tilecloud_chain",
-                    "ERROR",
-                    "The config file is invalid:\n"
-                    "-- tilegeneration/wrong_exists.yaml /: 'caches' is a required property (rule: required)\n"
-                    "-- tilegeneration/wrong_exists.yaml /: 'grids' is a required property (rule: required)\n"
-                    "-- tilegeneration/wrong_exists.yaml /: 'layers' is a required property (rule: required)",
-                ),
             )
 
     def test_type(self) -> None:
@@ -138,12 +117,6 @@ class TestError(CompareCase):
             log_capture.check_present(
                 (
                     "tilecloud_chain",
-                    "INFO",
-                    "Execute SQL: SELECT ST_AsBinary(geom) FROM (SELECT the_geom AS geom "
-                    "FROM tests.point) AS g.",
-                ),
-                (
-                    "tilecloud_chain",
                     "WARNING",
                     "zoom 10 is greater than the maximum zoom 4 of grid swissgrid_5 of layer point, ignored.",
                 ),
@@ -215,8 +188,6 @@ class TestError(CompareCase):
                     "tilecloud_chain",
                     "ERROR",
                     """The config file is invalid:
--- tilegeneration/wrong_map.yaml /: 'caches' is a required property (rule: required)
--- tilegeneration/wrong_map.yaml /: 'grids' is a required property (rule: required)
 -- tilegeneration/wrong_map.yaml:3:9 layers.test.empty_tile_detection: 'test' is not of type 'object' (rule: properties.layers.additionalProperties.anyOf.0.properties.empty_tile_detection.type)
 -- tilegeneration/wrong_map.yaml:3:9 layers.test.empty_tile_detection: 'test' is not of type 'object' (rule: properties.layers.additionalProperties.anyOf.1.properties.empty_tile_detection.type)
 -- tilegeneration/wrong_map.yaml:3:9 layers.test: 'extension' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
@@ -244,8 +215,6 @@ class TestError(CompareCase):
                     "tilecloud_chain",
                     "ERROR",
                     """The config file is invalid:
--- tilegeneration/wrong_sequence.yaml /: 'caches' is a required property (rule: required)
--- tilegeneration/wrong_sequence.yaml /: 'layers' is a required property (rule: required)
 -- tilegeneration/wrong_sequence.yaml:3:9 grids.test.resolutions: 'test' is not of type 'array' (rule: properties.grids.additionalProperties.properties.resolutions.type)
 -- tilegeneration/wrong_sequence.yaml:3:9 grids.test: 'bbox' is a required property (rule: properties.grids.additionalProperties.required)
 -- tilegeneration/wrong_sequence.yaml:3:9 grids.test: 'srs' is a required property (rule: properties.grids.additionalProperties.required)""",

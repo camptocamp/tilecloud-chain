@@ -27,24 +27,29 @@ def main() -> None:
 
         options = parser.parse_args()
         gene = TileGeneration(
-            options.config, options, layer_name=options.layer, base_config={"cost": {}}, multi_thread=False
+            options.config,
+            options=options,
+            layer_name=options.layer,
+            base_config={"cost": {}},
+            multi_thread=False,
         )
+        config = gene.get_config(options.config)
 
         all_size: float = 0
         tile_size: float = 0
         all_tiles = 0
         if options.layer:
-            layer = gene.layers[options.layer]
+            layer = config.config["layers"][options.layer]
             (all_size, all_time, all_price, all_tiles) = _calculate_cost(gene, options.layer, options)
             tile_size = layer["cost"]["tile_size"] / (1024.0 * 1024)
         else:
             all_time = timedelta()
             all_price = 0
-            for layer_name in gene.config["generation"]["default_layers"]:
-                print("")
+            for layer_name in gene.get_config(options.config).config["generation"]["default_layers"]:
+                print()
                 print(f"===== {layer_name} =====")
-                layer = gene.layers[layer_name]
-                gene.init_layer(layer_name, options)
+                layer = config.config["layers"][layer_name]
+                gene.create_log_tiles_error(layer_name)
                 (size, time, price, tiles) = _calculate_cost(gene, layer_name, options)
                 tile_size += layer["cost"]["tile_size"] / (1024.0 * 1024)
                 all_time += time
@@ -52,22 +57,24 @@ def main() -> None:
                 all_size += size
                 all_tiles += tiles
 
-            print("")
+            print()
             print("===== GLOBAL =====")
             print(f"Total number of tiles: {all_tiles}")
             print(f"Total generation time: {duration_format(all_time)} [d h:mm:ss]")
             print(f"Total generation cost: {all_price:0.2f} [$]")
-        print("")
+        print()
         print(
             "S3 Storage: {:0.2f} [$/month]".format(
-                all_size * gene.config["cost"]["s3"]["storage"] / (1024.0 * 1024 * 1024)
+                all_size * gene.get_main_config().config["cost"]["s3"]["storage"] / (1024.0 * 1024 * 1024)
             )
         )
         print(
             "S3 get: {:0.2f} [$/month]".format(
-                gene.config["cost"]["s3"]["get"] * gene.config["cost"]["request_per_layers"] / 10000.0
-                + gene.config["cost"]["s3"]["download"]
-                * gene.config["cost"]["request_per_layers"]
+                gene.get_main_config().config["cost"]["s3"]["get"]
+                * config.config["cost"]["request_per_layers"]
+                / 10000.0
+                + gene.get_main_config().config["cost"]["s3"]["download"]
+                * config.config["cost"]["request_per_layers"]
                 * tile_size
             )
         )
@@ -89,12 +96,13 @@ def _calculate_cost(
 ) -> Tuple[float, timedelta, float, int]:
     nb_metatiles = {}
     nb_tiles = {}
-    layer = gene.config["layers"][layer_name]
+    config = gene.get_config(options.config)
+    layer = config.config["layers"][layer_name]
 
     meta = layer["meta"]
     if options.cost_algo == "area":
-        tile_size = gene.config["grids"][layer["grid"]]["tile_size"]
-        for zoom, resolution in enumerate(gene.config["grids"][layer["grid"]]["resolutions"]):
+        tile_size = config.config["grids"][layer["grid"]]["tile_size"]
+        for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
             if "min_resolution_seed" in layer and resolution < layer["min_resolution_seed"]:
                 continue
 
@@ -105,15 +113,15 @@ def _calculate_cost(
             if meta:
                 size = tile_size * layer["meta_size"] * resolution
                 meta_buffer = size * 0.7 + m_buffer
-                meta_geom = gene.geoms[layer_name][zoom].buffer(meta_buffer, 1)
+                meta_geom = gene.get_geoms(config, layer_name)[zoom].buffer(meta_buffer, 1)
                 nb_metatiles[zoom] = int(round(meta_geom.area / size ** 2))
             size = tile_size * resolution
             tile_buffer = size * 0.7 + m_buffer
-            geom = gene.geoms[layer_name][zoom].buffer(tile_buffer, 1)
+            geom = gene.get_geoms(config, layer_name)[zoom].buffer(tile_buffer, 1)
             nb_tiles[zoom] = int(round(geom.area / size ** 2))
 
     elif options.cost_algo == "count":
-        gene.init_tilecoords(layer_name)
+        gene.init_tilecoords(config, layer_name)
         gene.add_geom_filter()
 
         if meta:
@@ -158,7 +166,7 @@ def _calculate_cost(
             run(tile)
 
     times = {}
-    print("")
+    print()
     for z in nb_metatiles:
         print(f"{nb_metatiles[z]} meta tiles in zoom {z}.")
         times[z] = layer["cost"]["metatile_generation_time"] * nb_metatiles[z]
@@ -168,7 +176,7 @@ def _calculate_cost(
     all_time: float = 0
     all_tiles = 0
     for z in nb_tiles:
-        print("")
+        print()
         print(f"{nb_tiles[z]} tiles in zoom {z}.")
         all_tiles += nb_tiles[z]
         if meta:
@@ -181,20 +189,20 @@ def _calculate_cost(
         all_time += time
         td = timedelta(milliseconds=time)
         print(f"Time to generate: {duration_format(td)} [d h:mm:ss]")
-        c = gene.config["cost"]["s3"]["put"] * nb_tiles[z] / 1000.0
+        c = gene.get_main_config().config["cost"]["s3"]["put"] * nb_tiles[z] / 1000.0
         price += c
         print(f"S3 PUT: {c:0.2f} [$]")
 
-        if "sqs" in gene.config:
+        if "sqs" in gene.get_main_config().config:
             if meta:
                 nb_sqs = nb_metatiles[z] * 3
             else:
                 nb_sqs = nb_tiles[z] * 3
-            c = nb_sqs * gene.config["cost"]["sqs"]["request"] / 1000000.0
+            c = nb_sqs * gene.get_main_config().config["cost"]["sqs"]["request"] / 1000000.0
             price += c
             print(f"SQS usage: {c:0.2f} [$]")
 
-    print("")
+    print()
     td = timedelta(milliseconds=all_time)
     print(f"Number of tiles: {all_tiles}")
     print(f"Generation time: {duration_format(td)} [d h:mm:ss]")
