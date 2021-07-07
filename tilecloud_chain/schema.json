@@ -882,10 +882,12 @@
             "type": "array",
             "items": [
               {
+                "title": "Sentinel host",
                 "description": "The sentinel host name (main configuration)",
                 "type": "string"
               },
               {
+                "title": "Sentinel port",
                 "description": "The sentinel port (main configuration)",
                 "anyOf": [{ "type": "string" }, { "type": "integer" }]
               }
@@ -1046,7 +1048,15 @@
         },
         "allowed_commands": {
           "title": "Allowed commands",
-          "description": "The regular expression of authorised commands",
+          "description": "The allowed commands (main configuration)",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "allowed_arguments": {
+          "title": "Allowed arguments",
+          "description": "The allowed arguments (main configuration)",
           "type": "array",
           "items": {
             "type": "string"

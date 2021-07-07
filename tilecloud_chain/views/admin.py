@@ -25,12 +25,12 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+from io import StringIO
 import logging
 import os
 import shlex
 import subprocess
-import threading
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from c2cwsgiutils.auth import auth_view, is_auth
 import pyramid.httpexceptions
@@ -42,45 +42,6 @@ from tilecloud_chain.controller import get_status
 import tilecloud_chain.server
 
 LOG = logging.getLogger(__name__)
-
-
-class LogThread(threading.Thread):
-    def __init__(self, command: List[str]):
-        super().__init__()
-        self.command = command
-
-    def run(self) -> None:
-        try:
-            display_command = " ".join([shlex.quote(arg) for arg in self.command])
-            LOG.info("Run the command `%s`", display_command)
-            env: Dict[str, str] = {}
-            env.update(os.environ)
-            env["FRONTEND"] = "noninteractive"
-            with subprocess.Popen(
-                self.command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                env=env,
-            ) as process:
-                stdout, stderr = process.communicate()
-                if process.returncode != 0:
-                    LOG.error(
-                        "The command `%s` exited with an error code: %s\nstdout:\n%s\nstderr:\n%s",
-                        display_command,
-                        process.returncode,
-                        stdout.decode(),
-                        stderr.decode(),
-                    )
-                else:
-                    LOG.info(
-                        "The command `%s` succeeded with stdout:\n%s\nstderr:\n%s",
-                        display_command,
-                        stdout.decode(),
-                        stderr.decode(),
-                    )
-        except Exception as exception:
-            LOG.error(str(exception))
-            raise exception
 
 
 class Admin:
@@ -108,20 +69,83 @@ class Admin:
             .get("static_path", "static"),
         }
 
-    @view_config(route_name="admin_run")  # type: ignore
+    @view_config(route_name="admin_run", renderer="fast_json")  # type: ignore
     def run(self) -> pyramid.response.Response:
         assert self.gene
         auth_view(self.request)
 
         if "command" not in self.request.POST:
-            raise pyramid.httpexceptions.HTTPBadRequest("The POST argument 'command' is required")
+            self.request.response.status_code = 400
+            return {"error": "The POST argument 'command' is required"}
 
-        command = shlex.split(self.request.POST["command"])
+        commands = shlex.split(self.request.POST["command"])
+        command = commands[0].replace("_", "-")
 
-        if command[0] not in self.gene.get_host_config(self.request.host).config.get("server", {}).get(
-            "allowed_commands", ["generate_tiles", "generate_controller"]
-        ):
-            raise pyramid.httpexceptions.HTTPBadRequest(f"The given executable '{command[0]}' is not allowed")
-        log_thread = LogThread(command)
-        log_thread.start()
-        return pyramid.httpexceptions.HTTPFound(self.request.route_url("admin"))
+        allowed_commands = (
+            self.gene.get_main_config()
+            .config.get("server", {})
+            .get("allowed_commands", ["generate-tiles", "generate-controller", "generate-cost"])
+        )
+        if command not in allowed_commands:
+            return {
+                "error": f"The given command '{command}' is not allowed, allowed command are: "
+                f"{', '.join(allowed_commands)}"
+            }
+        add_role = False
+        arguments = {c.split("=")[0]: c.split("=")[1:] for c in commands[1:]}
+        if command == "generate-tiles":
+            add_role = "--get-hash" not in arguments and "--get-bbox" not in arguments
+
+        allowed_arguments = (
+            self.gene.get_main_config()
+            .config.get("server", {})
+            .get(
+                "allowed_arguments",
+                [
+                    "--layer",
+                    "--get-hash",
+                    "--openlayers",
+                    "--generate-legend-images",
+                    "--dump-config",
+                    "--get-bbox",
+                ],
+            )
+        )
+        for arg in arguments.keys():
+            if arg.startswith("-") and arg not in allowed_arguments:
+                self.request.response.status_code = 400
+                return {
+                    "error": (
+                        f"The argument {arg} is not allowed, allowed arguments are: "
+                        f"{', '.join(allowed_arguments)}"
+                    )
+                }
+
+        final_command = [command, f"--config={self.gene.get_host_config_file(self.request.host)}"]
+        if add_role:
+            final_command += ["--role=master"]
+        final_command += commands[1:]
+
+        display_command = " ".join([shlex.quote(arg) for arg in final_command])
+        LOG.info("Run the command `%s`", display_command)
+        env: Dict[str, str] = {}
+        env.update(os.environ)
+        env["FRONTEND"] = "noninteractive"
+
+        stdout = StringIO()
+        stderr = StringIO()
+        completed_process = subprocess.run(  # pylint: disable=subprocess-run-check
+            final_command,
+            stdout=stdout,
+            stderr=stderr,
+            env=env,
+        )
+        if completed_process.returncode != 0:
+            LOG.warning(
+                "The command `%s` exited with an error code: %s\nstdout:\n%s\nstderr:\n%s",
+                display_command,
+                completed_process.returncode,
+                stdout.getvalue(),
+                stderr.getvalue(),
+            )
+        return {"stdout": stdout.getvalue(), "stderr": stderr.getvalue(), "returncode": completed_process}

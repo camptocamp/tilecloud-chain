@@ -19,9 +19,10 @@
     <h2>Status</h2>
     <p>${'<br />'.join(status)|n}</p>
     <h2>Launch generation</h2>
-    <form action="${run_url}" method="POST">
-      Command: <input id="command" type="text" name="command" />
-      <input type="submit" value="Start" />
+    <form id="command-form" action="${run_url}" method="POST" class="form-inline">
+      <label for="staticEmail2" class="sr-only">Command</label>
+      <input id="command" type="text" name="command" class="form-control" placeholder="Command" />
+      <button type="submit" class="btn btn-primary mb-2">Start</button>
       %if secret is not None:
       <input type="hidden" name="secret" value="${secret}" />
       %endif
@@ -34,6 +35,8 @@
     <!-- for prettier -->
     %endif
 
+    <div id="result"></div>
+
     <h2>Test</h2>
     <p>See the result in <a href="/${static_path}/index.html">the test page</a>.</p>
 
@@ -41,20 +44,46 @@
       src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
       integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
       crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.3.0/jquery.form.min.js"
+      integrity="sha512-YUkaLm+KJ5lQXDBdqBqk7EVhJAdxRnVdT2vtCzwPHSweCzyMgYV/tgGF4/dCyqtCC2eCphz0lRQgatGVdfR0ww=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
     ></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
       integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
       crossorigin="anonymous"
+      referrerpolicy="no-referrer"
     ></script>
     <script
       src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
       integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
       crossorigin="anonymous"
+      referrerpolicy="no-referrer"
     ></script>
     <script>
-      $('.command').click((handler) => {
-        $('#command').val(handler.target.dataset.role);
+      $(document).ready(function () {
+        $('.command').click((handler) => {
+          $('#command').val(handler.target.dataset.role);
+        });
+        $('#command-form').ajaxForm({
+          success: (data) => {
+            if ('error' in data) {
+              $('#result').html(`<div class="alert alert-danger" role="alert">${data['error']}</div>`);
+            } else {
+              errorcode = '';
+              if (data['returncode'] != 0) {
+                errorcode = `<br />error code: ${data['error']}`;
+              }
+              $('#result').html(
+                `<div class="alert alert-danger" role="alert">${data['stderr']}${errorcode}</div><div class="alert alert-primary" role="alert">${data['stdout']}</div>`
+              );
+            }
+          },
+        });
       });
     </script>
   </body>

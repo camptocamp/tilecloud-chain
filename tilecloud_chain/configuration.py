@@ -619,6 +619,18 @@ class S3Cost(TypedDict, total=False):
     download: Union[int, float]
 
 
+# Sentinel host
+#
+# The sentinel host name (main configuration)
+SentinelHost = str
+
+
+# Sentinel port
+#
+# The sentinel port (main configuration)
+SentinelPort = Union[str, int]
+
+
 # Server
 #
 # Configuration used by the tile server, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#distribute-the-tiles
@@ -633,6 +645,7 @@ class Server(TypedDict, total=False):
     expires: int
     predefined_commands: List["_PredefinedCommandsItem"]
     allowed_commands: List[str]
+    allowed_arguments: List[str]
 
 
 # SNS
@@ -656,14 +669,6 @@ class Sqs(TypedDict, total=False):
 # The SQS cost, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sqs (main configuration)
 class SqsCost(TypedDict, total=False):
     request: Union[int, float]
-
-
-# The sentinel host name (main configuration)
-_Base = str
-
-
-# The sentinel port (main configuration)
-_BaseGen823765 = Union[str, int]
 
 
 # pattern: ^[a-zA-Z0-9_\-\+~\.]+$
@@ -721,7 +726,7 @@ class _ProcessCommandItem(TypedDict, total=False):
 # A sentinel (main configuration)
 #
 # additionalItems: False
-_SentinelsItem = Tuple["_Base", "_BaseGen823765"]
+_SentinelsItem = Tuple["SentinelHost", "SentinelPort"]
 
 
 # pattern: ^[a-zA-Z0-9_\-\+~\.]+$
