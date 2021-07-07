@@ -18,16 +18,6 @@ class Address(TypedDict, total=False):
     email: str
 
 
-# Apache
-#
-# Configuration used to generate the Apache configuration (deprecated) (main configuration)
-class Apache(TypedDict, total=False):
-    location: str
-    config_file: str
-    expires: int
-    headers: "Headers"
-
-
 # Argument
 #
 # Used to build the %(args)
@@ -182,8 +172,6 @@ class Configuration(TypedDict, total=False):
     sqs: "Sqs"
     sns: "Sns"
     redis: "Redis"
-    apache: "Apache"
-    mapcache: "Mapcache"
     openlayers: "Openlayers"
     server: "Server"
     cost: "Cost"
@@ -510,16 +498,6 @@ LayerWmtsStyle = str
 # The logging configuration to database, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#logging (main configuration)
 class Logging(TypedDict, total=False):
     database: "Database"
-
-
-# MapCache
-#
-# Configuration used to generate the mapcache configuration (deprecated) (main configuration)
-class Mapcache(TypedDict, total=False):
-    config_file: str
-    memcache_host: str
-    memcache_port: Union[Union[int, float], str]
-    location: str
 
 
 # Matrix identifier

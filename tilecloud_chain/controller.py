@@ -32,7 +32,7 @@ def main() -> None:
         stats.init_backends({})
         parser = ArgumentParser(
             description="Used to generate the contextual file like the capabilities, the legends, "
-            "the Apache and MapCache configuration",
+            "the OpenLayers example",
             prog=sys.argv[0],
         )
         add_comon_options(parser, tile_pyramid=False, no_geom=False)
@@ -61,25 +61,6 @@ def main() -> None:
             action="store_true",
             dest="openlayers",
             help="Generate openlayers test page",
-        )
-        parser.add_argument(
-            "--mapcache",
-            "--generate-mapcache-config",
-            default=False,
-            action="store_true",
-            dest="mapcache",
-            help="Generate MapCache configuration file",
-        )
-        parser.add_argument(
-            "--mapcache-version", default="1.4", choices=("1.4", "1.6"), help="The used version of MapCache"
-        )
-        parser.add_argument(
-            "--apache",
-            "--generate-apache-config",
-            default=False,
-            action="store_true",
-            dest="apache",
-            help="Generate Apache configuration file",
         )
         parser.add_argument(
             "--dump-config",
@@ -113,12 +94,6 @@ def main() -> None:
 
         if options.capabilities:
             _generate_wmts_capabilities(gene)
-
-        if options.mapcache:
-            _generate_mapcache_config(gene, options.mapcache_version)
-
-        if options.apache:
-            _generate_apache_config(gene)
 
         if options.openlayers:
             _generate_openlayers(gene)
@@ -386,157 +361,6 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                             layer["legend_mime"],
                             cache,
                         )
-
-
-def _generate_mapcache_config(gene: TileGeneration, version: str) -> None:
-    assert gene.config_file
-    config = gene.get_config(gene.config_file)
-    for layer in config.config["layers"].values():
-        if layer["type"] == "wms" or "wms_url" in layer:
-            layer_wms = cast(tilecloud_chain.configuration.LayerWms, layer)
-            params = {}
-            params.update(layer_wms.get("params", {}))
-            if "FORMAT" not in params:
-                params["FORMAT"] = layer_wms["mime_type"]
-            if "LAYERS" not in layer_wms.get("params", {}):
-                params["LAYERS"] = layer_wms["layers"]
-            if "TRANSPARENT" not in layer_wms.get("params", {}):
-                params["TRANSPARENT"] = "TRUE" if layer_wms["mime_type"] == "image/png" else "FALSE"
-            layer_wms["params"] = params
-
-    data = pkgutil.get_data("tilecloud_chain", "mapcache_config.jinja")
-    assert data
-    config_out = jinja2_template(
-        data.decode("utf-8"),
-        layers=config.config["layers"],
-        grids=config.config["grids"],
-        mapcache=gene.get_main_config().config["mapcache"],
-        version=version,
-        min=min,
-        len=len,
-        sorted=sorted,
-    )
-
-    with open(gene.get_main_config().config["mapcache"]["config_file"], "w", encoding="utf-8") as f:
-        f.write(config_out)
-
-
-def _generate_apache_config(gene: TileGeneration) -> None:
-    assert gene.config_file
-    config = gene.get_config(gene.config_file)
-    cache = config.config["caches"][gene.options.cache]
-    use_server = "server" in gene.get_main_config().config
-
-    with open(gene.get_main_config().config["apache"]["config_file"], "w", encoding="utf-8") as f:
-
-        folder = cache["folder"]
-        if folder and folder[-1] != "/":
-            folder += "/"
-        location = gene.get_main_config().config["apache"]["location"]
-
-        if not use_server:
-            expires = gene.get_main_config().config["apache"]["expires"]
-            headers = "".join(
-                [
-                    f'    Header set {h[0]} "{h[1]}"'
-                    for h in gene.get_main_config()
-                    .config["apache"]
-                    .get("headers", {"Cache-Control": "max-age=864000, public"})
-                    .items()
-                ]
-            )
-            f.write(
-                f"""
-    <Location {location}>
-        ExpiresActive on
-        ExpiresDefault "now plus {expires} hours"
-    {headers}
-    </Location>
-    """
-            )
-            if cache["type"] == "s3":
-                cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
-                tiles_url = (
-                    (cache_s3["tiles_url"] % cache)
-                    if "tiles_url" in cache
-                    else "http://s3-{region}.amazonaws.com/{bucket}/{folder}".format(
-                        **{
-                            "region": cache_s3.get("region", "eu-west-1"),
-                            "bucket": cache_s3["bucket"],
-                            "folder": folder,
-                        }
-                    )
-                )
-                f.write(
-                    f"""
-    <Proxy {tiles_url}*>
-        Order deny,allow
-        Allow from all
-    </Proxy>
-    ProxyPass {location}/ {tiles_url}
-    ProxyPassReverse {location}/ {tiles_url}
-    """
-                )
-            elif cache["type"] == "filesystem":
-                f.write(
-                    f"""
-    Alias {location} {folder}
-    """
-                )
-
-        use_mapcache = "mapcache" in gene.get_main_config().config
-        if use_mapcache and not use_server:
-            token_regex = r"([a-zA-Z0-9_\-\+~\.]+)"  # nosec
-            f.write("\n")
-
-            for layer_name, layer in sorted(config.config["layers"].items()):
-                if "min_resolution_seed" in layer:
-                    res = [
-                        r
-                        for r in config.config["grids"][layer["grid"]]["resolutions"]
-                        if r < layer["min_resolution_seed"]
-                    ]
-                    dim = len(layer.get("dimensions", []))
-                    for r in res:
-                        f.write(
-                            "RewriteRule"
-                            " "
-                            "^%(tiles_location)s/1.0.0/%(layer)s/%(token_regex)s"  # Baseurl/layer/Style
-                            "%(dimensions_re)s"  # Dimensions : variable number of values
-                            # TileMatrixSet/TileMatrix/TileRow/TileCol.extension
-                            "/%(token_regex)s/%(zoom)s/(.*)$"
-                            " "
-                            "%(mapcache_location)s/wmts/1.0.0/%(layer)s/$1"
-                            "%(dimensions_rep)s"
-                            "/$%(tilematrixset)s/%(zoom)s/$%(final)s"
-                            " "
-                            "[PT]\n"
-                            % {
-                                "tiles_location": gene.get_main_config().config["apache"]["location"],
-                                "mapcache_location": gene.get_main_config().config["mapcache"]["location"],
-                                "layer": layer_name,
-                                "token_regex": token_regex,
-                                "dimensions_re": "".join(["/" + token_regex for e in range(dim)]),
-                                "dimensions_rep": "".join([f"/${e + 2}" for e in range(dim)]),
-                                "tilematrixset": dim + 2,
-                                "final": dim + 3,
-                                "zoom": config.config["grids"][layer["grid"]]["resolutions"].index(r),
-                            }
-                        )
-
-        if use_mapcache:
-            f.write(
-                """
-    MapCacheAlias {mapcache_location!s} "{mapcache_config!s}"
-    """.format(
-                    **{
-                        "mapcache_location": gene.get_main_config().config["mapcache"]["location"],
-                        "mapcache_config": os.path.abspath(
-                            gene.get_main_config().config["mapcache"]["config_file"]
-                        ),
-                    }
-                )
-            )
 
 
 def _get_resource(resource: str) -> bytes:

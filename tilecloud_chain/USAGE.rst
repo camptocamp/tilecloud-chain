@@ -311,61 +311,6 @@ Tile logs can be saved to a PostgreSQL database with this configuration:
     PostgreSQL authentication can be specified with the ``PGUSER`` and ``PGPASSWORD`` environment variables.
     If the database is not reachable, the process will wait until it is.
 
-Configure Apache (deprecated)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To generate the Apache configuration we use the command:
-
-.. prompt:: bash
-
-    generate-controller --generate-apache-config
-
-The Apache configuration look like this (default values):
-
-.. code:: yaml
-
-    apache:
-        # Generated file
-        config_file: apache/tiles.conf
-        # Serve tiles location, default is /tiles
-        location: /${instanceid}/tiles
-        # Expires header in hours
-        expires: 8
-
-        # Headers added to the responses
-        headers:
-            Cache-Control: max-age=864000, public
-
-If we use a proxy to access to the tiles we can specify a different URL to access to the tiles by adding the
-parameter ``tiles_url`` in the cache.
-
-Configure MapCache (deprecated)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-For the last zoom levels we can use MapCache.
-
-To select the levels we switch from pre-generate the tiles to generate tiles on run-time by using MapCache
-``min_resolution_seed`` in the layer configuration.
-
-The MapCache configuration look like this (default values):
-
-.. code:: yaml
-
-    mapcache:
-        # The generated file
-        config_file: apache/mapcache.xml
-        # The memcache host
-        memcache_host: localhost
-        # The memcache port
-        memcache_port: 11211
-        # The mapcache location, default is /mapcache
-        location: /${instanceid}/mapcache
-
-To generate the MapCache configuration we use the command:
-
-.. prompt:: bash
-
-    generate-controller --generate-mapcache-config
 
 Tiles error file
 ~~~~~~~~~~~~~~~~
@@ -555,23 +500,8 @@ To completely hide the missing tiles, useful for a transparent layer, or for an 
         background-color: white;
     }
 
-Distribute the tiles
+Configure the server
 --------------------
-
-There two ways to serve the tiles, with Apache configuration, or with an internal server.
-
-The advantage of the internal server are:
-
--  Can distribute MBTiles or Berkeley DB.
--  Return ``204 No Content`` HTTP code in place of ``404 Not Found`` (or ``403 Forbidden`` for s3).
--  Can be used in KVP mode.
--  Can have zone per layer where are the tiles, otherwise it redirect on mapcache.
-
-To generate the Apache configuration we use the command:
-
-.. prompt:: bash
-
-    generate-controller --generate-apache-config
 
 The server can be configure as it:
 
@@ -639,8 +569,7 @@ Commands
 Available commands
 ~~~~~~~~~~~~~~~~~~
 
--  ``generate-controller`` generate the annex files like capabilities, legend, OpenLayers test page, MapCache
-   configuration, Apache configuration.
+-  ``generate-controller`` generate the annex files like capabilities, legend, OpenLayers test page.
 -  ``generate-tiles`` generate the tiles.
 -  ``generate-copy`` copy the tiles from a cache to an other.
 -  ``generate-process`` process the tiles using a configured process.

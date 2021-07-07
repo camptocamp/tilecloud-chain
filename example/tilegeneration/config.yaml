@@ -106,35 +106,6 @@ generation:
   # maximum allowed consecutive errors, after it exit [default to 10]
   maxconsecutive_errors: 10
 
-apache:
-  location: /tiles
-  predefined_commands:
-    - name: Generation all layers
-      command: generate-tiles
-    - name: Generation the layer 'plan'
-      command: generate-tiles --layer=plan
-    - name: Generation the layer 'ortho'
-      command: generate-tiles --layer=ortho
-    - name: Get hash on layer 'plan'
-      command: generate-tiles --get-hash=10/0/0 --layer=plan
-    - name: Get hash on layer 'ortho'
-      command: generate-tiles --get-hash=10/0/0 --layer=ortho
-    - name: Get cost
-      command: generate-cost
-    - name: Generation OpenLayers example
-      command: generate-controller --openlayers
-    - name: Generate the legend images
-      command: generate-controller --generate-legend-images
-    - name: Dump config
-      command: generate-controller --dump-config
-    - name: Get bbox
-      command: generate-tile --get-bbox=5/5/5 --layer=plan
-
-mapcache:
-  config_file: apache/mapcache.xml
-  memcache_host: localhost
-  memcache_port: 11211
-
 process:
   optipng_test:
     - cmd: optipng -o7 -simulate %(in)s

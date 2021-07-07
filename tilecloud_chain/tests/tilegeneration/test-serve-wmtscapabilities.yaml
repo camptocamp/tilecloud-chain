@@ -47,11 +47,5 @@ generation:
   default_cache: local
   maxconsecutive_errors: 2
 
-mapcache:
-  config_file: mapcache.xml
-
-apache:
-  config_file: tiles.conf
-
 server:
   geoms_redirect: true

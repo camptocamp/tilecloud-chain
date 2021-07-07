@@ -33,10 +33,3 @@ layers:
   nodim:
     <<: *layer
     layers: default
-
-mapcache:
-  config_file: mapcache.xml
-  memcache_host: memcached
-
-apache:
-  config_file: tiles.conf
