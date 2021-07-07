@@ -6,8 +6,8 @@ Configure grids
 
 The ``grid`` describes how the tiles are arranged.
 
-Especially on ``s3`` be careful to choose every of the grid settings before generating the tiles. If you
-change one of them you must regenerate all the tiles.
+Especially on ``s3`` or ``azure``be careful to choose every of the grid settings before generating the
+tiles. If you change one of them you must regenerate all the tiles.
 
 The ``resolutions`` in [px/m] describes all the resolutions available for this layer. For a raster layer, have
 a look to the maximum resolution of the source files. It is not needed to generate tiles at smaller
@@ -31,12 +31,14 @@ allowing to add a new resolution without regenerating all the tiles, but it does
 Configure caches
 ~~~~~~~~~~~~~~~~
 
-The available tile caches are: ``s3``, ``bsddb``, ``mbtile`` and ``filesystem``.
+The available tile caches are: ``s3``, ``azure``, ``bsddb``, ``mbtile`` and ``filesystem``.
 
-The best solution to store the tiles, ``s3``, ``mbtiles`` and ``bsddb``, have the advantage of using only one
+The best solution to store the tiles, ``s3``, ``azure``, ``mbtiles`` and ``bsddb``, have the advantage of using only one
 file per layer - style dimensions. To serve the ``mbtile`` and the ``bsddb`` see Distribute the tiles.
 
 ``s3`` needs a ``bucket`` and a ``folder`` (defaults to '').
+
+``azure`` needs a ``container``.
 
 ``mbtiles``, ``bsddb`` and ``filesystem`` just need a ``folder``.
 
@@ -477,6 +479,33 @@ For example to delete many tiles do:
 .. code:: bash
 
     aws s3 rm --recursive s3://your_bucket_name/folder
+
+
+Configure Azure
+~~~~~~~~~~~~~~~
+
+The cache configuration is like this:
+
+.. code:: yaml
+
+    azure:
+        type: azure
+        # the Azure container name
+        container: tiles
+        # the used folder in the container [default to '']
+        folder: ''
+        # for GetCapabilities
+        http_url: https://%(host)s/%(bucket)s/%(folder)s/
+        cache_control: 'public, max-age=14400'
+        hosts:
+        - wmts0.<host>
+
+The container should already exists.
+
+For the authentication you should set those environment variables:
+``AZURE_STORAGE_CONNECTION_STRING`` on your local environment,
+or ``AZURE_STORAGE_ACCOUNT_URL`` if you run your container on Azure.
+
 
 Other related configuration
 ---------------------------

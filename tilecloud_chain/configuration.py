@@ -39,7 +39,30 @@ AwsRegion = str
 # Cache
 #
 # The tiles cache definition, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-caches
-Cache = Union["CacheFilesystem", "CacheS3", "CacheMbtiles", "CacheBsddb"]
+Cache = Union["CacheFilesystem", "CacheS3", "CacheAzure", "CacheMbtiles", "CacheBsddb"]
+
+
+# Cache Azure
+#
+# Azure Blob Storage
+#
+# WARNING: The required are not correctly taken in account,
+# See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
+#
+# WARNING: the Normally the types should be mised each other instead of Union.
+# See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
+CacheAzure = Union[Dict[str, str], "CacheAzureTyped"]
+
+
+class CacheAzureTyped(TypedDict, total=False):
+    type: Literal["azure"]
+    wmtscapabilities_file: "CacheWmstCapabilitiesFile"
+    http_url: "CacheHttpUrl"
+    hosts: "CacheHost"
+    http_urls: "CacheHttpUrls"
+    folder: "CacheFolder"
+    container: str
+    cache_control: str
 
 
 # Cache BSDDB

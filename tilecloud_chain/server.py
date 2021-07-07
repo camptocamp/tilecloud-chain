@@ -33,6 +33,7 @@ import time
 from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, Union, cast
 from urllib.parse import parse_qs, urlencode
 
+from azure.core.exceptions import ResourceNotFoundError
 import botocore.exceptions
 from c2cwsgiutils import health_check
 import c2cwsgiutils.pyramid
@@ -48,6 +49,7 @@ from tilecloud import Tile, TileCoord
 import tilecloud.store.s3
 from tilecloud_chain import TileGeneration, controller, internal_mapcache
 import tilecloud_chain.configuration
+from tilecloud_chain.controller import get_azure_client
 
 logger = logging.getLogger(__name__)
 
@@ -253,6 +255,23 @@ class Server(Generic[Response]):
             except Exception:
                 del self.s3_client_cache[cache_s3.get("host", "aws")]
                 return self._read(key_name, headers, config, **kwargs)
+        if cache["type"] == "azure":
+            cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
+            key_name = os.path.join(cache_azure["folder"], path)
+            try:
+                blob = get_azure_client().get_blob_client(container=cache_azure["container"], blob=key_name)
+                properties = blob.get_blob_properties()
+                return self.response(
+                    config,
+                    blob.download_blob().readall(),
+                    {
+                        "Content-Encoding": cast(str, properties.content_settings.content_encoding),
+                        "Content-Type": cast(str, properties.content_settings.content_type),
+                    },
+                    **kwargs,
+                )
+            except ResourceNotFoundError:
+                return self.error(config, 404, path + " not found", **kwargs)
         else:
             cache_filesystem = cast(tilecloud_chain.configuration.CacheFilesystem, cache)
             folder = cache_filesystem["folder"] or ""
@@ -421,7 +440,7 @@ class Server(Generic[Response]):
                 else:
                     return self.error(config, 400, f"Wrong Layer '{params['LAYER']}'", **kwargs)
 
-                for dimension in layer["dimensions"]:
+                for dimension in layer.get("dimensions", []):
                     value = (
                         params[dimension["name"].upper()]
                         if dimension["name"].upper() in params

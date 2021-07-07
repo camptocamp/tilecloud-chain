@@ -12,6 +12,9 @@ from typing import List, Optional, Union, cast
 from urllib.parse import urlencode, urljoin
 
 from PIL import Image
+from azure.core.exceptions import ResourceNotFoundError
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobServiceClient, ContentSettings
 import botocore.exceptions
 from bottle import jinja2_template
 from c2cwsgiutils import stats
@@ -107,6 +110,17 @@ def main() -> None:
         sys.exit(1)
 
 
+def get_azure_client() -> BlobServiceClient:
+    """Get the Azure blog storage client."""
+    if "AZURE_STORAGE_CONNECTION_STRING" in os.environ and os.environ["AZURE_STORAGE_CONNECTION_STRING"]:
+        return BlobServiceClient.from_connection_string(os.environ["AZURE_STORAGE_CONNECTION_STRING"])
+    else:
+        return BlobServiceClient(
+            account_url=os.environ["AZURE_STORAGE_ACCOUNT_URL"],
+            credential=DefaultAzureCredential(),
+        )
+
+
 def _send(
     data: Union[bytes, str], path: str, mime_type: str, cache: tilecloud_chain.configuration.Cache
 ) -> None:
@@ -122,6 +136,21 @@ def _send(
             Bucket=bucket,
             ContentEncoding="utf-8",
             ContentType=mime_type,
+        )
+    if cache["type"] == "azure":
+        cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
+        key_name = os.path.join(f"{cache['folder']}", path)
+        blob = get_azure_client().get_blob_client(container=cache_azure["container"], blob=key_name)
+        blob.upload_blob(data, overwrite=True)
+
+        blob.upload_blob(
+            data,
+            overwrite=True,
+            content_settings=ContentSettings(
+                content_type=mime_type,
+                content_encoding="utf-8",
+                cache_control=cache_azure["cache_control"],
+            ),
         )
     else:
         if isinstance(data, str):
@@ -150,6 +179,14 @@ def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> Optional[byte
                 return None
             else:
                 raise
+    if cache["type"] == "azure":
+        cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
+        key_name = os.path.join(f"{cache['folder']}", path)
+        try:
+            blob = get_azure_client().get_blob_client(container=cache_azure["container"], blob=key_name)
+            return cast(bytes, blob.download_blob().readall())
+        except ResourceNotFoundError:
+            return None
     else:
         cache_filesystem = cast(tilecloud_chain.configuration.CacheFilesystem, cache)
         p = os.path.join(cache_filesystem["folder"], path)

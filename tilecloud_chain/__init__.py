@@ -55,6 +55,7 @@ from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
 from tilecloud.filter.logger import Logger
 from tilecloud.grid.free import FreeTileGrid
 from tilecloud.layout.wmts import WMTSTileLayout
+from tilecloud.store.azure_storage_blob import AzureStorageBlobTileStore
 from tilecloud.store.filesystem import FilesystemTileStore
 from tilecloud.store.mbtiles import MBTilesTileStore
 from tilecloud.store.metatile import MetaTileSplitterTileStore
@@ -730,6 +731,14 @@ class TileGeneration:
                 layout,
                 s3_host=cache.get("host", "s3-eu-west-1.amazonaws.com"),
                 cache_control=cache.get("cache_control"),
+            )
+        elif cache["type"] == "azure":
+            cache_azure = cast(tilecloud_chain.configuration.CacheAzureTyped, cache)
+            # on Azure
+            cache_tilestore = AzureStorageBlobTileStore(
+                container=cache_azure["container"],
+                tilelayout=layout,
+                cache_control=cache_azure.get("cache_control"),
             )
         elif cache["type"] == "mbtiles":
             metadata = {}

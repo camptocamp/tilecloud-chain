@@ -161,6 +161,33 @@
       },
       "required": ["bucket"]
     },
+    "cache_azure": {
+      "title": "Cache Azure",
+      "description": "Azure Blob Storage",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "properties": {
+        "type": { "const": "azure" },
+        "wmtscapabilities_file": { "$ref": "#/definitions/cache_wmtscapabilities_file" },
+        "http_url": { "$ref": "#/definitions/cache_http_url" },
+        "hosts": { "$ref": "#/definitions/cache_hosts" },
+        "http_urls": { "$ref": "#/definitions/cache_http_urls" },
+        "folder": { "$ref": "#/definitions/cache_folder" },
+        "container": {
+          "title": "Container",
+          "description": "The Azure container name",
+          "type": "string"
+        },
+        "cache_control": {
+          "title": "Cache control",
+          "description": "The Cache-Control used to store tiles on Azure",
+          "type": "string"
+        }
+      },
+      "required": ["container"]
+    },
     "cache_mbtiles": {
       "title": "Cache MBtiles",
       "type": "object",
@@ -204,6 +231,9 @@
         },
         {
           "$ref": "#/definitions/cache_s3"
+        },
+        {
+          "$ref": "#/definitions/cache_azure"
         },
         {
           "$ref": "#/definitions/cache_mbtiles"
