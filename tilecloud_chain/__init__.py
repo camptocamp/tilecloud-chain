@@ -11,6 +11,7 @@ import logging
 import logging.config
 from math import ceil, sqrt
 import os
+import pathlib
 import pkgutil
 import queue
 import re
@@ -28,7 +29,6 @@ from typing import (
     Iterable,
     Iterator,
     List,
-    Mapping,
     Optional,
     TextIO,
     Tuple,
@@ -50,6 +50,7 @@ from shapely.wkb import loads as loads_wkb
 from typing_extensions import TypedDict
 
 from tilecloud import BoundingPyramid, Tile, TileCoord, TileGrid, TileStore, consume
+import tilecloud.filter.error
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
 from tilecloud.filter.logger import Logger
 from tilecloud.grid.free import FreeTileGrid
@@ -89,7 +90,6 @@ def add_comon_options(
     parser.add_argument(
         "-c",
         "--config",
-        default=os.environ.get("TILEGENERATION_CONFIGFILE", "tilegeneration/config.yaml"),
         help="path to the configuration file",
         metavar="FILE",
     )
@@ -192,18 +192,16 @@ class Run:
         self,
         gene: "TileGeneration",
         functions: List[Callable[[Tile], Tile]],
-        queue_store: Optional[Any] = None,
     ) -> None:
         self.gene = gene
         self.functions = functions
         self.safe = gene.options is None or not gene.options.debug
         daemon = gene.options is not None and getattr(gene.options, "daemon", False)
         self.max_consecutive_errors = (
-            MaximumConsecutiveErrors(gene.config["generation"]["maxconsecutive_errors"])
+            MaximumConsecutiveErrors(gene.get_main_config().config["generation"]["maxconsecutive_errors"])
             if not daemon and gene.maxconsecutive_errors
             else None
         )
-        self.queue_store = queue_store
         self.error = 0
         self.error_lock = threading.Lock()
         self.error_logger = LogErrors(
@@ -244,19 +242,19 @@ class Run:
                     if stats.BACKENDS:
                         stats.increment_counter(["error", tile.metadata.get("layer", "None")])
 
-                    if "error_file" in self.gene.config["generation"]:
+                    if "error_file" in self.gene.get_main_config().config["generation"]:
                         self.gene.log_tiles_error(tile=tile, message=repr(tile.error))
 
                     if self.max_consecutive_errors is not None:
                         self.max_consecutive_errors(tile)
 
-                    if self.queue_store is not None:
-                        self.queue_store.delete_one(tile)
+                    if self.gene.queue_store is not None:
+                        self.gene.queue_store.delete_one(tile)
                     with self.error_lock:
                         self.error += 1
                     return tile
             except Exception:
-                logger.exception("Run error")
+                logger.debug("Run error", stack_info=True)
                 raise
 
         if self.max_consecutive_errors is not None:
@@ -282,18 +280,41 @@ class Legend(TypedDict, total=False):
     height: int
 
 
+class DatedConfig:
+    def __init__(self, config: tilecloud_chain.configuration.Configuration, mtime: float, file: str) -> None:
+        self.config = config
+        self.mtime = mtime
+        self.file = file
+
+
+class DatedGeoms:
+    def __init__(self, geoms: Dict[Union[str, int], BaseGeometry], mtime: float) -> None:
+        self.geoms = geoms
+        self.mtime = mtime
+
+
+class DatedTileGrid:
+    def __init__(self, grid: TileGrid, mtime: float) -> None:
+        self.grid = grid
+        self.mtime = mtime
+
+
+class DatedHosts:
+    def __init__(self, hosts: Dict[str, str], mtime: float) -> None:
+        self.hosts = hosts
+        self.mtime = mtime
+
+
 class TileGeneration:
-    _geom = None
     tilestream: Optional[Iterator[Tile]] = None
     duration: timedelta = timedelta()
     error = 0
-    queue_store = None
+    queue_store: Optional[TileStore] = None
     daemon = False
-    config: tilecloud_chain.configuration.Configuration
 
     def __init__(
         self,
-        config_file: str,
+        config_file: Optional[str] = None,
         options: Optional[Namespace] = None,
         layer_name: Optional[str] = None,
         base_config: Optional[tilecloud_chain.configuration.Configuration] = None,
@@ -301,9 +322,8 @@ class TileGeneration:
         multi_thread: bool = True,
         maxconsecutive_errors: bool = True,
     ):
-        self.geoms: Dict[str, Dict[Union[str, int], BaseGeometry]] = {}
+        self.geoms_cache: Dict[str, Dict[str, DatedGeoms]] = {}
         self._close_actions: List["Close"] = []
-        self._layers_geoms: Dict[str, BaseGeometry] = {}
         self.error_lock = threading.Lock()
         self.error_files_: Dict[str, TextIO] = {}
         self.functions_tiles: List[Callable[[Tile], Tile]] = []
@@ -312,8 +332,12 @@ class TileGeneration:
         self.metatilesplitter_thread_pool: Optional[ThreadPoolExecutor] = None
         self.multi_thread = multi_thread
         self.maxconsecutive_errors = maxconsecutive_errors
-        self.grid_obj: Dict[str, TileGrid] = {}
+        self.grid_cache: Dict[str, Dict[str, DatedTileGrid]] = {}
         self.layer_legends: Dict[str, List[Legend]] = {}
+        self.config_file = config_file
+        self.base_config = base_config
+        self.configs: Dict[str, DatedConfig] = {}
+        self.hosts_cache: Optional[DatedHosts] = None
 
         self.options: Namespace = options or collections.namedtuple(  # type: ignore
             "Options",
@@ -340,17 +364,186 @@ class TileGeneration:
         if configure_logging:
             self._configure_logging(self.options, "%(levelname)s:%(name)s:%(funcName)s:%(message)s")
 
-        with open(config_file) as f:
-            self.config = {}
-            self.config.update({} if base_config is None else base_config)
-            ruamel = YAML()
-            self.config.update(ruamel.load(f))
-
-        self.validate_config(config_file, self.options.ignore_error)
+        assert "generation" in self.get_main_config().config, self.get_main_config().config
+        if configure_logging and "log_format" in self.get_main_config().config["generation"]:
+            self._configure_logging(self.options, self.get_main_config().config["generation"]["log_format"])
 
         error = False
-        self.grids = self.config["grids"]
-        for gname, grid in sorted(self.grids.items()):
+        if self.options is not None and self.options.zoom is not None:
+            error_message = (
+                "The zoom argument '%s' has incorrect format, "
+                "it can be a single value, a range (3-9), a list of values (2,5,7)."
+            ) % self.options.zoom
+            if self.options.zoom.find("-") >= 0:
+                splitted_zoom: List[str] = self.options.zoom.split("-")
+                if len(splitted_zoom) != 2:
+                    logger.error(error_message)
+                    error = True
+                try:
+                    self.options.zoom = range(int(splitted_zoom[0]), int(splitted_zoom[1]) + 1)
+                except ValueError:
+                    logger.exception(error_message)
+                    error = True
+            elif self.options.zoom.find(",") >= 0:
+                try:
+                    self.options.zoom = [int(z) for z in self.options.zoom.split(",")]
+                except ValueError:
+                    logger.exception(error_message)
+                    error = True
+            else:
+                try:
+                    self.options.zoom = [int(self.options.zoom)]
+                except ValueError:
+                    logger.exception(error_message)
+                    error = True
+
+        if error:
+            sys.exit(1)
+
+        if layer_name and self.config_file:
+            assert layer_name is not None
+            self.create_log_tiles_error(layer_name)
+
+    def get_host_config_file(self, host: Optional[str]) -> Optional[str]:
+        """
+        Get the configuration file name for the given host
+        """
+        if self.config_file:
+            return self.config_file
+        assert host
+        if host not in self.get_hosts():
+            logger.error("Missing host '%s' in global config", host)
+            return None
+        return self.get_hosts().get(host, os.environ.get("TILEGENERATION_CONFIGFILE"))
+
+    def get_host_config(self, host: Optional[str]) -> DatedConfig:
+        """
+        Get the configuration for the given host
+        """
+        config_file = self.get_host_config_file(host)
+        return (
+            self.get_config(config_file)
+            if config_file
+            else DatedConfig(cast(tilecloud_chain.configuration.Configuration, {}), 0, "")
+        )
+
+    def get_tile_config(self, tile: Tile) -> DatedConfig:
+        return self.get_config(tile.metadata["config_file"])
+
+    def get_config(
+        self,
+        config_file: str,
+        ignore_error: bool = True,
+        base_config: Optional[tilecloud_chain.configuration.Configuration] = None,
+    ) -> DatedConfig:
+        """
+        Get the validated configuration for the file name, with cache management
+        """
+        assert config_file
+        config_path = pathlib.Path(config_file)
+        if not config_path.exists():
+            logger.error("Missing config file %s", config_file)
+            if ignore_error:
+                return DatedConfig(cast(tilecloud_chain.configuration.Configuration, {}), 0, "")
+            else:
+                sys.exit(1)
+
+        config: Optional[DatedConfig] = self.configs.get(config_file)
+        if config is not None and config.mtime == config_path.stat().st_mtime:
+            return config
+
+        config, success = self._get_config(config_file, ignore_error, base_config)
+        if not success or config is None:
+            if ignore_error:
+                config = DatedConfig(cast(tilecloud_chain.configuration.Configuration, {}), 0, "")
+            else:
+                sys.exit(1)
+        self.configs[config_file] = config
+        return config
+
+    def get_main_config(self) -> DatedConfig:
+        if "TILEGENERATION_MAIN_CONFIGFILE" in os.environ and os.environ["TILEGENERATION_MAIN_CONFIGFILE"]:
+            return self.get_config(os.environ["TILEGENERATION_MAIN_CONFIGFILE"], False)
+        elif self.config_file:
+            return self.get_config(self.config_file, self.options.ignore_error, self.base_config)
+        else:
+            logger.error("No provided configuration file")
+            return DatedConfig({}, 0, "")
+
+    def get_hosts(self) -> Dict[str, str]:
+        file_path = pathlib.Path(os.environ["TILEGENERATION_HOSTSFILE"])
+        if not file_path.exists():
+            logger.error("Missing hosts file %s", file_path)
+            return {}
+
+        if self.hosts_cache is not None and self.hosts_cache.mtime == file_path.stat().st_mtime:
+            return self.hosts_cache.hosts
+
+        with file_path.open() as hosts_file:
+            ruamel = YAML(typ="safe")
+            hosts = cast(Dict[str, str], ruamel.load(hosts_file))
+
+        self.hosts_cache = DatedHosts(hosts, file_path.stat().st_mtime)
+        return hosts
+
+    def _get_config(
+        self,
+        config_file: str,
+        ignore_error: bool,
+        base_config: Optional[tilecloud_chain.configuration.Configuration] = None,
+    ) -> Tuple[DatedConfig, bool]:
+        """
+        Get the validated configuration for the file name
+        """
+        with open(config_file) as f:
+            config: Dict[str, Any] = {}
+            config.update({} if base_config is None else base_config)
+            ruamel = YAML()
+            config.update(ruamel.load(f))
+
+        dated_config = DatedConfig(
+            cast(tilecloud_chain.configuration.Configuration, config),
+            pathlib.Path(config_file).stat().st_mtime,
+            config_file,
+        )
+        success = self.validate_config(dated_config, ignore_error)
+        return dated_config, success
+
+    def validate_config(self, config: DatedConfig, ignore_error: bool) -> bool:
+        """
+        Validate the configuration
+        """
+
+        # Generate base structure
+        if "defaults" in config.config:
+            del config.config["defaults"]
+        if "generation" not in config.config:
+            config.config["generation"] = {}
+        if "cost" in config.config:
+            if "s3" not in config.config["cost"]:
+                config.config["cost"]["s3"] = {}
+            if "cloudfront" not in config.config["cost"]:
+                config.config["cost"]["cloudfront"] = {}
+            if "sqs" not in config.config["cost"]:
+                config.config["cost"]["sqs"] = {}
+
+        schema_data = pkgutil.get_data("tilecloud_chain", "schema.json")
+        assert schema_data
+        errors, _ = validate.validate(
+            config.file, cast(Dict[str, Any], config.config), json.loads(schema_data), default=True
+        )
+
+        if errors:
+            logger.error("The config file is invalid:\n%s", "\n".join(errors))
+            if not (
+                ignore_error
+                or os.environ.get("TILEGENERATION_IGNORE_CONFIG_ERROR", "FALSE").lower() == "true"
+            ):
+                sys.exit(1)
+
+        error = False
+        grids = config.config.get("grids", {})
+        for grid in grids.values():
             if "resolution_scale" in grid:
                 scale = grid["resolution_scale"]
                 for resolution in grid["resolutions"]:
@@ -384,17 +577,8 @@ class TileGeneration:
                 else:
                     grid["proj4_literal"] = "+init={}".format(grid["srs"])
 
-            scale = grid["resolution_scale"]
-            if not error:
-                self.grid_obj[gname] = FreeTileGrid(
-                    resolutions=cast(List[int], [r * scale for r in grid["resolutions"]]),
-                    scale=scale,
-                    max_extent=cast(Tuple[int, int, int, int], grid["bbox"]),
-                    tile_size=grid["tile_size"],
-                )
-
-        self.layers = self.config["layers"]
-        for lname, layer in sorted(self.layers.items()):
+        layers = config.config.get("layers", {})
+        for lname, layer in sorted(layers.items()):
             if "headers" not in layer and layer["type"] == "wms":
                 layer["headers"] = {
                     "Cache-Control": "no-cache, no-store",
@@ -404,79 +588,16 @@ class TileGeneration:
                 logger.error("The layer '%s' is of type Mapnik/Grid, that can't support matatiles.", lname)
                 error = True
 
-        self.caches = self.config["caches"]
-        self.metadata = self.config.get("metadata")
-        self.provider = self.config.get("provider")
-
         if error:
-            sys.exit(1)
-
-        if configure_logging and "log_format" in self.config.get("generation", {}):
-            self._configure_logging(self.options, self.config["generation"]["log_format"])
-
-        if self.options is not None and self.options.zoom is not None:
-            error_message = (
-                "The zoom argument '%s' has incorrect format, "
-                "it can be a single value, a range (3-9), a list of values (2,5,7)."
-            ) % self.options.zoom
-            if self.options.zoom.find("-") >= 0:
-                splitted_zoom: List[str] = self.options.zoom.split("-")
-                if len(splitted_zoom) != 2:
-                    logger.error(error_message)
-                    error = True
-                try:
-                    self.options.zoom = range(int(splitted_zoom[0]), int(splitted_zoom[1]) + 1)
-                except ValueError:
-                    logger.error(error_message, exc_info=True)
-                    error = True
-            elif self.options.zoom.find(",") >= 0:
-                try:
-                    self.options.zoom = [int(z) for z in self.options.zoom.split(",")]
-                except ValueError:
-                    logger.error(error_message, exc_info=True)
-                    error = True
-            else:
-                try:
-                    self.options.zoom = [int(self.options.zoom)]
-                except ValueError:
-                    logger.error(error_message, exc_info=True)
-                    error = True
-
-        if error:
-            sys.exit(1)
-
-        if layer_name and not error:
-            self.init_layer(layer_name, self.options)
-
-    def validate_config(self, config_file: str, ignore_error: bool) -> None:
-        # Generate base structure
-        if "defaults" in self.config:
-            del self.config["defaults"]
-        if "generation" not in self.config:
-            self.config["generation"] = {}
-        if "cost" in self.config:
-            if "s3" not in self.config["cost"]:
-                self.config["cost"]["s3"] = {}
-            if "cloudfront" not in self.config["cost"]:
-                self.config["cost"]["cloudfront"] = {}
-            if "sqs" not in self.config["cost"]:
-                self.config["cost"]["sqs"] = {}
-
-        schema_data = pkgutil.get_data("tilecloud_chain", "schema.json")
-        assert schema_data
-        errors, _ = validate.validate(
-            config_file, cast(Dict[str, Any], self.config), json.loads(schema_data), default=True
-        )
-
-        if errors:
-            logger.error("The config file is invalid:\n%s", "\n".join(errors))
             if not (
                 ignore_error
                 or os.environ.get("TILEGENERATION_IGNORE_CONFIG_ERROR", "FALSE").lower() == "true"
             ):
                 sys.exit(1)
 
-    def init(self, queue_store: Optional[Any] = None, daemon: bool = False) -> None:
+        return not (error or errors)
+
+    def init(self, queue_store: Optional[TileStore] = None, daemon: bool = False) -> None:
         self.queue_store = queue_store
         self.daemon = daemon
 
@@ -570,10 +691,14 @@ class TileGeneration:
         return [{}] if len(all_dimensions) == 0 else [dict(d) for d in product(*all_dimensions)]
 
     def get_store(
-        self, cache: tilecloud_chain.configuration.Cache, layer_name: str, read_only: bool = False
+        self,
+        config: DatedConfig,
+        cache: tilecloud_chain.configuration.Cache,
+        layer_name: str,
+        read_only: bool = False,
     ) -> TileStore:
-        layer = self.config["layers"][layer_name]
-        grid = self.config["grids"][layer["grid"]]
+        layer = config.config["layers"][layer_name]
+        grid = config.config["grids"][layer["grid"]]
         layout = WMTSTileLayout(
             layer=layer_name,
             url=cache["folder"],
@@ -644,149 +769,32 @@ class TileGeneration:
 
         return cache_tilestore
 
-    def init_layer(self, layer_name: str, options: Namespace) -> None:
-        layer = self.config["layers"][layer_name]
-        self.create_log_tiles_error(layer_name)
-
-        if options.near is not None or (
-            options.time is not None and "bbox" in layer and options.zoom is not None
-        ):
-            if options.zoom is None or len(options.zoom) != 1:
-                sys.exit("Option --near needs the option --zoom with one value.")
-            if not (options.time is not None or options.test is not None):
-                sys.exit("Option --near needs the option --time or --test.")
-            position = (
-                options.near
-                if options.near is not None
-                else [(layer["bbox"][0] + layer["bbox"][2]) / 2, (layer["bbox"][1] + layer["bbox"][3]) / 2]
-            )
-            bbox = self.config["grids"][layer["grid"]]["bbox"]
-            diff = [position[0] - bbox[0], position[1] - bbox[1]]
-            resolution = self.config["grids"][layer["grid"]]["resolutions"][options.zoom[0]]
-            mt_to_m = layer["meta_size"] * self.config["grids"][layer["grid"]]["tile_size"] * resolution
-            mt = [float(d) / mt_to_m for d in diff]
-
-            nb_tile = options.time * 3 if options.time is not None else options.test
-            nb_mt = nb_tile / (layer["meta_size"] ** 2)
-            nb_sqrt_mt = ceil(sqrt(nb_mt))
-
-            mt_origin = [round(m - nb_sqrt_mt / 2) for m in mt]
-            self.init_geom(
-                layer_name,
-                [
-                    bbox[0] + mt_origin[0] * mt_to_m,
-                    bbox[1] + mt_origin[1] * mt_to_m,
-                    bbox[0] + (mt_origin[0] + nb_sqrt_mt) * mt_to_m,
-                    bbox[1] + (mt_origin[1] + nb_sqrt_mt) * mt_to_m,
-                ],
-            )
-        elif options.bbox is not None:
-            self.init_geom(layer_name, options.bbox)
-        elif "bbox" in layer:
-            self.init_geom(layer_name, layer["bbox"])
-        else:
-            self.init_geom(layer_name, self.config["grids"][layer["grid"]]["bbox"])
-
-    def get_grid(
-        self, layer: tilecloud_chain.configuration.Layer, name: Optional[Any] = None
+    @staticmethod
+    def get_grid_name(
+        config: DatedConfig, layer: tilecloud_chain.configuration.Layer, name: Optional[Any] = None
     ) -> tilecloud_chain.configuration.Grid:
         if name is None:
             name = layer["grid"]
 
-        return self.grids[name]
+        return config.config["grids"][name]
 
-    def get_tilesstore(self, cache_name: str) -> TimedTileStoreWrapper:
-        cache = self.caches[cache_name]
+    def get_tilesstore(self, cache: Optional[str] = None) -> TimedTileStoreWrapper:
+        gene = self
+
+        def get_store(config_file: str, layer_name: str) -> TileStore:
+            config = gene.get_config(config_file)
+            cache_name = cache or config.config["generation"]["default_cache"]
+            cache_obj = config.config["caches"][cache_name]
+            return self.get_store(config, cache_obj, layer_name)
+
         cache_tilestore = TimedTileStoreWrapper(
-            MultiTileStore({lname: self.get_store(cache, lname) for lname in self.layers.keys()}),
+            MultiTileStore(get_store),
             stats_name="store",
         )
         return cache_tilestore
 
-    def init_geom(
-        self,
-        layer_name: str,
-        extent: Optional[Union[List[float], List[int]]] = None,
-    ) -> None:
-        self.geoms[layer_name] = self.get_geoms(layer_name, extent)
-
-    def get_geoms(
-        self,
-        layer_name: str,
-        extent: Optional[Union[List[float], List[int]]] = None,
-    ) -> Any:
-        layer = self.config["layers"][layer_name]
-        if layer_name in self._layers_geoms:
-            # already build
-            return self._layers_geoms[layer_name]
-
-        layer_geoms: Dict[int, BaseGeometry] = {}
-        self._layers_geoms[layer_name] = layer_geoms
-        if extent:
-            geom = Polygon(
-                (
-                    (extent[0], extent[1]),
-                    (extent[0], extent[3]),
-                    (extent[2], extent[3]),
-                    (extent[2], extent[1]),
-                )
-            )
-            for z, r in enumerate(self.config["grids"][layer["grid"]]["resolutions"]):
-                layer_geoms[z] = geom
-
-        if self.options.near is None and self.options.geom:
-            for g in layer.get("geoms", []):
-                with stats.timer_context(["geoms_get", layer_name]):
-                    connection = psycopg2.connect(g["connection"])
-                    cursor = connection.cursor()
-                    sql = "SELECT ST_AsBinary(geom) FROM (SELECT {}) AS g".format(g["sql"])
-                    logger.info("Execute SQL: %s.", sql)
-                    cursor.execute(sql)
-                    geoms = [loads_wkb(bytes(r[0])) for r in cursor.fetchall()]
-                    geom = cascaded_union(geoms)
-                    if extent:
-                        geom = geom.intersection(
-                            Polygon(
-                                (
-                                    (extent[0], extent[1]),
-                                    (extent[0], extent[3]),
-                                    (extent[2], extent[3]),
-                                    (extent[2], extent[1]),
-                                )
-                            )
-                        )
-                    for z, r in enumerate(self.config["grids"][layer["grid"]]["resolutions"]):
-                        if ("min_resolution" not in g or g["min_resolution"] <= r) and (
-                            "max_resolution" not in g or g["max_resolution"] >= r
-                        ):
-                            layer_geoms[z] = geom
-                    cursor.close()
-                    connection.close()
-        return layer_geoms
-
-    def get_geoms_filter(
-        self,
-        layer: tilecloud_chain.configuration.Layer,
-        grid_name: str,
-        geoms: Dict[str, Dict[Union[str, int], BaseGeometry]],
-    ) -> "IntersectGeometryFilter":
-        return IntersectGeometryFilter(
-            grid=self.config["grids"][grid_name],
-            tile_grid=self.grid_obj[grid_name],
-            geoms=geoms,
-            px_buffer=(layer["px_buffer"] + layer["meta_buffer"] if layer["meta"] else 0),
-        )
-
     def add_geom_filter(self) -> None:
-        self.imap(
-            MultiAction(
-                {
-                    layer_name: self.get_geoms_filter(layer=layer, grid_name=layer["grid"], geoms=self.geoms)
-                    for layer_name, layer in self.layers.items()
-                }
-            ),
-            "Intersect with geom",
-        )
+        self.imap(IntersectGeometryFilter(gene=self), "Intersect with geom")
 
     def add_logger(self) -> None:
         if (
@@ -814,18 +822,22 @@ class TileGeneration:
     def add_metatile_splitter(self, store: Optional[TileStore] = None) -> None:
         assert self.functions != self.functions_tiles, "add_metatile_splitter should not be called twice"
         if store is None:
-            splitters: Dict[str, Optional[TileStore]] = {}
-            for lname, layer in self.layers.items():
+            gene = self
+
+            def get_splitter(config_file: str, layer_name: str) -> Optional[MetaTileSplitterTileStore]:
+                config = gene.get_config(config_file)
+                layer = config.config["layers"][layer_name]
                 if layer.get("meta"):
-                    splitters[lname] = MetaTileSplitterTileStore(
+                    return MetaTileSplitterTileStore(
                         layer["mime_type"],
-                        self.config["grids"][layer["grid"]]["tile_size"],
+                        config.config["grids"][layer["grid"]]["tile_size"],
                         layer["meta_buffer"],
                     )
+                return None
 
-            store = TimedTileStoreWrapper(MultiTileStore(splitters), stats_name="splitter")
+            store = TimedTileStoreWrapper(MultiTileStore(get_splitter), stats_name="splitter")
 
-        run = Run(self, self.functions_tiles, self.queue_store)
+        run = Run(self, self.functions_tiles)
         nb_thread = int(os.environ.get("TILE_NB_THREAD", "1"))
         if nb_thread == 1 or not self.multi_thread:
 
@@ -868,10 +880,13 @@ class TileGeneration:
         self.functions = self.functions_tiles
 
     def create_log_tiles_error(self, layer: str) -> Optional[TextIO]:
-        if "error_file" in self.config["generation"]:
+        if "error_file" in self.get_main_config().config.get("generation", {}):
             now = datetime.now()
             time_ = now.strftime("%d-%m-%Y %H:%M:%S")
-            error_file = open(self.config["generation"]["error_file"].format(layer=layer, datetime=now), "a")
+            error_file = open(
+                self.get_main_config().config["generation"]["error_file"].format(layer=layer, datetime=now),
+                "a",
+            )
             error_file.write(f"# [{time_}] Start the layer '{layer}' generation\n")
             self.error_files_[layer] = error_file
             return error_file
@@ -885,7 +900,10 @@ class TileGeneration:
         return self.error_files_[layer] if layer in self.error_files_ else self.create_log_tiles_error(layer)
 
     def log_tiles_error(self, tile: Optional[Tile] = None, message: Optional[str] = None) -> None:
-        if "error_file" in self.config["generation"]:
+        if tile is None:
+            return
+        config = self.get_tile_config(tile)
+        if "error_file" in config.config["generation"]:
             assert tile is not None
 
             time_ = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
@@ -899,9 +917,115 @@ class TileGeneration:
             assert io is not None
             io.write("{}# [{}]{}\n".format(tilecoord, time_, message.replace("\n", " ")))
 
-    def init_tilecoords(self, layer_name: str) -> None:
-        layer = self.config["layers"][layer_name]
-        resolutions = self.config["grids"][layer["grid"]]["resolutions"]
+    def get_grid(self, config: DatedConfig, grid_name: str) -> TileGrid:
+        dated_grid = self.grid_cache.get(config.file, {}).get(grid_name)
+        if dated_grid is not None and config.mtime == dated_grid.mtime:
+            return dated_grid.grid
+
+        grid = config.config["grids"][grid_name]
+        scale = grid["resolution_scale"]
+
+        tilegrid = FreeTileGrid(
+            resolutions=cast(List[int], [r * scale for r in grid["resolutions"]]),
+            scale=scale,
+            max_extent=cast(Tuple[int, int, int, int], grid["bbox"]),
+            tile_size=grid["tile_size"],
+        )
+
+        self.grid_cache.setdefault(config.file, {})[grid_name] = DatedTileGrid(tilegrid, config.mtime)
+        return tilegrid
+
+    def get_geoms(self, config: DatedConfig, layer_name: str) -> Dict[Union[str, int], BaseGeometry]:
+        dated_geoms = self.geoms_cache.get(config.file, {}).get(layer_name)
+        if dated_geoms is not None and config.mtime == dated_geoms.mtime:
+            return dated_geoms.geoms
+
+        layer = config.config["layers"][layer_name]
+
+        if self.options.near is not None or (
+            self.options.time is not None and "bbox" in layer and self.options.zoom is not None
+        ):
+            if self.options.zoom is None or len(self.options.zoom) != 1:
+                sys.exit("Option --near needs the option --zoom with one value.")
+            if not (self.options.time is not None or self.options.test is not None):
+                sys.exit("Option --near needs the option --time or --test.")
+            position = (
+                self.options.near
+                if self.options.near is not None
+                else [(layer["bbox"][0] + layer["bbox"][2]) / 2, (layer["bbox"][1] + layer["bbox"][3]) / 2]
+            )
+            bbox = config.config["grids"][layer["grid"]]["bbox"]
+            diff = [position[0] - bbox[0], position[1] - bbox[1]]
+            resolution = config.config["grids"][layer["grid"]]["resolutions"][self.options.zoom[0]]
+            mt_to_m = layer["meta_size"] * config.config["grids"][layer["grid"]]["tile_size"] * resolution
+            mt = [float(d) / mt_to_m for d in diff]
+
+            nb_tile = self.options.time * 3 if self.options.time is not None else self.options.test
+            nb_mt = nb_tile / (layer["meta_size"] ** 2)
+            nb_sqrt_mt = ceil(sqrt(nb_mt))
+
+            mt_origin = [round(m - nb_sqrt_mt / 2) for m in mt]
+            extent = [
+                bbox[0] + mt_origin[0] * mt_to_m,
+                bbox[1] + mt_origin[1] * mt_to_m,
+                bbox[0] + (mt_origin[0] + nb_sqrt_mt) * mt_to_m,
+                bbox[1] + (mt_origin[1] + nb_sqrt_mt) * mt_to_m,
+            ]
+        elif self.options.bbox is not None:
+            extent = self.options.bbox
+        elif "bbox" in layer:
+            extent = layer["bbox"]
+        else:
+            extent = config.config["grids"][layer["grid"]]["bbox"]
+
+        geoms: Dict[Union[str, int], BaseGeometry] = {}
+        if extent:
+            geom = Polygon(
+                (
+                    (extent[0], extent[1]),
+                    (extent[0], extent[3]),
+                    (extent[2], extent[3]),
+                    (extent[2], extent[1]),
+                )
+            )
+            for z, r in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+                geoms[z] = geom
+
+        if self.options.near is None and self.options.geom:
+            for g in layer.get("geoms", []):
+                with stats.timer_context(["geoms_get", layer_name]):
+                    connection = psycopg2.connect(g["connection"])
+                    cursor = connection.cursor()
+                    sql = "SELECT ST_AsBinary(geom) FROM (SELECT {}) AS g".format(g["sql"])
+                    logger.info("Execute SQL: %s.", sql)
+                    cursor.execute(sql)
+                    geom_list = [loads_wkb(bytes(r[0])) for r in cursor.fetchall()]
+                    geom = cascaded_union(geom_list)
+                    if extent:
+                        geom = geom.intersection(
+                            Polygon(
+                                (
+                                    (extent[0], extent[1]),
+                                    (extent[0], extent[3]),
+                                    (extent[2], extent[3]),
+                                    (extent[2], extent[1]),
+                                )
+                            )
+                        )
+                    for z, r in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+                        if ("min_resolution" not in g or g["min_resolution"] <= r) and (
+                            "max_resolution" not in g or g["max_resolution"] >= r
+                        ):
+                            geoms[z] = geom
+                    cursor.close()
+                    connection.close()
+
+        self.geoms_cache.setdefault(config.file, {})[layer_name] = DatedGeoms(geoms, config.mtime)
+        return geoms
+
+    def init_tilecoords(self, config: DatedConfig, layer_name: str) -> None:
+        layer = config.config["layers"][layer_name]
+        resolutions = config.config["grids"][layer["grid"]]["resolutions"]
 
         if self.options.time is not None and self.options.zoom is None:
             if "min_resolution_seed" in layer:
@@ -948,9 +1072,9 @@ class TileGeneration:
             self.options.zoom = [z for z, r in enumerate(resolutions)]
 
         # Fill the bounding pyramid
-        tilegrid = self.grid_obj[layer["grid"]]
+        tilegrid = self.get_grid(config, layer["grid"])
         bounding_pyramid = BoundingPyramid(tilegrid=tilegrid)
-        geoms = self.geoms[layer_name]
+        geoms = self.get_geoms(config, layer_name)
         for zoom in self.options.zoom:
             if zoom in geoms:
                 extent = geoms[zoom].bounds
@@ -981,9 +1105,9 @@ class TileGeneration:
                     )
 
         if layer["meta"]:
-            self.set_tilecoords(bounding_pyramid.metatilecoords(layer["meta_size"]), layer_name)
+            self.set_tilecoords(config, bounding_pyramid.metatilecoords(layer["meta_size"]), layer_name)
         else:
-            self.set_tilecoords(bounding_pyramid, layer_name)
+            self.set_tilecoords(config, bounding_pyramid, layer_name)
 
     @staticmethod
     def _tilestream(
@@ -1000,11 +1124,15 @@ class TileGeneration:
                     metadata["dimension_" + k] = v
                 yield Tile(tilecoord, metadata=metadata)
 
-    def set_tilecoords(self, tilecoords: Iterable[TileCoord], layer_name: str) -> None:
+    def set_tilecoords(self, config: DatedConfig, tilecoords: Iterable[TileCoord], layer_name: str) -> None:
         assert tilecoords is not None
-        layer = self.config["layers"][layer_name]
+        layer = config.config["layers"][layer_name]
 
-        self.tilestream = self._tilestream(tilecoords, {"layer": layer_name}, self.get_all_dimensions(layer))
+        self.tilestream = self._tilestream(
+            tilecoords,
+            {"layer": layer_name, "config_file": config.file},
+            self.get_all_dimensions(layer),
+        )
 
     def set_store(self, store: TileStore) -> None:
         self.tilestream = cast(Iterator[Tile], store.list())
@@ -1020,15 +1148,19 @@ class TileGeneration:
         return count
 
     def process(self, name: Optional[str] = None, key: str = "post_process") -> None:
-        processes = {}
-        for lname, layer in self.layers.items():
+        gene = self
+
+        def get_process(config_file: str, layer_name: str) -> Optional[Process]:
+            config = gene.get_config(config_file)
+            layer = config.config["layers"][layer_name]
             name_ = name
             if name_ is None:
                 name_ = layer.get(key)  # type: ignore
             if name_ is not None:
-                processes[lname] = Process(self.config["process"][name_], self.options)
-        if processes:
-            self.imap(MultiAction(processes))
+                return Process(config.config["process"][name_], self.options)
+            return None
+
+        self.imap(MultiAction(get_process))
 
     def get(self, store: TileStore, time_message: Optional[str] = None) -> None:
         assert store is not None
@@ -1092,12 +1224,17 @@ class TileGeneration:
             if nb_thread == 1 or not self.multi_thread:
                 consume(map(run, self.tilestream), None)
             else:
+                should_exit_error = False
 
                 def target() -> None:
                     logger.debug("Start run")
+                    nonlocal should_exit_error
                     while not end or not buffer.empty():
                         try:
                             run(buffer.get(timeout=1))
+                        except tilecloud.filter.error.TooManyErrors:
+                            logger.exception("Too many errors")
+                            should_exit_error = True
                         except queue.Empty:
                             pass
                     logger.debug("End run")
@@ -1107,7 +1244,13 @@ class TileGeneration:
                     thread.start()
 
                 for tile in self.tilestream:
-                    buffer.put(tile)
+                    while True:
+                        try:
+                            buffer.put(tile, timeout=1)
+                            break
+                        except queue.Full:
+                            if should_exit_error:
+                                sys.exit(1)
 
                 end = True
 
@@ -1217,23 +1360,24 @@ class MultiAction:
     E.g a HashDropper or Process
     """
 
-    def __init__(self, actions: Mapping[str, Callable[[Tile], Optional[Tile]]]) -> None:
-        self.actions = actions
+    def __init__(
+        self,
+        get_action: Callable[[str, str], Optional[Callable[[Tile], Optional[Tile]]]],
+    ) -> None:
+        self.get_action = get_action
+        self.actions: Dict[Tuple[str, str], Optional[Callable[[Tile], Optional[Tile]]]] = {}
 
     def __call__(self, tile: Tile) -> Optional[Tile]:
         layer = tile.metadata["layer"]
-        if layer in self.actions:
-            action = self.actions[layer]
+        config_file = tile.metadata["config_file"]
+        action = self.actions.get((config_file, layer))
+        if action is None:
+            action = self.get_action(config_file, layer)
+            self.actions[(config_file, layer)] = action
+        if action:
             logger.debug("[%s] Run action %s.", tile.tilecoord, action)
             return action(tile)
-        else:
-            logger.debug(
-                "[%s] Action not found for layer %s, in [%s].",
-                tile.tilecoord,
-                layer,
-                ", ".join(self.actions.keys()),
-            )
-            return tile
+        return tile
 
 
 class HashLogger:
@@ -1251,13 +1395,14 @@ class HashLogger:
             image = Image.open(BytesIO(tile.data))
         except OSError as ex:
             assert tile.data
-            logger.error("%s: %s", str(ex), tile.data, exc_info=True)
+            logger.exception("%s: %s", str(ex), tile.data)
             raise
         for px in image.getdata():
             if ref is None:
                 ref = px
             elif px != ref:
-                sys.exit("Error: image is not uniform.")
+                logger.error("Error: image is not uniform.")
+                sys.exit(1)
 
         assert tile.data
         print(
@@ -1291,25 +1436,27 @@ class LocalProcessFilter:
 class IntersectGeometryFilter:
     def __init__(
         self,
-        grid: tilecloud_chain.configuration.Grid,
-        tile_grid: TileGrid,
-        geoms: Dict[str, Dict[Union[str, int], BaseGeometry]],
-        px_buffer: int = 0,
+        gene: TileGeneration,
     ) -> None:
-        assert grid is not None
-        assert geoms is not None
-        self.grid = grid
-        self.tile_grid = tile_grid
-        self.geoms = geoms
-        self.px_buffer = px_buffer
+        self.gene = gene
 
-    def filter_tilecoord(self, tilecoord: TileCoord, layer_name: str) -> bool:
+    def filter_tilecoord(self, config: DatedConfig, tilecoord: TileCoord, layer_name: str) -> bool:
+        layer = config.config["layers"][layer_name]
+        grid_name = layer["grid"]
+        grid = config.config["grids"][grid_name]
+        tile_grid = self.gene.get_grid(config, grid_name)
+        px_buffer = layer["px_buffer"] + layer["meta_buffer"] if layer["meta"] else 0
+        geoms = self.gene.get_geoms(config, layer_name)
         return self.bbox_polygon(  # type: ignore
-            self.tile_grid.extent(tilecoord, self.grid["resolutions"][tilecoord.z] * self.px_buffer)
-        ).intersects(self.geoms[layer_name][tilecoord.z])
+            tile_grid.extent(tilecoord, grid["resolutions"][tilecoord.z] * px_buffer)
+        ).intersects(geoms[tilecoord.z])
 
     def __call__(self, tile: Tile) -> Optional[Tile]:
-        return tile if self.filter_tilecoord(tile.tilecoord, tile.metadata["layer"]) else None
+        return (
+            tile
+            if self.filter_tilecoord(self.gene.get_tile_config(tile), tile.tilecoord, tile.metadata["layer"])
+            else None
+        )
 
     @staticmethod
     def bbox_polygon(bbox: Tuple[float, float, float, float]) -> Polygon:
@@ -1325,13 +1472,14 @@ class DropEmpty:
         self.gene = gene
 
     def __call__(self, tile: Tile) -> Optional[Tile]:
+        config = self.gene.get_tile_config(tile)
         if not tile or not tile.data:
             logger.error(
                 "The tile: %s%s is empty",
                 tile.tilecoord if tile else "not defined",
                 " " + tile.formated_metadata if tile else "",
             )
-            if "error_file" in self.gene.config["generation"] and tile:
+            if "error_file" in config.config["generation"] and tile:
                 self.gene.log_tiles_error(tile=tile, message="The tile is empty")
             return None
         else:
@@ -1433,13 +1581,10 @@ class Process:
 
 
 class TilesFileStore(TileStore):
-    def __init__(self, tiles_file: str, layer: str, all_dimensions: List[Dict[str, str]]):
+    def __init__(self, tiles_file: str):
         super().__init__()
-        assert isinstance(layer, str)
 
         self.tiles_file = open(tiles_file)
-        self.layer = layer
-        self.all_dimensions = all_dimensions
 
     def list(self) -> Iterator[Tile]:
         while True:
@@ -1448,22 +1593,20 @@ class TilesFileStore(TileStore):
                 return
             line = line.split("#")[0].strip()
             if line != "":
+                splitted_line = line.split(" ")
                 try:
-                    tilecoord = parse_tilecoord(line)
+                    tilecoord = parse_tilecoord(splitted_line[0])
                 except ValueError as e:
-                    logger.error(
+                    logger.exception(
                         "A tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n\n%s",
                         line,
                         repr(e),
-                        exc_info=True,
                     )
                     continue
 
-                for dimensions in self.all_dimensions:
-                    metadata = {"layer": self.layer}
-                    for k, v in dimensions.items():
-                        metadata["dimension_" + k] = v
-                    yield Tile(tilecoord, metadata=metadata)
+                yield Tile(
+                    tilecoord, metadata=dict([cast(Tuple[str, str], e.split("=")) for e in splitted_line[1:]])
+                )
 
 
 def _await_message(_: Any) -> bool:
@@ -1475,12 +1618,10 @@ def _await_message(_: Any) -> bool:
         raise StopIteration
 
 
-def get_queue_store(
-    config: tilecloud_chain.configuration.Configuration, daemon: bool
-) -> TimedTileStoreWrapper:
-    if "redis" in config:
+def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
+    if "redis" in config.config:
         # Create a Redis queue
-        conf = config["redis"]
+        conf = config.config["redis"]
         tilestore_kwargs: Dict[str, Any] = dict(
             name=conf["queue"],
             stop_if_empty=not daemon,
@@ -1511,9 +1652,9 @@ def get_queue_store(
 
 
 def _get_sqs_queue(
-    config: tilecloud_chain.configuration.Configuration,
+    config: DatedConfig,
 ) -> "botocore.client.SQS":
-    if "sqs" not in config:
+    if "sqs" not in config.config:
         sys.exit("The config hasn't any configured queue")
-    sqs = boto3.resource("sqs", region_name=config["sqs"].get("region", "eu-west-1"))
-    return sqs.get_queue_by_name(QueueName=config["sqs"]["queue"])
+    sqs = boto3.resource("sqs", region_name=config.config["sqs"].get("region", "eu-west-1"))
+    return sqs.get_queue_by_name(QueueName=config.config["sqs"]["queue"])

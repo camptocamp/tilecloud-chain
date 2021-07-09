@@ -69,6 +69,8 @@ ENV C2C_BASE_PATH=/c2c \
 # End from c2cwsgiutils
 
 ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
+  TILEGENERATION_MAIN_CONFIGFILE=/etc/tilegeneration/config.yaml \
+  TILEGENERATION_HOSTSFILE=/etc/tilegeneration/hosts.yaml \
   C2CWSGI_LOG_LEVEL=WARN \
   TILECLOUD_LOG_LEVEL=INFO \
   OTHER_LOG_LEVEL=WARN \
@@ -103,5 +105,8 @@ RUN pipenv sync --dev --system --clear
 
 COPY . /app/
 RUN prospector --output-format=pylint
+RUN python3 -m pip install --disable-pip-version-check --no-deps --no-cache-dir --editable=.
+
+ENV TILEGENERATION_MAIN_CONFIGFILE=
 
 FROM runner

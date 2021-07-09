@@ -34,11 +34,11 @@ class TestGenerate(CompareCase):
                     cmd=".build/venv/bin/generate_tiles {} --get-hash 4/0/0 "
                     "-c tilegeneration/test.yaml -l point".format(d),
                     main_func=generate.main,
-                    expected="""Tile: 4/0/0:+8/+8 dimension_DATE=2012 layer=point
+                    expected="""Tile: 4/0/0:+8/+8 config_file=tilegeneration/test.yaml dimension_DATE=2012 layer=point
             empty_metatile_detection:
                 size: 20743
                 hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
-        Tile: 4/0/0 dimension_DATE=2012 layer=point
+        Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 layer=point
             empty_tile_detection:
                 size: 334
                 hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
@@ -48,15 +48,20 @@ class TestGenerate(CompareCase):
             log_capture.check()
 
     def test_get_wrong_hash(self) -> None:
-        with LogCapture("tilecloud_chain", level=30) as log_capture:
-            for d in ("-d", "-q"):
+        for d in ("-d", "-q"):
+            with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_exit_equals(
                     cmd=".build/venv/bin/generate_tiles {} --get-hash 0/7/5 "
                     "-c tilegeneration/test.yaml -l all".format(d),
                     main_func=generate.main,
-                    expected="""Error: image is not uniform.""",
                 )
-            log_capture.check()
+                log_capture.check(
+                    (
+                        "tilecloud_chain",
+                        "ERROR",
+                        "Error: image is not uniform.",
+                    )
+                )
 
     def test_get_bbox(self) -> None:
         for d in ("-d", ""):
@@ -92,7 +97,7 @@ class TestGenerate(CompareCase):
                     cmd=".build/venv/bin/generate_tiles {} "
                     "--get-hash 4/0/0 -c tilegeneration/test.yaml -l mapnik".format(d),
                     main_func=generate.main,
-                    expected="""Tile: 4/0/0
+                    expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml
             empty_tile_detection:
                 size: 334
                 hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
@@ -107,11 +112,11 @@ class TestGenerate(CompareCase):
                     cmd=".build/venv/bin/generate_tiles {} "
                     "--get-hash 4/0/0 -c tilegeneration/test.yaml -l all".format(d),
                     main_func=generate.main,
-                    expected="""Tile: 4/0/0 dimension_DATE=2012 layer=all
+                    expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 layer=all
     empty_metatile_detection:
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
-    Tile: 4/0/0 dimension_DATE=2012 layer=all
+    Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 layer=all
     empty_tile_detection:
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
@@ -773,9 +778,14 @@ class TestGenerate(CompareCase):
                 self.assert_cmd_exit_equals(
                     cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-authorised.yaml",
                     main_func=generate.main,
-                    expected="""not authorised, authorised user is: www-data.""",
                 )
-                log_capture.check()
+                log_capture.check(
+                    (
+                        "tilecloud_chain.generate",
+                        "ERROR",
+                        "not authorised, authorised user is: www-data.",
+                    )
+                )
 
     def test_verbose(self) -> None:
         for d in ("-d", ""):
@@ -907,7 +917,7 @@ Size per tile: 4[0-9][0-9] o
 """,
             )
 
-    def test_error_file(self) -> None:
+    def test_error_file_create(self) -> None:
         tile_mbt = os.environ["TILE_NB_THREAD"]
         metatile_mbt = os.environ["METATILE_NB_THREAD"]
         os.environ["TILE_NB_THREAD"] = "1"
@@ -925,15 +935,15 @@ Size per tile: 4[0-9][0-9] o
                     "error.list",
                     r"""# \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] """
                     r"""Start the layer 'point_error' generation
-0/0/0:\+8/\+8 dimension_DATE=2012 layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] """
+0/0/0:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] """
                     r"""[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): """
                     r"""WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
                     r"""A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'
-0/0/8:\+8/\+8 dimension_DATE=2012 layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] """
+0/0/8:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] """
                     r"""[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): """
                     r"""WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
                     r"""A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'
-0/8/0:\+8/\+8 dimension_DATE=2012 layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] """
+0/8/0:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] """
                     r"""[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): """
                     r"""WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
                     r"""A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'
@@ -942,31 +952,55 @@ Size per tile: 4[0-9][0-9] o
             ],
         )
 
-        self.assert_tiles_generated(
-            cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-nosns.yaml -l point_hash"
-            " --tiles error.list",
-            main_func=generate.main,
-            directory="/tmp/tiles/",
-            tiles_pattern="1.0.0/point_hash/default/2012/swissgrid_5/%i/%i/%i.png",
-            tiles=[(0, 5, 7), (0, 7, 4)],
-            regex=True,
-            expected=r"""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
-Nb generated metatiles: 3
-Nb metatiles dropped: 1
-Nb generated tiles: 128
-Nb tiles dropped: 126
-Nb tiles stored: 2
-Nb tiles in error: 0
-Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: [89][0-9][0-9] o
-Time per tile: [0-9]+ ms
-Size per tile: [45][0-9][0-9] o
-
-""",
-        )
-
         os.environ["TILE_NB_THREAD"] = tile_mbt
         os.environ["METATILE_NB_THREAD"] = metatile_mbt
+
+    def test_error_file_use(self) -> None:
+        tile_mbt = os.environ["TILE_NB_THREAD"]
+        metatile_mbt = os.environ["METATILE_NB_THREAD"]
+        main_congifile = os.environ["TILEGENERATION_MAIN_CONFIGFILE"]
+        os.environ["TILE_NB_THREAD"] = "1"
+        os.environ["METATILE_NB_THREAD"] = "1"
+        os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = "tilegeneration/test-nosns.yaml"
+
+        try:
+            if os.path.exists("error.list"):
+                os.remove("error.list")
+
+            with open("error.list", "w") as error_file:
+                error_file.write(
+                    "# comment\n"
+                    "0/0/0:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash "
+                    "# comment\n"
+                    "0/0/8:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash\n"
+                    "0/8/0:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash\n"
+                )
+
+            self.assert_tiles_generated(
+                cmd=".build/venv/bin/generate_tiles -d --tiles error.list",
+                main_func=generate.main,
+                directory="/tmp/tiles/",
+                tiles_pattern="1.0.0/point_hash/default/2012/swissgrid_5/%i/%i/%i.png",
+                tiles=[(0, 5, 7), (0, 7, 4)],
+                regex=True,
+                expected=r"""The tile generation is finish
+    Nb generated metatiles: 3
+    Nb metatiles dropped: 1
+    Nb generated tiles: 128
+    Nb tiles dropped: 126
+    Nb tiles stored: 2
+    Nb tiles in error: 0
+    Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+    Total size: [89][0-9][0-9] o
+    Time per tile: [0-9]+ ms
+    Size per tile: [45][0-9][0-9] o
+
+    """,
+            )
+        finally:
+            os.environ["TILE_NB_THREAD"] = tile_mbt
+            os.environ["METATILE_NB_THREAD"] = metatile_mbt
+            os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = main_congifile
 
     def test_multy(self) -> None:
         for d in ("-v", ""):
@@ -1049,3 +1083,60 @@ Approximate number of generating tiles: 0
 Tiles in error:
 """,
         )
+
+    def test_redis_main_config(self) -> None:
+        main_congifile = os.environ["TILEGENERATION_MAIN_CONFIGFILE"]
+        os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = "tilegeneration/test-redis-main.yaml"
+
+        try:
+            RedisTileStore(sentinels=[["redis_sentinel", 26379]]).delete_all()
+            self.assert_cmd_equals(
+                cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-redis-project.yaml --role master -l point",
+                main_func=generate.main,
+                regex=False,
+                expected="""The tile generation of layer 'point (DATE=2012)' is finish
+    Nb of generated jobs: 10
+
+    """,
+            )
+
+            self.assert_cmd_equals(
+                cmd=".build/venv/bin/generate_controller -c tilegeneration/test-redis-project.yaml --status",
+                main_func=controller.main,
+                regex=False,
+                expected="""Approximate number of tiles to generate: 10
+    Approximate number of generating tiles: 0
+    Tiles in error:
+    """,
+            )
+
+            self.assert_cmd_equals(
+                cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-redis-project.yaml --role slave",
+                main_func=generate.main,
+                regex=True,
+                expected=r"""The tile generation is finish
+    Nb generated metatiles: 10
+    Nb metatiles dropped: 0
+    Nb generated tiles: 640
+    Nb tiles dropped: 0
+    Nb tiles stored: 640
+    Nb tiles in error: 0
+    Total time: 0:\d\d:\d\d
+    Total size: \d+ Kio
+    Time per tile: \d+ ms
+    Size per tile: \d+ o
+
+    """,
+            )
+
+            self.assert_cmd_equals(
+                cmd=".build/venv/bin/generate_controller -c tilegeneration/test-redis-project.yaml --status",
+                main_func=controller.main,
+                regex=False,
+                expected="""Approximate number of tiles to generate: 0
+    Approximate number of generating tiles: 0
+    Tiles in error:
+    """,
+            )
+        finally:
+            os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = main_congifile

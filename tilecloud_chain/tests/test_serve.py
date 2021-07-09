@@ -1024,6 +1024,8 @@ Size per tile: 4[0-9][0-9] o
                 headers[key] = value
 
         result = serve(
+            server.tilegeneration.get_main_config(),
+            "tilegeneration/test-serve.yaml",
             {
                 "QUERY_STRING": "&".join(
                     [
@@ -1063,6 +1065,8 @@ Size per tile: 4[0-9][0-9] o
         )
 
         result = serve(
+            server.tilegeneration.get_main_config(),
+            "tilegeneration/test-serve.yaml",
             {
                 "QUERY_STRING": "",
                 "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/14/11/114/111.xml",
@@ -1082,19 +1086,28 @@ Size per tile: 4[0-9][0-9] o
         )
 
         serve(
+            server.tilegeneration.get_main_config(),
+            "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png"},
             start_response,
         )
         self.assertEqual(code, "204 No Content")
 
         serve(
+            server.tilegeneration.get_main_config(),
+            "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png"},
             start_response,
         )
         self.assertEqual(code, "200 OK")
         self.assertEqual(headers["Cache-Control"], "max-age=28800")
 
-        result = serve({"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/WMTSCapabilities.xml"}, start_response)
+        result = serve(
+            server.tilegeneration.get_main_config(),
+            "tilegeneration/test-serve.yaml",
+            {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/WMTSCapabilities.xml"},
+            start_response,
+        )
         self.assertEqual(code, "200 OK")
         self.assert_result_equals(
             result[0].decode("utf-8"),

@@ -378,7 +378,7 @@ If we set a file path in configuration file:
         error_file: <path>
 
 The tiles that's in error will be append to the file, ant the tiles can be regenerated with
-``generate-tiles --layer <layer> --tiles <path>``.
+``generate-tiles --tiles <path>``.
 
 The ``<path>`` can be ``/tmp/error_{layer}_{datetime:%Y-%m-%d_%H:%M:%S}`` to have one file per layer and per
 run.
@@ -773,6 +773,16 @@ mode we don't catch exceptions, and we don't log time messages.
 
 The logging format is configurable in the\ ``config.yaml`` - ``generation/log_format``,
 `See <http://docs.python.org/2/library/logging.html#logrecord-attributes>`__.
+
+Mutualized
+----------
+
+The mutualized mode consist by having multiple project files with the projects related configurations
+(layers, cache, ...) and one main configuration file with the global configuration (number of process,
+log format, redis, ...).
+
+Configuration keys which should be set in the main configuration file are identified in property's
+descriptions of the ``schema.json`` file.
 
 Important remarks
 -----------------

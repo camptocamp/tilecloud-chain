@@ -474,7 +474,7 @@
         },
         "layer_cost": {
             "title": "Layer cost",
-            "description": "The rules used to calculate the cost (unmaintained)",
+            "description": "The rules used to calculate the cost",
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -827,29 +827,29 @@
                 },
                 "log_format": {
                     "title": "Log format",
-                    "description": "The logging format, default to '%(levelname)s:%(name)s:%(funcName)s:%(message)s'",
+                    "description": "The logging format (main configuration), default to '%(levelname)s:%(name)s:%(funcName)s:%(message)s'",
                     "type": "string",
                     "default": "%(levelname)s:%(name)s:%(funcName)s:%(message)s"
                 },
                 "authorised_user": {
                     "title": "Authorised user",
-                    "description": "The authorised user to generate the tiles (used to avoid permission issue on generated tiles)",
+                    "description": "The authorised user to generate the tiles (used to avoid permission issue on generated tiles) (main configuration)",
                     "type": "string"
                 },
                 "maxconsecutive_errors": {
                     "title": "Max consecutive errors",
-                    "description": "The maximum number of consecutive errors, default to 10",
+                    "description": "The maximum number of consecutive errors (main configuration), default to 10",
                     "type": "integer",
                     "default": 10
                 },
                 "error_file": {
                     "title": "Error file",
-                    "description": "File name generated with the tiles in error, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#tiles-error-file",
+                    "description": "File name generated with the tiles in error, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#tiles-error-file (main configuration)",
                     "type": "string"
                 },
                 "number_process": {
                     "title": "Number process",
-                    "description": "Number of process used to generate the tiles, default to 1",
+                    "description": "Number of process used to generate the tiles (main configuration), default to 1",
                     "type": "integer",
                     "default": 1
                 }
@@ -863,30 +863,30 @@
         },
         "redis": {
             "title": "Redis",
-            "description": "The Redis configuration",
+            "description": "The Redis configuration (main configuration)",
             "type": "object",
             "additionalProperties": false,
             "properties": {
                 "url": {
                     "title": "URL",
-                    "description": "The server URL",
+                    "description": "The server URL (main configuration)",
                     "type": "string",
                     "pattern": "^redis://[^:]+:[^:]+$"
                 },
                 "sentinels": {
                     "title": "Sentinels",
-                    "description": "The sentinels",
+                    "description": "The sentinels (main configuration)",
                     "type": "array",
                     "items": {
-                        "description": "A sentinel",
+                        "description": "A sentinel (main configuration)",
                         "type": "array",
                         "items": [
                             {
-                                "description": "The sentinel host name",
+                                "description": "The sentinel host name (main configuration)",
                                 "type": "string"
                             },
                             {
-                                "description": "The sentinel port",
+                                "description": "The sentinel port (main configuration)",
                                 "anyOf": [{ "type": "string" }, { "type": "integer" }]
                             }
                         ],
@@ -894,22 +894,22 @@
                     }
                 },
                 "connection_kwargs": {
-                    "description": "The Redis connection arguments",
+                    "description": "The Redis connection arguments (main configuration)",
                     "type": "object"
                 },
                 "sentinel_kwargs": {
-                    "description": "The Redis sentinel arguments",
+                    "description": "The Redis sentinel arguments (main configuration)",
                     "type": "object"
                 },
                 "service_name": {
                     "title": "Service name",
-                    "description": "The service name, default to 'mymaster'",
+                    "description": "The service name, default to 'mymaster' (main configuration)",
                     "type": "string",
                     "default": "mymaster"
                 },
                 "socket_timeout": {
                     "title": "Socket timeout",
-                    "description": "The socket timeout",
+                    "description": "The socket timeout (main configuration)",
                     "type": "integer"
                 },
                 "db": {
@@ -918,49 +918,49 @@
                 },
                 "queue": {
                     "title": "Queue",
-                    "description": "The queue name",
+                    "description": "The queue name (main configuration)",
                     "type": "string",
                     "default": "tilecloud"
                 },
                 "timeout": {
                     "title": "Timeout",
-                    "description": "The timeout, default to 5",
+                    "description": "The timeout (main configuration), default to 5",
                     "type": "integer",
                     "default": 5
                 },
                 "pending_timeout": {
                     "title": "Pending timeout",
-                    "description": "The pending timeout, default to 300",
+                    "description": "The pending timeout (main configuration), default to 300",
                     "type": "integer",
                     "default": 300
                 },
                 "max_retries": {
                     "title": "Max retries",
-                    "description": "The max retries, default to 5",
+                    "description": "The max retries (main configuration), default to 5",
                     "type": "integer",
                     "default": 5
                 },
                 "max_errors_age": {
                     "title": "Max errors age",
-                    "description": "The max error age, default to 86400 (1 day)",
+                    "description": "The max error age (main configuration), default to 86400 (1 day)",
                     "type": "integer",
                     "default": 86400
                 },
                 "max_errors_nb": {
                     "title": "Max errors number",
-                    "description": "The max error number, default to 100",
+                    "description": "The max error number (main configuration), default to 100",
                     "type": "integer",
                     "default": 100
                 },
                 "prefix": {
                     "title": "Prefix",
-                    "description": "The prefix, default to 'tilecloud_cache'",
+                    "description": "The prefix (main configuration), default to 'tilecloud_cache'",
                     "type": "string",
                     "default": "tilecloud_cache"
                 },
                 "expiration": {
                     "title": "Expiration",
-                    "description": "The meta-tile in queue expiration, default to 28800 (8 hours)",
+                    "description": "The meta-tile in queue expiration (main configuration), default to 28800 (8 hours)",
                     "type": "integer",
                     "default": 28800
                 }
@@ -991,21 +991,6 @@
                     "type": "boolean",
                     "default": false
                 },
-                "mapcache_internal": {
-                    "title": "Mapcache internal",
-                    "description": "Use internal mapcache, default to False",
-                    "type": "boolean",
-                    "default": false
-                },
-                "mapcache_base": {
-                    "title": "Mapcache base",
-                    "description": "The base URL, default to 'http://localhost/' (deprecated)",
-                    "type": "string",
-                    "default": "http://localhost/"
-                },
-                "mapcache_headers": {
-                    "$ref": "#/definitions/headers"
-                },
                 "static_allow_extension": {
                     "title": "Static allow extension",
                     "description": "The allowed extension of static files, defaults to [jpeg, png, xml, js, html, css]",
@@ -1016,19 +1001,19 @@
                 },
                 "wmts_path": {
                     "title": "WMTS path",
-                    "description": "The sub-path for the WMTS, default to 'wmts'",
+                    "description": "The sub-path for the WMTS (main configuration), default to 'wmts'",
                     "type": "string",
                     "default": "wmts"
                 },
                 "static_path": {
                     "title": "Static path",
-                    "description": "The sub-path for the static files, default to 'static'",
+                    "description": "The sub-path for the static files (main configuration), default to 'static'",
                     "type": "string",
                     "default": "static"
                 },
                 "admin_path": {
                     "title": "Admin path",
-                    "description": "The sub-path for the admin, default to 'admin'",
+                    "description": "The sub-path for the admin (main configuration), default to 'admin'",
                     "type": "string",
                     "default": "admin"
                 },
@@ -1083,31 +1068,31 @@
                 },
                 "s3": {
                     "title": "S3 cost",
-                    "description": "The S3 cost",
+                    "description": "The S3 cost (main configuration)",
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                         "storage": {
                             "title": "Storage",
-                            "description": "The storage cost in $ / Gio / month",
+                            "description": "The storage cost in $ / Gio / month (main configuration)",
                             "type": "number",
                             "default": 0.125
                         },
                         "put": {
                             "title": "Put",
-                            "description": "The cost of put in $ per 10 000 requests",
+                            "description": "The cost of put in $ per 10 000 requests (main configuration)",
                             "type": "number",
                             "default": 0.01
                         },
                         "get": {
                             "title": "Get",
-                            "description": "The cost of get in $ per 10 000 requests",
+                            "description": "The cost of get in $ per 10 000 requests (main configuration)",
                             "type": "number",
                             "default": 0.01
                         },
                         "download": {
                             "title": "Download",
-                            "description": "The cost of download in $ per Gio",
+                            "description": "The cost of download in $ per Gio (main configuration)",
                             "type": "number",
                             "default": 0.12
                         }
@@ -1115,19 +1100,19 @@
                 },
                 "cloudfront": {
                     "title": "CloudFront cost",
-                    "description": "The CloudFront cost",
+                    "description": "The CloudFront cost (main configuration)",
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                         "get": {
                             "title": "Get",
-                            "description": "The cost of get in $ per 10 000 requests",
+                            "description": "The cost of get in $ per 10 000 requests (main configuration)",
                             "type": "number",
                             "default": 0.009
                         },
                         "download": {
                             "title": "Download",
-                            "description": "The cost of download in $ per Gio",
+                            "description": "The cost of download in $ per Gio (main configuration)",
                             "type": "number",
                             "default": 0.12
                         }
@@ -1135,13 +1120,13 @@
                 },
                 "sqs": {
                     "title": "SQS cost",
-                    "description": "The SQS cost, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sqs",
+                    "description": "The SQS cost, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sqs (main configuration)",
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                         "request": {
                             "title": "Request",
-                            "description": "The cost of request in $ per 1 000 000 requests",
+                            "description": "The cost of request in $ per 1 000 000 requests (main configuration)",
                             "type": "number",
                             "default": 0.01
                         }
@@ -1291,45 +1276,45 @@
         },
         "logging": {
             "title": "Logging",
-            "description": "The logging configuration to database, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#logging",
+            "description": "The logging configuration to database, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#logging (main configuration)",
             "type": "object",
             "additionalProperties": false,
             "properties": {
                 "database": {
                     "title": "Database",
-                    "description": "The database",
+                    "description": "The database (main configuration)",
                     "type": "object",
                     "additionalProperties": false,
                     "properties": {
                         "host": {
                             "title": "Host",
-                            "description": "The host",
+                            "description": "The host (main configuration)",
                             "type": "string"
                         },
                         "port": {
                             "title": "Port",
-                            "description": "The port, default is 5432",
+                            "description": "The port (main configuration), default is 5432",
                             "type": "integer",
                             "default": 5432
                         },
                         "dbname": {
                             "title": "Database",
-                            "description": "The database name",
+                            "description": "The database name (main configuration)",
                             "type": "string"
                         },
                         "table": {
                             "title": "Table",
-                            "description": "The table name",
+                            "description": "The table name (main configuration)",
                             "type": "string"
                         },
                         "user": {
                             "title": "User",
-                            "description": "The user name",
+                            "description": "The user name (main configuration)",
                             "type": "string"
                         },
                         "password": {
                             "title": "Password",
-                            "description": "The password",
+                            "description": "The password (main configuration)",
                             "type": "string"
                         }
                     },
@@ -1427,7 +1412,7 @@
         },
         "apache": {
             "title": "Apache",
-            "description": "Configuration used to generate the Apache configuration (deprecated)",
+            "description": "Configuration used to generate the Apache configuration (deprecated) (main configuration)",
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -1450,7 +1435,7 @@
         },
         "mapcache": {
             "title": "MapCache",
-            "description": "Configuration used to generate the mapcache configuration (deprecated)",
+            "description": "Configuration used to generate the mapcache configuration (deprecated) (main configuration)",
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -1514,6 +1499,5 @@
         "logging": {
             "$ref": "#/definitions/logging"
         }
-    },
-    "required": ["grids", "caches", "layers"]
+    }
 }

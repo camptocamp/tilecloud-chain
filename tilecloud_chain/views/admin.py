@@ -98,10 +98,14 @@ class Admin:
         return {
             "secret": self.request.params.get("secret"),
             "auth": is_auth(self.request),
-            "commands": self.gene.config.get("server", {}).get("predefined_commands", []),
+            "commands": self.gene.get_host_config(self.request.host)
+            .config.get("server", {})
+            .get("predefined_commands", []),
             "status": get_status(self.gene),
             "run_url": self.request.route_url("admin_run"),
-            "static_path": self.gene.config.get("server", {}).get("static_path", "static"),
+            "static_path": self.gene.get_host_config(self.request.host)
+            .config.get("server", {})
+            .get("static_path", "static"),
         }
 
     @view_config(route_name="admin_run")  # type: ignore
@@ -114,7 +118,7 @@ class Admin:
 
         command = shlex.split(self.request.POST["command"])
 
-        if command[0] not in self.gene.config.get("server", {}).get(
+        if command[0] not in self.gene.get_host_config(self.request.host).config.get("server", {}).get(
             "allowed_commands", ["generate_tiles", "generate_controller"]
         ):
             raise pyramid.httpexceptions.HTTPBadRequest(f"The given executable '{command[0]}' is not allowed")

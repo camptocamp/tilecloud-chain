@@ -5,6 +5,7 @@ Automatically generated file from a JSON schema.
 
 from typing import Any, Dict, List, Literal, Tuple, TypedDict, Union
 
+
 # Address
 #
 # The address
@@ -19,7 +20,7 @@ class Address(TypedDict, total=False):
 
 # Apache
 #
-# Configuration used to generate the Apache configuration (deprecated)
+# Configuration used to generate the Apache configuration (deprecated) (main configuration)
 class Apache(TypedDict, total=False):
     location: str
     config_file: str
@@ -42,7 +43,6 @@ class Argument(TypedDict, total=False):
 # The region, default to 'eu-west-1'
 #
 # pattern: ^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$
-# default: eu-west-1
 AwsRegion = str
 
 
@@ -165,7 +165,7 @@ CacheWmstCapabilitiesFile = str
 
 # CloudFront cost
 #
-# The CloudFront cost
+# The CloudFront cost (main configuration)
 class CloudfrontCost(TypedDict, total=False):
     get: Union[int, float]
     download: Union[int, float]
@@ -213,7 +213,7 @@ class Cost(TypedDict, total=False):
 
 # Database
 #
-# The database
+# The database (main configuration)
 class Database(TypedDict, total=False):
     host: str
     port: int
@@ -281,7 +281,7 @@ LayerBoundingBox = List[Union[int, float]]
 
 # Layer cost
 #
-# The rules used to calculate the cost (unmaintained)
+# The rules used to calculate the cost
 class LayerCost(TypedDict, total=False):
     tileonly_generation_time: Union[int, float]
     tile_generation_time: Union[int, float]
@@ -507,14 +507,14 @@ LayerWmtsStyle = str
 
 # Logging
 #
-# The logging configuration to database, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#logging
+# The logging configuration to database, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#logging (main configuration)
 class Logging(TypedDict, total=False):
     database: "Database"
 
 
 # MapCache
 #
-# Configuration used to generate the mapcache configuration (deprecated)
+# Configuration used to generate the mapcache configuration (deprecated) (main configuration)
 class Mapcache(TypedDict, total=False):
     config_file: str
     memcache_host: str
@@ -590,7 +590,7 @@ class Provider(TypedDict, total=False):
 
 # Redis
 #
-# The Redis configuration
+# The Redis configuration (main configuration)
 class Redis(TypedDict, total=False):
     url: str
     sentinels: List["_SentinelsItem"]
@@ -611,7 +611,7 @@ class Redis(TypedDict, total=False):
 
 # S3 cost
 #
-# The S3 cost
+# The S3 cost (main configuration)
 class S3Cost(TypedDict, total=False):
     storage: Union[int, float]
     put: Union[int, float]
@@ -626,9 +626,6 @@ class Server(TypedDict, total=False):
     cache: str
     layers: List[str]
     geoms_redirect: bool
-    mapcache_internal: bool
-    mapcache_base: str
-    mapcache_headers: "Headers"
     static_allow_extension: List[str]
     wmts_path: str
     static_path: str
@@ -656,17 +653,17 @@ class Sqs(TypedDict, total=False):
 
 # SQS cost
 #
-# The SQS cost, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sqs
+# The SQS cost, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sqs (main configuration)
 class SqsCost(TypedDict, total=False):
     request: Union[int, float]
 
 
-# The sentinel host name
+# The sentinel host name (main configuration)
 _Base = str
 
 
-# The sentinel port
-_BaseGen439467 = Union[str, int]
+# The sentinel port (main configuration)
+_BaseGen823765 = Union[str, int]
 
 
 # pattern: ^[a-zA-Z0-9_\-\+~\.]+$
@@ -721,10 +718,10 @@ class _ProcessCommandItem(TypedDict, total=False):
     arg: "Argument"
 
 
-# A sentinel
+# A sentinel (main configuration)
 #
 # additionalItems: False
-_SentinelsItem = Tuple["_Base", "_BaseGen439467"]
+_SentinelsItem = Tuple["_Base", "_BaseGen823765"]
 
 
 # pattern: ^[a-zA-Z0-9_\-\+~\.]+$

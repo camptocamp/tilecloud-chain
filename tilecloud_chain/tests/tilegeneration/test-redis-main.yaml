@@ -1,0 +1,5 @@
+redis:
+  sentinels:
+    - - redis_sentinel
+      - 26379
+  queue: tilecloud

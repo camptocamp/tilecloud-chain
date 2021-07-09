@@ -23,10 +23,7 @@ class Copy:
         destination: str,
         task_name: str,
     ) -> None:
-        if gene.layers[layer]["type"] == "wms":
-            self._copy(options, gene, layer, source, destination, task_name)
-        else:
-            self._copy(options, gene, layer, source, destination, task_name)
+        self._copy(options, gene, layer, source, destination, task_name)
 
     def _copy(
         self,
@@ -38,14 +35,16 @@ class Copy:
         task_name: str,
     ) -> None:
         # disable metatiles
-        layer = gene.layers[layer_name]
+        assert gene.config_file
+        config = gene.get_config(gene.config_file)
+        layer = config.config["layers"][layer_name]
         cast(tilecloud_chain.configuration.LayerWms, layer)["meta"] = False
         count_tiles_dropped = Count()
 
-        gene.init_layer(layer_name, options)
+        gene.create_log_tiles_error(layer_name)
         source_tilestore = gene.get_tilesstore(source)
         dest_tilestore = gene.get_tilesstore(dest)
-        gene.init_tilecoords(layer_name)
+        gene.init_tilecoords(config, layer_name)
         gene.add_geom_filter()
         gene.add_logger()
         gene.get(source_tilestore, "Get the tiles")
@@ -105,15 +104,17 @@ def main() -> None:
         options = parser.parse_args()
 
         gene = TileGeneration(options.config, options)
+        assert gene.config_file
+        config = gene.get_config(gene.config_file)
 
         if options.layer:
             copy = Copy()
             copy.copy(options, gene, options.layer, options.source, options.dest, "copy")
         else:
             layers = (
-                gene.config["generation"]["default_layers"]
-                if "default_layers" in gene.config["generation"]
-                else gene.config["layers"].keys()
+                config.config["generation"]["default_layers"]
+                if "default_layers" in config.config["generation"]
+                else config.config["layers"].keys()
             )
             for layer in layers:
                 copy = Copy()
@@ -143,10 +144,12 @@ def process() -> None:
         if options.layer:
             copy.copy(options, gene, options.layer, options.cache, options.cache, "process")
         else:
+            assert gene.config_file
+            config = gene.get_config(gene.config_file)
             layers_name = (
-                gene.config["generation"]["default_layers"]
-                if "default_layers" in gene.config.get("generation", {})
-                else gene.layers.keys()
+                config.config["generation"]["default_layers"]
+                if "default_layers" in config.config.get("generation", {})
+                else config.config["layers"].keys()
             )
             for layer in layers_name:
                 copy.copy(options, gene, layer, options.cache, options.cache, "process")

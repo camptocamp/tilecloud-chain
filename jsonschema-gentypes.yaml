@@ -5,6 +5,7 @@ headers: |
 callbacks:
   - - pyupgrade
     - --py38-plus
+    - --exit-zero-even-if-changed
   - - black
   - - isort
 generate:

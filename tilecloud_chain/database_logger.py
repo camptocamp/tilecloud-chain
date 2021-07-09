@@ -24,12 +24,12 @@ class DatabaseLoggerCommon:
                     password=db_params.get("password"),
                 )
                 break
-            except psycopg2.OperationalError as e:
+            except psycopg2.OperationalError:
+                logger.warning("Failed connecting to the database. Will try again in 1s", exc_info=True)
                 if daemon:
-                    logger.warning("Failed connecting to the database. Will try again in 1s", exc_info=True)
                     time.sleep(1)
                 else:
-                    sys.exit("Cannot connect to the database: " + str(e))
+                    sys.exit(2)
         if "." in db_params["table"]:
             schema, table = db_params["table"].split(".")
         else:

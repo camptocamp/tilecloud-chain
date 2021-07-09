@@ -24,7 +24,7 @@ defaults:
       - name: DATE
         default: '2012'
         generate: ['2012']
-        values: ['2005', '2010', '2012']
+        values: ['2012']
     meta: true
     meta_size: 8
     meta_buffer: 128
@@ -45,31 +45,8 @@ layers:
     geoms:
       - sql: the_geom AS geom FROM tests.point
         connection: user=postgres password=postgres dbname=tests host=db
-    min_resolution_seed: 100
+    min_resolution_seed: 10
 
 generation:
   default_cache: local
   default_layers: [point]
-  maxconsecutive_errors: 2
-
-openlayers:
-  srs: EPSG:21781
-  center_x: 600000
-  center_y: 200000
-
-cost:
-  # [nb/month]
-  request_per_layers: 10000000
-
-mapcache:
-  config_file: mapcache.xml
-  memcache_host: memcached
-
-server:
-  geoms_redirect: true
-  mapcache_base: http://mapcache:8080/
-
-redis:
-  sentinels:
-    - - redis_sentinel
-      - 26379
