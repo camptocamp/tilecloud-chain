@@ -1,4 +1,4 @@
-FROM osgeo/gdal:ubuntu-small-3.3.0 as base
+FROM osgeo/gdal:ubuntu-small-3.3.1 as base
 LABEL maintainer "info@camptocamp.org"
 
 RUN \
