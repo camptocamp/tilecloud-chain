@@ -1,32 +1,32 @@
 grids:
-    swissgrid_1:
-        resolutions: [2]
-        resolution_scale: 5.5
-        bbox: [a, b, c]
-        srs: ['EPSG:21781']
-    swissgrid_2:
-        resolutions: [1]
-        bbox: [123]
-        srs: {}
-    swissgrid_3:
-        srs: epsg:21781
-    swissgrid_4:
-        srs: epsg21781
-    swissgrid_5: {}
-    swissgrid_6:
-    swissgrid!: {}
+  swissgrid_1:
+    resolutions: [2]
+    resolution_scale: 5.5
+    bbox: [a, b, c]
+    srs: ['EPSG:21781']
+  swissgrid_2:
+    resolutions: [1]
+    bbox: [123]
+    srs: {}
+  swissgrid_3:
+    srs: epsg:21781
+  swissgrid_4:
+    srs: epsg21781
+  swissgrid_5: {}
+  swissgrid_6:
+  swissgrid!: {}
 
 caches: {}
 
 layers:
-    hi!:
-        wmts_style: yo!
-        dimensions:
-        -   name: DATE!
-            default: '2010!'
-            generate: ['2012!']
-            values: ['2005!', '2010!', '2012!']
-        -   name: time
-            default: 1
-            generate: [1]
-            values: [1]
+  hi!:
+    wmts_style: yo!
+    dimensions:
+      - name: DATE!
+        default: '2010!'
+        generate: ['2012!']
+        values: ['2005!', '2010!', '2012!']
+      - name: time
+        default: 1
+        generate: [1]
+        values: [1]

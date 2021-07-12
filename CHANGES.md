@@ -41,7 +41,7 @@
     > ```yaml
     > connection: user=www-data password=www-data dbname=<db> host=localhost
     > geoms:
-    >     - sql: <column> AS geom FROM <table>
+    >   - sql: <column> AS geom FROM <table>
     > ```
     >
     > More information in the **Configure geom/sql** chapter.
@@ -82,12 +82,12 @@
 
 ```yaml
 layers:
-    layer_name:
-        sqs:
-            # The region where the SQS queue is
-            region: eu-west-1
-            # The SQS queue name, it should already exists
-            queue: the_name
+  layer_name:
+    sqs:
+      # The region where the SQS queue is
+      region: eu-west-1
+      # The SQS queue name, it should already exists
+      queue: the_name
 ```
 
 2.  Add debug option (`--debug`), please use it to report issue.

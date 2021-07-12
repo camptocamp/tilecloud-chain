@@ -1,9 +1,9 @@
 grids:
-    swissgrid_01:
-        resolutions: [1, 0.2, 0.1]
-        resolution_scale: 5
-        bbox: [420000, 30000, 900000, 350000]
-        srs: EPSG:21781
+  swissgrid_01:
+    resolutions: [1, 0.2, 0.1]
+    resolution_scale: 5
+    bbox: [420000, 30000, 900000, 350000]
+    srs: EPSG:21781
 
 caches: {}
 

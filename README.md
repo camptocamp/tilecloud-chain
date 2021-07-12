@@ -10,29 +10,29 @@ Destination in WMTS layout, on S3, on Berkeley DB (`bsddb`), on MBTiles, or on l
 
 Features:
 
--   Generate tiles.
--   Drop empty tiles.
--   Drop tiles outside a geometry or a bbox.
--   Use MetaTiles.
--   Generate the legend images.
--   Generate GetCapabilities.
--   Generate OpenLayers example page.
--   Generate the Apache configuration.
--   Obtain the hash of an empty tile.
--   In the future, measure tile generation speed.
--   Calculate cost and generation time.
--   In the future, manage the AWS hosts that generate tiles.
--   Delete empty tiles.
--   Copy files between caches.
--   Be able to use an SQS queue to dispatch the generation.
--   Post processing the generated tiles.
--   ...
+- Generate tiles.
+- Drop empty tiles.
+- Drop tiles outside a geometry or a bbox.
+- Use MetaTiles.
+- Generate the legend images.
+- Generate GetCapabilities.
+- Generate OpenLayers example page.
+- Generate the Apache configuration.
+- Obtain the hash of an empty tile.
+- In the future, measure tile generation speed.
+- Calculate cost and generation time.
+- In the future, manage the AWS hosts that generate tiles.
+- Delete empty tiles.
+- Copy files between caches.
+- Be able to use an SQS queue to dispatch the generation.
+- Post processing the generated tiles.
+- ...
 
 Legacy features:
 
--   bsddb support
--   sqlite (mbtiles) support
--   mapnik support (should be updated for Python3)
+- bsddb support
+- sqlite (mbtiles) support
+- mapnik support (should be updated for Python3)
 
 ## Get it
 
@@ -86,10 +86,10 @@ You can add that in your workspace configuration to use the JSON schema:
 
 ```json
 {
-    "yaml.schemas": {
-        "../tilecloud-chain/tilecloud_chain/schema.json": [
-            "tilecloud-chain/tilecloud_chain/tests/tilegeneration/*.yaml"
-        ]
-    }
+  "yaml.schemas": {
+    "../tilecloud-chain/tilecloud_chain/schema.json": [
+      "tilecloud-chain/tilecloud_chain/tests/tilegeneration/*.yaml"
+    ]
+  }
 }
 ```
