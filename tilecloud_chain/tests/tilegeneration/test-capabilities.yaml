@@ -1,47 +1,47 @@
 grids:
-    swissgrid:
-        resolutions: [100, 10]
-        bbox: [420000, 30000, 900000, 350000]
-        tile_size: 256
-        srs: EPSG:21781
+  swissgrid:
+    resolutions: [100, 10]
+    bbox: [420000, 30000, 900000, 350000]
+    tile_size: 256
+    srs: EPSG:21781
 
 caches:
-    local:
-        type: filesystem
-        http_url: http://wmts1/tiles/
-        folder: /tmp/tiles
-        wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
+  local:
+    type: filesystem
+    http_url: http://wmts1/tiles/
+    folder: /tmp/tiles
+    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
 
 defaults:
-    layer: &layer
-        url: http://mapserver:8080/mapserv
-        layers: point
-        grid: swissgrid
-        type: wms
-        wmts_style: default
-        mime_type: image/png
-        extension: png
+  layer: &layer
+    url: http://mapserver:8080/mapserv
+    layers: point
+    grid: swissgrid
+    type: wms
+    wmts_style: default
+    mime_type: image/png
+    extension: png
 
 layers:
-    no_dim: *layer
-    one:
-        <<: *layer
-        dimensions:
-        -   name: DATE
-            default: '2012'
-            generate: ['2012']
-            values: ['2012']
-    two:
-        <<: *layer
-        dimensions:
-        -   name: DATE
-            default: '2012'
-            generate: ['2012']
-            values: ['2012']
-        -   name: LEVEL
-            default: '1'
-            generate: ['1']
-            values: ['1', '2']
+  no_dim: *layer
+  one:
+    <<: *layer
+    dimensions:
+      - name: DATE
+        default: '2012'
+        generate: ['2012']
+        values: ['2012']
+  two:
+    <<: *layer
+    dimensions:
+      - name: DATE
+        default: '2012'
+        generate: ['2012']
+        values: ['2012']
+      - name: LEVEL
+        default: '1'
+        generate: ['1']
+        values: ['1', '2']
 
 generation:
-    default_cache: local
+  default_cache: local

@@ -1,41 +1,61 @@
 <html>
-    <head>
-        <title>The tile generation admin interface</title>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    </head>
-    <body class="px-5 py-4">
-        <h1 class="bd-title">Tile generation</h1>
-%if not auth:
-        <form>
-            Secret: <input type="password" name="secret">
-            <input type="submit" value="OK">
-        </form>
-%else:
-        <h2>Status</h2>
-        <p>${'<br />'.join(status)|n}</p>
-        <h2>Launch generation</h2>
-        <form action="${run_url}" method="POST">
-            Command: <input id="command" type="text" name="command">
-            <input type="submit" value="Start">
-%if secret is not None:
-            <input type="hidden" name="secret" value="${secret}">
-%endif
-        </form>
-%for command in commands:
-        <button class="btn btn-outline-primary command" data-role="${command.get('command', '')}">${command.get('name', 'Unnamed')}</button>
-%endfor
-%endif
+  <head>
+    <title>The tile generation admin interface</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body class="px-5 py-4">
+    <h1 class="bd-title">Tile generation</h1>
+    %if not auth:
+    <form>
+      Secret: <input type="password" name="secret" />
+      <input type="submit" value="OK" />
+    </form>
+    %else:
+    <h2>Status</h2>
+    <p>${'<br />'.join(status)|n}</p>
+    <h2>Launch generation</h2>
+    <form action="${run_url}" method="POST">
+      Command: <input id="command" type="text" name="command" />
+      <input type="submit" value="Start" />
+      %if secret is not None:
+      <input type="hidden" name="secret" value="${secret}" />
+      %endif
+    </form>
+    %for command in commands:
+    <button class="btn btn-outline-primary command" data-role="${command.get('command', '')}">
+      ${command.get('name', 'Unnamed')}
+    </button>
+    %endfor
+    <!-- for prettier -->
+    %endif
 
-        <h2>Test</h2>
-        <p>See the result in <a href="/${static_path}/index.html">the test page</a>.</p>
+    <h2>Test</h2>
+    <p>See the result in <a href="/${static_path}/index.html">the test page</a>.</p>
 
-        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-        <script>
-$('.command').click(handler => {
-  $('#command').val(handler.target.dataset.role)
-})
-        </script>
-    </body>
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      $('.command').click((handler) => {
+        $('#command').val(handler.target.dataset.role);
+      });
+    </script>
+  </body>
 </html>
