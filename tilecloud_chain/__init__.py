@@ -706,7 +706,7 @@ class TileGeneration:
             format="." + layer["extension"],
             dimensions_name=[dimension["name"] for dimension in layer.get("dimensions", [])],
             tile_matrix_set=layer["grid"],
-            tile_matrix=lambda z: get_tile_matrix_identifier(grid, zoom=z),  # type: ignore
+            tile_matrix=lambda z: get_tile_matrix_identifier(grid, zoom=z),
             request_encoding="REST",
         )
         # store
@@ -715,7 +715,7 @@ class TileGeneration:
             # on s3
             cache_tilestore: TileStore = S3TileStore(
                 cache_s3["bucket"],
-                layout,  # type: ignore
+                layout,
                 s3_host=cache.get("host", "s3-eu-west-1.amazonaws.com"),
                 cache_control=cache.get("cache_control"),
             )
