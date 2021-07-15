@@ -37,7 +37,7 @@ import botocore.exceptions
 from c2cwsgiutils import health_check
 import c2cwsgiutils.pyramid
 from pyramid.config import Configurator
-from pyramid.httpexceptions import exception_response
+from pyramid.httpexceptions import HTTPException, exception_response
 from pyramid.request import Request
 import pyramid.response
 from pyramid.router import Router
@@ -277,51 +277,130 @@ class Server(Generic[Response]):
         config: tilecloud_chain.DatedConfig,
         **kwargs: Any,
     ) -> Response:
-        dimensions = []
-        metadata = {}
-        assert tilegeneration
+        try:
+            dimensions = []
+            metadata = {}
+            assert tilegeneration
 
-        if path:
-            if tuple(path[: len(self.static_path)]) == tuple(self.static_path):
-                return self._get(  # pylint: disable=not-callable
-                    "/".join(path[len(self.static_path) :]),
-                    {
-                        "Expires": (
-                            datetime.datetime.utcnow()
-                            + datetime.timedelta(hours=self.get_expires_hours(config))
-                        ).isoformat(),
-                        "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
-                        "Access-Control-Allow-Origin": "*",
-                        "Access-Control-Allow-Methods": "GET",
-                    },
-                    config=config,
-                    **kwargs,
-                )
-            elif len(path) >= 1 and path[0] != self.wmts_path:
-                return self.error(
-                    config,
-                    404,
-                    "Type '{}' don't exists, allows values: '{}' or '{}'".format(
-                        path[0], self.wmts_path, "/".join(self.static_path)
-                    ),
-                    **kwargs,
-                )
-            path = path[1:]  # remove type
+            if path:
+                if tuple(path[: len(self.static_path)]) == tuple(self.static_path):
+                    return self._get(  # pylint: disable=not-callable
+                        "/".join(path[len(self.static_path) :]),
+                        {
+                            "Expires": (
+                                datetime.datetime.utcnow()
+                                + datetime.timedelta(hours=self.get_expires_hours(config))
+                            ).isoformat(),
+                            "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
+                            "Access-Control-Allow-Origin": "*",
+                            "Access-Control-Allow-Methods": "GET",
+                        },
+                        config=config,
+                        **kwargs,
+                    )
+                elif len(path) >= 1 and path[0] != self.wmts_path:
+                    return self.error(
+                        config,
+                        404,
+                        "Type '{}' don't exists, allows values: '{}' or '{}'".format(
+                            path[0], self.wmts_path, "/".join(self.static_path)
+                        ),
+                        **kwargs,
+                    )
+                path = path[1:]  # remove type
 
-        if path:
-            if len(path) == 2 and path[0] == "1.0.0" and path[1].lower() == "wmtscapabilities.xml":
-                params["SERVICE"] = "WMTS"
-                params["VERSION"] = "1.0.0"
-                params["REQUEST"] = "GetCapabilities"
-            elif len(path) < 7:
-                return self.error(config, 400, "Not enough path", **kwargs)
+            if path:
+                if len(path) == 2 and path[0] == "1.0.0" and path[1].lower() == "wmtscapabilities.xml":
+                    params["SERVICE"] = "WMTS"
+                    params["VERSION"] = "1.0.0"
+                    params["REQUEST"] = "GetCapabilities"
+                elif len(path) < 7:
+                    return self.error(config, 400, "Not enough path", **kwargs)
+                else:
+                    params["SERVICE"] = "WMTS"
+                    params["VERSION"] = path[0]
+
+                    params["LAYER"] = path[1]
+                    params["STYLE"] = path[2]
+
+                    if params["LAYER"] in self.get_layers(config):
+                        layer = cast(
+                            tilecloud_chain.configuration.LayerWms,
+                            config.config["layers"][params["LAYER"]],
+                        )
+                    else:
+                        return self.error(config, 400, "Wrong Layer '{}'".format(params["LAYER"]), **kwargs)
+
+                    index = 3
+                    dimensions = path[index : index + len(layer.get("dimensions", {}))]
+                    for dimension in layer.get("dimensions", {}):
+                        metadata["dimension_" + dimension["name"]] = path[index]
+                        params[dimension["name"].upper()] = path[index]
+                        index += 1
+
+                    last = path[-1].split(".")
+                    if len(path) < index + 4:
+                        return self.error(config, 400, "Not enough path", **kwargs)
+                    params["TILEMATRIXSET"] = path[index]
+                    params["TILEMATRIX"] = path[index + 1]
+                    params["TILEROW"] = path[index + 2]
+                    if len(path) == index + 4:
+                        params["REQUEST"] = "GetTile"
+                        params["TILECOL"] = last[0]
+                        if last[1] != layer["extension"]:
+                            return self.error(config, 400, f"Wrong extension '{last[1]}'", **kwargs)
+                    elif len(path) == index + 6:
+                        params["REQUEST"] = "GetFeatureInfo"
+                        params["TILECOL"] = path[index + 3]
+                        params["I"] = path[index + 4]
+                        params["J"] = last[0]
+                        params["INFO_FORMAT"] = layer.get("info_formats", ["application/vnd.ogc.gml"])[0]
+                    else:
+                        return self.error(config, 400, "Wrong path length", **kwargs)
+
+                    params["FORMAT"] = layer["mime_type"]
             else:
-                params["SERVICE"] = "WMTS"
-                params["VERSION"] = path[0]
+                if "SERVICE" not in params or "REQUEST" not in params or "VERSION" not in params:
+                    return self.error(config, 400, "Not all required parameters are present", **kwargs)
 
-                params["LAYER"] = path[1]
-                params["STYLE"] = path[2]
+            if params["SERVICE"] != "WMTS":
+                return self.error(config, 400, "Wrong Service '{}'".format(params["SERVICE"]), **kwargs)
+            if params["VERSION"] != "1.0.0":
+                return self.error(config, 400, "Wrong Version '{}'".format(params["VERSION"]), **kwargs)
 
+            if params["REQUEST"] == "GetCapabilities":
+                headers = {
+                    "Content-Type": "application/xml",
+                    "Expires": (
+                        datetime.datetime.utcnow() + datetime.timedelta(hours=self.get_expires_hours(config))
+                    ).isoformat(),
+                    "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET",
+                }
+                cache = self.get_cache(config)
+                if "wmtscapabilities_file" in cache:
+                    wmtscapabilities_file = cache["wmtscapabilities_file"]
+                    return self._get(
+                        wmtscapabilities_file, headers, config=config, **kwargs
+                    )  # pylint: disable=not-callable
+                else:
+                    body = controller.get_wmts_capabilities(tilegeneration, self.get_cache_name(config))
+                    assert body
+                    headers["Content-Type"] = "application/xml"
+                    return self.response(config, body.encode("utf-8"), headers=headers, **kwargs)
+
+            if (
+                "FORMAT" not in params
+                or "LAYER" not in params
+                or "TILEMATRIXSET" not in params
+                or "TILEMATRIX" not in params
+                or "TILEROW" not in params
+                or "TILECOL" not in params
+            ):
+                return self.error(config, 400, "Not all required parameters are present", **kwargs)
+
+            if not path:
                 if params["LAYER"] in self.get_layers(config):
                     layer = cast(
                         tilecloud_chain.configuration.LayerWms,
@@ -330,203 +409,133 @@ class Server(Generic[Response]):
                 else:
                     return self.error(config, 400, "Wrong Layer '{}'".format(params["LAYER"]), **kwargs)
 
-                index = 3
-                dimensions = path[index : index + len(layer["dimensions"])]
                 for dimension in layer["dimensions"]:
-                    metadata["dimension_" + dimension["name"]] = path[index]
-                    params[dimension["name"].upper()] = path[index]
-                    index += 1
+                    value = (
+                        params[dimension["name"].upper()]
+                        if dimension["name"].upper() in params
+                        else dimension["default"]
+                    )
+                    dimensions.append(value)
+                    metadata["dimension_" + dimension["name"]] = value
 
-                last = path[-1].split(".")
-                if len(path) < index + 4:
-                    return self.error(config, 400, "Not enough path", **kwargs)
-                params["TILEMATRIXSET"] = path[index]
-                params["TILEMATRIX"] = path[index + 1]
-                params["TILEROW"] = path[index + 2]
-                if len(path) == index + 4:
-                    params["REQUEST"] = "GetTile"
-                    params["TILECOL"] = last[0]
-                    if last[1] != layer["extension"]:
-                        return self.error(config, 400, f"Wrong extension '{last[1]}'", **kwargs)
-                elif len(path) == index + 6:
-                    params["REQUEST"] = "GetFeatureInfo"
-                    params["TILECOL"] = path[index + 3]
-                    params["I"] = path[index + 4]
-                    params["J"] = last[0]
-                    params["INFO_FORMAT"] = layer.get("info_formats", ["application/vnd.ogc.gml"])[0]
-                else:
-                    return self.error(config, 400, "Wrong path length", **kwargs)
-
-                params["FORMAT"] = layer["mime_type"]
-        else:
-            if "SERVICE" not in params or "REQUEST" not in params or "VERSION" not in params:
-                return self.error(config, 400, "Not all required parameters are present", **kwargs)
-
-        if params["SERVICE"] != "WMTS":
-            return self.error(config, 400, "Wrong Service '{}'".format(params["SERVICE"]), **kwargs)
-        if params["VERSION"] != "1.0.0":
-            return self.error(config, 400, "Wrong Version '{}'".format(params["VERSION"]), **kwargs)
-
-        if params["REQUEST"] == "GetCapabilities":
-            headers = {
-                "Content-Type": "application/xml",
-                "Expires": (
-                    datetime.datetime.utcnow() + datetime.timedelta(hours=self.get_expires_hours(config))
-                ).isoformat(),
-                "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET",
-            }
-            cache = self.get_cache(config)
-            if "wmtscapabilities_file" in cache:
-                wmtscapabilities_file = cache["wmtscapabilities_file"]
-                return self._get(
-                    wmtscapabilities_file, headers, config=config, **kwargs
-                )  # pylint: disable=not-callable
-            else:
-                body = controller.get_wmts_capabilities(tilegeneration, self.get_cache_name(config))
-                assert body
-                headers["Content-Type"] = "application/xml"
-                return self.response(config, body.encode("utf-8"), headers=headers, **kwargs)
-
-        if (
-            "FORMAT" not in params
-            or "LAYER" not in params
-            or "TILEMATRIXSET" not in params
-            or "TILEMATRIX" not in params
-            or "TILEROW" not in params
-            or "TILECOL" not in params
-        ):
-            return self.error(config, 400, "Not all required parameters are present", **kwargs)
-
-        if not path:
-            if params["LAYER"] in self.get_layers(config):
-                layer = cast(
-                    tilecloud_chain.configuration.LayerWms,
-                    config.config["layers"][params["LAYER"]],
+            if params["STYLE"] != layer["wmts_style"]:
+                return self.error(config, 400, "Wrong Style '{}'".format(params["STYLE"]), **kwargs)
+            if params["TILEMATRIXSET"] != layer["grid"]:
+                return self.error(
+                    config, 400, "Wrong TileMatrixSet '{}'".format(params["TILEMATRIXSET"]), **kwargs
                 )
-            else:
-                return self.error(config, 400, "Wrong Layer '{}'".format(params["LAYER"]), **kwargs)
 
-            for dimension in layer["dimensions"]:
-                value = (
-                    params[dimension["name"].upper()]
-                    if dimension["name"].upper() in params
-                    else dimension["default"]
-                )
-                dimensions.append(value)
-                metadata["dimension_" + dimension["name"]] = value
-
-        if params["STYLE"] != layer["wmts_style"]:
-            return self.error(config, 400, "Wrong Style '{}'".format(params["STYLE"]), **kwargs)
-        if params["TILEMATRIXSET"] != layer["grid"]:
-            return self.error(
-                config, 400, "Wrong TileMatrixSet '{}'".format(params["TILEMATRIXSET"]), **kwargs
+            metadata["layer"] = params["LAYER"]
+            metadata["config_file"] = config.file
+            tile = Tile(
+                TileCoord(
+                    # TODO fix for matrix_identifier = resolution
+                    int(params["TILEMATRIX"]),
+                    int(params["TILECOL"]),
+                    int(params["TILEROW"]),
+                ),
+                metadata=metadata,
             )
 
-        metadata["layer"] = params["LAYER"]
-        metadata["config_file"] = config.file
-        tile = Tile(
-            TileCoord(
-                # TODO fix for matrix_identifier = resolution
-                int(params["TILEMATRIX"]),
-                int(params["TILECOL"]),
-                int(params["TILEROW"]),
-            ),
-            metadata=metadata,
-        )
+            if params["REQUEST"] == "GetFeatureInfo":
+                if "I" not in params or "J" not in params or "INFO_FORMAT" not in params:
+                    return self.error(config, 400, "Not all required parameters are present", **kwargs)
+                if "query_layers" in layer:
+                    return self.forward(
+                        config,
+                        layer["url"]
+                        + "?"
+                        + urlencode(
+                            {
+                                "SERVICE": "WMS",
+                                "VERSION": layer.get("version", "1.1.1"),
+                                "REQUEST": "GetFeatureInfo",
+                                "LAYERS": layer["layers"],
+                                "QUERY_LAYERS": layer["query_layers"],
+                                "STYLES": params["STYLE"],
+                                "FORMAT": params["FORMAT"],
+                                "INFO_FORMAT": params["INFO_FORMAT"],
+                                "WIDTH": config.config["grids"][layer["grid"]]["tile_size"],
+                                "HEIGHT": config.config["grids"][layer["grid"]]["tile_size"],
+                                "SRS": config.config["grids"][layer["grid"]]["srs"],
+                                "BBOX": tilegeneration.get_grid(config, layer["grid"]).extent(tile.tilecoord),
+                                "X": params["I"],
+                                "Y": params["J"],
+                            }
+                        ),
+                        no_cache=True,
+                        **kwargs,
+                    )
+                else:
+                    return self.error(
+                        config, 400, "Layer '{}' not queryable".format(params["LAYER"]), **kwargs
+                    )
 
-        if params["REQUEST"] == "GetFeatureInfo":
-            if "I" not in params or "J" not in params or "INFO_FORMAT" not in params:
-                return self.error(config, 400, "Not all required parameters are present", **kwargs)
-            if "query_layers" in layer:
-                return self.forward(
+            if params["REQUEST"] != "GetTile":
+                return self.error(config, 400, "Wrong Request '{}'".format(params["REQUEST"]), **kwargs)
+
+            if params["FORMAT"] != layer["mime_type"]:
+                return self.error(config, 400, "Wrong Format '{}'".format(params["FORMAT"]), **kwargs)
+
+            if tile.tilecoord.z > self.get_max_zoom_seed(config, params["LAYER"]):
+                return self._map_cache(config, layer, tile, kwargs)
+
+            layer_filter = self.get_filter(config, params["LAYER"])
+            if layer_filter:
+                meta_size = layer["meta_size"]
+                meta_tilecoord = (
+                    TileCoord(
+                        # TODO fix for matrix_identifier = resolution
+                        tile.tilecoord.z,
+                        round(tile.tilecoord.x / meta_size * meta_size),
+                        round(tile.tilecoord.y / meta_size * meta_size),
+                        meta_size,
+                    )
+                    if meta_size != 1
+                    else tile.tilecoord
+                )
+                if not layer_filter.filter_tilecoord(config, meta_tilecoord, params["LAYER"]):
+                    return self._map_cache(config, layer, tile, kwargs)
+
+            store = self.get_store(config, params["LAYER"])
+            if store is None:
+                return self.error(
                     config,
-                    layer["url"]
-                    + "?"
-                    + urlencode(
-                        {
-                            "SERVICE": "WMS",
-                            "VERSION": layer.get("version", "1.1.1"),
-                            "REQUEST": "GetFeatureInfo",
-                            "LAYERS": layer["layers"],
-                            "QUERY_LAYERS": layer["query_layers"],
-                            "STYLES": params["STYLE"],
-                            "FORMAT": params["FORMAT"],
-                            "INFO_FORMAT": params["INFO_FORMAT"],
-                            "WIDTH": config.config["grids"][layer["grid"]]["tile_size"],
-                            "HEIGHT": config.config["grids"][layer["grid"]]["tile_size"],
-                            "SRS": config.config["grids"][layer["grid"]]["srs"],
-                            "BBOX": tilegeneration.get_grid(config, layer["grid"]).extent(tile.tilecoord),
-                            "X": params["I"],
-                            "Y": params["J"],
-                        }
-                    ),
-                    no_cache=True,
+                    400,
+                    "No store found for layer '{}'".format(params["LAYER"]),
+                    **kwargs,
+                )
+
+            tile2 = store.get_one(tile)
+            if tile2:
+                if tile2.error:
+                    return self.error(config, 500, tile2.error, **kwargs)
+
+                assert tile2.data
+                assert tile2.content_type
+                return self.response(
+                    config,
+                    tile2.data,
+                    headers={
+                        "Content-Type": tile2.content_type,
+                        "Expires": (
+                            datetime.datetime.utcnow()
+                            + datetime.timedelta(hours=self.get_expires_hours(config))
+                        ).isoformat(),
+                        "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Methods": "GET",
+                        "Tile-Backend": "Cache",
+                    },
                     **kwargs,
                 )
             else:
-                return self.error(config, 400, "Layer '{}' not queryable".format(params["LAYER"]), **kwargs)
-
-        if params["REQUEST"] != "GetTile":
-            return self.error(config, 400, "Wrong Request '{}'".format(params["REQUEST"]), **kwargs)
-
-        if params["FORMAT"] != layer["mime_type"]:
-            return self.error(config, 400, "Wrong Format '{}'".format(params["FORMAT"]), **kwargs)
-
-        if tile.tilecoord.z > self.get_max_zoom_seed(config, params["LAYER"]):
-            return self._map_cache(config, layer, tile, kwargs)
-
-        layer_filter = self.get_filter(config, params["LAYER"])
-        if layer_filter:
-            meta_size = layer["meta_size"]
-            meta_tilecoord = (
-                TileCoord(
-                    # TODO fix for matrix_identifier = resolution
-                    tile.tilecoord.z,
-                    round(tile.tilecoord.x / meta_size * meta_size),
-                    round(tile.tilecoord.y / meta_size * meta_size),
-                    meta_size,
-                )
-                if meta_size != 1
-                else tile.tilecoord
-            )
-            if not layer_filter.filter_tilecoord(config, meta_tilecoord, params["LAYER"]):
-                return self._map_cache(config, layer, tile, kwargs)
-
-        store = self.get_store(config, params["LAYER"])
-        if store is None:
-            return self.error(
-                config,
-                400,
-                "No store found for layer '{}'".format(params["LAYER"]),
-                **kwargs,
-            )
-
-        tile2 = store.get_one(tile)
-        if tile2:
-            if tile2.error:
-                return self.error(config, 500, tile2.error, **kwargs)
-
-            assert tile2.data
-            assert tile2.content_type
-            return self.response(
-                config,
-                tile2.data,
-                headers={
-                    "Content-Type": tile2.content_type,
-                    "Expires": (
-                        datetime.datetime.utcnow() + datetime.timedelta(hours=self.get_expires_hours(config))
-                    ).isoformat(),
-                    "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET",
-                    "Tile-Backend": "Cache",
-                },
-                **kwargs,
-            )
-        else:
-            return self.error(config, 204, **kwargs)
+                return self.error(config, 204, **kwargs)
+        except HTTPException:
+            raise
+        except Exception:
+            logger.exception("An unknown error occurred")
+            raise
 
     def _map_cache(
         self,
@@ -665,7 +674,7 @@ class PyramidServer(PyramidServerBase):
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET",
         }
-        if code == 204:
+        if code < 300:
             headers.update(
                 {
                     "Expires": (

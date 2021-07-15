@@ -32,6 +32,7 @@ from typing import (
     Optional,
     TextIO,
     Tuple,
+    TypedDict,
     Union,
     cast,
 )
@@ -47,7 +48,6 @@ from shapely.geometry.base import BaseGeometry
 from shapely.geometry.polygon import Polygon
 from shapely.ops import cascaded_union
 from shapely.wkb import loads as loads_wkb
-from typing_extensions import TypedDict
 
 from tilecloud import BoundingPyramid, Tile, TileCoord, TileGrid, TileStore, consume
 import tilecloud.filter.error
@@ -229,8 +229,7 @@ class Run:
                         tile.error = e
                 else:
                     tile = func(tile)
-                if getattr(func, "time_message", None) is not None:
-                    logger.debug("[%s] %s in %s", tilecoord, func.time_message, str(datetime.now() - n))  # type: ignore
+                logger.debug("[%s] %s in %s", tilecoord, func.time_message if getattr(func, "time_message", None) is not None else func, str(datetime.now() - n))  # type: ignore
                 if tile is None:
                     logger.debug("[%s] Drop", tilecoord)
                     return None
@@ -816,7 +815,7 @@ class TileGeneration:
                 return tile
 
             self.imap(log_tiles)
-        elif not self.options.quiet:
+        elif not self.options.quiet and getattr(self.options, "role", None) != "server":
             self.imap(Logger(logger, logging.INFO, "%(tilecoord)s, %(formated_metadata)s"))
 
     def add_metatile_splitter(self, store: Optional[TileStore] = None) -> None:

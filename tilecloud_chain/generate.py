@@ -86,9 +86,10 @@ class Generate:
         self.generate_resume(layer_name)
 
     def _generate_init(self) -> None:
-        self._count_metatiles_dropped = Count()
-        self._count_tiles = Count()
-        self._count_tiles_dropped = Count()
+        if self._options.role != "server":
+            self._count_metatiles_dropped = Count()
+            self._count_tiles = Count()
+            self._count_tiles_dropped = Count()
 
         if self._options.role in ("master", "slave") and not self._options.tiles:
             self._queue_tilestore = get_queue_store(self._gene.get_main_config(), self._options.daemon)
@@ -171,13 +172,14 @@ class Generate:
                 sys.exit(1)
 
     def _generate_tiles(self) -> None:
-        if self._options.role in ("slave", "server") and not self._options.tiles:
+        if self._options.role in ("slave") and not self._options.tiles:
             assert self._queue_tilestore is not None
             # Get the metatiles from the SQS/Redis queue
             self._gene.set_store(self._queue_tilestore)
             self._gene.imap(lambda tile: tile if "layer" in tile.metadata else None)
 
-        self._count_metatiles = self._gene.counter()
+        if self._options.role != "server":
+            self._count_metatiles = self._gene.counter()
 
         self._gene.get(
             TimedTileStoreWrapper(
@@ -221,7 +223,8 @@ class Generate:
         self._gene.add_metatile_splitter()
         self._gene.imap(Logger(logger, logging.INFO, "%(tilecoord)s, %(formated_metadata)s"))
 
-        self._gene.imap(self._count_tiles)
+        if self._count_tiles is not None:
+            self._gene.imap(self._count_tiles)
 
         self._gene.process(key="pre_hash_post_process")
 
@@ -231,9 +234,10 @@ class Generate:
             assert self._count_tiles_dropped is not None
             self._gene.imap(MultiAction(HashDropperGetter(self, False, self._count_tiles_dropped)))
 
-        self._gene.process()
+        if self._options.role != "server":
+            self._gene.process()
 
-        if self._options.role in ("local", "slave", "server"):
+        if self._options.role in ("local", "slave"):
             self._count_tiles_stored = self._gene.counter_size()
 
             if self._options.time:
@@ -404,12 +408,6 @@ class Generate:
                 ),
             )
 
-    def server_init(self, input_store: TileStore, cache_store: TileStore) -> None:
-        self._queue_tilestore = input_store
-        self._cache_tilestore = cache_store
-        self._count_tiles = Count()
-        self._generate_tiles()
-
 
 class TilestoreGetter:
     def __init__(self, gene: Generate):
@@ -557,7 +555,7 @@ def main() -> None:
                 options.cache = config.config["generation"]["default_cache"]
 
         if options.tiles is not None and options.role not in ["local", "master"]:
-            logging.error("The --tiles option work only with role local or master")
+            logger.error("The --tiles option work only with role local or master")
             sys.exit(1)
 
         try:
@@ -567,10 +565,10 @@ def main() -> None:
             elif options.layer:
                 generate.gene(options.layer)
             elif options.get_bbox:
-                logging.error("With --get-bbox option you need to specify a layer")
+                logger.error("With --get-bbox option you need to specify a layer")
                 sys.exit(1)
             elif options.get_hash:
-                logging.error("With --get-hash option you need to specify a layer")
+                logger.error("With --get-hash option you need to specify a layer")
                 sys.exit(1)
             else:
                 if options.config:
