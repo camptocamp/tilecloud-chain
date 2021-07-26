@@ -171,7 +171,7 @@ class CompareCase(TestCase):
 
     def assert_tiles_generated(self, directory: str, **kargs: Any) -> None:
         if os.path.exists(directory):
-            shutil.rmtree(directory)
+            shutil.rmtree(directory, ignore_errors=True)
 
         self.assert_tiles_generated_deleted(directory=directory, **kargs)
 

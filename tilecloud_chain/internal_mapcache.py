@@ -4,10 +4,9 @@ import datetime
 import json
 import logging
 import os
-import queue
 import struct
 import threading
-from typing import TYPE_CHECKING, Any, Dict, Iterable, Iterator, Optional, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Dict, Iterator, Optional, TypeVar, cast
 
 import redis.sentinel
 
@@ -15,38 +14,15 @@ from tilecloud import Tile, TileCoord, TileStore
 from tilecloud_chain import Run
 import tilecloud_chain.configuration
 from tilecloud_chain.generate import Generate
-from tilecloud_chain.server import Server
+
+if TYPE_CHECKING:
+    from tilecloud_chain.server import Server
 
 MAX_GENERATION_TIME = 60
 LOG = logging.getLogger(__name__)
 lock = threading.Lock()
 executing_lock = threading.Lock()
 _generator = None
-
-
-class InputStore(TileStore):
-    run = True
-
-    def __init__(self) -> None:
-        super().__init__()
-        if TYPE_CHECKING:
-            self._queue: queue.Queue[Tile] = queue.Queue()  # pylint: disable=unsubscriptable-object
-        else:
-            self._queue = queue.Queue()
-
-    def get_one(self, _: Any) -> Tile:
-        return self._queue.get()
-
-    def list(self) -> Iterable[Tile]:
-        while self.run:
-            yield self.get_one(None)
-
-    def put_one(self, tile: Tile) -> Tile:
-        self._queue.put(tile)
-        return tile
-
-    def delete_one(self, tile: Tile) -> Tile:
-        return tile
 
 
 def _decode_tile(data: bytes, tile: Tile) -> None:
@@ -93,11 +69,6 @@ class RedisStore(TileStore):
         LOG.debug("Tile found: %s/%s", tile.metadata["layer"], tile.tilecoord)
         return tile
 
-    def put(self, tiles: Iterable[Tile]) -> Iterator[Tile]:
-        for tile in tiles:
-            self.put_one(tile)
-            yield tile
-
     def put_one(self, tile: Tile) -> Tile:
         key = self._get_key(tile)
         self._master.set(key, _encode_tile(tile), ex=self._expiration)
@@ -126,43 +97,25 @@ class RedisStore(TileStore):
             yield
 
 
-class GeneratorThread(threading.Thread):
-    def __init__(self, index: int, generator: "Generate") -> None:
-        super().__init__(name="Generation thread #" + str(index), daemon=True)
-        self._generator = generator
-        self._gene = self._generator._gene  # pylint: disable=protected-access
-
-    def run(self) -> None:
-        LOG.info("Start internal mapcache generator")
-        try:
-            run = Run(
-                self._gene,
-                self._gene.functions_metatiles,
-            )
-            while True:
-                with executing_lock:
-                    assert self._gene.tilestream
-                    tile = next(self._gene.tilestream)
-                if tile is not None:
-                    run(tile)
-                    tile.metadata["lock"].release()  # type: ignore
-        except StopIteration:
-            pass
-        finally:
-            LOG.info("End internal mapcache generator")
-
-
 class Generator:
     def __init__(self, tilegeneration: tilecloud_chain.TileGeneration) -> None:
-        self._input_store = InputStore()
         redis_config = tilegeneration.get_main_config().config["redis"]
         self._cache_store = RedisStore(redis_config)
-        self.threads = []
         log_level = os.environ.get("TILE_MAPCACHE_LOGLEVEL")
         generator = Generate(
             collections.namedtuple(  # type: ignore
                 "Options",
-                ["verbose", "debug", "quiet", "role", "near", "time", "daemon", "local_process_number"],
+                [
+                    "verbose",
+                    "debug",
+                    "quiet",
+                    "role",
+                    "near",
+                    "time",
+                    "daemon",
+                    "local_process_number",
+                    "tiles",
+                ],
             )(
                 log_level == "verbose",  # type: ignore
                 log_level == "debug",
@@ -172,32 +125,21 @@ class Generator:
                 False,
                 True,
                 None,
+                None,
             ),
             tilegeneration,
             server=True,
         )
-        generator.server_init(self._input_store, self._cache_store)
-        for i in range(int(os.environ.get("SERVER_NB_THREAD", 10))):
-            thread = GeneratorThread(i, generator)
-            thread.start()
-            self.threads.append(thread)
-
-    def __del__(self) -> None:
-        self.stop()
-
-    def stop(self) -> None:
-        self._input_store.run = False
-        self._input_store.put_one(cast(Tile, None))
+        generator._generate_tiles()
+        self.run = Run(tilegeneration, tilegeneration.functions_metatiles)
 
     def read_from_cache(self, tile: Tile) -> Optional[Tile]:
         return self._cache_store.get_one(tile)
 
     def compute_tile(self, tile: Tile) -> None:
-        tile.metadata["lock"] = threading.Lock()  # type: ignore
-        tile.metadata["lock"].acquire()  # type: ignore
-        self._input_store.put_one(tile)
-        tile.metadata["lock"].acquire()  # type: ignore
-        del tile.metadata["lock"]
+        self.run(tile)
+        for tile_ in tile.metadata["tiles"].values():  # type: ignore
+            self._cache_store.put_one(tile_)
 
     @contextlib.contextmanager
     def lock(self, tile: Tile) -> Iterator[None]:
@@ -225,7 +167,7 @@ Response = TypeVar("Response")
 
 def fetch(
     config: tilecloud_chain.DatedConfig,
-    server: Server[Response],
+    server: "Server[Response]",
     tilegeneration: tilecloud_chain.TileGeneration,
     layer: tilecloud_chain.configuration.Layer,
     tile: Tile,
@@ -233,7 +175,9 @@ def fetch(
 ) -> Response:
     generator = _get_generator(tilegeneration)
     fetched_tile = generator.read_from_cache(tile)
+    backend = "redis"
     if fetched_tile is None:
+        backend = "wms-wait"
 
         tile.metadata.setdefault("tiles", {})  # type: ignore
         meta_tile = tile
@@ -245,6 +189,7 @@ def fetch(
         with generator.lock(meta_tile):
             fetched_tile = generator.read_from_cache(tile)
             if fetched_tile is None:
+                backend = "wms-generate"
                 generator.compute_tile(meta_tile)
 
                 if meta_tile.error:
@@ -270,16 +215,11 @@ def fetch(
         "Cache-Control": f"max-age={3600 * server.get_expires_hours(config)}",
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET",
-        "Tile-Backend": "WMS",
+        "Tile-Backend": backend,
     }
-    if tile.content_encoding:
-        response_headers["Content-Encoding"] = tile.content_encoding
-    if tile.content_type:
-        response_headers["Content-Type"] = tile.content_type
-    assert fetched_tile
-    assert fetched_tile.data
+    if fetched_tile.content_encoding:
+        response_headers["Content-Encoding"] = fetched_tile.content_encoding
+    if fetched_tile.content_type:
+        response_headers["Content-Type"] = fetched_tile.content_type
+    assert fetched_tile.data is not None
     return server.response(config, fetched_tile.data, headers=response_headers, **kwargs)
-
-
-def stop(tilegeneration: tilecloud_chain.TileGeneration) -> None:
-    _get_generator(tilegeneration).stop()
