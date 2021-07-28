@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "689361617f0589bd7d5a358193e49c341d21e9f859b16453f602b61381004973"
+            "sha256": "42a287d1d1d0eef58b2309d63807ba67b5edec2b8296e33de80ce5bb6ef3d5a2"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -38,19 +38,19 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:649ed1ca205f5ee0b0328d54580780aebc1a7a05681a24f6ee05253007ca48d8",
-                "sha256:7079b40bd6621c54a0385a8fc11240cff4318a4d487292653e393e18254f5d94"
+                "sha256:19cff13dd9b51ce66fad13c9f04ffcc12d5475dd8cd660e8cd6aac42aa45c24c",
+                "sha256:7ed86cc669bcfa60ef854cc2fbc2d300a8331fb1befdc7eabc51ce013659e86c"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==1.18.4"
+            "version": "==1.18.8"
         },
         "botocore": {
             "hashes": [
-                "sha256:317d441c8f3f03591761e3478de6ab34b22b333038d819bc24f2e74b64f22201",
-                "sha256:dca7f283d4e7a1c9f456f5a23e55725ffc1b7d34abd089eb2c7651359aebd977"
+                "sha256:437cdcd518e6f9db72ec87f170cc66d54081c8abc347abb9f9a3cd9c8e993bd1",
+                "sha256:e51ac230169af1325ab64c9935e679fb54f6d3fdf0978fe67a31931febdf94f9"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==1.21.4"
+            "version": "==1.21.8"
         },
         "bottle": {
             "hashes": [
@@ -640,11 +640,11 @@
         },
         "sentry-sdk": {
             "hashes": [
-                "sha256:5210a712dd57d88d225c1fc3fe3a3626fee493637bcd54e204826cf04b8d769c",
-                "sha256:6864dcb6f7dec692635e5518c2a5c80010adf673c70340817f1a1b713d65bb41"
+                "sha256:ebe99144fa9618d4b0e7617e7929b75acd905d258c3c779edcd34c0adfffe26c",
+                "sha256:f33d34c886d0ba24c75ea8885a8b3a172358853c7cbde05979fc99c29ef7bc52"
             ],
             "index": "pypi",
-            "version": "==1.3.0"
+            "version": "==1.3.1"
         },
         "shapely": {
             "hashes": [
