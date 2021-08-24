@@ -32,3 +32,7 @@ tests-fast:
 	done
 
 	docker-compose exec -T test pytest --exitfirst #--last-failed
+
+PHONY: jsonschema
+jsonschema:
+	jsonschema-gentypes
