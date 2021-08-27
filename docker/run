@@ -2,7 +2,7 @@
 
 import os
 import stat
-import subprocess
+import subprocess  # nosec
 import sys
 
 if "GROUP_ID" not in os.environ:
@@ -17,8 +17,8 @@ if "USER_NAME" not in os.environ:
 if "UMASK" not in os.environ:
     sys.exit("The UMASK environment variable is required")
 
-subprocess.check_call(["groupadd", "-g", os.environ["GROUP_ID"], "geomapfish"])
-subprocess.check_call(
+subprocess.check_call(["groupadd", "-g", os.environ["GROUP_ID"], "geomapfish"])  # nosec
+subprocess.check_call(  # nosec
     [
         "useradd",
         "--shell",
@@ -31,7 +31,7 @@ subprocess.check_call(
     ]
 )
 
-run_file_name = "/tmp/run"
+run_file_name = "/tmp/run"  # nosec
 with open(run_file_name, "w") as run_file:
     run_file.write("#!/usr/bin/python\n")
     run_file.write("import subprocess, os\n")
@@ -41,4 +41,4 @@ with open(run_file_name, "w") as run_file:
 os.chmod(
     run_file_name, stat.S_IRUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH
 )
-subprocess.check_call(["su", os.environ["USER_NAME"], "-c", run_file_name])
+subprocess.check_call(["su", os.environ["USER_NAME"], "-c", run_file_name])  # nosec

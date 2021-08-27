@@ -167,29 +167,29 @@ def _calculate_cost(
 
     times = {}
     print()
-    for z in nb_metatiles:
-        print(f"{nb_metatiles[z]} meta tiles in zoom {z}.")
-        times[z] = layer["cost"]["metatile_generation_time"] * nb_metatiles[z]
+    for z, nb_metatile in nb_metatiles.items():
+        print(f"{nb_metatile} meta tiles in zoom {z}.")
+        times[z] = layer["cost"]["metatile_generation_time"] * nb_metatile
 
     price: float = 0
     all_size: float = 0
     all_time: float = 0
     all_tiles = 0
-    for z in nb_tiles:
+    for z, nb_tile in nb_tiles.items():
         print()
-        print(f"{nb_tiles[z]} tiles in zoom {z}.")
-        all_tiles += nb_tiles[z]
+        print(f"{nb_tile} tiles in zoom {z}.")
+        all_tiles += nb_tile
         if meta:
-            time = times[z] + layer["cost"]["tile_generation_time"] * nb_tiles[z]
+            time = times[z] + layer["cost"]["tile_generation_time"] * nb_tile
         else:
-            time = layer["cost"]["tileonly_generation_time"] * nb_tiles[z]
-        size = layer["cost"]["tile_size"] * nb_tiles[z]
+            time = layer["cost"]["tileonly_generation_time"] * nb_tile
+        size = layer["cost"]["tile_size"] * nb_tile
         all_size += size
 
         all_time += time
         td = timedelta(milliseconds=time)
         print(f"Time to generate: {duration_format(td)} [d h:mm:ss]")
-        c = gene.get_main_config().config["cost"]["s3"]["put"] * nb_tiles[z] / 1000.0
+        c = gene.get_main_config().config["cost"]["s3"]["put"] * nb_tile / 1000.0
         price += c
         print(f"S3 PUT: {c:0.2f} [$]")
 
@@ -197,7 +197,7 @@ def _calculate_cost(
             if meta:
                 nb_sqs = nb_metatiles[z] * 3
             else:
-                nb_sqs = nb_tiles[z] * 3
+                nb_sqs = nb_tile * 3
             c = nb_sqs * gene.get_main_config().config["cost"]["sqs"]["request"] / 1000000.0
             price += c
             print(f"SQS usage: {c:0.2f} [$]")

@@ -421,7 +421,7 @@ class TilestoreGetter:
             if "STYLES" not in params:
                 params["STYLES"] = ",".join(layer["wmts_style"] for _ in layer["layers"].split(","))
             if layer.get("generate_salt", False):
-                params["SALT"] = str(random.randint(0, 999999))
+                params["SALT"] = str(random.randint(0, 999999))  # nosec
 
             # Get the metatile image from the WMS server
             return URLTileStore(

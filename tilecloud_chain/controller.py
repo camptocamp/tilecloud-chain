@@ -376,7 +376,7 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                     string_io = BytesIO()
                     image.save(string_io, FORMAT_BY_CONTENT_TYPE[layer["legend_mime"]])
                     result = string_io.getvalue()
-                    new_hash = sha1(result).hexdigest()
+                    new_hash = sha1(result).hexdigest()  # nosec
                     if new_hash != previous_hash:
                         previous_hash = new_hash
                         _send(
@@ -418,7 +418,7 @@ def _generate_mapcache_config(gene: TileGeneration, version: str) -> None:
         sorted=sorted,
     )
 
-    with open(gene.get_main_config().config["mapcache"]["config_file"], "w") as f:
+    with open(gene.get_main_config().config["mapcache"]["config_file"], "w", encoding="utf-8") as f:
         f.write(config_out)
 
 
@@ -428,7 +428,7 @@ def _generate_apache_config(gene: TileGeneration) -> None:
     cache = config.config["caches"][gene.options.cache]
     use_server = "server" in gene.get_main_config().config
 
-    with open(gene.get_main_config().config["apache"]["config_file"], "w") as f:
+    with open(gene.get_main_config().config["apache"]["config_file"], "w", encoding="utf-8") as f:
 
         folder = cache["folder"]
         if folder and folder[-1] != "/":
@@ -509,7 +509,7 @@ def _generate_apache_config(gene: TileGeneration) -> None:
 
         use_mapcache = "mapcache" in gene.get_main_config().config
         if use_mapcache and not use_server:
-            token_regex = r"([a-zA-Z0-9_\-\+~\.]+)"
+            token_regex = r"([a-zA-Z0-9_\-\+~\.]+)"  # nosec
             f.write("\n")
 
             for layer_name, layer in sorted(config.config["layers"].items()):

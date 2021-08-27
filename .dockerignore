@@ -11,4 +11,5 @@
 !docker/run
 !production.ini
 !.prospector.yaml
+!.bandit.yaml
 !jsonschema-gentypes.yaml

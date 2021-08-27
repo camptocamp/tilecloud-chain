@@ -29,7 +29,7 @@ from io import StringIO
 import logging
 import os
 import shlex
-import subprocess
+import subprocess  # nosec
 from typing import Any, Dict
 
 from c2cwsgiutils.auth import auth_view, is_auth
@@ -134,7 +134,7 @@ class Admin:
 
         stdout = StringIO()
         stderr = StringIO()
-        completed_process = subprocess.run(  # pylint: disable=subprocess-run-check
+        completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check
             final_command,
             stdout=stdout,
             stderr=stderr,

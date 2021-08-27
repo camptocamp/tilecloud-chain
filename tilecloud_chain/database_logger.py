@@ -3,7 +3,7 @@ import sys
 import time
 
 from c2cwsgiutils import stats
-import psycopg2
+import psycopg2.sql
 
 from tilecloud import Tile
 import tilecloud_chain.configuration
@@ -46,13 +46,15 @@ class DatabaseLoggerCommon:
             if not cursor.fetchone()[0]:
                 try:
                     cursor.execute(
-                        "CREATE TABLE {}.{} ("
-                        "  id BIGSERIAL PRIMARY KEY,"
-                        "  layer CHARACTER VARYING(80) NOT NULL,"
-                        "  run INTEGER NOT NULL,"
-                        "  action CHARACTER VARYING(7) NOT NULL,"
-                        "  tile TEXT NOT NULL,"
-                        "  UNIQUE (layer, run, tile))".format(schema, table)
+                        psycopg2.sql.SQL(
+                            "CREATE TABLE {}.{} ("
+                            "  id BIGSERIAL PRIMARY KEY,"
+                            "  layer CHARACTER VARYING(80) NOT NULL,"
+                            "  run INTEGER NOT NULL,"
+                            "  action CHARACTER VARYING(7) NOT NULL,"
+                            "  tile TEXT NOT NULL,"
+                            "  UNIQUE (layer, run, tile))"
+                        ).format(psycopg2.sql.Identifier(schema), psycopg2.sql.Identifier(table))
                     )
                     self.connection.commit()
                 except psycopg2.DatabaseError:
@@ -61,8 +63,9 @@ class DatabaseLoggerCommon:
             else:
                 try:
                     cursor.execute(
-                        "INSERT INTO {}.{}(layer, run, action, tile) "
-                        "VALUES (%s, %s, %s, %s)".format(schema, table),
+                        psycopg2.sql.SQL(
+                            "INSERT INTO {}.{}(layer, run, action, tile) " "VALUES (%s, %s, %s, %s)"
+                        ).format(psycopg2.sql.Identifier(schema), psycopg2.sql.Identifier(table)),
                         ("test_layer", -1, "test", "-1x-1"),
                     )
                 except psycopg2.DatabaseError:
@@ -71,7 +74,8 @@ class DatabaseLoggerCommon:
                 finally:
                     self.connection.rollback()
 
-        self.full_table = f"{schema}.{table}"
+        self.schema = schema
+        self.table = table
 
 
 class DatabaseLoggerInit(DatabaseLoggerCommon):
@@ -79,7 +83,11 @@ class DatabaseLoggerInit(DatabaseLoggerCommon):
         super().__init__(config, daemon)
 
         with self.connection.cursor() as cursor:
-            cursor.execute(f"SELECT COALESCE(MAX(run), 0) + 1 FROM {self.full_table}")
+            cursor.execute(
+                psycopg2.sql.SQL("SELECT COALESCE(MAX(run), 0) + 1 FROM {}").format(
+                    psycopg2.sql.Identifier(self.schema), psycopg2.sql.Identifier(self.table)
+                )
+            )
             (self.run,) = cursor.fetchone()
 
     def __call__(self, tile: Tile) -> Tile:
@@ -107,19 +115,19 @@ class DatabaseLogger(DatabaseLoggerCommon):
             with self.connection.cursor() as cursor:
                 try:
                     cursor.execute(
-                        "INSERT INTO {} (layer, run, action, tile) "
-                        "VALUES (%(layer)s, %(run)s, %(action)s::varchar(7), %(tile)s)".format(
-                            self.full_table
-                        ),
+                        psycopg2.sql.SQL(
+                            "INSERT INTO {} (layer, run, action, tile) "
+                            "VALUES (%(layer)s, %(run)s, %(action)s::varchar(7), %(tile)s)"
+                        ).format(psycopg2.sql.Identifier(self.schema), psycopg2.sql.Identifier(self.table)),
                         {"layer": layer, "action": action, "tile": str(tile.tilecoord), "run": run},
                     )
                 except psycopg2.IntegrityError:
                     self.connection.rollback()
                     cursor.execute(
-                        "UPDATE {} SET action = %(action)s "
-                        "WHERE layer = %(layer)s AND run = %(run)s AND tile = %(tile)s".format(
-                            self.full_table
-                        ),
+                        psycopg2.sql.SQL(
+                            "UPDATE {} SET action = %(action)s "
+                            "WHERE layer = %(layer)s AND run = %(run)s AND tile = %(tile)s"
+                        ).format(psycopg2.sql.Identifier(self.schema), psycopg2.sql.Identifier(self.table)),
                         {"layer": layer, "action": action, "tile": str(tile.tilecoord), "run": run},
                     )
 

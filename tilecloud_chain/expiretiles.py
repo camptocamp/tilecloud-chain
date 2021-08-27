@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 import logging
 import sys
 
-import psycopg2
+import psycopg2.sql
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import cascaded_union
 
@@ -85,26 +85,29 @@ def main() -> None:
 
         if options.create:
             cursor.execute(
-                "SELECT count(*) FROM pg_tables WHERE schemaname='{}' AND tablename='{}'".format(
-                    options.schema, options.table
-                )
+                "SELECT count(*) FROM pg_tables WHERE schemaname=%(schema)s AND tablename=%(table)s",
+                {"schema": options.schema, "table": options.table},
             )
             if cursor.fetchone()[0] == 0:
                 cursor.execute(f'CREATE TABLE IF NOT EXISTS "{options.schema}"."{options.table}" (id serial)')
                 cursor.execute(
-                    "SELECT AddGeometryColumn('{}', '{}', '{}', {}, 'MULTIPOLYGON', 2)".format(
-                        options.schema, options.table, options.column, options.srid
-                    )
+                    "SELECT AddGeometryColumn(%(schema)s, %(table)s, %(column)s, %(srid)s, 'MULTIPOLYGON', 2)",
+                    {
+                        "schema": options.schema,
+                        "table": options.table,
+                        "column": options.column,
+                        "srid": options.srid,
+                    },
                 )
 
         if options.delete:
-            cursor.execute(f'DELETE FROM "{options.table}"')
+            cursor.execute(psycopg2.sql.SQL("DELETE FROM {}").format(psycopg2.sql.Identifier(options.table)))
 
         geoms = []
         grid = QuadTileGrid(
             max_extent=(-20037508.34, -20037508.34, 20037508.34, 20037508.34),
         )
-        with open(options.file) as f:
+        with open(options.file, encoding="utf-8") as f:
             for coord in f:
                 extent = grid.extent(parse_tilecoord(coord), options.buffer)
                 geoms.append(
