@@ -16,6 +16,8 @@ tests: build
 		sleep 1; \
 	done
 
+	docker-compose logs
+
 	docker-compose exec -T test pytest
 
 	docker-compose down

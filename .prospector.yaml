@@ -38,3 +38,8 @@ mypy:
 
 mccabe:
   run: false
+
+bandit:
+  run: true
+  options:
+    config: .bandit.yaml

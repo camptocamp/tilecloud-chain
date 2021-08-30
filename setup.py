@@ -7,8 +7,8 @@ from setuptools import find_packages, setup
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
 here = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(here, "README.md")) as r:
-    with open(os.path.join(here, "CHANGES.md")) as c:
+with open(os.path.join(here, "README.md"), encoding="utf-8") as r:
+    with open(os.path.join(here, "CHANGES.md"), encoding="utf-8") as c:
         README = r.read() + "\n\n" + c.read()
 
 install_requires = [

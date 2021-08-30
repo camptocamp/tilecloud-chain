@@ -16,7 +16,7 @@ import pkgutil
 import queue
 import re
 import sqlite3
-import subprocess
+import subprocess  # nosec
 import sys
 import tempfile
 import threading
@@ -494,7 +494,7 @@ class TileGeneration:
         """
         Get the validated configuration for the file name
         """
-        with open(config_file) as f:
+        with open(config_file, encoding="utf-8") as f:
             config: Dict[str, Any] = {}
             config.update({} if base_config is None else base_config)
             ruamel = YAML()
@@ -804,7 +804,7 @@ class TileGeneration:
         ):
 
             def log_tiles(tile: Tile) -> Tile:
-                variables = dict()
+                variables = {}
                 variables.update(tile.__dict__)
                 variables.update(tile.tilecoord.__dict__)
                 variables["formated_metadata"] = tile.formated_metadata
@@ -882,9 +882,10 @@ class TileGeneration:
         if "error_file" in self.get_main_config().config.get("generation", {}):
             now = datetime.now()
             time_ = now.strftime("%d-%m-%Y %H:%M:%S")
-            error_file = open(
+            error_file = open(  # pylint: disable=consider-using-with
                 self.get_main_config().config["generation"]["error_file"].format(layer=layer, datetime=now),
                 "a",
+                encoding="utf-8",
             )
             error_file.write(f"# [{time_}] Start the layer '{layer}' generation\n")
             self.error_files_[layer] = error_file
@@ -995,7 +996,7 @@ class TileGeneration:
                 with stats.timer_context(["geoms_get", layer_name]):
                     connection = psycopg2.connect(g["connection"])
                     cursor = connection.cursor()
-                    sql = "SELECT ST_AsBinary(geom) FROM (SELECT {}) AS g".format(g["sql"])
+                    sql = "SELECT ST_AsBinary(geom) FROM (SELECT {}) AS g".format(g["sql"])  # nosec
                     logger.info("Execute SQL: %s.", sql)
                     cursor.execute(sql)
                     geom_list = [loads_wkb(bytes(r[0])) for r in cursor.fetchall()]
@@ -1328,7 +1329,7 @@ class HashDropper:
 
     def __call__(self, tile: Tile) -> Optional[Tile]:
         assert tile.data
-        if len(tile.data) != self.size or sha1(tile.data).hexdigest() != self.sha1code:
+        if len(tile.data) != self.size or sha1(tile.data).hexdigest() != self.sha1code:  # nosec
             return tile
         else:
             if self.store is not None:
@@ -1413,7 +1414,7 @@ class HashLogger:
                 tile.formated_metadata,
                 self.block,
                 len(tile.data),
-                sha1(tile.data).hexdigest(),
+                sha1(tile.data).hexdigest(),  # nosec
             )
         )
         return tile
@@ -1558,7 +1559,7 @@ class Process:
                 }
                 logger.debug("[%s] process: %s", tile.tilecoord, command)
                 result = subprocess.run(  # pylint: disable=subprocess-run-check
-                    command, shell=True, capture_output=True
+                    command, shell=True, capture_output=True  # nosec
                 )
                 if result.returncode != 0:
                     tile.error = "Command '{}' on tile {} return error code {}:\n{!s}\n{!s}".format(
@@ -1583,7 +1584,7 @@ class TilesFileStore(TileStore):
     def __init__(self, tiles_file: str):
         super().__init__()
 
-        self.tiles_file = open(tiles_file)
+        self.tiles_file = open(tiles_file, encoding="utf-8")  # pylint: disable=consider-using-with
 
     def list(self) -> Iterator[Tile]:
         while True:
@@ -1604,7 +1605,8 @@ class TilesFileStore(TileStore):
                     continue
 
                 yield Tile(
-                    tilecoord, metadata=dict([cast(Tuple[str, str], e.split("=")) for e in splitted_line[1:]])
+                    tilecoord,
+                    metadata=dict([cast(Tuple[str, str], e.split("=")) for e in splitted_line[1:]]),
                 )
 
 
@@ -1614,7 +1616,7 @@ def _await_message(_: Any) -> bool:
         time.sleep(10)
         return False
     except KeyboardInterrupt:
-        raise StopIteration
+        raise StopIteration  # pylint: disable=raise-missing-from
 
 
 def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
