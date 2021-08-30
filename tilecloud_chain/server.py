@@ -284,7 +284,7 @@ class Server(Generic[Response]):
 
             if path:
                 if tuple(path[: len(self.static_path)]) == tuple(self.static_path):
-                    return self._get(  # pylint: disable=not-callable
+                    return self._get(
                         "/".join(path[len(self.static_path) :]),
                         {
                             "Expires": (
@@ -381,9 +381,7 @@ class Server(Generic[Response]):
                 cache = self.get_cache(config)
                 if "wmtscapabilities_file" in cache:
                     wmtscapabilities_file = cache["wmtscapabilities_file"]
-                    return self._get(
-                        wmtscapabilities_file, headers, config=config, **kwargs
-                    )  # pylint: disable=not-callable
+                    return self._get(wmtscapabilities_file, headers, config=config, **kwargs)
                 else:
                     body = controller.get_wmts_capabilities(tilegeneration, self.get_cache_name(config))
                     assert body
