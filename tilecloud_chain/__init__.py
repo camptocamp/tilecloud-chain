@@ -236,7 +236,7 @@ class Run:
                 if tile.error:
                     if tile.content_type and tile.content_type.startswith("application/vnd.ogc.se_xml"):
                         assert isinstance(tile.error, str)
-                        tile.error = "WMS server error: {}".format(self._re_rm_xml_tag.sub("", tile.error))
+                        tile.error = f"WMS server error: {self._re_rm_xml_tag.sub('', tile.error)}"
                     logger.warning("Error with tile %s:\n%s", tile.tilecoord, tile.error)
                     if stats.BACKENDS:
                         stats.increment_counter(["error", tile.metadata.get("layer", "None")])
@@ -370,9 +370,9 @@ class TileGeneration:
         error = False
         if self.options is not None and self.options.zoom is not None:
             error_message = (
-                "The zoom argument '%s' has incorrect format, "
+                f"The zoom argument '{self.options.zoom}' has incorrect format, "
                 "it can be a single value, a range (3-9), a list of values (2,5,7)."
-            ) % self.options.zoom
+            )
             if self.options.zoom.find("-") >= 0:
                 splitted_zoom: List[str] = self.options.zoom.split("-")
                 if len(splitted_zoom) != 2:
@@ -478,7 +478,7 @@ class TileGeneration:
         if self.hosts_cache is not None and self.hosts_cache.mtime == file_path.stat().st_mtime:
             return self.hosts_cache.hosts
 
-        with file_path.open() as hosts_file:
+        with file_path.open(encoding="utf-8") as hosts_file:
             ruamel = YAML(typ="safe")
             hosts = cast(Dict[str, str], ruamel.load(hosts_file))
 
@@ -574,7 +574,7 @@ class TileGeneration:
                         "+units=m +no_defs"
                     )
                 else:
-                    grid["proj4_literal"] = "+init={}".format(grid["srs"])
+                    grid["proj4_literal"] = f"+init={grid['srs']}"
 
         layers = config.config.get("layers", {})
         for lname, layer in sorted(layers.items()):
@@ -804,13 +804,7 @@ class TileGeneration:
         ):
 
             def log_tiles(tile: Tile) -> Tile:
-                variables = {}
-                variables.update(tile.__dict__)
-                variables.update(tile.tilecoord.__dict__)
-                variables["formated_metadata"] = tile.formated_metadata
-                sys.stdout.write(
-                    "{tilecoord} {formated_metadata}                         \r".format(**variables)
-                )
+                sys.stdout.write(f"{tile.tilecoord} {tile.formated_metadata}                         \r")
                 sys.stdout.flush()
                 return tile
 
@@ -915,7 +909,8 @@ class TileGeneration:
 
             io = self.get_log_tiles_error_file(tile.metadata["layer"])
             assert io is not None
-            io.write("{}# [{}]{}\n".format(tilecoord, time_, message.replace("\n", " ")))
+            out_message = message.replace("\n", " ")
+            io.write(f"{tilecoord}# [{time_}]{out_message}\n")
 
     def get_grid(self, config: DatedConfig, grid_name: str) -> TileGrid:
         dated_grid = self.grid_cache.get(config.file, {}).get(grid_name)
@@ -996,7 +991,7 @@ class TileGeneration:
                 with stats.timer_context(["geoms_get", layer_name]):
                     connection = psycopg2.connect(g["connection"])
                     cursor = connection.cursor()
-                    sql = "SELECT ST_AsBinary(geom) FROM (SELECT {}) AS g".format(g["sql"])  # nosec
+                    sql = f"SELECT ST_AsBinary(geom) FROM (SELECT {g['sql']}) AS g"  # nosec
                     logger.info("Execute SQL: %s.", sql)
                     cursor.execute(sql)
                     geom_list = [loads_wkb(bytes(r[0])) for r in cursor.fetchall()]
@@ -1406,16 +1401,10 @@ class HashLogger:
 
         assert tile.data
         print(
-            """Tile: {} {}
-    {}:
-        size: {}
-        hash: {}""".format(
-                tile.tilecoord,
-                tile.formated_metadata,
-                self.block,
-                len(tile.data),
-                sha1(tile.data).hexdigest(),  # nosec
-            )
+            f"""Tile: {tile.tilecoord} {tile.formated_metadata}
+    {self.block}:
+        size: {len(tile.data)}
+        hash: {sha1(tile.data).hexdigest()}"""  # nosec
         )
         return tile
 
@@ -1487,12 +1476,12 @@ class DropEmpty:
 
 
 def quote(arg: str) -> str:
-    if " " in arg:
+    if " " in arg or "'" in arg or '"' in arg:
         if "'" in arg:
             if '"' in arg:
-                return "'{}'".format(arg.replace("'", "\\'"))
-            else:
-                return f'"{arg}"'
+                formated_arg = arg.replace("'", "\\'")
+                return f"'{formated_arg}'"
+            return f'"{arg}"'
         else:
             return f"'{arg}'"
     elif arg == "":
@@ -1562,8 +1551,9 @@ class Process:
                     command, shell=True, capture_output=True  # nosec
                 )
                 if result.returncode != 0:
-                    tile.error = "Command '{}' on tile {} return error code {}:\n{!s}\n{!s}".format(
-                        command, tile.tilecoord, result.returncode, result.stderr, result.stdout
+                    tile.error = (
+                        f"Command '{command}' on tile {tile.tilecoord} "
+                        f"return error code {result.returncode}:\n{result.stderr!s}\n{result.stdout!s}"
                     )
                     tile.data = None
                     return tile

@@ -63,21 +63,17 @@ def main() -> None:
             print(f"Total generation time: {duration_format(all_time)} [d h:mm:ss]")
             print(f"Total generation cost: {all_price:0.2f} [$]")
         print()
-        print(
-            "S3 Storage: {:0.2f} [$/month]".format(
-                all_size * gene.get_main_config().config["cost"]["s3"]["storage"] / (1024.0 * 1024 * 1024)
-            )
+        s3_cost = all_size * gene.get_main_config().config["cost"]["s3"]["storage"] / (1024.0 * 1024 * 1024)
+        print(f"S3 Storage: {s3_cost:0.2f} [$/month]")
+        s3_get_cost = (
+            gene.get_main_config().config["cost"]["s3"]["get"]
+            * config.config["cost"]["request_per_layers"]
+            / 10000.0
+            + gene.get_main_config().config["cost"]["s3"]["download"]
+            * config.config["cost"]["request_per_layers"]
+            * tile_size
         )
-        print(
-            "S3 get: {:0.2f} [$/month]".format(
-                gene.get_main_config().config["cost"]["s3"]["get"]
-                * config.config["cost"]["request_per_layers"]
-                / 10000.0
-                + gene.get_main_config().config["cost"]["s3"]["download"]
-                * config.config["cost"]["request_per_layers"]
-                * tile_size
-            )
-        )
+        print(f"S3 get: {s3_get_cost:0.2f} [$/month]")
         #    if 'cloudfront' in gene.config['cost']:
         #        print('CloudFront: %0.2f [$/month]' % ()
         #            gene.config['cost']['cloudfront']['get'] *

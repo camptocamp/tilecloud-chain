@@ -2417,6 +2417,9 @@ OpenLayers.Request.GET({
         self.assertEqual(quote("'a b c'"), "\"'a b c'\"")
         self.assertEqual(quote('"a b c"'), "'\"a b c\"'")
         self.assertEqual(quote("a\" b' c"), "'a\" b\\' c'")
+        self.assertEqual(quote("a'bc"), '"a\'bc"')
+        self.assertEqual(quote("a'b\"c"), "'a\\'b\"c'")
+        self.assertEqual(quote('ab"c'), "'ab\"c'")
         self.assertEqual(quote(""), "''")
 
     def test_legends(self) -> None:

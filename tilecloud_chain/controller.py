@@ -137,7 +137,7 @@ def _send(
     if cache["type"] == "s3":
         cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
         client = tilecloud.store.s3.get_client(cache_s3.get("host"))
-        key_name = os.path.join("{folder!s}".format(**cache), path)
+        key_name = os.path.join(f"{cache['folder']}", path)
         bucket = cache_s3["bucket"]
         client.put_object(
             ACL="public-read",
@@ -164,7 +164,7 @@ def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> Optional[byte
     if cache["type"] == "s3":
         cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
         client = tilecloud.store.s3.get_client(cache_s3.get("host"))
-        key_name = os.path.join("{folder}".format(**cache), path)
+        key_name = os.path.join(f"{cache['folder']}".format(), path)
         bucket = cache_s3["bucket"]
         try:
             response = client.get_object(Bucket=bucket, Key=key_name)
@@ -276,7 +276,7 @@ def _fill_legend(
                         "1.0.0",
                         layer_name,
                         layer["wmts_style"],
-                        "legend{}.{}".format(zoom, layer["legend_extension"]),
+                        f"legend{zoom}.{layer['legend_extension']}",
                     ]
                 )
                 img = _get(path, cache)
@@ -381,9 +381,8 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                         previous_hash = new_hash
                         _send(
                             result,
-                            "1.0.0/{}/{}/legend{}.{}".format(
-                                layer_name, layer["wmts_style"], zoom, layer["legend_extension"]
-                            ),
+                            f"1.0.0/{layer_name}/{layer['wmts_style']}/"
+                            f"legend{zoom}.{layer['legend_extension']}",
                             layer["legend_mime"],
                             cache,
                         )
@@ -433,30 +432,27 @@ def _generate_apache_config(gene: TileGeneration) -> None:
         folder = cache["folder"]
         if folder and folder[-1] != "/":
             folder += "/"
+        location = gene.get_main_config().config["apache"]["location"]
 
         if not use_server:
+            expires = gene.get_main_config().config["apache"]["expires"]
+            headers = "".join(
+                [
+                    f'    Header set {h[0]} "{h[1]}"'
+                    for h in gene.get_main_config()
+                    .config["apache"]
+                    .get("headers", {"Cache-Control": "max-age=864000, public"})
+                    .items()
+                ]
+            )
             f.write(
-                """
+                f"""
     <Location {location}>
         ExpiresActive on
         ExpiresDefault "now plus {expires} hours"
     {headers}
     </Location>
-    """.format(
-                    **{
-                        "location": gene.get_main_config().config["apache"]["location"],
-                        "expires": gene.get_main_config().config["apache"]["expires"],
-                        "headers": "".join(
-                            [
-                                '    Header set {} "{}"'.format(*h)
-                                for h in gene.get_main_config()
-                                .config["apache"]
-                                .get("headers", {"Cache-Control": "max-age=864000, public"})
-                                .items()
-                            ]
-                        ),
-                    }
-                )
+    """
             )
             if cache["type"] == "s3":
                 cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
@@ -472,39 +468,20 @@ def _generate_apache_config(gene: TileGeneration) -> None:
                     )
                 )
                 f.write(
-                    """
+                    f"""
     <Proxy {tiles_url}*>
         Order deny,allow
         Allow from all
     </Proxy>
     ProxyPass {location}/ {tiles_url}
     ProxyPassReverse {location}/ {tiles_url}
-    """.format(
-                        **{
-                            "location": gene.get_main_config().config["apache"]["location"],
-                            "tiles_url": tiles_url,
-                        }
-                    )
+    """
                 )
             elif cache["type"] == "filesystem":
                 f.write(
-                    """
-    Alias {location!s} {files_folder!s}
-    """.format(
-                        **{
-                            "location": gene.get_main_config().config["apache"]["location"],
-                            "files_folder": folder,
-                            "headers": "".join(
-                                [
-                                    "    Header set {} '{}'".format(*h)
-                                    for h in gene.get_main_config()
-                                    .config["apache"]
-                                    .get("headers", {"Cache-Control": "max-age=864000, public"})
-                                    .items()
-                                ]
-                            ),
-                        }
-                    )
+                    f"""
+    Alias {location} {folder}
+    """
                 )
 
         use_mapcache = "mapcache" in gene.get_main_config().config
