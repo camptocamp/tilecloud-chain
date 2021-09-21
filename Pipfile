@@ -31,6 +31,5 @@ coverage = "==5.5"
 testfixtures = "==6.18.1"
 pytest = "==6.2.5"
 prospector = {extras = ["with_mypy", "with_bandit"], version = "==1.5.1"}
-flake8 = "==3.8.0"
 types-redis = "==3.5.8"
 types-requests = "==2.25.6"
