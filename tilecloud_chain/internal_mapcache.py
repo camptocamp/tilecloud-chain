@@ -81,13 +81,9 @@ class RedisStore(TileStore):
         return tile
 
     def _get_key(self, tile: Tile) -> str:
-        return "%s_%s_%s_%d_%d_%d" % (
-            self._prefix,
-            tile.metadata["config_file"],
-            tile.metadata["layer"],
-            tile.tilecoord.z,
-            tile.tilecoord.x,
-            tile.tilecoord.y,
+        return (
+            f"{self._prefix}_{tile.metadata['config_file']}_{tile.metadata['layer']}_"
+            f"{tile.tilecoord.z}_{tile.tilecoord.x}_{tile.tilecoord.y}"
         )
 
     @contextlib.contextmanager
@@ -148,15 +144,14 @@ class Generator:
 
 
 def _get_generator(tilegeneration: tilecloud_chain.TileGeneration) -> Generator:
-    global _generator  # pylint: disable=global-statement
     if _generator is None:
         return _init_generator(tilegeneration)
     return _generator
 
 
 def _init_generator(tilegeneration: tilecloud_chain.TileGeneration) -> Generator:
-    global _generator, lock  # pylint: disable=global-statement
     with lock:
+        global _generator  # pylint: disable=global-statement
         if _generator is None:
             _generator = Generator(tilegeneration)
         return _generator

@@ -104,7 +104,6 @@ class Server(Generic[Response]):
             self.s3_client_cache: Dict[str, "botocore.client.S3"] = {}
             self.store_cache: Dict[str, Dict[str, DatedStore]] = {}
 
-            global tilegeneration  # pylint: disable=global-statement
             assert tilegeneration
 
             self.wmts_path = tilegeneration.get_main_config().config["server"]["wmts_path"]
@@ -157,7 +156,6 @@ class Server(Generic[Response]):
         if dated_filter is not None and dated_filter.mtime == config.mtime:
             return dated_filter.filter
 
-        global tilegeneration  # pylint: disable=global-statement
         assert tilegeneration
 
         layer_filter = (
@@ -175,7 +173,6 @@ class Server(Generic[Response]):
         if dated_store is not None and dated_store.mtime == config.mtime:
             return dated_store.store
 
-        global tilegeneration  # pylint: disable=global-statement
         assert tilegeneration
 
         store = tilegeneration.get_store(config, self.get_cache(config), layer_name, read_only=True)
@@ -302,9 +299,8 @@ class Server(Generic[Response]):
                     return self.error(
                         config,
                         404,
-                        "Type '{}' don't exists, allows values: '{}' or '{}'".format(
-                            path[0], self.wmts_path, "/".join(self.static_path)
-                        ),
+                        f"Type '{path[0]}' don't exists, allows values: '{self.wmts_path}' or "
+                        f"'{'/'.join(self.static_path)}'",
                         **kwargs,
                     )
                 path = path[1:]  # remove type
@@ -329,7 +325,7 @@ class Server(Generic[Response]):
                             config.config["layers"][params["LAYER"]],
                         )
                     else:
-                        return self.error(config, 400, "Wrong Layer '{}'".format(params["LAYER"]), **kwargs)
+                        return self.error(config, 400, f"Wrong Layer '{params['LAYER']}'", **kwargs)
 
                     index = 3
                     dimensions = path[index : index + len(layer.get("dimensions", {}))]
@@ -364,9 +360,9 @@ class Server(Generic[Response]):
                     return self.error(config, 400, "Not all required parameters are present", **kwargs)
 
             if params["SERVICE"] != "WMTS":
-                return self.error(config, 400, "Wrong Service '{}'".format(params["SERVICE"]), **kwargs)
+                return self.error(config, 400, f"Wrong Service '{params['SERVICE']}'", **kwargs)
             if params["VERSION"] != "1.0.0":
-                return self.error(config, 400, "Wrong Version '{}'".format(params["VERSION"]), **kwargs)
+                return self.error(config, 400, f"Wrong Version '{params['VERSION']}'", **kwargs)
 
             if params["REQUEST"] == "GetCapabilities":
                 headers = {
@@ -405,7 +401,7 @@ class Server(Generic[Response]):
                         config.config["layers"][params["LAYER"]],
                     )
                 else:
-                    return self.error(config, 400, "Wrong Layer '{}'".format(params["LAYER"]), **kwargs)
+                    return self.error(config, 400, f"Wrong Layer '{params['LAYER']}'", **kwargs)
 
                 for dimension in layer["dimensions"]:
                     value = (
@@ -417,11 +413,9 @@ class Server(Generic[Response]):
                     metadata["dimension_" + dimension["name"]] = value
 
             if params["STYLE"] != layer["wmts_style"]:
-                return self.error(config, 400, "Wrong Style '{}'".format(params["STYLE"]), **kwargs)
+                return self.error(config, 400, f"Wrong Style '{params['STYLE']}'", **kwargs)
             if params["TILEMATRIXSET"] != layer["grid"]:
-                return self.error(
-                    config, 400, "Wrong TileMatrixSet '{}'".format(params["TILEMATRIXSET"]), **kwargs
-                )
+                return self.error(config, 400, f"Wrong TileMatrixSet '{params['TILEMATRIXSET']}'", **kwargs)
 
             metadata["layer"] = params["LAYER"]
             metadata["config_file"] = config.file
@@ -465,15 +459,13 @@ class Server(Generic[Response]):
                         **kwargs,
                     )
                 else:
-                    return self.error(
-                        config, 400, "Layer '{}' not queryable".format(params["LAYER"]), **kwargs
-                    )
+                    return self.error(config, 400, f"Layer '{params['LAYER']}' not queryable", **kwargs)
 
             if params["REQUEST"] != "GetTile":
-                return self.error(config, 400, "Wrong Request '{}'".format(params["REQUEST"]), **kwargs)
+                return self.error(config, 400, f"Wrong Request '{params['REQUEST']}'", **kwargs)
 
             if params["FORMAT"] != layer["mime_type"]:
-                return self.error(config, 400, "Wrong Format '{}'".format(params["FORMAT"]), **kwargs)
+                return self.error(config, 400, f"Wrong Format '{params['FORMAT']}'", **kwargs)
 
             if tile.tilecoord.z > self.get_max_zoom_seed(config, params["LAYER"]):
                 return self._map_cache(config, layer, tile, kwargs)
@@ -500,7 +492,7 @@ class Server(Generic[Response]):
                 return self.error(
                     config,
                     400,
-                    "No store found for layer '{}'".format(params["LAYER"]),
+                    f"No store found for layer '{params['LAYER']}'",
                     **kwargs,
                 )
 
@@ -542,9 +534,7 @@ class Server(Generic[Response]):
         tile: Tile,
         kwargs: Dict[str, Any],
     ) -> Response:
-        global tilegeneration  # pylint: disable=global-statement
         assert tilegeneration
-
         return internal_mapcache.fetch(config, self, tilegeneration, layer, tile, kwargs)
 
     def forward(
@@ -576,8 +566,9 @@ class Server(Generic[Response]):
                 response_headers["Access-Control-Allow-Methods"] = "GET"
             return self.response(config, response.content, headers=response_headers, **kwargs)
         else:
-            message = "The URL '{}' return '{} {}', content:\n{}".format(
-                url, response.status_code, response.reason, response.text
+            message = (
+                f"The URL '{url}' return '{response.status_code} {response.reason}', "
+                f"content:\n{response.text}"
             )
             logger.warning(message)
             return self.error(config, 502, message=message, **kwargs)
@@ -720,9 +711,6 @@ class PyramidView:
         self.server = pyramid_server
 
     def __call__(self) -> pyramid.response.Response:
-        global tilegeneration  # pylint: disable=global-statement
-        assert tilegeneration
-
         params = {}
         path = None
 
@@ -732,6 +720,7 @@ class PyramidView:
         for param, value in self.request.params.items():
             params[param.upper()] = value
 
+        assert tilegeneration
         return self.server.serve(
             path,
             params,
@@ -747,7 +736,6 @@ def main(global_config: Any, **settings: Any) -> Router:
     config = Configurator(settings=settings)
 
     init_tilegeneration(settings.get("tilegeneration_configfile"))
-    global tilegeneration  # pylint: disable=global-statement
     assert tilegeneration
 
     config.include(c2cwsgiutils.pyramid.includeme)
@@ -757,12 +745,12 @@ def main(global_config: Any, **settings: Any) -> Router:
 
     config.add_route(
         "admin",
-        "/{}/".format(tilegeneration.get_main_config().config["server"]["admin_path"]),
+        f"/{tilegeneration.get_main_config().config['server']['admin_path']}/",
         request_method="GET",
     )
     config.add_route(
         "admin_run",
-        "/{}/run".format(tilegeneration.get_main_config().config["server"]["admin_path"]),
+        f"/{tilegeneration.get_main_config().config['server']['admin_path']}/run",
         request_method="POST",
     )
 

@@ -142,11 +142,8 @@ class Generate:
         if self._options.get_bbox:
             try:
                 tilecoord = parse_tilecoord(self._options.get_bbox)
-                print(
-                    "Tile bounds: [{},{},{},{}]".format(
-                        *default_int(self._gene.get_grid(config, layer["grid"]).extent(tilecoord))
-                    )
-                )
+                bounds = default_int(self._gene.get_grid(config, layer["grid"]).extent(tilecoord))
+                print(f"Tile bounds: [{','.join([str(b) for b in bounds])}]")
                 sys.exit()
             except ValueError:
                 logger.exception(
@@ -293,12 +290,10 @@ class Generate:
                         t2 = datetime.now()
                         assert self.t1
                         duration = (t2 - self.t1) / options.time
-                        sys.stdout.write(
-                            "time: {}\n".format(
-                                (duration.days * 24 * 3600 + duration.seconds) * 1000000
-                                + duration.microseconds
-                            )
-                        )
+                        time = (
+                            duration.days * 24 * 3600 + duration.seconds
+                        ) * 1000000 + duration.microseconds
+                        sys.stdout.write(f"time: {time}\n")
                     return tile
 
             self._gene.imap(LogTime())
@@ -315,24 +310,15 @@ class Generate:
                 assert config is not None
                 layer = config.config["layers"][layer_name]
                 all_dimensions = self._gene.get_all_dimensions(layer)
-                message = [
-                    "The tile generation of layer '{}{}' is finish".format(
-                        layer_name,
-                        ""
-                        if (
-                            (len(all_dimensions) == 1 and len(all_dimensions[0]) == 0)
-                            or layer["type"] != "wms"
-                        )
-                        else " ({})".format(
-                            " - ".join(
-                                [
-                                    ", ".join(["=".join(d) for d in dimensions.items()])
-                                    for dimensions in all_dimensions
-                                ]
-                            )
-                        ),
-                    )
-                ]
+                formated_dimensions = " - ".join(
+                    [", ".join(["=".join(d) for d in dimensions.items()]) for dimensions in all_dimensions]
+                )
+                suffix = (
+                    ""
+                    if ((len(all_dimensions) == 1 and len(all_dimensions[0]) == 0) or layer["type"] != "wms")
+                    else f" ({formated_dimensions})"
+                )
+                message = [f"The tile generation of layer '{layer_name}{suffix}' is finish"]
             else:
                 message = ["The tile generation is finish"]
             if self._options.role == "master":
@@ -365,15 +351,13 @@ class Generate:
                         message.append(f"Total size: {size_format(self._count_tiles_stored.size)}")
                     if self._count_tiles.nb != 0:
                         message.append(
-                            "Time per tile: {:0.0f} ms".format(
-                                (self._gene.duration / self._count_tiles.nb * 1000).seconds
-                            )
+                            "Time per tile: "
+                            f"{(self._gene.duration / self._count_tiles.nb * 1000).seconds:0.0f} ms"
                         )
                     if self._count_tiles_stored.nb != 0:
                         message.append(
-                            "Size per tile: {:0.0f} o".format(
-                                self._count_tiles_stored.size / self._count_tiles_stored.nb
-                            )
+                            "Size per tile: "
+                            f"{self._count_tiles_stored.size / self._count_tiles_stored.nb:0.0f} o"
                         )
 
             if not self._options.quiet and self._options.role in ("local", "slave", "master") and message:
@@ -394,18 +378,17 @@ class Generate:
                 sns_client = boto3.client("sns")
             sns_message = [message[0]]
             sns_message += [
-                "Layer: {}".format(layer_name if layer_name is not None else "(All layers)"),
+                f"Layer: {layer_name if layer_name is not None else '(All layers)'}",
                 f"Role: {self._options.role}",
                 f"Host: {socket.getfqdn()}",
-                "Command: {}".format(" ".join([quote(arg) for arg in sys.argv])),
+                f"Command: {' '.join([quote(arg) for arg in sys.argv])}",
             ]
             sns_message += message[1:]
             sns_client.publish(
                 TopicArn=config.config["sns"]["topic"],
                 Message="\n".join(sns_message),
-                Subject="Tile generation ({layer} - {role})".format(
-                    role=self._options.role, layer=layer_name if layer_name is not None else "All layers"
-                ),
+                Subject=f"Tile generation ({layer_name if layer_name is not None else 'All layers'} - "
+                f"{self._options.role})",
             )
 
 
