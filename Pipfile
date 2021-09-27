@@ -32,4 +32,4 @@ testfixtures = "==6.18.2"
 pytest = "==6.2.5"
 prospector = {extras = ["with_mypy", "with_bandit"], version = "==1.5.1"}
 types-redis = "==3.5.8"
-types-requests = "==2.25.8"
+types-requests = "==2.25.9"
