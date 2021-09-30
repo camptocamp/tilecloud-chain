@@ -28,7 +28,7 @@ jsonschema-gentypes = "==0.9.4"
 
 [dev-packages]
 coverage = "==5.5"
-testfixtures = "==6.18.2"
+testfixtures = "==6.18.3"
 pytest = "==6.2.5"
 prospector = {extras = ["with_mypy", "with_bandit"], version = "==1.5.1"}
 types-redis = "==3.5.8"
