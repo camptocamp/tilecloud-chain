@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "072b6ebfbffb3bc30a4cacf33bc95129d7b4e87205c97a684dcc97972bc20eca"
+            "sha256": "0c6b4dc7e8d113712f1b03130aec075178a2ae149f66b9b0605cab831e49f62b"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -755,6 +755,7 @@
                 "sha256:0d453338f04bacf91bbfba545d8bcdf529aa829e67b705eac8c1a7fdce66e2df",
                 "sha256:f1480b74995958b24ce37b0ef04d3663d2683e5d6debc96726eff18acf4ea113"
             ],
+            "index": "pypi",
             "version": "==4.4.0"
         },
         "zope.interface": {
@@ -811,7 +812,7 @@
                 "sha256:fa939c2e2468142c9773443d4038e7c915b0cc1b670d3c9192bdc503f7ea73e9",
                 "sha256:fcc5c1f95102989d2e116ffc8467963554ce89f30a65a3ea86a4d06849c498d8"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4'",
+            "index": "pypi",
             "version": "==5.3.0"
         },
         "zope.sqlalchemy": {
