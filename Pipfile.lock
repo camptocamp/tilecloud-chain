@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "6636e09c28dc969f2181fbcbf117f191f3d030004da4a99540d4dfb1b856e7b0"
+            "sha256": "07a54b541f8fbcdefecd2dcc1d81e3a67c17008574134b11487a56a7bde1d101"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -38,19 +38,19 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:4c20f183b680f6b02f70fb32b03df8b52ab9e0fc7a48dc309c159babaf5c9497",
-                "sha256:9dea5a820282bcd752bba118e38e44d683024e7cd8792ea89e72e3df7c61978e"
+                "sha256:2d81dc484020059fc738165984304107d4db1c6774b6310d08c892a1751f6980",
+                "sha256:f22a77098cd70ddf848df6981ec57b92178e9d8eb74637edbdf4173bfa9279fa"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==1.18.53"
+            "version": "==1.18.54"
         },
         "botocore": {
             "hashes": [
-                "sha256:09f82a17a352f8b694ac6542eae34fe39169b049c4ca55e17040a0796b8f399b",
-                "sha256:650604ca5231b819d64430c6b2d1748646bab1095a02fb81bad99cd59f6f6cf5"
+                "sha256:46127b3a385d0ec73d1994b8958b23b79e0613e12c486371a100df992b72a1b9",
+                "sha256:56b74a5186bec835baf580b2d062ea1738d3ff5a573653d41b3ad1598a5b77c4"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==1.21.53"
+            "version": "==1.21.54"
         },
         "bottle": {
             "hashes": [
@@ -270,11 +270,11 @@
         },
         "jinja2": {
             "hashes": [
-                "sha256:1f06f2da51e7b56b8f238affdd6b4e2c61e39598a378cc49345bc1bd42a978a4",
-                "sha256:703f484b47a6af502e743c9122595cc812b0271f661722403114f71a79d0f5a4"
+                "sha256:827a0e32839ab1600d4eb1c4c33ec5a8edfbc5cb42dafa13b81f182f97784b45",
+                "sha256:8569982d3f0889eed11dd620c706d39b60c36d6d25843961f33f77fb6bc6b20c"
             ],
             "index": "pypi",
-            "version": "==3.0.1"
+            "version": "==3.0.2"
         },
         "jmespath": {
             "hashes": [
