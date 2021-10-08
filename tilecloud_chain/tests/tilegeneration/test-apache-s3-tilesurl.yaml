@@ -28,9 +28,3 @@ layers:
 generation:
   default_cache: s3-tilesurl
   default_layers: [point]
-
-mapcache:
-  config_file: mapcache.xml
-
-apache:
-  config_file: tiles.conf

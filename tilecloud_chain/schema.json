@@ -1420,53 +1420,6 @@
     "redis": {
       "$ref": "#/definitions/redis"
     },
-    "apache": {
-      "title": "Apache",
-      "description": "Configuration used to generate the Apache configuration (deprecated) (main configuration)",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "location": {
-          "type": "string",
-          "default": "/tiles"
-        },
-        "config_file": {
-          "type": "string",
-          "default": "apache/tiles.conf"
-        },
-        "expires": {
-          "type": "integer",
-          "default": 8
-        },
-        "headers": {
-          "$ref": "#/definitions/headers"
-        }
-      }
-    },
-    "mapcache": {
-      "title": "MapCache",
-      "description": "Configuration used to generate the mapcache configuration (deprecated) (main configuration)",
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "config_file": {
-          "type": "string",
-          "default": "apache/mapcache.xml"
-        },
-        "memcache_host": {
-          "type": "string",
-          "default": "localhost"
-        },
-        "memcache_port": {
-          "type": ["number", "string"],
-          "default": 11211
-        },
-        "location": {
-          "type": "string",
-          "default": "/mapcache"
-        }
-      }
-    },
     "openlayers": {
       "title": "OpenLayers",
       "description": "Configuration used to generate the OpenLayers example page",

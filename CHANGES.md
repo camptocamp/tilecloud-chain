@@ -6,6 +6,8 @@
 2. The argument --layer is no more used when we use the parameter --tiles, we get the information from the
    tiles file.
 3. Be able to mutualise the service.
+4. Add Azure blob storage
+5. Remove apache and mapcache
 
 ## Release 1.16
 
