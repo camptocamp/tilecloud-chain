@@ -8,7 +8,10 @@ logger = logging.getLogger(__name__)
 
 
 class MultiTileStore(TileStore):
+    """Redirect to the corresponding Tilestore for the layer and config file."""
+
     def __init__(self, get_store: Callable[[str, str], Optional[TileStore]]) -> None:
+        """Initialize."""
         TileStore.__init__(self)
         self.get_store = get_store
         self.stores: Dict[Tuple[str, str], Optional[TileStore]] = {}
@@ -92,6 +95,8 @@ class MultiTileStore(TileStore):
         return store.get_one(tile)
 
     def get(self, tiles: Iterable[Tile]) -> Iterator[Optional[Tile]]:
+        """See in superclass."""
+
         def apply(key: Tuple[str, str], tiles: Iterator[Tile]) -> Iterable[Optional[Tile]]:
             store = self._get_store(*key)
             if store is None:
@@ -101,6 +106,8 @@ class MultiTileStore(TileStore):
         return chain.from_iterable(starmap(apply, groupby(tiles, self._get_layer)))
 
     def put(self, tiles: Iterable[Tile]) -> Iterator[Tile]:
+        """See in superclass."""
+
         def apply(key: Tuple[str, str], tiles: Iterator[Tile]) -> Iterator[Tile]:
             store = self._get_store(*key)
             assert store is not None
@@ -109,6 +116,8 @@ class MultiTileStore(TileStore):
         return chain.from_iterable(starmap(apply, groupby(tiles, self._get_layer)))
 
     def delete(self, tiles: Iterable[Tile]) -> Iterator[Tile]:
+        """See in superclass."""
+
         def apply(key: Tuple[str, str], tiles: Iterator[Tile]) -> Iterator[Tile]:
             store = self._get_store(*key)
             assert store is not None

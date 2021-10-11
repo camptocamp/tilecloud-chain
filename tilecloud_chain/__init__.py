@@ -69,6 +69,7 @@ logger = logging.getLogger(__name__)
 
 
 def formated_metadata(tile: Tile) -> str:
+    """Get human redable string of the metadata."""
     metadata = dict(tile.metadata)
     if "tiles" in metadata:
         metadata["tiles"] = metadata["tiles"].keys()  # type: ignore
@@ -78,7 +79,7 @@ def formated_metadata(tile: Tile) -> str:
 setattr(Tile, "formated_metadata", property(formated_metadata))
 
 
-def add_comon_options(
+def add_common_options(
     parser: ArgumentParser,
     tile_pyramid: bool = True,
     no_geom: bool = True,
@@ -87,6 +88,7 @@ def add_comon_options(
     dimensions: bool = False,
     cache: bool = True,
 ) -> None:
+    """Get the options used by some commands."""
     parser.add_argument(
         "-c",
         "--config",
@@ -173,6 +175,7 @@ def add_comon_options(
 def get_tile_matrix_identifier(
     grid: tilecloud_chain.configuration.Grid, resolution: Optional[float] = None, zoom: Optional[int] = None
 ) -> str:
+    """Get an identifier for a tile matrix."""
     if grid is None or grid["matrix_identifier"] == "zoom":
         return str(zoom)
     else:
@@ -186,6 +189,13 @@ def get_tile_matrix_identifier(
 
 
 class Run:
+    """
+    Run the tile generation.
+
+    Add some logs.
+    Manage the max_consecutive_errors.
+    """
+
     _re_rm_xml_tag = re.compile("(<[^>]*>|\n)")
 
     def __init__(
@@ -263,6 +273,8 @@ class Run:
 
 
 class Close:
+    """Database closer."""
+
     def __init__(self, db: Any) -> None:
         self.db = db
 
@@ -271,6 +283,8 @@ class Close:
 
 
 class Legend(TypedDict, total=False):
+    """Legend fields."""
+
     mime_type: str
     href: str
     max_resolution: float
@@ -280,6 +294,8 @@ class Legend(TypedDict, total=False):
 
 
 class DatedConfig:
+    """Loaded config with timestamps to be able to invalidate it on configuration file change."""
+
     def __init__(self, config: tilecloud_chain.configuration.Configuration, mtime: float, file: str) -> None:
         self.config = config
         self.mtime = mtime
@@ -287,24 +303,32 @@ class DatedConfig:
 
 
 class DatedGeoms:
+    """Geoms with timestamps to be able to invalidate it on configuration change."""
+
     def __init__(self, geoms: Dict[Union[str, int], BaseGeometry], mtime: float) -> None:
         self.geoms = geoms
         self.mtime = mtime
 
 
 class DatedTileGrid:
+    """TilGrid with timestamps to be able to invalidate it on configuration change."""
+
     def __init__(self, grid: TileGrid, mtime: float) -> None:
         self.grid = grid
         self.mtime = mtime
 
 
 class DatedHosts:
+    """Host with timestamps to be able to invalidate it on configuration change."""
+
     def __init__(self, hosts: Dict[str, str], mtime: float) -> None:
         self.hosts = hosts
         self.mtime = mtime
 
 
 class TileGeneration:
+    """Base class of all the tile generation."""
+
     tilestream: Optional[Iterator[Tile]] = None
     duration: timedelta = timedelta()
     error = 0
@@ -404,9 +428,7 @@ class TileGeneration:
             self.create_log_tiles_error(layer_name)
 
     def get_host_config_file(self, host: Optional[str]) -> Optional[str]:
-        """
-        Get the configuration file name for the given host
-        """
+        """Get the configuration file name for the given host."""
         if self.config_file:
             return self.config_file
         assert host
@@ -416,9 +438,7 @@ class TileGeneration:
         return self.get_hosts().get(host, os.environ.get("TILEGENERATION_CONFIGFILE"))
 
     def get_host_config(self, host: Optional[str]) -> DatedConfig:
-        """
-        Get the configuration for the given host
-        """
+        """Get the configuration for the given host."""
         config_file = self.get_host_config_file(host)
         return (
             self.get_config(config_file)
@@ -435,9 +455,7 @@ class TileGeneration:
         ignore_error: bool = True,
         base_config: Optional[tilecloud_chain.configuration.Configuration] = None,
     ) -> DatedConfig:
-        """
-        Get the validated configuration for the file name, with cache management
-        """
+        """Get the validated configuration for the file name, with cache management."""
         assert config_file
         config_path = pathlib.Path(config_file)
         if not config_path.exists():
@@ -491,9 +509,7 @@ class TileGeneration:
         ignore_error: bool,
         base_config: Optional[tilecloud_chain.configuration.Configuration] = None,
     ) -> Tuple[DatedConfig, bool]:
-        """
-        Get the validated configuration for the file name
-        """
+        """Get the validated configuration for the file name."""
         with open(config_file, encoding="utf-8") as f:
             config: Dict[str, Any] = {}
             config.update({} if base_config is None else base_config)
@@ -509,10 +525,7 @@ class TileGeneration:
         return dated_config, success
 
     def validate_config(self, config: DatedConfig, ignore_error: bool) -> bool:
-        """
-        Validate the configuration
-        """
-
+        """Validate the configuration."""
         # Generate base structure
         if "defaults" in config.config:
             del config.config["defaults"]
@@ -1183,6 +1196,8 @@ class TileGeneration:
         assert func is not None
 
         class Func:
+            """Function with an additional field used to names it in timing messages."""
+
             def __init__(self, func: Callable[[Tile], Tile], time_message: Optional[str]) -> None:
                 self.func = func
                 self.time_message = time_message
@@ -1275,6 +1290,8 @@ class TileGeneration:
 
 
 class Count:
+    """Count the number of generated tile."""
+
     def __init__(self) -> None:
         self.nb = 0
         self.lock = threading.Lock()
@@ -1286,6 +1303,8 @@ class Count:
 
 
 class CountSize:
+    """Count the number of generated tile and measure the total generated size."""
+
     def __init__(self) -> None:
         self.nb = 0
         self.size = 0
@@ -1376,9 +1395,7 @@ class MultiAction:
 
 
 class HashLogger:
-    """
-    Log the tile size and hash.
-    """
+    """Log the tile size and hash."""
 
     def __init__(self, block: str) -> None:
         self.block = block
@@ -1410,6 +1427,14 @@ class HashLogger:
 
 
 class LocalProcessFilter:
+    """
+    Drop the tiles (coordinate) that shouldn't be generated in this process.
+
+    Process 1: process tiles 0 of 3
+    Process 2: process tiles 1 of 3
+    Process 3: process tiles 2 of 3
+    """
+
     def __init__(self, nb_process: int, process_nb: int) -> None:
         self.nb_process = nb_process
         self.process_nb = int(process_nb)
@@ -1423,6 +1448,8 @@ class LocalProcessFilter:
 
 
 class IntersectGeometryFilter:
+    """Drop the tiles (coordinates) it she didn't intersect the configured geom."""
+
     def __init__(
         self,
         gene: TileGeneration,
@@ -1453,9 +1480,7 @@ class IntersectGeometryFilter:
 
 
 class DropEmpty:
-    """
-    Create a filter for dropping all tiles with errors.
-    """
+    """Create a filter for dropping all tiles with errors."""
 
     def __init__(self, gene: TileGeneration) -> None:
         self.gene = gene
@@ -1476,6 +1501,7 @@ class DropEmpty:
 
 
 def quote(arg: str) -> str:
+    """Add some quote and escape to pass the argument to an externa command."""
     if " " in arg or "'" in arg or '"' in arg:
         if "'" in arg:
             if '"' in arg:
@@ -1491,6 +1517,7 @@ def quote(arg: str) -> str:
 
 
 def parse_tilecoord(string_representation: str) -> TileCoord:
+    """Parce the tile coordinates (z/x/y => TileCoord object)."""
     parts = string_representation.split(":")
     coords = [int(v) for v in parts[0].split("/")]
     if len(coords) != 3:
@@ -1509,6 +1536,8 @@ def parse_tilecoord(string_representation: str) -> TileCoord:
 
 
 class Process:
+    """Process a tile throw an external command."""
+
     def __init__(self, config: tilecloud_chain.configuration.ProcessCommand, options: Namespace) -> None:
         self.config = config
         self.options = options
@@ -1571,6 +1600,8 @@ class Process:
 
 
 class TilesFileStore(TileStore):
+    """Load tiles to be generate from a file."""
+
     def __init__(self, tiles_file: str):
         super().__init__()
 
@@ -1610,6 +1641,7 @@ def _await_message(_: Any) -> bool:
 
 
 def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
+    """Get the quue tile store (Redir or SQS)."""
     if "redis" in config.config:
         # Create a Redis queue
         conf = config.config["redis"]

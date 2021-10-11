@@ -8,6 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 class MapnikDropActionTileStore(MapnikTileStore):
+    """MapnikTileStore with drop action if the generated tile is empty."""
+
     def __init__(
         self,
         store: Optional[TileStore] = None,
@@ -15,12 +17,14 @@ class MapnikDropActionTileStore(MapnikTileStore):
         count: Optional[List[Callable[[Optional[Tile]], Any]]] = None,
         **kwargs: Any,
     ) -> None:
+        """Initialize."""
         self.store = store
         self.queue_store = queue_store
         self.count = count or []
         MapnikTileStore.__init__(self, **kwargs)
 
     def get_one(self, tile: Tile) -> Optional[Tile]:
+        """See in superclass."""
         result = MapnikTileStore.get_one(self, tile)
         if result is None:
             if self.store is not None:

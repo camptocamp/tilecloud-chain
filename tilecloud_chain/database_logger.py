@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseLoggerCommon:
+    """Log the generated tiles in a database."""
+
     def __init__(self, config: tilecloud_chain.configuration.Logging, daemon: bool):
         db_params = config["database"]
         while True:
@@ -79,12 +81,14 @@ class DatabaseLoggerCommon:
 
 
 class DatabaseLoggerInit(DatabaseLoggerCommon):
+    """Log the generated tiles in a database."""
+
     def __init__(self, config: tilecloud_chain.configuration.Logging, daemon: bool) -> None:
         super().__init__(config, daemon)
 
         with self.connection.cursor() as cursor:
             cursor.execute(
-                psycopg2.sql.SQL("SELECT COALESCE(MAX(run), 0) + 1 FROM {}").format(
+                psycopg2.sql.SQL("SELECT COALESCE(MAX(run), 0) + 1 FROM {}.{}").format(
                     psycopg2.sql.Identifier(self.schema), psycopg2.sql.Identifier(self.table)
                 )
             )
@@ -96,6 +100,8 @@ class DatabaseLoggerInit(DatabaseLoggerCommon):
 
 
 class DatabaseLogger(DatabaseLoggerCommon):
+    """Log the generated tiles in a database."""
+
     def __call__(self, tile: Tile) -> Tile:
         if tile is None:
             logger.warning("The tile is None")

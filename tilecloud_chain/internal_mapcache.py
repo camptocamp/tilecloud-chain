@@ -26,6 +26,7 @@ _generator = None
 
 
 def _decode_tile(data: bytes, tile: Tile) -> None:
+    """Decode a tile."""
     image_len = struct.unpack("q", data[:8])[0]
     tile.data = data[8 : (image_len + 8)]
     other = json.loads((data[(8 + image_len) :]).decode("utf-8"))
@@ -34,6 +35,7 @@ def _decode_tile(data: bytes, tile: Tile) -> None:
 
 
 def _encode_tile(tile: Tile) -> bytes:
+    """Encode a tile."""
     other = {"content_encoding": tile.content_encoding, "content_type": tile.content_type}
     assert tile.data
     data = struct.pack("q", len(tile.data)) + tile.data + json.dumps(other).encode("utf-8")
@@ -41,7 +43,10 @@ def _encode_tile(tile: Tile) -> bytes:
 
 
 class RedisStore(TileStore):
+    """A store based on Redis."""
+
     def __init__(self, config: tilecloud_chain.configuration.Redis, **kwargs: Any):
+        """Initialize."""
         super().__init__(**kwargs)
 
         connection_kwargs = {}
@@ -60,6 +65,7 @@ class RedisStore(TileStore):
         self._expiration = config["expiration"]
 
     def get_one(self, tile: Tile) -> Optional[Tile]:
+        """See in superclass."""
         key = self._get_key(tile)
         data = self._slave.get(key)
         if data is None:
@@ -70,12 +76,14 @@ class RedisStore(TileStore):
         return tile
 
     def put_one(self, tile: Tile) -> Tile:
+        """See in superclass."""
         key = self._get_key(tile)
         self._master.set(key, _encode_tile(tile), ex=self._expiration)
         LOG.info("Tile saved: %s/%s", tile.metadata["layer"], tile.tilecoord)
         return tile
 
     def delete_one(self, tile: Tile) -> Tile:
+        """See in superclass."""
         key = self._get_key(tile)
         self._master.delete(key)
         return tile
@@ -88,13 +96,17 @@ class RedisStore(TileStore):
 
     @contextlib.contextmanager
     def lock(self, tile: Tile) -> Iterator[None]:
+        """Lock a tile."""
         key = self._get_key(tile) + "_l"
         with self._master.lock(key, timeout=MAX_GENERATION_TIME):
             yield
 
 
 class Generator:
+    """Get the tile from the cache (Redis) or generated it on the WMS server."""
+
     def __init__(self, tilegeneration: tilecloud_chain.TileGeneration) -> None:
+        """Initialize."""
         redis_config = tilegeneration.get_main_config().config["redis"]
         self._cache_store = RedisStore(redis_config)
         log_level = os.environ.get("TILE_MAPCACHE_LOGLEVEL")
@@ -130,15 +142,18 @@ class Generator:
         self.run = Run(tilegeneration, tilegeneration.functions_metatiles)
 
     def read_from_cache(self, tile: Tile) -> Optional[Tile]:
+        """Get the tile from the cache (Redis)."""
         return self._cache_store.get_one(tile)
 
     def compute_tile(self, tile: Tile) -> None:
+        """Create the tile."""
         self.run(tile)
         for tile_ in tile.metadata["tiles"].values():  # type: ignore
             self._cache_store.put_one(tile_)
 
     @contextlib.contextmanager
     def lock(self, tile: Tile) -> Iterator[None]:
+        """Lock the tile."""
         with self._cache_store.lock(tile):
             yield
 
@@ -168,6 +183,7 @@ def fetch(
     tile: Tile,
     kwargs: Dict[str, Any],
 ) -> Response:
+    """Fetch a time in the cache (redis) or get it on the WMS server."""
     generator = _get_generator(tilegeneration)
     fetched_tile = generator.read_from_cache(tile)
     backend = "redis"

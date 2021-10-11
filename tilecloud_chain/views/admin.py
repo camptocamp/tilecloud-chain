@@ -45,7 +45,10 @@ LOG = logging.getLogger(__name__)
 
 
 class Admin:
+    """The admin views."""
+
     def __init__(self, request: pyramid.request.Request):
+        """Initialize."""
         self.request = request
 
         tilecloud_chain.server.init_tilegeneration(
@@ -55,6 +58,7 @@ class Admin:
 
     @view_config(route_name="admin", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore
     def index(self) -> Dict[str, Any]:
+        """Get the admin index page."""
         assert self.gene
         return {
             "secret": self.request.params.get("secret"),
@@ -71,6 +75,7 @@ class Admin:
 
     @view_config(route_name="admin_run", renderer="fast_json")  # type: ignore
     def run(self) -> pyramid.response.Response:
+        """Run the command given by the user."""
         assert self.gene
         auth_view(self.request)
 

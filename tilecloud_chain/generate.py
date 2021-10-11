@@ -25,7 +25,7 @@ from tilecloud_chain import (
     MultiAction,
     TileGeneration,
     TilesFileStore,
-    add_comon_options,
+    add_common_options,
     get_queue_store,
     parse_tilecoord,
     quote,
@@ -39,6 +39,8 @@ logger = logging.getLogger(__name__)
 
 
 class Generate:
+    """Generate the tiles, generate the queue, ..."""
+
     def __init__(self, options: Namespace, gene: TileGeneration, server: bool = False) -> None:
         self._count_metatiles: Optional[Count] = None
         self._count_metatiles_dropped: Optional[Count] = None
@@ -278,6 +280,8 @@ class Generate:
             options = self._options
 
             class LogTime:
+                """Log the generation time."""
+
                 n = 0
                 t1 = None
 
@@ -393,6 +397,8 @@ class Generate:
 
 
 class TilestoreGetter:
+    """Used to get the correct tilestore based on the layername config file any layer type."""
+
     def __init__(self, gene: Generate):
         self.gene = gene
 
@@ -463,6 +469,7 @@ class TilestoreGetter:
 
 
 def detach() -> None:
+    """Detach to the parent process."""
     try:
         pid = os.fork()
         if pid > 0:
@@ -476,10 +483,11 @@ def detach() -> None:
 
 
 def main() -> None:
+    """Run the tiles generation."""
     try:
         stats.init_backends({})
         parser = ArgumentParser(description="Used to generate the tiles", prog=sys.argv[0])
-        add_comon_options(parser, dimensions=True)
+        add_common_options(parser, dimensions=True)
         parser.add_argument(
             "--get-hash", metavar="TILE", help="get the empty tiles hash, use the specified TILE z/x/y"
         )
@@ -574,12 +582,15 @@ def main() -> None:
 
 
 class HashDropperGetter:
+    """Drop th tiles based on the hash and the size."""
+
     def __init__(self, gene: Generate, meta: bool, count: Count):
         self.gene = gene
         self.meta = meta
         self.count = count
 
     def __call__(self, config_file: str, layer_name: str) -> Callable[[Tile], Optional[Tile]]:
+        """Call."""
         layer = self.gene._gene.get_config(config_file).config["layers"][layer_name]
         conf_name = "empty_metatile_detection" if self.meta else "empty_tile_detection"
         if conf_name in layer:

@@ -5,16 +5,17 @@ import sys
 from typing import Iterable, Iterator, Tuple
 
 from tilecloud import Tile, TileStore
-from tilecloud_chain import Run, TileGeneration, add_comon_options
+from tilecloud_chain import Run, TileGeneration, add_common_options
 from tilecloud_chain.format import duration_format
 
 logger = logging.getLogger(__name__)
 
 
 def main() -> None:
+    """Calculate the cost, main function."""
     try:
         parser = ArgumentParser(description="Used to calculate the generation cost", prog=sys.argv[0])
-        add_comon_options(parser, tile_pyramid=False, dimensions=True)
+        add_common_options(parser, tile_pyramid=False, dimensions=True)
         parser.add_argument(
             "--cost-algo",
             "--calculate-cost-algorithm",
@@ -133,6 +134,8 @@ def _calculate_cost(
             gene.imap(count_metatile)
 
             class MetaTileSplitter(TileStore):
+                """Convert the metatile flow to tile flow."""
+
                 @staticmethod
                 def get(tiles: Iterable[Tile]) -> Iterator[Tile]:
                     for metatile in tiles:

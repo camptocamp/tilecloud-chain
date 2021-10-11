@@ -55,6 +55,7 @@ tilegeneration = None
 
 
 def init_tilegeneration(config_file: Optional[str]) -> None:
+    """Initialize the tile generation."""
     global tilegeneration  # pylint: disable=global-statement
     if tilegeneration is None:
         logger.info("Config file: '%s'", config_file)
@@ -86,19 +87,28 @@ Response = TypeVar("Response")
 
 
 class DatedStore:
+    """Store with timestamp to be able to invalidate it on configuration change."""
+
     def __init__(self, store: tilecloud.TileStore, mtime: float) -> None:
+        """Initialise."""
         self.store = store
         self.mtime = mtime
 
 
 class DatedFilter:
+    """Filter with timestamp to be able to invalidate it on configuration change."""
+
     def __init__(self, layer_filter: Optional[tilecloud_chain.IntersectGeometryFilter], mtime: float) -> None:
+        """Initialise."""
         self.filter = layer_filter
         self.mtime = mtime
 
 
 class Server(Generic[Response]):
+    """The generic implementation of the WMTS server."""
+
     def __init__(self) -> None:
+        """Initialise."""
         try:
             self.filter_cache: Dict[str, Dict[str, DatedFilter]] = {}
             self.s3_client_cache: Dict[str, "botocore.client.S3"] = {}
@@ -114,19 +124,23 @@ class Server(Generic[Response]):
 
     @staticmethod
     def get_expires_hours(config: tilecloud_chain.DatedConfig) -> float:
+        """Get the expiration time in hours."""
         return config.config["server"]["expires"]
 
     @staticmethod
     def get_static_allow_extension(config: tilecloud_chain.DatedConfig) -> List[str]:
+        """Get the allowed extensions in the static view."""
         return config.config["server"].get(
             "static_allow_extension", ["jpeg", "png", "xml", "js", "html", "css"]
         )
 
     @staticmethod
     def get_cache_name(config: tilecloud_chain.DatedConfig) -> str:
+        """Get the cache name."""
         return config.config["server"].get("cache", config.config["generation"]["default_cache"])
 
     def get_s3_client(self, config: tilecloud_chain.DatedConfig) -> "botocore.client.S3":
+        """Get the AWS S3 client."""
         cache_s3 = cast(tilecloud_chain.configuration.CacheS3, self.get_cache(config))
         if cache_s3.get("host", "aws") in self.s3_client_cache:
             return self.s3_client_cache[cache_s3.get("host", "aws")]
@@ -141,16 +155,19 @@ class Server(Generic[Response]):
         raise error
 
     def get_cache(self, config: tilecloud_chain.DatedConfig) -> tilecloud_chain.configuration.Cache:
+        """Get the cache from the config."""
         return config.config["caches"][self.get_cache_name(config)]
 
     @staticmethod
     def get_layers(config: tilecloud_chain.DatedConfig) -> List[str]:
+        """Get the layer from the config."""
         layers: List[str] = cast(List[str], config.config["layers"].keys())
         return config.config["server"].get("layers", layers)
 
     def get_filter(
         self, config: tilecloud_chain.DatedConfig, layer_name: str
     ) -> Optional[tilecloud_chain.IntersectGeometryFilter]:
+        """Get the filter from the config."""
         dated_filter = self.filter_cache.get(config.file, {}).get(layer_name)
 
         if dated_filter is not None and dated_filter.mtime == config.mtime:
@@ -168,6 +185,7 @@ class Server(Generic[Response]):
         return layer_filter
 
     def get_store(self, config: tilecloud_chain.DatedConfig, layer_name: str) -> tilecloud.TileStore:
+        """Get the store from the config."""
         dated_store = self.store_cache.get(config.file, {}).get(layer_name)
 
         if dated_store is not None and dated_store.mtime == config.mtime:
@@ -181,7 +199,7 @@ class Server(Generic[Response]):
 
     @staticmethod
     def get_max_zoom_seed(config: tilecloud_chain.DatedConfig, layer_name: str) -> int:
-
+        """Get the max zoom to be bet in the stored cache."""
         layer = config.config["layers"][layer_name]
         if "min_resolution_seed" in layer:
             max_zoom_seed = -1
@@ -223,9 +241,7 @@ class Server(Generic[Response]):
         config: tilecloud_chain.DatedConfig,
         **kwargs: Any,
     ) -> Response:
-        """
-        Get capabilities or other static files.
-        """
+        """Get capabilities or other static files."""
         assert tilegeneration
         cache = self.get_cache(config)
 
@@ -259,6 +275,7 @@ class Server(Generic[Response]):
         environ: Dict[str, str],
         start_response: bytes,
     ) -> Response:
+        """Build the response on request."""
         params = {}
         for key, value in parse_qs(environ["QUERY_STRING"], True).items():
             params[key.upper()] = value[0]
@@ -274,6 +291,7 @@ class Server(Generic[Response]):
         config: tilecloud_chain.DatedConfig,
         **kwargs: Any,
     ) -> Response:
+        """Serve the WMTS requests."""
         try:
             dimensions = []
             metadata = {}
@@ -534,6 +552,7 @@ class Server(Generic[Response]):
         tile: Tile,
         kwargs: Dict[str, Any],
     ) -> Response:
+        """Get the tile on a cache of tile."""
         assert tilegeneration
         return internal_mapcache.fetch(config, self, tilegeneration, layer, tile, kwargs)
 
@@ -545,6 +564,7 @@ class Server(Generic[Response]):
         no_cache: bool = False,
         **kwargs: Any,
     ) -> Response:
+        """Forward the seqest on a fallback WMS server."""
         if headers is None:
             headers = {}
         if no_cache:
@@ -580,6 +600,7 @@ class Server(Generic[Response]):
         message: Optional[Union[Exception, str]] = "",
         **kwargs: Any,
     ) -> Response:
+        """Build the error, should be implemented in a sub class."""
         raise NotImplementedError
 
     def response(
@@ -589,6 +610,7 @@ class Server(Generic[Response]):
         headers: Optional[Dict[str, str]] = None,
         **kwargs: Any,
     ) -> Response:
+        """Build the response, should be implemented in a sub class."""
         raise NotImplementedError
 
 
@@ -599,6 +621,8 @@ else:
 
 
 class WsgiServer(WsgiServerBase):
+    """Convert the error and response for the WSGI server."""
+
     HTTP_MESSAGES = {
         204: "204 No Content",
         400: "400 Bad Request",
@@ -614,6 +638,7 @@ class WsgiServer(WsgiServerBase):
         message: Optional[Union[Exception, str]] = "",
         **kwargs: Any,
     ) -> List[bytes]:
+        """Build the error."""
         assert message is not None
         kwargs["start_response"](self.HTTP_MESSAGES[code], [])
         return [str(message).encode()]
@@ -625,6 +650,7 @@ class WsgiServer(WsgiServerBase):
         headers: Optional[Dict[str, str]] = None,
         **kwargs: Any,
     ) -> List[bytes]:
+        """Build the response."""
         if headers is None:
             headers = {}
         headers["Content-Length"] = str(len(data))
@@ -637,6 +663,7 @@ def app_factory(
     configfile: Optional[str] = os.environ.get("TILEGENERATION_CONFIGFILE"),
     **local_conf: Any,
 ) -> WsgiServer:
+    """Create the WSGI server."""
     del global_config
     del local_conf
 
@@ -652,6 +679,8 @@ else:
 
 
 class PyramidServer(PyramidServerBase):
+    """Convert the error and response for Pyramid."""
+
     def error(
         self,
         config: tilecloud_chain.DatedConfig,
@@ -659,6 +688,7 @@ class PyramidServer(PyramidServerBase):
         message: Optional[Union[Exception, str]] = None,
         **kwargs: Any,
     ) -> pyramid.response.Response:
+        """Build the Pyramid response on error."""
         headers = {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET",
@@ -683,6 +713,7 @@ class PyramidServer(PyramidServerBase):
         headers: Optional[Dict[str, str]] = None,
         **kwargs: Any,
     ) -> pyramid.response.Response:
+        """Build the Pyramid response."""
         if headers is None:
             headers = {}
         request: pyramid.request.Request = kwargs["request"]
@@ -698,7 +729,10 @@ pyramid_server = None
 
 
 class PyramidView:
+    """The Pyramid view."""
+
     def __init__(self, request: Request) -> None:
+        """Init the Pyramid view."""
         self.request = request
 
         global pyramid_server  # pylint: disable=global-statement
@@ -711,6 +745,7 @@ class PyramidView:
         self.server = pyramid_server
 
     def __call__(self) -> pyramid.response.Response:
+        """Call the Pyramid view."""
         params = {}
         path = None
 
@@ -731,6 +766,7 @@ class PyramidView:
 
 
 def main(global_config: Any, **settings: Any) -> Router:
+    """Start the server in Pyramid."""
     del global_config  # unused
 
     config = Configurator(settings=settings)

@@ -21,13 +21,14 @@ import ruamel.yaml
 from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
 import tilecloud.store.redis
 import tilecloud.store.s3
-from tilecloud_chain import TileGeneration, add_comon_options, get_queue_store, get_tile_matrix_identifier
+from tilecloud_chain import TileGeneration, add_common_options, get_queue_store, get_tile_matrix_identifier
 import tilecloud_chain.configuration
 
 logger = logging.getLogger(__name__)
 
 
 def main() -> None:
+    """Generate the contextual file like the capabilities, the legends, the OpenLayers example."""
     try:
         stats.init_backends({})
         parser = ArgumentParser(
@@ -35,7 +36,7 @@ def main() -> None:
             "the OpenLayers example",
             prog=sys.argv[0],
         )
-        add_comon_options(parser, tile_pyramid=False, no_geom=False)
+        add_common_options(parser, tile_pyramid=False, no_geom=False)
         parser.add_argument(
             "--status", default=False, action="store_true", help="Display the SQS queue status and exit"
         )
@@ -172,6 +173,7 @@ def _validate_generate_wmts_capabilities(
 
 
 def get_wmts_capabilities(gene: TileGeneration, cache_name: str, exit_: bool = False) -> Optional[str]:
+    """Get the WMTS capabilities for a configuration file."""
     assert gene.config_file
     config = gene.get_config(gene.config_file)
     cache = config.config["caches"][cache_name]
@@ -426,10 +428,12 @@ def _generate_openlayers(gene: TileGeneration) -> None:
 
 
 def status(gene: TileGeneration) -> None:
+    """Print th tilegeneration status."""
     print("\n".join(get_status(gene)))
 
 
 def get_status(gene: TileGeneration) -> List[str]:
+    """Get the tile generation status."""
     config = gene.get_main_config()
     store = get_queue_store(config, False)
     prefix = "redis" if "redis" in config.config else "sqs"

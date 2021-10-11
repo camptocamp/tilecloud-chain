@@ -4,7 +4,7 @@ import os
 import sys
 from typing import cast
 
-from tilecloud_chain import Count, DropEmpty, HashDropper, TileGeneration, add_comon_options
+from tilecloud_chain import Count, DropEmpty, HashDropper, TileGeneration, add_common_options
 import tilecloud_chain.configuration
 from tilecloud_chain.format import duration_format, size_format
 
@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class Copy:
+    """Copy the tiles from a cache to an other."""
+
     count = None
 
     def copy(
@@ -81,11 +83,12 @@ Size per tile: {self.count.size / self.count.nb if self.count.nb != 0 else -1} o
 
 
 def main() -> None:
+    """Copy the tiles from a cache to an other."""
     try:
         parser = ArgumentParser(
             description="Used to copy the tiles from a cache to an other", prog=sys.argv[0]
         )
-        add_comon_options(parser, near=False, time=False, dimensions=True, cache=False)
+        add_common_options(parser, near=False, time=False, dimensions=True, cache=False)
         parser.add_argument("--process", dest="process", metavar="NAME", help="The process name to do")
         parser.add_argument("source", metavar="SOURCE", help="The source cache")
         parser.add_argument("dest", metavar="DEST", help="The destination cache")
@@ -118,11 +121,12 @@ def main() -> None:
 
 
 def process() -> None:
+    """Copy the tiles from a cache to an other."""
     try:
         parser = ArgumentParser(
             description="Used to copy the tiles from a cache to an other", prog=sys.argv[0]
         )
-        add_comon_options(parser, near=False, time=False, dimensions=True)
+        add_common_options(parser, near=False, time=False, dimensions=True)
         parser.add_argument("process", metavar="PROCESS", help="The process name to do")
 
         options = parser.parse_args()
