@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def main() -> None:
+    """Import the osm2pgsql expire-tiles file to Postgres."""
     try:
         parser = ArgumentParser(
             description="Used to import the osm2pgsql expire-tiles file to Postgres", prog=sys.argv[0]

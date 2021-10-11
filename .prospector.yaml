@@ -28,12 +28,23 @@ pylint:
     - abstract-method
     - duplicate-string-formatting-argument
     - cyclic-import
+    - missing-module-docstring
+    - missing-function-docstring
 
 pep8:
   disable:
     - E203 # Whitespace before ':'
     - E722 # Do not use bare 'except'
     - E501 # Line too long
+
+pep257:
+  disable:
+    - D100 # Missing docstring in public module
+    - D102 # Missing docstring in public method
+    - D104 # Missing docstring in public package
+    - D107 # Missing docstring in __init__
+    - D203 # 1 blank line required before class docstring (found 0)
+    - D212 # Multi-line docstring summary should start at the first line
 
 mypy:
   run: true

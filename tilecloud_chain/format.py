@@ -1,14 +1,14 @@
 from datetime import timedelta
-from typing import List, Tuple
-
-# -*- coding: utf-8 -*-
+from typing import Tuple
 
 
-def default_int(number_array: Tuple[float, float, float, float]) -> List[float]:
-    return [int(n) if n % 1 == 0 else n for n in number_array]
+def default_int(number_array: Tuple[float, float, float, float]) -> Tuple[int, int, int, int]:
+    """Convert an array of float in an array of int."""
+    return (int(number_array[0]), int(number_array[1]), int(number_array[2]), int(number_array[3]))
 
 
 def size_format(number: float) -> str:
+    """Get human readable size."""
     for unit in ["o", "Kio", "Mio", "Gio", "Tio"]:
         if number < 1024.0:
             if number < 10:
@@ -20,6 +20,7 @@ def size_format(number: float) -> str:
 
 
 def duration_format(duration: timedelta) -> str:
+    """Get human readable duration."""
     hours, remainder = divmod(duration.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
     if duration.days > 0:
