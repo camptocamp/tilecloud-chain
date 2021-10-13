@@ -27,10 +27,9 @@ class MultiTileStore(TileStore):
         """
         Return true if this store contains ``tile``.
 
-        :param tile: Tile
-        :type tile: :class:`Tile`
+        Arguments:
 
-        :rtype: bool
+            tile: Tile
         """
         layer = tile.metadata["layer"]
         config_file = tile.metadata["config_file"]
@@ -42,10 +41,9 @@ class MultiTileStore(TileStore):
         """
         Delete ``tile`` and return ``tile``.
 
-        :param tile: Tile
-        :type tile: :class:`Tile` or ``None``
+        Arguments:
 
-        :rtype: :class:`Tile` or ``None``
+            tile: Tile
         """
         layer = tile.metadata["layer"]
         config_file = tile.metadata["config_file"]
@@ -55,11 +53,7 @@ class MultiTileStore(TileStore):
 
     @staticmethod
     def list() -> Iterator[Tile]:
-        """
-        Generate all the tiles in the store, but without their data.
-
-        :rtype: iterator
-        """
+        """Generate all the tiles in the store, but without their data."""
         # Too dangerous to list all tiles in all stores. Return an empty iterator instead
         while False:
             yield
@@ -68,10 +62,9 @@ class MultiTileStore(TileStore):
         """
         Store ``tile`` in the store.
 
-        :param tile: Tile
-        :type tile: :class:`Tile` or ``None``
+        Arguments:
 
-        :rtype: :class:`Tile` or ``None``
+            tile: Tile
         """
         layer = tile.metadata["layer"]
         config_file = tile.metadata["config_file"]
@@ -83,10 +76,9 @@ class MultiTileStore(TileStore):
         """
         Add data to ``tile``, or return ``None`` if ``tile`` is not in the store.
 
-        :param tile: Tile
-        :type tile: :class:`Tile` or ``None``
+        Arguments:
 
-        :rtype: :class:`Tile` or ``None``
+            tile: Tile
         """
         layer = tile.metadata["layer"]
         config_file = tile.metadata["config_file"]
