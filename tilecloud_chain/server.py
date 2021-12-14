@@ -808,6 +808,11 @@ def main(global_config: Any, **settings: Any) -> Router:
         f"/{tilegeneration.get_main_config().config['server']['admin_path']}/run",
         request_method="POST",
     )
+    config.add_route(
+        "admin_test",
+        f"/{tilegeneration.get_main_config().config['server']['admin_path']}/test",
+        request_method="GET",
+    )
 
     config.add_route("tiles", "/*path", request_method="GET")
     config.add_view(PyramidView, route_name="tiles")

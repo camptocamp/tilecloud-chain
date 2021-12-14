@@ -10,12 +10,10 @@ caches:
     type: filesystem
     http_url: http://wmts1/tiles/
     folder: /tmp/tiles
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   mbtiles:
     type: mbtiles
     http_url: http://wmts1/tiles/
     folder: /tmp/tiles/mbtiles
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
 
 defaults:
   layer: &layer

@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from tilecloud_chain import controller
+from tilecloud_chain import TileGeneration, controller
 from tilecloud_chain.tests import CompareCase
 
 
@@ -22,14 +22,12 @@ class TestController(CompareCase):
             shutil.rmtree("/tmp/tiles")
 
     def test_capabilities(self) -> None:
-        self.assert_main_equals(
-            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml",
-            main_func=controller.main,
-            regex=True,
-            expected=[
-                [
-                    "/tmp/tiles/1.0.0/WMTSCapabilities.xml",
-                    r"""<\?xml version="1.0" encoding="UTF-8"\?>
+
+        gene = TileGeneration("tilegeneration/test-fix.yaml")
+        config = gene.get_config("tilegeneration/test-fix.yaml")
+        self.assert_result_equals(
+            controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -118,7 +116,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/all/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -140,7 +138,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/line/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -162,7 +160,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/mapnik/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -184,7 +182,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="application/utfgrid" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/mapnik_grid/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -206,7 +204,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="application/utfgrid" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/mapnik_grid_drop/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -228,7 +226,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/point/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -250,7 +248,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/point_hash/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -272,7 +270,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/point_hash_no_meta/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -294,7 +292,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/point_px_buffer/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -316,7 +314,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/polygon/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>
@@ -338,7 +336,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/polygon2/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_01</TileMatrixSet>
       </TileMatrixSetLink>
@@ -454,8 +452,7 @@ class TestController(CompareCase):
     </TileMatrixSet>
   </Contents>
 </Capabilities>""",
-                ]
-            ],
+            True,
         )
 
     MULTIHOST_CAPABILITIES = (
@@ -967,23 +964,17 @@ class TestController(CompareCase):
     )
 
     def test_multi_host_capabilities(self) -> None:
-        self.assert_main_equals(
-            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml "
-            "--cache multi_host",
-            main_func=controller.main,
-            regex=True,
-            expected=[["/tmp/tiles/1.0.0/WMTSCapabilities.xml", self.MULTIHOST_CAPABILITIES]],
+        gene = TileGeneration("tilegeneration/test-fix.yaml")
+        self.assert_result_equals(
+            controller.get_wmts_capabilities(gene, "multi_host"), self.MULTIHOST_CAPABILITIES, True
         )
 
     def test_capabilities_slash(self) -> None:
-        self.assert_main_equals(
-            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-capabilities.yaml",
-            main_func=controller.main,
-            regex=True,
-            expected=[
-                [
-                    "/tmp/tiles/1.0.0/WMTSCapabilities.xml",
-                    r"""<\?xml version="1.0" encoding="UTF-8"\?>
+        gene = TileGeneration("tilegeneration/test-capabilities.yaml")
+        config = gene.get_config("tilegeneration/test-capabilities.yaml")
+        self.assert_result_equals(
+            controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -1031,7 +1022,7 @@ class TestController(CompareCase):
       <Format>image/png</Format>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/no_dim/default/"""
-                    """{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -1051,7 +1042,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/one/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -1077,7 +1068,7 @@ class TestController(CompareCase):
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/two/default/"""
-                    """{DATE}/{LEVEL}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{DATE}/{LEVEL}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -1109,17 +1100,13 @@ class TestController(CompareCase):
     </TileMatrixSet>
   </Contents>
 </Capabilities>""",
-                ]
-            ],
+            True,
         )
 
     def test_multi_url_capabilities(self) -> None:
-        self.assert_main_equals(
-            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-fix.yaml "
-            "--cache multi_url",
-            main_func=controller.main,
-            regex=True,
-            expected=[["/tmp/tiles/1.0.0/WMTSCapabilities.xml", self.MULTIHOST_CAPABILITIES]],
+        gene = TileGeneration("tilegeneration/test-fix.yaml")
+        self.assert_result_equals(
+            controller.get_wmts_capabilities(gene, "multi_url"), self.MULTIHOST_CAPABILITIES, True
         )
 
     CONFIG = """
@@ -1654,7 +1641,10 @@ metadata:
 openlayers:
   center_x: 600000
   center_y: 200000
+  zoom: 3
   srs: EPSG:21781
+  proj4js_def: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel
+    +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
 provider:
   contact:
     info:
@@ -1693,189 +1683,6 @@ sqs:
             expected=self.CONFIG,
         )
 
-    def test_openlayers(self) -> None:
-        html = """<!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
-    />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <title>OpenLayers test page</title>
-    <style>
-      html,
-      body,
-      #map {
-        width: 100%;
-        height: 100%;
-        margin: 0;
-      }
-      #attrs {
-        position: absolute;
-        zindex: 1000;
-        bottom: 1em;
-        left: 1em;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="map">
-      <div id="attrs"></div>
-    </div>
-    <script src="OpenLayers.js"></script>
-    <script src="wmts.js"></script>
-  </body>
-</html>
-"""
-        js = """var callback = function(infoLookup) {
-    var msg = "";
-    if (infoLookup) {
-        var info;
-        for (var idx in infoLookup) {
-            // idx can be used to retrieve layer from map.layers[idx]
-            info = infoLookup[idx];
-            if (info && info.data) {
-                msg += "[" + info.id + "]"
-                for (k in info.data) {
-                    msg += '<br />' + k + ': ' + info.data[k];
-                }
-            }
-        }
-    }
-    document.getElementById("attrs").innerHTML = msg;
-};
-
-map = new OpenLayers.Map({
-    div: "map",
-    projection: "EPSG:21781",
-    controls: [
-        new OpenLayers.Control.Navigation(),
-        new OpenLayers.Control.Zoom(),
-        new OpenLayers.Control.MousePosition(),
-        new OpenLayers.Control.LayerSwitcher(),
-        new OpenLayers.Control.Permalink(),
-        new OpenLayers.Control.UTFGrid({
-            callback: callback,
-            handlerMode: "hover",
-            handlerOptions: {
-                'delay': 0,
-                'pixelTolerance': 0
-            },
-            reset: function() {}
-        })
-    ],
-    center: [600000, 200000],
-    zoom: 0
-});
-
-var format = new OpenLayers.Format.WMTSCapabilities();
-OpenLayers.Request.GET({
-    url: "%s",
-    success: function(request) {
-        var doc = request.responseXML;
-        if (!doc || !doc.documentElement) {
-            doc = request.responseText;
-        }
-        var capabilities = format.read(doc);
-
-        map.addLayer(format.createLayer(capabilities, {
-            layer: "all",
-            maxExtent: [420000, 30000, 900000, 350000],
-            isBaseLayer: true
-        }));
-        map.addLayer(format.createLayer(capabilities, {
-            layer: "line",
-            maxExtent: [420000, 30000, 900000, 350000],
-            isBaseLayer: true
-        }));
-        map.addLayer(format.createLayer(capabilities, {
-            layer: "mapnik",
-            maxExtent: [420000, 30000, 900000, 350000],
-            isBaseLayer: true
-        }));
-        map.addLayer(format.createLayer(capabilities, {
-            layer: "mapnik_grid",
-            maxExtent: [420000, 30000, 900000, 350000],
-            isBaseLayer: false,
-            utfgridResolution: 16
-        }));
-        map.addLayer(format.createLayer(capabilities, {
-            layer: "mapnik_grid_drop",
-            maxExtent: [420000, 30000, 900000, 350000],
-            isBaseLayer: false,
-            utfgridResolution: 16
-        }));
-        map.addLayer(format.createLayer(capabilities, {
-            layer: "point",
-            maxExtent: [420000, 30000, 900000, 350000],
-            isBaseLayer: true
-        }));
-        map.addLayer(format.createLayer(capabilities, {
-            layer: "point_hash",
-            maxExtent: [420000, 30000, 900000, 350000],
-            isBaseLayer: true
-        }));
-        map.addLayer(format.createLayer(capabilities, {
-            layer: "point_hash_no_meta",
-            maxExtent: [420000, 30000, 900000, 350000],
-            isBaseLayer: true
-        }));
-        map.addLayer(format.createLayer(capabilities, {
-            layer: "point_px_buffer",
-            maxExtent: [420000, 30000, 900000, 350000],
-            isBaseLayer: true
-        }));
-        map.addLayer(format.createLayer(capabilities, {
-            layer: "polygon",
-            maxExtent: [420000, 30000, 900000, 350000],
-            isBaseLayer: true
-        }));
-        map.addLayer(format.createLayer(capabilities, {
-            layer: "polygon2",
-            maxExtent: [420000, 30000, 900000, 350000],
-            isBaseLayer: true
-        }));
-    },
-    failure: function() {
-        alert("Trouble getting capabilities doc");
-        OpenLayers.Console.error.apply(OpenLayers.Console, arguments);
-    }
-});"""
-        self.assert_main_equals(
-            cmd=".build/venv/bin/generate_controller --openlayers -c tilegeneration/test-fix.yaml",
-            main_func=controller.main,
-            expected=[
-                ["/tmp/tiles/index.html", html],
-                ["/tmp/tiles/wmts.js", js % "http://wmts1/tiles/1.0.0/WMTSCapabilities.xml"],
-            ],
-        )
-
-        self.assert_main_equals(
-            cmd=(
-                ".build/venv/bin/generate_controller --openlayers "
-                "-c tilegeneration/test-fix.yaml --cache multi_host"
-            ),
-            main_func=controller.main,
-            expected=[
-                ["/tmp/tiles/index.html", html],
-                ["/tmp/tiles/wmts.js", js % "http://wmts1/tiles/1.0.0/WMTSCapabilities.xml"],
-            ],
-        )
-
-        self.assert_main_equals(
-            cmd=(
-                ".build/venv/bin/generate_controller --openlayers "
-                "-c tilegeneration/test-fix.yaml --cache multi_url"
-            ),
-            main_func=controller.main,
-            expected=[
-                ["/tmp/tiles/index.html", html],
-                ["/tmp/tiles/wmts.js", js % "http://wmts1/tiles/1.0.0/WMTSCapabilities.xml"],
-            ],
-        )
-
     def test_quote(self) -> None:
         from tilecloud_chain import quote
 
@@ -1898,14 +1705,11 @@ OpenLayers.Request.GET({
             tiles=[("point", 0), ("line", 0), ("line", 2), ("polygon", 0), ("all", 0), ("all", 2)],
         )
 
-        self.assert_main_equals(
-            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-legends.yaml",
-            main_func=controller.main,
-            regex=True,
-            expected=[
-                [
-                    "/tmp/tiles/1.0.0/WMTSCapabilities.xml",
-                    r"""<\?xml version="1.0" encoding="UTF-8"\?>
+        gene = TileGeneration("tilegeneration/test-legends.yaml")
+        config = gene.get_config("tilegeneration/test-legends.yaml")
+        self.assert_result_equals(
+            controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
     xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -1950,9 +1754,9 @@ OpenLayers.Request.GET({
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/all/default/legend0.png" """
-                    """width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
+            """width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/all/default/legend2.png" """
-                    """width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
+            """width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -1964,7 +1768,7 @@ OpenLayers.Request.GET({
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/all/default/"""
-                    r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -1976,9 +1780,9 @@ OpenLayers.Request.GET({
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend0.png" """
-                    r"""width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
+            r"""width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend2.png" """
-                    r"""width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
+            r"""width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -1990,7 +1794,7 @@ OpenLayers.Request.GET({
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/line/default/"""
-                    r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -2002,7 +1806,7 @@ OpenLayers.Request.GET({
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/point/default/legend0.png" """
-                    """width="[0-9]*" height="[0-9]*" />
+            """width="[0-9]*" height="[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -2014,7 +1818,7 @@ OpenLayers.Request.GET({
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/point/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -2026,7 +1830,7 @@ OpenLayers.Request.GET({
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
         <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/polygon/default/legend0.png" """
-                    """width="[0-9]*" height="[0-9]*" />
+            """width="[0-9]*" height="[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -2038,7 +1842,7 @@ OpenLayers.Request.GET({
       </Dimension>
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/polygon/default/"""
-                    """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
       </TileMatrixSetLink>
@@ -2097,6 +1901,5 @@ OpenLayers.Request.GET({
     </TileMatrixSet>
   </Contents>
 </Capabilities>""",
-                ]
-            ],
+            True,
         )

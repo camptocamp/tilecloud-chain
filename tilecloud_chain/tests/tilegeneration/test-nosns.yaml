@@ -31,12 +31,10 @@ caches:
     type: filesystem
     http_url: http://wmts1/tiles/
     folder: /tmp/tiles
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   multi_host:
     type: filesystem
     http_url: http://%(host)s/tiles/
     folder: /tmp/tiles
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
     hosts:
       - wmts1
       - wmts2
@@ -48,24 +46,20 @@ caches:
       - http://wmts2/tiles/
       - http://wmts3/tiles/
     folder: /tmp/tiles
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   mbtiles:
     type: mbtiles
     http_url: http://wmts1/tiles/
     folder: /tmp/tiles/mbtiles
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   bsddb:
     type: bsddb
     http_url: http://wmts1/tiles/
     folder: /tmp/tiles/bsddb
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   s3:
     type: s3
     http_url: https://%(host)s/%(bucket)s/%(folder)s/
     host: s3-eu-west-1.amazonaws.com
     bucket: tiles
     folder: tiles
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
 
 defaults:
   all_layer: &all_layer

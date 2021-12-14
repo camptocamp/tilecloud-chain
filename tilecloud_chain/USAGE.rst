@@ -510,25 +510,6 @@ or ``AZURE_STORAGE_ACCOUNT_URL`` if you run your container on Azure.
 Other related configuration
 ---------------------------
 
-OpenLayers pink tiles
-~~~~~~~~~~~~~~~~~~~~~
-
-To avoid the OpenLayers red tiles on missing empty tiles we can add the following CSS rule:
-
-.. code:: css
-
-    .olImageLoadError {
-        display: none;
-    }
-
-To completely hide the missing tiles, useful for a transparent layer, or for an opaque layer:
-
-.. code:: css
-
-    .olImageLoadError {
-        background-color: white;
-    }
-
 Configure the server
 --------------------
 
@@ -598,7 +579,7 @@ Commands
 Available commands
 ~~~~~~~~~~~~~~~~~~
 
--  ``generate-controller`` generate the annex files like capabilities, legend, OpenLayers test page.
+-  ``generate-controller`` generate the annex files like legend.
 -  ``generate-tiles`` generate the tiles.
 -  ``generate-copy`` copy the tiles from a cache to an other.
 -  ``generate-process`` process the tiles using a configured process.
@@ -664,20 +645,6 @@ Generate a tiles in a different cache than the default one:
 
     generate-tiles --cache <a_cache>
 
-And don't forget to generate the WMTS Capabilities:
-
-.. prompt:: bash
-
-    generate-controller --capabilities
-
-OpenLayers test page
-~~~~~~~~~~~~~~~~~~~~
-
-To generate a test page use:
-
-.. prompt:: bash
-
-    generate-controller --openlayers
 
 Explain cost
 ------------
@@ -756,9 +723,36 @@ Please use the ``--debug`` to report issue.
 Environment variables
 ---------------------
 
--  ``TILE_NB_THREAD``: Default is ``2``, The number of thread used to generate the tiles (If we use meta tiles)
--  ``METATILE_NB_THREAD``: Default is ``25``, The number of thread used to generate the meta tiles (If we use
-   meta tiles, also to generate the tiles)
--  ``SERVER_NB_THREAD``: Default to ``10``, The number of thread used to generate the meta tiles in the server.
--  ``TILE_QUEUE_SIZE``: Default to ``2``, The queue size just after the Redis queue
--  ``TILE_CHUNK_SIZE``: Default is ``1``, The chunk size to process the tiles after the meta tiles.
+- ``TILEGENERATION_CONFIGFILE``: Default to ``/etc/tilegeneration/config.yaml``, the all in one
+  configuration file to use.
+- ``TILEGENERATION_MAIN_CONFIGFILE``: Default to ``/etc/tilegeneration/config.yaml``, the main
+  configuration file to use.
+- ``TILEGENERATION_HOSTSFILE``: Default to ``/etc/tilegeneration/hosts.yaml``, the hosts to config file
+  mapping file to use.
+- ``TILE_NB_THREAD``: Default is ``2``, the number of thread used to generate the tiles (If we use meta tiles)
+- ``METATILE_NB_THREAD``: Default is ``25``, the number of thread used to generate the meta tiles (If we use
+  meta tiles, also to generate the tiles)
+- ``SERVER_NB_THREAD``: Default to ``10``, the number of thread used to generate the meta tiles in the server.
+- ``TILE_QUEUE_SIZE``: Default to ``2``, the queue size just after the Redis queue
+- ``TILE_CHUNK_SIZE``: Default to ``1``, the chunk size to process the tiles after the meta tiles.
+- ``TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH``: Default to ``1000``, the maximum number of character of the
+  output to be display in the admin interface.
+- ``LOG_TYPE``: Default to ``console``, can also be ``json`` to log in JSON for ``Logstash``.
+- ``TILECLOUD_CHAIN_LOG_LEVEL`` Default to ``INFO``,
+  ``TILECLOUD_LOG_LEVEL`` Default to ``INFO``,
+  ``C2CWSGI_LOG_LEVEL`` Default to ``WARN``,
+  ``OTHER_LOG_LEVEL`` Default to ``WARN``, the logging level of deferent components, can be ``DEBUG``,
+  ``INFO``, ``WARN``, ``ERROR`` or ``CRITICAL``.
+- ``TILE_SERVER_LOGLEVEL`` Default to ``quiet`` the log level used in the server part.
+- ``TILE_MAPCACHE_LOGLEVEL``Default to ``verbose`` the log level used in the internal mapcache.
+- ``DEVELOPMENT``: Default to ``0`` set it to ``1`` to have the Pyramid development options.
+- ``VISIBLE_ENTRY_POINT`` Default to ``/tiles/`` the entrypoint path.
+
+
+Admin and test pages
+--------------------
+
+On the URL `<base URL>/admin/` you can see the status of the generation, a tool to generate the tiles, and a link
+to a test page.
+
+Beware, the test page assumes we have configured only one grid.
