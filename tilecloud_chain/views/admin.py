@@ -25,7 +25,6 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from io import StringIO
 import logging
 import os
 import shlex
@@ -60,17 +59,15 @@ class Admin:
     def index(self) -> Dict[str, Any]:
         """Get the admin index page."""
         assert self.gene
+        config = self.gene.get_host_config(self.request.host)
+        server_config = config.config.get("server", {})
         return {
             "secret": self.request.params.get("secret"),
             "auth": is_auth(self.request),
-            "commands": self.gene.get_host_config(self.request.host)
-            .config.get("server", {})
-            .get("predefined_commands", []),
+            "commands": server_config.get("predefined_commands", []),
             "status": get_status(self.gene),
             "run_url": self.request.route_url("admin_run"),
-            "static_path": self.gene.get_host_config(self.request.host)
-            .config.get("server", {})
-            .get("static_path", "static"),
+            "static_path": server_config.get("static_path", "static"),
         }
 
     @view_config(route_name="admin_run", renderer="fast_json")  # type: ignore
@@ -137,20 +134,24 @@ class Admin:
         env.update(os.environ)
         env["FRONTEND"] = "noninteractive"
 
-        stdout = StringIO()
-        stderr = StringIO()
         completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check
             final_command,
-            stdout=stdout,
-            stderr=stderr,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             env=env,
         )
+
         if completed_process.returncode != 0:
             LOG.warning(
                 "The command `%s` exited with an error code: %s\nstdout:\n%s\nstderr:\n%s",
                 display_command,
                 completed_process.returncode,
-                stdout.getvalue(),
-                stderr.getvalue(),
+                completed_process.stdout.decode(),
+                completed_process.stderr.decode(),
             )
-        return {"stdout": stdout.getvalue(), "stderr": stderr.getvalue(), "returncode": completed_process}
+
+        return {
+            "stdout": completed_process.stdout.decode(),
+            "stderr": completed_process.stderr.decode(),
+            "returncode": completed_process.returncode,
+        }

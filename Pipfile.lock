@@ -24,17 +24,27 @@
         },
         "azure-core": {
             "hashes": [
-                "sha256:18d2a6cd3b7391489f005775fe69e4d0870f9384b755e45185efd45c050e2306",
-                "sha256:4fbbe8b867ef077df77614b86b7927e4d87aa7a0bd54e771d9ba14f48dae2c4b"
+                "sha256:3d70e9ec64de92dfae330c15bc69085caceb2d83813ef6c01cc45326f2a4be83",
+                "sha256:88d2db5cf9a135a7287dc45fdde6b96f9ca62c9567512a3bb3e20e322ce7deb2"
             ],
-            "version": "==1.19.0"
+            "version": "==1.21.1"
+        },
+        "azure-identity": {
+            "hashes": [
+                "sha256:454e16ed1152b4fd3fb463f4b4e2f7a3fc3a862b0ca28010bff6d5c6b2b0c50f",
+                "sha256:7f22cd0c7a9b92ed297dd67ae79d9bb9a866e404061c02cec709ad10c4c88e19"
+            ],
+            "version": "==1.7.1"
         },
         "azure-storage-blob": {
             "hashes": [
                 "sha256:859195b4850dcfe77ffafbe53500abb74b001e52e77fe6d9492fa73639a22127",
-                "sha256:cff66a115c73c90e496c8c8b3026898a3ce64100840276e9245434e28a864225"
+                "sha256:cff66a115c73c90e496c8c8b3026898a3ce64100840276e9245434e28a864225",
+                "sha256:e74c2c49fd04b80225f5b9734f1dbd417d89f280abfedccced3ac21509e1659d",
+                "sha256:eb37b50ddfb6e558b29f6c8c03b0666514e55d6170bf4624e7261a3af93c6401"
             ],
-            "version": "==12.9.0"
+            "index": "pypi",
+            "version": "==12.8.1"
         },
         "boto3": {
             "hashes": [
@@ -299,6 +309,13 @@
             "index": "pypi",
             "version": "==0.9.4"
         },
+        "jwt": {
+            "hashes": [
+                "sha256:61c9170f92e736b530655e75374681d4fcca9cfa8763ab42be57353b2b203494"
+            ],
+            "index": "pypi",
+            "version": "==1.3.1"
+        },
         "mako": {
             "hashes": [
                 "sha256:169fa52af22a91900d852e937400e79f535496191c63712e3b9fda5a9bed6fc3",
@@ -366,6 +383,20 @@
             ],
             "markers": "python_version >= '3.6'",
             "version": "==2.0.1"
+        },
+        "msal": {
+            "hashes": [
+                "sha256:240fb04dba46a27fd6a3178db8334412d0d02e0be85166f9e05bb45d03399084",
+                "sha256:a421a43413335099228f1d9ad93f7491d7c7c40044108290e4923fe58f41a332"
+            ],
+            "version": "==1.16.0"
+        },
+        "msal-extensions": {
+            "hashes": [
+                "sha256:89df9c0237e1adf16938fa58575db59c2bb9de04a83ffb0452c8dfc79031f717",
+                "sha256:d9029af70f2cbdc5ad7ecfed61cb432ebe900484843ccf72825445dbfe62d311"
+            ],
+            "version": "==0.3.1"
         },
         "msrest": {
             "hashes": [
@@ -765,10 +796,10 @@
         },
         "tilecloud": {
             "hashes": [
-                "sha256:f7ede89f4fd97ba32e51823b038a44f0aecd5f20f557f5a271bb2d051a758732"
+                "sha256:31e9da7b951b8003217c879427d8c89f194e3a716a19a40ead7f55bcc24ceec9"
             ],
             "index": "pypi",
-            "version": "==1.6.5"
+            "version": "==1.7.0"
         },
         "transaction": {
             "hashes": [
