@@ -3,6 +3,9 @@ name = "pypi"
 url = "https://pypi.org/simple/"
 verify_ssl = true
 
+[requires]
+python_version = "3.8"
+
 [packages]
 c2cwsgiutils = "==4.1.4"
 pyramid-mako = "==1.1.0"
@@ -25,11 +28,12 @@ cornice = "==6.0.0"  # c2cwsgiutils
 jsonschema = "==4.0.1"
 pyramid = "==2.0"
 jsonschema-gentypes = "==0.9.4"
+azure-storage-blob = "==12.8.1"
 
 [dev-packages]
 coverage = "==6.0.1"
 testfixtures = "==6.18.3"
 pytest = "==6.2.5"
-prospector = {extras = ["with_mypy", "with_bandit"], version = "==1.5.1"}
+prospector = {extras = ["with_mypy", "with_bandit"], version = "==1.5.3.1"}
 types-redis = "==3.5.9"
 types-requests = "==2.25.9"
