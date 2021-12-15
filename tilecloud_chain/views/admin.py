@@ -151,7 +151,19 @@ class Admin:
             )
 
         return {
-            "stdout": completed_process.stdout.decode(),
-            "stderr": completed_process.stderr.decode(),
+            "stdout": _limit_length(
+                completed_process.stdout.decode(),
+                int(os.environ.get("TILECLOUD_CHAN_MAX_OUTPUT_LENGTH", 1000)),
+            ),
+            "stderr": _limit_length(
+                completed_process.stderr.decode(),
+                int(os.environ.get("TILECLOUD_CHAN_MAX_OUTPUT_LENGTH", 1000)),
+            ),
             "returncode": completed_process.returncode,
         }
+
+
+def _limit_length(string: str, max_length: int = 1000) -> str:
+    if len(string) > max_length:
+        return string[: max_length - 3] + "\n..."
+    return string
