@@ -31,7 +31,7 @@ jsonschema-gentypes = "==0.9.4"
 azure-storage-blob = "==12.8.1"
 
 [dev-packages]
-coverage = "==6.0.1"
+coverage = "==6.2"
 testfixtures = "==6.18.3"
 pytest = "==6.2.5"
 prospector = {extras = ["with_mypy", "with_bandit"], version = "==1.5.3.1"}
