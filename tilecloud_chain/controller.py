@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 def main() -> None:
-    """Generate the contextual file like the capabilities, the legends, the OpenLayers example."""
+    """Generate the contextual file like the legends."""
     try:
         stats.init_backends({})
         parser = ArgumentParser(
@@ -44,27 +44,12 @@ def main() -> None:
             "--status", default=False, action="store_true", help="Display the SQS queue status and exit"
         )
         parser.add_argument(
-            "--capabilities",
-            "--generate-wmts-capabilities",
-            default=False,
-            action="store_true",
-            help="Generate the WMTS Capabilities",
-        )
-        parser.add_argument(
             "--legends",
             "--generate-legend-images",
             default=False,
             action="store_true",
             dest="legends",
             help="Generate the legend images",
-        )
-        parser.add_argument(
-            "--openlayers",
-            "--generate-openlayers-testpage",
-            default=False,
-            action="store_true",
-            dest="openlayers",
-            help="Generate openlayers test page",
         )
         parser.add_argument(
             "--dump-config",
@@ -96,11 +81,6 @@ def main() -> None:
         if options.legends:
             _generate_legend_images(gene)
 
-        if options.capabilities:
-            _generate_wmts_capabilities(gene)
-
-        if options.openlayers:
-            _generate_openlayers(gene)
     except SystemExit:
         raise
     except:  # pylint: disable=bare-except
@@ -324,21 +304,6 @@ def _fill_legend(
                 previous_resolution = resolution
 
 
-def _generate_wmts_capabilities(gene: TileGeneration) -> None:
-    assert gene.config_file
-    config = gene.get_config(gene.config_file)
-    cache = cast(tilecloud_chain.configuration.CacheS3, config.config["caches"][gene.options.cache])
-
-    capabilities = get_wmts_capabilities(gene, gene.options.cache, True)
-    assert capabilities is not None
-    _send(
-        capabilities,
-        cache.get("wmtscapabilities_file", "1.0.0/WMTSCapabilities.xml"),
-        "application/xml",
-        cache,
-    )
-
-
 def _generate_legend_images(gene: TileGeneration) -> None:
     assert gene.config_file
     config = gene.get_config(gene.config_file)
@@ -406,62 +371,6 @@ def _get_resource(resource: str) -> bytes:
     path = os.path.join(os.path.dirname(__file__), resource)
     with open(path, "rb") as f:
         return f.read()
-
-
-def _generate_openlayers(gene: TileGeneration) -> None:
-    assert gene.config_file
-    config = gene.get_config(gene.config_file)
-    cache = config.config["caches"][gene.options.cache]
-
-    http_url = ""
-    if "http_url" in cache and cache["http_url"]:
-        if "hosts" in cache and cache["hosts"]:
-            cc = copy(cache)
-            cc["host"] = cache["hosts"][0]  # type: ignore
-            http_url = cache["http_url"] % cc
-        else:
-            http_url = cache["http_url"] % cache
-    if "http_urls" in cache and cache["http_urls"]:
-        http_url = cache["http_urls"][0] % cache
-
-    data = pkgutil.get_data("tilecloud_chain", "openlayers.js")
-    assert data
-    js = jinja2_template(
-        data.decode("utf-8"),
-        srs=config.config["openlayers"]["srs"],
-        center_x=config.config["openlayers"]["center_x"],
-        center_y=config.config["openlayers"]["center_y"],
-        http_url=http_url
-        + (
-            gene.get_main_config().config["server"].get("wmts_path", "wmts") + "/"
-            if "server" in gene.get_main_config().config
-            else ""
-        ),
-        layers=[
-            {
-                "name": name,
-                "grid": layer["type"] == "mapnik"
-                and (layer.get("output_format", "png") == tilecloud_chain.configuration.OUTPUTFORMAT_GRID),
-                "maxExtent": config.config["grids"][layer["grid"]]["bbox"],
-                "resolution": layer.get("resolution", 4)
-                if layer["type"] == "mapnik"
-                and layer.get("output_format", "png") == tilecloud_chain.configuration.OUTPUTFORMAT_GRID
-                else None,
-            }
-            for name, layer in sorted(config.config["layers"].items())
-            if config.config["grids"][layer["grid"]]["srs"] == config.config["openlayers"]["srs"]
-        ],
-        sorted=sorted,
-    )
-
-    html = pkgutil.get_data("tilecloud_chain", "openlayers.html")
-    assert html
-    _send(html, "index.html", "text/html", cache)
-    _send(js, "wmts.js", "application/javascript", cache)
-    _send(_get_resource("OpenLayers.js"), "OpenLayers.js", "application/javascript", cache)
-    _send(_get_resource("OpenLayers-style.css"), "theme/default/style.css", "text/css", cache)
-    _send(_get_resource("layer-switcher-maximize.png"), "img/layer-switcher-maximize.png", "image/png", cache)
-    _send(_get_resource("layer-switcher-minimize.png"), "img/layer-switcher-minimize.png", "image/png", cache)
 
 
 def status(gene: TileGeneration) -> None:

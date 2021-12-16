@@ -27,9 +27,11 @@
 
 import logging
 import os
+import re
 import shlex
 import subprocess  # nosec
 from typing import Any, Dict
+from urllib.parse import urljoin
 
 from c2cwsgiutils.auth import auth_view, is_auth
 import pyramid.httpexceptions
@@ -67,7 +69,7 @@ class Admin:
             "commands": server_config.get("predefined_commands", []),
             "status": get_status(self.gene),
             "run_url": self.request.route_url("admin_run"),
-            "static_path": server_config.get("static_path", "static"),
+            "admin_path": server_config.get("admin_path", "admin"),
         }
 
     @view_config(route_name="admin_run", renderer="fast_json")  # type: ignore
@@ -106,7 +108,6 @@ class Admin:
                 [
                     "--layer",
                     "--get-hash",
-                    "--openlayers",
                     "--generate-legend-images",
                     "--dump-config",
                     "--get-bbox",
@@ -151,7 +152,41 @@ class Admin:
             )
 
         return {
-            "stdout": completed_process.stdout.decode(),
-            "stderr": completed_process.stderr.decode(),
+            "stdout": _limit_length(
+                completed_process.stdout.decode(),
+                int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
+            ),
+            "stderr": _limit_length(
+                completed_process.stderr.decode(),
+                int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
+            ),
             "returncode": completed_process.returncode,
         }
+
+    @view_config(route_name="admin_test", renderer="tilecloud_chain:templates/openlayers.html")  # type: ignore
+    def admin_test(self) -> Dict[str, Any]:
+        assert self.gene
+        config = self.gene.get_host_config(self.request.host)
+        return {
+            "proj4js_def": re.sub(
+                r"\s+",
+                " ",
+                config.config["openlayers"]["proj4js_def"],
+            ),
+            "srs": config.config["openlayers"]["srs"],
+            "center_x": config.config["openlayers"]["center_x"],
+            "center_y": config.config["openlayers"]["center_y"],
+            "zoom": config.config["openlayers"]["zoom"],
+            "http_url": urljoin(
+                self.request.current_route_url(),
+                "/" + config.config["server"].get("wmts_path", "wmts") + "/"
+                if "server" in config.config
+                else "/",
+            ),
+        }
+
+
+def _limit_length(string: str, max_length: int = 1000) -> str:
+    if len(string) > max_length:
+        return string[: max_length - 3] + "\n..."
+    return string

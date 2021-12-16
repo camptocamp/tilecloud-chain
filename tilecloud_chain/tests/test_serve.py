@@ -180,18 +180,6 @@ class TestServe(CompareCase):
 
   """,
             )
-            # use delete to don't delete the repository
-            self.assert_tiles_generated_deleted(
-                cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-nosns.yaml",
-                main_func=controller.main,
-                directory="/tmp/tiles/",
-                tiles_pattern="1.0.0/%s",
-                tiles=[
-                    ("WMTSCapabilities.xml"),
-                    ("point_hash/default/2012/swissgrid_5/1/11/14.png"),
-                    ("point_hash/default/2012/swissgrid_5/1/15/8.png"),
-                ],
-            )
 
             server.pyramid_server = None
             server.tilegeneration = None
@@ -715,14 +703,6 @@ class TestServe(CompareCase):
 
   """,
             )
-            # use delete to don't delete the repository
-            self.assert_tiles_generated_deleted(
-                cmd=".build/venv/bin/generate_controller -d --capabilities -c tilegeneration/test-serve.yaml",
-                main_func=controller.main,
-                directory="/tmp/tiles/mbtiles/",
-                tiles_pattern="1.0.0/%s",
-                tiles=[("WMTSCapabilities.xml"), ("point_hash/default/2012/swissgrid_5.png.mbtiles")],
-            )
 
             server.pyramid_server = None
             server.tilegeneration = None
@@ -775,15 +755,6 @@ class TestServe(CompareCase):
                 regex=True,
             )
 
-            request.matchdict["path"] = ["static", "1.0.0", "WMTSCapabilities.xml"]
-            PyramidView(request)()
-            self.assertEqual(request.response.headers["Content-Type"], "application/xml")
-            self.assert_result_equals(
-                request.response.body.decode("utf-8"),
-                CAPABILITIES,
-                regex=True,
-            )
-
             os.environ["TILE_NB_THREAD"] = tile_mbt
             os.environ["METATILE_NB_THREAD"] = metatile_mbt
 
@@ -813,14 +784,6 @@ class TestServe(CompareCase):
   Size per tile: 4[0-9][0-9] o
 
   """,
-            )
-            # use delete to don't delete the repository
-            self.assert_tiles_generated_deleted(
-                cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-bsddb.yaml",
-                main_func=controller.main,
-                directory="/tmp/tiles/bsddb/",
-                tiles_pattern="1.0.0/%s",
-                tiles=[("WMTSCapabilities.xml"), ("point_hash/default/2012/swissgrid_5.png.bsddb")],
             )
 
             server.pyramid_server = None
@@ -998,14 +961,6 @@ Time per tile: [0-9]+ ms
 Size per tile: 4[0-9][0-9] o
 
 """,
-        )
-        # use delete to don't delete the repository
-        self.assert_tiles_generated_deleted(
-            cmd=".build/venv/bin/generate_controller --capabilities -c tilegeneration/test-serve.yaml",
-            main_func=controller.main,
-            directory="/tmp/tiles/mbtiles/",
-            tiles_pattern="1.0.0/%s",
-            tiles=[("WMTSCapabilities.xml"), ("point_hash/default/2012/swissgrid_5.png.mbtiles")],
         )
 
         server.pyramid_server = None

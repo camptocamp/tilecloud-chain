@@ -1463,6 +1463,12 @@
           "pattern": "^EPSG:[0-9]+$",
           "default": "EPSG:2056"
         },
+        "proj4js_def": {
+          "title": "The proj4js definition",
+          "description": "The proj4js definition, get it from https://epsg.io/",
+          "type": "string",
+          "default": "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"
+        },
         "center_x": {
           "title": "Center x",
           "description": "The center easting",
@@ -1474,6 +1480,12 @@
           "description": "The center northing",
           "type": "number",
           "default": 1200000
+        },
+        "zoom": {
+          "title": "Map initial zoom",
+          "description": "The initial zoom",
+          "type": "number",
+          "default": 3
         }
       }
     },

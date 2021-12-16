@@ -551,8 +551,10 @@ class Metadata(TypedDict, total=False):
 # Configuration used to generate the OpenLayers example page
 class Openlayers(TypedDict, total=False):
     srs: str
+    proj4js_def: str
     center_x: Union[int, float]
     center_y: Union[int, float]
+    zoom: Union[int, float]
 
 
 # Output format
