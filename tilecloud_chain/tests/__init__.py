@@ -194,3 +194,19 @@ class CompareCase(TestCase):
 
     def assert_files_generated(self, **kargs):
         self.assert_tiles_generated(tiles_pattern="%s", **kargs)
+
+
+class MatchRegex:
+    """Assert that a given string meets some expectations."""
+
+    def __init__(self, regex) -> None:
+        self._regex = re.compile(regex)
+
+    def __eq__(self, other: str) -> bool:
+        return self._regex.match(other) is not None
+
+    def match(self, other: str) -> re.Match:
+        return self._regex.match(other)
+
+    def __repr__(self):
+        return self._regex.pattern

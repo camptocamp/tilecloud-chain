@@ -46,7 +46,7 @@ import psycopg2
 from ruamel.yaml import YAML  # type: ignore
 from shapely.geometry.base import BaseGeometry
 from shapely.geometry.polygon import Polygon
-from shapely.ops import cascaded_union
+from shapely.ops import unary_union
 from shapely.wkb import loads as loads_wkb
 
 from tilecloud import BoundingPyramid, Tile, TileCoord, TileGrid, TileStore, consume
@@ -1017,7 +1017,7 @@ class TileGeneration:
                     logger.info("Execute SQL: %s.", sql)
                     cursor.execute(sql)
                     geom_list = [loads_wkb(bytes(r[0])) for r in cursor.fetchall()]
-                    geom = cascaded_union(geom_list)
+                    geom = unary_union(geom_list)
                     if extent:
                         geom = geom.intersection(
                             Polygon(
