@@ -4,7 +4,7 @@ import sys
 
 import psycopg2.sql
 from shapely.geometry import MultiPolygon, Polygon
-from shapely.ops import cascaded_union
+from shapely.ops import unary_union
 
 from tilecloud.grid.quad import QuadTileGrid
 from tilecloud_chain import parse_tilecoord
@@ -127,7 +127,7 @@ def main() -> None:
             cursor.close()
             connection.close()
             sys.exit(0)
-        geom = cascaded_union(geoms)
+        geom = unary_union(geoms)
         if geom.geom_type == "Polygon":
             geom = MultiPolygon((geom,))
 
