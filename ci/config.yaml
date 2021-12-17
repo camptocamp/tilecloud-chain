@@ -1,6 +1,9 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/camptocamp/c2cciutils/master/c2cciutils/schema.json
 
 publish:
+  docker:
+    images:
+      - name: camptocamp/tilecloud-chain
   pypi:
     versions:
       - version_tag
