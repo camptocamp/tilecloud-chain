@@ -30,7 +30,7 @@ class Argument(TypedDict, total=False):
 
 # AWS region
 #
-# The region, default to 'eu-west-1'
+# The region, default is 'eu-west-1'
 #
 # pattern: ^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$
 AwsRegion = str
@@ -105,7 +105,7 @@ class CacheFilesystemTyped(TypedDict, total=False):
 
 # Cache folder
 #
-# The root folder of the cache, default to ''
+# The root folder of the cache, default is ''
 #
 # default:
 CacheFolder = str
@@ -412,7 +412,7 @@ class LayerMapnik(TypedDict, total=False):
 
 # Layer meta
 #
-# Used meta-tiles, default to False, see see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles
+# Use meta-tiles, default is False, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles
 #
 # default: False
 LayerMeta = bool
@@ -420,7 +420,7 @@ LayerMeta = bool
 
 # Layer meta buffer
 #
-# The meta-tiles buffer in pixels, default to 128
+# The meta-tiles buffer in pixels, default is 128
 #
 # default: 128
 LayerMetaBuffer = int
@@ -428,7 +428,7 @@ LayerMetaBuffer = int
 
 # Layer meta size
 #
-# The meta-tile size in tiles, default to 5
+# The meta-tile size in tiles, default is 5
 #
 # default: 5
 LayerMetaSize = int
@@ -450,7 +450,7 @@ LayerMinResolutionSeed = Union[int, float]
 
 # Layer pixel buffer
 #
-# The buffer in pixel used to calculate geometry intersection, default to 0
+# The buffer in pixel used to calculate geometry intersection, default is 0
 #
 # default: 0
 LayerPixelBuffer = int
@@ -559,7 +559,7 @@ class Openlayers(TypedDict, total=False):
 
 # Output format
 #
-# The Mapnik output format, default to 'png'
+# The Mapnik output format, default is 'png'
 OutputFormat = Union[Literal["png"], Literal["png256"], Literal["jpeg"], Literal["grid"]]
 # The values for the enum
 OUTPUTFORMAT_PNG: Literal["png"] = "png"
