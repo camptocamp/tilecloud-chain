@@ -6,14 +6,14 @@ updates:
     directory: '/'
     schedule:
       interval: daily
-      time: '02:00'
     ignore:
       - dependency-name: none
+    allow:
+      - dependency-type: all
 
   - package-ecosystem: docker
     directory: '/'
     schedule:
       interval: weekly
-      time: '02:00'
     ignore:
       - dependency-name: none
