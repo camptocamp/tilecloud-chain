@@ -283,8 +283,8 @@ The process is a set of names processes, and each one has a list of commands dec
     process:  # root process config
         optipng:  # the process command
         -   cmd: optipng %(args)s -q -zc9 -zm8 -zs3 -f5 -o %(out)s %(in)s  # the command line
-            need_out: true  # if false the command rewrite the input file, default to false
-            arg:  # argument used with the different log switches, all default to ''
+            need_out: true  # if false the command rewrite the input file, default is false
+            arg:  # argument used with the different log switches, in all cases default is ''
                 default: '-q' # the argument used by default
                 quiet: '-q' # the argument used in quiet mode
                 verbose: '-v' # the argument used in verbose mode
@@ -392,7 +392,7 @@ The cache configuration is like this:
         type: s3
         # the s3 bucket name
         bucket: tiles
-        # the used folder in the bucket [default to '']
+        # the used folder in the bucket [default is '']
         folder: ''
         # for GetCapabilities
         http_url: https://%(host)s/%(bucket)s/%(folder)s/
@@ -492,7 +492,7 @@ The cache configuration is like this:
         type: azure
         # the Azure container name
         container: tiles
-        # the used folder in the container [default to '']
+        # the used folder in the container [default is '']
         folder: ''
         # for GetCapabilities
         http_url: https://%(host)s/%(bucket)s/%(folder)s/
@@ -518,13 +518,13 @@ The server can be configure as it:
 .. code:: yaml
 
     server:
-        layers: a_layer # Restrict to serve an certain number of layers [default to all]
+        layers: a_layer # Restrict to serve an certain number of layers [default is all]
         cache: mbtiles # The used cache [default use generation/default_cache]
-        # the URL without location to MapCache, [default to http://localhost/]
+        # the URL without location to MapCache, [default is http://localhost/]
         mapcache_base: http://localhost/
-        mapcache_headers: # headers, can be used to access to an other Apache vhost [default to {}]
+        mapcache_headers: # headers, can be used to access to an other Apache vhost [default is {}]
             Host: localhost
-        geoms_redirect: true # use the geoms to redirect to MapCache [default to false]
+        geoms_redirect: true # use the geoms to redirect to MapCache [default is false]
         # allowed extension in the static path (default value), not used for s3.
         static_allow_extension: [jpeg, png, xml, js, html, css]
 
