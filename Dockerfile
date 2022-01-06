@@ -1,6 +1,9 @@
 FROM osgeo/gdal:ubuntu-small-3.4.1 as base
 LABEL maintainer "info@camptocamp.org"
 
+# Workaround for setuptools >= 60.0.0
+ENV SETUPTOOLS_USE_DISTUTILS=stdlib
+
 RUN \
   apt update && \
   DEBIAN_FRONTEND=noninteractive apt install --assume-yes --no-install-recommends \
