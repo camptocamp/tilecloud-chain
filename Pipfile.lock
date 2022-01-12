@@ -48,19 +48,19 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:2c7eacd3edd38ec89456841edecd9c29382372180b675e43e22d16df6a582a4a",
-                "sha256:b427f103f7d1488ad360b665687a032741d0a0c9ebe6f1a40dcdda95b646859a"
+                "sha256:1e72294b042651ab27a3b6a9eea2810fc8faab5be52b0876f9f5b55f5fd9e101",
+                "sha256:4110e8a1790842d1f818363b83c5f72dea4bdd980c46df1540814c4a79d72884"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==1.20.32"
+            "version": "==1.20.33"
         },
         "botocore": {
             "hashes": [
-                "sha256:49c39a4e0ece6e486aefa23d7c96c5f9a4c41a6ceab3cc41b157e8b5bea749e3",
-                "sha256:a33e6b30c5d64156d10ec6986fc96dfdf5c723ad7dc83e0d60af6407192b16b4"
+                "sha256:8faeda0da14a3cb5df8005052527cc0263181adad6bdbfedbe20079c72973c2c",
+                "sha256:9be1ea775e6de420a5873dff42108a1843e9137a52ef98c926dad56a8152ef2f"
             ],
-            "markers": "python_version >= '3.6'",
-            "version": "==1.23.32"
+            "index": "pypi",
+            "version": "==1.23.33"
         },
         "bottle": {
             "hashes": [
@@ -1582,10 +1582,10 @@
         },
         "types-urllib3": {
             "hashes": [
-                "sha256:580c784925d5902d5fb3b67c0c1019b3d20b8f2d54050f0bb07862d52b93ad03",
-                "sha256:e0c57152d7efc408a877adfc9073316dcd3e3ffb39962e90544f7597696c0d7c"
+                "sha256:35c17be09e1bcef3b1e2101c5172b97cdb78330915973c741f4c1979d8405ef9",
+                "sha256:61a0099899b1472bfbae8ee6ad196950aac46705b99216188aa962ad1e514ed5"
             ],
-            "version": "==1.26.3"
+            "version": "==1.26.4"
         },
         "typing-extensions": {
             "hashes": [
