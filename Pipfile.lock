@@ -59,7 +59,7 @@
                 "sha256:9ea3eb6e507684900418ad100e5accd1d98979d41c49bacf15f970f0d72f75d4",
                 "sha256:f3077f1ca19e6ab6b7a84c61e01e136a97c7732078a8d806908aee44f1042f5f"
             ],
-            "index": "pypi",
+            "markers": "python_version >= '3.6'",
             "version": "==1.23.37"
         },
         "bottle": {
@@ -702,11 +702,11 @@
         },
         "redis": {
             "hashes": [
-                "sha256:21f0a23bce707909076e6ba2ce076cba59bff60d2ab22972e0647fdf620ffe47",
-                "sha256:e13fad67c098a33141bacde872786960e86a5c97a4255009bcd43c795fa1cc77"
+                "sha256:07420a3fbedd8e012c31d4fadac943fb81568946da202c5a5bc237774e5280a0",
+                "sha256:bc97d18938ca18d66737d0ef88584a2073069589e4026813cfba9ad6df9a9f40"
             ],
-            "markers": "python_version >= '3.6'",
-            "version": "==4.1.0"
+            "index": "pypi",
+            "version": "==4.1.1"
         },
         "requests": {
             "hashes": [
