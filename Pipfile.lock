@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2d73e3cdf21466af58225ae3c14c0717dbafebc211bb37be10716fd8efb7c48e"
+            "sha256": "f4c539257c9937d19d5d9b6cc594ca4d6ab6d923ca10281a16d0a5962d1c2bf5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -48,19 +48,19 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:22b243302f526df9c599c6b81092cb3c62f785bc06cedceeff9054489df4ffb3",
-                "sha256:edeae6d38c98691cb9da187c541f3033e0f30d6b2a0b54b5399a44d9b3ba4f61"
+                "sha256:c9f37d93b56f24bd5dac608d7541799a596da2fc85119af65815fe30c7a36a4c",
+                "sha256:fa30deb141f12cd51b226638f831ff1be5ce60704063a4634bbca554d2fed9ea"
             ],
-            "index": "pypi",
-            "version": "==1.20.38"
+            "markers": "python_version >= '3.6'",
+            "version": "==1.20.39"
         },
         "botocore": {
             "hashes": [
-                "sha256:49b304d9d4a782d7108f6a5ca0df6557da20a22b74d5bf745f02fea5cffc35ca",
-                "sha256:f733bc565f144f0ec97ffe0d51235d358ad2f5f12b331563b69d9e9227262a36"
+                "sha256:3a373890c953f9f5dc3d65aeea4efcab9e1e1a7ef5fb9abfb247d8a8ecf0f8ca",
+                "sha256:9ea02d96aa425427cee286d9e9f1fb9cb81db1c3a655c08814d952cd9ed75627"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==1.23.38"
+            "version": "==1.23.39"
         },
         "bottle": {
             "hashes": [
@@ -1567,11 +1567,11 @@
         },
         "types-redis": {
             "hashes": [
-                "sha256:0dcd0f47f96eee006b7533435c3692841bd1d4ecf6866ab758a789956c9e9f59",
-                "sha256:1a6f918dbc5307e38fab931bd43d5d6181eea745e7cfee476f493c3c3c32cf42"
+                "sha256:7b6b5ce5837cdebb9b36efd37a8587204f544956367a51a6cd29b8e62def756e",
+                "sha256:cd9fe6689442315a453028b38ff2ba11eff7a46f22320335766508e956164dc6"
             ],
             "index": "pypi",
-            "version": "==4.1.8"
+            "version": "==4.1.10"
         },
         "types-requests": {
             "hashes": [
