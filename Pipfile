@@ -32,7 +32,7 @@ azure-storage-blob = "==12.8.1"
 setuptools = "==60.5.0"
 
 [dev-packages]
-coverage = "==6.2"
+coverage = "==6.3"
 testfixtures = "==6.18.3"
 pytest = "==6.2.5"
 prospector = {extras = ["with_mypy", "with_bandit"], version = "==1.6.0"}
