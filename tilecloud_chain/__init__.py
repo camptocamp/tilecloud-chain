@@ -639,7 +639,7 @@ class TileGeneration:
 
         result = 1
         for fact, nb in prime_fact.items():
-            result *= fact ** nb
+            result *= fact**nb
         return result
 
     @staticmethod
