@@ -212,7 +212,7 @@ class Generate:
 
         def add_elapsed_togenerate(metatile: Tile) -> Optional[Tile]:
             if metatile is not None:
-                metatile.elapsed_togenerate = metatile.tilecoord.n ** 2  # type: ignore
+                metatile.elapsed_togenerate = metatile.tilecoord.n**2  # type: ignore
                 return metatile
             return None
 
