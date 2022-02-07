@@ -9,7 +9,9 @@
 !MANIFEST.in
 !tilecloud_chain/*
 !docker/run
+!development.ini
 !production.ini
+!gunicorn.conf.py
 !.prospector.yaml
 !.bandit.yaml
 !jsonschema-gentypes.yaml

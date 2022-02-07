@@ -39,7 +39,7 @@ RUN \
 
 # From c2cwsgiutils
 
-CMD ["c2cwsgiutils-run"]
+CMD ["gunicorn", "--paste=/app/production.ini"]
 
 ENV TERM=linux \
   LANG=C.UTF-8 \
@@ -49,7 +49,6 @@ ENV TERM=linux \
 
 ENV C2C_BASE_PATH=/c2c \
   C2C_SECRET=c2crulez \
-  C2CWSGIUTILS_CONFIG=/app/production.ini \
   C2C_REDIS_URL= \
   C2C_REDIS_SENTINELS= \
   C2C_REDIS_TIMEOUT=3 \
@@ -69,10 +68,13 @@ ENV C2C_BASE_PATH=/c2c \
 ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
   TILEGENERATION_MAIN_CONFIGFILE=/etc/tilegeneration/config.yaml \
   TILEGENERATION_HOSTSFILE=/etc/tilegeneration/hosts.yaml \
-  C2CWSGI_LOG_LEVEL=WARN \
-  TILECLOUD_LOG_LEVEL=INFO \
-  OTHER_LOG_LEVEL=WARN \
   TILECLOUD_CHAIN_LOG_LEVEL=INFO \
+  TILECLOUD_LOG_LEVEL=INFO \
+  C2CWSGIUTILS_LOG_LEVEL=WARN \
+  GUNICORN_LOG_LEVEL=WARN \
+  GUNICORN_ACCESS_LOG_LEVEL=INFO \
+  SQL_LOG_LEVEL=WARN \
+  OTHER_LOG_LEVEL=WARN \
   VISIBLE_ENTRY_POINT=/tiles/ \
   TILE_NB_THREAD=2 \
   METATILE_NB_THREAD=25 \
@@ -80,7 +82,8 @@ ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
   TILE_QUEUE_SIZE=2 \
   TILE_CHUNK_SIZE=1 \
   TILE_SERVER_LOGLEVEL=quiet \
-  TILE_MAPCACHE_LOGLEVEL=verbose
+  TILE_MAPCACHE_LOGLEVEL=verbose \
+  DEVLOPEMENT=0
 
 EXPOSE 8080
 
@@ -94,8 +97,6 @@ RUN \
   python3 -m pip install --disable-pip-version-check --no-deps --no-cache-dir --editable=. && \
   mv docker/run /usr/bin/ && \
   python3 -m compileall -q /app/tilecloud_chain
-
-WORKDIR /etc/tilegeneration/
 
 FROM base as tests
 
