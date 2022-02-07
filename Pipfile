@@ -7,7 +7,7 @@ verify_ssl = true
 python_version = "3.8"
 
 [packages]
-c2cwsgiutils = "==4.1.4"
+c2cwsgiutils = "==5.0.0"
 pyramid-mako = "==1.1.0"
 python-dateutil = "==2.8.2"
 tilecloud = "==1.7.0"
