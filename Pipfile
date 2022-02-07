@@ -34,7 +34,7 @@ setuptools = "==60.8.1"
 [dev-packages]
 coverage = "==6.3.1"
 testfixtures = "==6.18.3"
-pytest = "==6.2.5"
+pytest = "==7.0.0"
 prospector = {extras = ["with_mypy", "with_bandit"], version = "==1.6.0"}
 types-redis = "==4.1.15"
 types-requests = "==2.27.8"
