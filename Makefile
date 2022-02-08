@@ -16,10 +16,11 @@ tests: build
 		sleep 1; \
 	done
 
-	docker-compose logs
+	c2cciutils-docker-logs
 
 	docker-compose exec -T test pytest
 
+	c2cciutils-docker-logs
 	docker-compose down
 
 PHONY: tests-fast
