@@ -7,7 +7,9 @@
    tiles file.
 3. Be able to mutualise the service.
 4. Add Azure blob storage
-5. Remove apache and mapcache
+5. Remove Apache and MapCache
+6. Remove the `log_format` in the `generation` configuration, nor we use the logging configuration from the
+   `development.ini` file.
 
 ## Release 1.16
 

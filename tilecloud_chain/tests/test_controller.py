@@ -23,7 +23,7 @@ class TestController(CompareCase):
 
     def test_capabilities(self) -> None:
 
-        gene = TileGeneration("tilegeneration/test-fix.yaml")
+        gene = TileGeneration("tilegeneration/test-fix.yaml", configure_logging=False)
         config = gene.get_config("tilegeneration/test-fix.yaml")
         self.assert_result_equals(
             controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
@@ -964,13 +964,13 @@ class TestController(CompareCase):
     )
 
     def test_multi_host_capabilities(self) -> None:
-        gene = TileGeneration("tilegeneration/test-fix.yaml")
+        gene = TileGeneration("tilegeneration/test-fix.yaml", configure_logging=False)
         self.assert_result_equals(
             controller.get_wmts_capabilities(gene, "multi_host"), self.MULTIHOST_CAPABILITIES, True
         )
 
     def test_capabilities_slash(self) -> None:
-        gene = TileGeneration("tilegeneration/test-capabilities.yaml")
+        gene = TileGeneration("tilegeneration/test-capabilities.yaml", configure_logging=False)
         config = gene.get_config("tilegeneration/test-capabilities.yaml")
         self.assert_result_equals(
             controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
@@ -1104,7 +1104,7 @@ class TestController(CompareCase):
         )
 
     def test_multi_url_capabilities(self) -> None:
-        gene = TileGeneration("tilegeneration/test-fix.yaml")
+        gene = TileGeneration("tilegeneration/test-fix.yaml", configure_logging=False)
         self.assert_result_equals(
             controller.get_wmts_capabilities(gene, "multi_url"), self.MULTIHOST_CAPABILITIES, True
         )
@@ -1160,7 +1160,6 @@ generation:
   - line
   - polygon
   error_file: error.list
-  log_format: '%(levelname)s:%(name)s:%(funcName)s:%(message)s'
   maxconsecutive_errors: 2
   number_process: 1
 grids:
@@ -1705,7 +1704,7 @@ sqs:
             tiles=[("point", 0), ("line", 0), ("line", 2), ("polygon", 0), ("all", 0), ("all", 2)],
         )
 
-        gene = TileGeneration("tilegeneration/test-legends.yaml")
+        gene = TileGeneration("tilegeneration/test-legends.yaml", configure_logging=False)
         config = gene.get_config("tilegeneration/test-legends.yaml")
         self.assert_result_equals(
             controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),

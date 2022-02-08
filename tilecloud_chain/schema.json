@@ -855,12 +855,6 @@
             "type": "string"
           }
         },
-        "log_format": {
-          "title": "Log format",
-          "description": "The logging format (main configuration), default is '%(levelname)s:%(name)s:%(funcName)s:%(message)s'",
-          "type": "string",
-          "default": "%(levelname)s:%(name)s:%(funcName)s:%(message)s"
-        },
         "authorised_user": {
           "title": "Authorised user",
           "description": "The authorised user to generate the tiles (used to avoid permission issue on generated tiles) (main configuration)",
