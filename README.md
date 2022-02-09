@@ -17,7 +17,6 @@ Features:
 - Generate the legend images.
 - Generate GetCapabilities.
 - Generate OpenLayers example page.
-- Generate the Apache configuration.
 - Obtain the hash of an empty tile.
 - In the future, measure tile generation speed.
 - Calculate cost and generation time.

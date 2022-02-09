@@ -521,9 +521,6 @@ The server can be configure as it:
         layers: a_layer # Restrict to serve an certain number of layers [default is all]
         cache: mbtiles # The used cache [default use generation/default_cache]
         # the URL without location to MapCache, [default is http://localhost/]
-        mapcache_base: http://localhost/
-        mapcache_headers: # headers, can be used to access to an other Apache vhost [default is {}]
-            Host: localhost
         geoms_redirect: true # use the geoms to redirect to MapCache [default is false]
         # allowed extension in the static path (default value), not used for s3.
         static_allow_extension: [jpeg, png, xml, js, html, css]
