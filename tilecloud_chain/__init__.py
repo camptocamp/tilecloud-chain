@@ -41,8 +41,10 @@ from PIL import Image
 import boto3
 import botocore.client
 from c2cwsgiutils import sentry, stats
+import c2cwsgiutils.setup_process
 from jsonschema_gentypes import validate
 import psycopg2
+import pyramid.scripts.common
 from ruamel.yaml import YAML  # type: ignore
 from shapely.geometry.base import BaseGeometry
 from shapely.geometry.polygon import Polygon
@@ -90,6 +92,7 @@ def add_common_options(
     cache: bool = True,
 ) -> None:
     """Get the options used by some commands."""
+    c2cwsgiutils.setup_process.fill_arguments(parser)
     parser.add_argument(
         "-c",
         "--config",
@@ -157,11 +160,6 @@ def add_common_options(
         )
     if cache:
         parser.add_argument("--cache", dest="cache", metavar="NAME", help="The cache name to use")
-    parser.add_argument(
-        "--logging-configuration-file",
-        help="Configuration file for Python logging.",
-        default="/app/production.ini",
-    )
     parser.add_argument("-q", "--quiet", default=False, action="store_true", help="Display only errors.")
     parser.add_argument("-v", "--verbose", default=False, action="store_true", help="Display info message.")
     parser.add_argument(
@@ -386,11 +384,16 @@ class TileGeneration:
             self.options.ignore_error = False
 
         if configure_logging:
-            self._configure_logging(self.options, "%(levelname)s:%(name)s:%(funcName)s:%(message)s")
+            if os.environ.get("CI", "false").lower() != "true":
+                loader = pyramid.scripts.common.get_config_loader(self.options.config_uri)
+                loader.setup_logging(
+                    pyramid.scripts.common.parse_vars(self.options.config_vars)
+                    if self.options.config_vars
+                    else None
+                )
+                sentry.init()
 
         assert "generation" in self.get_main_config().config, self.get_main_config().config
-        if configure_logging and "log_format" in self.get_main_config().config["generation"]:
-            self._configure_logging(self.options, self.get_main_config().config["generation"]["log_format"])
 
         error = False
         if self.options is not None and self.options.zoom is not None:
@@ -641,49 +644,6 @@ class TileGeneration:
         for fact, nb in prime_fact.items():
             result *= fact**nb
         return result
-
-    @staticmethod
-    def _configure_logging(options: Namespace, format_: str) -> None:
-        if os.environ.get("CI", "false").lower() == "true":
-            pass
-        elif (
-            options is not None
-            and options.logging_configuration_file
-            and os.path.exists(options.logging_configuration_file)
-        ):  # pragma: nocover
-            logging.config.fileConfig(options.logging_configuration_file, defaults=dict(os.environ))
-        else:  # pragma: nocover
-            level = logging.WARNING
-            other_level = logging.CRITICAL
-            if options is not None and options.quiet:
-                level = logging.ERROR
-            elif options is not None and options.verbose:
-                level = logging.INFO
-            elif options is not None and options.debug:
-                level = logging.DEBUG
-                other_level = logging.INFO
-            logging.config.dictConfig(
-                {
-                    "version": 1,
-                    "disable_existing_loggers": False,  # Without that, existing loggers are silent
-                    "loggers": {"tilecloud": {"level": level}, "tilecloud_chain": {"level": level}},
-                    "root": {"level": other_level, "handlers": [os.environ.get("LOG_TYPE", "console")]},
-                    "handlers": {
-                        "console": {
-                            "class": "logging.StreamHandler",
-                            "formatter": "default",
-                            "stream": "ext://sys.stdout",
-                        },
-                        "json": {
-                            "class": "c2cwsgiutils.pyramid_logging.JsonLogHandler",
-                            "stream": "ext://sys.stdout",
-                        },
-                    },
-                    "formatters": {"default": {"format": format_}},
-                }
-            )
-        if os.environ.get("CI", "false").lower() != "true":
-            sentry.init()
 
     def get_all_dimensions(self, layer: tilecloud_chain.configuration.Layer) -> List[Dict[str, str]]:
         assert layer is not None

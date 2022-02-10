@@ -521,9 +521,6 @@ The server can be configure as it:
         layers: a_layer # Restrict to serve an certain number of layers [default is all]
         cache: mbtiles # The used cache [default use generation/default_cache]
         # the URL without location to MapCache, [default is http://localhost/]
-        mapcache_base: http://localhost/
-        mapcache_headers: # headers, can be used to access to an other Apache vhost [default is {}]
-            Host: localhost
         geoms_redirect: true # use the geoms to redirect to MapCache [default is false]
         # allowed extension in the static path (default value), not used for s3.
         static_allow_extension: [jpeg, png, xml, js, html, css]
@@ -696,8 +693,6 @@ mode we don't catch exceptions, and we don't log time messages.
 
 ``--test <n>`` or ``-t <n>``: used to generate only ``<n>`` tiles, useful for test.
 
-The logging format is configurable in the\ ``config.yaml`` - ``generation/log_format``,
-`See <http://docs.python.org/2/library/logging.html#logrecord-attributes>`__.
 
 Mutualized
 ----------

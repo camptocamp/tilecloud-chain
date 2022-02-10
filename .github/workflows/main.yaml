@@ -43,8 +43,8 @@ jobs:
       - name: Tests
         run: make tests
 
-      - run: docker-compose logs
-        if: failure()
+      - run: c2cciutils-docker-logs
+        if: always()
 
       - name: Publish
         run: c2cciutils-publish

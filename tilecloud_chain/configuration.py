@@ -240,7 +240,6 @@ class Database(TypedDict, total=False):
 class Generation(TypedDict, total=False):
     default_cache: str
     default_layers: List[str]
-    log_format: str
     authorised_user: str
     maxconsecutive_errors: int
     error_file: str
