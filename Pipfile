@@ -29,7 +29,7 @@ jsonschema = "==4.4.0"
 pyramid = "==2.0"
 jsonschema-gentypes = "==1.0.0"
 azure-storage-blob = "==12.8.1"
-setuptools = "==60.9.1"
+setuptools = "==60.9.2"
 
 [dev-packages]
 coverage = "==6.3.1"
