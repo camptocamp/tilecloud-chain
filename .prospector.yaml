@@ -31,13 +31,13 @@ pylint:
     - missing-module-docstring
     - missing-function-docstring
 
-pep8:
+pycodestyle:
   disable:
     - E203 # Whitespace before ':'
     - E722 # Do not use bare 'except'
     - E501 # Line too long
 
-pep257:
+pydocstyle:
   disable:
     - D100 # Missing docstring in public module
     - D102 # Missing docstring in public method
