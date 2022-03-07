@@ -503,11 +503,15 @@ class TileGeneration:
         with file_path.open(encoding="utf-8") as hosts_file:
             ruamel = YAML(typ="safe")
             hosts = {}
-            for key, value in ruamel.load(hosts_file).items():
-                if isinstance(value, str):
-                    hosts[key] = value
-                else:
-                    hosts.update(value)
+            hosts_raw = ruamel.load(hosts_file)
+            if "sources" in hosts_raw:
+                for key, value in hosts_raw["sources"].items():
+                    if isinstance(value, str):
+                        hosts[key] = value
+                    else:
+                        hosts.update(value)
+            else:
+                hosts = hosts_raw
 
         self.hosts_cache = DatedHosts(hosts, file_path.stat().st_mtime)
         return hosts
