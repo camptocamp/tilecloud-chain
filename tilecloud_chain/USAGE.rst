@@ -6,7 +6,7 @@ Configure grids
 
 The ``grid`` describes how the tiles are arranged.
 
-Especially on ``s3`` or ``azure``be careful to choose every of the grid settings before generating the
+Especially on ``s3`` or ``azure`` be careful to choose every of the grid settings before generating the
 tiles. If you change one of them you must regenerate all the tiles.
 
 The ``resolutions`` in [px/m] describes all the resolutions available for this layer. For a raster layer, have
