@@ -209,7 +209,7 @@ def get_wmts_capabilities(
         server = gene.get_main_config().config.get("server")
 
         base_urls = _get_base_urls(cache)
-        _fill_legend(gene, cache, server, base_urls)
+        _fill_legend(gene, cache, server, base_urls, config=config)
 
         data = pkgutil.get_data("tilecloud_chain", "wmts_get_capabilities.jinja")
         assert data
@@ -266,9 +266,13 @@ def _fill_legend(
     cache: tilecloud_chain.configuration.Cache,
     server: Optional[tilecloud_chain.configuration.Server],
     base_urls: List[str],
+    config: Optional[DatedConfig] = None,
 ) -> None:
-    assert gene.config_file
-    config = gene.get_config(gene.config_file)
+
+    if config is None:
+        assert gene.config_file
+        config = gene.get_config(gene.config_file)
+
     for layer_name, layer in config.config["layers"].items():
         previous_legend: Optional[tilecloud_chain.Legend] = None
         previous_resolution = None
