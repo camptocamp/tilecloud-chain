@@ -24,7 +24,13 @@ import ruamel.yaml
 from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
 import tilecloud.store.redis
 import tilecloud.store.s3
-from tilecloud_chain import TileGeneration, add_common_options, get_queue_store, get_tile_matrix_identifier
+from tilecloud_chain import (
+    DatedConfig,
+    TileGeneration,
+    add_common_options,
+    get_queue_store,
+    get_tile_matrix_identifier,
+)
 import tilecloud_chain.configuration
 
 logger = logging.getLogger(__name__)
@@ -189,10 +195,15 @@ def _validate_generate_wmts_capabilities(
     return True
 
 
-def get_wmts_capabilities(gene: TileGeneration, cache_name: str, exit_: bool = False) -> Optional[str]:
+def get_wmts_capabilities(
+    gene: TileGeneration, cache_name: str, exit_: bool = False, config: Optional[DatedConfig] = None
+) -> Optional[str]:
     """Get the WMTS capabilities for a configuration file."""
-    assert gene.config_file
-    config = gene.get_config(gene.config_file)
+
+    if config is None:
+        assert gene.config_file
+        config = gene.get_config(gene.config_file)
+
     cache = config.config["caches"][cache_name]
     if _validate_generate_wmts_capabilities(cache, cache_name, exit_):
         server = gene.get_main_config().config.get("server")
