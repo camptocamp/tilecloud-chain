@@ -416,7 +416,9 @@ class Server(Generic[Response]):
                     wmtscapabilities_file = cache["wmtscapabilities_file"]
                     return self._get(wmtscapabilities_file, headers, config=config, **kwargs)
                 else:
-                    body = controller.get_wmts_capabilities(tilegeneration, self.get_cache_name(config))
+                    body = controller.get_wmts_capabilities(
+                        tilegeneration, self.get_cache_name(config), config=config
+                    )
                     assert body
                     headers["Content-Type"] = "application/xml"
                     return self.response(config, body.encode("utf-8"), headers=headers, **kwargs)
