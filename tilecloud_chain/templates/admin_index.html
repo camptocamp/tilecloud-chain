@@ -96,7 +96,7 @@
               }
             })
             .catch((error) => {
-              log.error(error);
+              console.error(error);
               $('#result').html(`<div class="alert alert-danger" role="alert">${'$'}{error}</div>`);
             });
         });
