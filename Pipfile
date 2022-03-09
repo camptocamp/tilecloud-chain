@@ -28,7 +28,7 @@ cornice = "==6.0.1"  # c2cwsgiutils
 jsonschema = "==4.4.0"
 pyramid = "==2.0"
 jsonschema-gentypes = "==1.0.0"
-azure-storage-blob = "==12.8.1"
+azure-storage-blob = "==12.9.0"
 setuptools = "==60.9.3"
 
 [dev-packages]
