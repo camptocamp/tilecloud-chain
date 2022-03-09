@@ -63,13 +63,15 @@ class Admin:
         assert self.gene
         config = self.gene.get_host_config(self.request.host)
         server_config = config.config.get("server", {})
+        main_config = self.gene.get_main_config()
+        main_server_config = main_config.config.get("server", {})
         return {
             "secret": self.request.params.get("secret"),
             "auth": is_auth(self.request),
             "commands": server_config.get("predefined_commands", []),
             "status": get_status(self.gene),
             "run_url": self.request.route_url("admin_run"),
-            "admin_path": server_config.get("admin_path", "admin"),
+            "admin_path": main_server_config.get("admin_path", "admin"),
         }
 
     @view_config(route_name="admin_run", renderer="fast_json")  # type: ignore
@@ -167,6 +169,7 @@ class Admin:
     def admin_test(self) -> Dict[str, Any]:
         assert self.gene
         config = self.gene.get_host_config(self.request.host)
+        main_config = self.gene.get_main_config()
         return {
             "proj4js_def": re.sub(
                 r"\s+",
@@ -179,7 +182,7 @@ class Admin:
             "zoom": config.config["openlayers"]["zoom"],
             "http_url": urljoin(
                 self.request.current_route_url(),
-                "/" + config.config["server"].get("wmts_path", "wmts") + "/"
+                "/" + main_config.config["server"].get("wmts_path", "wmts") + "/"
                 if "server" in config.config
                 else "/",
             ),
