@@ -25,6 +25,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+import json
 import logging
 import os
 import re
@@ -154,11 +155,11 @@ class Admin:
             )
 
         return {
-            "stdout": _limit_length(
+            "stdout": _format_output(
                 completed_process.stdout.decode(),
                 int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
             ),
-            "stderr": _limit_length(
+            "stderr": _format_output(
                 completed_process.stderr.decode(),
                 int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
             ),
@@ -189,7 +190,45 @@ class Admin:
         }
 
 
-def _limit_length(string: str, max_length: int = 1000) -> str:
+def _format_output(string: str, max_length: int = 1000) -> str:
+    result = ""
+    for line in string.splitlines():
+        if len(string) > max_length:
+            break
+        if line.startswith("{"):
+            try:
+                parsed = json.loads(line)
+                if "source_facility" in parsed:
+                    if not parsed.startswith("tilecloud"):
+                        continue
+
+                if result:
+                    result += "\n"
+
+                if (
+                    "level_name" in parsed
+                    and "source_facility" in parsed
+                    and "line" in parsed
+                    and "msg" in parsed
+                ):
+                    if parsed.startswith("tilecloud"):
+                        result += (
+                            f"[{parsed['level_name']}] {parsed['source_facility']}:{parsed['line']} "
+                            f"{parsed['msg']}"
+                        )
+                elif "msg" in parsed:
+                    result += parsed["msg"]
+                else:
+                    result += line
+            except json.decoder.JSONDecodeError:
+                if result:
+                    result += "\n"
+                result += line
+        else:
+            if result:
+                result += "\n"
+            result += line
+
     if len(string) > max_length:
         return string[: max_length - 3] + "\n..."
     return string
