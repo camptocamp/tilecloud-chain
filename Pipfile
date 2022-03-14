@@ -18,7 +18,7 @@ cee_syslog_handler = "==0.6.0"  # c2cwsgiutils
 gunicorn = "==20.1.0"  # c2cwsgiutils
 objgraph = "==3.5.0"  # c2cwsgiutils
 psycopg2 = "==2.9.3"  # c2cwsgiutils
-pyramid-tm = "==2.4"  # c2cwsgiutils
+pyramid-tm = "==2.5"  # c2cwsgiutils
 sentry-sdk = "==1.5.7"  # c2cwsgiutils
 sqlalchemy = "==1.4.32"  # c2cwsgiutils
 transaction = "==3.0.1"  # c2cwsgiutils
