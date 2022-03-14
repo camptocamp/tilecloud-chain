@@ -1,0 +1,29 @@
+{
+  "extends": ["config:base"],
+  "baseBranches": ["master", "1.17", "1.15", "1.13"],
+  "packageRules": [
+    {
+      "matchBaseBranches": ["master"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "automerge": true
+    },
+    {
+      "branchPrefix": ["1."],
+      "matchUpdateTypes": [
+        "major",
+        "minor",
+        "patch",
+        "pin",
+        "digest",
+        "lockFileMaintenance",
+        "rollback",
+        "bump"
+      ],
+      "enabled": false
+    }
+  ]
+}
