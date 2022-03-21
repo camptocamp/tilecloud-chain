@@ -1,4 +1,4 @@
-FROM osgeo/gdal:ubuntu-small-3.4.1 as base
+FROM osgeo/gdal:ubuntu-small-3.4.2 as base
 LABEL maintainer "info@camptocamp.org"
 
 # Workaround for setuptools >= 60.0.0
