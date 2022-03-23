@@ -78,7 +78,7 @@ def main() -> None:
 
         if options.dump_config:
             _validate_generate_wmts_capabilities(config.config["caches"][options.cache], options.cache, True)
-            yaml = ruamel.yaml.YAML()  # type: ignore
+            yaml = ruamel.yaml.YAML()
             out = StringIO()
             yaml.dump(config.config, out)
             print(out.getvalue())

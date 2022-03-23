@@ -45,7 +45,7 @@ import c2cwsgiutils.setup_process
 from jsonschema_gentypes import validate
 import psycopg2
 import pyramid.scripts.common
-from ruamel.yaml import YAML  # type: ignore
+from ruamel.yaml import YAML
 from shapely.geometry.base import BaseGeometry
 from shapely.geometry.polygon import Polygon
 from shapely.ops import unary_union
