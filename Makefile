@@ -1,3 +1,5 @@
+export DOCKER_BUILDKIT=1
+
 PHONY: build
 build:
 	docker build --tag=camptocamp/tilecloud-chain:tests --target=tests .

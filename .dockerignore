@@ -2,8 +2,8 @@
 !setup.py
 !setup.cfg
 !requirements.txt
-!Pipfile
-!Pipfile.lock
+!poetry.lock
+!pyproject.toml
 !README.md
 !CHANGES.md
 !MANIFEST.in
