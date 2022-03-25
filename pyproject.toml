@@ -37,6 +37,6 @@ azure-storage-blob = "12.8.1"
 coverage = "6.3.2"
 testfixtures = "6.18.5"
 pytest = "7.1.1"
-prospector = {extras = ["with_mypy", "with_bandit"], version = "1.7.6"}
+prospector = {extras = ["with_mypy", "with_bandit"], version = "1.7.7"}
 types-redis = "4.1.17"
 types-requests = "2.27.11"
