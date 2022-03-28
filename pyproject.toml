@@ -22,7 +22,7 @@ gunicorn = "20.1.0"  # c2cwsgiutils
 objgraph = "3.5.0"  # c2cwsgiutils
 psycopg2 = "2.9.3"  # c2cwsgiutils
 pyramid-tm = "2.4"  # c2cwsgiutils
-sentry-sdk = "1.5.7"  # c2cwsgiutils
+sentry-sdk = "1.5.8"  # c2cwsgiutils
 sqlalchemy = "1.4.32"  # c2cwsgiutils
 transaction = "3.0.1"  # c2cwsgiutils
 ujson = "5.1.0"  # c2cwsgiutils
@@ -37,6 +37,6 @@ azure-storage-blob = "12.8.1"
 coverage = "6.3.2"
 testfixtures = "6.18.5"
 pytest = "7.0.1"
-prospector = {extras = ["with_mypy", "with_bandit"], version = "1.7.6"}
-types-redis = "4.1.17"
-types-requests = "2.27.11"
+prospector = {extras = ["with_mypy", "with_bandit"], version = "1.7.7"}
+types-redis = "4.1.18"
+types-requests = "2.27.15"
