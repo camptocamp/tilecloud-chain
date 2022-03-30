@@ -23,7 +23,7 @@ jobs:
       SUMMON_PROVIDER: /usr/local/bin/gopass
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
         with:
           ref: ${{ matrix.branch }}
 
