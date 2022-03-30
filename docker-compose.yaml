@@ -31,7 +31,7 @@ services:
       - redis_master
 
   redis_sentinel:
-    image: camptocamp/c2cwsgiutils-redis-sentinel:5
+    image: camptocamp/c2cwsgiutils-redis-sentinel:6
     environment:
       - MASTER_NAME=mymaster
       - QUORUM=1
