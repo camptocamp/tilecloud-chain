@@ -136,8 +136,7 @@ def _calculate_cost(
             class MetaTileSplitter(TileStore):
                 """Convert the metatile flow to tile flow."""
 
-                @staticmethod
-                def get(tiles: Iterable[Tile]) -> Iterator[Tile]:
+                def get(self, tiles: Iterable[Tile]) -> Iterator[Tile]:
                     for metatile in tiles:
                         for tilecoord in metatile.tilecoord:
                             yield Tile(tilecoord)
