@@ -664,8 +664,8 @@ class WsgiServer(WsgiServerBase):
         kwargs["start_response"](self.HTTP_MESSAGES[code], [])
         return [str(message).encode()]
 
-    @staticmethod
     def response(
+        self,
         config: tilecloud_chain.DatedConfig,
         data: bytes,
         headers: Optional[Dict[str, str]] = None,
