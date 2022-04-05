@@ -51,8 +51,7 @@ class MultiTileStore(TileStore):
         assert store is not None
         return store.delete_one(tile)
 
-    @staticmethod
-    def list() -> Iterator[Tile]:
+    def list(self) -> Iterator[Tile]:
         """Generate all the tiles in the store, but without their data."""
         # Too dangerous to list all tiles in all stores. Return an empty iterator instead
         while False:
