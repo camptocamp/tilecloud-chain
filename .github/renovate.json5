@@ -1,6 +1,7 @@
 {
   extends: ['config:base', 'schedule:earlyMondays'],
   baseBranches: ['master', '1.17'],
+  lockFileMaintenance: { enabled: true },
   packageRules: [
     /** Automerge the patch, the minor and the dev dependency */
     {
