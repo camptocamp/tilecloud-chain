@@ -2,8 +2,9 @@ FROM osgeo/gdal:ubuntu-small-3.1.3 as runner
 LABEL maintainer "info@camptocamp.org"
 
 RUN \
-  apt update && \
-  DEBIAN_FRONTEND=noninteractive apt install --assume-yes --no-install-recommends \
+  apt-get update && \
+  apt-get upgrade --assume-yes && \
+  DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
   libmapnik3.0 \
   mapnik-utils \
   libdb5.3 \
