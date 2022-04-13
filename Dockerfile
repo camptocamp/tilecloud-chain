@@ -5,6 +5,7 @@ COPY requirements.txt /app/
 RUN \
   DEV_PACKAGES="python3.7-dev build-essential libgeos-dev" && \
   apt-get update && \
+  apt-get upgrade --assume-yes && \
   DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
     ca-certificates \
     libmapnik-dev \
