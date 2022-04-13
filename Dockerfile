@@ -8,6 +8,7 @@ ENV SETUPTOOLS_USE_DISTUTILS=stdlib
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
   apt-get update && \
+  apt-get upgrade --assume-yes && \
   DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
   libmapnik3.0 mapnik-utils \
   libdb5.3 \
