@@ -15,4 +15,4 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCHES: master
-          AUTHOR: dependabot[bot],renovatebot
+          AUTHOR: renovatebot
