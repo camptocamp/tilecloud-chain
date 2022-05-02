@@ -1341,7 +1341,7 @@ docs = ["Sphinx (>=1.3.1)", "docutils", "pylons-sphinx-themes"]
 
 [[package]]
 name = "types-redis"
-version = "4.1.21"
+version = "4.2.0"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1491,7 +1491,7 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "caafc8a701ef8fe953a4d36343d25de6378c1148edb99d827636f44a1f924c93"
+content-hash = "105de561a68363275dbe3ce3b09d40e52cda7a02a2d9833f39c5b0d7be06ac7a"
 
 [metadata.files]
 astroid = [
@@ -2370,8 +2370,8 @@ translationstring = [
     {file = "translationstring-1.4.tar.gz", hash = "sha256:bf947538d76e69ba12ab17283b10355a9ecfbc078e6123443f43f2107f6376f3"},
 ]
 types-redis = [
-    {file = "types-redis-4.1.21.tar.gz", hash = "sha256:babc153c07046a05f76d119337fde7c12d7f002687d3d48156c4632e88bbcfc1"},
-    {file = "types_redis-4.1.21-py3-none-any.whl", hash = "sha256:91df0a020b8d5b2d5637fe916466f0ccbdda48f66c57a2d7f33674d0fc7bb2a8"},
+    {file = "types-redis-4.2.0.tar.gz", hash = "sha256:c9b61894c7621b801db44efd63f843ead93cbbcf034186d7343f7f5771e1106a"},
+    {file = "types_redis-4.2.0-py3-none-any.whl", hash = "sha256:24c0effe59b2eef030733fd352fdcee6647a66611001aa25762475c3f26fb5f1"},
 ]
 types-requests = [
     {file = "types-requests-2.27.25.tar.gz", hash = "sha256:805ae7e38fd9d157153066dc4381cf585fd34dfa212f2fc1fece248c05aac571"},
