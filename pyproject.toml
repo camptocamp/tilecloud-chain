@@ -22,8 +22,8 @@ gunicorn = "20.1.0"  # c2cwsgiutils
 objgraph = "3.5.0"  # c2cwsgiutils
 psycopg2 = "2.9.3"  # c2cwsgiutils
 pyramid-tm = "2.4"  # c2cwsgiutils
-sentry-sdk = "1.5.8"  # c2cwsgiutils
-sqlalchemy = "1.4.35"  # c2cwsgiutils
+sentry-sdk = "1.5.10"  # c2cwsgiutils
+sqlalchemy = "1.4.36"  # c2cwsgiutils
 transaction = "3.0.1"  # c2cwsgiutils
 ujson = "5.1.0"  # c2cwsgiutils
 cornice = "6.0.1"  # c2cwsgiutils
@@ -39,4 +39,4 @@ testfixtures = "6.18.5"
 pytest = "7.0.1"
 prospector = {extras = ["with_mypy", "with_bandit"], version = "1.7.7"}
 types-redis = "4.1.19"
-types-requests = "2.27.16"
+types-requests = "2.27.25"
