@@ -1200,9 +1200,7 @@ class TileGeneration:
 
         if test is None:
             if TYPE_CHECKING:
-                buffer: queue.Queue[Tile] = queue.Queue(  # pylint: disable=unsubscriptable-object
-                    int(os.environ.get("TILE_QUEUE_SIZE", "2"))
-                )
+                buffer: queue.Queue[Tile] = queue.Queue(int(os.environ.get("TILE_QUEUE_SIZE", "2")))
             else:
                 buffer = queue.Queue(int(os.environ.get("TILE_QUEUE_SIZE", "2")))
             end = False
