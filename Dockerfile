@@ -1,5 +1,5 @@
 # Base of all section, install the apt packages
-FROM osgeo/gdal:ubuntu-small-3.4.2 as base-all
+FROM osgeo/gdal:ubuntu-small-3.4.3 as base-all
 LABEL maintainer "info@camptocamp.org"
 
 # Workaround for setuptools >= 60.0.0
