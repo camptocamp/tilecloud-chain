@@ -391,7 +391,7 @@ class TileGeneration:
                     if self.options.config_vars
                     else None
                 )
-                sentry.init()
+                sentry.includeme()
 
         assert "generation" in self.get_main_config().config, self.get_main_config().config
 
