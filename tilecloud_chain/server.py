@@ -803,6 +803,11 @@ def main(global_config: Any, **settings: Any) -> Router:
 
     config.add_route(
         "admin",
+        f"/{tilegeneration.get_main_config().config['server']['admin_path']}",
+        request_method="GET",
+    )
+    config.add_route(
+        "admin_slash",
         f"/{tilegeneration.get_main_config().config['server']['admin_path']}/",
         request_method="GET",
     )

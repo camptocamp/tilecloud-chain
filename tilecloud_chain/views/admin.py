@@ -59,6 +59,7 @@ class Admin:
         self.gene = tilecloud_chain.server.tilegeneration
 
     @view_config(route_name="admin", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore
+    @view_config(route_name="admin_slash", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore
     def index(self) -> Dict[str, Any]:
         """Get the admin index page."""
         assert self.gene
