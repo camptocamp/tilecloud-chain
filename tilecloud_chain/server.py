@@ -42,6 +42,7 @@ from pyramid.httpexceptions import HTTPException, exception_response
 from pyramid.request import Request
 import pyramid.response
 from pyramid.router import Router
+import pyramid.session
 from pyramid_mako import add_mako_renderer
 import requests
 
@@ -792,6 +793,12 @@ def main(global_config: Any, **settings: Any) -> Router:
     del global_config  # unused
 
     config = Configurator(settings=settings)
+
+    config.set_session_factory(
+        pyramid.session.SignedCookieSessionFactory(
+            os.environ["TILECLOUD_CHAIN_SESSION_SECRET"], salt=os.environ["TILECLOUD_CHAIN_SESSION_SALT"]
+        )
+    )
 
     init_tilegeneration(settings.get("tilegeneration_configfile"))
     assert tilegeneration

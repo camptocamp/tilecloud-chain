@@ -12,12 +12,22 @@
   </head>
   <body class="px-5 py-4">
     <h1 class="bd-title">Tile generation</h1>
-    %if not auth:
+    %if not auth and auth_type == AuthenticationType.SECRET:
     <form>
       Secret: <input type="password" name="secret" />
       <input type="submit" value="OK" />
     </form>
-    %else:
+    %elif not auth and auth_type == AuthenticationType.GITHUB:
+    <a href="${github_auth_url}">Login with GitHub</a>
+    %elif auth_type == AuthenticationType.GITHUB:
+    <h2>Authentication</h2>
+    <p>
+      Logged as: <a href="${user_url}">${user_name}</a><br />
+      <a href="${logout_url}">Logout</a>
+    </p>
+    %endif
+    <span></span>
+    %if has_access:
     <h2>Status</h2>
     <p>${'<br />'.join(status)|n}</p>
     <h2>Launch generation</h2>
