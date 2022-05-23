@@ -261,9 +261,10 @@ class Server(Generic[Response]):
             try:
                 blob = get_azure_client().get_blob_client(container=cache_azure["container"], blob=key_name)
                 properties = blob.get_blob_properties()
+                data = blob.download_blob().readall()
                 return self.response(
                     config,
-                    blob.download_blob().readall(),
+                    data if isinstance(data, bytes) else data.encode("utf-8"),
                     {
                         "Content-Encoding": cast(str, properties.content_settings.content_encoding),
                         "Content-Type": cast(str, properties.content_settings.content_type),
