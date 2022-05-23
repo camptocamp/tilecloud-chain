@@ -25,16 +25,16 @@ pyramid-tm = "2.5"  # c2cwsgiutils
 sentry-sdk = "1.5.12"  # c2cwsgiutils
 sqlalchemy = "1.4.36"  # c2cwsgiutils
 transaction = "3.0.1"  # c2cwsgiutils
-ujson = "5.2.0"  # c2cwsgiutils
+ujson = "5.3.0"  # c2cwsgiutils
 cornice = "6.0.1"  # c2cwsgiutils
 "zope.sqlalchemy" = "1.6"  # c2cwsgiutils
-jsonschema = "4.4.0"
+jsonschema = "4.5.1"
 pyramid = "2.0"
 jsonschema-gentypes = "1.0.0"
-azure-storage-blob = "12.11.0"
+azure-storage-blob = "12.12.0"
 
 [tool.poetry.dev-dependencies]
-coverage = "6.3.2"
+coverage = "6.4"
 testfixtures = "6.18.5"
 pytest = "7.1.2"
 prospector = {extras = ["with_mypy", "with_bandit"], version = "1.7.7"}
