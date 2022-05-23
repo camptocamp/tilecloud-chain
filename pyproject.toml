@@ -16,13 +16,13 @@ python-dateutil = "2.8.2"
 tilecloud = "1.8.0"
 Jinja2 = "3.1.2"
 PyYAML = "6.0"
-Shapely = "1.8.1.post1"
+Shapely = "1.8.2"
 cee_syslog_handler = "0.6.0"  # c2cwsgiutils
 gunicorn = "20.1.0"  # c2cwsgiutils
 objgraph = "3.5.0"  # c2cwsgiutils
 psycopg2 = "2.9.3"  # c2cwsgiutils
 pyramid-tm = "2.5"  # c2cwsgiutils
-sentry-sdk = "1.5.10"  # c2cwsgiutils
+sentry-sdk = "1.5.12"  # c2cwsgiutils
 sqlalchemy = "1.4.36"  # c2cwsgiutils
 transaction = "3.0.1"  # c2cwsgiutils
 ujson = "5.2.0"  # c2cwsgiutils
@@ -31,12 +31,12 @@ cornice = "6.0.1"  # c2cwsgiutils
 jsonschema = "4.4.0"
 pyramid = "2.0"
 jsonschema-gentypes = "1.0.0"
-azure-storage-blob = "12.11.0"
+azure-storage-blob = "12.12.0"
 
 [tool.poetry.dev-dependencies]
 coverage = "6.3.2"
 testfixtures = "6.18.5"
 pytest = "7.1.2"
 prospector = {extras = ["with_mypy", "with_bandit"], version = "1.7.7"}
-types-redis = "4.2.0"
-types-requests = "2.27.25"
+types-redis = "4.2.5"
+types-requests = "2.27.27"
