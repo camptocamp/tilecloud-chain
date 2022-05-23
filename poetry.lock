@@ -451,7 +451,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "jsonschema"
-version = "4.4.0"
+version = "4.5.1"
 description = "An implementation of JSON Schema validation for Python"
 category = "main"
 optional = false
@@ -1491,7 +1491,7 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "6b007cda970242875275cce0237be0947b0c5f9635ed39dea5150c8587d15103"
+content-hash = "181d5484745ee1b3ea90f7b6eca123e78fde808970e1e81c447ec251d708ec3f"
 
 [metadata.files]
 astroid = [
@@ -1806,8 +1806,8 @@ jmespath = [
     {file = "jmespath-1.0.0.tar.gz", hash = "sha256:a490e280edd1f57d6de88636992d05b71e97d69a26a19f058ecf7d304474bf5e"},
 ]
 jsonschema = [
-    {file = "jsonschema-4.4.0-py3-none-any.whl", hash = "sha256:77281a1f71684953ee8b3d488371b162419767973789272434bbc3f29d9c8823"},
-    {file = "jsonschema-4.4.0.tar.gz", hash = "sha256:636694eb41b3535ed608fe04129f26542b59ed99808b4f688aa32dcf55317a83"},
+    {file = "jsonschema-4.5.1-py3-none-any.whl", hash = "sha256:71b5e39324422543546572954ce71c67728922c104902cb7ce252e522235b33f"},
+    {file = "jsonschema-4.5.1.tar.gz", hash = "sha256:7c6d882619340c3347a1bf7315e147e6d3dae439033ae6383d6acb908c101dfc"},
 ]
 jsonschema-gentypes = [
     {file = "jsonschema_gentypes-1.0.0-py3-none-any.whl", hash = "sha256:2b1f46852b7cb65246817f2274abbc161423bb51e1b3a25bde40da67ef33add0"},
