@@ -4,8 +4,8 @@
     <title>The tile generation admin interface</title>
     <link
       rel="stylesheet"
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+      integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn"
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
@@ -18,23 +18,30 @@
       <input type="submit" value="OK" />
     </form>
     %elif not auth and auth_type == AuthenticationType.GITHUB:
-    <a href="${github_auth_url}">Login with GitHub</a>
+    <a class="btn btn-primary" href="${github_auth_url}">Login with GitHub</a>
     %elif auth_type == AuthenticationType.GITHUB:
     <h2>Authentication</h2>
     <p>
       Logged as: <a href="${user_url}">${user_name}</a><br />
-      <a href="${logout_url}">Logout</a>
+      <a class="btn btn-primary" href="${logout_url}">Logout</a>
     </p>
     %endif
     <span></span>
     %if has_access:
+    <hr />
     <h2>Status</h2>
     <p>${'<br />'.join(status)|n}</p>
+    <hr />
     <h2>Launch generation</h2>
     <form id="command-form" class="form-inline">
       <label for="staticEmail2" class="sr-only">Command</label>
-      <input id="command" type="text" name="command" class="form-control" placeholder="Command" />
-      <button type="submit" class="btn btn-primary mb-2">Start</button>
+      <div class="input-group mb-3">
+        <input id="command" type="text" name="command" class="form-control" placeholder="Command" />
+
+        <div class="input-group-append">
+          <button type="submit" class="btn btn-outline-primary mb-2">Start</button>
+        </div>
+      </div>
       %if secret is not None:
       <input type="hidden" name="secret" value="${secret}" />
       %endif
@@ -49,6 +56,7 @@
     %endif
     <span id="result"></span>
 
+    <hr />
     <h2>Test</h2>
     <p>See the result in <a href="/${admin_path}/test">the test page</a>.</p>
 
@@ -65,8 +73,8 @@
       referrerpolicy="no-referrer"
     ></script>
     <script
-      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.min.js"
+      integrity="sha384-VHvPCCyXqtD5DqJeNxl2dtTyhF78xXNXdkwX1CZeRusQfRKp+tA7hAShOK/B/fQ2"
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
