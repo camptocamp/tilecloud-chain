@@ -26,6 +26,7 @@
 
 import collections
 import datetime
+import json
 import logging
 import mimetypes
 import os
@@ -795,7 +796,9 @@ def main(global_config: Any, **settings: Any) -> Router:
     config = Configurator(settings=settings)
 
     config.set_session_factory(
-        pyramid.session.SignedCookieSessionFactory(
+        pyramid.session.BaseCookieSessionFactory(json)
+        if os.environ.get("TILECLOUD_CHAIN_DEBUG_SESSION", "false").lower() == "true"
+        else pyramid.session.SignedCookieSessionFactory(
             os.environ["TILECLOUD_CHAIN_SESSION_SECRET"], salt=os.environ["TILECLOUD_CHAIN_SESSION_SALT"]
         )
     )
