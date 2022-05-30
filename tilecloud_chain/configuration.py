@@ -28,6 +28,14 @@ class Argument(TypedDict, total=False):
     quiet: str
 
 
+# Authentication
+#
+# The authentication configuration
+class Authentication(TypedDict, total=False):
+    github_repository: str
+    github_access: "GithubAccess"
+
+
 # AWS region
 #
 # The region, default is 'eu-west-1'
@@ -201,6 +209,7 @@ class Configuration(TypedDict, total=False):
     metadata: "Metadata"
     provider: "Provider"
     logging: "Logging"
+    authentication: "Authentication"
 
 
 # Contact
@@ -244,6 +253,18 @@ class Generation(TypedDict, total=False):
     maxconsecutive_errors: int
     error_file: str
     number_process: int
+
+
+# GitHub access
+#
+# The kind of rights the user should have on the repository
+#
+# default: pull
+GithubAccess = Union[Literal["push"], Literal["pull"], Literal["admin"]]
+# The values for the enum
+GITHUBACCESS_PUSH: Literal["push"] = "push"
+GITHUBACCESS_PULL: Literal["pull"] = "pull"
+GITHUBACCESS_ADMIN: Literal["admin"] = "admin"
 
 
 # Grid

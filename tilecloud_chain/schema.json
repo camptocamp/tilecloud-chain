@@ -1497,6 +1497,26 @@
     },
     "logging": {
       "$ref": "#/definitions/logging"
+    },
+    "authentication": {
+      "title": "Authentication",
+      "description": "The authentication configuration",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "github_repository": {
+          "title": "GitHub repository",
+          "description": "The GitHub repository name, on witch one we will check the access rights",
+          "type": "string"
+        },
+        "github_access": {
+          "title": "GitHub access",
+          "description": "The kind of rights the user should have on the repository",
+          "type": "string",
+          "default": "pull",
+          "enum": ["push", "pull", "admin"]
+        }
+      }
     }
   }
 }
