@@ -43,7 +43,7 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 
 [[package]]
 name = "azure-core"
-version = "1.24.0"
+version = "1.24.1"
 description = "Microsoft Azure Core Library for Python"
 category = "main"
 optional = false
@@ -103,27 +103,27 @@ yaml = ["pyyaml"]
 
 [[package]]
 name = "boto3"
-version = "1.23.10"
+version = "1.24.2"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
-python-versions = ">= 3.6"
+python-versions = ">= 3.7"
 
 [package.dependencies]
-botocore = ">=1.26.10,<1.27.0"
+botocore = ">=1.27.2,<1.28.0"
 jmespath = ">=0.7.1,<2.0.0"
-s3transfer = ">=0.5.0,<0.6.0"
+s3transfer = ">=0.6.0,<0.7.0"
 
 [package.extras]
 crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.26.10"
+version = "1.27.2"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
-python-versions = ">= 3.6"
+python-versions = ">= 3.7"
 
 [package.dependencies]
 jmespath = ">=0.7.1,<2.0.0"
@@ -522,14 +522,14 @@ python-versions = "*"
 
 [[package]]
 name = "msal"
-version = "1.17.0"
+version = "1.18.0"
 description = "The Microsoft Authentication Library (MSAL) for Python library enables your app to access the Microsoft Cloud by supporting authentication of users with Microsoft Azure Active Directory accounts (AAD) and Microsoft Accounts (MSA) using industry standard OAuth2 and OpenID Connect."
 category = "main"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
-cryptography = ">=0.6,<39"
+cryptography = ">=0.6,<40"
 PyJWT = {version = ">=1.0.0,<3", extras = ["crypto"]}
 requests = ">=2.0.0,<3"
 
@@ -844,11 +844,11 @@ tests = ["pytest (>=6.0.0,<7.0.0)", "coverage[toml] (==5.0.4)"]
 
 [[package]]
 name = "pylint"
-version = "2.13.9"
+version = "2.14.0"
 description = "python code static checker"
 category = "dev"
 optional = false
-python-versions = ">=3.6.2"
+python-versions = ">=3.7.2"
 
 [package.dependencies]
 astroid = ">=2.11.5,<=2.12.0-dev0"
@@ -858,10 +858,12 @@ isort = ">=4.2.5,<6"
 mccabe = ">=0.6,<0.8"
 platformdirs = ">=2.2.0"
 tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
+tomlkit = ">=0.10.1"
 typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
-testutil = ["gitpython (>3)"]
+spelling = ["pyenchant (>=3.2,<4.0)"]
+testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pylint-celery"
@@ -1048,7 +1050,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "redis"
-version = "4.3.1"
+version = "4.3.3"
 description = "Python client for Redis database and key-value store"
 category = "main"
 optional = false
@@ -1132,11 +1134,11 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "s3transfer"
-version = "0.5.2"
+version = "0.6.0"
 description = "An Amazon S3 Transfer Manager"
 category = "main"
 optional = false
-python-versions = ">= 3.6"
+python-versions = ">= 3.7"
 
 [package.dependencies]
 botocore = ">=1.12.36,<2.0a.0"
@@ -1311,6 +1313,14 @@ description = "A lil' TOML parser"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
+
+[[package]]
+name = "tomlkit"
+version = "0.11.0"
+description = "Style preserving TOML library"
+category = "dev"
+optional = false
+python-versions = ">=3.6,<4.0"
 
 [[package]]
 name = "transaction"
@@ -1523,8 +1533,8 @@ attrs = [
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
 ]
 azure-core = [
-    {file = "azure-core-1.24.0.zip", hash = "sha256:345b1b041faad7d0205b20d5697f1d0df344302e7aaa8501905580ff87bd0be5"},
-    {file = "azure_core-1.24.0-py3-none-any.whl", hash = "sha256:923e492e72d103c768a643dfad331ce6b8ec1669575c7d0832fed19bffd119f7"},
+    {file = "azure-core-1.24.1.zip", hash = "sha256:39c5d59d04209bb70a1a7ee879cef05d07bc76472cd3fb5eaa2e607a90d312bb"},
+    {file = "azure_core-1.24.1-py3-none-any.whl", hash = "sha256:f48a640affa59fa45ac770565b3bead4c4f834242d16983c1ae2bb173a4b8a6d"},
 ]
 azure-identity = [
     {file = "azure-identity-1.10.0.zip", hash = "sha256:656e5034d9cef297cf9b35376ed620085273c18cfa52cea4a625bf0d5d2d6409"},
@@ -1539,12 +1549,12 @@ bandit = [
     {file = "bandit-1.7.4.tar.gz", hash = "sha256:2d63a8c573417bae338962d4b9b06fbc6080f74ecd955a092849e1e65c717bd2"},
 ]
 boto3 = [
-    {file = "boto3-1.23.10-py3-none-any.whl", hash = "sha256:40d08614f17a69075e175c02c5d5aab69a6153fd50e40fa7057b913ac7bf40e7"},
-    {file = "boto3-1.23.10.tar.gz", hash = "sha256:2a4395e3241c20eef441d7443a5e6eaa0ee3f7114653fb9d9cef41587526f7bd"},
+    {file = "boto3-1.24.2-py3-none-any.whl", hash = "sha256:e3c10adc7be890b147568a4162d9cafb876f11f87460c4a0dc90742d6d4ebe7c"},
+    {file = "boto3-1.24.2.tar.gz", hash = "sha256:927b5e8e2decad746e6c32bb81f15c2ea9ab4398286134d21f6742493eb893f6"},
 ]
 botocore = [
-    {file = "botocore-1.26.10-py3-none-any.whl", hash = "sha256:8a4a984bf901ccefe40037da11ba2abd1ddbcb3b490a492b7f218509c99fc12f"},
-    {file = "botocore-1.26.10.tar.gz", hash = "sha256:5df2cf7ebe34377470172bd0bbc582cf98c5cbd02da0909a14e9e2885ab3ae9c"},
+    {file = "botocore-1.27.2-py3-none-any.whl", hash = "sha256:131f71fe16ef84f9e0e72c54d2e230a6d8e79dd3947f507259a129649649a35d"},
+    {file = "botocore-1.27.2.tar.gz", hash = "sha256:b7cdd4f4a6395a084a381a7d2a25b177e6de5f8a4dfa3c645ec957ba3c83e200"},
 ]
 bottle = [
     {file = "bottle-0.12.21-py3-none-any.whl", hash = "sha256:6e1c9817019dae3a8c20adacaf09035251798d2ae2fcc8ce43157ee72965f257"},
@@ -1914,8 +1924,8 @@ mccabe = [
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
 msal = [
-    {file = "msal-1.17.0-py2.py3-none-any.whl", hash = "sha256:5a52d78e70d2c451e267c1e8c2342e4c06f495c75c859aeafd9260d3974f09fe"},
-    {file = "msal-1.17.0.tar.gz", hash = "sha256:04e3cb7bb75c51f56d290381f23056207df1f3eb594ed03d38551f3b16d2a36e"},
+    {file = "msal-1.18.0-py2.py3-none-any.whl", hash = "sha256:9c10e6cb32e0b6b8eaafc1c9a68bc3b2ff71505e0c5b8200799582d8b9f22947"},
+    {file = "msal-1.18.0.tar.gz", hash = "sha256:576af55866038b60edbcb31d831325a1bd8241ed272186e2832968fd4717d202"},
 ]
 msal-extensions = [
     {file = "msal-extensions-1.0.0.tar.gz", hash = "sha256:c676aba56b0cce3783de1b5c5ecfe828db998167875126ca4b47dc6436451354"},
@@ -2080,8 +2090,8 @@ pyjwt = [
     {file = "PyJWT-2.4.0.tar.gz", hash = "sha256:d42908208c699b3b973cbeb01a969ba6a96c821eefb1c5bfe4c390c01d67abba"},
 ]
 pylint = [
-    {file = "pylint-2.13.9-py3-none-any.whl", hash = "sha256:705c620d388035bdd9ff8b44c5bcdd235bfb49d276d488dd2c8ff1736aa42526"},
-    {file = "pylint-2.13.9.tar.gz", hash = "sha256:095567c96e19e6f57b5b907e67d265ff535e588fe26b12b5ebe1fc5645b2c731"},
+    {file = "pylint-2.14.0-py3-none-any.whl", hash = "sha256:ef64ce5d4c17b8906caeaf2c2914ef3036a3a1b7f4a86f5fbf6caff9067c5f63"},
+    {file = "pylint-2.14.0.tar.gz", hash = "sha256:10d291ea5133645f73fc1b51ca137ad6531223c1461a5632a1db029a9bc033b5"},
 ]
 pylint-celery = [
     {file = "pylint-celery-0.3.tar.gz", hash = "sha256:41e32094e7408d15c044178ea828dd524beedbdbe6f83f712c5e35bde1de4beb"},
@@ -2221,8 +2231,8 @@ pyyaml = [
     {file = "PyYAML-6.0.tar.gz", hash = "sha256:68fb519c14306fec9720a2a5b45bc9f0c8d1b9c72adf45c37baedfcd949c35a2"},
 ]
 redis = [
-    {file = "redis-4.3.1-py3-none-any.whl", hash = "sha256:84316970995a7adb907a56754d2b92d88fc2d252963dc5ac34c88f0f1a22c25d"},
-    {file = "redis-4.3.1.tar.gz", hash = "sha256:94b617b4cd296e94991146f66fc5559756fbefe9493604f0312e4d3298ac63e9"},
+    {file = "redis-4.3.3-py3-none-any.whl", hash = "sha256:f57f8df5d238a8ecf92f499b6b21467bfee6c13d89953c27edf1e2bc673622e7"},
+    {file = "redis-4.3.3.tar.gz", hash = "sha256:2f7a57cf4af15cd543c4394bcbe2b9148db2606a37edba755368836e3a1d053e"},
 ]
 requests = [
     {file = "requests-2.27.1-py2.py3-none-any.whl", hash = "sha256:f22fa1e554c9ddfd16e6e41ac79759e17be9e492b3587efa038054674760e72d"},
@@ -2267,8 +2277,8 @@ requirements-detector = [
     {file = "ruamel.yaml.clib-0.2.6.tar.gz", hash = "sha256:4ff604ce439abb20794f05613c374759ce10e3595d1867764dd1ae675b85acbd"},
 ]
 s3transfer = [
-    {file = "s3transfer-0.5.2-py3-none-any.whl", hash = "sha256:7a6f4c4d1fdb9a2b640244008e142cbc2cd3ae34b386584ef044dd0f27101971"},
-    {file = "s3transfer-0.5.2.tar.gz", hash = "sha256:95c58c194ce657a5f4fb0b9e60a84968c808888aed628cd98ab8771fe1db98ed"},
+    {file = "s3transfer-0.6.0-py3-none-any.whl", hash = "sha256:06176b74f3a15f61f1b4f25a1fc29a4429040b7647133a463da8fa5bd28d5ecd"},
+    {file = "s3transfer-0.6.0.tar.gz", hash = "sha256:2ed07d3866f523cc561bf4a00fc5535827981b117dd7876f036b0c1aca42c947"},
 ]
 sentry-sdk = [
     {file = "sentry-sdk-1.5.12.tar.gz", hash = "sha256:259535ba66933eacf85ab46524188c84dcb4c39f40348455ce15e2c0aca68863"},
@@ -2381,6 +2391,10 @@ toml = [
 tomli = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
+]
+tomlkit = [
+    {file = "tomlkit-0.11.0-py3-none-any.whl", hash = "sha256:0f4050db66fd445b885778900ce4dd9aea8c90c4721141fde0d6ade893820ef1"},
+    {file = "tomlkit-0.11.0.tar.gz", hash = "sha256:71ceb10c0eefd8b8f11fe34e8a51ad07812cb1dc3de23247425fbc9ddc47b9dd"},
 ]
 transaction = [
     {file = "transaction-3.0.1-py2.py3-none-any.whl", hash = "sha256:2329a6e6b82d1d8d4de9267ea6ee790532c375e5911d3c7633a234e94a4a0a9e"},
