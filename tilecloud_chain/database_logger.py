@@ -66,7 +66,7 @@ class DatabaseLoggerCommon:
                 try:
                     cursor.execute(
                         psycopg2.sql.SQL(
-                            "INSERT INTO {}.{}(layer, run, action, tile) " "VALUES (%s, %s, %s, %s)"
+                            "INSERT INTO {}.{}(layer, run, action, tile) VALUES (%s, %s, %s, %s)"
                         ).format(psycopg2.sql.Identifier(schema), psycopg2.sql.Identifier(table)),
                         ("test_layer", -1, "test", "-1x-1"),
                     )
