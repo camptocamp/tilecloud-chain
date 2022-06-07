@@ -1024,7 +1024,7 @@ class TileGeneration:
             for zoom in self.options.zoom:
                 if zoom > zoom_max:
                     logger.warning(
-                        "zoom %i is greater than the maximum zoom %i" " of grid %s of layer %s, ignored.",
+                        "zoom %i is greater than the maximum zoom %i of grid %s of layer %s, ignored.",
                         zoom,
                         zoom_max,
                         layer["grid"],
