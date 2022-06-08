@@ -2,11 +2,10 @@ name: Auto reviews updates
 
 on:
   pull_request:
-  workflow_run:
-    workflows:
-      - None
     types:
-      - completed
+      - opened
+      - reopened
+      - synchronize
 
 jobs:
   auto-merge:
