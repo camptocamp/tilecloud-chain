@@ -20,6 +20,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
 
 
 # Used to convert the locked packages by poetry to pip requirements format
+# We don't directly use `poetry install` because it force to use a virtual environment.
 FROM base-all as poetry
 
 # Install poetry
@@ -47,8 +48,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
   ${DEV_PACKAGES} && \
-  python3 -m pip install --disable-pip-version-check --no-cache-dir \
-  --requirement=/poetry/requirements.txt && \
+  python3 -m pip install --disable-pip-version-check --requirement=/poetry/requirements.txt && \
   python3 -m compileall /usr/local/lib/python3.8 /usr/lib/python3.8 && \
   strip /usr/local/lib/python3.8/dist-packages/shapely/*/*.so && \
   apt-get remove --purge --autoremove --yes ${DEV_PACKAGES} binutils
