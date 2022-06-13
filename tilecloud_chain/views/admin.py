@@ -74,8 +74,8 @@ class Admin:
             "auth_type": auth_type(self.request.registry.settings),
             "has_access": check_access(
                 self.request,
-                config.config["authentication"]["github_repository"],
-                config.config["authentication"]["github_access"],
+                config.config.get("authentication", {}).get("github_repository"),
+                config.config.get("authentication", {}).get("github_access"),
             ),
             "user_url": user.get("url"),
             "user_name": user.get("name"),
