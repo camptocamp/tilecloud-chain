@@ -153,3 +153,5 @@ provider:
         postal_code: 3000
         country: Switzerland
         email: info@example.com
+
+server: {}
