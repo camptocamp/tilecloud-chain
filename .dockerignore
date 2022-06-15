@@ -1,6 +1,4 @@
 *
-!setup.py
-!setup.cfg
 !requirements.txt
 !poetry.lock
 !pyproject.toml
@@ -12,6 +10,3 @@
 !development.ini
 !production.ini
 !gunicorn.conf.py
-!.prospector.yaml
-!.bandit.yaml
-!jsonschema-gentypes.yaml

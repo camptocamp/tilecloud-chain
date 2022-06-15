@@ -1,7 +1,11 @@
 {
-  extends: ['config:base', 'schedule:earlyMondays'],
-  baseBranches: ['master', '1.17'],
+  extends: ['config:base'],
+  timezone: 'Europe/Zurich',
+  schedule: 'before 1am on Monday',
+  labels: ['dependencies'],
   separateMajorMinor: true,
+  separateMinorPatch: true,
+  baseBranches: ['master', '1.17'],
   lockFileMaintenance: { enabled: true, automerge: true },
   packageRules: [
     /** Automerge the patch, the minor and the dev dependency */

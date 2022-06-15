@@ -40,7 +40,7 @@ services:
       - redis_master
 
   test:
-    image: camptocamp/tilecloud-chain:tests
+    image: camptocamp/tilecloud-chain-tests
     working_dir: /app
     environment:
       CI: 'true'

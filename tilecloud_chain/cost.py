@@ -1,7 +1,7 @@
-from argparse import ArgumentParser, Namespace
-from datetime import timedelta
 import logging
 import sys
+from argparse import ArgumentParser, Namespace
+from datetime import timedelta
 from typing import Iterable, Iterator, Tuple
 
 from tilecloud import Tile, TileStore

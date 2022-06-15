@@ -1,33 +1,31 @@
 # Base of all section, install the apt packages
 FROM osgeo/gdal:ubuntu-small-3.5.0 as base-all
-LABEL maintainer "info@camptocamp.org"
-
-# Workaround for setuptools >= 60.0.0
-ENV SETUPTOOLS_USE_DISTUTILS=stdlib
+LABEL maintainer Camptocamp "info@camptocamp.com"
+SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
     && apt-get upgrade --assume-yes \
-    && DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
+    && apt-get install --assume-yes --no-install-recommends \
         libmapnik3.0 mapnik-utils \
         libdb5.3 \
         fonts-dejavu \
         node-carto \
         optipng jpegoptim \
         postgresql-client-12 net-tools iputils-ping \
-        python3-pip python3-wheel
+        python3-pip \
+    && python3 -m pip install --disable-pip-version-check --upgrade pip
 
 # Used to convert the locked packages by poetry to pip requirements format
 # We don't directly use `poetry install` because it force to use a virtual environment.
 FROM base-all as poetry
 
-# Install poetry
+# Install Poetry
 WORKDIR /tmp
 COPY requirements.txt ./
 RUN --mount=type=cache,target=/root/.cache \
-    python3 -m pip install --disable-pip-version-check --requirement=requirements.txt \
-    && rm requirements.txt
+    python3 -m pip install --disable-pip-version-check --requirement=requirements.txt
 
 # Do the conversion
 COPY poetry.lock pyproject.toml ./
@@ -44,9 +42,8 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     DEV_PACKAGES="python3.8-dev build-essential libgeos-dev libmapnik-dev libpq-dev \
   build-essential python3-dev" \
     && apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
-        ${DEV_PACKAGES} \
-    && python3 -m pip install --disable-pip-version-check --requirement=/poetry/requirements.txt \
+    && apt-get install --assume-yes --no-install-recommends ${DEV_PACKAGES} \
+    && python3 -m pip install --disable-pip-version-check --no-deps --requirement=/poetry/requirements.txt \
     && python3 -m compileall /usr/local/lib/python3.8 /usr/lib/python3.8 \
     && strip /usr/local/lib/python3.8/dist-packages/shapely/*/*.so \
     && apt-get remove --purge --autoremove --yes ${DEV_PACKAGES} binutils
@@ -107,9 +104,9 @@ WORKDIR /app/
 FROM base as runner
 
 COPY . /app/
-
-RUN \
-    python3 -m pip install --disable-pip-version-check --no-deps --no-cache-dir --editable=. \
+RUN --mount=type=cache,target=/root/.cache \
+    sed --in-place 's/enable = true # disable on Docker/enable = false/g' pyproject.toml \
+    && python3 -m pip install --disable-pip-version-check --no-deps --editable=. \
     && mv docker/run /usr/bin/ \
     && python3 -m compileall -q /app/tilecloud_chain
 
@@ -118,11 +115,12 @@ FROM base as tests
 
 RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/poetry \
-    python3 -m pip install --disable-pip-version-check --requirement=/poetry/requirements-dev.txt
+    python3 -m pip install --disable-pip-version-check --no-deps --requirement=/poetry/requirements-dev.txt
 
 COPY . /app/
-RUN prospector --output-format=pylint
-RUN python3 -m pip install --disable-pip-version-check --no-deps --no-cache-dir --editable=.
+RUN --mount=type=cache,target=/root/.cache \
+    sed --in-place 's/enable = true # disable on Docker/enable = false/g' pyproject.toml \
+    && python3 -m pip install --disable-pip-version-check --no-deps --editable=.
 
 ENV TILEGENERATION_MAIN_CONFIGFILE=
 

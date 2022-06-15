@@ -34,14 +34,14 @@ import subprocess  # nosec
 from typing import Any, Dict
 from urllib.parse import urljoin
 
-from c2cwsgiutils.auth import AuthenticationType, auth_type, auth_view, check_access, is_auth_user
 import pyramid.httpexceptions
 import pyramid.request
 import pyramid.response
+from c2cwsgiutils.auth import AuthenticationType, auth_type, auth_view, check_access, is_auth_user
 from pyramid.view import view_config
 
-from tilecloud_chain.controller import get_status
 import tilecloud_chain.server
+from tilecloud_chain.controller import get_status
 
 LOG = logging.getLogger(__name__)
 

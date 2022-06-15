@@ -1,18 +1,18 @@
-from argparse import ArgumentParser, Namespace
-from datetime import datetime
-from getpass import getuser
 import logging
 import os
 import random
 import socket
 import sys
+from argparse import ArgumentParser, Namespace
+from datetime import datetime
+from getpass import getuser
 from typing import Callable, Optional, cast
 
 import boto3
 from c2cwsgiutils import stats
 
-from tilecloud import Tile, TileCoord, TileStore
 import tilecloud.filter.error
+from tilecloud import Tile, TileCoord, TileStore
 from tilecloud.filter.logger import Logger
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.store.url import URLTileStore

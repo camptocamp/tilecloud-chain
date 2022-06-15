@@ -1,11 +1,11 @@
-from argparse import ArgumentParser, Namespace
 import logging
 import os
 import sys
+from argparse import ArgumentParser, Namespace
 from typing import cast
 
-from tilecloud_chain import Count, DropEmpty, HashDropper, TileGeneration, add_common_options
 import tilecloud_chain.configuration
+from tilecloud_chain import Count, DropEmpty, HashDropper, TileGeneration, add_common_options
 from tilecloud_chain.format import duration_format, size_format
 
 logger = logging.getLogger(__name__)

@@ -2,11 +2,11 @@ import logging
 import sys
 import time
 
-from c2cwsgiutils import stats
 import psycopg2.sql
+from c2cwsgiutils import stats
 
-from tilecloud import Tile
 import tilecloud_chain.configuration
+from tilecloud import Tile
 
 logger = logging.getLogger(__name__)
 

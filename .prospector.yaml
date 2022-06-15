@@ -19,7 +19,7 @@ pylint:
     - too-many-lines
     - too-many-public-methods
     - too-few-public-methods
-    - wrong-import-order # done by isore
+    - wrong-import-order # done by isort
     - line-too-long # done by black
     - no-else-return
     - no-else-break
@@ -60,3 +60,6 @@ bandit:
   run: true
   options:
     config: .bandit.yaml
+
+pyorama:
+  run: true
