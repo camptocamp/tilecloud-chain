@@ -10,7 +10,7 @@ authors = []
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-c2cwsgiutils = "5.1.0.dev20220615103822"
+c2cwsgiutils = "5.1.0.dev20220620050632"
 pyramid-mako = "1.1.0"
 python-dateutil = "2.8.2"
 tilecloud = "1.8.0"
@@ -39,5 +39,5 @@ coverage = "6.4.1"
 testfixtures = "6.18.5"
 pytest = "7.1.2"
 prospector = {extras = ["with_mypy", "with_bandit"], version = "1.7.7"}
-types-redis = "4.2.7"
+types-redis = "4.2.8"
 types-requests = "2.27.30"

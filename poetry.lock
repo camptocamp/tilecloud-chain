@@ -143,7 +143,7 @@ python-versions = "*"
 
 [[package]]
 name = "c2cwsgiutils"
-version = "5.1.0.dev20220615103822"
+version = "5.1.0.dev20220620050632"
 description = "Common utilities for Camptocamp WSGI applications"
 category = "main"
 optional = false
@@ -1350,7 +1350,7 @@ docs = ["Sphinx (>=1.3.1)", "docutils", "pylons-sphinx-themes"]
 
 [[package]]
 name = "types-redis"
-version = "4.2.7"
+version = "4.2.8"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1512,7 +1512,7 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "93c75751846bb3f33681540c35e0ddd18b54ea7a941006654fca17dddd38531f"
+content-hash = "0e2f6b9f961604ffc42af929e9ab40da9761c8e852bce62cb048cc37898851b5"
 
 [metadata.files]
 astroid = [
@@ -1560,7 +1560,7 @@ bottle = [
     {file = "bottle-0.12.21.tar.gz", hash = "sha256:787c61b6cc02b9c229bf2663011fac53dd8fc197f7f8ad2eeede29d888d7887e"},
 ]
 c2cwsgiutils = [
-    {file = "c2cwsgiutils-5.1.0.dev20220615103822-py3-none-any.whl", hash = "sha256:092c8bd663a575e0938f49ee1c3907b74ecc765949006afb656ae24d1c0de41f"},
+    {file = "c2cwsgiutils-5.1.0.dev20220620050632-py3-none-any.whl", hash = "sha256:038a130ece24bd828c610dcd88f4fe166597764a0f9f8b9eddc2f5aa2a0a3614"},
 ]
 cee-syslog-handler = [
     {file = "cee_syslog_handler-0.6.0-py3-none-any.whl", hash = "sha256:13b60f5b4f9f04e2868316d88bf63d51b4b4b273ba7df12af6f21ee10e223ca3"},
@@ -2405,8 +2405,8 @@ translationstring = [
     {file = "translationstring-1.4.tar.gz", hash = "sha256:bf947538d76e69ba12ab17283b10355a9ecfbc078e6123443f43f2107f6376f3"},
 ]
 types-redis = [
-    {file = "types-redis-4.2.7.tar.gz", hash = "sha256:eece573e8dfd51238fae1df84d3602335fbcbd3ba8b064081cc0ff8ec1f058a1"},
-    {file = "types_redis-4.2.7-py3-none-any.whl", hash = "sha256:1362d1dd69e8d6688a192c36c29b7ee61d67196df28ff40610013353023571bd"},
+    {file = "types-redis-4.2.8.tar.gz", hash = "sha256:2fe34d40bc7851db8752cda6210c4a8becd1bafd9adb5df189e11583770bf9a0"},
+    {file = "types_redis-4.2.8-py3-none-any.whl", hash = "sha256:ab0136dfd489dbd7e041dc77089dbc2239305f8e421bf92506db26b57ffaf1d3"},
 ]
 types-requests = [
     {file = "types-requests-2.27.30.tar.gz", hash = "sha256:ca8d7cc549c3d10dbcb3c69c1b53e3ffd1270089c1001a65c1e9e1017eb5e704"},
