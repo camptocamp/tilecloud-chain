@@ -3,6 +3,9 @@ name = "pypi"
 url = "https://pypi.org/simple/"
 verify_ssl = true
 
+[requires]
+python_version = "3.8"
+
 [packages]
 c2cwsgiutils = "==4.0.1"
 pykwalify = "==1.7.0"
@@ -30,7 +33,7 @@ setuptools = "==45.2.0"
 "azure-storage-blob" = "==12.8.0"
 "boto3" = "==1.20.46"
 "botocore" = "==1.23.46"
-"bottle" = "==0.12.19"
+"bottle" = "==0.12.20"
 "certifi" = "==2020.6.20"
 "cffi" = "==1.14.5"
 "chardet" = "==3.0.4"
