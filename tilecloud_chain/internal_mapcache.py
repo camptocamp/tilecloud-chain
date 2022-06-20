@@ -10,9 +10,9 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, Optional, TypeVar, cast
 
 import redis.sentinel
 
+import tilecloud_chain.configuration
 from tilecloud import Tile, TileCoord, TileStore
 from tilecloud_chain import Run
-import tilecloud_chain.configuration
 from tilecloud_chain.generate import Generate
 
 if TYPE_CHECKING:

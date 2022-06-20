@@ -1,6 +1,6 @@
-from itertools import product, repeat
 import os
 import shutil
+from itertools import product, repeat
 from typing import List, Tuple
 
 import pytest

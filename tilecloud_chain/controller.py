@@ -1,29 +1,30 @@
+import logging
+import math
+import os
+import pkgutil
+import sys
 from argparse import ArgumentParser
 from copy import copy
 from hashlib import sha1
 from io import BytesIO, StringIO
-import logging
-import math
 from math import exp, log
-import os
-import pkgutil
-import sys
 from typing import List, Optional, Union, cast
 from urllib.parse import urlencode, urljoin
 
-from PIL import Image
+import botocore.exceptions
+import requests
+import ruamel.yaml
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient, ContentSettings
-import botocore.exceptions
 from bottle import jinja2_template
 from c2cwsgiutils import stats
-import requests
-import ruamel.yaml
+from PIL import Image
 
-from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
 import tilecloud.store.redis
 import tilecloud.store.s3
+import tilecloud_chain.configuration
+from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
 from tilecloud_chain import (
     DatedConfig,
     TileGeneration,
@@ -31,7 +32,6 @@ from tilecloud_chain import (
     get_queue_store,
     get_tile_matrix_identifier,
 )
-import tilecloud_chain.configuration
 
 logger = logging.getLogger(__name__)
 

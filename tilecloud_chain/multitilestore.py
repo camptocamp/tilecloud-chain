@@ -1,5 +1,5 @@
-from itertools import chain, groupby, starmap
 import logging
+from itertools import chain, groupby, starmap
 from typing import Callable, Dict, Iterable, Iterator, Optional, Tuple
 
 from tilecloud import Tile, TileStore

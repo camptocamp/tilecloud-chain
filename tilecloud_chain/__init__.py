@@ -1,15 +1,7 @@
-from argparse import ArgumentParser, Namespace
 import collections
-from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timedelta
-from fractions import Fraction
-from hashlib import sha1
-from io import BytesIO
-from itertools import product
 import json
 import logging
 import logging.config
-from math import ceil, sqrt
 import os
 import pathlib
 import pkgutil
@@ -21,6 +13,14 @@ import sys
 import tempfile
 import threading
 import time
+from argparse import ArgumentParser, Namespace
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta
+from fractions import Fraction
+from hashlib import sha1
+from io import BytesIO
+from itertools import product
+from math import ceil, sqrt
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -37,22 +37,23 @@ from typing import (
     cast,
 )
 
-from PIL import Image
 import boto3
 import botocore.client
-from c2cwsgiutils import sentry, stats
 import c2cwsgiutils.setup_process
-from jsonschema_gentypes import validate
 import psycopg2
 import pyramid.scripts.common
+from c2cwsgiutils import sentry, stats
+from jsonschema_gentypes import validate
+from PIL import Image
 from ruamel.yaml import YAML
 from shapely.geometry.base import BaseGeometry
 from shapely.geometry.polygon import Polygon
 from shapely.ops import unary_union
 from shapely.wkb import loads as loads_wkb
 
-from tilecloud import BoundingPyramid, Tile, TileCoord, TileGrid, TileStore, consume
 import tilecloud.filter.error
+import tilecloud_chain.configuration
+from tilecloud import BoundingPyramid, Tile, TileCoord, TileGrid, TileStore, consume
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
 from tilecloud.filter.logger import Logger
 from tilecloud.grid.free import FreeTileGrid
@@ -64,7 +65,6 @@ from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.store.redis import RedisTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.sqs import SQSTileStore, maybe_stop
-import tilecloud_chain.configuration
 from tilecloud_chain.multitilestore import MultiTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 

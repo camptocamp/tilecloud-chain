@@ -1,33 +1,71 @@
 [tool.black]
 line-length = 110
-target-version = ['py38']
+target-version = ["py38"]
+
+[tool.mypy]
+python_version = 3.8
+warn_redundant_casts = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+strict = true
+
+[tool.isort]
+known_first_party = "tilecloud"
+known_third_party = "c2cwsgiutils"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = false
+use_parentheses = true
+line_length = 110
 
 [tool.poetry]
-name = 'tilecloud-chain'
-version = '0.0.0'
-description = 'Not used'
-authors = []
+name = "tilecloud-chain"
+version = "0.0.0"
+description = "Tools to generate tiles from WMS or Mapnik, to S3, Berkeley DB, MBTiles, or local filesystem in WMTS layout using Amazon cloud services."
+readme = "README.md"
+authors = ["Camptocamp <info@camptocamp.com>"]
+repository = "https://github.com/camptocamp/tilecloud-chain"
+license = "BSD"
+keywords = ["gis", "tilecloud", "chain"]
+packages = [{ include = "tilecloud_chain" }]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: Pyramid",
+    "Intended Audience :: Other Audience",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Typing :: Typed",
+]
+include = ["tilecloud_chain/py.typed"]
+
+[tool.poetry.scripts]
+generate-tiles = "tilecloud_chain.generate:main"
+generate-controller = "tilecloud_chain.controller:main"
+generate-cost = "tilecloud_chain.cost:main"
+generate-copy = "tilecloud_chain.copy_:main"
+generate-process = "tilecloud_chain.copy_:process"
+import-expiretiles = "tilecloud_chain.expiretiles:main"
+
+[tool.poetry.plugins."pyramid.scaffold"]
+tilecloud_chain = "tilecloud_chain.scaffolds:Create"
+
+[tool.poetry.plugins."paste.app_factory"]
+main = "tilecloud_chain.server:main"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-c2cwsgiutils = "5.1.0.dev20220615103822"
+c2cwsgiutils = {version = "5.1.0.dev20220615103822", extras = ["standard", "broadcast"]}
 pyramid-mako = "1.1.0"
 python-dateutil = "2.8.2"
 tilecloud = "1.8.0"
 Jinja2 = "3.1.2"
 PyYAML = "6.0"
 Shapely = "1.8.2"
-cee_syslog_handler = "0.6.0"  # c2cwsgiutils
-gunicorn = "20.1.0"  # c2cwsgiutils
-objgraph = "3.5.0"  # c2cwsgiutils
-psycopg2 = "2.9.3"  # c2cwsgiutils
-pyramid-tm = "2.5"  # c2cwsgiutils
-sentry-sdk = "1.5.12"  # c2cwsgiutils
-sqlalchemy = "1.4.37"  # c2cwsgiutils
-transaction = "3.0.1"  # c2cwsgiutils
-ujson = "5.3.0"  # c2cwsgiutils
-cornice = "6.0.1"  # c2cwsgiutils
-"zope.sqlalchemy" = "1.6"  # c2cwsgiutils
 jsonschema = "4.6.0"
 pyramid = "2.0"
 jsonschema-gentypes = "1.0.0"
@@ -35,9 +73,24 @@ azure-storage-blob = "12.12.0"
 waitress = "2.1.2"
 
 [tool.poetry.dev-dependencies]
-coverage = "6.4.1"
-testfixtures = "6.18.5"
+prospector = {extras = ["with_mypy", "with_bandit", "with_pyorama"], version = "1.7.7"}
+pylint = "2.14.1"
+mypy = "0.961"
+flake8 = "4.0.1"
 pytest = "7.1.2"
-prospector = {extras = ["with_mypy", "with_bandit"], version = "1.7.7"}
+testfixtures = "6.18.5"
+coverage = "6.4.1"
 types-redis = "4.2.7"
 types-requests = "2.27.30"
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry-dynamic-versioning]
+enable = true # disable on Docker
+vcs = "git"
+pattern = "^((?P<epoch>\\d+)!)?(?P<base>\\d+(\\.\\d+)*)"
+
+[tool.poetry-plugin-tweak-dependencies-version]
+default = "present"

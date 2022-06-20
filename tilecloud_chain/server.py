@@ -34,23 +34,23 @@ import time
 from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, Union, cast
 from urllib.parse import parse_qs, urlencode
 
-from azure.core.exceptions import ResourceNotFoundError
 import botocore.exceptions
-from c2cwsgiutils import health_check
 import c2cwsgiutils.pyramid
+import pyramid.response
+import pyramid.session
+import requests
+from azure.core.exceptions import ResourceNotFoundError
+from c2cwsgiutils import health_check
 from pyramid.config import Configurator
 from pyramid.httpexceptions import HTTPException, exception_response
 from pyramid.request import Request
-import pyramid.response
 from pyramid.router import Router
-import pyramid.session
 from pyramid_mako import add_mako_renderer
-import requests
 
-from tilecloud import Tile, TileCoord
 import tilecloud.store.s3
-from tilecloud_chain import TileGeneration, controller, internal_mapcache
 import tilecloud_chain.configuration
+from tilecloud import Tile, TileCoord
+from tilecloud_chain import TileGeneration, controller, internal_mapcache
 from tilecloud_chain.controller import get_azure_client
 
 logger = logging.getLogger(__name__)

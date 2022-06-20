@@ -1,12 +1,27 @@
 export DOCKER_BUILDKIT=1
 
+.PHONY: help
+help: ## Display this help message
+	@echo "Usage: make <target>"
+	@echo
+	@echo "Available targets:"
+	@grep --extended-regexp --no-filename '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | sort | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "	%-20s%s\n", $$1, $$2}'
+
 PHONY: build
-build:
-	docker build --tag=camptocamp/tilecloud-chain:tests --target=tests .
+build: ## Build all Docker images
+	docker build --tag=camptocamp/tilecloud-chain-tests --target=tests .
 	docker build --tag=camptocamp/tilecloud-chain .
 
+PHONY: checks
+checks: prospector ## Run the checks
+
+PHONY: prospector
+prospector: ## Run Prospector
+	docker run --rm --volume=${PWD}:/app camptocamp/tilecloud-chain-tests prospector --output-format=pylint --die-on-tool-error
+
 PHONY: tests
-tests: build
+tests: build ## Run the unit tests
 	docker-compose stop --timeout=0
 	docker-compose down || true
 	docker-compose up -d
@@ -39,5 +54,5 @@ tests-fast:
 	docker-compose exec -T test pytest --exitfirst #--last-failed
 
 PHONY: jsonschema
-jsonschema:
+jsonschema: ## Generate the files related to the JSON schema
 	jsonschema-gentypes

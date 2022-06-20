@@ -1,6 +1,6 @@
-from argparse import ArgumentParser
 import logging
 import sys
+from argparse import ArgumentParser
 
 import psycopg2.sql
 from shapely.geometry import MultiPolygon, Polygon

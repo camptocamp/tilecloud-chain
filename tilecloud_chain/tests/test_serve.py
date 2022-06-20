@@ -1,9 +1,9 @@
 import os
 import shutil
 
+import pytest
 from pyramid.httpexceptions import HTTPBadRequest, HTTPNoContent
 from pyramid.testing import DummyRequest
-import pytest
 from testfixtures import LogCapture
 
 from tilecloud_chain import controller, generate, server
