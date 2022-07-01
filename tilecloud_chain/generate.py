@@ -523,7 +523,9 @@ def main() -> None:
             detach()
 
         gene = TileGeneration(
-            config_file=options.config, options=options, multi_thread=options.get_hash is None
+            config_file=options.config or os.environ.get("TILEGENERATION_CONFIGFILE"),
+            options=options,
+            multi_thread=options.get_hash is None,
         )
 
         if (
