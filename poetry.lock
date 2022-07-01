@@ -128,14 +128,14 @@ python-versions = "*"
 
 [[package]]
 name = "boto3"
-version = "1.24.9"
+version = "1.24.21"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 
 [package.dependencies]
-botocore = ">=1.27.9,<1.28.0"
+botocore = ">=1.27.21,<1.28.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -144,7 +144,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.27.9"
+version = "1.27.21"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -1639,7 +1639,7 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "8f822fd080cfe996d85895acbf6fe674f5ff0ef27013a20f914bcaf7267dec6f"
+content-hash = "28e3492815fc82e1ab909d839f570c727e56e03f3279fb35e6bb2b3ee02829dd"
 
 [metadata.files]
 alembic = [
@@ -1683,12 +1683,12 @@ boltons = [
     {file = "boltons-21.0.0.tar.gz", hash = "sha256:65e70a79a731a7fe6e98592ecfb5ccf2115873d01dbc576079874629e5c90f13"},
 ]
 boto3 = [
-    {file = "boto3-1.24.9-py3-none-any.whl", hash = "sha256:87d34861727699c795bf8d65703f2435e75f12879bdd483e08b35b7c5510e8c8"},
-    {file = "boto3-1.24.9.tar.gz", hash = "sha256:0821212ff521cb934801b1f655cef3c0e976775324b1018f1751700d0f42dbb4"},
+    {file = "boto3-1.24.21-py3-none-any.whl", hash = "sha256:abe5b44010e3f50c5e0243aa4fc2338f10e5a868413faa0d6ae79131d6b507b8"},
+    {file = "boto3-1.24.21.tar.gz", hash = "sha256:551e902b70ccf9f6a58e28bb409718a0403b021b17ff6d63ab0b9af5a122386e"},
 ]
 botocore = [
-    {file = "botocore-1.27.9-py3-none-any.whl", hash = "sha256:5669b982b0583e73daef1fe0a4df311055e6287326f857dbb1dcc2de1d8412ad"},
-    {file = "botocore-1.27.9.tar.gz", hash = "sha256:7a7588b0170e571317496ac4104803329d5bc792bc008e8a757ffd440f1b6fa6"},
+    {file = "botocore-1.27.21-py3-none-any.whl", hash = "sha256:3bafa8e773d207c0ce02c63790a8820562e22d2e892abaf1eb90c343e995218a"},
+    {file = "botocore-1.27.21.tar.gz", hash = "sha256:b685ffc0ac170bf7de5fde931504eccd939f8545a9c9d10259245ca4c91101e5"},
 ]
 bottle = [
     {file = "bottle-0.12.21-py3-none-any.whl", hash = "sha256:6e1c9817019dae3a8c20adacaf09035251798d2ae2fcc8ce43157ee72965f257"},
