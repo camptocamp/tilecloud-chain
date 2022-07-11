@@ -1398,16 +1398,16 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
 name = "testfixtures"
-version = "6.18.5"
+version = "7.0.0"
 description = "A collection of helpers and mock objects for unit tests and doc tests."
 category = "dev"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 
 [package.extras]
 build = ["setuptools-git", "wheel", "twine"]
-docs = ["sphinx", "zope.component", "sybil", "twisted", "mock", "django (<2)", "django"]
-test = ["pytest (>=3.6)", "pytest-cov", "pytest-django", "zope.component", "sybil", "twisted", "mock", "django (<2)", "django"]
+docs = ["sphinx", "furo", "zope.component", "django", "sybil (>=3)", "twisted"]
+test = ["mypy", "pytest (>=3.6)", "pytest-cov", "pytest-django", "zope.component", "django", "sybil (>=3)", "twisted"]
 
 [[package]]
 name = "tilecloud"
@@ -1634,7 +1634,7 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "a8674bb41ee14b7a9877f73d8fc3d4f88e38bc351a12daab689841010348e106"
+content-hash = "82b58c0e4cf0b9837a7ec07ffa04d43cb14ec0a761d0f21071edcb9410cbfe80"
 
 [metadata.files]
 alembic = [
@@ -2656,8 +2656,8 @@ stevedore = [
     {file = "stevedore-3.5.0.tar.gz", hash = "sha256:f40253887d8712eaa2bb0ea3830374416736dc8ec0e22f5a65092c1174c44335"},
 ]
 testfixtures = [
-    {file = "testfixtures-6.18.5-py2.py3-none-any.whl", hash = "sha256:7de200e24f50a4a5d6da7019fb1197aaf5abd475efb2ec2422fdcf2f2eb98c1d"},
-    {file = "testfixtures-6.18.5.tar.gz", hash = "sha256:02dae883f567f5b70fd3ad3c9eefb95912e78ac90be6c7444b5e2f46bf572c84"},
+    {file = "testfixtures-7.0.0-py3-none-any.whl", hash = "sha256:ae95a0522f181686204fc816e817c4725516cf5bc43360160390aad54b1dfd00"},
+    {file = "testfixtures-7.0.0.tar.gz", hash = "sha256:8ecac5a308793451640594d9ca42ce89b987711e1e4c9312855321ec21f6ccb4"},
 ]
 tilecloud = [
     {file = "tilecloud-1.8.2-py3-none-any.whl", hash = "sha256:f1542902c157ff8ab1551040299941838203bb871606aa31bc931d33b8d8146e"},
