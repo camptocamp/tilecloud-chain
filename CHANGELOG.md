@@ -10,6 +10,7 @@
 
 #### :wrench: Build, CI, Tests, Code style
 
+- Update the changelog [\#1717](https://github.com/camptocamp/tilecloud-chain/pull/1717) ([github-actions[bot]](https://github.com/apps/github-actions))
 - Fix the changelog [\#1716](https://github.com/camptocamp/tilecloud-chain/pull/1716) ([sbrunner](https://github.com/sbrunner))
 
 #### :package: Dependencies update
@@ -393,7 +394,7 @@
 - Add types [\#1170](https://github.com/camptocamp/tilecloud-chain/pull/1170) ([sbrunner](https://github.com/sbrunner))
 - Use native Redis lock instead of unmaintained redlock-py [\#1169](https://github.com/camptocamp/tilecloud-chain/pull/1169) ([sbrunner](https://github.com/sbrunner))
 - \[Backport master\] \[Backport 1.16\] Better logs [\#1166](https://github.com/camptocamp/tilecloud-chain/pull/1166) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
-- \[Backport master\] \[Backport 1.16\] Disable maxconsecutive\_errors on server [\#1162](https://github.com/camptocamp/tilecloud-chain/pull/1162) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
+- \[Backport master\] \[Backport 1.16\] Disable maxconsecutive_errors on server [\#1162](https://github.com/camptocamp/tilecloud-chain/pull/1162) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
 - \[Backport master\] Add log on error [\#1157](https://github.com/camptocamp/tilecloud-chain/pull/1157) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
 - \[Backport master\] Add jpegoptim [\#1144](https://github.com/camptocamp/tilecloud-chain/pull/1144) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
 - Fix code in the readme [\#1132](https://github.com/camptocamp/tilecloud-chain/pull/1132) ([sbrunner](https://github.com/sbrunner))
@@ -837,11 +838,11 @@
 
 **Merged pull requests:**
 
-- Don't fetch the just generated tile  [\#744](https://github.com/camptocamp/tilecloud-chain/pull/744) ([sbrunner](https://github.com/sbrunner))
-- \[Backport master\] Fix no connection\_kwargs in config [\#702](https://github.com/camptocamp/tilecloud-chain/pull/702) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
+- Don't fetch the just generated tile [\#744](https://github.com/camptocamp/tilecloud-chain/pull/744) ([sbrunner](https://github.com/sbrunner))
+- \[Backport master\] Fix no connection_kwargs in config [\#702](https://github.com/camptocamp/tilecloud-chain/pull/702) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
 - Add missing skip CI [\#701](https://github.com/camptocamp/tilecloud-chain/pull/701) ([sbrunner](https://github.com/sbrunner))
 - \[Backport master\] Be able to have Redis options [\#699](https://github.com/camptocamp/tilecloud-chain/pull/699) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
-- Use GDAL as base image  [\#564](https://github.com/camptocamp/tilecloud-chain/pull/564) ([sbrunner](https://github.com/sbrunner))
+- Use GDAL as base image [\#564](https://github.com/camptocamp/tilecloud-chain/pull/564) ([sbrunner](https://github.com/sbrunner))
 - Remove unworking dependabot rules [\#561](https://github.com/camptocamp/tilecloud-chain/pull/561) ([sbrunner](https://github.com/sbrunner))
 - Fix rebuild [\#559](https://github.com/camptocamp/tilecloud-chain/pull/559) ([sbrunner](https://github.com/sbrunner))
 - Use safety to avoid simple security in dependencies [\#555](https://github.com/camptocamp/tilecloud-chain/pull/555) ([sbrunner](https://github.com/sbrunner))
@@ -868,9 +869,9 @@
 - Add more information [\#479](https://github.com/camptocamp/tilecloud-chain/pull/479) ([sbrunner](https://github.com/sbrunner))
 - Security note [\#478](https://github.com/camptocamp/tilecloud-chain/pull/478) ([sbrunner](https://github.com/sbrunner))
 - \[Backport master\] Fix var completion in logging configuration [\#475](https://github.com/camptocamp/tilecloud-chain/pull/475) ([backporting[bot]](https://github.com/apps/backporting))
-- \[Backport master\] Fix the logging to use the production.ini  [\#471](https://github.com/camptocamp/tilecloud-chain/pull/471) ([backporting[bot]](https://github.com/apps/backporting))
+- \[Backport master\] Fix the logging to use the production.ini [\#471](https://github.com/camptocamp/tilecloud-chain/pull/471) ([backporting[bot]](https://github.com/apps/backporting))
 - Set a ttl for tiles stored in Redis [\#455](https://github.com/camptocamp/tilecloud-chain/pull/455) ([pvalsecc](https://github.com/pvalsecc))
--  Cache the no content responses  [\#454](https://github.com/camptocamp/tilecloud-chain/pull/454) ([sbrunner](https://github.com/sbrunner))
+- Cache the no content responses [\#454](https://github.com/camptocamp/tilecloud-chain/pull/454) ([sbrunner](https://github.com/sbrunner))
 - Fix static path test [\#451](https://github.com/camptocamp/tilecloud-chain/pull/451) ([arnaud-morvan](https://github.com/arnaud-morvan))
 
 ## [1.14.0](https://github.com/camptocamp/tilecloud-chain/tree/1.14.0) (2020-05-11)
@@ -1134,7 +1135,7 @@
 
 **Merged pull requests:**
 
-- Add missing generate\_controller --status for redis [\#381](https://github.com/camptocamp/tilecloud-chain/pull/381) ([pvalsecc](https://github.com/pvalsecc))
+- Add missing generate_controller --status for redis [\#381](https://github.com/camptocamp/tilecloud-chain/pull/381) ([pvalsecc](https://github.com/pvalsecc))
 
 ## [1.7.1](https://github.com/camptocamp/tilecloud-chain/tree/1.7.1) (2018-08-08)
 
@@ -1169,7 +1170,7 @@
 
 **Merged pull requests:**
 
-- Improve await\_message [\#377](https://github.com/camptocamp/tilecloud-chain/pull/377) ([pvalsecc](https://github.com/pvalsecc))
+- Improve await_message [\#377](https://github.com/camptocamp/tilecloud-chain/pull/377) ([pvalsecc](https://github.com/pvalsecc))
 - Less strict schema [\#367](https://github.com/camptocamp/tilecloud-chain/pull/367) ([sbrunner](https://github.com/sbrunner))
 - Bump the version to 1.6.0 [\#366](https://github.com/camptocamp/tilecloud-chain/pull/366) ([sbrunner](https://github.com/sbrunner))
 - Set a more pertinant working directory [\#365](https://github.com/camptocamp/tilecloud-chain/pull/365) ([sbrunner](https://github.com/sbrunner))
@@ -1232,7 +1233,7 @@
 - \[requires.io\] dependency update on master branch [\#347](https://github.com/camptocamp/tilecloud-chain/pull/347) ([sdebayle](https://github.com/sdebayle))
 - \[requires.io\] dependency update on master branch [\#346](https://github.com/camptocamp/tilecloud-chain/pull/346) ([sdebayle](https://github.com/sdebayle))
 - Be able to provide a layer title [\#349](https://github.com/camptocamp/tilecloud-chain/pull/349) ([sbrunner](https://github.com/sbrunner))
-- Add metrics to generate\_controller --status [\#345](https://github.com/camptocamp/tilecloud-chain/pull/345) ([pvalsecc](https://github.com/pvalsecc))
+- Add metrics to generate_controller --status [\#345](https://github.com/camptocamp/tilecloud-chain/pull/345) ([pvalsecc](https://github.com/pvalsecc))
 
 ## [1.4.1](https://github.com/camptocamp/tilecloud-chain/tree/1.4.1) (2018-02-21)
 
@@ -1245,7 +1246,7 @@
 **Merged pull requests:**
 
 - Fix master mode when running on SQS [\#343](https://github.com/camptocamp/tilecloud-chain/pull/343) ([pvalsecc](https://github.com/pvalsecc))
-- Fix generate\_controller --status with SQS [\#341](https://github.com/camptocamp/tilecloud-chain/pull/341) ([pvalsecc](https://github.com/pvalsecc))
+- Fix generate_controller --status with SQS [\#341](https://github.com/camptocamp/tilecloud-chain/pull/341) ([pvalsecc](https://github.com/pvalsecc))
 
 ## [1.4.0](https://github.com/camptocamp/tilecloud-chain/tree/1.4.0) (2018-02-21)
 
@@ -1304,7 +1305,7 @@
 - Add daemon mode [\#281](https://github.com/camptocamp/tilecloud-chain/pull/281) ([alexbrault](https://github.com/alexbrault))
 - Add tile generation log to database [\#279](https://github.com/camptocamp/tilecloud-chain/pull/279) ([alexbrault](https://github.com/alexbrault))
 - Be able to get the SQS queue status [\#277](https://github.com/camptocamp/tilecloud-chain/pull/277) ([sbrunner](https://github.com/sbrunner))
-- Add + in url\_part pattern [\#276](https://github.com/camptocamp/tilecloud-chain/pull/276) ([arnaud-morvan](https://github.com/arnaud-morvan))
+- Add + in url_part pattern [\#276](https://github.com/camptocamp/tilecloud-chain/pull/276) ([arnaud-morvan](https://github.com/arnaud-morvan))
 
 ## [1.4.0.dev11](https://github.com/camptocamp/tilecloud-chain/tree/1.4.0.dev11) (2018-02-09)
 
@@ -1345,7 +1346,7 @@
 
 **Closed issues:**
 
-- missing username and password in database\_logger [\#303](https://github.com/camptocamp/tilecloud-chain/issues/303)
+- missing username and password in database_logger [\#303](https://github.com/camptocamp/tilecloud-chain/issues/303)
 
 ## [1.4.0.dev4](https://github.com/camptocamp/tilecloud-chain/tree/1.4.0.dev4) (2017-06-22)
 
@@ -1434,10 +1435,10 @@
 
 **Merged pull requests:**
 
-- Set the wmtscapabilities\_file for c2cgeoportal [\#250](https://github.com/camptocamp/tilecloud-chain/pull/250) ([sbrunner](https://github.com/sbrunner))
-- \[Fix the travis tests\] Don't stop on add geometry column  [\#248](https://github.com/camptocamp/tilecloud-chain/pull/248) ([sbrunner](https://github.com/sbrunner))
+- Set the wmtscapabilities_file for c2cgeoportal [\#250](https://github.com/camptocamp/tilecloud-chain/pull/250) ([sbrunner](https://github.com/sbrunner))
+- \[Fix the travis tests\] Don't stop on add geometry column [\#248](https://github.com/camptocamp/tilecloud-chain/pull/248) ([sbrunner](https://github.com/sbrunner))
 - Reorder parameters in apache rewrite rule and add + sign in token regex [\#247](https://github.com/camptocamp/tilecloud-chain/pull/247) ([arnaud-morvan](https://github.com/arnaud-morvan))
-- Fix typo in generate\_controller doc [\#246](https://github.com/camptocamp/tilecloud-chain/pull/246) ([asaunier](https://github.com/asaunier))
+- Fix typo in generate_controller doc [\#246](https://github.com/camptocamp/tilecloud-chain/pull/246) ([asaunier](https://github.com/asaunier))
 - Acctivate Python3 travis build [\#242](https://github.com/camptocamp/tilecloud-chain/pull/242) ([sbrunner](https://github.com/sbrunner))
 - Add Python3 support [\#241](https://github.com/camptocamp/tilecloud-chain/pull/241) ([sbrunner](https://github.com/sbrunner))
 - Completely remove buildout [\#240](https://github.com/camptocamp/tilecloud-chain/pull/240) ([sbrunner](https://github.com/sbrunner))
@@ -1480,7 +1481,7 @@
 - fix typo [\#223](https://github.com/camptocamp/tilecloud-chain/pull/223) ([ochriste](https://github.com/ochriste))
 - Fix rst files [\#221](https://github.com/camptocamp/tilecloud-chain/pull/221) ([sbrunner](https://github.com/sbrunner))
 - Fix readme [\#220](https://github.com/camptocamp/tilecloud-chain/pull/220) ([sbrunner](https://github.com/sbrunner))
-- Add optional tiles\_url for apache config and s3 cache [\#218](https://github.com/camptocamp/tilecloud-chain/pull/218) ([sbrunner](https://github.com/sbrunner))
+- Add optional tiles_url for apache config and s3 cache [\#218](https://github.com/camptocamp/tilecloud-chain/pull/218) ([sbrunner](https://github.com/sbrunner))
 - Some fixes in Readme [\#217](https://github.com/camptocamp/tilecloud-chain/pull/217) ([gberaudo](https://github.com/gberaudo))
 
 ## [0.9.0](https://github.com/camptocamp/tilecloud-chain/tree/0.9.0) (2014-08-19)
@@ -1494,7 +1495,7 @@
 **Closed issues:**
 
 - Syntax of error file [\#212](https://github.com/camptocamp/tilecloud-chain/issues/212)
-- document max\_resolution\_seed [\#208](https://github.com/camptocamp/tilecloud-chain/issues/208)
+- document max_resolution_seed [\#208](https://github.com/camptocamp/tilecloud-chain/issues/208)
 - double slashes if no dimension is set in the layer definition [\#207](https://github.com/camptocamp/tilecloud-chain/issues/207)
 - `http_url` \(or `http_urls`\) should never ends with a '/' [\#200](https://github.com/camptocamp/tilecloud-chain/issues/200)
 - url for wmtsGetCapability is illogical [\#194](https://github.com/camptocamp/tilecloud-chain/issues/194)
@@ -1529,7 +1530,7 @@
 
 **Merged pull requests:**
 
-- Update tests for Travis updates …  [\#204](https://github.com/camptocamp/tilecloud-chain/pull/204) ([sbrunner](https://github.com/sbrunner))
+- Update tests for Travis updates … [\#204](https://github.com/camptocamp/tilecloud-chain/pull/204) ([sbrunner](https://github.com/sbrunner))
 - Add an error message [\#203](https://github.com/camptocamp/tilecloud-chain/pull/203) ([sbrunner](https://github.com/sbrunner))
 - More work on double slashes prevention [\#202](https://github.com/camptocamp/tilecloud-chain/pull/202) ([gberaudo](https://github.com/gberaudo))
 - No process on dorpped tiles [\#199](https://github.com/camptocamp/tilecloud-chain/pull/199) ([sbrunner](https://github.com/sbrunner))
@@ -1562,7 +1563,7 @@
 - Now travis dirrectly include postgis [\#189](https://github.com/camptocamp/tilecloud-chain/pull/189) ([sbrunner](https://github.com/sbrunner))
 - Cut data error on too long data [\#188](https://github.com/camptocamp/tilecloud-chain/pull/188) ([sbrunner](https://github.com/sbrunner))
 - Fix using --capabilities and --openlayers [\#180](https://github.com/camptocamp/tilecloud-chain/pull/180) ([sbrunner](https://github.com/sbrunner))
-- Typo in empty\_tile\_detection for JPEG tiles config [\#178](https://github.com/camptocamp/tilecloud-chain/pull/178) ([asaunier](https://github.com/asaunier))
+- Typo in empty_tile_detection for JPEG tiles config [\#178](https://github.com/camptocamp/tilecloud-chain/pull/178) ([asaunier](https://github.com/asaunier))
 - Fix Drop Empty [\#175](https://github.com/camptocamp/tilecloud-chain/pull/175) ([sbrunner](https://github.com/sbrunner))
 
 ## [archive/0.7](https://github.com/camptocamp/tilecloud-chain/tree/archive/0.7) (2013-11-28)
@@ -1613,8 +1614,8 @@
 - Use hash instance of BTree in Berkeley DB cache \(faster to read\) [\#158](https://github.com/camptocamp/tilecloud-chain/pull/158) ([sbrunner](https://github.com/sbrunner))
 - Display generation statistics [\#157](https://github.com/camptocamp/tilecloud-chain/pull/157) ([sbrunner](https://github.com/sbrunner))
 - Add osm2pgsql expire-tiles import tool [\#156](https://github.com/camptocamp/tilecloud-chain/pull/156) ([sbrunner](https://github.com/sbrunner))
-- Should support  Access-Control-Allow-Origin header [\#155](https://github.com/camptocamp/tilecloud-chain/pull/155) ([sbrunner](https://github.com/sbrunner))
-- px\_buffer can introduce tile generation outside the grid extent [\#154](https://github.com/camptocamp/tilecloud-chain/pull/154) ([sbrunner](https://github.com/sbrunner))
+- Should support Access-Control-Allow-Origin header [\#155](https://github.com/camptocamp/tilecloud-chain/pull/155) ([sbrunner](https://github.com/sbrunner))
+- px_buffer can introduce tile generation outside the grid extent [\#154](https://github.com/camptocamp/tilecloud-chain/pull/154) ([sbrunner](https://github.com/sbrunner))
 - Some fix to use the server and for MapCache [\#153](https://github.com/camptocamp/tilecloud-chain/pull/153) ([sbrunner](https://github.com/sbrunner))
 - Close Postgres connection [\#151](https://github.com/camptocamp/tilecloud-chain/pull/151) ([sbrunner](https://github.com/sbrunner))
 - Generate legend images [\#150](https://github.com/camptocamp/tilecloud-chain/pull/150) ([sbrunner](https://github.com/sbrunner))
@@ -1640,7 +1641,7 @@
 - Allows float bbox [\#109](https://github.com/camptocamp/tilecloud-chain/issues/109)
 - Add log to file [\#103](https://github.com/camptocamp/tilecloud-chain/issues/103)
 - Add a --one z/x/y option [\#102](https://github.com/camptocamp/tilecloud-chain/issues/102)
-- default\_layers should be all by default [\#101](https://github.com/camptocamp/tilecloud-chain/issues/101)
+- default_layers should be all by default [\#101](https://github.com/camptocamp/tilecloud-chain/issues/101)
 - Allows bbox as float [\#100](https://github.com/camptocamp/tilecloud-chain/issues/100)
 - Create test categories [\#97](https://github.com/camptocamp/tilecloud-chain/issues/97)
 - Test cover to 100% [\#96](https://github.com/camptocamp/tilecloud-chain/issues/96)
@@ -1737,7 +1738,7 @@
 
 **Closed issues:**
 
-- Use http\_urls [\#62](https://github.com/camptocamp/tilecloud-chain/issues/62)
+- Use http_urls [\#62](https://github.com/camptocamp/tilecloud-chain/issues/62)
 
 ## [0.4.1](https://github.com/camptocamp/tilecloud-chain/tree/0.4.1) (2013-03-12)
 
@@ -1757,16 +1758,16 @@
 - Verity tile delete with \(or without\) metatile [\#61](https://github.com/camptocamp/tilecloud-chain/issues/61)
 - Verify this [\#60](https://github.com/camptocamp/tilecloud-chain/issues/60)
 - Add missing config.yaml to gitignore [\#59](https://github.com/camptocamp/tilecloud-chain/issues/59)
-- Add ability to auto calculate grid resolution\_scale [\#58](https://github.com/camptocamp/tilecloud-chain/issues/58)
+- Add ability to auto calculate grid resolution_scale [\#58](https://github.com/camptocamp/tilecloud-chain/issues/58)
 
 **Merged pull requests:**
 
 - Change MapCache resolutions strategy [\#69](https://github.com/camptocamp/tilecloud-chain/pull/69) ([sbrunner](https://github.com/sbrunner))
 - Fix delete files on metatiles [\#68](https://github.com/camptocamp/tilecloud-chain/pull/68) ([sbrunner](https://github.com/sbrunner))
-- Calculate resolution\_scale [\#67](https://github.com/camptocamp/tilecloud-chain/pull/67) ([sbrunner](https://github.com/sbrunner))
+- Calculate resolution_scale [\#67](https://github.com/camptocamp/tilecloud-chain/pull/67) ([sbrunner](https://github.com/sbrunner))
 - Add config.yaml to gitignore [\#66](https://github.com/camptocamp/tilecloud-chain/pull/66) ([sbrunner](https://github.com/sbrunner))
 - Use apt-get instance of aptitude [\#65](https://github.com/camptocamp/tilecloud-chain/pull/65) ([sbrunner](https://github.com/sbrunner))
-- Add documentation for maxconsecutive\_errors [\#64](https://github.com/camptocamp/tilecloud-chain/pull/64) ([sbrunner](https://github.com/sbrunner))
+- Add documentation for maxconsecutive_errors [\#64](https://github.com/camptocamp/tilecloud-chain/pull/64) ([sbrunner](https://github.com/sbrunner))
 
 ## [0.3](https://github.com/camptocamp/tilecloud-chain/tree/0.3) (2013-02-05)
 
@@ -1801,19 +1802,19 @@
 - Test don't seem work well [\#33](https://github.com/camptocamp/tilecloud-chain/issues/33)
 - Demonize too late [\#32](https://github.com/camptocamp/tilecloud-chain/issues/32)
 - options.test \> 0 =\> options.test \> 0 or options.verbose [\#29](https://github.com/camptocamp/tilecloud-chain/issues/29)
-- Move buildout\_tilegeneration.cfg to tilegeneration/buildout.cfg [\#19](https://github.com/camptocamp/tilecloud-chain/issues/19)
+- Move buildout_tilegeneration.cfg to tilegeneration/buildout.cfg [\#19](https://github.com/camptocamp/tilecloud-chain/issues/19)
 - Update readme and packges versions [\#17](https://github.com/camptocamp/tilecloud-chain/issues/17)
 - Add message in controller process [\#15](https://github.com/camptocamp/tilecloud-chain/issues/15)
 - Don't catch user interupt [\#14](https://github.com/camptocamp/tilecloud-chain/issues/14)
-- Improve tilecloud\_chain.controller tests [\#11](https://github.com/camptocamp/tilecloud-chain/issues/11)
-- Improve tilecloud\_chain module tests [\#10](https://github.com/camptocamp/tilecloud-chain/issues/10)
+- Improve tilecloud_chain.controller tests [\#11](https://github.com/camptocamp/tilecloud-chain/issues/11)
+- Improve tilecloud_chain module tests [\#10](https://github.com/camptocamp/tilecloud-chain/issues/10)
 - Generate tiles from AWS [\#3](https://github.com/camptocamp/tilecloud-chain/issues/3)
 - Add tests for tile generation [\#2](https://github.com/camptocamp/tilecloud-chain/issues/2)
 
 **Merged pull requests:**
 
 - Some little fix [\#45](https://github.com/camptocamp/tilecloud-chain/pull/45) ([sbrunner](https://github.com/sbrunner))
-- Add --near option to fix \#42  [\#44](https://github.com/camptocamp/tilecloud-chain/pull/44) ([sbrunner](https://github.com/sbrunner))
+- Add --near option to fix \#42 [\#44](https://github.com/camptocamp/tilecloud-chain/pull/44) ([sbrunner](https://github.com/sbrunner))
 - Pass no-geom to tile generator [\#43](https://github.com/camptocamp/tilecloud-chain/pull/43) ([sbrunner](https://github.com/sbrunner))
 - Add some unit tests [\#41](https://github.com/camptocamp/tilecloud-chain/pull/41) ([sbrunner](https://github.com/sbrunner))
 - More log message in verbose mode fix \#29 [\#39](https://github.com/camptocamp/tilecloud-chain/pull/39) ([sbrunner](https://github.com/sbrunner))
@@ -1823,8 +1824,8 @@
 - Documentation [\#35](https://github.com/camptocamp/tilecloud-chain/pull/35) ([sbrunner](https://github.com/sbrunner))
 - Reorganise tests [\#31](https://github.com/camptocamp/tilecloud-chain/pull/31) ([sbrunner](https://github.com/sbrunner))
 - Some bugfix for AWS [\#30](https://github.com/camptocamp/tilecloud-chain/pull/30) ([sbrunner](https://github.com/sbrunner))
-- Move buildout\_tilegeneration.cfg to tilegeneration/buildout.cfg  [\#26](https://github.com/camptocamp/tilecloud-chain/pull/26) ([sbrunner](https://github.com/sbrunner))
-- Better logs, Allows no ssh\_options, Add AWS autentication [\#25](https://github.com/camptocamp/tilecloud-chain/pull/25) ([sbrunner](https://github.com/sbrunner))
+- Move buildout_tilegeneration.cfg to tilegeneration/buildout.cfg [\#26](https://github.com/camptocamp/tilecloud-chain/pull/26) ([sbrunner](https://github.com/sbrunner))
+- Better logs, Allows no ssh_options, Add AWS autentication [\#25](https://github.com/camptocamp/tilecloud-chain/pull/25) ([sbrunner](https://github.com/sbrunner))
 - Some fix [\#24](https://github.com/camptocamp/tilecloud-chain/pull/24) ([sbrunner](https://github.com/sbrunner))
 - Add some additional tests [\#23](https://github.com/camptocamp/tilecloud-chain/pull/23) ([sbrunner](https://github.com/sbrunner))
 - Add test for error case [\#22](https://github.com/camptocamp/tilecloud-chain/pull/22) ([sbrunner](https://github.com/sbrunner))
@@ -1840,6 +1841,4 @@
 
 [Full Changelog](https://github.com/camptocamp/tilecloud-chain/compare/2da63014c047afeeba3f6b2574a37c1bb2c95d5a...0.1)
 
-
-
-\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*
+\* _This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)_
