@@ -3,6 +3,7 @@ import os
 import random
 import socket
 import sys
+import threading
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from getpass import getuser
@@ -12,6 +13,7 @@ import boto3
 from c2cwsgiutils import stats
 
 import tilecloud.filter.error
+import tilecloud_chain
 from tilecloud import Tile, TileCoord, TileStore
 from tilecloud.filter.logger import Logger
 from tilecloud.layout.wms import WMSTileLayout
@@ -36,6 +38,22 @@ from tilecloud_chain.multitilestore import MultiTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
 logger = logging.getLogger(__name__)
+
+
+class LogTilesContext:
+    """Logging tile context."""
+
+    def __init__(self, gene: TileGeneration):
+        self.gene = gene
+
+    def __call__(self, tile: Tile) -> Tile:
+        tilecloud_chain.LOGGING_CONTEXT.setdefault(os.getpid(), {})[threading.current_thread().native_id] = {  # type: ignore
+            "host": tile.metadata.get("host"),
+            "layer": tile.metadata.get("layer"),
+            "meta_tilecoord": str(tile.tilecoord),
+        }
+
+        return tile
 
 
 class Generate:
@@ -176,6 +194,7 @@ class Generate:
             # Get the metatiles from the SQS/Redis queue
             self._gene.set_store(self._queue_tilestore)
             self._gene.imap(lambda tile: tile if "layer" in tile.metadata else None)
+            self._gene.imap(LogTilesContext(self._gene))
 
         if self._options.role != "server":
             self._count_metatiles = self._gene.counter()

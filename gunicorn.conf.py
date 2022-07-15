@@ -49,7 +49,7 @@ logconfig_dict = {
             "stream": "ext://sys.stdout",
         },
         "json": {
-            "class": "c2cwsgiutils.pyramid_logging.JsonLogHandler",
+            "class": "tilecloud_chain.JsonLogHandler",
             "formatter": "generic",
             "stream": "ext://sys.stdout",
         },
