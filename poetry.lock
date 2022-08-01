@@ -545,9 +545,9 @@ jsonschema = "*"
 "ruamel.yaml" = "*"
 
 [package.extras]
-generate = ["pyyaml", "requests"]
-tools = ["black", "isort", "pyupgrade"]
-extra = ["pinyin", "romanize", "romkan"]
+extra = ["romkan", "romanize", "pinyin"]
+generate = ["requests", "pyyaml"]
+tools = ["pyupgrade", "isort", "black"]
 
 [[package]]
 name = "lazy-object-proxy"
@@ -627,8 +627,8 @@ python-versions = "*"
 [package.dependencies]
 msal = ">=0.4.1,<2.0.0"
 portalocker = [
-    {version = ">=1.0,<3", markers = "python_version >= \"3.5\" and platform_system != \"Windows\""},
     {version = ">=1.6,<3", markers = "python_version >= \"3.5\" and platform_system == \"Windows\""},
+    {version = ">=1.0,<3", markers = "python_version >= \"3.5\" and platform_system != \"Windows\""},
 ]
 
 [[package]]
@@ -647,7 +647,7 @@ requests = ">=2.16,<3.0"
 requests-oauthlib = ">=0.5.0"
 
 [package.extras]
-async = ["aiodns", "aiohttp (>=3.0)"]
+async = ["aiohttp (>=3.0)", "aiodns"]
 
 [[package]]
 name = "mypy"
@@ -727,8 +727,8 @@ optional = false
 python-versions = "*"
 
 [package.extras]
+docs = ["pylons-sphinx-themes", "Sphinx (>=1.7.5)"]
 paste = ["paste"]
-docs = ["Sphinx (>=1.7.5)", "pylons-sphinx-themes"]
 
 [[package]]
 name = "pbr"
@@ -797,7 +797,7 @@ PasteDeploy = ">=2.0"
 plaster = ">=0.5"
 
 [package.extras]
-testing = ["pytest", "pytest-cov"]
+testing = ["pytest-cov", "pytest"]
 
 [[package]]
 name = "platformdirs"
@@ -820,8 +820,8 @@ optional = false
 python-versions = ">=3.6"
 
 [package.extras]
-dev = ["pre-commit", "tox"]
-testing = ["pytest", "pytest-benchmark"]
+testing = ["pytest-benchmark", "pytest"]
+dev = ["tox", "pre-commit"]
 
 [[package]]
 name = "portalocker"
@@ -940,10 +940,10 @@ python-versions = ">=3.6"
 cryptography = {version = ">=3.3.1", optional = true, markers = "extra == \"crypto\""}
 
 [package.extras]
+tests = ["coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)"]
+docs = ["zope.interface", "sphinx-rtd-theme", "sphinx"]
+dev = ["pre-commit", "mypy", "coverage[toml] (==5.0.4)", "pytest (>=6.0.0,<7.0.0)", "cryptography (>=3.3.1)", "zope.interface", "sphinx-rtd-theme", "sphinx"]
 crypto = ["cryptography (>=3.3.1)"]
-dev = ["sphinx", "sphinx-rtd-theme", "zope.interface", "cryptography (>=3.3.1)", "pytest (>=6.0.0,<7.0.0)", "coverage[toml] (==5.0.4)", "mypy", "pre-commit"]
-docs = ["sphinx", "sphinx-rtd-theme", "zope.interface"]
-tests = ["pytest (>=6.0.0,<7.0.0)", "coverage[toml] (==5.0.4)"]
 
 [[package]]
 name = "pylint"
@@ -1060,8 +1060,8 @@ webob = ">=1.8.3"
 "zope.interface" = ">=3.8.0"
 
 [package.extras]
-docs = ["Sphinx (>=3.0.0)", "docutils", "pylons-sphinx-themes (>=1.0.8)", "pylons-sphinx-latesturl", "repoze.sphinx.autointerface", "sphinx-copybutton", "sphinxcontrib-autoprogram"]
-testing = ["webtest (>=1.3.1)", "zope.component (>=4.0)", "coverage", "pytest (>=5.4.2)", "pytest-cov"]
+testing = ["pytest-cov", "pytest (>=5.4.2)", "coverage", "zope.component (>=4.0)", "webtest (>=1.3.1)"]
+docs = ["sphinxcontrib-autoprogram", "sphinx-copybutton", "repoze.sphinx.autointerface", "pylons-sphinx-latesturl", "pylons-sphinx-themes (>=1.0.8)", "docutils", "Sphinx (>=3.0.0)"]
 
 [[package]]
 name = "pyramid-mako"
@@ -1076,8 +1076,8 @@ Mako = ">=1.1.0"
 pyramid = "*"
 
 [package.extras]
-docs = ["Sphinx (>=1.8.1)", "docutils", "repoze.sphinx.autointerface", "pylons-sphinx-themes (>=1.0.8)"]
-testing = ["WebTest (>=1.3.1)", "nose", "coverage"]
+testing = ["coverage", "nose", "WebTest (>=1.3.1)"]
+docs = ["pylons-sphinx-themes (>=1.0.8)", "repoze.sphinx.autointerface", "docutils", "Sphinx (>=1.8.1)"]
 
 [[package]]
 name = "pyramid-tm"
@@ -1262,22 +1262,22 @@ certifi = "*"
 urllib3 = ">=1.10.0"
 
 [package.extras]
-aiohttp = ["aiohttp (>=3.5)"]
-beam = ["apache-beam (>=2.12)"]
-bottle = ["bottle (>=0.12.13)"]
-celery = ["celery (>=3)"]
-chalice = ["chalice (>=1.16.0)"]
-django = ["django (>=1.8)"]
-falcon = ["falcon (>=1.4)"]
-flask = ["flask (>=0.11)", "blinker (>=1.1)"]
-httpx = ["httpx (>=0.16.0)"]
-pure_eval = ["pure-eval", "executing", "asttokens"]
-pyspark = ["pyspark (>=2.4.4)"]
-quart = ["quart (>=0.16.1)", "blinker (>=1.1)"]
-rq = ["rq (>=0.6)"]
-sanic = ["sanic (>=0.8)"]
-sqlalchemy = ["sqlalchemy (>=1.2)"]
 tornado = ["tornado (>=5)"]
+sqlalchemy = ["sqlalchemy (>=1.2)"]
+sanic = ["sanic (>=0.8)"]
+rq = ["rq (>=0.6)"]
+quart = ["blinker (>=1.1)", "quart (>=0.16.1)"]
+pyspark = ["pyspark (>=2.4.4)"]
+pure_eval = ["asttokens", "executing", "pure-eval"]
+httpx = ["httpx (>=0.16.0)"]
+flask = ["blinker (>=1.1)", "flask (>=0.11)"]
+falcon = ["falcon (>=1.4)"]
+django = ["django (>=1.8)"]
+chalice = ["chalice (>=1.16.0)"]
+celery = ["celery (>=3)"]
+bottle = ["bottle (>=0.12.13)"]
+beam = ["apache-beam (>=2.12)"]
+aiohttp = ["aiohttp (>=3.5)"]
 
 [[package]]
 name = "setoptconf-tmp"
@@ -1387,11 +1387,11 @@ url = ["furl (>=0.4.1)"]
 
 [[package]]
 name = "stevedore"
-version = "3.5.0"
+version = "4.0.0"
 description = "Manage dynamic plugins for Python applications"
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 
 [package.dependencies]
 pbr = ">=2.0.0,<2.1.0 || >2.1.0"
@@ -1476,7 +1476,7 @@ optional = false
 python-versions = "*"
 
 [package.extras]
-docs = ["Sphinx (>=1.3.1)", "docutils", "pylons-sphinx-themes"]
+docs = ["pylons-sphinx-themes", "docutils", "Sphinx (>=1.3.1)"]
 
 [[package]]
 name = "types-redis"
@@ -1543,8 +1543,8 @@ optional = false
 python-versions = ">=3.5"
 
 [package.extras]
-docs = ["sphinx", "repoze.sphinx.autointerface"]
-testing = ["pytest", "pytest-cov", "coverage"]
+testing = ["coverage", "pytest-cov", "pytest"]
+docs = ["repoze.sphinx.autointerface", "sphinx"]
 
 [[package]]
 name = "waitress"
@@ -2652,8 +2652,8 @@ sqlalchemy-utils = [
     {file = "SQLAlchemy_Utils-0.38.2-py3-none-any.whl", hash = "sha256:622235b1598f97300e4d08820ab024f5219c9a6309937a8b908093f487b4ba54"},
 ]
 stevedore = [
-    {file = "stevedore-3.5.0-py3-none-any.whl", hash = "sha256:a547de73308fd7e90075bb4d301405bebf705292fa90a90fc3bcf9133f58616c"},
-    {file = "stevedore-3.5.0.tar.gz", hash = "sha256:f40253887d8712eaa2bb0ea3830374416736dc8ec0e22f5a65092c1174c44335"},
+    {file = "stevedore-4.0.0-py3-none-any.whl", hash = "sha256:87e4d27fe96d0d7e4fc24f0cbe3463baae4ec51e81d95fbe60d2474636e0c7d8"},
+    {file = "stevedore-4.0.0.tar.gz", hash = "sha256:f82cc99a1ff552310d19c379827c2c64dd9f85a38bcd5559db2470161867b786"},
 ]
 testfixtures = [
     {file = "testfixtures-7.0.0-py3-none-any.whl", hash = "sha256:ae95a0522f181686204fc816e817c4725516cf5bc43360160390aad54b1dfd00"},
