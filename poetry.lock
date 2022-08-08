@@ -628,8 +628,8 @@ python-versions = "*"
 [package.dependencies]
 msal = ">=0.4.1,<2.0.0"
 portalocker = [
-    {version = ">=1.0,<3", markers = "python_version >= \"3.5\" and platform_system != \"Windows\""},
     {version = ">=1.6,<3", markers = "python_version >= \"3.5\" and platform_system == \"Windows\""},
+    {version = ">=1.0,<3", markers = "python_version >= \"3.5\" and platform_system != \"Windows\""},
 ]
 
 [[package]]
@@ -728,8 +728,8 @@ optional = false
 python-versions = "*"
 
 [package.extras]
-docs = ["pylons-sphinx-themes", "Sphinx (>=1.7.5)"]
 paste = ["paste"]
+docs = ["Sphinx (>=1.7.5)", "pylons-sphinx-themes"]
 
 [[package]]
 name = "pbr"
@@ -1489,7 +1489,7 @@ docs = ["pylons-sphinx-themes", "docutils", "Sphinx (>=1.3.1)"]
 
 [[package]]
 name = "types-redis"
-version = "4.3.3"
+version = "4.3.13"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1643,7 +1643,7 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "a7d8542cab40f7c77ad817d2b3dbfa8389510b7fc128ec1501c18e11fe6354d4"
+content-hash = "e47d1a9f777fecd69bc15dc6c3736f98f039ecc134024dfe29fcf53b46993d13"
 
 [metadata.files]
 alembic = [
@@ -2698,8 +2698,8 @@ translationstring = [
     {file = "translationstring-1.4.tar.gz", hash = "sha256:bf947538d76e69ba12ab17283b10355a9ecfbc078e6123443f43f2107f6376f3"},
 ]
 types-redis = [
-    {file = "types-redis-4.3.3.tar.gz", hash = "sha256:d3ae29aff7999361c9f979498bd2e257f932f6291b876aac0b44b5f00106c6e1"},
-    {file = "types_redis-4.3.3-py3-none-any.whl", hash = "sha256:7d37d9c2ab6a52c9f2a3ceaac41c4033f1a14b59cbdd01717b29a5fbe16600fb"},
+    {file = "types-redis-4.3.13.tar.gz", hash = "sha256:b8334a96a2f431521bfa72205b343129acdc5a646ffcfb304d80a1cd0deff548"},
+    {file = "types_redis-4.3.13-py3-none-any.whl", hash = "sha256:cc2209ecfab2ad6df1e3eec730c06f9b2dec77f4164eb86e04dad455a651b394"},
 ]
 types-requests = [
     {file = "types-requests-2.28.0.tar.gz", hash = "sha256:9863d16dfbb3fa55dcda64fa3b989e76e8859033b26c1e1623e30465cfe294d3"},
