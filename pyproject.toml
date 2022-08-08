@@ -74,9 +74,6 @@ waitress = "2.1.2"
 
 [tool.poetry.dev-dependencies]
 prospector = {extras = ["with_mypy", "with_bandit", "with_pyorama"], version = "1.7.7"}
-pylint = "2.14.4"
-mypy = "0.961"
-flake8 = "4.0.1"
 pytest = "7.1.2"
 testfixtures = "7.0.0"
 coverage = "6.4.1"
