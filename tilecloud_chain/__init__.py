@@ -90,12 +90,16 @@ def add_common_options(
     time: bool = True,  # pylint: disable=redefined-outer-name
     dimensions: bool = False,
     cache: bool = True,
+    default_config_file: bool = False,
 ) -> None:
     """Get the options used by some commands."""
     c2cwsgiutils.setup_process.fill_arguments(parser)
     parser.add_argument(
         "-c",
         "--config",
+        default=os.environ.get("TILEGENERATION_CONFIGFILE", "tilegeneration/config.yaml")
+        if default_config_file
+        else None,
         help="path to the configuration file",
         metavar="FILE",
     )
