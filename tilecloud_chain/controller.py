@@ -45,7 +45,7 @@ def main() -> None:
             "the OpenLayers example",
             prog=sys.argv[0],
         )
-        add_common_options(parser, tile_pyramid=False, no_geom=False)
+        add_common_options(parser, tile_pyramid=False, no_geom=False, default_config_file=True)
         parser.add_argument(
             "--status", default=False, action="store_true", help="Display the SQS queue status and exit"
         )
