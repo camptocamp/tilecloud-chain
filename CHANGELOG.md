@@ -4,18 +4,29 @@
 
 [Full Changelog](https://github.com/camptocamp/tilecloud-chain/compare/1.17.0...HEAD)
 
+#### :bug: Bug Fixes
+
+- \[Backport master\] Add missing default config file on controller [\#1736](https://github.com/camptocamp/tilecloud-chain/pull/1736) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
+
 #### :books: Documentation
 
 - Add generated changelog [\#1704](https://github.com/camptocamp/tilecloud-chain/pull/1704) ([sbrunner](https://github.com/sbrunner))
 
 #### :wrench: Build, CI, Tests, Code style
 
+- Use the latest version of c2cciutils in the audit [\#1737](https://github.com/camptocamp/tilecloud-chain/pull/1737) ([sbrunner](https://github.com/sbrunner))
+- Update the changelog [\#1719](https://github.com/camptocamp/tilecloud-chain/pull/1719) ([github-actions[bot]](https://github.com/apps/github-actions))
 - Update the changelog [\#1718](https://github.com/camptocamp/tilecloud-chain/pull/1718) ([github-actions[bot]](https://github.com/apps/github-actions))
 - Update the changelog [\#1717](https://github.com/camptocamp/tilecloud-chain/pull/1717) ([github-actions[bot]](https://github.com/apps/github-actions))
 - Fix the changelog [\#1716](https://github.com/camptocamp/tilecloud-chain/pull/1716) ([sbrunner](https://github.com/sbrunner))
 
 #### :package: Dependencies update
 
+- Lock file maintenance \(master\) [\#1739](https://github.com/camptocamp/tilecloud-chain/pull/1739) ([renovate[bot]](https://github.com/apps/renovate))
+- Update all patch versions \(master\) \(patch\) [\#1738](https://github.com/camptocamp/tilecloud-chain/pull/1738) ([renovate[bot]](https://github.com/apps/renovate))
+- Update all minor versions \(master\) \(minor\) [\#1724](https://github.com/camptocamp/tilecloud-chain/pull/1724) ([renovate[bot]](https://github.com/apps/renovate))
+- Update all patch versions \(master\) \(patch\) [\#1723](https://github.com/camptocamp/tilecloud-chain/pull/1723) ([renovate[bot]](https://github.com/apps/renovate))
+- Lock file maintenance \(master\) [\#1722](https://github.com/camptocamp/tilecloud-chain/pull/1722) ([renovate[bot]](https://github.com/apps/renovate))
 - Update dependency testfixtures to v7 \(master\) [\#1708](https://github.com/camptocamp/tilecloud-chain/pull/1708) ([renovate[bot]](https://github.com/apps/renovate))
 - Update all minor versions \(master\) \(minor\) [\#1707](https://github.com/camptocamp/tilecloud-chain/pull/1707) ([renovate[bot]](https://github.com/apps/renovate))
 - Update all patch versions \(master\) \(patch\) [\#1706](https://github.com/camptocamp/tilecloud-chain/pull/1706) ([renovate[bot]](https://github.com/apps/renovate))
@@ -1690,7 +1701,7 @@
 - Don't create unneeded geom on slave mode [\#95](https://github.com/camptocamp/tilecloud-chain/issues/95)
 - Verify that cost take care on min resolution seed [\#94](https://github.com/camptocamp/tilecloud-chain/issues/94)
 - Add more message on verbose [\#91](https://github.com/camptocamp/tilecloud-chain/issues/91)
-- The hash filterd tiles isn't removed for the SQS queue [\#89](https://github.com/camptocamp/tilecloud-chain/issues/89)
+- The hash filtered tiles isn't removed for the SQS queue [\#89](https://github.com/camptocamp/tilecloud-chain/issues/89)
 - Metatile buffer should be used in intersects [\#84](https://github.com/camptocamp/tilecloud-chain/issues/84)
 - Use resolution in zoom identifier instance of zoom [\#79](https://github.com/camptocamp/tilecloud-chain/issues/79)
 - Add a verification on zoom levels. [\#78](https://github.com/camptocamp/tilecloud-chain/issues/78)
