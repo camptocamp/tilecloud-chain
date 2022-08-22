@@ -8,10 +8,15 @@
   baseBranches: ['master', '1.17'],
   lockFileMaintenance: { enabled: true, automerge: true },
   packageRules: [
-    /** Less strict version for Docker images */
+    /** Docker images versioning */
     {
       matchDatasources: ['docker'],
       versioning: 'loose',
+    },
+    {
+      matchDatasources: ['docker'],
+      matchPackageNames: ['redis'],
+      versioning: 'regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$',
     },
     /** Automerge the patch, the minor and the dev dependency */
     {
