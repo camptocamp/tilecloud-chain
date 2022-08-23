@@ -35,7 +35,7 @@ tests: build ## Run the unit tests
 
 	c2cciutils-docker-logs
 
-	docker-compose exec -T test pytest
+	docker-compose exec -T test pytest -vv
 
 	c2cciutils-docker-logs
 	docker-compose down
@@ -51,7 +51,7 @@ tests-fast:
 		sleep 1; \
 	done
 
-	docker-compose exec -T test pytest --exitfirst #--last-failed
+	docker-compose exec -T test pytest -vv --exitfirst #--last-failed
 
 PHONY: jsonschema
 jsonschema: ## Generate the files related to the JSON schema
