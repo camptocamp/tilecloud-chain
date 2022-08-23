@@ -517,7 +517,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "jsonschema"
-version = "4.9.1"
+version = "4.14.0"
 description = "An implementation of JSON Schema validation for Python"
 category = "main"
 optional = false
@@ -535,7 +535,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "jsonschema-gentypes"
-version = "1.2.1"
+version = "1.3.1"
 description = "Tool to generate Python types based on TypedDict from a JSON Schema"
 category = "main"
 optional = false
@@ -1655,7 +1655,7 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "77c56fd550a8e519b0df67e1c9795ed852e5f116bc0dfb951acfadd25cd8c86b"
+content-hash = "8e826b5123eb326ef7cb2ae67e33170cb447d1044002161965c0a9e2e6d938d1"
 
 [metadata.files]
 alembic = [
@@ -2004,11 +2004,11 @@ jmespath = [
     {file = "jmespath-1.0.1.tar.gz", hash = "sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe"},
 ]
 jsonschema = [
-    {file = "jsonschema-4.9.1-py3-none-any.whl", hash = "sha256:8ebad55894c002585271af2d327d99339ef566fb085d9129b69e2623867c4106"},
-    {file = "jsonschema-4.9.1.tar.gz", hash = "sha256:408c4c8ed0dede3b268f7a441784f74206380b04f93eb2d537c7befb3df3099f"},
+    {file = "jsonschema-4.14.0-py3-none-any.whl", hash = "sha256:9892b8d630a82990521a9ca630d3446bd316b5ad54dbe981338802787f3e0d2d"},
+    {file = "jsonschema-4.14.0.tar.gz", hash = "sha256:15062f4cc6f591400cd528d2c355f2cfa6a57e44c820dc783aee5e23d36a831f"},
 ]
 jsonschema-gentypes = [
-    {file = "jsonschema_gentypes-1.2.1-py3-none-any.whl", hash = "sha256:16c68a74f4c1390e1aff33ce0d85c188ca73a43a17abe267d7291343761614e1"},
+    {file = "jsonschema_gentypes-1.3.1-py3-none-any.whl", hash = "sha256:5f461eb923aa5e9fe4fbe3ebfbeb2e5415674d82fb626c06a2062a55368ca693"},
 ]
 lazy-object-proxy = [
     {file = "lazy-object-proxy-1.7.1.tar.gz", hash = "sha256:d609c75b986def706743cdebe5e47553f4a5a1da9c5ff66d76013ef396b5a8a4"},
