@@ -2,7 +2,7 @@ version: '2.2'
 
 services:
   db:
-    image: camptocamp/postgres:11.4
+    image: camptocamp/postgres:14-postgis-3
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
