@@ -15,7 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         branch:
-          - '1.13'
           - '1.15'
           - '1.17'
           - master
