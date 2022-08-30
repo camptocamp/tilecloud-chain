@@ -73,7 +73,7 @@ azure-storage-blob = "12.13.1"
 waitress = "2.1.2"
 
 [tool.poetry.dev-dependencies]
-prospector = {extras = ["with_mypy", "with_bandit", "with_pyorama"], version = "1.7.7"}
+prospector = {extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.7.7"}
 pytest = "7.1.2"
 testfixtures = "7.0.0"
 coverage = "6.4.4"
