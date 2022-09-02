@@ -2,9 +2,12 @@
 /dist
 /.build
 /.mypy_cache/
+/.github/changelog-generator-cache
 /PYPI.md
 /tilecloud_chain.egg-info/
 /tilecloud_chain/tests/error.list
 /tilecloud_chain/tests/mapcache.xml
 /tilecloud_chain/tests/tiles.conf
-/.github/changelog-generator-cache
+/node_modules/
+/results/
+/docker-compose.override.yaml

@@ -67,27 +67,12 @@ class Admin:
         server_config = config.config.get("server", {})
         main_config = self.gene.get_main_config()
         main_server_config = main_config.config.get("server", {})
-        auth, user = is_auth_user(self.request)
+        print(self.request.identity)
         return {
-            "secret": self.request.params.get("secret"),
-            "auth": auth,
             "auth_type": auth_type(self.request.registry.settings),
-            "has_access": check_access(
-                self.request,
-                config.config.get("authentication", {}).get("github_repository"),
-                config.config.get("authentication", {}).get("github_access"),
-            ),
-            "user_url": user.get("url"),
-            "user_name": user.get("name"),
-            "logout_url": self.request.route_url(
-                "c2c_github_logout", _query={"came_from": self.request.current_route_url()}
-            ),
+            "has_access": self.request.has_permission("admin", config.config.get("authentication", {})),
             "commands": server_config.get("predefined_commands", []),
             "status": get_status(self.gene),
-            "run_url": self.request.route_url("admin_run"),
-            "github_auth_url": self.request.route_url(
-                "c2c_github_login", _query={"came_from": self.request.current_route_url()}
-            ),
             "admin_path": main_server_config.get("admin_path", "admin"),
             "AuthenticationType": AuthenticationType,
         }

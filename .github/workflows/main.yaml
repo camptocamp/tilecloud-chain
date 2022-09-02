@@ -50,6 +50,13 @@ jobs:
 
       - run: c2cciutils-docker-logs
         if: always()
+      - uses: actions/upload-artifact@v3
+        with:
+          name: results
+          path: results
+          if-no-files-found: ignore
+          retention-days: 5
+        if: failure()
 
       - name: Publish
         run: c2cciutils-publish

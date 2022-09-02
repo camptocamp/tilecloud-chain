@@ -5,6 +5,9 @@ Automatically generated file from a JSON schema.
 
 from typing import Any, Dict, List, Literal, Tuple, TypedDict, Union
 
+# Default value of the field path 'Server admin_path'
+ADMIN_PATH_DEFAULT = "admin"
+
 
 # Address
 #
@@ -33,7 +36,7 @@ class Argument(TypedDict, total=False):
 # The authentication configuration
 class Authentication(TypedDict, total=False):
     github_repository: str
-    github_access: "GithubAccess"
+    github_access_type: "GithubAccess"
 
 
 # AWS region
@@ -42,6 +45,18 @@ class Authentication(TypedDict, total=False):
 #
 # pattern: ^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$
 AwsRegion = str
+
+
+# Default value of the field path 'Cache filesystem folder'
+CACHE_FOLDER_DEFAULT = ""
+
+
+# Default value of the field path 'OpenLayers center_x'
+CENTER_X_DEFAULT = 2600000
+
+
+# Default value of the field path 'OpenLayers center_y'
+CENTER_Y_DEFAULT = 1200000
 
 
 # Cache
@@ -57,7 +72,7 @@ Cache = Union["CacheFilesystem", "CacheS3", "CacheAzure", "CacheMbtiles", "Cache
 # WARNING: The required are not correctly taken in account,
 # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
 #
-# WARNING: the Normally the types should be mised each other instead of Union.
+# WARNING: Normally the types should be a mix of each other instead of Union.
 # See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 CacheAzure = Union[Dict[str, str], "CacheAzureTyped"]
 
@@ -78,7 +93,7 @@ class CacheAzureTyped(TypedDict, total=False):
 # WARNING: The required are not correctly taken in account,
 # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
 #
-# WARNING: the Normally the types should be mised each other instead of Union.
+# WARNING: Normally the types should be a mix of each other instead of Union.
 # See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 CacheBsddb = Union[Dict[str, str], "CacheBsddbTyped"]
 
@@ -97,7 +112,7 @@ class CacheBsddbTyped(TypedDict, total=False):
 # WARNING: The required are not correctly taken in account,
 # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
 #
-# WARNING: the Normally the types should be mised each other instead of Union.
+# WARNING: Normally the types should be a mix of each other instead of Union.
 # See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 CacheFilesystem = Union[Dict[str, str], "CacheFilesystemTyped"]
 
@@ -140,7 +155,7 @@ CacheHttpUrls = List[str]
 # WARNING: The required are not correctly taken in account,
 # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
 #
-# WARNING: the Normally the types should be mised each other instead of Union.
+# WARNING: Normally the types should be a mix of each other instead of Union.
 # See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 CacheMbtiles = Union[Dict[str, str], "CacheMbtilesTyped"]
 
@@ -159,7 +174,7 @@ class CacheMbtilesTyped(TypedDict, total=False):
 # WARNING: The required are not correctly taken in account,
 # See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
 #
-# WARNING: the Normally the types should be mised each other instead of Union.
+# WARNING: Normally the types should be a mix of each other instead of Union.
 # See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 CacheS3 = Union[Dict[str, str], "CacheS3Typed"]
 
@@ -231,6 +246,18 @@ class Cost(TypedDict, total=False):
     sqs: "SqsCost"
 
 
+# Default value of the field path 'Generation default_cache'
+DEFAULT_CACHE_DEFAULT = "default"
+
+
+# Default value of the field path 'S3 cost download'
+DOWNLOAD_DEFAULT = 0.12
+
+
+# Default value of the field path 'CloudFront cost download'
+DOWNLOAD_DEFAULTGen253567 = 0.12
+
+
 # Database
 #
 # The database (main configuration)
@@ -241,6 +268,30 @@ class Database(TypedDict, total=False):
     table: str
     user: str
     password: str
+
+
+# Default value of the field path 'Redis expiration'
+EXPIRATION_DEFAULT = 28800
+
+
+# Default value of the field path 'Server expires'
+EXPIRES_DEFAULT = 8
+
+
+# Default value of the field path 'Server geoms_redirect'
+GEOMETRIES_REDIRECT_DEFAULT = False
+
+
+# Default value of the field path 'S3 cost get'
+GET_DEFAULT = 0.01
+
+
+# Default value of the field path 'CloudFront cost get'
+GET_DEFAULTGen24276 = 0.009
+
+
+# Default value of the field path 'Authentication github_access_type'
+GITHUB_ACCESS_DEFAULT = "pull"
 
 
 # Generation
@@ -293,6 +344,22 @@ Headers = Dict[str, "_HeadersAdditionalproperties"]
 class Info(TypedDict, total=False):
     phone: "Phone"
     address: "Address"
+
+
+# Default value of the field path 'Layer WMS meta_buffer'
+LAYER_META_BUFFER_DEFAULT = 128
+
+
+# Default value of the field path 'Layer WMS meta'
+LAYER_META_DEFAULT = False
+
+
+# Default value of the field path 'Layer WMS meta_size'
+LAYER_META_SIZE_DEFAULT = 5
+
+
+# Default value of the field path 'Layer WMS px_buffer'
+LAYER_PIXEL_BUFFER_DEFAULT = 0
 
 
 # Layer
@@ -543,6 +610,34 @@ class Logging(TypedDict, total=False):
     database: "Database"
 
 
+# Default value of the field path 'OpenLayers zoom'
+MAP_INITIAL_ZOOM_DEFAULT = 3
+
+
+# Default value of the field path 'Grid matrix_identifier'
+MATRIX_IDENTIFIER_DEFAULT = "zoom"
+
+
+# Default value of the field path 'Generation maxconsecutive_errors'
+MAX_CONSECUTIVE_ERRORS_DEFAULT = 10
+
+
+# Default value of the field path 'Redis max_errors_age'
+MAX_ERRORS_AGE_DEFAULT = 86400
+
+
+# Default value of the field path 'Redis max_errors_nb'
+MAX_ERRORS_NUMBER_DEFAULT = 100
+
+
+# Default value of the field path 'Redis max_retries'
+MAX_RETRIES_DEFAULT = 5
+
+
+# Default value of the field path 'Layer cost metatile_generation_time'
+META_TILE_GENERATION_TIME_DEFAULT = 30
+
+
 # Matrix identifier
 #
 # The identifier to use in the tiles URL, recommend to be resolution (default)
@@ -564,6 +659,14 @@ class Metadata(TypedDict, total=False):
     keywords: List[str]
     fees: str
     access_constraints: str
+
+
+# Default value of the field path 'Process command item need_out'
+NEED_OUT_DEFAULT = False
+
+
+# Default value of the field path 'Generation number_process'
+NUMBER_PROCESS_DEFAULT = 1
 
 
 # OpenLayers
@@ -588,6 +691,22 @@ OUTPUTFORMAT_JPEG: Literal["jpeg"] = "jpeg"
 OUTPUTFORMAT_GRID: Literal["grid"] = "grid"
 
 
+# Default value of the field path 'Redis pending_timeout'
+PENDING_TIMEOUT_DEFAULT = 300
+
+
+# Default value of the field path 'Database port'
+PORT_DEFAULT = 5432
+
+
+# Default value of the field path 'Redis prefix'
+PREFIX_DEFAULT = "tilecloud_cache"
+
+
+# Default value of the field path 'S3 cost put'
+PUT_DEFAULT = 0.01
+
+
 # Phone
 #
 # The phone
@@ -609,6 +728,18 @@ class Provider(TypedDict, total=False):
     name: str
     url: str
     contact: "Contact"
+
+
+# Default value of the field path 'Redis queue'
+QUEUE_DEFAULT = "tilecloud"
+
+
+# Default value of the field path 'SQS cost request'
+REQUEST_DEFAULT = 0.01
+
+
+# Default value of the field path 'Cost request_per_layers'
+REQUEST_PER_LAYERS_DEFAULT = 10000000
 
 
 # Redis
@@ -640,6 +771,26 @@ class S3Cost(TypedDict, total=False):
     put: Union[int, float]
     get: Union[int, float]
     download: Union[int, float]
+
+
+# Default value of the field path 'Redis service_name'
+SERVICE_NAME_DEFAULT = "mymaster"
+
+
+# Default value of the field path 'Metadata servicetype'
+SERVICE_TYPE_DEFAULT = "OGC WMTS"
+
+
+# Default value of the field path 'OpenLayers srs'
+SRS_DEFAULT = "EPSG:2056"
+
+
+# Default value of the field path 'Server static_path'
+STATIC_PATH_DEFAULT = "static"
+
+
+# Default value of the field path 'S3 cost storage'
+STORAGE_DEFAULT = 0.125
 
 
 # Sentinel host
@@ -694,12 +845,64 @@ class SqsCost(TypedDict, total=False):
     request: Union[int, float]
 
 
+# Default value of the field path 'OpenLayers proj4js_def'
+THE_PROJ4JS_DEFINITION_DEFAULT = "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"
+
+
+# Default value of the field path 'Layer cost tile_generation_time'
+TILE_GENERATION_TIME_DEFAULT = 30
+
+
+# Default value of the field path 'Layer cost tileonly_generation_time'
+TILE_ONLY_GENERATION_TIME_DEFAULT = 40
+
+
+# Default value of the field path 'Grid tile_size'
+TILE_SIZE_DEFAULT = 256
+
+
+# Default value of the field path 'Layer cost tile_size'
+TILE_SIZE_DEFAULTGen627171 = 20
+
+
+# Default value of the field path 'Redis timeout'
+TIMEOUT_DEFAULT = 5
+
+
+# Default value of the field path 'Grid unit'
+UNIT_DEFAULT = "m"
+
+
+# Default value of the field path 'Server wmts_path'
+WMTS_PATH_DEFAULT = "wmts"
+
+
 # pattern: ^[a-zA-Z0-9_\-\+~\.]+$
 _GenerateItem = str
 
 
 # The header value
 _HeadersAdditionalproperties = str
+
+
+# Default value of the field path 'Layer Mapnik layers'
+_LAYER_MAPNIK_LAYERS_DEFAULT = "__all__"
+
+
+# Default value of the field path 'Layer Mapnik meta_buffer'
+_LAYER_MAPNIK_META_BUFFER_DEFAULT = 0
+
+
+# Default value of the field path 'Layer Mapnik meta_size'
+_LAYER_MAPNIK_META_SIZE_DEFAULT = 1
+
+
+# Default value of the field path 'Layer WMS meta_buffer'
+_LAYER_WMS_META_BUFFER_DEFAULT = 128
+
+
+# Default value of the field path 'Layer WMS meta_size'
+_LAYER_WMS_META_SIZE_DEFAULT = 5
 
 
 class _LayerDimensionsItem(TypedDict, total=False):

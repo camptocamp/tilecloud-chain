@@ -1,0 +1,18 @@
+version: '2.2'
+
+services:
+  application: &app
+    ports:
+      - '9050:8080'
+    command:
+      - pserve
+      - --reload
+      - c2c:///app/development.ini
+    volumes:
+      - ./tilecloud_chain:/app/tilecloud_chain:ro
+      # - ../tilecloud/tilecloud:/usr/local/lib/python3.8/dist-packages/tilecloud:ro
+
+  app_test_user:
+    <<: *app
+    ports:
+      - '9051:8080'

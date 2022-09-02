@@ -53,6 +53,7 @@ from shapely.wkb import loads as loads_wkb
 
 import tilecloud.filter.error
 import tilecloud_chain.configuration
+import tilecloud_chain.security
 from tilecloud import BoundingPyramid, Tile, TileCoord, TileGrid, TileStore, consume
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
 from tilecloud.filter.logger import Logger
