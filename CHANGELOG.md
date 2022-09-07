@@ -14,7 +14,11 @@
 
 #### :wrench: Build, CI, Tests, Code style
 
+- Update the Renovate configuration [\#1772](https://github.com/camptocamp/tilecloud-chain/pull/1772) ([sbrunner](https://github.com/sbrunner))
+- Fix Poetry export [\#1755](https://github.com/camptocamp/tilecloud-chain/pull/1755) ([sbrunner](https://github.com/sbrunner))
+- Version 1.13 will be no more supported [\#1750](https://github.com/camptocamp/tilecloud-chain/pull/1750) ([sbrunner](https://github.com/sbrunner))
 - Use the latest version of c2cciutils in the audit [\#1737](https://github.com/camptocamp/tilecloud-chain/pull/1737) ([sbrunner](https://github.com/sbrunner))
+- Update the changelog [\#1732](https://github.com/camptocamp/tilecloud-chain/pull/1732) ([github-actions[bot]](https://github.com/apps/github-actions))
 - Update the changelog [\#1719](https://github.com/camptocamp/tilecloud-chain/pull/1719) ([github-actions[bot]](https://github.com/apps/github-actions))
 - Update the changelog [\#1718](https://github.com/camptocamp/tilecloud-chain/pull/1718) ([github-actions[bot]](https://github.com/apps/github-actions))
 - Update the changelog [\#1717](https://github.com/camptocamp/tilecloud-chain/pull/1717) ([github-actions[bot]](https://github.com/apps/github-actions))
@@ -22,6 +26,18 @@
 
 #### :package: Dependencies update
 
+- Lock file maintenance \(master\) [\#1767](https://github.com/camptocamp/tilecloud-chain/pull/1767) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency jsonschema to v4.15.0 \(master\) [\#1766](https://github.com/camptocamp/tilecloud-chain/pull/1766) ([renovate[bot]](https://github.com/apps/renovate))
+- Update all patch versions \(master\) \(patch\) [\#1765](https://github.com/camptocamp/tilecloud-chain/pull/1765) ([renovate[bot]](https://github.com/apps/renovate))
+- Update dependency c2cwsgiutils to v5.1.3 \(master\) [\#1762](https://github.com/camptocamp/tilecloud-chain/pull/1762) ([renovate[bot]](https://github.com/apps/renovate))
+- Update all patch versions \(master\) \(patch\) [\#1756](https://github.com/camptocamp/tilecloud-chain/pull/1756) ([renovate[bot]](https://github.com/apps/renovate))
+- Lock file maintenance \(master\) [\#1754](https://github.com/camptocamp/tilecloud-chain/pull/1754) ([renovate[bot]](https://github.com/apps/renovate))
+- Update osgeo/gdal Docker tag to vubuntu-small-3.5.1 \(master\) [\#1752](https://github.com/camptocamp/tilecloud-chain/pull/1752) ([renovate[bot]](https://github.com/apps/renovate))
+- Update camptocamp/postgres Docker tag to v14 \(master\) [\#1747](https://github.com/camptocamp/tilecloud-chain/pull/1747) ([renovate[bot]](https://github.com/apps/renovate))
+- Update all minor versions \(master\) \(minor\) [\#1746](https://github.com/camptocamp/tilecloud-chain/pull/1746) ([renovate[bot]](https://github.com/apps/renovate))
+- Update all patch versions Docker tags \(master\) \(patch\) [\#1745](https://github.com/camptocamp/tilecloud-chain/pull/1745) ([renovate[bot]](https://github.com/apps/renovate))
+- Update all patch versions \(master\) \(patch\) [\#1743](https://github.com/camptocamp/tilecloud-chain/pull/1743) ([renovate[bot]](https://github.com/apps/renovate))
+- Lock file maintenance \(master\) [\#1742](https://github.com/camptocamp/tilecloud-chain/pull/1742) ([renovate[bot]](https://github.com/apps/renovate))
 - Lock file maintenance \(master\) [\#1739](https://github.com/camptocamp/tilecloud-chain/pull/1739) ([renovate[bot]](https://github.com/apps/renovate))
 - Update all patch versions \(master\) \(patch\) [\#1738](https://github.com/camptocamp/tilecloud-chain/pull/1738) ([renovate[bot]](https://github.com/apps/renovate))
 - Update all minor versions \(master\) \(minor\) [\#1724](https://github.com/camptocamp/tilecloud-chain/pull/1724) ([renovate[bot]](https://github.com/apps/renovate))
