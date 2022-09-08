@@ -7,3 +7,4 @@
 /tilecloud_chain/tests/error.list
 /tilecloud_chain/tests/mapcache.xml
 /tilecloud_chain/tests/tiles.conf
+/.github/changelog-generator-cache
