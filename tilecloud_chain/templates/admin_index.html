@@ -19,52 +19,64 @@
     </style>
   </head>
   <body class="px-5 py-4">
+    <div style="position: absolute; right: 3rem; top: 2rem">
+      %if not request.identity.is_auth and auth_type == AuthenticationType.SECRET:
+      <form>
+        Secret: <input type="password" name="secret" />
+        <input type="submit" value="OK" />
+      </form>
+      %elif not request.identity.is_auth and auth_type == AuthenticationType.GITHUB:
+      <a
+        class="btn btn-primary"
+        href="${request.route_url('c2c_github_login', _query={'came_from': request.current_route_url()})}"
+        >Login with GitHub</a
+      >
+      %elif auth_type == AuthenticationType.GITHUB:
+      <p>
+        Logged as: <a href="${request.identity.url}">${request.identity.name}</a>
+        <a
+          class="btn btn-primary"
+          style="vertical-align: baseline; margin-left: 0.5rem"
+          href="${request.route_url('c2c_github_logout', _query={'came_from': request.current_route_url()})}"
+          >Logout</a
+        >
+      </p>
+      %endif
+    </div>
     <h1 class="bd-title">Tile generation</h1>
-    %if not auth and auth_type == AuthenticationType.SECRET:
-    <form>
-      Secret: <input type="password" name="secret" />
-      <input type="submit" value="OK" />
-    </form>
-    %elif not auth and auth_type == AuthenticationType.GITHUB:
-    <a class="btn btn-primary" href="${github_auth_url}">Login with GitHub</a>
-    %elif auth_type == AuthenticationType.GITHUB:
-    <h2>Authentication</h2>
-    <p>
-      Logged as: <a href="${user_url}">${user_name}</a><br />
-      <a class="btn btn-primary" href="${logout_url}">Logout</a>
-    </p>
-    %endif
+    <hr />
     <span></span>
     %if has_access:
-    <hr />
     <h2>Status</h2>
     <p>${'<br />'.join(status)|n}</p>
-    <hr />
     <h2>Launch generation</h2>
     <form id="command-form" class="form-inline">
-      <label for="staticEmail2" class="sr-only">Command</label>
       <div class="input-group mb-3">
-        <input id="command" type="text" name="command" class="form-control" placeholder="Command" />
-
-        <div class="input-group-append">
-          <button type="submit" class="btn btn-outline-primary mb-2">Start</button>
-        </div>
+        <input
+          id="command"
+          type="text"
+          name="command"
+          class="form-control"
+          placeholder="Command"
+          aria-label="Command"
+          aria-describedby="button-run"
+        />
+        <button class="btn btn-outline-primary" type="submit" id="button-run">Start</button>
       </div>
       %if secret is not None:
-      <input type="hidden" name="secret" value="${secret}" />
+      <input type="hidden" name="secret" value="${request.params.get('secret')}" />
       %endif
     </form>
-    <p>
+    <div class="btn-group" role="group" style="margin-bottom: 1rem">
       %for command in commands:
       <button class="btn btn-outline-primary command" data-role="${command.get('command', '')}">
         ${command.get('name', 'Unnamed')}
       </button>
       %endfor
-    </p>
+    </div>
     %endif
     <span id="result"></span>
 
-    <hr />
     <h2>Test</h2>
     <p>See the result in <a href="/${admin_path}/test">the test page</a>.</p>
 
@@ -95,7 +107,7 @@
           $('#result').html('');
           event.preventDefault();
 
-          fetch('${run_url}', {
+          fetch('${request.route_url("admin_run")}', {
             body: new FormData(document.getElementById('command-form')),
             method: 'POST',
           })

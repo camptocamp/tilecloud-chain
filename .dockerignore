@@ -10,3 +10,5 @@
 !development.ini
 !production.ini
 !gunicorn.conf.py
+!package*.json
+!screenshot.js

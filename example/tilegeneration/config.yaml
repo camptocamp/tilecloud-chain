@@ -12,15 +12,14 @@ caches:
   local:
     type: filesystem
     folder: /var/sig/tiles
-    wmtscapabilities_file: /1.0.0/WMTSCapabilities.xml
     # for GetCapabilities
     http_url: https://%(host)s/tiles/
     hosts:
-      - wmts0.<host>
-      - wmts1.<host>
-      - wmts2.<host>
-      - wmts3.<host>
-      - wmts4.<host>
+      - wmts0.example.com
+      - wmts1.example.com
+      - wmts2.example.com
+      - wmts3.example.com
+      - wmts4.example.com
   s3:
     type: s3
     bucket: tiles
@@ -154,4 +153,21 @@ provider:
         country: Switzerland
         email: info@example.com
 
-server: {}
+redis:
+  socket_timeout: 30
+  sentinels:
+    - - redis_sentinel
+      - 26379
+  service_name: mymaster
+  db: 1
+
+server:
+  predefined_commands:
+    - name: Generation all layers
+      command: generate_tiles
+    - name: Generation layer plan
+      command: generate_tiles --layer=plan
+    - name: Generation layer ortho
+      command: generate_tiles --layer=ortho
+    - name: Generate the legend images
+      command: generate_controller --generate-legend-images

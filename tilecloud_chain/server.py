@@ -49,6 +49,7 @@ from pyramid_mako import add_mako_renderer
 
 import tilecloud.store.s3
 import tilecloud_chain.configuration
+import tilecloud_chain.security
 from tilecloud import Tile, TileCoord
 from tilecloud_chain import TileGeneration, controller, internal_mapcache
 from tilecloud_chain.controller import get_azure_client
@@ -789,6 +790,19 @@ class PyramidView:
         )
 
 
+def forbidden(request: pyramid.request.Request) -> pyramid.response.Response:
+    is_auth = c2cwsgiutils.auth.is_auth(request)
+
+    if is_auth:
+        return pyramid.httpexceptions.HTTPForbidden(request.exception.message)
+    return pyramid.httpexceptions.HTTPFound(
+        location=request.route_url(
+            "c2c_github_login",
+            _query={"came_from": request.current_route_url()},
+        )
+    )
+
+
 def main(global_config: Any, **settings: Any) -> Router:
     """Start the server in Pyramid."""
     del global_config  # unused
@@ -808,8 +822,9 @@ def main(global_config: Any, **settings: Any) -> Router:
 
     config.include(c2cwsgiutils.pyramid.includeme)
     health_check.HealthCheck(config)
-
     add_mako_renderer(config, ".html")
+    config.set_security_policy(tilecloud_chain.security.SecurityPolicy())
+    config.add_forbidden_view(forbidden)
 
     config.add_route(
         "admin",

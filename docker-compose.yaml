@@ -39,6 +39,30 @@ services:
     depends_on:
       - redis_master
 
+  application: &app
+    image: camptocamp/tilecloud-chain
+    environment: &app-env
+      TILECLOUD_LOG_LEVEL: DEBUG
+      TILECLOUD_CHAIN_LOG_LEVEL: DEBUG
+      TILECLOUD_CHAIN_SESSION_SECRET: '1234'
+      TILECLOUD_CHAIN_SESSION_SALT: '1234'
+      C2C_AUTH_GITHUB_REPOSITORY: camptocamp/tilecloud-chain
+      C2C_AUTH_GITHUB_SECRET: '1234567890123456789'
+      C2C_AUTH_GITHUB_CLIENT_ID: '1234'
+      C2C_AUTH_GITHUB_CLIENT_SECRET: '1234'
+    links:
+      - db
+      - mapserver
+      - redis_sentinel
+    volumes:
+      - ./example/tilegeneration/config.yaml:/etc/tilegeneration/config.yaml:ro
+
+  app_test_user:
+    <<: *app
+    environment:
+      <<: *app-env
+      TEST_USER: Test
+
   test:
     image: camptocamp/tilecloud-chain-tests
     working_dir: /app
@@ -59,5 +83,6 @@ services:
       - mapserver
       - redis_sentinel
     volumes:
+      - ./results:/results
       - ./tilecloud_chain:/app/tilecloud_chain
       # - ../tilecloud/tilecloud:/usr/local/lib/python3.8/dist-packages/tilecloud
