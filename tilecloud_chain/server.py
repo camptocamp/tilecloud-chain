@@ -63,7 +63,8 @@ def init_tilegeneration(config_file: Optional[str]) -> None:
     """Initialize the tile generation."""
     global tilegeneration  # pylint: disable=global-statement
     if tilegeneration is None:
-        logger.info("Config file: '%s'", config_file)
+        if config_file is not None:
+            logger.info("Use config file: '%s'", config_file)
         log_level = os.environ.get("TILE_SERVER_LOGLEVEL")
         tilegeneration = TileGeneration(
             config_file,
