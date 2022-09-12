@@ -444,7 +444,9 @@ class TileGeneration:
         if host not in self.get_hosts():
             logger.error("Missing host '%s' in global config", host)
             return None
-        return self.get_hosts().get(host, os.environ.get("TILEGENERATION_CONFIGFILE"))
+        config_file = self.get_hosts().get(host, os.environ.get("TILEGENERATION_CONFIGFILE"))
+        logger.debug("For the host %s, use config file: %s", host, config_file)
+        return config_file
 
     def get_host_config(self, host: Optional[str]) -> DatedConfig:
         """Get the configuration for the given host."""
