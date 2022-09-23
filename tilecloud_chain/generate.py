@@ -536,7 +536,7 @@ def main() -> None:
             and gene.get_main_config().config["generation"]["authorised_user"] != getuser()
         ):
             logger.error(
-                "not authorised, authorised user is: %s.",
+                "not authorized, authorized user is: %s.",
                 gene.get_main_config().config["generation"]["authorised_user"],
             )
             sys.exit(1)

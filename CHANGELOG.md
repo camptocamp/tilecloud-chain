@@ -236,7 +236,7 @@
 - \[Backport master\] Publish Docker images to GitHub Container Registry [\#815](https://github.com/camptocamp/tilecloud-chain/pull/815) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
 - \[Backport master\] Use Ubuntu 20.04 [\#800](https://github.com/camptocamp/tilecloud-chain/pull/800) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
 - \[Backport master\] Fix clean Docker hub tags [\#799](https://github.com/camptocamp/tilecloud-chain/pull/799) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
-- \[Backport master\] Use secret defined in organisation [\#798](https://github.com/camptocamp/tilecloud-chain/pull/798) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
+- \[Backport master\] Use secret defined in organization [\#798](https://github.com/camptocamp/tilecloud-chain/pull/798) ([c2c-bot-gis-ci](https://github.com/c2c-bot-gis-ci))
 - \[Backport master\] Add Clean Docker hub tags workflow [\#797](https://github.com/camptocamp/tilecloud-chain/pull/797) ([sbrunner](https://github.com/sbrunner))
 
 ## [archive/1.12](https://github.com/camptocamp/tilecloud-chain/tree/archive/1.12) (2020-12-16)
@@ -619,7 +619,7 @@
 
 **Merged pull requests:**
 
-- Fix StopIteration behaviour with python 3.7 [\#418](https://github.com/camptocamp/tilecloud-chain/pull/418) ([pvalsecc](https://github.com/pvalsecc))
+- Fix StopIteration behavior with python 3.7 [\#418](https://github.com/camptocamp/tilecloud-chain/pull/418) ([pvalsecc](https://github.com/pvalsecc))
 - \[requires.io\] dependency update on master branch [\#417](https://github.com/camptocamp/tilecloud-chain/pull/417) ([jwkaltz](https://github.com/jwkaltz))
 - \[requires.io\] dependency update on master branch [\#416](https://github.com/camptocamp/tilecloud-chain/pull/416) ([jwkaltz](https://github.com/jwkaltz))
 - \[requires.io\] dependency update on master branch [\#415](https://github.com/camptocamp/tilecloud-chain/pull/415) ([jwkaltz](https://github.com/jwkaltz))
@@ -1215,7 +1215,7 @@
 - Some fix to use the server and for MapCache [\#153](https://github.com/camptocamp/tilecloud-chain/pull/153) ([sbrunner](https://github.com/sbrunner))
 - Close Postgres connection [\#151](https://github.com/camptocamp/tilecloud-chain/pull/151) ([sbrunner](https://github.com/sbrunner))
 - Generate legend images [\#150](https://github.com/camptocamp/tilecloud-chain/pull/150) ([sbrunner](https://github.com/sbrunner))
-- Reorganisation [\#149](https://github.com/camptocamp/tilecloud-chain/pull/149) ([sbrunner](https://github.com/sbrunner))
+- Reorganization [\#149](https://github.com/camptocamp/tilecloud-chain/pull/149) ([sbrunner](https://github.com/sbrunner))
 - Use the new ArgumentParser in place of the old OptionParser [\#148](https://github.com/camptocamp/tilecloud-chain/pull/148) ([sbrunner](https://github.com/sbrunner))
 - Add proxy/cache pass throw strategies [\#147](https://github.com/camptocamp/tilecloud-chain/pull/147) ([sbrunner](https://github.com/sbrunner))
 - Add support of different geometries per zoom level [\#143](https://github.com/camptocamp/tilecloud-chain/pull/143) ([sbrunner](https://github.com/sbrunner))
@@ -1415,10 +1415,10 @@
 - Add some unit tests [\#41](https://github.com/camptocamp/tilecloud-chain/pull/41) ([sbrunner](https://github.com/sbrunner))
 - More log message in verbose mode fix \#29 [\#39](https://github.com/camptocamp/tilecloud-chain/pull/39) ([sbrunner](https://github.com/sbrunner))
 - Generic build configuration [\#38](https://github.com/camptocamp/tilecloud-chain/pull/38) ([sbrunner](https://github.com/sbrunner))
-- Add no-geom and reorganise options \#34 [\#37](https://github.com/camptocamp/tilecloud-chain/pull/37) ([sbrunner](https://github.com/sbrunner))
+- Add no-geom and reorganize options \#34 [\#37](https://github.com/camptocamp/tilecloud-chain/pull/37) ([sbrunner](https://github.com/sbrunner))
 - Daemonize [\#36](https://github.com/camptocamp/tilecloud-chain/pull/36) ([sbrunner](https://github.com/sbrunner))
 - Documentation [\#35](https://github.com/camptocamp/tilecloud-chain/pull/35) ([sbrunner](https://github.com/sbrunner))
-- Reorganise tests [\#31](https://github.com/camptocamp/tilecloud-chain/pull/31) ([sbrunner](https://github.com/sbrunner))
+- Reorganize tests [\#31](https://github.com/camptocamp/tilecloud-chain/pull/31) ([sbrunner](https://github.com/sbrunner))
 - Some bugfix for AWS [\#30](https://github.com/camptocamp/tilecloud-chain/pull/30) ([sbrunner](https://github.com/sbrunner))
 - Move buildout_tilegeneration.cfg to tilegeneration/buildout.cfg [\#26](https://github.com/camptocamp/tilecloud-chain/pull/26) ([sbrunner](https://github.com/sbrunner))
 - Better logs, Allows no ssh_options, Add AWS authentication [\#25](https://github.com/camptocamp/tilecloud-chain/pull/25) ([sbrunner](https://github.com/sbrunner))
