@@ -11,7 +11,7 @@ class TimedTileStoreWrapper(TileStore):
     """A wrapper around a TileStore that adds timer metrics."""
 
     def __init__(self, tile_store: TileStore, stats_name: str) -> None:
-        """Initialise."""
+        """Initialize."""
         super().__init__()
         self._tile_store = tile_store
         self._stats_name = stats_name

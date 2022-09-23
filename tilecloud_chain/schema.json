@@ -856,8 +856,8 @@
           }
         },
         "authorised_user": {
-          "title": "Authorised user",
-          "description": "The authorised user to generate the tiles (used to avoid permission issue on generated tiles) (main configuration)",
+          "title": "Authorized user",
+          "description": "The authorized user to generate the tiles (used to avoid permission issue on generated tiles) (main configuration)",
           "type": "string"
         },
         "maxconsecutive_errors": {

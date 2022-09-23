@@ -783,7 +783,7 @@ class TestGenerate(CompareCase):
                     (
                         "tilecloud_chain.generate",
                         "ERROR",
-                        "not authorised, authorised user is: www-data.",
+                        "not authorized, authorized user is: www-data.",
                     )
                 )
 

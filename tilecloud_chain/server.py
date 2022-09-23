@@ -96,7 +96,7 @@ class DatedStore:
     """Store with timestamp to be able to invalidate it on configuration change."""
 
     def __init__(self, store: tilecloud.TileStore, mtime: float) -> None:
-        """Initialise."""
+        """Initialize."""
         self.store = store
         self.mtime = mtime
 
@@ -105,7 +105,7 @@ class DatedFilter:
     """Filter with timestamp to be able to invalidate it on configuration change."""
 
     def __init__(self, layer_filter: Optional[tilecloud_chain.IntersectGeometryFilter], mtime: float) -> None:
-        """Initialise."""
+        """Initialize."""
         self.filter = layer_filter
         self.mtime = mtime
 
@@ -114,7 +114,7 @@ class Server(Generic[Response]):
     """The generic implementation of the WMTS server."""
 
     def __init__(self) -> None:
-        """Initialise."""
+        """Initialize."""
         try:
             self.filter_cache: Dict[str, Dict[str, DatedFilter]] = {}
             self.s3_client_cache: Dict[str, "botocore.client.S3"] = {}
