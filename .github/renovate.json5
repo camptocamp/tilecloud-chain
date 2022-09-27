@@ -17,6 +17,11 @@
     },
     {
       matchDatasources: ['docker'],
+      matchPackageNames: ['camptocamp/mapserver'],
+      versioning: 'regex:^(?<major>\\d+)\\.(?<minor>\\d+)$',
+    },
+    {
+      matchDatasources: ['docker'],
       matchPackageNames: ['redis'],
       versioning: 'regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$',
     },
