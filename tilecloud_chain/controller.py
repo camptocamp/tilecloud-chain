@@ -127,12 +127,12 @@ def _send(
         cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
         key_name = os.path.join(f"{cache['folder']}", path)
         blob = get_azure_client().get_blob_client(container=cache_azure["container"], blob=key_name)
-        blob.upload_blob(data, overwrite=True)
+        blob.upload_blob(data, overwrite=True)  # type: ignore
 
         blob.upload_blob(
-            data,
+            data,  # type: ignore
             overwrite=True,
-            content_settings=ContentSettings(
+            content_settings=ContentSettings(  # type: ignore
                 content_type=mime_type,
                 content_encoding="utf-8",
                 cache_control=cache_azure["cache_control"],
