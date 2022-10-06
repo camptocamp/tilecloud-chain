@@ -263,7 +263,7 @@ class Server(Generic[Response]):
                 properties = blob.get_blob_properties()
                 return self.response(
                     config,
-                    blob.download_blob().readall(),
+                    blob.download_blob().readall(),  # type: ignore
                     {
                         "Content-Encoding": cast(str, properties.content_settings.content_encoding),
                         "Content-Type": cast(str, properties.content_settings.content_type),
