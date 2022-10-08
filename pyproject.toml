@@ -20,7 +20,7 @@ Shapely = "1.8.4"
 cee_syslog_handler = "0.6.0" # c2cwsgiutils
 gunicorn = "20.1.0" # c2cwsgiutils
 objgraph = "3.5.0" # c2cwsgiutils
-psycopg2 = "2.9.3" # c2cwsgiutils
+psycopg2 = "2.9.4" # c2cwsgiutils
 pyramid-tm = "2.4" # c2cwsgiutils
 sentry-sdk = "1.5.12" # c2cwsgiutils
 sqlalchemy = "1.4.41" # c2cwsgiutils
@@ -32,8 +32,8 @@ jsonschema = "4.4.0"
 pyramid = "2.0"
 jsonschema-gentypes = "1.0.0"
 azure-storage-blob = "12.13.*"
-bottle = "0.12.20"
-mako = "1.2.2"
+bottle = "0.12.23"
+mako = "1.2.3"
 oauthlib = "3.2.1"
 
 [tool.poetry.dev-dependencies]
