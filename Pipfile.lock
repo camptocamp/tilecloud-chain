@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b4a01eaa1818f4e6d8522171a8232cf109939dcbbfbc10dbfe0d4e735674b10b"
+            "sha256": "e5cbbb153fe51991d3569f95e37309316961a67baa3f3c89d8b941ab33f07195"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,19 +18,19 @@
     "default": {
         "azure-core": {
             "hashes": [
-                "sha256:3c886a5c6e0698360826c08b2685965d8c23e1292c32be9028ce2fa691005849",
-                "sha256:624b46db407dbed9e03134ab65214efab5b5315949a1fbd6cd592c46fb272588"
+                "sha256:28a01dfbaf0a6812c4e2a82d1642ea30956a9739f25bc77c9b23b91f4ea68f0f",
+                "sha256:c3e8a9a3ec9d89f59b5d5b2f19d19a30d76a5b5c0cee3788ecad3cb72b9bd028"
             ],
             "index": "pypi",
-            "version": "==1.13.0"
+            "version": "==1.23.1"
         },
         "azure-storage-blob": {
             "hashes": [
-                "sha256:36b85a3423379d4a93f663022487cf53aa3043a355f8414321dde878c00cb577",
-                "sha256:46999df6e2cde8773739f7c3bd1eb5846d4b7dc1ef6e2161f3b6d1d0f21726ba"
+                "sha256:280a6ab032845bab9627582bee78a50497ca2f14772929b5c5ee8b4605af0cb3",
+                "sha256:53f0d4cd32970ac9ff9b9753f83dd2fb3f9ac30e1d01e71638c436c509bfd884"
             ],
             "index": "pypi",
-            "version": "==12.8.0"
+            "version": "==12.13.0"
         },
         "boto3": {
             "hashes": [
@@ -690,6 +690,14 @@
             "index": "pypi",
             "version": "==1.4"
         },
+        "typing-extensions": {
+            "hashes": [
+                "sha256:4ca091dea149f945ec56afb48dae714f21e8692ef22a395223bcd328961b6a0e",
+                "sha256:7f001e5ac290a0c0401508864c7ec868be4e701886d5b573a9528ed3973d9d3b"
+            ],
+            "index": "pypi",
+            "version": "==4.0.1"
+        },
         "ujson": {
             "hashes": [
                 "sha256:025758cf6561af6986d77cd4af9367ab56dde5c7c50f13f59e6964b4b25df73e",
@@ -1230,12 +1238,11 @@
         },
         "typing-extensions": {
             "hashes": [
-                "sha256:0ac0f89795dd19de6b97debb0c6af1c70987fd80a2d62d1958f7e56fcc31b497",
-                "sha256:50b6f157849174217d0656f99dc82fe932884fb250826c18350e159ec6cdf342",
-                "sha256:779383f6086d90c99ae41cf0ff39aac8a7937a9283ce0a414e5dd782f4c94a84"
+                "sha256:4ca091dea149f945ec56afb48dae714f21e8692ef22a395223bcd328961b6a0e",
+                "sha256:7f001e5ac290a0c0401508864c7ec868be4e701886d5b573a9528ed3973d9d3b"
             ],
             "index": "pypi",
-            "version": "==3.10.0.0"
+            "version": "==4.0.1"
         },
         "wrapt": {
             "hashes": [
