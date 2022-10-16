@@ -104,9 +104,9 @@ WORKDIR /app/
 FROM base as runner
 
 COPY . /app/
+ENV POETRY_DYNAMIC_VERSIONING_BYPASS=dev
 RUN --mount=type=cache,target=/root/.cache \
-    sed --in-place 's/enable = true # disable on Docker/enable = false/g' pyproject.toml \
-    && python3 -m pip install --disable-pip-version-check --no-deps --editable=. \
+    python3 -m pip install --disable-pip-version-check --no-deps --editable=. \
     && mv docker/run /usr/bin/ \
     && python3 -m compileall -q /app/tilecloud_chain
 
@@ -135,9 +135,9 @@ RUN --mount=type=cache,target=/root/.cache \
     python3 -m pip install --disable-pip-version-check --no-deps --requirement=/poetry/requirements-dev.txt
 
 COPY . ./
+ENV POETRY_DYNAMIC_VERSIONING_BYPASS=dev
 RUN --mount=type=cache,target=/root/.cache \
-    sed --in-place 's/enable = true # disable on Docker/enable = false/g' pyproject.toml \
-    && python3 -m pip install --disable-pip-version-check --no-deps --editable=. \
+    python3 -m pip install --disable-pip-version-check --no-deps --editable=. \
     && python3 -m pip freeze > /requirements.txt
 
 ENV TILEGENERATION_MAIN_CONFIGFILE=
