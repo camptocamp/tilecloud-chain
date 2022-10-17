@@ -47,7 +47,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
   ${DEV_PACKAGES} && \
-  python3 -m pip install --disable-pip-version-check --no-cache-dir \
+  python3 -m pip install --disable-pip-version-check --no-cache-dir --no-deps \
   --requirement=/poetry/requirements.txt && \
   python3 -m compileall /usr/local/lib/python3.8 /usr/lib/python3.8 && \
   strip /usr/local/lib/python3.8/dist-packages/shapely/*/*.so && \
@@ -122,7 +122,7 @@ FROM base as tests
 
 RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/poetry \
-    python3 -m pip install --disable-pip-version-check --requirement=/poetry/requirements-dev.txt
+    python3 -m pip install --disable-pip-version-check --no-deps --requirement=/poetry/requirements-dev.txt
 
 COPY . /app/
 RUN prospector --output-format=pylint
