@@ -41,9 +41,11 @@ MAP
     END
     CLASS
         NAME "Point"
-        COLOR 255 0 0
-        SIZE 10
-        SYMBOL "circle"
+        STYLE
+            COLOR 255 0 0
+            SIZE 10
+            SYMBOL "circle"
+        END
     END
   END
 
@@ -66,9 +68,11 @@ MAP
     END
     CLASS
         NAME "Point"
-        COLOR 255 0 0
-        SIZE 10
-        SYMBOL "circle"
+        STYLE
+            COLOR 255 0 0
+            SIZE 10
+            SYMBOL "circle"
+        END
     END
   END
 
@@ -81,19 +85,19 @@ MAP
     STATUS ON
     CLASS
         NAME "Line 1"
-        COLOR 0 0 255
         STYLE
+            COLOR 0 0 255
             WIDTH 5
+            MINSCALEDENOM 100000
         END
-        MINSCALE 100000
     END
     CLASS
         NAME "Line 2"
-        COLOR 0 0 255
         STYLE
+            COLOR 0 0 255
             WIDTH 5
+            MAXSCALEDENOM 100000
         END
-        MAXSCALE 100000
     END
   END
 
@@ -106,8 +110,10 @@ MAP
     STATUS ON
     CLASS
         NAME "Polygon"
-        OUTLINECOLOR 0 255 0
-        COLOR 255 255 0
+        STYLE
+            OUTLINECOLOR 0 255 0
+            COLOR 255 255 0
+        END
     END
   END
 END
