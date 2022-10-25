@@ -150,9 +150,9 @@ class TestGenerate(CompareCase):
     Nb tiles stored: 6
     Nb tiles in error: 0
     Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-    Total size: 3.6 Kio
+    Total size: 3.[0-9] Kio
     Time per tile: [0-9]+ ms
-    Size per tile: 619 o
+    Size per tile: 6[0-9][0-9] o
 
     The tile generation of layer 'polygon \(DATE=2012\)' is finish
     Nb generated tiles: 1
@@ -195,9 +195,9 @@ class TestGenerate(CompareCase):
     Nb tiles stored: 6
     Nb tiles in error: 0
     Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-    Total size: 3.6 Kio
+    Total size: 3.[0-9] Kio
     Time per tile: [0-9]+ ms
-    Size per tile: 619 o
+    Size per tile: 6[0-9][0-9] o
 
     The tile generation of layer 'polygon \(DATE=2013\)' is finish
     Nb generated tiles: 1
