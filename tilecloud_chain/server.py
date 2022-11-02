@@ -851,6 +851,8 @@ def main(global_config: Any, **settings: Any) -> Router:
     config.add_route("tiles", "/*path", request_method="GET")
     config.add_view(PyramidView, route_name="tiles")
 
+    config.add_static_view(name="static", path="/app/tilecloud_chain/static")
+
     config.scan("tilecloud_chain.views")
 
     return config.make_wsgi_app()
