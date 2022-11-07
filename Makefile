@@ -1,4 +1,5 @@
 export DOCKER_BUILDKIT=1
+VERSION = $(strip $(shell poetry version --short))
 
 .PHONY: help
 help: ## Display this help message
@@ -11,7 +12,7 @@ help: ## Display this help message
 PHONY: build
 build: ## Build all Docker images
 	docker build --tag=camptocamp/tilecloud-chain-tests --target=tests .
-	docker build --tag=camptocamp/tilecloud-chain .
+	docker build --tag=camptocamp/tilecloud-chain --build-arg=VERSION=$(VERSION) .
 
 PHONY: checks
 checks: prospector ## Run the checks
