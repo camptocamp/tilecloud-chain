@@ -1612,7 +1612,7 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
 name = "testfixtures"
-version = "7.0.0"
+version = "7.0.3"
 description = "A collection of helpers and mock objects for unit tests and doc tests."
 category = "dev"
 optional = false
@@ -1880,7 +1880,7 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "c2353c5121f88ec6940d4deb52387f46a76c7f0f6ccfcd204642628034527ab9"
+content-hash = "cb51deb6933bb6e7e005d33362338907b67687f35ff77180fe3e7df244250690"
 
 [metadata.files]
 alembic = [
@@ -3090,8 +3090,8 @@ stevedore = [
     {file = "stevedore-4.1.0.tar.gz", hash = "sha256:02518a8f0d6d29be8a445b7f2ac63753ff29e8f2a2faa01777568d5500d777a6"},
 ]
 testfixtures = [
-    {file = "testfixtures-7.0.0-py3-none-any.whl", hash = "sha256:ae95a0522f181686204fc816e817c4725516cf5bc43360160390aad54b1dfd00"},
-    {file = "testfixtures-7.0.0.tar.gz", hash = "sha256:8ecac5a308793451640594d9ca42ce89b987711e1e4c9312855321ec21f6ccb4"},
+    {file = "testfixtures-7.0.3-py3-none-any.whl", hash = "sha256:8e21110ccea169745c839699b5718370906f59100bb291aed46e3a7b5ae28435"},
+    {file = "testfixtures-7.0.3.tar.gz", hash = "sha256:942bc751d45068658e11277f213ce1868476e141ea4240da0fb6712ae6f96401"},
 ]
 tifffile = [
     {file = "tifffile-2022.10.10-py3-none-any.whl", hash = "sha256:87f3aee8a0d06b74655269a105de75c1958a24653e1930d523eb516100043503"},
