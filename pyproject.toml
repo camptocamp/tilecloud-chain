@@ -35,11 +35,12 @@ azure-storage-blob = "12.13.*"
 bottle = "0.12.23"
 mako = "1.2.3"
 oauthlib = "3.2.2"
+cryptography = "38.0.3"
 
 [tool.poetry.dev-dependencies]
 coverage = "6.3.3"
 testfixtures = "6.18.5"
 pytest = "7.0.1"
-prospector = { extras = ["with-mypy", "with-bandit"], version = "1.7.7" }
+prospector = { extras = ["with_mypy", "with_bandit"], version = "1.7.7" }
 types-redis = "4.1.22"
 types-requests = "2.27.31"
