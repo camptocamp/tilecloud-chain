@@ -2,6 +2,11 @@
 FROM osgeo/gdal:ubuntu-small-3.4.3 as base-all
 LABEL maintainer "info@camptocamp.org"
 
+# Fail on error on pipe, see: https://github.com/hadolint/hadolint/wiki/DL4006.
+# Treat unset variables as an error when substituting.
+# Print commands and their arguments as they are executed.
+SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
+
 # Workaround for setuptools >= 60.0.0
 ENV SETUPTOOLS_USE_DISTUTILS=stdlib
 
