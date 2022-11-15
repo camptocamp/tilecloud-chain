@@ -36,6 +36,7 @@ bottle = "0.12.23"
 mako = "1.2.3"
 oauthlib = "3.2.2"
 cryptography = "38.0.3"
+Pillow = "9.2.0"
 
 [tool.poetry.dev-dependencies]
 coverage = "6.3.3"
