@@ -54,9 +54,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
 
 CMD ["gunicorn", "--paste=/app/production.ini"]
 
-ENV TERM=linux \
-    LANG=C.UTF-8 \
-    LOG_TYPE=console \
+ENV LOG_TYPE=console \
     DEVELOPMENT=0 \
     PKG_CONFIG_ALLOW_SYSTEM_LIBS=OHYESPLEASE
 
