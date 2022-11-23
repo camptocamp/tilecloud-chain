@@ -8,3 +8,8 @@ checks:
     clean.yaml: False
     dependabot-auto-merge.yaml: False
   dependabot_config: False
+
+audit:
+  pipfile:
+    sections:
+      - default
