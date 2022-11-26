@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "commander": "9.4.1",
-    "puppeteer": "19.2.2"
+    "puppeteer": "19.3.0"
   },
   "type": "module"
 }
