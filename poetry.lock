@@ -586,7 +586,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "jsonschema"
-version = "4.17.0"
+version = "4.17.1"
 description = "An implementation of JSON Schema validation for Python"
 category = "main"
 optional = false
@@ -604,7 +604,7 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "jsonschema-gentypes"
-version = "1.3.1"
+version = "1.3.2"
 description = "Tool to generate Python types based on TypedDict from a JSON Schema"
 category = "main"
 optional = false
@@ -1708,7 +1708,7 @@ docs = ["Sphinx (>=1.3.1)", "docutils", "pylons-sphinx-themes"]
 
 [[package]]
 name = "types-redis"
-version = "4.3.21.4"
+version = "4.3.21.5"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
@@ -1880,7 +1880,7 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "18cf46ec692f486092d839d4009dca59e46db0476d5bab39e4a34773b4f7d1a7"
+content-hash = "d38b7e5a1518ba17ec38eef56eeec46c0268b83de953aa8d8d1b81e7fe2b74bb"
 
 [metadata.files]
 alembic = [
@@ -2251,11 +2251,12 @@ jmespath = [
     {file = "jmespath-1.0.1.tar.gz", hash = "sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe"},
 ]
 jsonschema = [
-    {file = "jsonschema-4.17.0-py3-none-any.whl", hash = "sha256:f660066c3966db7d6daeaea8a75e0b68237a48e51cf49882087757bb59916248"},
-    {file = "jsonschema-4.17.0.tar.gz", hash = "sha256:5bfcf2bca16a087ade17e02b282d34af7ccd749ef76241e7f9bd7c0cb8a9424d"},
+    {file = "jsonschema-4.17.1-py3-none-any.whl", hash = "sha256:410ef23dcdbca4eaedc08b850079179883c2ed09378bd1f760d4af4aacfa28d7"},
+    {file = "jsonschema-4.17.1.tar.gz", hash = "sha256:05b2d22c83640cde0b7e0aa329ca7754fbd98ea66ad8ae24aa61328dfe057fa3"},
 ]
 jsonschema-gentypes = [
-    {file = "jsonschema_gentypes-1.3.1-py3-none-any.whl", hash = "sha256:5f461eb923aa5e9fe4fbe3ebfbeb2e5415674d82fb626c06a2062a55368ca693"},
+    {file = "jsonschema_gentypes-1.3.2-py3-none-any.whl", hash = "sha256:6753c04ce64632e9be1f2004e25ced751bb5100a90963ab6adde23ac654fd4a3"},
+    {file = "jsonschema_gentypes-1.3.2.tar.gz", hash = "sha256:2419c33a35b7fec85b08037c43d2d058d80cee796348f67a3bc2ca5b5fdbc39e"},
 ]
 lazy-object-proxy = [
     {file = "lazy-object-proxy-1.8.0.tar.gz", hash = "sha256:c219a00245af0f6fa4e95901ed28044544f50152840c5b6a3e7b2568db34d156"},
@@ -3123,8 +3124,8 @@ translationstring = [
     {file = "translationstring-1.4.tar.gz", hash = "sha256:bf947538d76e69ba12ab17283b10355a9ecfbc078e6123443f43f2107f6376f3"},
 ]
 types-redis = [
-    {file = "types-redis-4.3.21.4.tar.gz", hash = "sha256:3955c5682f926a1aaee13ed5bc0a37521115b0b8ffd6cd457facf517999abe93"},
-    {file = "types_redis-4.3.21.4-py3-none-any.whl", hash = "sha256:cf8a94ac9efbeb6459fd1aa05dbb977fc59c1022ebe8f72bc0bae57df136105d"},
+    {file = "types-redis-4.3.21.5.tar.gz", hash = "sha256:4be36676840606c536fa43de0221141699962499318a9fd7c75202506d19e1d2"},
+    {file = "types_redis-4.3.21.5-py3-none-any.whl", hash = "sha256:0eb90bb7a20fbc3c2307f71a08179e37feee23d9922f3614daa75fd3a8e7506d"},
 ]
 types-requests = [
     {file = "types-requests-2.28.11.5.tar.gz", hash = "sha256:a7df37cc6fb6187a84097da951f8e21d335448aa2501a6b0a39cbd1d7ca9ee2a"},
