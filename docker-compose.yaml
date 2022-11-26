@@ -31,7 +31,7 @@ services:
     user: www-data
 
   memcached:
-    image: memcached:1.5
+    image: memcached:1.5.22
     user: www-data
     command:
       - memcached
