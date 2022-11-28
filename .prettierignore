@@ -1,0 +1,9 @@
+*.md
+Pipfile.lock
+tilecloud_chain/OpenLayers-style.css
+tilecloud_chain/OpenLayers.js
+tilecloud_chain/openlayers.html
+tilecloud_chain/schema*.yaml
+tilecloud_chain/templates/admin_index.html
+tilecloud_chain/tests/create_test_data.sh
+tilecloud_chain/tests/tilegeneration/*.yaml
