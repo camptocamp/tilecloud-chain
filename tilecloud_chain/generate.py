@@ -256,7 +256,7 @@ class Generate:
             def delete_from_store(tile: Tile) -> Tile:
                 assert self._queue_tilestore is not None
                 if hasattr(tile, "metatile"):
-                    metatile: Tile = tile.metatile  # type: ignore
+                    metatile: Tile = tile.metatile
                     metatile.elapsed_togenerate -= 1  # type: ignore
                     if metatile.elapsed_togenerate == 0:  # type: ignore
                         self._queue_tilestore.delete_one(metatile)
@@ -368,7 +368,7 @@ class Generate:
                 print("\n".join(message) + "\n")
 
         if self._cache_tilestore is not None and hasattr(self._cache_tilestore, "connection"):
-            self._cache_tilestore.connection.close()  # type: ignore
+            self._cache_tilestore.connection.close()
 
         if (
             self._options.role != "hash"
