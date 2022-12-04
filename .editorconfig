@@ -13,5 +13,5 @@ quote_type = single
 [{Makefile,*.mk}]
 indent_style = tab
 
-[*.{json,json5,js,yaml,md,html}]
+[*.{json,json5,js,yaml,md,html,whitesource}]
 indent_size = 2
