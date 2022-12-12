@@ -10,8 +10,3 @@ checks:
   dependabot_config: False
   prospector_config: False
   setup: False
-
-audit:
-  pipfile:
-    sections:
-      - default
