@@ -10,9 +10,14 @@ services:
       - c2c:///app/development.ini
     volumes:
       - ./tilecloud_chain:/app/tilecloud_chain:ro
-      # - ../tilecloud/tilecloud:/usr/local/lib/python3.8/dist-packages/tilecloud:ro
+      # - ../tilecloud/tilecloud:/usr/local/lib/python3.10/dist-packages/tilecloud:ro
 
   app_test_user:
     <<: *app
     ports:
       - '9051:8080'
+
+  # test:
+  #   volumes:
+  #     - ./tilecloud_chain:/app/tilecloud_chain:ro
+  #     - ../tilecloud/tilecloud:/usr/local/lib/python3.10/dist-packages/tilecloud:ro
