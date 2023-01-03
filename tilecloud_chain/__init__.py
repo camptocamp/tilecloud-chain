@@ -2,6 +2,7 @@ import collections
 import json
 import logging
 import logging.config
+import math
 import os
 import pathlib
 import pkgutil
@@ -1072,7 +1073,7 @@ class TileGeneration:
             if zoom in geoms:
                 extent = geoms[zoom].bounds
 
-                if len(extent) == 0:
+                if len([e for e in extent if not math.isnan(e)]) == 0:
                     logger.warning("bounds empty for zoom %s", zoom)
                 else:
                     minx, miny, maxx, maxy = extent

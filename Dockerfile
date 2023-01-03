@@ -47,7 +47,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     && apt-get install --assume-yes --no-install-recommends ${DEV_PACKAGES} \
     && python3 -m pip install --disable-pip-version-check --no-deps --requirement=/poetry/requirements.txt \
     && python3 -m compileall /usr/local/lib/python* /usr/lib/python* \
-    && strip /usr/local/lib/python*/dist-packages/shapely/*/*.so \
+    && strip /usr/local/lib/python*/dist-packages/shapely/*.so \
     && apt-get remove --purge --autoremove --yes ${DEV_PACKAGES} binutils
 
 # From c2cwsgiutils
