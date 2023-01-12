@@ -2,6 +2,7 @@
 
 publish:
   docker:
+    dispatch: {}
     images:
       - name: camptocamp/tilecloud-chain
   pypi:
