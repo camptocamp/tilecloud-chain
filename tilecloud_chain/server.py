@@ -848,7 +848,10 @@ def main(global_config: Any, **settings: Any) -> Router:
         request_method="GET",
     )
 
-    config.add_static_view(name="tilecloud-chain-static", path="/app/tilecloud_chain/static")
+    config.add_static_view(
+        name=f"/{tilegeneration.get_main_config().config['server']['admin_path']}/static",
+        path="/app/tilecloud_chain/static",
+    )
 
     config.add_route("tiles", "/*path", request_method="GET")
     config.add_view(PyramidView, route_name="tiles")
