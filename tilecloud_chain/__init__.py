@@ -391,11 +391,48 @@ class TileGeneration:
 
         if configure_logging:
             if os.environ.get("CI", "false").lower() != "true":
-                loader = pyramid.scripts.common.get_config_loader(self.options.config_uri)
-                loader.setup_logging(
-                    pyramid.scripts.common.parse_vars(self.options.config_vars)
-                    if self.options.config_vars
-                    else None
+                ###
+                # logging configuration
+                # https://docs.python.org/3/library/logging.config.html#logging-config-dictschema
+                ###
+                logging.config.dictConfig(
+                    {
+                        "version": 1,
+                        "root": {
+                            "level": os.environ["OTHER_LOG_LEVEL"],
+                            "handlers": [os.environ["LOG_TYPE"]],
+                        },
+                        "loggers": {
+                            "gunicorn.error": {"level": os.environ["GUNICORN_LOG_LEVEL"]},
+                            "gunicorn.access": {"level": os.environ["GUNICORN_ACCESS_LOG_LEVEL"]},
+                            # "level = INFO" logs SQL queries.
+                            # "level = DEBUG" logs SQL queries and results.
+                            # "level = WARN" logs neither.  (Recommended for production systems.)
+                            "sqlalchemy.engine": {"level": os.environ["SQL_LOG_LEVEL"]},
+                            "c2cwsgiutils": {"level": os.environ["C2CWSGIUTILS_LOG_LEVEL"]},
+                            "tilecloud": {"level": os.environ["TILECLOUD_LOG_LEVEL"]},
+                            "tilecloud_chain": {"level": os.environ["TILECLOUD_CHAIN_LOG_LEVEL"]},
+                        },
+                        "handlers": {
+                            "console": {
+                                "class": "logging.StreamHandler",
+                                "formatter": "generic",
+                                "stream": "ext://sys.stdout",
+                            },
+                            "json": {
+                                "class": "c2cwsgiutils.pyramid_logging.JsonLogHandler",
+                                "formatter": "generic",
+                                "stream": "ext://sys.stdout",
+                            },
+                        },
+                        "formatters": {
+                            "generic": {
+                                "format": "%(asctime)s [%(process)d] [%(levelname)-5.5s] %(message)s",
+                                "datefmt": "[%Y-%m-%d %H:%M:%S %z]",
+                                "class": "logging.Formatter",
+                            }
+                        },
+                    }
                 )
                 sentry.includeme()
 
