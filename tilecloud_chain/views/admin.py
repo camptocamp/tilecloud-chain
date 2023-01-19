@@ -177,7 +177,7 @@ class Admin:
                 json_message = json.loads(line)
                 msg = json_message["msg"]
                 if "full_message" in json_message:
-                    full_message = json_message["full_message"].replaceAll("\n", "<br />")
+                    full_message = json_message["full_message"].replace("\n", "<br />")
                     msg += f"<br />{full_message}"
                 stdout.append(msg)
             except:
@@ -189,7 +189,7 @@ class Admin:
                 int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
             ),
             "stderr": _format_output(
-                completed_process.stderr.decode().replaceAll("\n", "<br />"),
+                completed_process.stderr.decode().replace("\n", "<br />"),
                 int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
             ),
             "returncode": completed_process.returncode,
