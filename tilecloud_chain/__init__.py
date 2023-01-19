@@ -1662,7 +1662,7 @@ def _await_message(_: Any) -> bool:
 
 
 def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
-    """Get the quue tile store (Redir or SQS)."""
+    """Get the quue tile store (Redis or SQS)."""
     if "redis" in config.config:
         # Create a Redis queue
         conf = config.config["redis"]
