@@ -176,10 +176,11 @@ class Admin:
             try:
                 json_message = json.loads(line)
                 msg = json_message["msg"]
-                if "full_message" in json_message:
-                    full_message = json_message["full_message"].replace("\n", "<br />")
-                    msg += f"<br />{full_message}"
-                stdout.append(msg)
+                if json_message.get("logger_name", "").startswith("tilecloud"):
+                    if "full_message" in json_message:
+                        full_message = json_message["full_message"].replace("\n", "<br />")
+                        msg += f"<br />{full_message}"
+                    stdout.append(msg)
             except:
                 stdout.append(line)
 
