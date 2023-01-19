@@ -130,21 +130,19 @@
             })
             .then((data) => {
               if (data.error) {
-                $('#result').html(
-                  `<p class="alert alert-danger" role="alert">${'$'}{data.error.replaceAll('\n', '<br/>')}</p>`
-                );
+                $('#result').html(`<p class="alert alert-danger" role="alert">${'$'}{data.error}</p>`);
               } else {
                 if (data.returncode == 0) {
                   if (data['stdout'] || data['stderr']) {
                     $('#result').html(
-                      `<p class="alert alert-success" role="alert">${'$'}{data.stdout.replaceAll('\n', '<br/>')}${'$'}{data.stderr.replaceAll('\n', '<br/>')}</p>`
+                      `<p class="alert alert-success" role="alert">${'$'}{data.stdout}${'$'}{data.stderr}</p>`
                     );
                   } else {
                     $('#result').html(`<p class="alert alert-success" role="alert">Success</p>`);
                   }
                 } else {
                   $('#result').html(
-                    `<p class="alert alert-danger" role="alert">Return code: ${'$'}{data.returncode}<br/>${'$'}{data.stdout.replaceAll('\n', '<br/>')}<br/>${'$'}{data.stderr.replaceAll('\n', '<br/>')}</p>`
+                    `<p class="alert alert-danger" role="alert">Return code: ${'$'}{data.returncode}<br/>${'$'}{data.stdout}<br/>${'$'}{data.stderr}</p>`
                   );
                 }
               }
