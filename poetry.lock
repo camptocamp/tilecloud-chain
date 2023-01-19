@@ -162,18 +162,18 @@ files = [
 
 [[package]]
 name = "boto3"
-version = "1.26.41"
+version = "1.26.52"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "boto3-1.26.41-py3-none-any.whl", hash = "sha256:05a5ce3af2d7419e39d93498c7f56fd5c2cc17870c92c4abc75659553b0b16de"},
-    {file = "boto3-1.26.41.tar.gz", hash = "sha256:8cbea352f28ec6b241f348356bcb8f331fc433bec3ad76ebf6194227f1a7f613"},
+    {file = "boto3-1.26.52-py3-none-any.whl", hash = "sha256:319ddb274f8f83b035b88a3b127c465bf6fe3e3fc2d668869b489e992c47ca77"},
+    {file = "boto3-1.26.52.tar.gz", hash = "sha256:0b1f82d4565ed875c7975ac0be5665e8d948613c01bcb0e49df6d4f5af670cc8"},
 ]
 
 [package.dependencies]
-botocore = ">=1.29.41,<1.30.0"
+botocore = ">=1.29.52,<1.30.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -182,14 +182,14 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.41"
+version = "1.29.52"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 files = [
-    {file = "botocore-1.29.41-py3-none-any.whl", hash = "sha256:b670b7f8958a2908167081efb6ea39794bf61d618be729984629a63d85cf8bfe"},
-    {file = "botocore-1.29.41.tar.gz", hash = "sha256:78761227d986d393956b6d08fdadcfe142748828e0e9db33f2f4c42a482dcd35"},
+    {file = "botocore-1.29.52-py3-none-any.whl", hash = "sha256:de55b6333fb13c66da9055972d7e4efff5dcc5a087478a2b70e99d888b29a24c"},
+    {file = "botocore-1.29.52.tar.gz", hash = "sha256:a0b89a33305cfa6251c6e1142deb7567e216e37e25363159f45fb81dc5b474e5"},
 ]
 
 [package.dependencies]
@@ -1536,6 +1536,13 @@ files = [
     {file = "Pillow-9.4.0-1-cp39-cp39-macosx_10_10_x86_64.whl", hash = "sha256:b8c2f6eb0df979ee99433d8b3f6d193d9590f735cf12274c108bd954e30ca858"},
     {file = "Pillow-9.4.0-1-pp38-pypy38_pp73-macosx_10_10_x86_64.whl", hash = "sha256:b70756ec9417c34e097f987b4d8c510975216ad26ba6e57ccb53bc758f490dab"},
     {file = "Pillow-9.4.0-1-pp39-pypy39_pp73-macosx_10_10_x86_64.whl", hash = "sha256:43521ce2c4b865d385e78579a082b6ad1166ebed2b1a2293c3be1d68dd7ca3b9"},
+    {file = "Pillow-9.4.0-2-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:9d9a62576b68cd90f7075876f4e8444487db5eeea0e4df3ba298ee38a8d067b0"},
+    {file = "Pillow-9.4.0-2-cp311-cp311-macosx_10_10_x86_64.whl", hash = "sha256:87708d78a14d56a990fbf4f9cb350b7d89ee8988705e58e39bdf4d82c149210f"},
+    {file = "Pillow-9.4.0-2-cp37-cp37m-macosx_10_10_x86_64.whl", hash = "sha256:8a2b5874d17e72dfb80d917213abd55d7e1ed2479f38f001f264f7ce7bae757c"},
+    {file = "Pillow-9.4.0-2-cp38-cp38-macosx_10_10_x86_64.whl", hash = "sha256:83125753a60cfc8c412de5896d10a0a405e0bd88d0470ad82e0869ddf0cb3848"},
+    {file = "Pillow-9.4.0-2-cp39-cp39-macosx_10_10_x86_64.whl", hash = "sha256:9e5f94742033898bfe84c93c831a6f552bb629448d4072dd312306bab3bd96f1"},
+    {file = "Pillow-9.4.0-2-pp38-pypy38_pp73-macosx_10_10_x86_64.whl", hash = "sha256:013016af6b3a12a2f40b704677f8b51f72cb007dac785a9933d5c86a72a7fe33"},
+    {file = "Pillow-9.4.0-2-pp39-pypy39_pp73-macosx_10_10_x86_64.whl", hash = "sha256:99d92d148dd03fd19d16175b6d355cc1b01faf80dae93c6c3eb4163709edc0a9"},
     {file = "Pillow-9.4.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:2968c58feca624bb6c8502f9564dd187d0e1389964898f5e9e1fbc8533169157"},
     {file = "Pillow-9.4.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:c5c1362c14aee73f50143d74389b2c158707b4abce2cb055b7ad37ce60738d47"},
     {file = "Pillow-9.4.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bd752c5ff1b4a870b7661234694f24b1d2b9076b8bf337321a814c612665f343"},
@@ -1712,14 +1719,14 @@ files = [
 
 [[package]]
 name = "portalocker"
-version = "2.6.0"
+version = "2.7.0"
 description = "Wraps the portalocker recipe for easy usage"
 category = "main"
 optional = false
 python-versions = ">=3.5"
 files = [
-    {file = "portalocker-2.6.0-py2.py3-none-any.whl", hash = "sha256:102ed1f2badd8dec9af3d732ef70e94b215b85ba45a8d7ff3c0003f19b442f4e"},
-    {file = "portalocker-2.6.0.tar.gz", hash = "sha256:964f6830fb42a74b5d32bce99ed37d8308c1d7d44ddf18f3dd89f4680de97b39"},
+    {file = "portalocker-2.7.0-py2.py3-none-any.whl", hash = "sha256:a07c5b4f3985c3cf4798369631fb7011adb498e2a46d8440efc75a8f29a0f983"},
+    {file = "portalocker-2.7.0.tar.gz", hash = "sha256:032e81d534a88ec1736d03f780ba073f047a06c478b06e2937486f334e955c51"},
 ]
 
 [package.dependencies]
@@ -1728,7 +1735,7 @@ pywin32 = {version = ">=226", markers = "platform_system == \"Windows\""}
 [package.extras]
 docs = ["sphinx (>=1.7.1)"]
 redis = ["redis"]
-tests = ["pytest (>=5.4.1)", "pytest-cov (>=2.8.1)", "pytest-mypy (>=0.8.0)", "pytest-timeout (>=2.1.0)", "redis", "sphinx (>=3.0.3)"]
+tests = ["pytest (>=5.4.1)", "pytest-cov (>=2.8.1)", "pytest-mypy (>=0.8.0)", "pytest-timeout (>=2.1.0)", "redis", "sphinx (>=6.0.0)"]
 
 [[package]]
 name = "prospector"
@@ -2887,24 +2894,34 @@ all = ["fsspec", "imagecodecs (>=2022.2.22)", "lxml", "matplotlib (>=3.3)", "zar
 
 [[package]]
 name = "tilecloud"
-version = "1.8.2"
+version = "1.9.3"
 description = "Tools for managing tiles"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.8,<3.11"
 files = [
-    {file = "tilecloud-1.8.2-py3-none-any.whl", hash = "sha256:f1542902c157ff8ab1551040299941838203bb871606aa31bc931d33b8d8146e"},
+    {file = "tilecloud-1.9.3-py3-none-any.whl", hash = "sha256:565d3d5c41461a24c91c0582c2af53e4abaccd4a6e56ace071c884199fd5b149"},
+    {file = "tilecloud-1.9.3.tar.gz", hash = "sha256:76f7c70fe26b9bb89aebcf6b3a4e93cdbd45881c314071c09b0f91debe5aec12"},
 ]
 
 [package.dependencies]
-azure-identity = "*"
-azure-storage-blob = "*"
-boto3 = "*"
+azure-identity = {version = "*", optional = true, markers = "extra == \"azure\" or extra == \"all\""}
+azure-storage-blob = {version = "*", optional = true, markers = "extra == \"azure\" or extra == \"all\""}
+boto3 = {version = "*", optional = true, markers = "extra == \"aws\" or extra == \"all\""}
 bottle = "*"
+c2cwsgiutils = {version = "*", extras = ["broadcast"], optional = true, markers = "extra == \"redis\" or extra == \"all\""}
 Pillow = "*"
 pyproj = "*"
-redis = ">=2"
-requests = ">=1.0"
+pyramid = {version = "*", optional = true, markers = "extra == \"wsgi\" or extra == \"all\""}
+redis = {version = "*", optional = true, markers = "extra == \"redis\" or extra == \"all\""}
+requests = "*"
+
+[package.extras]
+all = ["azure-identity", "azure-storage-blob", "boto3", "c2cwsgiutils[broadcast]", "pyramid", "redis"]
+aws = ["boto3"]
+azure = ["azure-identity", "azure-storage-blob"]
+redis = ["c2cwsgiutils[broadcast]", "redis"]
+wsgi = ["pyramid"]
 
 [[package]]
 name = "toml"
@@ -2990,16 +3007,35 @@ files = [
 ]
 
 [[package]]
+name = "types-pyopenssl"
+version = "23.0.0.2"
+description = "Typing stubs for pyOpenSSL"
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-pyOpenSSL-23.0.0.2.tar.gz", hash = "sha256:2e95f9a667d5eeb0af699196f857f7d23d5b4d642437bd37355bc13a87e9f4ae"},
+    {file = "types_pyOpenSSL-23.0.0.2-py3-none-any.whl", hash = "sha256:ea7e5d06f9190a1cb013ad4b13d48896e5cd1e785c04491f38b206d1bc4b8dc1"},
+]
+
+[package.dependencies]
+cryptography = ">=35.0.0"
+
+[[package]]
 name = "types-redis"
-version = "4.3.21.7"
+version = "4.4.0.3"
 description = "Typing stubs for redis"
 category = "dev"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-redis-4.3.21.7.tar.gz", hash = "sha256:f9baac41fcafb0b8ec655893feebc5d8bd189da05062d03b4566a16c092fc08c"},
-    {file = "types_redis-4.3.21.7-py3-none-any.whl", hash = "sha256:834e816a84fc570aa96551a9252b0df164ac671bc09e4708e2f8e2b129449ef1"},
+    {file = "types-redis-4.4.0.3.tar.gz", hash = "sha256:99fc86307fb19b775a0ad5de91d2fc0ccdb9a2be7ac790f4553911d2f2abdf61"},
+    {file = "types_redis-4.4.0.3-py3-none-any.whl", hash = "sha256:fc25550bc108908a32bb47cfdecde8d2155b6b7e40688af99a4bacbd7e3e857e"},
 ]
+
+[package.dependencies]
+cryptography = ">=35.0.0"
+types-pyOpenSSL = "*"
 
 [[package]]
 name = "types-requests"
@@ -3382,4 +3418,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "ba00583d403cbf7d537bd53ddd5e25571a5f4f5e52b68869096ee431a243988b"
+content-hash = "23c127b3f296c2d5c264d2e258dce9d05b646e2102ca91bbbf0aa9ee0c232353"

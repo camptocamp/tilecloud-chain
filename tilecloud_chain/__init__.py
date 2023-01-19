@@ -1686,6 +1686,10 @@ def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
         else:
             tilestore_kwargs["sentinels"] = conf["sentinels"]
             tilestore_kwargs["service_name"] = conf.get("service_name", "mymaster")
+        if "pending_count" in conf:
+            tilestore_kwargs["pending_count"] = conf["pending_count"]
+        if "pending_max_count" in conf:
+            tilestore_kwargs["pending_max_count"] = conf["pending_max_count"]
         return TimedTileStoreWrapper(RedisTileStore(**tilestore_kwargs), stats_name="redis")
     else:
         # Create a SQS queue
