@@ -527,7 +527,7 @@
           "default": 30
         },
         "tile_size": {
-          "title": "Tile size",
+          "title": "Cost tile size",
           "description": "The tile mean size in bytes",
           "type": "number",
           "default": 20
@@ -989,6 +989,18 @@
           "description": "The meta-tile in queue expiration (main configuration), default is 28800 (8 hours)",
           "type": "integer",
           "default": 28800
+        },
+        "pending_count": {
+          "title": "Pending count",
+          "description": "The pending count: the number of pending tiles get in one request (main configuration), default is 10",
+          "type": "integer",
+          "default": 10
+        },
+        "pending_max_count": {
+          "title": "Pending max count",
+          "description": "The pending max count: the maximum number of pending tiles get in one pass (if not generating other tiles, every second) (main configuration), default is 10000",
+          "type": "integer",
+          "default": 10000
         }
       }
     },
@@ -1107,25 +1119,25 @@
           "additionalProperties": false,
           "properties": {
             "storage": {
-              "title": "Storage",
+              "title": "S3 Storage",
               "description": "The storage cost in $ / Gio / month (main configuration)",
               "type": "number",
               "default": 0.125
             },
             "put": {
-              "title": "Put",
+              "title": "S3 Put",
               "description": "The cost of put in $ per 10 000 requests (main configuration)",
               "type": "number",
               "default": 0.01
             },
             "get": {
-              "title": "Get",
+              "title": "S3 Get",
               "description": "The cost of get in $ per 10 000 requests (main configuration)",
               "type": "number",
               "default": 0.01
             },
             "download": {
-              "title": "Download",
+              "title": "S3 Download",
               "description": "The cost of download in $ per Gio (main configuration)",
               "type": "number",
               "default": 0.12
@@ -1139,13 +1151,13 @@
           "additionalProperties": false,
           "properties": {
             "get": {
-              "title": "Get",
+              "title": "CloudFront Get",
               "description": "The cost of get in $ per 10 000 requests (main configuration)",
               "type": "number",
               "default": 0.009
             },
             "download": {
-              "title": "Download",
+              "title": "CloudFront Download",
               "description": "The cost of download in $ per Gio (main configuration)",
               "type": "number",
               "default": 0.12
