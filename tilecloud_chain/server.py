@@ -131,7 +131,7 @@ class Server(Generic[Response]):
     @staticmethod
     def get_expires_hours(config: tilecloud_chain.DatedConfig) -> float:
         """Get the expiration time in hours."""
-        return config.config["server"]["expires"]
+        return config.config.get("server", {}).get("expires", tilecloud_chain.configuration.EXPIRES_DEFAULT)
 
     @staticmethod
     def get_static_allow_extension(config: tilecloud_chain.DatedConfig) -> List[str]:
