@@ -131,7 +131,7 @@ class Server(Generic[Response]):
     @staticmethod
     def get_expires_hours(config: tilecloud_chain.DatedConfig) -> float:
         """Get the expiration time in hours."""
-        return config.config["server"]["expires"]
+        return config.config.get("server", {}).get("expires", tilecloud_chain.configuration.EXPIRES_DEFAULT)
 
     @staticmethod
     def get_static_allow_extension(config: tilecloud_chain.DatedConfig) -> List[str]:
@@ -316,6 +316,15 @@ class Server(Generic[Response]):
         **kwargs: Any,
     ) -> Response:
         """Serve the WMTS requests."""
+
+        if not config or not config.config:
+            return self.error(
+                config,
+                404,
+                "No configuration file found for the host or the configuration has an error, see logs for details",
+                **kwargs,
+            )
+
         try:
             dimensions = []
             metadata = {}
@@ -590,7 +599,7 @@ class Server(Generic[Response]):
         no_cache: bool = False,
         **kwargs: Any,
     ) -> Response:
-        """Forward the seqest on a fallback WMS server."""
+        """Forward the request on a fallback WMS server."""
         if headers is None:
             headers = {}
         if no_cache:
