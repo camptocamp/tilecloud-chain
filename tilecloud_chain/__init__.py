@@ -489,6 +489,8 @@ class TileGeneration:
     def get_host_config(self, host: Optional[str]) -> DatedConfig:
         """Get the configuration for the given host."""
         config_file = self.get_host_config_file(host)
+        if not config_file:
+            logger.error("No config file for host %s", host)
         return (
             self.get_config(config_file)
             if config_file
