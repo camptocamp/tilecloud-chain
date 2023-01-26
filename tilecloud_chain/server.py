@@ -316,6 +316,15 @@ class Server(Generic[Response]):
         **kwargs: Any,
     ) -> Response:
         """Serve the WMTS requests."""
+
+        if not config or not config.config:
+            return self.error(
+                config,
+                404,
+                "No configuration file found for the host or the configuration has an error, see logs for details",
+                **kwargs,
+            )
+
         try:
             dimensions = []
             metadata = {}
