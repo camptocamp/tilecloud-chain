@@ -590,7 +590,7 @@ class Server(Generic[Response]):
         no_cache: bool = False,
         **kwargs: Any,
     ) -> Response:
-        """Forward the seqest on a fallback WMS server."""
+        """Forward the request on a fallback WMS server."""
         if headers is None:
             headers = {}
         if no_cache:
