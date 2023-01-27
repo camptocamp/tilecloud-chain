@@ -15,7 +15,7 @@ jobs:
       matrix:
         branch:
           - '1.17'
-          - master
+          - '1.18'
 
     env:
       REDIS_URL: redis://localhost:6379
