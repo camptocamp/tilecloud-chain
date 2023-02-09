@@ -72,6 +72,7 @@ jsonschema-gentypes = "1.4.1"
 azure-storage-blob = "12.14.1"
 waitress = "2.1.2"
 certifi = "2022.12.7"
+cryptography = "39.0.1"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.8.4" }
