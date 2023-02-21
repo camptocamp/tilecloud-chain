@@ -20,7 +20,7 @@ jobs:
           - '1.18'
 
     steps:
-      - run: pip install pyOpenSSL pip --upgrade
+      - run: pip install pyOpenSSL --upgrade
 
       - uses: actions/checkout@v3
         with:
