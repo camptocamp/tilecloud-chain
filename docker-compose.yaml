@@ -23,10 +23,10 @@ services:
     user: www-data
 
   redis_master:
-    image: redis:7.0.8
+    image: redis:7.0.9
 
   redis_slave:
-    image: redis:7.0.8
+    image: redis:7.0.9
     command: redis-server --slaveof redis_master 6379
     depends_on:
       - redis_master
