@@ -11,18 +11,17 @@ SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 ENV SETUPTOOLS_USE_DISTUTILS=stdlib
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
-    --mount=type=cache,target=/var/cache,sharing=locked \
-  apt-get update && \
-  apt-get upgrade --assume-yes && \
-  DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
-  libmapnik3.0 mapnik-utils \
-  libdb5.3 \
-  fonts-dejavu \
-  node-carto \
-  optipng jpegoptim \
-  postgresql-client-12 net-tools iputils-ping \
-  python3-pip python3-wheel
-
+  --mount=type=cache,target=/var/cache,sharing=locked \
+  apt-get update \
+  && apt-get upgrade --assume-yes \
+  && DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
+    libmapnik3.0 mapnik-utils \
+    libdb5.3 \
+    fonts-dejavu \
+    node-carto \
+    optipng jpegoptim \
+    postgresql-client-12 net-tools iputils-ping \
+    python3-pip python3-wheel
 
 # Used to convert the locked packages by poetry to pip requirements format
 FROM base-all as poetry
@@ -31,32 +30,31 @@ FROM base-all as poetry
 WORKDIR /tmp
 COPY requirements.txt ./
 RUN --mount=type=cache,target=/root/.cache \
-    python3 -m pip install --disable-pip-version-check --requirement=requirements.txt && \
-    rm requirements.txt
+  python3 -m pip install --disable-pip-version-check --requirement=requirements.txt \
+  && rm requirements.txt
 
 # Do the conversion
 COPY poetry.lock pyproject.toml ./
-RUN poetry export --output=requirements.txt && \
-    poetry export --dev --output=requirements-dev.txt
-
+RUN poetry export --output=requirements.txt \
+  && poetry export --dev --output=requirements-dev.txt
 
 # Base, the biggest thing is to install the Python packages
 FROM base-all as base
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
-    --mount=type=cache,target=/var/cache,sharing=locked \
-    --mount=type=cache,target=/root/.cache \
-    --mount=type=bind,from=poetry,source=/tmp,target=/poetry \
+  --mount=type=cache,target=/var/cache,sharing=locked \
+  --mount=type=cache,target=/root/.cache \
+  --mount=type=bind,from=poetry,source=/tmp,target=/poetry \
   DEV_PACKAGES="python3.8-dev build-essential libgeos-dev libmapnik-dev libpq-dev \
-  build-essential python3-dev" && \
-  apt-get update && \
-  DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
-  ${DEV_PACKAGES} && \
-  python3 -m pip install --disable-pip-version-check --no-cache-dir --no-deps \
-  --requirement=/poetry/requirements.txt && \
-  python3 -m compileall /usr/local/lib/python3.8 /usr/lib/python3.8 && \
-  strip /usr/local/lib/python3.8/dist-packages/shapely/*/*.so && \
-  apt-get remove --purge --autoremove --yes ${DEV_PACKAGES} binutils
+  build-essential python3-dev" \
+  && apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
+    ${DEV_PACKAGES} \
+  && python3 -m pip install --disable-pip-version-check --no-cache-dir --no-deps \
+    --requirement=/poetry/requirements.txt \
+  && python3 -m compileall /usr/local/lib/python3.8 /usr/lib/python3.8 \
+  && strip /usr/local/lib/python3.8/dist-packages/shapely/*/*.so \
+  && apt-get remove --purge --autoremove --yes ${DEV_PACKAGES} binutils
 
 # From c2cwsgiutils
 
@@ -109,31 +107,28 @@ EXPOSE 8080
 
 WORKDIR /app/
 
-
 # The final part
 FROM base as runner
 
 COPY . /app/
 
 RUN \
-  python3 -m pip install --disable-pip-version-check --no-deps --no-cache-dir --editable=. && \
-  mv docker/run /usr/bin/ && \
-  python3 -m compileall -q /app/tilecloud_chain
-
+  python3 -m pip install --disable-pip-version-check --no-deps --no-cache-dir --editable=. \
+  && mv docker/run /usr/bin/ \
+  && python3 -m compileall -q /app/tilecloud_chain
 
 # Do the lint, used by the tests
 FROM base as tests
 
 RUN --mount=type=cache,target=/root/.cache \
-    --mount=type=bind,from=poetry,source=/tmp,target=/poetry \
-    python3 -m pip install --disable-pip-version-check --no-deps --requirement=/poetry/requirements-dev.txt
+  --mount=type=bind,from=poetry,source=/tmp,target=/poetry \
+  python3 -m pip install --disable-pip-version-check --no-deps --requirement=/poetry/requirements-dev.txt
 
 COPY . /app/
 RUN prospector --output-format=pylint
 RUN python3 -m pip install --disable-pip-version-check --no-deps --no-cache-dir --editable=.
 
 ENV TILEGENERATION_MAIN_CONFIGFILE=
-
 
 # Set runner as final
 FROM runner
