@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import c2cwsgiutils.auth
 import pyramid.request  # type: ignore
