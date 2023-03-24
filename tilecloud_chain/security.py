@@ -8,6 +8,8 @@ from pyramid.security import Allowed, Denied  # type: ignore
 
 
 class User:
+    """The user definition."""
+
     login: Optional[str]
     name: Optional[str]
     url: Optional[str]
@@ -45,6 +47,8 @@ class User:
 
 
 class SecurityPolicy:
+    """The pyramid security policy."""
+
     def identity(self, request: pyramid.request.Request) -> User:
         """Return app-specific user object."""
 

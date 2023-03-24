@@ -1,4 +1,4 @@
-# Copyright (c) 2013 by Stéphane Brunner
+# Copyright (c) 2013-2023 by Stéphane Brunner
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -801,6 +801,7 @@ class PyramidView:
 
 
 def forbidden(request: pyramid.request.Request) -> pyramid.response.Response:
+    """Return a 403 Forbidden response."""
     is_auth = c2cwsgiutils.auth.is_auth(request)
 
     if is_auth:
