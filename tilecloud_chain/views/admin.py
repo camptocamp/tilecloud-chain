@@ -1,4 +1,4 @@
-# Copyright (c) 2018 by Camptocamp
+# Copyright (c) 2018-2023 by Camptocamp
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -157,8 +157,7 @@ class Admin:
 
         completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check
             final_command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
             env=env,
         )
 

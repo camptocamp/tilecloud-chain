@@ -240,7 +240,7 @@ Cache folder.
 
 The root folder of the cache, default is ''
 
-default: 
+default:
 """
 
 

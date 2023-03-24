@@ -94,7 +94,7 @@ class CompareCase(TestCase):
         try:
             main_func()
             assert "exit() not called."
-        except SystemExit as e:
+        except SystemExit:
             pass
 
     def assert_main_equals(
