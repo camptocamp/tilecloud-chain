@@ -19,6 +19,18 @@ typing-extensions = {version = ">=3.10", markers = "python_version < \"3.10\""}
 wrapt = ">=1.11,<1.14"
 
 [[package]]
+name = "async-timeout"
+version = "4.0.2"
+description = "Timeout context manager for asyncio programs"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "async-timeout-4.0.2.tar.gz", hash = "sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15"},
+    {file = "async_timeout-4.0.2-py3-none-any.whl", hash = "sha256:8ca1e4fcf50d07413d66d1a5e416e42cfdf5851c981d679a09851a6853383b3c"},
+]
+
+[[package]]
 name = "atomicwrites"
 version = "1.4.0"
 description = "Atomic file writes."
@@ -421,24 +433,6 @@ ssh = ["bcrypt (>=3.1.5)"]
 test = ["hypothesis (>=1.11.4,!=3.79.2)", "iso8601", "pretend", "pytest (>=6.2.0)", "pytest-benchmark", "pytest-cov", "pytest-shard (>=0.1.2)", "pytest-subtests", "pytest-xdist", "pytz"]
 test-randomorder = ["pytest-randomly"]
 tox = ["tox"]
-
-[[package]]
-name = "deprecated"
-version = "1.2.13"
-description = "Python @deprecated decorator to deprecate old python classes, functions or methods."
-category = "main"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-files = [
-    {file = "Deprecated-1.2.13-py2.py3-none-any.whl", hash = "sha256:64756e3e14c8c5eea9795d93c524551432a0be75629f8f29e67ab8caf076c76d"},
-    {file = "Deprecated-1.2.13.tar.gz", hash = "sha256:43ac5335da90c31c24ba028af536a91d41d53f9e6901ddb021bcc572ce44e38d"},
-]
-
-[package.dependencies]
-wrapt = ">=1.10,<2"
-
-[package.extras]
-dev = ["PyTest", "PyTest (<5)", "PyTest-Cov", "PyTest-Cov (<2.6)", "bump2version (<1)", "configparser (<5)", "importlib-metadata (<3)", "importlib-resources (<4)", "sphinx (<2)", "sphinxcontrib-websupport (<2)", "tox", "zipp (<2)"]
 
 [[package]]
 name = "dodgy"
@@ -1785,18 +1779,18 @@ files = [
 
 [[package]]
 name = "redis"
-version = "4.1.4"
+version = "4.3.6"
 description = "Python client for Redis database and key-value store"
 category = "main"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "redis-4.1.4-py3-none-any.whl", hash = "sha256:04629f8e42be942c4f7d1812f2094568f04c612865ad19ad3ace3005da70631a"},
-    {file = "redis-4.1.4.tar.gz", hash = "sha256:1d9a0cdf89fdd93f84261733e24f55a7bbd413a9b219fdaf56e3e728ca9a2306"},
+    {file = "redis-4.3.6-py3-none-any.whl", hash = "sha256:1ea4018b8b5d8a13837f0f1c418959c90bfde0a605cb689e8070cff368a3b177"},
+    {file = "redis-4.3.6.tar.gz", hash = "sha256:7a462714dcbf7b1ad1acd81f2862b653cc8535cdfc879e28bf4947140797f948"},
 ]
 
 [package.dependencies]
-deprecated = ">=1.2.3"
+async-timeout = ">=4.0.2"
 packaging = ">=20.4"
 
 [package.extras]
@@ -2462,7 +2456,7 @@ testing = ["coverage", "pytest (>=3.1.0)", "pytest-cov", "pytest-xdist"]
 name = "wrapt"
 version = "1.13.3"
 description = "Module for decorators, wrappers and monkey patching."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 files = [
@@ -2647,4 +2641,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "7dabd948871fe8aaa8be7ea9d307ee3e07a2e6ea48ca3cfa22967f414f2e8075"
+content-hash = "8f160c3b596ee49fc7549bc4b7372511e6dfe65af3972fedbbf6bd5dd84448d5"
