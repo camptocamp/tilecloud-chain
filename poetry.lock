@@ -1049,24 +1049,25 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "jsonschema-gentypes"
-version = "1.4.1"
+version = "1.5.0"
 description = "Tool to generate Python types based on TypedDict from a JSON Schema"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4"
 files = [
-    {file = "jsonschema_gentypes-1.4.1-py3-none-any.whl", hash = "sha256:9a9ecf05a2658deb8ffc199d347957f6e0ac001de761bb37d0c74705254a1c79"},
-    {file = "jsonschema_gentypes-1.4.1.tar.gz", hash = "sha256:a5662ce969c898aebd36bf8d0c6e0f9162f176877d57f916b9f83284d7951af9"},
+    {file = "jsonschema_gentypes-1.5.0-py3-none-any.whl", hash = "sha256:4cb769bfd206610fe2b673daab015cf7c3df0dfddf903dba332a08b691469426"},
+    {file = "jsonschema_gentypes-1.5.0.tar.gz", hash = "sha256:6d53f22ea850023ca3af60b9a9425f2c75bb83faffa5463e18e78c1c1a6c7a0c"},
 ]
 
 [package.dependencies]
 certifi = "*"
 jsonschema = "*"
+requests = "*"
 "ruamel.yaml" = "*"
+typing-extensions = "*"
 
 [package.extras]
 extra = ["pinyin", "romanize", "romkan"]
-generate = ["PyYAML", "requests"]
 tools = ["black", "isort", "pyupgrade"]
 
 [[package]]
@@ -3550,4 +3551,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "9199c43aabb6d4d62215add87374ebb4f89403e94e5bb48c7fcc6ff27c4284b1"
+content-hash = "bb72c1205582c2a9c2cf09cabf804d713028b1633be305a82cbbb5ba85b83dd0"
