@@ -268,7 +268,6 @@ def _fill_legend(
     base_urls: List[str],
     config: Optional[DatedConfig] = None,
 ) -> None:
-
     if config is None:
         assert gene.config_file
         config = gene.get_config(gene.config_file)

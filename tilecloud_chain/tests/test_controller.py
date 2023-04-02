@@ -22,7 +22,6 @@ class TestController(CompareCase):
             shutil.rmtree("/tmp/tiles")
 
     def test_capabilities(self) -> None:
-
         gene = TileGeneration("tilegeneration/test-fix.yaml", configure_logging=False)
         config = gene.get_config("tilegeneration/test-fix.yaml")
         self.assert_result_equals(
