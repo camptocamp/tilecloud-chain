@@ -57,7 +57,3 @@ tests-fast:
 	done
 
 	docker-compose exec -T test pytest -vv --color=yes --exitfirst #--last-failed
-
-PHONY: jsonschema
-jsonschema: ## Generate the files related to the JSON schema
-	jsonschema-gentypes

@@ -5,6 +5,8 @@ Automatically generated file from a JSON schema.
 
 from typing import Any, Dict, List, Literal, Tuple, TypedDict, Union
 
+from typing_extensions import Required
+
 ADMIN_PATH_DEFAULT = "admin"
 """Default value of the field path 'Server admin_path'"""
 
@@ -160,8 +162,6 @@ Cache Azure.
 
 Azure Blob Storage
 
-WARNING: The required are not correctly taken in account,
-See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
 
 WARNING: Normally the types should be a mix of each other instead of Union.
 See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
@@ -175,13 +175,13 @@ class CacheAzureTyped(TypedDict, total=False):
     hosts: "CacheHost"
     http_urls: "CacheHttpUrls"
     folder: "CacheFolder"
-    container: str
+    container: Required[str]
     """
     Container.
 
     The Azure container name
 
-    required
+    Required property
     """
 
     cache_control: str
@@ -196,8 +196,6 @@ CacheBsddb = Union[Dict[str, str], "CacheBsddbTyped"]
 """
 Cache BSDDB.
 
-WARNING: The required are not correctly taken in account,
-See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
 
 WARNING: Normally the types should be a mix of each other instead of Union.
 See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
@@ -217,8 +215,6 @@ CacheFilesystem = Union[Dict[str, str], "CacheFilesystemTyped"]
 """
 Cache filesystem.
 
-WARNING: The required are not correctly taken in account,
-See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
 
 WARNING: Normally the types should be a mix of each other instead of Union.
 See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
@@ -268,8 +264,6 @@ CacheMbtiles = Union[Dict[str, str], "CacheMbtilesTyped"]
 """
 Cache MBtiles.
 
-WARNING: The required are not correctly taken in account,
-See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
 
 WARNING: Normally the types should be a mix of each other instead of Union.
 See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
@@ -289,8 +283,6 @@ CacheS3 = Union[Dict[str, str], "CacheS3Typed"]
 """
 Cache S3.
 
-WARNING: The required are not correctly taken in account,
-See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
 
 WARNING: Normally the types should be a mix of each other instead of Union.
 See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
@@ -317,13 +309,13 @@ class CacheS3Typed(TypedDict, total=False):
     The S3 host, default is 's3-eu-west-1.amazonaws.com'
     """
 
-    bucket: str
+    bucket: Required[str]
     """
     Bucket.
 
     The S3 bucker name
 
-    required
+    Required property
     """
 
     region: "AwsRegion"
@@ -419,70 +411,16 @@ class Configuration(TypedDict, total=False):
     """
 
     generation: "Generation"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     sqs: "Sqs"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     sns: "Sns"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     redis: "Redis"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     openlayers: "Openlayers"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     server: "Server"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     cost: "Cost"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     metadata: "Metadata"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     provider: "Provider"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     logging: "Logging"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     authentication: "Authentication"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
 
 
 class Contact(TypedDict, total=False):
@@ -499,10 +437,6 @@ class Contact(TypedDict, total=False):
     """Position."""
 
     info: "Info"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
 
 
 class Cost(TypedDict, total=False):
@@ -522,22 +456,8 @@ class Cost(TypedDict, total=False):
     """
 
     s3: "S3Cost"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     cloudfront: "CloudfrontCost"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     sqs: "SqsCost"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
 
 
 DEFAULT_CACHE_DEFAULT = "default"
@@ -567,40 +487,40 @@ class Database(TypedDict, total=False):
     default: 5432
     """
 
-    dbname: str
+    dbname: Required[str]
     """
     Database.
 
     The database name (main configuration)
 
-    required
+    Required property
     """
 
-    table: str
+    table: Required[str]
     """
     Table.
 
     The table name (main configuration)
 
-    required
+    Required property
     """
 
-    user: str
+    user: Required[str]
     """
     User.
 
     The user name (main configuration)
 
-    required
+    Required property
     """
 
-    password: str
+    password: Required[str]
     """
     Password.
 
     The password (main configuration)
 
-    required
+    Required property
     """
 
 
@@ -706,16 +626,16 @@ class Grid(TypedDict, total=False):
     The scale used to build a FreeTileGrid typically '2'
     """
 
-    resolutions: List[Union[int, float]]
+    resolutions: Required[List[Union[int, float]]]
     """
     Resolutions.
 
     The resolutions in pixel per meter
 
-    required
+    Required property
     """
 
-    bbox: List[Union[int, float]]
+    bbox: Required[List[Union[int, float]]]
     """
     Bounding box.
 
@@ -724,10 +644,10 @@ class Grid(TypedDict, total=False):
     minLength: 4
     maxLength: 4
 
-    required
+    Required property
     """
 
-    srs: str
+    srs: Required[str]
     """
     SRS.
 
@@ -735,7 +655,7 @@ class Grid(TypedDict, total=False):
 
     pattern: ^EPSG:[0-9]+$
 
-    required
+    Required property
     """
 
     proj4_literal: str
@@ -782,16 +702,7 @@ class Info(TypedDict, total=False):
     """
 
     phone: "Phone"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     address: "Address"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
 
 
 LAYER_META_BUFFER_DEFAULT = 128
@@ -898,22 +809,22 @@ class LayerEmptyMetaTileDetection(TypedDict, total=False):
     The rules used to detect the empty meta-tiles, use `generate-tiles --get-hash` to get what we can use, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-hash
     """
 
-    size: int
+    size: Required[int]
     """
     Size.
 
     The meta-tile size
 
-    required
+    Required property
     """
 
-    hash: str
+    hash: Required[str]
     """
     Hash.
 
     The meta-tile hash
 
-    required
+    Required property
     """
 
 
@@ -924,22 +835,22 @@ class LayerEmptyTileDetection(TypedDict, total=False):
     The rules used to detect the empty tiles, use `generate-tiles --get-hash` to get what we can use, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-hash
     """
 
-    size: int
+    size: Required[int]
     """
     Title.
 
     The tile size
 
-    required
+    Required property
     """
 
-    hash: str
+    hash: Required[str]
     """
     Hash.
 
     The tile hash
 
-    required
+    Required property
     """
 
 
@@ -1008,12 +919,8 @@ class LayerMapnik(TypedDict, total=False):
 
     type: Literal["mapnik"]
     title: "LayerTitle"
-    grid: "LayerGrid"
-    """
-    required
-
-    required
-    """
+    grid: Required["LayerGrid"]
+    """Required property"""
 
     bbox: "LayerBoundingBox"
     min_resolution_seed: "LayerMinResolutionSeed"
@@ -1022,28 +929,14 @@ class LayerMapnik(TypedDict, total=False):
     meta_size: "LayerMetaSize"
     meta_buffer: "LayerMetaBuffer"
     layers: "LayerLayers"
-    """required"""
+    wmts_style: Required["LayerWmtsStyle"]
+    """Required property"""
 
-    wmts_style: "LayerWmtsStyle"
-    """
-    required
+    mime_type: Required["LayerMimeType"]
+    """Required property"""
 
-    required
-    """
-
-    mime_type: "LayerMimeType"
-    """
-    required
-
-    required
-    """
-
-    extension: "LayerExtension"
-    """
-    required
-
-    required
-    """
+    extension: Required["LayerExtension"]
+    """Required property"""
 
     dimensions: "LayerDimensions"
     legends: "LayerLegends"
@@ -1053,23 +946,8 @@ class LayerMapnik(TypedDict, total=False):
     post_process: "LayerPostProcess"
     geoms: "LayerGeometries"
     empty_tile_detection: "LayerEmptyTileDetection"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     empty_metatile_detection: "LayerEmptyMetaTileDetection"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     cost: "LayerCost"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     mapfile: str
     """
     MapFile.
@@ -1201,12 +1079,8 @@ class LayerWms(TypedDict, total=False):
 
     type: Literal["wms"]
     title: "LayerTitle"
-    grid: "LayerGrid"
-    """
-    required
-
-    required
-    """
+    grid: Required["LayerGrid"]
+    """Required property"""
 
     bbox: "LayerBoundingBox"
     min_resolution_seed: "LayerMinResolutionSeed"
@@ -1214,29 +1088,17 @@ class LayerWms(TypedDict, total=False):
     meta: "LayerMeta"
     meta_size: "LayerMetaSize"
     meta_buffer: "LayerMetaBuffer"
-    layers: "LayerLayers"
-    """required"""
+    layers: Required["LayerLayers"]
+    """Required property"""
 
-    wmts_style: "LayerWmtsStyle"
-    """
-    required
+    wmts_style: Required["LayerWmtsStyle"]
+    """Required property"""
 
-    required
-    """
+    mime_type: Required["LayerMimeType"]
+    """Required property"""
 
-    mime_type: "LayerMimeType"
-    """
-    required
-
-    required
-    """
-
-    extension: "LayerExtension"
-    """
-    required
-
-    required
-    """
+    extension: Required["LayerExtension"]
+    """Required property"""
 
     dimensions: "LayerDimensions"
     legends: "LayerLegends"
@@ -1246,30 +1108,15 @@ class LayerWms(TypedDict, total=False):
     post_process: "LayerPostProcess"
     geoms: "LayerGeometries"
     empty_tile_detection: "LayerEmptyTileDetection"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     empty_metatile_detection: "LayerEmptyMetaTileDetection"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
     cost: "LayerCost"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
-
-    url: str
+    url: Required[str]
     """
     URL.
 
     The WMS service URL
 
-    required
+    Required property
     """
 
     generate_salt: bool
@@ -1326,13 +1173,8 @@ class Logging(TypedDict, total=False):
     The logging configuration to database, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#logging (main configuration)
     """
 
-    database: "Database"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-
-    required
-    """
+    database: Required["Database"]
+    """Required property"""
 
 
 MAP_INITIAL_ZOOM_DEFAULT = 3
@@ -1384,13 +1226,13 @@ class Metadata(TypedDict, total=False):
     The configuration of the WMTS capabilities metadata
     """
 
-    title: str
+    title: Required[str]
     """
     Title.
 
     The title
 
-    required
+    Required property
     """
 
     abstract: str
@@ -1577,10 +1419,6 @@ class Provider(TypedDict, total=False):
     """
 
     contact: "Contact"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
 
 
 QUEUE_DEFAULT = "tilecloud"
@@ -1928,13 +1766,13 @@ class Sns(TypedDict, total=False):
     The Simple Notification Service configuration, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sns
     """
 
-    topic: str
+    topic: Required[str]
     """
     Topic.
 
     The topic
 
-    required
+    Required property
     """
 
     region: "AwsRegion"
@@ -2031,28 +1869,28 @@ _LAYER_WMS_META_SIZE_DEFAULT = 5
 
 
 class _LayerDimensionsItem(TypedDict, total=False):
-    name: "LayerDimensionName"
-    """required"""
+    name: Required["LayerDimensionName"]
+    """Required property"""
 
-    generate: List["_GenerateItem"]
+    generate: Required[List["_GenerateItem"]]
     """
     Generate.
 
     The values that should be generate
 
-    required
+    Required property
     """
 
-    values: List["_ValuesItem"]
+    values: Required[List["_ValuesItem"]]
     """
     Values.
 
     The values present in the capabilities
 
-    required
+    Required property
     """
 
-    default: str
+    default: Required[str]
     r"""
     Default.
 
@@ -2060,27 +1898,27 @@ class _LayerDimensionsItem(TypedDict, total=False):
 
     pattern: ^[a-zA-Z0-9_\-\+~\.]+$
 
-    required
+    Required property
     """
 
 
 class _LayerGeometriesItem(TypedDict, total=False):
-    connection: str
+    connection: Required[str]
     """
     Connection.
 
     The PostgreSQL connection string
 
-    required
+    Required property
     """
 
-    sql: str
+    sql: Required[str]
     """
     SQL.
 
     The SQL query that get the geometry in geom e.g. 'the_geom AS geom FROM my_table'
 
-    required
+    Required property
     """
 
     min_resolution: Union[int, float]
@@ -2099,7 +1937,7 @@ class _LayerGeometriesItem(TypedDict, total=False):
 
 
 class _LayerLegendsItem(TypedDict, total=False):
-    mime_type: str
+    mime_type: Required[str]
     r"""
     MIME type.
 
@@ -2107,16 +1945,16 @@ class _LayerLegendsItem(TypedDict, total=False):
 
     pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
 
-    required
+    Required property
     """
 
-    href: str
+    href: Required[str]
     """
     Href.
 
     The URL of the legend image
 
-    required
+    Required property
     """
 
     width: str
@@ -2187,13 +2025,13 @@ class _PredefinedCommandsItem(TypedDict, total=False):
 
 
 class _ProcessCommandItem(TypedDict, total=False):
-    cmd: str
+    cmd: Required[str]
     """
     Command.
 
     The shell command, available parameters: %(in)s, %(out)s, %(args)s, %(x)s, %(y)s, %(z)s.
 
-    required
+    Required property
     """
 
     need_out: bool
@@ -2206,10 +2044,6 @@ class _ProcessCommandItem(TypedDict, total=False):
     """
 
     arg: "Argument"
-    """
-    WARNING: The required are not correctly taken in account,
-    See: https://github.com/camptocamp/jsonschema-gentypes/issues/6
-    """
 
 
 _SentinelsItem = Tuple["SentinelHost", "SentinelPort"]
