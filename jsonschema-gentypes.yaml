@@ -2,12 +2,12 @@ headers: |
   """
   Automatically generated file from a JSON schema.
   """
-callbacks:
-  - - pyupgrade
-    - --py38-plus
-    - --exit-zero-even-if-changed
-  - - black
-  - - isort
+
+pre_commit:
+  enabled: true
+  arguments:
+    - --color=never
+
 generate:
   - source: tilecloud_chain/schema.json
     destination: tilecloud_chain/configuration.py

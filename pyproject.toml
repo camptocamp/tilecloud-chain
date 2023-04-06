@@ -41,7 +41,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: GIS",
     "Typing :: Typed",
 ]
-include = ["tilecloud_chain/py.typed"]
+include = ["tilecloud_chain/py.typed", "tilecloud_chain/*.rst", "tilecloud_chain/*.md"]
 
 [tool.poetry.scripts]
 generate-tiles = "tilecloud_chain.generate:main"
