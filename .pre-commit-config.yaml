@@ -60,7 +60,12 @@ repos:
     rev: v2.2.4
     hooks:
       - id: codespell
-        exclude: ^(.*/)?poetry\.lock$
+        exclude: |-
+          (?x)^(
+            (.*/)?poetry\.lock
+            |ogcapi-tiles-bundled\.json
+            |ogcapi-tiles-bundled-filtered\.json
+          )$
         args:
           - --ignore-words=.github/spell-ignore-words.txt
   - repo: https://github.com/shellcheck-py/shellcheck-py

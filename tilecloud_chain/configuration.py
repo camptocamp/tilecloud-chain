@@ -619,6 +619,27 @@ class Grid(TypedDict, total=False):
     The WMTS grid definition, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-grids
     """
 
+    title: str
+    """
+    Title.
+
+    The title of the grid
+    """
+
+    description: str
+    """
+    Description.
+
+    The description of the grid
+    """
+
+    keywords: List[str]
+    """
+    Keywords.
+
+    The keywords
+    """
+
     resolution_scale: int
     """
     Resolution scale.
@@ -639,7 +660,7 @@ class Grid(TypedDict, total=False):
     """
     Bounding box.
 
-    The bounding box in meter
+    The bounding box in meter (left, bottom, right, top, of the map image)
 
     minLength: 4
     maxLength: 4
@@ -784,6 +805,14 @@ class LayerCost(TypedDict, total=False):
     """
 
 
+LayerDescription = str
+"""
+Layer description.
+
+The description, use to generate the capabilities
+"""
+
+
 LayerDimensionName = str
 r"""
 Layer dimension name.
@@ -919,6 +948,8 @@ class LayerMapnik(TypedDict, total=False):
 
     type: Literal["mapnik"]
     title: "LayerTitle"
+    description: "LayerDescription"
+    theme: "LayerTheme"
     grid: Required["LayerGrid"]
     """Required property"""
 
@@ -1066,6 +1097,14 @@ Do an image post process before the empty hash check
 """
 
 
+LayerTheme = str
+"""
+Layer theme.
+
+Category where the layer can be grouped
+"""
+
+
 LayerTitle = str
 """
 Layer title.
@@ -1079,6 +1118,8 @@ class LayerWms(TypedDict, total=False):
 
     type: Literal["wms"]
     title: "LayerTitle"
+    description: "LayerDescription"
+    theme: "LayerTheme"
     grid: Required["LayerGrid"]
     """Required property"""
 
@@ -1240,6 +1281,20 @@ class Metadata(TypedDict, total=False):
     Abstract.
 
     The abstract
+    """
+
+    attribution: str
+    """
+    Attribution.
+
+    The attribution
+    """
+
+    license: str
+    """
+    License.
+
+    The license
     """
 
     servicetype: str
@@ -1410,6 +1465,13 @@ class Provider(TypedDict, total=False):
 
     name: str
     """Name."""
+
+    pointOfContact: str
+    """
+    Point of contact.
+
+    Useful information to contact the authors or custodians for the layer (e.g. e-mail address, a physical address,  phone numbers, etc)
+    """
 
     url: str
     """

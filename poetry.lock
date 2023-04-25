@@ -1056,6 +1056,24 @@ extra = ["pinyin", "romanize", "romkan"]
 tools = ["black", "isort", "pyupgrade"]
 
 [[package]]
+name = "jsonschema-spec"
+version = "0.1.4"
+description = "JSONSchema Spec with object-oriented paths"
+category = "main"
+optional = false
+python-versions = ">=3.7.0,<4.0.0"
+files = [
+    {file = "jsonschema_spec-0.1.4-py3-none-any.whl", hash = "sha256:34471d8b60e1f06d174236c4d3cf9590fbf3cff1cc733b28d15cd83672bcd062"},
+    {file = "jsonschema_spec-0.1.4.tar.gz", hash = "sha256:824c743197bbe2104fcc6dce114a4082bf7f7efdebf16683510cb0ec6d8d53d0"},
+]
+
+[package.dependencies]
+jsonschema = ">=4.0.0,<4.18.0"
+pathable = ">=0.4.1,<0.5.0"
+PyYAML = ">=5.1"
+typing-extensions = ">=4.3.0,<5.0.0"
+
+[[package]]
 name = "lazy-loader"
 version = "0.2"
 description = "lazy_loader"
@@ -1075,7 +1093,7 @@ test = ["pytest (>=7.2)", "pytest-cov (>=4.0)"]
 name = "lazy-object-proxy"
 version = "1.9.0"
 description = "A fast and thorough lazy object proxy."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1340,6 +1358,18 @@ files = [
 ]
 
 [[package]]
+name = "more-itertools"
+version = "9.1.0"
+description = "More routines for operating on iterables, beyond itertools"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "more-itertools-9.1.0.tar.gz", hash = "sha256:cabaa341ad0389ea83c17a94566a53ae4c9d07349861ecb14dc6d0345cf9ac5d"},
+    {file = "more_itertools-9.1.0-py3-none-any.whl", hash = "sha256:d2bc7f02446e86a68911e58ded76d6561eea00cddfb2a91e7019bbb586c799f3"},
+]
+
+[[package]]
 name = "msal"
 version = "1.21.0"
 description = "The Microsoft Authentication Library (MSAL) for Python library enables your app to access the Microsoft Cloud by supporting authentication of users with Microsoft Azure Active Directory accounts (AAD) and Microsoft Accounts (MSA) using industry standard OAuth2 and OpenID Connect."
@@ -1567,6 +1597,77 @@ files = [
 graphviz = "*"
 
 [[package]]
+name = "openapi-core"
+version = "0.16.6"
+description = "client-side and server-side support for the OpenAPI Specification v3"
+category = "main"
+optional = false
+python-versions = ">=3.7.0,<4.0.0"
+files = [
+    {file = "openapi_core-0.16.6-py3-none-any.whl", hash = "sha256:0ce163fa5b1388cee296993fde2f1519fe6b115e3d6b2ee4eb1f5f57dc807a6c"},
+    {file = "openapi_core-0.16.6.tar.gz", hash = "sha256:ed79a6adf9b0375804eac50b9b45e282b8a18fed5f6745dacc70fc1f3ea0abc3"},
+]
+
+[package.dependencies]
+isodate = "*"
+jsonschema-spec = ">=0.1.1,<0.2.0"
+more-itertools = "*"
+openapi-schema-validator = ">=0.3.0,<0.5"
+openapi-spec-validator = ">=0.5.0,<0.6.0"
+parse = "*"
+pathable = ">=0.4.0,<0.5.0"
+typing-extensions = ">=4.3.0,<5.0.0"
+werkzeug = "*"
+
+[package.extras]
+django = ["django (>=3.0)"]
+falcon = ["falcon (>=3.0)"]
+flask = ["flask"]
+requests = ["requests"]
+
+[[package]]
+name = "openapi-schema-validator"
+version = "0.4.4"
+description = "OpenAPI schema validation for Python"
+category = "main"
+optional = false
+python-versions = ">=3.7.0,<4.0.0"
+files = [
+    {file = "openapi_schema_validator-0.4.4-py3-none-any.whl", hash = "sha256:79f37f38ef9fd5206b924ed7a6f382cea7b649b3b56383c47f1906082b7b9015"},
+    {file = "openapi_schema_validator-0.4.4.tar.gz", hash = "sha256:c573e2be2c783abae56c5a1486ab716ca96e09d1c3eab56020d1dc680aa57bf8"},
+]
+
+[package.dependencies]
+jsonschema = ">=4.0.0,<4.18.0"
+rfc3339-validator = "*"
+
+[package.extras]
+docs = ["sphinx (>=5.3.0,<6.0.0)", "sphinx-immaterial (>=0.11.0,<0.12.0)"]
+
+[[package]]
+name = "openapi-spec-validator"
+version = "0.5.6"
+description = "OpenAPI 2.0 (aka Swagger) and OpenAPI 3 spec validator"
+category = "main"
+optional = false
+python-versions = ">=3.7.0,<4.0.0"
+files = [
+    {file = "openapi_spec_validator-0.5.6-py3-none-any.whl", hash = "sha256:4145478f26df16059c147406eaaa59b77ff60e3461ba6edb9aa84d481ed89aaf"},
+    {file = "openapi_spec_validator-0.5.6.tar.gz", hash = "sha256:1189d0618ae0678ccf6c883cc1266d381454eece6f21fcf330cc7caea5fc25eb"},
+]
+
+[package.dependencies]
+importlib-resources = {version = ">=5.8.0,<6.0.0", markers = "python_version < \"3.9\""}
+jsonschema = ">=4.0.0,<4.18.0"
+jsonschema-spec = ">=0.1.1,<0.2.0"
+lazy-object-proxy = ">=1.7.1,<2.0.0"
+openapi-schema-validator = ">=0.4.2,<0.5.0"
+
+[package.extras]
+docs = ["sphinx (>=5.3.0,<6.0.0)", "sphinx-immaterial (>=0.11.0,<0.12.0)"]
+requests = ["requests"]
+
+[[package]]
 name = "packaging"
 version = "23.0"
 description = "Core utilities for Python packages"
@@ -1576,6 +1677,17 @@ python-versions = ">=3.7"
 files = [
     {file = "packaging-23.0-py3-none-any.whl", hash = "sha256:714ac14496c3e68c99c29b00845f7a2b85f3bb6f1078fd9f72fd20f0570002b2"},
     {file = "packaging-23.0.tar.gz", hash = "sha256:b6ad297f8907de0fa2fe1ccbd26fdaf387f5f47c7275fedf8cce89f99446cf97"},
+]
+
+[[package]]
+name = "parse"
+version = "1.19.0"
+description = "parse() is the opposite of format()"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "parse-1.19.0.tar.gz", hash = "sha256:9ff82852bcb65d139813e2a5197627a94966245c897796760a3a2a8eb66f020b"},
 ]
 
 [[package]]
@@ -1594,6 +1706,18 @@ files = [
 docs = ["Sphinx (>=1.7.5)", "pylons-sphinx-themes"]
 paste = ["Paste"]
 testing = ["Paste", "pytest", "pytest-cov"]
+
+[[package]]
+name = "pathable"
+version = "0.4.3"
+description = "Object-oriented paths"
+category = "main"
+optional = false
+python-versions = ">=3.7.0,<4.0.0"
+files = [
+    {file = "pathable-0.4.3-py3-none-any.whl", hash = "sha256:cdd7b1f9d7d5c8b8d3315dbf5a86b2596053ae845f056f57d97c0eefff84da14"},
+    {file = "pathable-0.4.3.tar.gz", hash = "sha256:5c869d315be50776cc8a993f3af43e0c60dc01506b399643f919034ebf4cdcab"},
+]
 
 [[package]]
 name = "pbr"
@@ -2183,6 +2307,22 @@ docs = ["Sphinx (>=1.8.1)", "docutils", "pylons-sphinx-themes (>=1.0.8)", "repoz
 testing = ["WebTest (>=1.3.1)", "coverage", "nose"]
 
 [[package]]
+name = "pyramid-openapi3"
+version = "0.16.0"
+description = "Pyramid addon for OpenAPI3 validation of requests and responses."
+category = "main"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "pyramid_openapi3-0.16.0-py3-none-any.whl", hash = "sha256:d79c7994eb7c94df65c937c19603f0f780a8112e0e144577f75832aa0cae67b1"},
+    {file = "pyramid_openapi3-0.16.0.tar.gz", hash = "sha256:f1bb0d0760664db0a498faa7189d6af0f8ffe5e2ab963c491a2ff840bf6eb6e7"},
+]
+
+[package.dependencies]
+openapi-core = ">=0.16.1"
+pyramid = ">=1.10.7"
+
+[[package]]
 name = "pyramid-tm"
 version = "2.5"
 description = "A package which allows Pyramid requests to join the active transaction"
@@ -2491,6 +2631,21 @@ astroid = ">=2.0,<3.0"
 packaging = ">=21.3"
 poetry-semver = ">=0.1.0,<0.2.0"
 toml = ">=0.10.2,<0.11.0"
+
+[[package]]
+name = "rfc3339-validator"
+version = "0.1.4"
+description = "A pure python RFC3339 validator"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+files = [
+    {file = "rfc3339_validator-0.1.4-py2.py3-none-any.whl", hash = "sha256:24f6ec1eda14ef823da9e36ec7113124b39c04d50a4d3d3a3c2859577e7791fa"},
+    {file = "rfc3339_validator-0.1.4.tar.gz", hash = "sha256:138a2abdf93304ad60530167e51d2dfb9549521a836871b88d7f4695d0022f6b"},
+]
+
+[package.dependencies]
+six = "*"
 
 [[package]]
 name = "rich"
@@ -3367,6 +3522,24 @@ docs = ["Sphinx (>=1.7.5)", "pylons-sphinx-themes"]
 testing = ["coverage", "pytest (>=3.1.0)", "pytest-cov", "pytest-xdist"]
 
 [[package]]
+name = "werkzeug"
+version = "2.2.3"
+description = "The comprehensive WSGI web application library."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "Werkzeug-2.2.3-py3-none-any.whl", hash = "sha256:56433961bc1f12533306c624f3be5e744389ac61d722175d543e1751285da612"},
+    {file = "Werkzeug-2.2.3.tar.gz", hash = "sha256:2e1ccc9417d4da358b9de6f174e3ac094391ea1d4fbef2d667865d819dfd0afe"},
+]
+
+[package.dependencies]
+MarkupSafe = ">=2.1.1"
+
+[package.extras]
+watchdog = ["watchdog"]
+
+[[package]]
 name = "wrapt"
 version = "1.15.0"
 description = "Module for decorators, wrappers and monkey patching."
@@ -3558,4 +3731,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "bb72c1205582c2a9c2cf09cabf804d713028b1633be305a82cbbb5ba85b83dd0"
+content-hash = "215e4f57c0286fc45f72de3620fd8ef0c6beeea669060508926de6a2561d9973"

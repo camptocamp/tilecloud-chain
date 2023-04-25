@@ -1711,3 +1711,8 @@ def _get_sqs_queue(
         sys.exit("The config hasn't any configured queue")
     sqs = boto3.resource("sqs", region_name=config.config["sqs"].get("region", "eu-west-1"))
     return sqs.get_queue_by_name(QueueName=config.config["sqs"]["queue"])
+
+
+def get_expires_hours(config: tilecloud_chain.DatedConfig) -> float:
+    """Get the expiration time in hours."""
+    return config.config.get("server", {}).get("expires", tilecloud_chain.configuration.EXPIRES_DEFAULT)

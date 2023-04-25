@@ -12,14 +12,14 @@ import redis.sentinel
 
 import tilecloud_chain.configuration
 from tilecloud import Tile, TileCoord, TileStore
-from tilecloud_chain import Run
+from tilecloud_chain import Run, get_expires_hours
 from tilecloud_chain.generate import Generate
 
 if TYPE_CHECKING:
     from tilecloud_chain.server import Server
 
 MAX_GENERATION_TIME = 60
-LOG = logging.getLogger(__name__)
+_LOG = logging.getLogger(__name__)
 lock = threading.Lock()
 executing_lock = threading.Lock()
 _generator = None
@@ -70,17 +70,17 @@ class RedisStore(TileStore):
         key = self._get_key(tile)
         data = self._slave.get(key)
         if data is None:
-            LOG.debug("Tile not found: %s/%s", tile.metadata["layer"], tile.tilecoord)
+            _LOG.debug("Tile not found: %s/%s", tile.metadata["layer"], tile.tilecoord)
             return None
         _decode_tile(data, tile)
-        LOG.debug("Tile found: %s/%s", tile.metadata["layer"], tile.tilecoord)
+        _LOG.debug("Tile found: %s/%s", tile.metadata["layer"], tile.tilecoord)
         return tile
 
     def put_one(self, tile: Tile) -> Tile:
         """See in superclass."""
         key = self._get_key(tile)
         self._master.set(key, _encode_tile(tile), ex=self._expiration)
-        LOG.info("Tile saved: %s/%s", tile.metadata["layer"], tile.tilecoord)
+        _LOG.info("Tile saved: %s/%s", tile.metadata["layer"], tile.tilecoord)
         return tile
 
     def delete_one(self, tile: Tile) -> Tile:
@@ -205,7 +205,7 @@ def fetch(
                 generator.compute_tile(meta_tile)
 
                 if meta_tile.error:
-                    LOG.error("Tile '%s' in error: %s", meta_tile.tilecoord, meta_tile.error)
+                    _LOG.error("Tile '%s' in error: %s", meta_tile.tilecoord, meta_tile.error)
                     return server.error(config, 500, "Error while generate the tile, see logs for details")
 
                 # Don't fetch the just generated tile
@@ -213,7 +213,7 @@ def fetch(
                 try:
                     fetched_tile = tiles[tile.tilecoord]
                 except KeyError:
-                    LOG.exception(
+                    _LOG.exception(
                         "Try to get the tile '%s', from the available: '%s'",
                         tile.tilecoord,
                         ", ".join([str(e) for e in tiles.keys()]),
@@ -222,9 +222,9 @@ def fetch(
 
     response_headers = {
         "Expires": (
-            datetime.datetime.utcnow() + datetime.timedelta(hours=server.get_expires_hours(config))
+            datetime.datetime.utcnow() + datetime.timedelta(hours=get_expires_hours(config))
         ).isoformat(),
-        "Cache-Control": f"max-age={3600 * server.get_expires_hours(config)}",
+        "Cache-Control": f"max-age={3600 * get_expires_hours(config)}",
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET",
         "Tile-Backend": backend,

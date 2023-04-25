@@ -41,17 +41,19 @@ import pyramid.session
 import requests
 from azure.core.exceptions import ResourceNotFoundError
 from c2cwsgiutils import health_check
-from pyramid.config import Configurator
+from pyramid.config import PHASE0_CONFIG, Configurator
 from pyramid.httpexceptions import HTTPException, exception_response
 from pyramid.request import Request
 from pyramid.router import Router
 from pyramid_mako import add_mako_renderer
 
 import tilecloud.store.s3
+import tilecloud_chain.admin
 import tilecloud_chain.configuration
+import tilecloud_chain.ogcapi
 import tilecloud_chain.security
 from tilecloud import Tile, TileCoord
-from tilecloud_chain import TileGeneration, controller, internal_mapcache
+from tilecloud_chain import TileGeneration, controller, get_expires_hours, internal_mapcache
 from tilecloud_chain.controller import get_azure_client
 
 logger = logging.getLogger(__name__)
@@ -59,7 +61,7 @@ logger = logging.getLogger(__name__)
 tilegeneration = None
 
 
-def init_tilegeneration(config_file: Optional[str]) -> None:
+def init_tilegeneration(config_file: Optional[str]) -> TileGeneration:
     """Initialize the tile generation."""
     global tilegeneration  # pylint: disable=global-statement
     if tilegeneration is None:
@@ -87,6 +89,7 @@ def init_tilegeneration(config_file: Optional[str]) -> None:
             multi_thread=False,
             maxconsecutive_errors=False,
         )
+    return tilegeneration
 
 
 Response = TypeVar("Response")
@@ -110,6 +113,35 @@ class DatedFilter:
         self.mtime = mtime
 
 
+def get_max_zoom_seed(config: tilecloud_chain.DatedConfig, layer_name: str) -> int:
+    """Get the max zoom to be bet in the stored cache."""
+    layer = config.config["layers"][layer_name]
+    if "min_resolution_seed" in layer:
+        max_zoom_seed = -1
+        for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+            if resolution > layer["min_resolution_seed"]:
+                max_zoom_seed = zoom
+        return max_zoom_seed
+    else:
+        return 999999
+
+
+def get_static_allow_extension(config: tilecloud_chain.DatedConfig) -> List[str]:
+    """Get the allowed extensions in the static view."""
+    return config.config["server"].get("static_allow_extension", ["jpeg", "png", "xml", "js", "html", "css"])
+
+
+def get_cache_name(config: tilecloud_chain.DatedConfig) -> str:
+    """Get the cache name."""
+    return config.config["server"].get("cache", config.config["generation"]["default_cache"])
+
+
+def get_layers(config: tilecloud_chain.DatedConfig) -> List[str]:
+    """Get the layer from the config."""
+    layers: List[str] = cast(List[str], config.config["layers"].keys())
+    return config.config["server"].get("layers", layers)
+
+
 class Server(Generic[Response]):
     """The generic implementation of the WMTS server."""
 
@@ -128,23 +160,6 @@ class Server(Generic[Response]):
             logger.exception("Initialization error")
             raise
 
-    @staticmethod
-    def get_expires_hours(config: tilecloud_chain.DatedConfig) -> float:
-        """Get the expiration time in hours."""
-        return config.config.get("server", {}).get("expires", tilecloud_chain.configuration.EXPIRES_DEFAULT)
-
-    @staticmethod
-    def get_static_allow_extension(config: tilecloud_chain.DatedConfig) -> List[str]:
-        """Get the allowed extensions in the static view."""
-        return config.config["server"].get(
-            "static_allow_extension", ["jpeg", "png", "xml", "js", "html", "css"]
-        )
-
-    @staticmethod
-    def get_cache_name(config: tilecloud_chain.DatedConfig) -> str:
-        """Get the cache name."""
-        return config.config["server"].get("cache", config.config["generation"]["default_cache"])
-
     def get_s3_client(self, config: tilecloud_chain.DatedConfig) -> "botocore.client.S3":
         """Get the AWS S3 client."""
         cache_s3 = cast(tilecloud_chain.configuration.CacheS3, self.get_cache(config))
@@ -162,13 +177,7 @@ class Server(Generic[Response]):
 
     def get_cache(self, config: tilecloud_chain.DatedConfig) -> tilecloud_chain.configuration.Cache:
         """Get the cache from the config."""
-        return config.config["caches"][self.get_cache_name(config)]
-
-    @staticmethod
-    def get_layers(config: tilecloud_chain.DatedConfig) -> List[str]:
-        """Get the layer from the config."""
-        layers: List[str] = cast(List[str], config.config["layers"].keys())
-        return config.config["server"].get("layers", layers)
+        return config.config["caches"][get_cache_name(config)]
 
     def get_filter(
         self, config: tilecloud_chain.DatedConfig, layer_name: str
@@ -202,19 +211,6 @@ class Server(Generic[Response]):
         store = tilegeneration.get_store(config, self.get_cache(config), layer_name, read_only=True)
         self.store_cache.setdefault(config.file, {})[layer_name] = DatedStore(store, config.mtime)
         return store
-
-    @staticmethod
-    def get_max_zoom_seed(config: tilecloud_chain.DatedConfig, layer_name: str) -> int:
-        """Get the max zoom to be bet in the stored cache."""
-        layer = config.config["layers"][layer_name]
-        if "min_resolution_seed" in layer:
-            max_zoom_seed = -1
-            for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
-                if resolution > layer["min_resolution_seed"]:
-                    max_zoom_seed = zoom
-            return max_zoom_seed
-        else:
-            return 999999
 
     def _read(
         self,
@@ -280,7 +276,7 @@ class Server(Generic[Response]):
         else:
             cache_filesystem = cast(tilecloud_chain.configuration.CacheFilesystem, cache)
             folder = cache_filesystem["folder"] or ""
-            if path.split(".")[-1] not in self.get_static_allow_extension(config):
+            if path.split(".")[-1] not in get_static_allow_extension(config):
                 return self.error(config, 403, "Extension not allowed", **kwargs)
             p = os.path.join(folder, path)
             if not os.path.isfile(p):
@@ -337,9 +333,9 @@ class Server(Generic[Response]):
                         {
                             "Expires": (
                                 datetime.datetime.utcnow()
-                                + datetime.timedelta(hours=self.get_expires_hours(config))
+                                + datetime.timedelta(hours=get_expires_hours(config))
                             ).isoformat(),
-                            "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
+                            "Cache-Control": f"max-age={3600 * get_expires_hours(config)}",
                             "Access-Control-Allow-Origin": "*",
                             "Access-Control-Allow-Methods": "GET",
                         },
@@ -370,7 +366,7 @@ class Server(Generic[Response]):
                     params["LAYER"] = path[1]
                     params["STYLE"] = path[2]
 
-                    if params["LAYER"] in self.get_layers(config):
+                    if params["LAYER"] in get_layers(config):
                         layer = cast(
                             tilecloud_chain.configuration.LayerWms,
                             config.config["layers"][params["LAYER"]],
@@ -419,9 +415,9 @@ class Server(Generic[Response]):
                 headers = {
                     "Content-Type": "application/xml",
                     "Expires": (
-                        datetime.datetime.utcnow() + datetime.timedelta(hours=self.get_expires_hours(config))
+                        datetime.datetime.utcnow() + datetime.timedelta(hours=get_expires_hours(config))
                     ).isoformat(),
-                    "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
+                    "Cache-Control": f"max-age={3600 * get_expires_hours(config)}",
                     "Access-Control-Allow-Origin": "*",
                     "Access-Control-Allow-Methods": "GET",
                 }
@@ -431,7 +427,7 @@ class Server(Generic[Response]):
                     return self._get(wmtscapabilities_file, headers, config=config, **kwargs)
                 else:
                     body = controller.get_wmts_capabilities(
-                        tilegeneration, self.get_cache_name(config), config=config
+                        tilegeneration, get_cache_name(config), config=config
                     )
                     assert body
                     headers["Content-Type"] = "application/xml"
@@ -448,7 +444,7 @@ class Server(Generic[Response]):
                 return self.error(config, 400, "Not all required parameters are present", **kwargs)
 
             if not path:
-                if params["LAYER"] in self.get_layers(config):
+                if params["LAYER"] in get_layers(config):
                     layer = cast(
                         tilecloud_chain.configuration.LayerWms,
                         config.config["layers"][params["LAYER"]],
@@ -520,7 +516,7 @@ class Server(Generic[Response]):
             if params["FORMAT"] != layer["mime_type"]:
                 return self.error(config, 400, f"Wrong Format '{params['FORMAT']}'", **kwargs)
 
-            if tile.tilecoord.z > self.get_max_zoom_seed(config, params["LAYER"]):
+            if tile.tilecoord.z > get_max_zoom_seed(config, params["LAYER"]):
                 return self._map_cache(config, layer, tile, kwargs)
 
             layer_filter = self.get_filter(config, params["LAYER"])
@@ -562,10 +558,9 @@ class Server(Generic[Response]):
                     headers={
                         "Content-Type": tile2.content_type,
                         "Expires": (
-                            datetime.datetime.utcnow()
-                            + datetime.timedelta(hours=self.get_expires_hours(config))
+                            datetime.datetime.utcnow() + datetime.timedelta(hours=get_expires_hours(config))
                         ).isoformat(),
-                        "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
+                        "Cache-Control": f"max-age={3600 * get_expires_hours(config)}",
                         "Access-Control-Allow-Origin": "*",
                         "Access-Control-Allow-Methods": "GET",
                         "Tile-Backend": "Cache",
@@ -614,9 +609,9 @@ class Server(Generic[Response]):
                 response_headers["Pragma"] = "no-cache"
             else:
                 response_headers["Expires"] = (
-                    datetime.datetime.utcnow() + datetime.timedelta(hours=self.get_expires_hours(config))
+                    datetime.datetime.utcnow() + datetime.timedelta(hours=get_expires_hours(config))
                 ).isoformat()
-                response_headers["Cache-Control"] = f"max-age={3600 * self.get_expires_hours(config)}"
+                response_headers["Cache-Control"] = f"max-age={3600 * get_expires_hours(config)}"
                 response_headers["Access-Control-Allow-Origin"] = "*"
                 response_headers["Access-Control-Allow-Methods"] = "GET"
             return self.response(config, response.content, headers=response_headers, **kwargs)
@@ -732,9 +727,9 @@ class PyramidServer(PyramidServerBase):
             headers.update(
                 {
                     "Expires": (
-                        datetime.datetime.utcnow() + datetime.timedelta(hours=self.get_expires_hours(config))
+                        datetime.datetime.utcnow() + datetime.timedelta(hours=get_expires_hours(config))
                     ).isoformat(),
-                    "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
+                    "Cache-Control": f"max-age={3600 * get_expires_hours(config)}",
                 }
             )
             return exception_response(code, detail=message, headers=headers)
@@ -832,40 +827,21 @@ def main(global_config: Any, **settings: Any) -> Router:
     assert tilegeneration
 
     config.include(c2cwsgiutils.pyramid.includeme)
+
     health_check.HealthCheck(config)
     add_mako_renderer(config, ".html")
     config.set_security_policy(tilecloud_chain.security.SecurityPolicy())
     config.add_forbidden_view(forbidden)
 
-    config.add_route(
-        "admin",
-        f"/{tilegeneration.get_main_config().config['server']['admin_path']}",
-        request_method="GET",
-    )
-    config.add_route(
-        "admin_slash",
-        f"/{tilegeneration.get_main_config().config['server']['admin_path']}/",
-        request_method="GET",
-    )
-    config.add_route(
-        "admin_run",
-        f"/{tilegeneration.get_main_config().config['server']['admin_path']}/run",
-        request_method="POST",
-    )
-    config.add_route(
-        "admin_test",
-        f"/{tilegeneration.get_main_config().config['server']['admin_path']}/test",
-        request_method="GET",
-    )
+    admin_route = f"/{tilegeneration.get_main_config().config['server']['admin_path']}"
+    config.add_route("admin", admin_route, request_method="GET")
+    config.include(tilecloud_chain.admin.includeme, route_prefix=admin_route)
+    config.include(tilecloud_chain.ogcapi.includeme, route_prefix="/ogcapi")
 
-    config.add_static_view(
-        name=f"/{tilegeneration.get_main_config().config['server']['admin_path']}/static",
-        path="/app/tilecloud_chain/static",
-    )
+    def add_tiles_view() -> None:
+        config.add_route("tiles", "/*path", request_method="GET")
+        config.add_view(PyramidView, route_name="tiles")
 
-    config.add_route("tiles", "/*path", request_method="GET")
-    config.add_view(PyramidView, route_name="tiles")
-
-    config.scan("tilecloud_chain.views")
+    config.action(("add_tiles_view",), add_tiles_view, order=PHASE0_CONFIG)
 
     return config.make_wsgi_app()
