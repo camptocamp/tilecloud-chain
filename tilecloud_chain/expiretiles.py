@@ -90,7 +90,11 @@ def main() -> None:
                 {"schema": options.schema, "table": options.table},
             )
             if cursor.fetchone()[0] == 0:
-                cursor.execute(f'CREATE TABLE IF NOT EXISTS "{options.schema}"."{options.table}" (id serial)')
+                cursor.execute(
+                    psycopg2.sql.SQL("CREATE TABLE IF NOT EXISTS {}.{} (id serial)").format(
+                        psycopg2.sql.Identifier(options.schema), psycopg2.sql.Identifier(options.table)
+                    )
+                )
                 cursor.execute(
                     "SELECT AddGeometryColumn(%(schema)s, %(table)s, %(column)s, %(srid)s, 'MULTIPOLYGON', 2)",
                     {
@@ -134,13 +138,42 @@ def main() -> None:
         if options.simplify > 0:
             geom.simplify(options.simplify)
 
-        sql_geom = f"ST_GeomFromText('{geom.wkt}', 3857)"
         if options.srid <= 0:
-            sql_geom = f"ST_GeomFromText('{geom.wkt}')"
-        elif options.srid != 3857:
-            sql_geom = f"ST_Transform({sql_geom}, {options.srid})"
+            cursor.execute(
+                psycopg2.sql.SQL("INSERT INTO {} ({}) VALUES (ST_GeomFromText(%(geom)s))").format(
+                    psycopg2.sql.Identifier(options.table),
+                    psycopg2.sql.Identifier(options.column),
+                ),
+                {
+                    "geom": geom.wkt,
+                },
+            )
 
-        cursor.execute(f'INSERT INTO "{options.table}" ("{options.column}") VALUES ({sql_geom})')
+        elif options.srid != 3857:
+            cursor.execute(
+                psycopg2.sql.SQL(
+                    "INSERT INTO {} ({}) VALUES (ST_Transform(ST_GeomFromText(%(geom)s, 3857), %(srid)s))"
+                ).format(
+                    psycopg2.sql.Identifier(options.table),
+                    psycopg2.sql.Identifier(options.column),
+                ),
+                {
+                    "geom": geom.wkt,
+                    "srid": options.srid,
+                },
+            )
+        else:
+            cursor.execute(
+                psycopg2.sql.SQL("INSERT INTO {} ({}) VALUES (ST_GeomFromText(%(geom)s, 3857))").format(
+                    psycopg2.sql.Identifier(options.table),
+                    psycopg2.sql.Identifier(options.column),
+                ),
+                {
+                    "geom": geom.wkt,
+                    "srid": options.srid,
+                },
+            )
+
         connection.commit()
         cursor.close()
         connection.close()

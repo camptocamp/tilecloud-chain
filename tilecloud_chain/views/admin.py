@@ -37,7 +37,7 @@ from urllib.parse import urljoin
 import pyramid.httpexceptions
 import pyramid.request
 import pyramid.response
-from c2cwsgiutils.auth import AuthenticationType, auth_type, auth_view, check_access, is_auth_user
+from c2cwsgiutils.auth import AuthenticationType, auth_type, auth_view
 from pyramid.view import view_config
 
 import tilecloud_chain.server
@@ -180,7 +180,7 @@ class Admin:
                         full_message = json_message["full_message"].replace("\n", "<br />")
                         msg += f"<br />{full_message}"
                     stdout.append(msg)
-            except:
+            except:  # pylint: disable=bare-except
                 stdout.append(line)
 
         return {

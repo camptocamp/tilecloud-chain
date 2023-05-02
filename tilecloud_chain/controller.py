@@ -127,10 +127,10 @@ def _send(
         cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
         key_name = os.path.join(f"{cache['folder']}", path)
         blob = get_azure_client().get_blob_client(container=cache_azure["container"], blob=key_name)
-        blob.upload_blob(data, overwrite=True)  # type: ignore
+        blob.upload_blob(data, overwrite=True)
 
         blob.upload_blob(
-            data,  # type: ignore
+            data,
             overwrite=True,
             content_settings=ContentSettings(  # type: ignore
                 content_type=mime_type,
@@ -170,7 +170,7 @@ def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> Optional[byte
         key_name = os.path.join(f"{cache['folder']}", path)
         try:
             blob = get_azure_client().get_blob_client(container=cache_azure["container"], blob=key_name)
-            return cast(bytes, blob.download_blob().readall())
+            return blob.download_blob().readall()
         except ResourceNotFoundError:
             return None
     else:
@@ -299,9 +299,7 @@ def _fill_legend(
                     if previous_legend is not None:
                         assert previous_resolution is not None
                         middle_res = exp((log(previous_resolution) + log(resolution)) / 2)
-                        previous_legend[  # pylint: disable=unsupported-assignment-operation
-                            "min_resolution"
-                        ] = middle_res
+                        previous_legend["min_resolution"] = middle_res
                         new_legend["max_resolution"] = middle_res
                     try:
                         pil_img = Image.open(BytesIO(img))

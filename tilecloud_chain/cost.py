@@ -2,7 +2,7 @@ import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from datetime import timedelta
-from typing import Iterable, Iterator, Tuple
+from typing import Iterable, Iterator, Optional, Tuple
 
 from tilecloud import Tile, TileStore
 from tilecloud_chain import Run, TileGeneration, add_common_options
@@ -136,8 +136,10 @@ def _calculate_cost(
             class MetaTileSplitter(TileStore):
                 """Convert the metatile flow to tile flow."""
 
-                def get(self, tiles: Iterable[Tile]) -> Iterator[Tile]:
+                def get(self, tiles: Iterable[Optional[Tile]]) -> Iterator[Tile]:
+                    assert tiles is not None
                     for metatile in tiles:
+                        assert metatile is not None
                         for tilecoord in metatile.tilecoord:
                             yield Tile(tilecoord)
 

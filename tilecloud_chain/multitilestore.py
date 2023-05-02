@@ -85,7 +85,7 @@ class MultiTileStore(TileStore):
         assert store is not None
         return store.get_one(tile)
 
-    def get(self, tiles: Iterable[Tile]) -> Iterator[Optional[Tile]]:
+    def get(self, tiles: Iterable[Optional[Tile]]) -> Iterator[Optional[Tile]]:
         """See in superclass."""
 
         def apply(key: Tuple[str, str], tiles: Iterator[Tile]) -> Iterable[Optional[Tile]]:
@@ -117,5 +117,6 @@ class MultiTileStore(TileStore):
         return chain.from_iterable(starmap(apply, groupby(tiles, self._get_layer)))
 
     @staticmethod
-    def _get_layer(tile: Tile) -> Tuple[str, str]:
+    def _get_layer(tile: Optional[Tile]) -> Tuple[str, str]:
+        assert tile is not None
         return (tile.metadata["config_file"], tile.metadata["layer"])

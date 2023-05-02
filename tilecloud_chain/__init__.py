@@ -42,7 +42,6 @@ import boto3
 import botocore.client
 import c2cwsgiutils.setup_process
 import psycopg2
-import pyramid.scripts.common
 from c2cwsgiutils import sentry, stats
 from jsonschema_gentypes import validate
 from PIL import Image
@@ -329,6 +328,10 @@ class DatedHosts:
     def __init__(self, hosts: Dict[str, str], mtime: float) -> None:
         self.hosts = hosts
         self.mtime = mtime
+
+
+class MissingErrorFileException(Exception):
+    """Missing error file exception."""
 
 
 class TileGeneration:
@@ -940,7 +943,7 @@ class TileGeneration:
 
             time_ = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
             if self.get_log_tiles_error_file(tile.metadata["layer"]) is None:
-                raise Exception("Missing error file")
+                raise MissingErrorFileException("Missing error file")
 
             tilecoord = "" if tile.tilecoord is None else f"{tile.tilecoord} {tile.formated_metadata} "
             message = "" if message is None else f" {message}"
@@ -1377,7 +1380,7 @@ class HashDropper:
                     self.store.delete_one(tile)
             logger.info("The tile %s %s is dropped", tile.tilecoord, tile.formated_metadata)
             if hasattr(tile, "metatile"):
-                metatile: Tile = tile.metatile  # type: ignore
+                metatile: Tile = tile.metatile
                 metatile.elapsed_togenerate -= 1  # type: ignore
                 if metatile.elapsed_togenerate == 0 and self.queue_store is not None:  # type: ignore
                     self.queue_store.delete_one(metatile)
@@ -1668,17 +1671,17 @@ def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
     if "redis" in config.config:
         # Create a Redis queue
         conf = config.config["redis"]
-        tilestore_kwargs: Dict[str, Any] = dict(
-            name=conf["queue"],
-            stop_if_empty=not daemon,
-            timeout=conf["timeout"],
-            pending_timeout=conf["pending_timeout"],
-            max_retries=conf["max_retries"],
-            max_errors_age=conf["max_errors_age"],
-            max_errors_nb=conf["max_errors_nb"],
-            connection_kwargs=conf.get("connection_kwargs", {}),
-            sentinel_kwargs=conf.get("sentinel_kwargs"),
-        )
+        tilestore_kwargs: Dict[str, Any] = {
+            "name": conf["queue"],
+            "stop_if_empty": not daemon,
+            "timeout": conf["timeout"],
+            "pending_timeout": conf["pending_timeout"],
+            "max_retries": conf["max_retries"],
+            "max_errors_age": conf["max_errors_age"],
+            "max_errors_nb": conf["max_errors_nb"],
+            "connection_kwargs": conf.get("connection_kwargs", {}),
+            "sentinel_kwargs": conf.get("sentinel_kwargs"),
+        }
         if "socket_timeout" in conf:
             tilestore_kwargs["connection_kwargs"]["socket_timeout"] = conf["socket_timeout"]
         if "db" in conf:
