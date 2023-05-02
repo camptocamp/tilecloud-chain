@@ -58,7 +58,8 @@ class RedisStore(TileStore):
             self._master = redis.Redis.from_url(config["url"], **connection_kwargs)  # type: ignore
             self._slave = self._master
         else:
-            sentinel = redis.sentinel.Sentinel(config["sentinels"], **connection_kwargs)
+            sentinels = [(host, int(port)) for host, port in config["sentinels"]]
+            sentinel = redis.sentinel.Sentinel(sentinels, **connection_kwargs)  # type: ignore
             self._master = sentinel.master_for(config.get("service_name", "mymaster"))
             self._slave = sentinel.slave_for(config.get("service_name", "mymaster"))
         self._prefix = config["prefix"]

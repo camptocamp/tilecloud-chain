@@ -268,7 +268,7 @@ class Server(Generic[Response]):
                 data = blob.download_blob().readall()
                 return self.response(
                     config,
-                    data if isinstance(data, bytes) else data.encode("utf-8"),
+                    data if isinstance(data, bytes) else data.encode("utf-8"),  # type: ignore
                     {
                         "Content-Encoding": cast(str, properties.content_settings.content_encoding),
                         "Content-Type": cast(str, properties.content_settings.content_type),
@@ -606,7 +606,7 @@ class Server(Generic[Response]):
             headers["Cache-Control"] = "no-cache"
             headers["Pragma"] = "no-cache"
 
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers)  # nosec
         if response.status_code == 200:
             response_headers = dict(response.headers)
             if no_cache:

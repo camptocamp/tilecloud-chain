@@ -30,6 +30,7 @@ pylint:
     - cyclic-import
     - missing-module-docstring
     - missing-function-docstring
+    - missing-timeout # done globally by c2cwsgiutils
 
 pycodestyle:
   disable:

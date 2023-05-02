@@ -63,7 +63,7 @@ class TimedTileStoreWrapper(TileStore):
         """See in superclass."""
         return cast(Iterable[Tile], self._time_iteration(self._tile_store.list(), "list"))
 
-    def get(self, tiles: Iterable[Tile]) -> Iterator[Optional[Tile]]:
+    def get(self, tiles: Iterable[Optional[Tile]]) -> Iterator[Optional[Tile]]:
         """See in superclass."""
         return self._time_iteration(self._tile_store.get(tiles), "get")
 

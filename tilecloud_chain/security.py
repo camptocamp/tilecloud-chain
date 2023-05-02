@@ -2,9 +2,9 @@ import os
 from typing import Optional, Union
 
 import c2cwsgiutils.auth
-import pyramid.request  # type: ignore
+import pyramid.request
 from c2cwsgiutils.auth import AuthConfig
-from pyramid.security import Allowed, Denied  # type: ignore
+from pyramid.security import Allowed, Denied
 
 
 class User:
@@ -102,8 +102,8 @@ class SecurityPolicy:
             return Allowed("The User is admin.")
         if permission == "all":
             return Denied("Root access is required.")
-        if permission not in context.get("sources", {}):
+        if permission not in context.get("sources", {}):  # type: ignore
             return Denied(f"No such source '{permission}'.")
-        if identity.has_access(context["sources"][permission]):
+        if identity.has_access(context["sources"][permission]):  # type: ignore
             return Allowed(f"The User has access to source {permission}.")
         return Denied(f"The User has no access to source {permission}.")
