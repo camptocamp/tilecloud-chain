@@ -1034,26 +1034,26 @@ format-nongpl = ["fqdn", "idna", "isoduration", "jsonpointer (>1.13)", "rfc3339-
 
 [[package]]
 name = "jsonschema-gentypes"
-version = "1.5.0"
+version = "2.1.0"
 description = "Tool to generate Python types based on TypedDict from a JSON Schema"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4"
 files = [
-    {file = "jsonschema_gentypes-1.5.0-py3-none-any.whl", hash = "sha256:4cb769bfd206610fe2b673daab015cf7c3df0dfddf903dba332a08b691469426"},
-    {file = "jsonschema_gentypes-1.5.0.tar.gz", hash = "sha256:6d53f22ea850023ca3af60b9a9425f2c75bb83faffa5463e18e78c1c1a6c7a0c"},
+    {file = "jsonschema_gentypes-2.1.0-py3-none-any.whl", hash = "sha256:b7b8357f927be6e1457fc438e3f85629da00c93f645f52dd4fcd7352c2d20e1f"},
+    {file = "jsonschema_gentypes-2.1.0.tar.gz", hash = "sha256:6a5bb3637bfa41e6ada820e50107270badd105172b9c8bdf7d6e1b876af2caf9"},
 ]
 
 [package.dependencies]
-certifi = "*"
 jsonschema = "*"
+PyYAML = "*"
+referencing = "*"
 requests = "*"
-"ruamel.yaml" = "*"
 typing-extensions = "*"
 
 [package.extras]
 extra = ["pinyin", "romanize", "romkan"]
-tools = ["black", "isort", "pyupgrade"]
+tools = ["pre-commit"]
 
 [[package]]
 name = "lazy-loader"
@@ -2434,6 +2434,22 @@ hiredis = ["hiredis (>=1.0.0)"]
 ocsp = ["cryptography (>=36.0.1)", "pyopenssl (==20.0.1)", "requests (>=2.26.0)"]
 
 [[package]]
+name = "referencing"
+version = "0.28.0"
+description = "JSON Referencing + Python"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "referencing-0.28.0-py3-none-any.whl", hash = "sha256:8c1886f14748c22c9fdc0e302add12f99ad93cada04ce818d47641dc06637a36"},
+    {file = "referencing-0.28.0.tar.gz", hash = "sha256:3c963366bc94261bec1a4bd5917a05fee800c1e87995add5edba21abfa253c7d"},
+]
+
+[package.dependencies]
+attrs = ">=22.2.0"
+rpds-py = ">=0.7.0"
+
+[[package]]
 name = "requests"
 version = "2.28.2"
 description = "Python HTTP for Humans."
@@ -2513,68 +2529,36 @@ typing-extensions = {version = ">=4.0.0,<5.0", markers = "python_version < \"3.9
 jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
-name = "ruamel-yaml"
-version = "0.17.21"
-description = "ruamel.yaml is a YAML parser/emitter that supports roundtrip preservation of comments, seq/map flow style, and map key order"
+name = "rpds-py"
+version = "0.7.1"
+description = "Python bindings to Rust's persistent data structures (rpds)"
 category = "main"
 optional = false
-python-versions = ">=3"
+python-versions = ">=3.8"
 files = [
-    {file = "ruamel.yaml-0.17.21-py3-none-any.whl", hash = "sha256:742b35d3d665023981bd6d16b3d24248ce5df75fdb4e2924e93a05c1f8b61ca7"},
-    {file = "ruamel.yaml-0.17.21.tar.gz", hash = "sha256:8b7ce697a2f212752a35c1ac414471dc16c424c9573be4926b56ff3f5d23b7af"},
-]
-
-[package.dependencies]
-"ruamel.yaml.clib" = {version = ">=0.2.6", markers = "platform_python_implementation == \"CPython\" and python_version < \"3.11\""}
-
-[package.extras]
-docs = ["ryd"]
-jinja2 = ["ruamel.yaml.jinja2 (>=0.2)"]
-
-[[package]]
-name = "ruamel-yaml-clib"
-version = "0.2.7"
-description = "C version of reader, parser and emitter for ruamel.yaml derived from libyaml"
-category = "main"
-optional = false
-python-versions = ">=3.5"
-files = [
-    {file = "ruamel.yaml.clib-0.2.7-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:d5859983f26d8cd7bb5c287ef452e8aacc86501487634573d260968f753e1d71"},
-    {file = "ruamel.yaml.clib-0.2.7-cp310-cp310-macosx_12_0_arm64.whl", hash = "sha256:debc87a9516b237d0466a711b18b6ebeb17ba9f391eb7f91c649c5c4ec5006c7"},
-    {file = "ruamel.yaml.clib-0.2.7-cp310-cp310-manylinux2014_aarch64.whl", hash = "sha256:df5828871e6648db72d1c19b4bd24819b80a755c4541d3409f0f7acd0f335c80"},
-    {file = "ruamel.yaml.clib-0.2.7-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl", hash = "sha256:efa08d63ef03d079dcae1dfe334f6c8847ba8b645d08df286358b1f5293d24ab"},
-    {file = "ruamel.yaml.clib-0.2.7-cp310-cp310-win32.whl", hash = "sha256:763d65baa3b952479c4e972669f679fe490eee058d5aa85da483ebae2009d231"},
-    {file = "ruamel.yaml.clib-0.2.7-cp310-cp310-win_amd64.whl", hash = "sha256:d000f258cf42fec2b1bbf2863c61d7b8918d31ffee905da62dede869254d3b8a"},
-    {file = "ruamel.yaml.clib-0.2.7-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:045e0626baf1c52e5527bd5db361bc83180faaba2ff586e763d3d5982a876a9e"},
-    {file = "ruamel.yaml.clib-0.2.7-cp311-cp311-macosx_12_6_arm64.whl", hash = "sha256:721bc4ba4525f53f6a611ec0967bdcee61b31df5a56801281027a3a6d1c2daf5"},
-    {file = "ruamel.yaml.clib-0.2.7-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl", hash = "sha256:41d0f1fa4c6830176eef5b276af04c89320ea616655d01327d5ce65e50575c94"},
-    {file = "ruamel.yaml.clib-0.2.7-cp311-cp311-win32.whl", hash = "sha256:f6d3d39611ac2e4f62c3128a9eed45f19a6608670c5a2f4f07f24e8de3441d38"},
-    {file = "ruamel.yaml.clib-0.2.7-cp311-cp311-win_amd64.whl", hash = "sha256:da538167284de58a52109a9b89b8f6a53ff8437dd6dc26d33b57bf6699153122"},
-    {file = "ruamel.yaml.clib-0.2.7-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:4b3a93bb9bc662fc1f99c5c3ea8e623d8b23ad22f861eb6fce9377ac07ad6072"},
-    {file = "ruamel.yaml.clib-0.2.7-cp36-cp36m-macosx_12_0_arm64.whl", hash = "sha256:a234a20ae07e8469da311e182e70ef6b199d0fbeb6c6cc2901204dd87fb867e8"},
-    {file = "ruamel.yaml.clib-0.2.7-cp36-cp36m-manylinux2014_aarch64.whl", hash = "sha256:15910ef4f3e537eea7fe45f8a5d19997479940d9196f357152a09031c5be59f3"},
-    {file = "ruamel.yaml.clib-0.2.7-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl", hash = "sha256:370445fd795706fd291ab00c9df38a0caed0f17a6fb46b0f607668ecb16ce763"},
-    {file = "ruamel.yaml.clib-0.2.7-cp36-cp36m-win32.whl", hash = "sha256:ecdf1a604009bd35c674b9225a8fa609e0282d9b896c03dd441a91e5f53b534e"},
-    {file = "ruamel.yaml.clib-0.2.7-cp36-cp36m-win_amd64.whl", hash = "sha256:f34019dced51047d6f70cb9383b2ae2853b7fc4dce65129a5acd49f4f9256646"},
-    {file = "ruamel.yaml.clib-0.2.7-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:2aa261c29a5545adfef9296b7e33941f46aa5bbd21164228e833412af4c9c75f"},
-    {file = "ruamel.yaml.clib-0.2.7-cp37-cp37m-macosx_12_0_arm64.whl", hash = "sha256:f01da5790e95815eb5a8a138508c01c758e5f5bc0ce4286c4f7028b8dd7ac3d0"},
-    {file = "ruamel.yaml.clib-0.2.7-cp37-cp37m-manylinux2014_aarch64.whl", hash = "sha256:40d030e2329ce5286d6b231b8726959ebbe0404c92f0a578c0e2482182e38282"},
-    {file = "ruamel.yaml.clib-0.2.7-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl", hash = "sha256:c3ca1fbba4ae962521e5eb66d72998b51f0f4d0f608d3c0347a48e1af262efa7"},
-    {file = "ruamel.yaml.clib-0.2.7-cp37-cp37m-win32.whl", hash = "sha256:7bdb4c06b063f6fd55e472e201317a3bb6cdeeee5d5a38512ea5c01e1acbdd93"},
-    {file = "ruamel.yaml.clib-0.2.7-cp37-cp37m-win_amd64.whl", hash = "sha256:be2a7ad8fd8f7442b24323d24ba0b56c51219513cfa45b9ada3b87b76c374d4b"},
-    {file = "ruamel.yaml.clib-0.2.7-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:91a789b4aa0097b78c93e3dc4b40040ba55bef518f84a40d4442f713b4094acb"},
-    {file = "ruamel.yaml.clib-0.2.7-cp38-cp38-macosx_12_0_arm64.whl", hash = "sha256:99e77daab5d13a48a4054803d052ff40780278240a902b880dd37a51ba01a307"},
-    {file = "ruamel.yaml.clib-0.2.7-cp38-cp38-manylinux2014_aarch64.whl", hash = "sha256:3243f48ecd450eddadc2d11b5feb08aca941b5cd98c9b1db14b2fd128be8c697"},
-    {file = "ruamel.yaml.clib-0.2.7-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl", hash = "sha256:8831a2cedcd0f0927f788c5bdf6567d9dc9cc235646a434986a852af1cb54b4b"},
-    {file = "ruamel.yaml.clib-0.2.7-cp38-cp38-win32.whl", hash = "sha256:3110a99e0f94a4a3470ff67fc20d3f96c25b13d24c6980ff841e82bafe827cac"},
-    {file = "ruamel.yaml.clib-0.2.7-cp38-cp38-win_amd64.whl", hash = "sha256:92460ce908546ab69770b2e576e4f99fbb4ce6ab4b245345a3869a0a0410488f"},
-    {file = "ruamel.yaml.clib-0.2.7-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:5bc0667c1eb8f83a3752b71b9c4ba55ef7c7058ae57022dd9b29065186a113d9"},
-    {file = "ruamel.yaml.clib-0.2.7-cp39-cp39-macosx_12_0_arm64.whl", hash = "sha256:4a4d8d417868d68b979076a9be6a38c676eca060785abaa6709c7b31593c35d1"},
-    {file = "ruamel.yaml.clib-0.2.7-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:bf9a6bc4a0221538b1a7de3ed7bca4c93c02346853f44e1cd764be0023cd3640"},
-    {file = "ruamel.yaml.clib-0.2.7-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl", hash = "sha256:a7b301ff08055d73223058b5c46c55638917f04d21577c95e00e0c4d79201a6b"},
-    {file = "ruamel.yaml.clib-0.2.7-cp39-cp39-win32.whl", hash = "sha256:d5e51e2901ec2366b79f16c2299a03e74ba4531ddcfacc1416639c557aef0ad8"},
-    {file = "ruamel.yaml.clib-0.2.7-cp39-cp39-win_amd64.whl", hash = "sha256:184faeaec61dbaa3cace407cffc5819f7b977e75360e8d5ca19461cd851a5fc5"},
-    {file = "ruamel.yaml.clib-0.2.7.tar.gz", hash = "sha256:1f08fd5a2bea9c4180db71678e850b995d2a5f4537be0e94557668cf0f5f9497"},
+    {file = "rpds_py-0.7.1-cp38-abi3-macosx_10_7_x86_64.whl", hash = "sha256:858604fe5d7eb50e91b1096bcbcb421f2cb3101454244afda92b4d768d0cb4ce"},
+    {file = "rpds_py-0.7.1-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:e16c02923726307d960e908b61d4d833939f322877d2957c001fca23b644914e"},
+    {file = "rpds_py-0.7.1-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:311a57cc972481bd220af28cf4309141c680a356b2359f163daac030d0c2318d"},
+    {file = "rpds_py-0.7.1-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:1b6db70c2ab847229fa9cff3a5eb641c33ab3f981ee8b99d326a7deb8989e4ce"},
+    {file = "rpds_py-0.7.1-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:34007442d36980c4aab3f4044c1fd05a736c8ae09d47b8a42112deab5d6b5a10"},
+    {file = "rpds_py-0.7.1-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:6d1d4078d60ca47f0eb6bdddbf79f00a72d41ee3148aba1dcf9b980f73a8d26e"},
+    {file = "rpds_py-0.7.1-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:025b8101dbf39d77cf41ac3c737e4c713e0b2728a516443b382e66b9d492ff98"},
+    {file = "rpds_py-0.7.1-cp38-abi3-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:cc6ff891c3814d8cd92549cb385353a922518d433aaf1d2d0d99e98e59915370"},
+    {file = "rpds_py-0.7.1-cp38-abi3-win32.whl", hash = "sha256:cbdc8ab6108b8bb260ee68fb2de83fb1c481d3a77355156049a8a49ea47eacf6"},
+    {file = "rpds_py-0.7.1-cp38-abi3-win_amd64.whl", hash = "sha256:5eda3aba0cd291de9d4bb138db45814bac24bc4c07e0f38b0544374b6104c488"},
+    {file = "rpds_py-0.7.1-pp38-pypy38_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:038249d2bbaf91aa65c4108a40ee076f657654261b1a246ab99726710bfb77de"},
+    {file = "rpds_py-0.7.1-pp38-pypy38_pp73-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:2a5c672b1cd382973bf414518ddc9d743d06bcee751fa65256d84ba412192b0b"},
+    {file = "rpds_py-0.7.1-pp38-pypy38_pp73-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:453e62d679d8de32c5e00ba27f8c8c45a456e5d6db6fa6f67fdd3e12f1658833"},
+    {file = "rpds_py-0.7.1-pp38-pypy38_pp73-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:0bcb162f5549408125ec986bfed1a66f2036ac2910d3fb0a6afda0f97bc6ea15"},
+    {file = "rpds_py-0.7.1-pp38-pypy38_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:98b54a47e670093b8bf7d1a0222d0af26dac19314a0e79ac478e447357396a2d"},
+    {file = "rpds_py-0.7.1-pp38-pypy38_pp73-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:f53f65cf56bb60355681431d04bc04dbe709452dd85eebf537035dc145bd36c9"},
+    {file = "rpds_py-0.7.1-pp39-pypy39_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:68e8f2cedc65198248a14d716125016fd0816f63f216a82c2209a0686d5447cf"},
+    {file = "rpds_py-0.7.1-pp39-pypy39_pp73-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:f8391420714e84ae9f4c6d4e4d52eb4209ca8d66abfbe4b2ba4892221be1c6f5"},
+    {file = "rpds_py-0.7.1-pp39-pypy39_pp73-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:c7bd3a381c4a5fe7e0fc4dff554bd1ce2b0be12ba0193c176c291b7dc1e8bea0"},
+    {file = "rpds_py-0.7.1-pp39-pypy39_pp73-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:c38d17af73aa03686d701686628e37c114a459650233c0d5f0492dad3a76e3e0"},
+    {file = "rpds_py-0.7.1-pp39-pypy39_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:014828cd68b4cdee84ab66adaf5bfe1f137656a7a588c31fdca04ba0768ef62d"},
+    {file = "rpds_py-0.7.1-pp39-pypy39_pp73-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:33a2a15b641bc17bc6574f9600976374a085ff81ac8dddd4bde6c451e9e9e58d"},
+    {file = "rpds_py-0.7.1.tar.gz", hash = "sha256:d940b5644f14e49b1c6e7902b9ec8a0c7584109fbf380fa18115831a641927c8"},
 ]
 
 [[package]]
@@ -3558,4 +3542,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "bbb96e2474f49ef36ba4695ba438de8e6d33645920281467188cd656b529531f"
+content-hash = "a1a56ae3f8165f66844b23fbccb7a9cb3009d1a1f08c68ad8f5e548691cd48c5"
