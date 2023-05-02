@@ -20,6 +20,24 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "title": {
+          "title": "Title",
+          "description": "The title of the grid",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "description": "The description of the grid",
+          "type": "string"
+        },
+        "keywords": {
+          "title": "Keywords",
+          "description": "The keywords",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "resolution_scale": {
           "title": "Resolution scale",
           "description": "The scale used to build a FreeTileGrid typically '2'",
@@ -35,7 +53,7 @@
         },
         "bbox": {
           "title": "Bounding box",
-          "description": "The bounding box in meter",
+          "description": "The bounding box in meter (left, bottom, right, top, of the map image) ",
           "type": "array",
           "items": {
             "type": "number"
@@ -246,6 +264,16 @@
     "layer_title": {
       "title": "Layer title",
       "description": "The title, use to generate the capabilities",
+      "type": "string"
+    },
+    "layer_description": {
+      "title": "Layer description",
+      "description": "The description, use to generate the capabilities",
+      "type": "string"
+    },
+    "layer_theme": {
+      "title": "Layer theme",
+      "description": "Category where the layer can be grouped",
       "type": "string"
     },
     "layer_grid": {
@@ -543,6 +571,12 @@
         "title": {
           "$ref": "#/definitions/layer_title"
         },
+        "description": {
+          "$ref": "#/definitions/layer_description"
+        },
+        "theme": {
+          "$ref": "#/definitions/layer_theme"
+        },
         "grid": {
           "$ref": "#/definitions/layer_grid"
         },
@@ -659,6 +693,12 @@
         "type": { "const": "mapnik" },
         "title": {
           "$ref": "#/definitions/layer_title"
+        },
+        "description": {
+          "$ref": "#/definitions/layer_description"
+        },
+        "theme": {
+          "$ref": "#/definitions/layer_theme"
         },
         "grid": {
           "$ref": "#/definitions/layer_grid"
@@ -1196,6 +1236,16 @@
           "description": "The abstract",
           "type": "string"
         },
+        "attribution": {
+          "title": "Attribution",
+          "description": "The attribution",
+          "type": "string"
+        },
+        "license": {
+          "title": "License",
+          "description": "The license",
+          "type": "string"
+        },
         "servicetype": {
           "title": "Service type",
           "description": "The service type, default is 'OGC WMTS'",
@@ -1232,6 +1282,11 @@
         "name": {
           "title": "Name",
           "type": "string"
+        },
+        "pointOfContact": {
+          "title": "Point of contact",
+          "type": "string",
+          "description": "Useful information to contact the authors or custodians for the layer (e.g. e-mail address, a physical address,  phone numbers, etc)"
         },
         "url": {
           "title": "URL",

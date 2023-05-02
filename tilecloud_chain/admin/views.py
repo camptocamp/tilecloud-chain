@@ -37,13 +37,15 @@ from urllib.parse import urljoin
 import pyramid.httpexceptions
 import pyramid.request
 import pyramid.response
+import pyramid.session
 from c2cwsgiutils.auth import AuthenticationType, auth_type, auth_view
 from pyramid.view import view_config
 
 import tilecloud_chain.server
 from tilecloud_chain.controller import get_status
+from tilecloud_chain.server import init_tilegeneration
 
-LOG = logging.getLogger(__name__)
+_LOG = logging.getLogger(__name__)
 
 
 class Admin:
@@ -150,7 +152,7 @@ class Admin:
         final_command += commands[1:]
 
         display_command = " ".join([shlex.quote(arg) for arg in final_command])
-        LOG.info("Run the command `%s`", display_command)
+        _LOG.info("Run the command `%s`", display_command)
         env: Dict[str, str] = {}
         env.update(os.environ)
         env["FRONTEND"] = "noninteractive"
@@ -162,7 +164,7 @@ class Admin:
         )
 
         if completed_process.returncode != 0:
-            LOG.warning(
+            _LOG.warning(
                 "The command `%s` exited with an error code: %s\nstdout:\n%s\nstderr:\n%s",
                 display_command,
                 completed_process.returncode,
@@ -193,29 +195,6 @@ class Admin:
                 int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
             ),
             "returncode": completed_process.returncode,
-        }
-
-    @view_config(route_name="admin_test", renderer="tilecloud_chain:templates/openlayers.html")  # type: ignore
-    def admin_test(self) -> Dict[str, Any]:
-        assert self.gene
-        config = self.gene.get_host_config(self.request.host)
-        main_config = self.gene.get_main_config()
-        return {
-            "proj4js_def": re.sub(
-                r"\s+",
-                " ",
-                config.config["openlayers"]["proj4js_def"],
-            ),
-            "srs": config.config["openlayers"]["srs"],
-            "center_x": config.config["openlayers"]["center_x"],
-            "center_y": config.config["openlayers"]["center_y"],
-            "zoom": config.config["openlayers"]["zoom"],
-            "http_url": urljoin(
-                self.request.current_route_url(),
-                "/" + main_config.config["server"].get("wmts_path", "wmts") + "/"
-                if "server" in config.config
-                else "/",
-            ),
         }
 
 
@@ -261,3 +240,29 @@ def _format_output(string: str, max_length: int = 1000) -> str:
     if len(string) > max_length:
         return string[: max_length - 3] + "\n..."
     return string
+
+
+@view_config(route_name="admin_test", renderer="tilecloud_chain:templates/openlayers.html")  # type: ignore
+def landing_page(request: pyramid.request.Request) -> pyramid.response.Response:
+    """Get the landing page."""
+
+    tilegeneration = init_tilegeneration(request.registry.settings.get("tilegeneration_configfile"))
+    config = tilegeneration.get_host_config(request.host)
+    main_config = tilegeneration.get_main_config()
+    return {
+        "proj4js_def": re.sub(
+            r"\s+",
+            " ",
+            config.config["openlayers"]["proj4js_def"],
+        ),
+        "srs": config.config["openlayers"]["srs"],
+        "center_x": config.config["openlayers"]["center_x"],
+        "center_y": config.config["openlayers"]["center_y"],
+        "zoom": config.config["openlayers"]["zoom"],
+        "http_url": urljoin(
+            request.current_route_url(),
+            "/" + main_config.config["server"].get("wmts_path", "wmts") + "/"
+            if "server" in config.config
+            else "/",
+        ),
+    }

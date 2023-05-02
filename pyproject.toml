@@ -72,6 +72,8 @@ jsonschema-gentypes = "1.5.0"
 azure-storage-blob = "12.15.0"
 waitress = "2.1.2"
 certifi = "2022.12.7"
+pyramid-openapi3 = "0.16.0"
+openapi-core = "0.16.6"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.9.0" }

@@ -39,10 +39,14 @@
 - <a id="definitions/headers"></a>**`headers`** _(object)_: The headers that we send to the WMS backend. Can contain additional properties.
   - **Additional Properties** _(string)_: The header value.
 - <a id="definitions/grid"></a>**`grid`** _(object)_: The WMTS grid definition, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-grids. Cannot contain additional properties.
+  - **`title`** _(string)_: The title of the grid.
+  - **`description`** _(string)_: The description of the grid.
+  - **`keywords`** _(array)_: The keywords.
+    - **Items** _(string)_
   - **`resolution_scale`** _(integer)_: The scale used to build a FreeTileGrid typically '2'.
   - **`resolutions`** _(array)_: The resolutions in pixel per meter.
     - **Items** _(number)_
-  - **`bbox`** _(array)_: The bounding box in meter.
+  - **`bbox`** _(array)_: The bounding box in meter (left, bottom, right, top, of the map image) .
     - **Items** _(number)_
   - **`srs`** _(string)_: The projection reference.
   - **`proj4_literal`** _(string)_: The Proj4 definition.
@@ -111,6 +115,8 @@
     - : Refer to _[#/definitions/cache_mbtiles](#definitions/cache_mbtiles)_.
     - : Refer to _[#/definitions/cache_bsddb](#definitions/cache_bsddb)_.
 - <a id="definitions/layer_title"></a>**`layer_title`** _(string)_: The title, use to generate the capabilities.
+- <a id="definitions/layer_description"></a>**`layer_description`** _(string)_: The description, use to generate the capabilities.
+- <a id="definitions/layer_theme"></a>**`layer_theme`** _(string)_: Category where the layer can be grouped.
 - <a id="definitions/layer_grid"></a>**`layer_grid`** _(string)_: The used grid name.
 - <a id="definitions/layer_bbox"></a>**`layer_bbox`** _(array)_: The bounding box where we will generate the tiles.
   - **Items** _(number)_
@@ -166,6 +172,8 @@
 - <a id="definitions/layer_wms"></a>**`layer_wms`** _(object)_: Cannot contain additional properties.
   - **`type`**
   - **`title`**: Refer to _[#/definitions/layer_title](#definitions/layer_title)_.
+  - **`description`**: Refer to _[#/definitions/layer_description](#definitions/layer_description)_.
+  - **`theme`**: Refer to _[#/definitions/layer_theme](#definitions/layer_theme)_.
   - **`grid`**: Refer to _[#/definitions/layer_grid](#definitions/layer_grid)_.
   - **`bbox`**: Refer to _[#/definitions/layer_bbox](#definitions/layer_bbox)_.
   - **`min_resolution_seed`**: Refer to _[#/definitions/layer_min_resolution_seed](#definitions/layer_min_resolution_seed)_.
@@ -199,6 +207,8 @@
 - <a id="definitions/layer_mapnik"></a>**`layer_mapnik`** _(object)_: Cannot contain additional properties.
   - **`type`**
   - **`title`**: Refer to _[#/definitions/layer_title](#definitions/layer_title)_.
+  - **`description`**: Refer to _[#/definitions/layer_description](#definitions/layer_description)_.
+  - **`theme`**: Refer to _[#/definitions/layer_theme](#definitions/layer_theme)_.
   - **`grid`**: Refer to _[#/definitions/layer_grid](#definitions/layer_grid)_.
   - **`bbox`**: Refer to _[#/definitions/layer_bbox](#definitions/layer_bbox)_.
   - **`min_resolution_seed`**: Refer to _[#/definitions/layer_min_resolution_seed](#definitions/layer_min_resolution_seed)_.
@@ -310,6 +320,8 @@
 - <a id="definitions/metadata"></a>**`metadata`** _(object)_: The configuration of the WMTS capabilities metadata. Cannot contain additional properties.
   - **`title`** _(string)_: The title.
   - **`abstract`** _(string)_: The abstract.
+  - **`attribution`** _(string)_: The attribution.
+  - **`license`** _(string)_: The license.
   - **`servicetype`** _(string)_: The service type, default is 'OGC WMTS'. Default: `"OGC WMTS"`.
   - **`keywords`** _(array)_: The keywords.
     - **Items** _(string)_
@@ -317,6 +329,7 @@
   - **`access_constraints`** _(string)_: The access constraints.
 - <a id="definitions/provider"></a>**`provider`** _(object)_: The provider. Cannot contain additional properties.
   - **`name`** _(string)_
+  - **`pointOfContact`** _(string)_: Useful information to contact the authors or custodians for the layer (e.g. e-mail address, a physical address, phone numbers, etc).
   - **`url`** _(string)_: The public URL.
   - **`contact`** _(object)_: The contact. Cannot contain additional properties.
     - **`name`** _(string)_

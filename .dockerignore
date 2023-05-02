@@ -12,3 +12,4 @@
 !gunicorn.conf.py
 !package*.json
 !screenshot.js
+!ogcapi-tiles-bundled-filtered.json
