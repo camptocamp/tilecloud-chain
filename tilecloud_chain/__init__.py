@@ -41,9 +41,9 @@ from typing import (
 import boto3
 import botocore.client
 import c2cwsgiutils.setup_process
+import jsonschema_validator
 import psycopg2
 from c2cwsgiutils import sentry, stats
-from jsonschema_gentypes import validate
 from PIL import Image
 from ruamel.yaml import YAML
 from shapely.geometry.base import BaseGeometry
@@ -604,7 +604,7 @@ class TileGeneration:
 
         schema_data = pkgutil.get_data("tilecloud_chain", "schema.json")
         assert schema_data
-        errors, _ = validate.validate(
+        errors, _ = jsonschema_validator.validate(
             config.file, cast(Dict[str, Any], config.config), json.loads(schema_data), default=True
         )
 
