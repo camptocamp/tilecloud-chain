@@ -56,7 +56,7 @@ class TestError(CompareCase):
                     "tilecloud_chain",
                     "ERROR",
                     """The config file is invalid:
--- tilegeneration/wrong_type.yaml:10:10 grids.swissgrid_2.srs: ordereddict() is not of type 'string' (rule: properties.grids.additionalProperties.properties.srs.type)
+-- tilegeneration/wrong_type.yaml:10:10 grids.swissgrid_2.srs: {} is not of type 'string' (rule: properties.grids.additionalProperties.properties.srs.type)
 -- tilegeneration/wrong_type.yaml:12:5 grids.swissgrid_3.srs: 'epsg:21781' does not match '^EPSG:[0-9]+$' (rule: properties.grids.additionalProperties.properties.srs.pattern)
 -- tilegeneration/wrong_type.yaml:12:5 grids.swissgrid_3: 'bbox' is a required property (rule: properties.grids.additionalProperties.required)
 -- tilegeneration/wrong_type.yaml:12:5 grids.swissgrid_3: 'resolutions' is a required property (rule: properties.grids.additionalProperties.required)
