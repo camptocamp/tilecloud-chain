@@ -16,7 +16,7 @@
   - **`queue`** _(string)_: The queue name, default is 'tilecloud'.
   - **`region`**: Refer to _[#/definitions/aws_region](#definitions/aws_region)_.
 - **`sns`** _(object)_: The Simple Notification Service configuration, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sns. Cannot contain additional properties.
-  - **`topic`** _(string)_: The topic.
+  - **`topic`** _(string, required)_: The topic.
   - **`region`**: Refer to _[#/definitions/aws_region](#definitions/aws_region)_.
 - **`redis`**: Refer to _[#/definitions/redis](#definitions/redis)_.
 - **`openlayers`** _(object)_: Configuration used to generate the OpenLayers example page. Cannot contain additional properties.
@@ -40,11 +40,11 @@
   - **Additional Properties** _(string)_: The header value.
 - <a id="definitions/grid"></a>**`grid`** _(object)_: The WMTS grid definition, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-grids. Cannot contain additional properties.
   - **`resolution_scale`** _(integer)_: The scale used to build a FreeTileGrid typically '2'.
-  - **`resolutions`** _(array)_: The resolutions in pixel per meter.
+  - **`resolutions`** _(array, required)_: The resolutions in pixel per meter.
     - **Items** _(number)_
-  - **`bbox`** _(array)_: The bounding box in meter.
+  - **`bbox`** _(array, required)_: The bounding box in meter.
     - **Items** _(number)_
-  - **`srs`** _(string)_: The projection reference.
+  - **`srs`** _(string, required)_: The projection reference.
   - **`proj4_literal`** _(string)_: The Proj4 definition.
   - **`unit`** _(string)_: The projection unit, default is 'm'. Default: `"m"`.
   - **`tile_size`** _(integer)_: The tile size in pixel, default is 256. Default: `256`.
@@ -73,7 +73,7 @@
   - **`http_urls`**: Refer to _[#/definitions/cache_http_urls](#definitions/cache_http_urls)_.
   - **`tiles_url`** _(string)_: The template tiles URL on S3, the argument can be region, bucket and folder (default is 'http://s3-{region}.amazonaws.com/{bucket}/{folder}').
   - **`host`** _(string)_: The S3 host, default is 's3-eu-west-1.amazonaws.com'.
-  - **`bucket`** _(string)_: The S3 bucker name.
+  - **`bucket`** _(string, required)_: The S3 bucker name.
   - **`region`**: Refer to _[#/definitions/aws_region](#definitions/aws_region)_.
   - **`cache_control`** _(string)_: The Cache-Control used to store tiles on S3.
   - **`folder`**: Refer to _[#/definitions/cache_folder](#definitions/cache_folder)_.
@@ -85,7 +85,7 @@
   - **`hosts`**: Refer to _[#/definitions/cache_hosts](#definitions/cache_hosts)_.
   - **`http_urls`**: Refer to _[#/definitions/cache_http_urls](#definitions/cache_http_urls)_.
   - **`folder`**: Refer to _[#/definitions/cache_folder](#definitions/cache_folder)_.
-  - **`container`** _(string)_: The Azure container name.
+  - **`container`** _(string, required)_: The Azure container name.
   - **`cache_control`** _(string)_: The Cache-Control used to store tiles on Azure.
 - <a id="definitions/cache_mbtiles"></a>**`cache_mbtiles`** _(object)_: Can contain additional properties.
   - **Additional Properties** _(string)_
@@ -127,15 +127,15 @@
 - <a id="definitions/layer_dimensions"></a>**`layer_dimensions`** _(array)_: The WMTS dimensions.
   - **Items** _(object)_: Cannot contain additional properties.
     - **`name`**: Refer to _[#/definitions/layer_dimension_name](#definitions/layer_dimension_name)_.
-    - **`generate`** _(array)_: The values that should be generate.
+    - **`generate`** _(array, required)_: The values that should be generate.
       - **Items** _(string)_
-    - **`values`** _(array)_: The values present in the capabilities.
+    - **`values`** _(array, required)_: The values present in the capabilities.
       - **Items** _(string)_
-    - **`default`** _(string)_: The default value present in the capabilities.
+    - **`default`** _(string, required)_: The default value present in the capabilities.
 - <a id="definitions/layer_legends"></a>**`layer_legends`** _(array)_: The provided legend.
   - **Items** _(object)_: Cannot contain additional properties.
-    - **`mime_type`** _(string)_: The mime type used in the WMS request.
-    - **`href`** _(string)_: The URL of the legend image.
+    - **`mime_type`** _(string, required)_: The mime type used in the WMS request.
+    - **`href`** _(string, required)_: The URL of the legend image.
     - **`width`** _(string)_: The width of the legend image.
     - **`height`** _(string)_: The height of the legend image.
     - **`min_scale`** _(string)_: The max scale of the legend image.
@@ -148,16 +148,16 @@
 - <a id="definitions/layer_post_process"></a>**`layer_post_process`** _(string)_: Do an image post process after the empty hash check.
 - <a id="definitions/layer_geoms"></a>**`layer_geoms`** _(array)_: The geometries used to determine where we should create the tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-geomsql.
   - **Items** _(object)_: Cannot contain additional properties.
-    - **`connection`** _(string)_: The PostgreSQL connection string.
-    - **`sql`** _(string)_: The SQL query that get the geometry in geom e.g. 'the_geom AS geom FROM my_table'.
+    - **`connection`** _(string, required)_: The PostgreSQL connection string.
+    - **`sql`** _(string, required)_: The SQL query that get the geometry in geom e.g. 'the_geom AS geom FROM my_table'.
     - **`min_resolution`** _(number)_: The min resolution where the query is valid.
     - **`max_resolution`** _(number)_: The max resolution where the query is valid.
 - <a id="definitions/layer_empty_tile_detection"></a>**`layer_empty_tile_detection`** _(object)_: The rules used to detect the empty tiles, use `generate-tiles --get-hash` to get what we can use, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-hash. Cannot contain additional properties.
-  - **`size`** _(integer)_: The tile size.
-  - **`hash`** _(string)_: The tile hash.
+  - **`size`** _(integer, required)_: The tile size.
+  - **`hash`** _(string, required)_: The tile hash.
 - <a id="definitions/layer_empty_metatile_detection"></a>**`layer_empty_metatile_detection`** _(object)_: The rules used to detect the empty meta-tiles, use `generate-tiles --get-hash` to get what we can use, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-hash. Cannot contain additional properties.
-  - **`size`** _(integer)_: The meta-tile size.
-  - **`hash`** _(string)_: The meta-tile hash.
+  - **`size`** _(integer, required)_: The meta-tile size.
+  - **`hash`** _(string, required)_: The meta-tile hash.
 - <a id="definitions/layer_cost"></a>**`layer_cost`** _(object)_: The rules used to calculate the cost. Cannot contain additional properties.
   - **`tileonly_generation_time`** _(number)_: The time to generate a tile without meta-tile. Default: `40`.
   - **`tile_generation_time`** _(number)_: The time to generate a tile from the meta-tile. Default: `30`.
@@ -187,7 +187,7 @@
   - **`empty_tile_detection`**: Refer to _[#/definitions/layer_empty_tile_detection](#definitions/layer_empty_tile_detection)_.
   - **`empty_metatile_detection`**: Refer to _[#/definitions/layer_empty_metatile_detection](#definitions/layer_empty_metatile_detection)_.
   - **`cost`**: Refer to _[#/definitions/layer_cost](#definitions/layer_cost)_.
-  - **`url`** _(string)_: The WMS service URL.
+  - **`url`** _(string, required)_: The WMS service URL.
   - **`generate_salt`** _(boolean)_: Should generate a salt to drop the cache, default is False.
   - **`query_layers`** _(string)_: The layers use for query (To be used with the server).
   - **`info_formats`** _(array)_: The query info format.
@@ -235,7 +235,7 @@
     - : Refer to _[#/definitions/layer_mapnik](#definitions/layer_mapnik)_.
 - <a id="definitions/process"></a>**`process`** _(array)_: A command.
   - **Items** _(object)_: Cannot contain additional properties.
-    - **`cmd`** _(string)_: The shell command, available parameters: %(in)s, %(out)s, %(args)s, %(x)s, %(y)s, %(z)s.
+    - **`cmd`** _(string, required)_: The shell command, available parameters: %(in)s, %(out)s, %(args)s, %(x)s, %(y)s, %(z)s.
     - **`need_out`** _(boolean)_: The command will generate an output in a file, default is False. Default: `false`.
     - **`arg`** _(object)_: Used to build the %(args). Cannot contain additional properties.
       - **`default`** _(string)_: The arguments used by default.
@@ -308,7 +308,7 @@
   - **`sqs`** _(object)_: The SQS cost, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sqs (main configuration). Cannot contain additional properties.
     - **`request`** _(number)_: The cost of request in $ per 1 000 000 requests (main configuration). Default: `0.01`.
 - <a id="definitions/metadata"></a>**`metadata`** _(object)_: The configuration of the WMTS capabilities metadata. Cannot contain additional properties.
-  - **`title`** _(string)_: The title.
+  - **`title`** _(string, required)_: The title.
   - **`abstract`** _(string)_: The abstract.
   - **`servicetype`** _(string)_: The service type, default is 'OGC WMTS'. Default: `"OGC WMTS"`.
   - **`keywords`** _(array)_: The keywords.
@@ -333,10 +333,10 @@
         - **`country`** _(string)_: The country.
         - **`email`** _(string)_: The email.
 - <a id="definitions/logging"></a>**`logging`** _(object)_: The logging configuration to database, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#logging (main configuration). Cannot contain additional properties.
-  - **`database`** _(object)_: The database (main configuration). Cannot contain additional properties.
+  - **`database`** _(object, required)_: The database (main configuration). Cannot contain additional properties.
     - **`host`** _(string)_: The host (main configuration).
     - **`port`** _(integer)_: The port (main configuration), default is 5432. Default: `5432`.
-    - **`dbname`** _(string)_: The database name (main configuration).
-    - **`table`** _(string)_: The table name (main configuration).
-    - **`user`** _(string)_: The user name (main configuration).
-    - **`password`** _(string)_: The password (main configuration).
+    - **`dbname`** _(string, required)_: The database name (main configuration).
+    - **`table`** _(string, required)_: The table name (main configuration).
+    - **`user`** _(string, required)_: The user name (main configuration).
+    - **`password`** _(string, required)_: The password (main configuration).
