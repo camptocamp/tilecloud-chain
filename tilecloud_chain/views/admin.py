@@ -67,7 +67,6 @@ class Admin:
         server_config = config.config.get("server", {})
         main_config = self.gene.get_main_config()
         main_server_config = main_config.config.get("server", {})
-        print(self.request.identity)
         return {
             "auth_type": auth_type(self.request.registry.settings),
             "has_access": self.request.has_permission("admin", config.config.get("authentication", {})),
