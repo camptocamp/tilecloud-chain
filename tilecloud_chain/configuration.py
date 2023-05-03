@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Literal, Tuple, TypedDict, Union
 from typing_extensions import Required
 
 ADMIN_PATH_DEFAULT = "admin"
-"""Default value of the field path 'Server admin_path'"""
+""" Default value of the field path 'Server admin_path' """
 
 
 class Address(TypedDict, total=False):
@@ -125,27 +125,27 @@ pattern: ^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$
 
 
 CACHE_FOLDER_DEFAULT = ""
-"""Default value of the field path 'Cache filesystem folder'"""
+""" Default value of the field path 'cache_folder' """
 
 
 CENTER_X_DEFAULT = 2600000
-"""Default value of the field path 'OpenLayers center_x'"""
+""" Default value of the field path 'OpenLayers center_x' """
 
 
 CENTER_Y_DEFAULT = 1200000
-"""Default value of the field path 'OpenLayers center_y'"""
+""" Default value of the field path 'OpenLayers center_y' """
 
 
 CLOUDFRONT_DOWNLOAD_DEFAULT = 0.12
-"""Default value of the field path 'CloudFront cost download'"""
+""" Default value of the field path 'CloudFront cost download' """
 
 
 CLOUDFRONT_GET_DEFAULT = 0.009
-"""Default value of the field path 'CloudFront cost get'"""
+""" Default value of the field path 'CloudFront cost get' """
 
 
 COST_TILE_SIZE_DEFAULT = 20
-"""Default value of the field path 'Layer cost tile_size'"""
+""" Default value of the field path 'Layer cost tile_size' """
 
 
 Cache = Union["CacheFilesystem", "CacheS3", "CacheAzure", "CacheMbtiles", "CacheBsddb"]
@@ -257,7 +257,7 @@ The HTTP URL %host will be replaces by one of the hosts
 
 
 CacheHttpUrls = List[str]
-"""Cache HTTP URLs."""
+""" Cache HTTP URLs. """
 
 
 CacheMbtiles = Union[Dict[str, str], "CacheMbtilesTyped"]
@@ -431,10 +431,10 @@ class Contact(TypedDict, total=False):
     """
 
     name: str
-    """Name."""
+    """ Name. """
 
     position: str
-    """Position."""
+    """ Position. """
 
     info: "Info"
 
@@ -461,7 +461,7 @@ class Cost(TypedDict, total=False):
 
 
 DEFAULT_CACHE_DEFAULT = "default"
-"""Default value of the field path 'Generation default_cache'"""
+""" Default value of the field path 'Generation default_cache' """
 
 
 class Database(TypedDict, total=False):
@@ -525,19 +525,19 @@ class Database(TypedDict, total=False):
 
 
 EXPIRATION_DEFAULT = 28800
-"""Default value of the field path 'Redis expiration'"""
+""" Default value of the field path 'Redis expiration' """
 
 
 EXPIRES_DEFAULT = 8
-"""Default value of the field path 'Server expires'"""
+""" Default value of the field path 'Server expires' """
 
 
 GEOMETRIES_REDIRECT_DEFAULT = False
-"""Default value of the field path 'Server geoms_redirect'"""
+""" Default value of the field path 'Server geoms_redirect' """
 
 
 GITHUB_ACCESS_DEFAULT = "pull"
-"""Default value of the field path 'Authentication github_access_type'"""
+""" Default value of the field path 'Authentication github_access_type' """
 
 
 class Generation(TypedDict, total=False):
@@ -706,19 +706,19 @@ class Info(TypedDict, total=False):
 
 
 LAYER_META_BUFFER_DEFAULT = 128
-"""Default value of the field path 'Layer WMS meta_buffer'"""
+""" Default value of the field path 'Layer WMS meta_buffer' """
 
 
 LAYER_META_DEFAULT = False
-"""Default value of the field path 'Layer WMS meta'"""
+""" Default value of the field path 'layer_meta' """
 
 
 LAYER_META_SIZE_DEFAULT = 5
-"""Default value of the field path 'Layer WMS meta_size'"""
+""" Default value of the field path 'Layer WMS meta_size' """
 
 
 LAYER_PIXEL_BUFFER_DEFAULT = 0
-"""Default value of the field path 'Layer WMS px_buffer'"""
+""" Default value of the field path 'layer_px_buffer' """
 
 
 Layer = Union["LayerWms", "LayerMapnik"]
@@ -920,7 +920,7 @@ class LayerMapnik(TypedDict, total=False):
     type: Literal["mapnik"]
     title: "LayerTitle"
     grid: Required["LayerGrid"]
-    """Required property"""
+    """ Required property """
 
     bbox: "LayerBoundingBox"
     min_resolution_seed: "LayerMinResolutionSeed"
@@ -930,13 +930,13 @@ class LayerMapnik(TypedDict, total=False):
     meta_buffer: "LayerMetaBuffer"
     layers: "LayerLayers"
     wmts_style: Required["LayerWmtsStyle"]
-    """Required property"""
+    """ Required property """
 
     mime_type: Required["LayerMimeType"]
-    """Required property"""
+    """ Required property """
 
     extension: Required["LayerExtension"]
-    """Required property"""
+    """ Required property """
 
     dimensions: "LayerDimensions"
     legends: "LayerLegends"
@@ -1007,8 +1007,6 @@ LayerMetaBuffer = int
 Layer meta buffer.
 
 The meta-tiles buffer in pixels, default is 128
-
-default: 128
 """
 
 
@@ -1017,8 +1015,6 @@ LayerMetaSize = int
 Layer meta size.
 
 The meta-tile size in tiles, default is 5
-
-default: 5
 """
 
 
@@ -1080,7 +1076,7 @@ class LayerWms(TypedDict, total=False):
     type: Literal["wms"]
     title: "LayerTitle"
     grid: Required["LayerGrid"]
-    """Required property"""
+    """ Required property """
 
     bbox: "LayerBoundingBox"
     min_resolution_seed: "LayerMinResolutionSeed"
@@ -1089,16 +1085,16 @@ class LayerWms(TypedDict, total=False):
     meta_size: "LayerMetaSize"
     meta_buffer: "LayerMetaBuffer"
     layers: Required["LayerLayers"]
-    """Required property"""
+    """ Required property """
 
     wmts_style: Required["LayerWmtsStyle"]
-    """Required property"""
+    """ Required property """
 
     mime_type: Required["LayerMimeType"]
-    """Required property"""
+    """ Required property """
 
     extension: Required["LayerExtension"]
-    """Required property"""
+    """ Required property """
 
     dimensions: "LayerDimensions"
     legends: "LayerLegends"
@@ -1174,35 +1170,35 @@ class Logging(TypedDict, total=False):
     """
 
     database: Required["Database"]
-    """Required property"""
+    """ Required property """
 
 
 MAP_INITIAL_ZOOM_DEFAULT = 3
-"""Default value of the field path 'OpenLayers zoom'"""
+""" Default value of the field path 'OpenLayers zoom' """
 
 
 MATRIX_IDENTIFIER_DEFAULT = "zoom"
-"""Default value of the field path 'Grid matrix_identifier'"""
+""" Default value of the field path 'Grid matrix_identifier' """
 
 
 MAX_CONSECUTIVE_ERRORS_DEFAULT = 10
-"""Default value of the field path 'Generation maxconsecutive_errors'"""
+""" Default value of the field path 'Generation maxconsecutive_errors' """
 
 
 MAX_ERRORS_AGE_DEFAULT = 86400
-"""Default value of the field path 'Redis max_errors_age'"""
+""" Default value of the field path 'Redis max_errors_age' """
 
 
 MAX_ERRORS_NUMBER_DEFAULT = 100
-"""Default value of the field path 'Redis max_errors_nb'"""
+""" Default value of the field path 'Redis max_errors_nb' """
 
 
 MAX_RETRIES_DEFAULT = 5
-"""Default value of the field path 'Redis max_retries'"""
+""" Default value of the field path 'Redis max_retries' """
 
 
 META_TILE_GENERATION_TIME_DEFAULT = 30
-"""Default value of the field path 'Layer cost metatile_generation_time'"""
+""" Default value of the field path 'Layer cost metatile_generation_time' """
 
 
 MatrixIdentifier = Union[Literal["zoom"], Literal["resolution"]]
@@ -1274,11 +1270,11 @@ class Metadata(TypedDict, total=False):
 
 
 NEED_OUT_DEFAULT = False
-"""Default value of the field path 'Process command item need_out'"""
+""" Default value of the field path 'Process command item need_out' """
 
 
 NUMBER_PROCESS_DEFAULT = 1
-"""Default value of the field path 'Generation number_process'"""
+""" Default value of the field path 'Generation number_process' """
 
 
 class Openlayers(TypedDict, total=False):
@@ -1352,23 +1348,23 @@ OUTPUTFORMAT_GRID: Literal["grid"] = "grid"
 
 
 PENDING_COUNT_DEFAULT = 10
-"""Default value of the field path 'Redis pending_count'"""
+""" Default value of the field path 'Redis pending_count' """
 
 
 PENDING_MAX_COUNT_DEFAULT = 10000
-"""Default value of the field path 'Redis pending_max_count'"""
+""" Default value of the field path 'Redis pending_max_count' """
 
 
 PENDING_TIMEOUT_DEFAULT = 300
-"""Default value of the field path 'Redis pending_timeout'"""
+""" Default value of the field path 'Redis pending_timeout' """
 
 
 PORT_DEFAULT = 5432
-"""Default value of the field path 'Database port'"""
+""" Default value of the field path 'Database port' """
 
 
 PREFIX_DEFAULT = "tilecloud_cache"
-"""Default value of the field path 'Redis prefix'"""
+""" Default value of the field path 'Redis prefix' """
 
 
 class Phone(TypedDict, total=False):
@@ -1409,7 +1405,7 @@ class Provider(TypedDict, total=False):
     """
 
     name: str
-    """Name."""
+    """ Name. """
 
     url: str
     """
@@ -1422,15 +1418,15 @@ class Provider(TypedDict, total=False):
 
 
 QUEUE_DEFAULT = "tilecloud"
-"""Default value of the field path 'Redis queue'"""
+""" Default value of the field path 'Redis queue' """
 
 
 REQUEST_DEFAULT = 0.01
-"""Default value of the field path 'SQS cost request'"""
+""" Default value of the field path 'SQS cost request' """
 
 
 REQUEST_PER_LAYERS_DEFAULT = 10000000
-"""Default value of the field path 'Cost request_per_layers'"""
+""" Default value of the field path 'Cost request_per_layers' """
 
 
 class Redis(TypedDict, total=False):
@@ -1457,10 +1453,10 @@ class Redis(TypedDict, total=False):
     """
 
     connection_kwargs: Dict[str, Any]
-    """The Redis connection arguments (main configuration)"""
+    """ The Redis connection arguments (main configuration) """
 
     sentinel_kwargs: Dict[str, Any]
-    """The Redis sentinel arguments (main configuration)"""
+    """ The Redis sentinel arguments (main configuration) """
 
     service_name: str
     """
@@ -1479,7 +1475,7 @@ class Redis(TypedDict, total=False):
     """
 
     db: int
-    """Database."""
+    """ Database. """
 
     queue: str
     """
@@ -1617,35 +1613,35 @@ class S3Cost(TypedDict, total=False):
 
 
 S3_DOWNLOAD_DEFAULT = 0.12
-"""Default value of the field path 'S3 cost download'"""
+""" Default value of the field path 'S3 cost download' """
 
 
 S3_GET_DEFAULT = 0.01
-"""Default value of the field path 'S3 cost get'"""
+""" Default value of the field path 'S3 cost get' """
 
 
 S3_PUT_DEFAULT = 0.01
-"""Default value of the field path 'S3 cost put'"""
+""" Default value of the field path 'S3 cost put' """
 
 
 S3_STORAGE_DEFAULT = 0.125
-"""Default value of the field path 'S3 cost storage'"""
+""" Default value of the field path 'S3 cost storage' """
 
 
 SERVICE_NAME_DEFAULT = "mymaster"
-"""Default value of the field path 'Redis service_name'"""
+""" Default value of the field path 'Redis service_name' """
 
 
 SERVICE_TYPE_DEFAULT = "OGC WMTS"
-"""Default value of the field path 'Metadata servicetype'"""
+""" Default value of the field path 'Metadata servicetype' """
 
 
 SRS_DEFAULT = "EPSG:2056"
-"""Default value of the field path 'OpenLayers srs'"""
+""" Default value of the field path 'OpenLayers srs' """
 
 
 STATIC_PATH_DEFAULT = "static"
-"""Default value of the field path 'Server static_path'"""
+""" Default value of the field path 'Server static_path' """
 
 
 SentinelHost = str
@@ -1813,64 +1809,56 @@ class SqsCost(TypedDict, total=False):
 
 
 THE_PROJ4JS_DEFINITION_DEFAULT = "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"
-"""Default value of the field path 'OpenLayers proj4js_def'"""
+""" Default value of the field path 'OpenLayers proj4js_def' """
 
 
 TILE_GENERATION_TIME_DEFAULT = 30
-"""Default value of the field path 'Layer cost tile_generation_time'"""
+""" Default value of the field path 'Layer cost tile_generation_time' """
 
 
 TILE_ONLY_GENERATION_TIME_DEFAULT = 40
-"""Default value of the field path 'Layer cost tileonly_generation_time'"""
+""" Default value of the field path 'Layer cost tileonly_generation_time' """
 
 
 TILE_SIZE_DEFAULT = 256
-"""Default value of the field path 'Grid tile_size'"""
+""" Default value of the field path 'Grid tile_size' """
 
 
 TIMEOUT_DEFAULT = 5
-"""Default value of the field path 'Redis timeout'"""
+""" Default value of the field path 'Redis timeout' """
 
 
 UNIT_DEFAULT = "m"
-"""Default value of the field path 'Grid unit'"""
+""" Default value of the field path 'Grid unit' """
 
 
 WMTS_PATH_DEFAULT = "wmts"
-"""Default value of the field path 'Server wmts_path'"""
+""" Default value of the field path 'Server wmts_path' """
 
 
 _GenerateItem = str
-r"""pattern: ^[a-zA-Z0-9_\-\+~\.]+$"""
+r""" pattern: ^[a-zA-Z0-9_\-\+~\.]+$ """
 
 
 _HeadersAdditionalproperties = str
-"""The header value"""
+""" The header value """
 
 
 _LAYER_MAPNIK_LAYERS_DEFAULT = "__all__"
-"""Default value of the field path 'Layer Mapnik layers'"""
+""" Default value of the field path 'Layer Mapnik layers' """
 
 
 _LAYER_MAPNIK_META_BUFFER_DEFAULT = 0
-"""Default value of the field path 'Layer Mapnik meta_buffer'"""
+""" Default value of the field path 'Layer Mapnik meta_buffer' """
 
 
 _LAYER_MAPNIK_META_SIZE_DEFAULT = 1
-"""Default value of the field path 'Layer Mapnik meta_size'"""
-
-
-_LAYER_WMS_META_BUFFER_DEFAULT = 128
-"""Default value of the field path 'Layer WMS meta_buffer'"""
-
-
-_LAYER_WMS_META_SIZE_DEFAULT = 5
-"""Default value of the field path 'Layer WMS meta_size'"""
+""" Default value of the field path 'Layer Mapnik meta_size' """
 
 
 class _LayerDimensionsItem(TypedDict, total=False):
     name: Required["LayerDimensionName"]
-    """Required property"""
+    """ Required property """
 
     generate: Required[List["_GenerateItem"]]
     """
@@ -2001,11 +1989,11 @@ class _LayerLegendsItem(TypedDict, total=False):
 
 
 _LayersFieldsAdditionalproperties = List[str]
-"""The Mapnik layer fields"""
+""" The Mapnik layer fields """
 
 
 _ParametersAdditionalproperties = str
-"""The parameter value"""
+""" The parameter value """
 
 
 class _PredefinedCommandsItem(TypedDict, total=False):
@@ -2055,4 +2043,4 @@ additionalItems: False
 
 
 _ValuesItem = str
-r"""pattern: ^[a-zA-Z0-9_\-\+~\.]+$"""
+r""" pattern: ^[a-zA-Z0-9_\-\+~\.]+$ """

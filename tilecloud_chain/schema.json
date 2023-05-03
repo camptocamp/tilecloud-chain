@@ -777,10 +777,10 @@
       "description": "The layer definition, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-layers",
       "anyOf": [
         {
-          "$ref": "#definitions/layer_wms"
+          "$ref": "#/definitions/layer_wms"
         },
         {
-          "$ref": "#definitions/layer_mapnik"
+          "$ref": "#/definitions/layer_mapnik"
         }
       ]
     },

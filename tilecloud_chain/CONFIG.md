@@ -231,8 +231,8 @@
   - **`drop_empty_utfgrid`** _(boolean)_: Drop if the tile is empty, default is False.
 - <a id="definitions/layer"></a>**`layer`**: The layer definition, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-layers.
   - **Any of**
-    - : Refer to _[#definitions/layer_wms](#efinitions/layer_wms)_.
-    - : Refer to _[#definitions/layer_mapnik](#efinitions/layer_mapnik)_.
+    - : Refer to _[#/definitions/layer_wms](#definitions/layer_wms)_.
+    - : Refer to _[#/definitions/layer_mapnik](#definitions/layer_mapnik)_.
 - <a id="definitions/process"></a>**`process`** _(array)_: A command.
   - **Items** _(object)_: Cannot contain additional properties.
     - **`cmd`** _(string)_: The shell command, available parameters: %(in)s, %(out)s, %(args)s, %(x)s, %(y)s, %(z)s.
