@@ -74,14 +74,14 @@ waitress = "2.1.2"
 certifi = "2023.5.7"
 
 [tool.poetry.dev-dependencies]
-prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.9.0" }
+prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.10.2" }
 c2cwsgiutils = { version = "5.2.2", extras = ["test_images"] }
-scikit-image = { version = "0.20.0" }
+scikit-image = { version = "0.21.0" }
 pytest = "7.3.1"
 testfixtures = "7.1.0"
 coverage = "7.2.7"
 types-redis = "4.5.5.2"
-types-requests = "2.29.0.0"
+types-requests = "2.31.0.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version"]
