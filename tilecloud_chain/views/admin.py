@@ -143,7 +143,11 @@ class Admin:
                     )
                 }
 
-        final_command = [command, f"--config={self.gene.get_host_config_file(self.request.host)}"]
+        final_command = [
+            command,
+            f"--host={self.request.host}",
+            f"--config={self.gene.get_host_config_file(self.request.host)}",
+        ]
         if add_role:
             final_command += ["--role=master"]
         final_command += commands[1:]

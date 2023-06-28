@@ -40,6 +40,7 @@ from typing import (
 
 import boto3
 import botocore.client
+import c2cwsgiutils.pyramid_logging
 import c2cwsgiutils.setup_process
 import jsonschema_validator
 import psycopg2
@@ -104,6 +105,7 @@ def add_common_options(
         help="path to the configuration file",
         metavar="FILE",
     )
+    parser.add_argument("--host", help="the host name used in JSON logs")
     parser.add_argument(
         "--ignore-error",
         action="store_true",
@@ -334,6 +336,41 @@ class MissingErrorFileException(Exception):
     """Missing error file exception."""
 
 
+class LoggingInformation(TypedDict):
+    """Logging information."""
+
+    host: Optional[str]
+    layer: Optional[str]
+    meta_tilecoord: str
+
+
+LOGGING_CONTEXT: Dict[int, Dict[int, LoggingInformation]] = {}
+
+
+class JsonLogHandler(c2cwsgiutils.pyramid_logging.JsonLogHandler):
+    """Log to stdout in JSON."""
+
+    def __init__(self, stream: Optional[TextIO] = None):
+        super().__init__(stream)
+        self.addFilter(TileFilter())
+
+
+class TileFilter(logging.Filter):
+    """A logging filter that adds request information to CEE logs."""
+
+    def filter(self, record: Any) -> bool:
+        thread_id = threading.current_thread().native_id
+        assert thread_id is not None
+        log_info = LOGGING_CONTEXT.get(os.getpid(), {}).get(thread_id)
+
+        if log_info is not None:
+            record.tcc_host = log_info["host"]
+            record.tcc_layer = log_info["layer"]
+            record.tcc_meta_tilecoord = log_info["meta_tilecoord"]
+
+        return True
+
+
 class TileGeneration:
     """Base class of all the tile generation."""
 
@@ -541,10 +578,11 @@ class TileGeneration:
             logger.error("No provided configuration file")
             return DatedConfig({}, 0, "")
 
-    def get_hosts(self) -> Dict[str, str]:
+    def get_hosts(self, silent: bool = False) -> Dict[str, str]:
         file_path = pathlib.Path(os.environ["TILEGENERATION_HOSTSFILE"])
         if not file_path.exists():
-            logger.error("Missing hosts file %s", file_path)
+            if not silent:
+                logger.error("Missing hosts file %s", file_path)
             return {}
 
         if self.hosts_cache is not None and self.hosts_cache.mtime == file_path.stat().st_mtime:
@@ -1164,11 +1202,10 @@ class TileGeneration:
         assert tilecoords is not None
         layer = config.config["layers"][layer_name]
 
-        self.tilestream = self._tilestream(
-            tilecoords,
-            {"layer": layer_name, "config_file": config.file},
-            self.get_all_dimensions(layer),
-        )
+        metadata = {"layer": layer_name, "config_file": config.file}
+        if self.options.host is not None:
+            metadata["host"] = self.options.host
+        self.tilestream = self._tilestream(tilecoords, metadata, self.get_all_dimensions(layer))
 
     def set_store(self, store: TileStore) -> None:
         self.tilestream = cast(Iterator[Tile], store.list())
