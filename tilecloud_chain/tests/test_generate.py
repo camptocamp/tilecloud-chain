@@ -34,11 +34,11 @@ class TestGenerate(CompareCase):
                     cmd=".build/venv/bin/generate_tiles {} --get-hash 4/0/0 "
                     "-c tilegeneration/test.yaml -l point".format(d),
                     main_func=generate.main,
-                    expected="""Tile: 4/0/0:+8/+8 config_file=tilegeneration/test.yaml dimension_DATE=2012 layer=point
+                    expected="""Tile: 4/0/0:+8/+8 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=point
             empty_metatile_detection:
                 size: 20743
                 hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
-        Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 layer=point
+        Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=point
             empty_tile_detection:
                 size: 334
                 hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
@@ -112,11 +112,11 @@ class TestGenerate(CompareCase):
                     cmd=".build/venv/bin/generate_tiles {} "
                     "--get-hash 4/0/0 -c tilegeneration/test.yaml -l all".format(d),
                     main_func=generate.main,
-                    expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 layer=all
+                    expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=all
     empty_metatile_detection:
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
-    Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 layer=all
+    Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=all
     empty_tile_detection:
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
@@ -933,21 +933,30 @@ Size per tile: 4[0-9][0-9] o
             expected=[
                 [
                     "error.list",
-                    r"""# \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] """
-                    r"""Start the layer 'point_error' generation
-0/0/0:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] """
-                    r"""[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): """
-                    r"""WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
-                    r"""A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'
-0/0/8:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] """
-                    r"""[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): """
-                    r"""WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
-                    r"""A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'
-0/8/0:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] """
-                    r"""[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): """
-                    r"""WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. """
-                    r"""A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'
-""",
+                    "\n".join(
+                        [
+                            r"# \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] "
+                            r"Start the layer 'point_error' generation",
+                            r"0/0/0:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 "
+                            r"host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
+                            r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): "
+                            r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
+                            r"A layer might be disabled for this request\. Check wms/ows_enable_request "
+                            r"settings\.'",
+                            r"0/0/8:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 "
+                            r"host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
+                            r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): "
+                            r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
+                            r"A layer might be disabled for this request\. Check wms/ows_enable_request "
+                            r"settings\.'",
+                            r"0/8/0:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 "
+                            r"host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
+                            r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): "
+                            r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
+                            r"A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'",
+                            "",
+                        ]
+                    ),
                 ]
             ],
         )

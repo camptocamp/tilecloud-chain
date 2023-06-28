@@ -3,12 +3,14 @@ import sys
 import time
 
 import psycopg2.sql
-from c2cwsgiutils import stats
+from prometheus_client import Summary
 
 import tilecloud_chain.configuration
 from tilecloud import Tile
 
-logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
+
+_INSERT_SUMMARY = Summary("tilecloud_chain_database_logger", "Number of database inserts", ["layer"])
 
 
 class DatabaseLoggerCommon:
@@ -27,7 +29,7 @@ class DatabaseLoggerCommon:
                 )
                 break
             except psycopg2.OperationalError:
-                logger.warning("Failed connecting to the database. Will try again in 1s", exc_info=True)
+                _LOGGER.warning("Failed connecting to the database. Will try again in 1s", exc_info=True)
                 if daemon:
                     time.sleep(1)
                 else:
@@ -104,7 +106,7 @@ class DatabaseLogger(DatabaseLoggerCommon):
 
     def __call__(self, tile: Tile) -> Tile:
         if tile is None:
-            logger.warning("The tile is None")
+            _LOGGER.warning("The tile is None")
             return None
 
         if tile.error:
@@ -117,7 +119,7 @@ class DatabaseLogger(DatabaseLoggerCommon):
         layer = tile.metadata.get("layer", "- No layer -")
         run = tile.metadata.get("run", -1)
 
-        with stats.timer_context(["db_logger", "insert"]):
+        with _INSERT_SUMMARY.labels(layer).time():
             with self.connection.cursor() as cursor:
                 try:
                     cursor.execute(

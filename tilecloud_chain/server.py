@@ -537,7 +537,9 @@ class Server(Generic[Response]):
                     if meta_size != 1
                     else tile.tilecoord
                 )
-                if not layer_filter.filter_tilecoord(config, meta_tilecoord, params["LAYER"]):
+                if not layer_filter.filter_tilecoord(
+                    config, meta_tilecoord, params["LAYER"], host=self.get_host(**kwargs)
+                ):
                     return self._map_cache(config, layer, tile, kwargs)
 
             store = self.get_store(config, params["LAYER"])
@@ -636,6 +638,7 @@ class Server(Generic[Response]):
         **kwargs: Any,
     ) -> Response:
         """Build the error, should be implemented in a sub class."""
+
         raise NotImplementedError
 
     def response(
@@ -646,7 +649,14 @@ class Server(Generic[Response]):
         **kwargs: Any,
     ) -> Response:
         """Build the response, should be implemented in a sub class."""
+
         raise NotImplementedError
+
+    def get_host(self, **kwargs: Any) -> str:
+        """Get the host used in Prometheus stats and in the JSON logs, should be implemented in a sub class."""
+
+        del kwargs
+        return "localhost"
 
 
 if TYPE_CHECKING:
@@ -758,6 +768,11 @@ class PyramidServer(PyramidServerBase):
         else:
             request.response.body = data
         return request.response
+
+    def get_host(self, **kwargs: Any) -> str:
+        request: pyramid.request.Request = kwargs["request"]
+        assert isinstance(request.host, str)
+        return request.host
 
 
 pyramid_server = None

@@ -8,7 +8,7 @@ from copy import copy
 from hashlib import sha1
 from io import BytesIO, StringIO
 from math import exp, log
-from typing import List, Optional, Union, cast
+from typing import List, Literal, Optional, Union, cast
 from urllib.parse import urlencode, urljoin
 
 import botocore.exceptions
@@ -18,8 +18,8 @@ from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from bottle import jinja2_template
-from c2cwsgiutils import stats
 from PIL import Image
+from prometheus_client import Summary
 
 import tilecloud.store.redis
 import tilecloud.store.s3
@@ -33,17 +33,17 @@ from tilecloud_chain import (
     get_tile_matrix_identifier,
 )
 
-logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
+_GET_STATUS_SUMMARY = Summary("tilecloud_chain_get_status", "Number of get_stats", ["type", "queue"])
 
 
-def main() -> None:
+def main(args: Optional[List[str]] = None) -> None:
     """Generate the contextual file like the legends."""
     try:
-        stats.init_backends({})
         parser = ArgumentParser(
             description="Used to generate the contextual file like the capabilities, the legends, "
             "the OpenLayers example",
-            prog=sys.argv[0],
+            prog=args[0] if args else sys.argv[0],
         )
         add_common_options(parser, tile_pyramid=False, no_geom=False, default_config_file=True)
         parser.add_argument(
@@ -64,7 +64,7 @@ def main() -> None:
             help="Dump the used config with default values and exit",
         )
 
-        options = parser.parse_args()
+        options = parser.parse_args(args if args else sys.argv)
         gene = TileGeneration(options.config, options, layer_name=options.layer)
         assert gene.config_file
         config = gene.get_config(gene.config_file)
@@ -90,7 +90,7 @@ def main() -> None:
     except SystemExit:
         raise
     except:  # pylint: disable=bare-except
-        logger.exception("Exit with exception")
+        _LOGGER.exception("Exit with exception")
         if os.environ.get("TESTS", "false").lower() == "true":
             raise
         sys.exit(1)
@@ -186,7 +186,7 @@ def _validate_generate_wmts_capabilities(
     cache: tilecloud_chain.configuration.Cache, cache_name: str, exit_: bool
 ) -> bool:
     if "http_url" not in cache and "http_urls" not in cache:
-        logger.error(
+        _LOGGER.error(
             "The attribute 'http_url' or 'http_urls' is required in the object cache[%s].", cache_name
         )
         if exit_:
@@ -306,7 +306,7 @@ def _fill_legend(
                         new_legend["width"] = pil_img.size[0]
                         new_legend["height"] = pil_img.size[1]
                     except Exception:  # pragma: nocover
-                        logger.warning(
+                        _LOGGER.warning(
                             "Unable to read legend image '%s', with '%s'",
                             path,
                             repr(img),
@@ -349,7 +349,7 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                         try:
                             legends.append(Image.open(BytesIO(response.content)))
                         except Exception:  # pragma: nocover
-                            logger.warning(
+                            _LOGGER.warning(
                                 "Unable to read legend image for layer '%s'-'%s', resolution '%s': %s",
                                 layer_name,
                                 wmslayer,
@@ -394,9 +394,8 @@ def get_status(gene: TileGeneration) -> List[str]:
     """Get the tile generation status."""
     config = gene.get_main_config()
     store = get_queue_store(config, False)
-    prefix = "redis" if "redis" in config.config else "sqs"
-    conf = config.config["redis"] if "redis" in config.config else config.config["sqs"]
-    stats_prefix = [prefix, conf["queue"]]
-    with stats.timer_context(stats_prefix + ["get_stats"]):
+    type_: Union[Literal["redis"], Literal["sqs"]] = "redis" if "redis" in config.config else "sqs"
+    conf = config.config[type_]
+    with _GET_STATUS_SUMMARY.labels(type_, conf["queue"]).time():
         status_ = store.get_status()
     return [name + ": " + str(value) for name, value in status_.items()]
