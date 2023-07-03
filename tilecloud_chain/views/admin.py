@@ -25,13 +25,15 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+import io
 import json
 import logging
 import os
 import re
 import shlex
 import subprocess  # nosec
-from typing import Any, Dict
+import sys
+from typing import Any, Dict, List
 from urllib.parse import urljoin
 
 import pyramid.httpexceptions
@@ -41,6 +43,7 @@ from c2cwsgiutils.auth import AuthenticationType, auth_type, auth_view
 from pyramid.view import view_config
 
 import tilecloud_chain.server
+from tilecloud_chain import controller, generate
 from tilecloud_chain.controller import get_status
 
 LOG = logging.getLogger(__name__)
@@ -152,11 +155,45 @@ class Admin:
             final_command += ["--role=master"]
         final_command += commands[1:]
 
-        display_command = " ".join([shlex.quote(arg) for arg in final_command])
+        display_command = shlex.join(final_command)
         LOG.info("Run the command `%s`", display_command)
         env: Dict[str, str] = {}
         env.update(os.environ)
         env["FRONTEND"] = "noninteractive"
+
+        main = None
+        if final_command[0] in ["generate-tiles", "generate_tiles"]:
+            main = generate.main
+        elif final_command[0] in ["generate-controller", "generate_controller"]:
+            main = controller.main
+        if main is not None:
+            return_code = 0
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            original_stdout = sys.stdout
+            original_stderr = sys.stderr
+            try:
+                for key, value in env.items():
+                    os.environ[key] = value
+                sys.stdout = stdout
+                sys.stderr = stderr
+                main(final_command)
+            except Exception:
+                LOG.exception("Error while running the command `%s`", display_command)
+                return_code = 1
+            sys.stdout = original_stdout
+            sys.stderr = original_stderr
+            return {
+                "stdout": _format_output(
+                    "<br />".join(_parse_stdout(stdout.getvalue())),
+                    int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
+                ),
+                "stderr": _format_output(
+                    stderr.getvalue().replace("\n", "<br />"),
+                    int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
+                ),
+                "returncode": return_code,
+            }
 
         completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check
             final_command,
@@ -173,22 +210,10 @@ class Admin:
                 completed_process.stderr.decode(),
             )
 
-        stdout = []
-        for line in completed_process.stdout.decode().splitlines():
-            try:
-                json_message = json.loads(line)
-                msg = json_message["msg"]
-                if json_message.get("logger_name", "").startswith("tilecloud"):
-                    if "full_message" in json_message:
-                        full_message = json_message["full_message"].replace("\n", "<br />")
-                        msg += f"<br />{full_message}"
-                    stdout.append(msg)
-            except:  # pylint: disable=bare-except
-                stdout.append(line)
-
+        stdout_parsed = _parse_stdout(completed_process.stdout.decode())
         return {
             "stdout": _format_output(
-                "<br />".join(stdout),
+                "<br />".join(stdout_parsed),
                 int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
             ),
             "stderr": _format_output(
@@ -220,6 +245,22 @@ class Admin:
                 else "/",
             ),
         }
+
+
+def _parse_stdout(stdout: str) -> List[str]:
+    stdout_parsed = []
+    for line in stdout.splitlines():
+        try:
+            json_message = json.loads(line)
+            msg = json_message["msg"]
+            if json_message.get("logger_name", "").startswith("tilecloud"):
+                if "full_message" in json_message:
+                    full_message = json_message["full_message"].replace("\n", "<br />")
+                    msg += f"<br />{full_message}"
+                stdout_parsed.append(msg)
+        except:  # pylint: disable=bare-except
+            stdout_parsed.append(line)
+    return stdout_parsed
 
 
 def _format_output(string: str, max_length: int = 1000) -> str:

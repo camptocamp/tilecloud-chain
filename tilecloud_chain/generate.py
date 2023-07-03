@@ -7,10 +7,10 @@ import threading
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from getpass import getuser
-from typing import Callable, Optional, cast
+from typing import Callable, List, Optional, cast
 
 import boto3
-from c2cwsgiutils import stats
+import c2cwsgiutils.prometheus
 
 import tilecloud.filter.error
 import tilecloud_chain
@@ -37,7 +37,7 @@ from tilecloud_chain.format import default_int, duration_format, size_format
 from tilecloud_chain.multitilestore import MultiTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
-logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 class LogTilesContext:
@@ -166,7 +166,7 @@ class Generate:
                 print(f"Tile bounds: [{','.join([str(b) for b in bounds])}]")
                 sys.exit()
             except ValueError:
-                logger.exception(
+                _LOGGER.exception(
                     "Tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n",
                     self._options.get_bbox,
                 )
@@ -185,7 +185,7 @@ class Generate:
                 else:
                     self._gene.set_tilecoords(config, [TileCoord(z, x, y)], layer_name)
             except ValueError:
-                logger.exception("Tile '%s' is not in the format 'z/x/y'", self._options.get_hash)
+                _LOGGER.exception("Tile '%s' is not in the format 'z/x/y'", self._options.get_hash)
                 sys.exit(1)
 
     def _generate_tiles(self) -> None:
@@ -202,7 +202,7 @@ class Generate:
         self._gene.get(
             TimedTileStoreWrapper(
                 MultiTileStore(TilestoreGetter(self)),
-                stats_name="get",
+                store_name="get",
             ),
             "Get tile",
         )
@@ -239,7 +239,7 @@ class Generate:
 
         # Split the metatile image into individual tiles
         self._gene.add_metatile_splitter()
-        self._gene.imap(Logger(logger, logging.INFO, "%(tilecoord)s, %(formated_metadata)s"))
+        self._gene.imap(Logger(_LOGGER, logging.INFO, "%(tilecoord)s, %(formated_metadata)s"))
 
         if self._count_tiles is not None:
             self._gene.imap(self._count_tiles)
@@ -454,7 +454,7 @@ class TilestoreGetter:
                 )
             except ImportError:
                 if os.environ.get("CI", "FALSE") == "FALSE":  # pragma nocover
-                    logger.error("Mapnik is not available", exc_info=True)
+                    _LOGGER.error("Mapnik is not available", exc_info=True)
                 return None
 
             grid = config.config["grids"][layer["grid"]]
@@ -497,15 +497,16 @@ def detach() -> None:
             # exit parent
             sys.exit(0)
     except OSError as e:
-        logger.exception("fork #1 failed: %d (%s)", e.errno, e.strerror)
+        _LOGGER.exception("fork #1 failed: %d (%s)", e.errno, e.strerror)
         sys.exit(1)
 
 
-def main() -> None:
+def main(args: Optional[List[str]] = None) -> None:
     """Run the tiles generation."""
     try:
-        stats.init_backends({})
-        parser = ArgumentParser(description="Used to generate the tiles", prog=sys.argv[0])
+        parser = ArgumentParser(
+            description="Used to generate the tiles", prog=args[0] if args else sys.argv[0]
+        )
         add_common_options(parser, dimensions=True)
         parser.add_argument(
             "--get-hash", metavar="TILE", help="get the empty tiles hash, use the specified TILE z/x/y"
@@ -536,10 +537,14 @@ def main() -> None:
             help="Generate the tiles from a tiles file, use the format z/x/y, or z/x/y:+n/+n for metatiles",
         )
 
-        options = parser.parse_args()
+        options = parser.parse_args(args if args else sys.argv)
 
         if options.detach:
             detach()
+
+        if options.daemon:
+            c2cwsgiutils.prometheus.includeme(None)
+            c2cwsgiutils.prometheus.start()
 
         gene = TileGeneration(
             config_file=options.config or os.environ.get("TILEGENERATION_CONFIGFILE"),
@@ -554,7 +559,7 @@ def main() -> None:
             and "authorised_user" in gene.get_main_config().config.get("generation", {})
             and gene.get_main_config().config["generation"]["authorised_user"] != getuser()
         ):
-            logger.error(
+            _LOGGER.error(
                 "not authorized, authorized user is: %s.",
                 gene.get_main_config().config["generation"]["authorised_user"],
             )
@@ -567,7 +572,7 @@ def main() -> None:
                 options.cache = config.config["generation"]["default_cache"]
 
         if options.tiles is not None and options.role not in ["local", "master"]:
-            logger.error("The --tiles option work only with role local or master")
+            _LOGGER.error("The --tiles option work only with role local or master")
             sys.exit(1)
 
         try:
@@ -577,10 +582,10 @@ def main() -> None:
             elif options.layer:
                 generate.gene(options.layer)
             elif options.get_bbox:
-                logger.error("With --get-bbox option you need to specify a layer")
+                _LOGGER.error("With --get-bbox option you need to specify a layer")
                 sys.exit(1)
             elif options.get_hash:
-                logger.error("With --get-hash option you need to specify a layer")
+                _LOGGER.error("With --get-hash option you need to specify a layer")
                 sys.exit(1)
             else:
                 if options.config:
@@ -589,14 +594,14 @@ def main() -> None:
                     ):
                         generate.gene(layer)
         except tilecloud.filter.error.TooManyErrors:
-            logger.exception("Too many errors")
+            _LOGGER.exception("Too many errors")
             sys.exit(1)
         finally:
             gene.close()
     except SystemExit:
         raise
     except:  # pylint: disable=bare-except
-        logger.exception("Exit with exception")
+        _LOGGER.exception("Exit with exception")
         if os.environ.get("TESTS", "false").lower() == "true":
             raise
         sys.exit(1)
