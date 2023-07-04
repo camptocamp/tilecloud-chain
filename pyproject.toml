@@ -40,6 +40,8 @@ Pillow = "9.4.0"
 certifi = "2022.12.7"
 redis = "4.3.6"
 requests = "2.31.0"
+# Workaround to be able to do the lock file update
+urllib3 = "1.26.16"
 
 [tool.poetry.dev-dependencies]
 coverage = "6.3.3"
