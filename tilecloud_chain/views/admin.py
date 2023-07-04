@@ -170,6 +170,7 @@ class Admin:
             return_code = 0
             stdout = io.StringIO()
             stderr = io.StringIO()
+            _LOG.debug("Replace the stdout and stderr")
             original_stdout = sys.stdout
             original_stderr = sys.stderr
             try:
@@ -177,12 +178,14 @@ class Admin:
                     os.environ[key] = value
                 sys.stdout = stdout
                 sys.stderr = stderr
+                _LOG.debug("Running the command `%s` using the function directly", display_command)
                 main(final_command)
             except Exception:
                 _LOG.exception("Error while running the command `%s`", display_command)
                 return_code = 1
             sys.stdout = original_stdout
             sys.stderr = original_stderr
+            _LOG.debug("Restore the original stdout and stderr")
             return {
                 "stdout": _format_output(
                     "<br />".join(_parse_stdout(stdout.getvalue())),
