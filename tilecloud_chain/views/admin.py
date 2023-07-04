@@ -28,12 +28,13 @@
 import io
 import json
 import logging
+import multiprocessing
 import os
 import re
 import shlex
 import subprocess  # nosec
 import sys
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 from urllib.parse import urljoin
 
 import pyramid.httpexceptions
@@ -167,36 +168,13 @@ class Admin:
         elif final_command[0] in ["generate-controller", "generate_controller"]:
             main = controller.main
         if main is not None:
-            return_code = 0
-            stdout = io.StringIO()
-            stderr = io.StringIO()
-            _LOG.debug("Replace the stdout and stderr")
-            original_stdout = sys.stdout
-            original_stderr = sys.stderr
-            try:
-                for key, value in env.items():
-                    os.environ[key] = value
-                sys.stdout = stdout
-                sys.stderr = stderr
-                _LOG.debug("Running the command `%s` using the function directly", display_command)
-                main(final_command)
-            except Exception:
-                _LOG.exception("Error while running the command `%s`", display_command)
-                return_code = 1
-            sys.stdout = original_stdout
-            sys.stderr = original_stderr
-            _LOG.debug("Restore the original stdout and stderr")
-            return {
-                "stdout": _format_output(
-                    "<br />".join(_parse_stdout(stdout.getvalue())),
-                    int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
-                ),
-                "stderr": _format_output(
-                    stderr.getvalue().replace("\n", "<br />"),
-                    int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
-                ),
-                "returncode": return_code,
-            }
+            return_dict: Dict[str, Any] = {}
+            proc = multiprocessing.Process(
+                target=_run_in_process, args=(final_command, env, main, return_dict)
+            )
+            proc.start()
+            proc.join()
+            return return_dict
 
         completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check
             final_command,
@@ -308,3 +286,40 @@ def _format_output(string: str, max_length: int = 1000) -> str:
     if len(string) > max_length:
         return string[: max_length - 3] + "\n..."
     return string
+
+
+def _run_in_process(
+    final_command: List[str],
+    env: Dict[str, str],
+    main: Callable[[List[str]], Any],
+    return_dict: Dict[str, Any],
+) -> None:
+    display_command = shlex.join(final_command)
+    return_code = 0
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+    _LOG.debug("Replace the stdout and stderr")
+    original_stdout = sys.stdout
+    original_stderr = sys.stderr
+    try:
+        for key, value in env.items():
+            os.environ[key] = value
+        sys.stdout = stdout
+        sys.stderr = stderr
+        _LOG.debug("Running the command `%s` using the function directly", display_command)
+        main(final_command)
+    except Exception:
+        _LOG.exception("Error while running the command `%s`", display_command)
+        return_code = 1
+    sys.stdout = original_stdout
+    sys.stderr = original_stderr
+    _LOG.debug("Restore the original stdout and stderr")
+    return_dict["stdout"] = _format_output(
+        "<br />".join(_parse_stdout(stdout.getvalue())),
+        int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
+    )
+    return_dict["stderr"] = _format_output(
+        stderr.getvalue().replace("\n", "<br />"),
+        int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
+    )
+    return_dict["returncode"] = return_code
