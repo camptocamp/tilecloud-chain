@@ -537,7 +537,7 @@ def main(args: Optional[List[str]] = None) -> None:
             help="Generate the tiles from a tiles file, use the format z/x/y, or z/x/y:+n/+n for metatiles",
         )
 
-        options = parser.parse_args(args if args else sys.argv)
+        options = parser.parse_args(args[1:] if args else sys.argv[1:])
 
         if options.detach:
             detach()
