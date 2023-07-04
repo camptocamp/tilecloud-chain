@@ -76,6 +76,8 @@ cryptography = "41.0.1"
 sentry-sdk = "1.14.0"
 redis = "4.4.4"
 requests = "2.31.0"
+# Workaround to be able to do the lock file update
+urllib3 = "1.26.16"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.8.4" }
