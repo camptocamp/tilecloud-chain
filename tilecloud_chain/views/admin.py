@@ -46,7 +46,7 @@ import tilecloud_chain.server
 from tilecloud_chain import controller, generate
 from tilecloud_chain.controller import get_status
 
-LOG = logging.getLogger(__name__)
+_LOG = logging.getLogger(__name__)
 
 
 class Admin:
@@ -156,7 +156,7 @@ class Admin:
         final_command += commands[1:]
 
         display_command = shlex.join(final_command)
-        LOG.info("Run the command `%s`", display_command)
+        _LOG.info("Run the command `%s`", display_command)
         env: Dict[str, str] = {}
         env.update(os.environ)
         env["FRONTEND"] = "noninteractive"
@@ -179,7 +179,7 @@ class Admin:
                 sys.stderr = stderr
                 main(final_command)
             except Exception:
-                LOG.exception("Error while running the command `%s`", display_command)
+                _LOG.exception("Error while running the command `%s`", display_command)
                 return_code = 1
             sys.stdout = original_stdout
             sys.stderr = original_stderr
@@ -202,7 +202,7 @@ class Admin:
         )
 
         if completed_process.returncode != 0:
-            LOG.warning(
+            _LOG.warning(
                 "The command `%s` exited with an error code: %s\nstdout:\n%s\nstderr:\n%s",
                 display_command,
                 completed_process.returncode,
