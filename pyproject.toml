@@ -59,7 +59,7 @@ main = "tilecloud_chain.server:main"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-c2cwsgiutils = { version = "6.0.0.dev93", extras = ["standard", "broadcast", "oauth2"] }
+c2cwsgiutils = { version = "6.0.0.dev113", extras = ["standard", "broadcast", "oauth2"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.8.2"
 tilecloud = { version = "1.10.0", extras = ["azure", "aws", "redis", "wsgi"] }
@@ -73,11 +73,11 @@ azure-storage-blob = "12.16.0"
 waitress = "2.1.2"
 certifi = "2023.5.7"
 # Workaround to be able to do the lock file update
-urllib3 = "1.26.15"
+urllib3 = "1.26.16"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.10.2" }
-c2cwsgiutils = { version = "6.0.0.dev93", extras = ["test_images"] }
+c2cwsgiutils = { version = "6.0.0.dev113", extras = ["test_images"] }
 scikit-image = { version = "0.21.0" }
 pytest = "7.4.0"
 testfixtures = "7.1.0"
