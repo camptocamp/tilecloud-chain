@@ -64,7 +64,7 @@ def main(args: Optional[List[str]] = None) -> None:
             help="Dump the used config with default values and exit",
         )
 
-        options = parser.parse_args(args if args else sys.argv)
+        options = parser.parse_args(args[1:] if args else sys.argv[1:])
         gene = TileGeneration(options.config, options, layer_name=options.layer)
         assert gene.config_file
         config = gene.get_config(gene.config_file)
