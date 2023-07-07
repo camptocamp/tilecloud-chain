@@ -78,6 +78,7 @@ redis = "4.4.4"
 requests = "2.31.0"
 # Workaround to be able to do the lock file update
 urllib3 = "1.26.16"
+scipy = "1.10.0rc1"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.8.4" }
