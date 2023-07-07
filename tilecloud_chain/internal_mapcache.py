@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import struct
+import sys
 import threading
 from typing import TYPE_CHECKING, Any, Dict, Iterator, Optional, TypeVar, cast
 
@@ -137,6 +138,7 @@ class Generator:
                 None,
             ),
             tilegeneration,
+            out=sys.stdout,
             server=True,
         )
         generator._generate_tiles()

@@ -135,20 +135,12 @@
             })
             .then((data) => {
               if (data.error) {
-                $('#result').html(`<p class="alert alert-danger" role="alert">${'$'}{data.error}</p>`);
+                $('#result').html(`<p class="alert alert-danger" role="alert">${'$'}{data.out}</p>`);
               } else {
-                if (data.returncode == 0) {
-                  if (data['stdout'] || data['stderr']) {
-                    $('#result').html(
-                      `<p class="alert alert-success" role="alert">${'$'}{data.stdout}${'$'}{data.stderr}</p>`
-                    );
-                  } else {
-                    $('#result').html(`<p class="alert alert-success" role="alert">Success</p>`);
-                  }
+                if (data['out']) {
+                  $('#result').html(`<p class="alert alert-success" role="alert">${'$'}{data.out}</p>`);
                 } else {
-                  $('#result').html(
-                    `<p class="alert alert-danger" role="alert">Return code: ${'$'}{data.returncode}<br/>${'$'}{data.stdout}<br/>${'$'}{data.stderr}</p>`
-                  );
+                  $('#result').html(`<p class="alert alert-success" role="alert">Success</p>`);
                 }
               }
             })

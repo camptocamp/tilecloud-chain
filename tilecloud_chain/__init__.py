@@ -23,6 +23,7 @@ from io import BytesIO
 from itertools import product
 from math import ceil, sqrt
 from typing import (
+    IO,
     TYPE_CHECKING,
     Any,
     Callable,
@@ -1470,8 +1471,9 @@ class MultiAction:
 class HashLogger:
     """Log the tile size and hash."""
 
-    def __init__(self, block: str) -> None:
+    def __init__(self, block: str, out: Optional[IO[str]]) -> None:
         self.block = block
+        self.out = out
 
     def __call__(self, tile: Tile) -> Tile:
         ref = None
@@ -1494,7 +1496,8 @@ class HashLogger:
             f"""Tile: {tile.tilecoord} {tile.formated_metadata}
     {self.block}:
         size: {len(tile.data)}
-        hash: {sha1(tile.data).hexdigest()}"""  # nosec
+        hash: {sha1(tile.data).hexdigest()}""",  # nosec
+            file=self.out,
         )
         return tile
 

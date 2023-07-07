@@ -8,7 +8,7 @@ from copy import copy
 from hashlib import sha1
 from io import BytesIO, StringIO
 from math import exp, log
-from typing import List, Literal, Optional, Union, cast
+from typing import IO, List, Literal, Optional, Union, cast
 from urllib.parse import urlencode, urljoin
 
 import botocore.exceptions
@@ -37,8 +37,11 @@ _LOGGER = logging.getLogger(__name__)
 _GET_STATUS_SUMMARY = Summary("tilecloud_chain_get_status", "Number of get_stats", ["type", "queue"])
 
 
-def main(args: Optional[List[str]] = None) -> None:
+def main(args: Optional[List[str]] = None, out: Optional[IO[str]] = None) -> None:
     """Generate the contextual file like the legends."""
+
+    del out
+
     try:
         parser = ArgumentParser(
             description="Used to generate the contextual file like the capabilities, the legends, "
@@ -79,9 +82,9 @@ def main(args: Optional[List[str]] = None) -> None:
         if options.dump_config:
             _validate_generate_wmts_capabilities(config.config["caches"][options.cache], options.cache, True)
             yaml = ruamel.yaml.YAML()
-            out = StringIO()
-            yaml.dump(config.config, out)
-            print(out.getvalue())
+            yaml_out = StringIO()
+            yaml.dump(config.config, yaml_out)
+            print(yaml_out.getvalue())
             sys.exit(0)
 
         if options.legends:

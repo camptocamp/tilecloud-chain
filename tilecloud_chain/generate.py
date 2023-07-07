@@ -7,7 +7,7 @@ import threading
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from getpass import getuser
-from typing import Callable, List, Optional, cast
+from typing import IO, Callable, List, Optional, cast
 
 import boto3
 import c2cwsgiutils.prometheus
@@ -59,7 +59,9 @@ class LogTilesContext:
 class Generate:
     """Generate the tiles, generate the queue, ..."""
 
-    def __init__(self, options: Namespace, gene: TileGeneration, server: bool = False) -> None:
+    def __init__(
+        self, options: Namespace, gene: TileGeneration, out: Optional[IO[str]], server: bool = False
+    ) -> None:
         self._count_metatiles: Optional[Count] = None
         self._count_metatiles_dropped: Optional[Count] = None
         self._count_tiles: Optional[Count] = None
@@ -69,6 +71,7 @@ class Generate:
         self._cache_tilestore: Optional[TileStore] = None
         self._options = options
         self._gene = gene
+        self.out = out
 
         if getattr(self._options, "get_hash", None) is not None:
             self._options.role = "hash"
@@ -163,7 +166,7 @@ class Generate:
             try:
                 tilecoord = parse_tilecoord(self._options.get_bbox)
                 bounds = default_int(self._gene.get_grid(config, layer["grid"]).extent(tilecoord))
-                print(f"Tile bounds: [{','.join([str(b) for b in bounds])}]")
+                print(f"Tile bounds: [{','.join([str(b) for b in bounds])}]", file=self.out)
                 sys.exit()
             except ValueError:
                 _LOGGER.exception(
@@ -224,7 +227,7 @@ class Generate:
             self._gene.init(daemon=self._options.daemon)
 
         if self._options.role == "hash":
-            self._gene.imap(HashLogger("empty_metatile_detection"))
+            self._gene.imap(HashLogger("empty_metatile_detection", self.out))
         elif not self._options.near:
             assert self._count_metatiles_dropped is not None
             self._gene.imap(MultiAction(HashDropperGetter(self, True, self._count_metatiles_dropped)))
@@ -247,7 +250,7 @@ class Generate:
         self._gene.process(key="pre_hash_post_process")
 
         if self._options.role == "hash":
-            self._gene.imap(HashLogger("empty_tile_detection"))
+            self._gene.imap(HashLogger("empty_tile_detection", self.out))
         elif not self._options.near:
             assert self._count_tiles_dropped is not None
             self._gene.imap(MultiAction(HashDropperGetter(self, False, self._count_tiles_dropped)))
@@ -384,7 +387,7 @@ class Generate:
                         )
 
             if not self._options.quiet and self._options.role in ("local", "slave", "master") and message:
-                print("\n".join(message) + "\n")
+                print("\n".join(message) + "\n", file=self.out)
 
         if self._cache_tilestore is not None and hasattr(self._cache_tilestore, "connection"):
             self._cache_tilestore.connection.close()
@@ -501,7 +504,7 @@ def detach() -> None:
         sys.exit(1)
 
 
-def main(args: Optional[List[str]] = None) -> None:
+def main(args: Optional[List[str]] = None, out: Optional[IO[str]] = None) -> None:
     """Run the tiles generation."""
     try:
         parser = ArgumentParser(
@@ -576,7 +579,7 @@ def main(args: Optional[List[str]] = None) -> None:
             sys.exit(1)
 
         try:
-            generate = Generate(options, gene)
+            generate = Generate(options, gene, out)
             if options.role == "slave":
                 generate.gene()
             elif options.layer:
