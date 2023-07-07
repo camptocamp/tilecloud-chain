@@ -33,8 +33,7 @@ import os
 import re
 import shlex
 import subprocess  # nosec
-import sys
-from typing import Any, Callable, Dict, List
+from typing import IO, Any, Callable, Dict, List
 from urllib.parse import urljoin
 
 import pyramid.httpexceptions
@@ -192,16 +191,18 @@ class Admin:
             )
 
         stdout_parsed = _parse_stdout(completed_process.stdout.decode())
-        return {
-            "stdout": _format_output(
-                "<br />".join(stdout_parsed),
-                int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
-            ),
-            "stderr": _format_output(
+        out = _format_output(
+            "<br />".join(stdout_parsed),
+            int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
+        )
+        if completed_process.stderr:
+            out += "<br />Error:<br />" + _format_output(
                 completed_process.stderr.decode().replace("\n", "<br />"),
                 int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
-            ),
-            "returncode": completed_process.returncode,
+            )
+        return {
+            "out": out,
+            "error": completed_process.returncode != 0,
         }
 
     @view_config(route_name="admin_test", renderer="tilecloud_chain:templates/openlayers.html")  # type: ignore
@@ -291,35 +292,22 @@ def _format_output(string: str, max_length: int = 1000) -> str:
 def _run_in_process(
     final_command: List[str],
     env: Dict[str, str],
-    main: Callable[[List[str]], Any],
+    main: Callable[[List[str], IO[str]], Any],
     return_dict: Dict[str, Any],
 ) -> None:
     display_command = shlex.join(final_command)
-    return_code = 0
-    stdout = io.StringIO()
-    stderr = io.StringIO()
-    _LOG.debug("Replace the stdout and stderr")
-    original_stdout = sys.stdout
-    original_stderr = sys.stderr
+    error = False
+    out = io.StringIO()
     try:
         for key, value in env.items():
             os.environ[key] = value
-        sys.stdout = stdout
-        sys.stderr = stderr
         _LOG.debug("Running the command `%s` using the function directly", display_command)
-        main(final_command)
+        main(final_command, out)
     except Exception:
         _LOG.exception("Error while running the command `%s`", display_command)
-        return_code = 1
-    sys.stdout = original_stdout
-    sys.stderr = original_stderr
-    _LOG.debug("Restore the original stdout and stderr")
-    return_dict["stdout"] = _format_output(
-        "<br />".join(_parse_stdout(stdout.getvalue())),
+        error = True
+    return_dict["out"] = _format_output(
+        "<br />".join(_parse_stdout(out.getvalue())),
         int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
     )
-    return_dict["stderr"] = _format_output(
-        stderr.getvalue().replace("\n", "<br />"),
-        int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
-    )
-    return_dict["returncode"] = return_code
+    return_dict["error"] = error
