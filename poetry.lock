@@ -231,13 +231,13 @@ virtualenv = ["virtualenv (>=20.0.35)"]
 
 [[package]]
 name = "c2cwsgiutils"
-version = "6.0.0.dev116"
+version = "6.0.0.dev122"
 description = "Common utilities for Camptocamp WSGI applications"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "c2cwsgiutils-6.0.0.dev116-py3-none-any.whl", hash = "sha256:b147fadd2e91ada0491d7a400e21ea2b9fae6dd204d3ab7ad7a9b7e5894391a8"},
-    {file = "c2cwsgiutils-6.0.0.dev116.tar.gz", hash = "sha256:1fa5e4bc61dc5495c78656a1624483e08da56ec5620bd1d9998f8b8c130cefcd"},
+    {file = "c2cwsgiutils-6.0.0.dev122-py3-none-any.whl", hash = "sha256:2cadea0b6d377028c61c737a67a5b2dc6d8aceb6df5cd3c008b48a703e8dacf2"},
+    {file = "c2cwsgiutils-6.0.0.dev122.tar.gz", hash = "sha256:5b743c92c7b9d4377ee2044cba6feb99205389f67f2f9ab931730ea4a464d5c9"},
 ]
 
 [package.dependencies]
@@ -3002,13 +3002,13 @@ cryptography = ">=35.0.0"
 
 [[package]]
 name = "types-redis"
-version = "4.6.0.1"
+version = "4.6.0.2"
 description = "Typing stubs for redis"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-redis-4.6.0.1.tar.gz", hash = "sha256:1254d525de7a45e2efaacb6969e67ad1dd5cc359a092022200583a3f04868669"},
-    {file = "types_redis-4.6.0.1-py3-none-any.whl", hash = "sha256:88ceb79c27f2084ad6f0b8514f8fcd8a740811f07c25f3fef5c9e843fc6c60a2"},
+    {file = "types-redis-4.6.0.2.tar.gz", hash = "sha256:d0efcd96f65fd2036437c29d8c12566cfdc549345d73eddacb0488b81aff9f9e"},
+    {file = "types_redis-4.6.0.2-py3-none-any.whl", hash = "sha256:a98f3386f44d045057696f3efc8869c53dda0060610e0fe3d8a4d391e2a8916a"},
 ]
 
 [package.dependencies]
@@ -3370,4 +3370,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "5eb32dc56747c7ff46bbd65d9ed3eac8c7221056b7693520258a51bf58a9347b"
+content-hash = "17668b93c524f7217ad413131eb66c552dbe97b2df3fd5051f631b39a9628ff6"
