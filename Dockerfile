@@ -141,5 +141,9 @@ RUN --mount=type=cache,target=/root/.cache \
 
 ENV TILEGENERATION_MAIN_CONFIGFILE=
 
+RUN mkdir -p /prometheus-metrics \
+    && chmod a+rwx /prometheus-metrics
+ENV PROMETHEUS_MULTIPROC_DIR=/prometheus-metrics
+
 # Set runner as final
 FROM runner
