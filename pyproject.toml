@@ -64,7 +64,7 @@ pyramid-mako = "1.1.0"
 python-dateutil = "2.8.2"
 tilecloud = { version = "1.9.3", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.2"
-PyYAML = "6.0"
+PyYAML = "6.0.1"
 Shapely = "2.0.1"
 jsonschema = "4.17.3"
 pyramid = "2.0.1"
@@ -78,7 +78,7 @@ redis = "4.4.4"
 requests = "2.31.0"
 # Workaround to be able to do the lock file update
 urllib3 = "1.26.16"
-scipy = "1.10.0rc1"
+scipy = "1.10.1"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.8.4" }
