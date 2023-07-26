@@ -37,7 +37,7 @@ mako = "1.2.4"
 oauthlib = "3.2.2"
 cryptography = "41.0.2"
 Pillow = "9.4.0"
-certifi = "2022.12.7"
+certifi = "2023.7.22"
 redis = "4.3.6"
 requests = "2.31.0"
 # Workaround to be able to do the lock file update
