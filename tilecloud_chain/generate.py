@@ -10,7 +10,7 @@ from getpass import getuser
 from typing import IO, Callable, List, Optional, cast
 
 import boto3
-import c2cwsgiutils.prometheus
+import prometheus_client
 
 import tilecloud.filter.error
 import tilecloud_chain
@@ -545,9 +545,8 @@ def main(args: Optional[List[str]] = None, out: Optional[IO[str]] = None) -> Non
         if options.detach:
             detach()
 
-        if options.daemon:
-            c2cwsgiutils.prometheus.includeme(None)
-            c2cwsgiutils.prometheus.start()
+        if options.daemon and "C2C_PROMETHEUS_PORT" in os.environ:
+            prometheus_client.start_http_server(int(os.environ["C2C_PROMETHEUS_PORT"]))
 
         gene = TileGeneration(
             config_file=options.config or os.environ.get("TILEGENERATION_CONFIGFILE"),
