@@ -110,6 +110,10 @@ RUN --mount=type=cache,target=/root/.cache \
     && mv docker/run /usr/bin/ \
     && python3 -m compileall -q /app/tilecloud_chain
 
+RUN mkdir -p /prometheus-metrics \
+    && chmod a+rwx /prometheus-metrics
+ENV PROMETHEUS_MULTIPROC_DIR=/prometheus-metrics
+
 # Do the lint, used by the tests
 FROM base as tests
 
@@ -140,10 +144,6 @@ RUN --mount=type=cache,target=/root/.cache \
     && python3 -m pip freeze > /requirements.txt
 
 ENV TILEGENERATION_MAIN_CONFIGFILE=
-
-RUN mkdir -p /prometheus-metrics \
-    && chmod a+rwx /prometheus-metrics
-ENV PROMETHEUS_MULTIPROC_DIR=/prometheus-metrics
 
 # Set runner as final
 FROM runner
