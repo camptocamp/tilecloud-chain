@@ -1288,7 +1288,6 @@ class TileGeneration:
 
     def consume(self, test: Optional[int] = None) -> None:
         assert self.tilestream is not None
-        assert threading.active_count() == 1, ", ".join([str(t) for t in threading.enumerate()])
 
         test = self.options.test if test is None else test
 
