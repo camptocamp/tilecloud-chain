@@ -435,19 +435,22 @@ class TilestoreGetter:
                 params["SALT"] = str(random.randint(0, 999999))  # nosec
 
             # Get the metatile image from the WMS server
-            return URLTileStore(
-                tilelayouts=(
-                    WMSTileLayout(
-                        url=layer["url"],
-                        layers=layer["layers"],
-                        srs=config.config["grids"][layer["grid"]]["srs"],
-                        format=layer["mime_type"],
-                        border=layer["meta_buffer"] if layer["meta"] else 0,
-                        tilegrid=self.gene._gene.get_grid(config, layer["grid"]),
-                        params=params,
+            return TimedTileStoreWrapper(
+                URLTileStore(
+                    tilelayouts=(
+                        WMSTileLayout(
+                            url=layer["url"],
+                            layers=layer["layers"],
+                            srs=config.config["grids"][layer["grid"]]["srs"],
+                            format=layer["mime_type"],
+                            border=layer["meta_buffer"] if layer["meta"] else 0,
+                            tilegrid=self.gene._gene.get_grid(config, layer["grid"]),
+                            params=params,
+                        ),
                     ),
+                    headers=layer["headers"],
                 ),
-                headers=layer["headers"],
+                "wms",
             )
         elif layer["type"] == "mapnik":
             try:
