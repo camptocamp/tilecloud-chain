@@ -1671,12 +1671,14 @@ class Process:
 
                 if cmd["need_out"]:
                     os.close(fd_in)
+                    os.remove(name_in)
                     name_in = name_out
                     fd_in = fd_out
 
             with open(name_in, "rb") as file_out:
                 tile.data = file_out.read()
             os.close(fd_in)
+            os.remove(name_in)
 
         return tile
 
