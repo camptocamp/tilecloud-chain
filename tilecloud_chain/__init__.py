@@ -370,9 +370,9 @@ class TileFilter(logging.Filter):
     def filter(self, record: Any) -> bool:
         thread_id = threading.current_thread().native_id
         assert thread_id is not None
-        _LOGGER.debug("Ger process id %i in [%s]", os.getpid(), ", ".join([str(e) for e in LOGGING_CONTEXT]))
+        _LOGGER.debug("Get process id %i in [%s]", os.getpid(), ", ".join([str(e) for e in LOGGING_CONTEXT]))
         _LOGGER.debug(
-            "Ger thread id %i in [%s]",
+            "Get thread id %i in [%s]",
             thread_id,
             ", ".join([str(e) for e in LOGGING_CONTEXT.get(os.getpid(), {})]),
         )
