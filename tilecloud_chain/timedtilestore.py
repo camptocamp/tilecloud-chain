@@ -1,5 +1,5 @@
 import time
-from typing import Any, Iterable, Iterator, List, Optional, TypeVar, cast
+from typing import Any, Iterable, Iterator, Optional, TypeVar, cast
 
 from prometheus_client import Summary
 
@@ -7,30 +7,10 @@ from tilecloud import BoundingPyramid, Tile, TileStore
 
 _OPTIONAL_TILE_OR_NOT = TypeVar("_OPTIONAL_TILE_OR_NOT", Optional[Tile], Tile)
 
-_CONTAINS_SUMMARY = Summary(
-    "tilecloud_chain_tilestore_contains", "Number of tilestore contains", ["layer", "host", "store"]
+_TILESTORE_OPERATION_SUMMARY = Summary(
+    "tilecloud_chain_tilestore", "Number of tilestore contains", ["layer", "host", "store", "operation"]
 )
 _LEN_SUMMARY = Summary("tilecloud_chain_tilestore_len", "Number of tilestore len", ["store"])
-_DELETE_SUMMARY = Summary(
-    "tilecloud_chain_tilestore_delete", "Number of tilestore delete all", ["layer", "host", "store"]
-)
-_DELETE_ONE_SUMMARY = Summary(
-    "tilecloud_chain_tilestore_delete_one", "Number of tilestore delete", ["layer", "host", "store"]
-)
-_GET_ALL_SUMMARY = Summary(
-    "tilecloud_chain_tilestore_get_all", "Number of tilestore get all", ["layer", "host", "store"]
-)
-_GET_SUMMARY = Summary("tilecloud_chain_tilestore_get", "Number of tilestore get", ["layer", "host", "store"])
-_GET_ONE_SUMMARY = Summary(
-    "tilecloud_chain_tilestore_get_one", "Number of tilestore get one", ["layer", "host", "store"]
-)
-_PUT_SUMMARY = Summary("tilecloud_chain_tilestore_put", "Number of tilestore put", ["layer", "host", "store"])
-_PUT_ONE_SUMMARY = Summary(
-    "tilecloud_chain_tilestore_put_one", "Number of tilestore put one", ["layer", "host", "store"]
-)
-_LIST_SUMMARY = Summary(
-    "tilecloud_chain_tilestore_list", "Number of tilestore list", ["layer", "host", "store"]
-)
 
 
 class TimedTileStoreWrapper(TileStore):
@@ -42,14 +22,8 @@ class TimedTileStoreWrapper(TileStore):
         self._tile_store = tile_store
         self._store_name = store_name
 
-    def _get_stats_name(self, func_name: str, tile: Optional[Tile] = None) -> List[str]:
-        if tile and "layer" in tile.metadata:
-            return [self._store_name, tile.metadata["layer"], func_name]
-        else:
-            return [self._store_name, func_name]
-
     def _time_iteration(
-        self, generator: Iterable[_OPTIONAL_TILE_OR_NOT], summary: Summary
+        self, generator: Iterable[_OPTIONAL_TILE_OR_NOT], operation: str
     ) -> Iterator[_OPTIONAL_TILE_OR_NOT]:
         while True:
             start = time.perf_counter()
@@ -63,16 +37,22 @@ class TimedTileStoreWrapper(TileStore):
                     break
                 else:
                     raise
-            summary.labels(
-                tile.metadata.get("layer", "none"), tile.metadata.get("host", "none"), self._store_name
+            _TILESTORE_OPERATION_SUMMARY.labels(
+                tile.metadata.get("layer", "none"),
+                tile.metadata.get("host", "none"),
+                self._store_name,
+                operation,
             ).observe(time.perf_counter() - start)
             yield tile
 
     def __contains__(self, tile: Tile) -> bool:
         """See in superclass."""
 
-        with _CONTAINS_SUMMARY.labels(
-            tile.metadata.get("layer", "none"), tile.metadata.get("host", "none"), self._store_name
+        with _TILESTORE_OPERATION_SUMMARY.labels(
+            tile.metadata.get("layer", "none"),
+            tile.metadata.get("host", "none"),
+            self._store_name,
+            "contains",
         ).time():
             return self._tile_store.__contains__(tile)
 
@@ -87,49 +67,52 @@ class TimedTileStoreWrapper(TileStore):
     def delete(self, tiles: Iterable[Tile]) -> Iterator[Tile]:
         """See in superclass."""
 
-        return self._time_iteration(self._tile_store.delete(tiles), _DELETE_SUMMARY)
+        return self._time_iteration(self._tile_store.delete(tiles), "delete")
 
     def delete_one(self, tile: Tile) -> Tile:
         """See in superclass."""
 
-        with _DELETE_ONE_SUMMARY.labels(
-            tile.metadata.get("layer", "none"), tile.metadata.get("host", "none"), self._store_name
+        with _TILESTORE_OPERATION_SUMMARY.labels(
+            tile.metadata.get("layer", "none"),
+            tile.metadata.get("host", "none"),
+            self._store_name,
+            "delete_one",
         ).time():
             return self._tile_store.delete_one(tile)
 
     def list(self) -> Iterable[Tile]:
         """See in superclass."""
 
-        return cast(Iterable[Tile], self._time_iteration(self._tile_store.list(), _LIST_SUMMARY))
+        return cast(Iterable[Tile], self._time_iteration(self._tile_store.list(), "list"))
 
     def get(self, tiles: Iterable[Optional[Tile]]) -> Iterator[Optional[Tile]]:
         """See in superclass."""
 
-        return self._time_iteration(self._tile_store.get(tiles), _GET_SUMMARY)
+        return self._time_iteration(self._tile_store.get(tiles), "get")
 
     def get_all(self) -> Iterator[Optional[Tile]]:
         """See in superclass."""
 
-        return self._time_iteration(self._tile_store.get_all(), _GET_ALL_SUMMARY)
+        return self._time_iteration(self._tile_store.get_all(), "get_all")
 
     def get_one(self, tile: Tile) -> Optional[Tile]:
         """See in superclass."""
 
-        with _GET_ONE_SUMMARY.labels(
-            tile.metadata.get("layer", "none"), tile.metadata.get("host", "none"), self._store_name
+        with _TILESTORE_OPERATION_SUMMARY.labels(
+            tile.metadata.get("layer", "none"), tile.metadata.get("host", "none"), self._store_name, "get_one"
         ).time():
             return self._tile_store.get_one(tile)
 
     def put(self, tiles: Iterable[Tile]) -> Iterator[Tile]:
         """See in superclass."""
 
-        return cast(Iterator[Tile], self._time_iteration(self._tile_store.put(tiles), _PUT_SUMMARY))
+        return cast(Iterator[Tile], self._time_iteration(self._tile_store.put(tiles), "put"))
 
     def put_one(self, tile: Tile) -> Tile:
         """See in superclass."""
 
-        with _PUT_ONE_SUMMARY.labels(
-            tile.metadata.get("layer", "none"), tile.metadata.get("host", "none"), self._store_name
+        with _TILESTORE_OPERATION_SUMMARY.labels(
+            tile.metadata.get("layer", "none"), tile.metadata.get("host", "none"), self._store_name, "put_one"
         ).time():
             return self._tile_store.put_one(tile)
 
