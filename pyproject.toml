@@ -63,12 +63,12 @@ tilecloud = { version = "1.10.0", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.2"
 PyYAML = "6.0.1"
 Shapely = "2.0.1"
-jsonschema = "4.17.3"
+jsonschema = "4.18.4"
 pyramid = "2.0.1"
 jsonschema-validator-new = "0.1.0"
-azure-storage-blob = "12.16.0"
+azure-storage-blob = "12.17.0"
 waitress = "2.1.2"
-certifi = "2023.5.7"
+certifi = "2023.7.22"
 # Workaround to be able to do the lock file update
 urllib3 = "1.26.16"
 
