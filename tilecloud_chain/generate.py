@@ -202,13 +202,7 @@ class Generate:
         if self._options.role != "server":
             self._count_metatiles = self._gene.counter()
 
-        self._gene.get(
-            TimedTileStoreWrapper(
-                MultiTileStore(TilestoreGetter(self)),
-                store_name="get",
-            ),
-            "Get tile",
-        )
+        self._gene.get(MultiTileStore(TilestoreGetter(self)), "Get tile")
 
         if self._options.role in ("local", "slave") and "logging" in self._gene.get_main_config().config:
             self._gene.imap(
@@ -467,28 +461,34 @@ class TilestoreGetter:
             if cast(str, layer.get("output_format", "png")) == "grid":
                 assert self.gene._count_tiles
                 assert self.gene._count_tiles_dropped
-                return MapnikDropActionTileStore(
-                    tilegrid=self.gene._gene.get_grid(config, layer["grid"]),
-                    mapfile=layer["mapfile"],
-                    image_buffer=layer["meta_buffer"] if layer.get("meta") else 0,
-                    data_buffer=layer.get("data_buffer", 128),
-                    output_format=layer.get("output_format", "png"),
-                    resolution=layer.get("resolution", 4),
-                    layers_fields=layer.get("layers_fields", {}),
-                    drop_empty_utfgrid=layer.get("drop_empty_utfgrid", False),
-                    store=self.gene._cache_tilestore,
-                    queue_store=self.gene._queue_tilestore,
-                    count=[self.gene._count_tiles, self.gene._count_tiles_dropped],
-                    proj4_literal=grid["proj4_literal"],
+                return TimedTileStoreWrapper(
+                    MapnikDropActionTileStore(
+                        tilegrid=self.gene._gene.get_grid(config, layer["grid"]),
+                        mapfile=layer["mapfile"],
+                        image_buffer=layer["meta_buffer"] if layer.get("meta") else 0,
+                        data_buffer=layer.get("data_buffer", 128),
+                        output_format=layer.get("output_format", "png"),
+                        resolution=layer.get("resolution", 4),
+                        layers_fields=layer.get("layers_fields", {}),
+                        drop_empty_utfgrid=layer.get("drop_empty_utfgrid", False),
+                        store=self.gene._cache_tilestore,
+                        queue_store=self.gene._queue_tilestore,
+                        count=[self.gene._count_tiles, self.gene._count_tiles_dropped],
+                        proj4_literal=grid["proj4_literal"],
+                    ),
+                    "mapnik-drop",
                 )
             else:
-                return MapnikTileStore(
-                    tilegrid=self.gene._gene.get_grid(config, layer["grid"]),
-                    mapfile=layer["mapfile"],
-                    image_buffer=layer["meta_buffer"] if layer.get("meta") else 0,
-                    data_buffer=layer.get("data_buffer", 128),
-                    output_format=cast(str, layer.get("output_format", "png")),
-                    proj4_literal=grid["proj4_literal"],
+                return TimedTileStoreWrapper(
+                    MapnikTileStore(
+                        tilegrid=self.gene._gene.get_grid(config, layer["grid"]),
+                        mapfile=layer["mapfile"],
+                        image_buffer=layer["meta_buffer"] if layer.get("meta") else 0,
+                        data_buffer=layer.get("data_buffer", 128),
+                        output_format=cast(str, layer.get("output_format", "png")),
+                        proj4_literal=grid["proj4_literal"],
+                    ),
+                    "mapnik",
                 )
         return None
 
