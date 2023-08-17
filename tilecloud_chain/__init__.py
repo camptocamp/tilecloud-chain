@@ -376,6 +376,11 @@ class TileFilter(logging.Filter):
             record.tcc_host = log_info["host"]
             record.tcc_layer = log_info["layer"]
             record.tcc_meta_tilecoord = log_info["meta_tilecoord"]
+        else:
+            record.tcc_process_id = os.getpid()
+            record.tcc_thread_id = thread_id
+            record.tcc_available_process_id = ", ".join([str(e) for e in LOGGING_CONTEXT])
+            record.tcc_available_thread_id = ", ".join([str(e) for e in LOGGING_CONTEXT.get(os.getpid(), {})])
 
         return True
 
