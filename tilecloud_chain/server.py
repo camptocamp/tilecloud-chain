@@ -54,7 +54,7 @@ from tilecloud import Tile, TileCoord
 from tilecloud_chain import TileGeneration, controller, internal_mapcache
 from tilecloud_chain.controller import get_azure_client
 
-logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 tilegeneration = None
 
@@ -64,7 +64,7 @@ def init_tilegeneration(config_file: Optional[str]) -> None:
     global tilegeneration  # pylint: disable=global-statement
     if tilegeneration is None:
         if config_file is not None:
-            logger.info("Use config file: '%s'", config_file)
+            _LOGGER.info("Use config file: '%s'", config_file)
         log_level = os.environ.get("TILE_SERVER_LOGLEVEL")
         tilegeneration = TileGeneration(
             config_file,
@@ -125,7 +125,7 @@ class Server(Generic[Response]):
             self.wmts_path = tilegeneration.get_main_config().config["server"]["wmts_path"]
             self.static_path = tilegeneration.get_main_config().config["server"]["static_path"].split("/")
         except Exception:
-            logger.exception("Initialization error")
+            _LOGGER.exception("Initialization error")
             raise
 
     @staticmethod
@@ -579,7 +579,7 @@ class Server(Generic[Response]):
         except HTTPException:
             raise
         except Exception:
-            logger.exception("An unknown error occurred")
+            _LOGGER.exception("An unknown error occurred")
             raise
 
     def _map_cache(
@@ -627,7 +627,7 @@ class Server(Generic[Response]):
                 f"The URL '{url}' return '{response.status_code} {response.reason}', "
                 f"content:\n{response.text}"
             )
-            logger.warning(message)
+            _LOGGER.warning(message)
             return self.error(config, 502, message=message, **kwargs)
 
     def error(
