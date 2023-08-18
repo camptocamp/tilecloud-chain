@@ -220,13 +220,13 @@ virtualenv = ["virtualenv (>=20.0.35)"]
 
 [[package]]
 name = "c2cwsgiutils"
-version = "6.0.0.dev142"
+version = "6.0.0.dev151"
 description = "Common utilities for Camptocamp WSGI applications"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "c2cwsgiutils-6.0.0.dev142-py3-none-any.whl", hash = "sha256:37e8a9aa6c601f5506d6a9c8e9090a1b1c4668f22b5d0c8cbb1f6bf7478612a1"},
-    {file = "c2cwsgiutils-6.0.0.dev142.tar.gz", hash = "sha256:f765be71ef604062501c4addff5f5de32c126d44b5545691c111807e8df736d2"},
+    {file = "c2cwsgiutils-6.0.0.dev151-py3-none-any.whl", hash = "sha256:b1faecd0b21eeb383cd819b159accc19f5383146af80f9084228db4e57486e23"},
+    {file = "c2cwsgiutils-6.0.0.dev151.tar.gz", hash = "sha256:0a2e0d5b4c1b781c2b908aa28e6b722d10d90c381969524a1724634effc17f95"},
 ]
 
 [package.dependencies]
@@ -951,13 +951,13 @@ files = [
 
 [[package]]
 name = "jsonschema"
-version = "4.18.4"
+version = "4.18.6"
 description = "An implementation of JSON Schema validation for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "jsonschema-4.18.4-py3-none-any.whl", hash = "sha256:971be834317c22daaa9132340a51c01b50910724082c2c1a2ac87eeec153a3fe"},
-    {file = "jsonschema-4.18.4.tar.gz", hash = "sha256:fb3642735399fa958c0d2aad7057901554596c63349f4f6b283c493cf692a25d"},
+    {file = "jsonschema-4.18.6-py3-none-any.whl", hash = "sha256:dc274409c36175aad949c68e5ead0853aaffbe8e88c830ae66bb3c7a1728ad2d"},
+    {file = "jsonschema-4.18.6.tar.gz", hash = "sha256:ce71d2f8c7983ef75a756e568317bf54bc531dc3ad7e66a128eae0d51623d8a3"},
 ]
 
 [package.dependencies]
@@ -2962,13 +2962,13 @@ cryptography = ">=35.0.0"
 
 [[package]]
 name = "types-redis"
-version = "4.6.0.3"
+version = "4.6.0.4"
 description = "Typing stubs for redis"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-redis-4.6.0.3.tar.gz", hash = "sha256:efdef37dc0c04bf5786195651fd694f8bfdd693eac09ec4af46d90f72652558f"},
-    {file = "types_redis-4.6.0.3-py3-none-any.whl", hash = "sha256:67c44c14369c33c2a300da2a50b5607c0fc888f7b85eeb7c73e15c78a0f05edd"},
+    {file = "types-redis-4.6.0.4.tar.gz", hash = "sha256:c475a9d3cf73dd696c3887d30644323fc56f5e00af96151035b3b5b52875c9b3"},
+    {file = "types_redis-4.6.0.4-py3-none-any.whl", hash = "sha256:03a1e1659ae4d8f6543bc2b8b11e94b1ee53937f313b1dc6f67dc7bde7d38fe0"},
 ]
 
 [package.dependencies]
@@ -3330,4 +3330,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "015c234659264f0e3b2c5eedf671904964afe8d552d2de74b10fda88b64c4653"
+content-hash = "8a5b3ba26ab0087f42d9f4c9bdca011fdb73aa6ee17d898de234edd7f78d05bc"
