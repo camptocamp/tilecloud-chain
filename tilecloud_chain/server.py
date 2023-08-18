@@ -41,6 +41,7 @@ import pyramid.session
 import requests
 from azure.core.exceptions import ResourceNotFoundError
 from c2cwsgiutils import health_check
+from prometheus_client import Summary
 from pyramid.config import Configurator
 from pyramid.httpexceptions import HTTPException, exception_response
 from pyramid.request import Request
@@ -55,6 +56,8 @@ from tilecloud_chain import TileGeneration, controller, internal_mapcache
 from tilecloud_chain.controller import get_azure_client
 
 _LOGGER = logging.getLogger(__name__)
+
+_GET_TILE = Summary("tilecloud_chain_get_tile", "Time to get the tiles", ["storage"])
 
 tilegeneration = None
 
@@ -255,15 +258,20 @@ class Server(Generic[Response]):
             cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
             key_name = os.path.join(cache_s3["folder"], path)
             try:
-                return self._read(key_name, headers, config, **kwargs)
+                with _GET_TILE.labels(storage="s3").time():
+                    return self._read(key_name, headers, config, **kwargs)
             except Exception:
                 del self.s3_client_cache[cache_s3.get("host", "aws")]
-                return self._read(key_name, headers, config, **kwargs)
+                with _GET_TILE.labels(storage="s3").time():
+                    return self._read(key_name, headers, config, **kwargs)
         if cache["type"] == "azure":
             cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
             key_name = os.path.join(cache_azure["folder"], path)
             try:
-                blob = get_azure_client().get_blob_client(container=cache_azure["container"], blob=key_name)
+                with _GET_TILE.labels(storage="azure").time():
+                    blob = get_azure_client().get_blob_client(
+                        container=cache_azure["container"], blob=key_name
+                    )
                 properties = blob.get_blob_properties()
                 data = blob.download_blob().readall()
                 return self.response(
