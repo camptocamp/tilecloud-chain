@@ -41,6 +41,7 @@ import pyramid.session
 import requests
 from azure.core.exceptions import ResourceNotFoundError
 from c2cwsgiutils import health_check
+from prometheus_client import Summary
 from pyramid.config import Configurator
 from pyramid.httpexceptions import HTTPException, exception_response
 from pyramid.request import Request
@@ -54,7 +55,9 @@ from tilecloud import Tile, TileCoord
 from tilecloud_chain import TileGeneration, controller, internal_mapcache
 from tilecloud_chain.controller import get_azure_client
 
-logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
+
+_GET_TILE = Summary("tilecloud_chain_get_tile", "Time to get the tiles", ["storage"])
 
 tilegeneration = None
 
@@ -64,7 +67,7 @@ def init_tilegeneration(config_file: Optional[str]) -> None:
     global tilegeneration  # pylint: disable=global-statement
     if tilegeneration is None:
         if config_file is not None:
-            logger.info("Use config file: '%s'", config_file)
+            _LOGGER.info("Use config file: '%s'", config_file)
         log_level = os.environ.get("TILE_SERVER_LOGLEVEL")
         tilegeneration = TileGeneration(
             config_file,
@@ -125,7 +128,7 @@ class Server(Generic[Response]):
             self.wmts_path = tilegeneration.get_main_config().config["server"]["wmts_path"]
             self.static_path = tilegeneration.get_main_config().config["server"]["static_path"].split("/")
         except Exception:
-            logger.exception("Initialization error")
+            _LOGGER.exception("Initialization error")
             raise
 
     @staticmethod
@@ -255,15 +258,20 @@ class Server(Generic[Response]):
             cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
             key_name = os.path.join(cache_s3["folder"], path)
             try:
-                return self._read(key_name, headers, config, **kwargs)
+                with _GET_TILE.labels(storage="s3").time():
+                    return self._read(key_name, headers, config, **kwargs)
             except Exception:
                 del self.s3_client_cache[cache_s3.get("host", "aws")]
-                return self._read(key_name, headers, config, **kwargs)
+                with _GET_TILE.labels(storage="s3").time():
+                    return self._read(key_name, headers, config, **kwargs)
         if cache["type"] == "azure":
             cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
             key_name = os.path.join(cache_azure["folder"], path)
             try:
-                blob = get_azure_client().get_blob_client(container=cache_azure["container"], blob=key_name)
+                with _GET_TILE.labels(storage="azure").time():
+                    blob = get_azure_client().get_blob_client(
+                        container=cache_azure["container"], blob=key_name
+                    )
                 properties = blob.get_blob_properties()
                 data = blob.download_blob().readall()
                 return self.response(
@@ -579,7 +587,7 @@ class Server(Generic[Response]):
         except HTTPException:
             raise
         except Exception:
-            logger.exception("An unknown error occurred")
+            _LOGGER.exception("An unknown error occurred")
             raise
 
     def _map_cache(
@@ -627,7 +635,7 @@ class Server(Generic[Response]):
                 f"The URL '{url}' return '{response.status_code} {response.reason}', "
                 f"content:\n{response.text}"
             )
-            logger.warning(message)
+            _LOGGER.warning(message)
             return self.error(config, 502, message=message, **kwargs)
 
     def error(

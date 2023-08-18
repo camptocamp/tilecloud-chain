@@ -10,6 +10,7 @@ import threading
 from typing import TYPE_CHECKING, Any, Dict, Iterator, Optional, TypeVar, cast
 
 import redis.sentinel
+from prometheus_client import Summary
 
 import tilecloud_chain.configuration
 from tilecloud import Tile, TileCoord, TileStore
@@ -24,6 +25,8 @@ LOG = logging.getLogger(__name__)
 lock = threading.Lock()
 executing_lock = threading.Lock()
 _generator = None
+
+_GET_TILE = Summary("tilecloud_chain_get_generated_tile", "Time to get the generated tiles", ["storage"])
 
 
 def _decode_tile(data: bytes, tile: Tile) -> None:
@@ -146,11 +149,15 @@ class Generator:
 
     def read_from_cache(self, tile: Tile) -> Optional[Tile]:
         """Get the tile from the cache (Redis)."""
-        return self._cache_store.get_one(tile)
+
+        with _GET_TILE.labels("redis").time():
+            return self._cache_store.get_one(tile)
 
     def compute_tile(self, tile: Tile) -> None:
         """Create the tile."""
-        self.run(tile)
+
+        with _GET_TILE.labels("wms").time():
+            self.run(tile)
         for tile_ in tile.metadata["tiles"].values():  # type: ignore
             self._cache_store.put_one(tile_)
 
