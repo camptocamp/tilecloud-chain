@@ -51,6 +51,7 @@ services:
       C2C_AUTH_GITHUB_SECRET: '1234567890123456789'
       C2C_AUTH_GITHUB_CLIENT_ID: '1234'
       C2C_AUTH_GITHUB_CLIENT_SECRET: '1234'
+      C2C_PROMETHEUS_PORT: '9110'
     links:
       - db
       - mapserver

@@ -64,6 +64,7 @@ tilegeneration = None
 
 def init_tilegeneration(config_file: Optional[str]) -> None:
     """Initialize the tile generation."""
+
     global tilegeneration  # pylint: disable=global-statement
     if tilegeneration is None:
         if config_file is not None:
@@ -559,7 +560,10 @@ class Server(Generic[Response]):
                     **kwargs,
                 )
 
-            tile2 = store.get_one(tile)
+            cache = self.get_cache(config)
+            with _GET_TILE.labels(storage=cache["type"]).time():
+                tile2 = store.get_one(tile)
+
             if tile2:
                 if tile2.error:
                     return self.error(config, 500, tile2.error, **kwargs)
