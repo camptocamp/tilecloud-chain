@@ -120,7 +120,7 @@ class Generate:
             self._count_tiles = self._gene.counter()
 
         if self._options.role in ("local", "slave"):
-            self._cache_tilestore = self._gene.get_tilesstore()
+            self._cache_tilestore = self._gene.get_tilesstore(self._options.cache)
             assert self._cache_tilestore is not None
 
     def add_local_process_filter(self) -> None:
@@ -600,7 +600,7 @@ class HashDropperGetter:
             return HashDropper(
                 empty_tile["size"],
                 empty_tile["hash"],
-                store=self.gene._gene.get_tilesstore(),
+                store=self.gene._gene.get_tilesstore(self.gene._options.cache),
                 queue_store=self.gene._gene.queue_store,
                 count=self.count,
             )
