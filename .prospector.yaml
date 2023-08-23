@@ -1,4 +1,5 @@
----
+inherits:
+  - duplicated
 strictness: veryhigh
 max-line-length: 110
 doc-warnings: true
@@ -19,7 +20,6 @@ pylint:
     - too-many-lines
     - too-many-public-methods
     - too-few-public-methods
-    - wrong-import-order # done by isort
     - line-too-long # done by black
     - no-else-return
     - no-else-break
@@ -34,13 +34,11 @@ pylint:
 
 pycodestyle:
   disable:
-    - E203 # Whitespace before ':'
     - E722 # Do not use bare 'except'
     - E501 # Line too long
 
 pydocstyle:
   disable:
-    - D100 # Missing docstring in public module
     - D102 # Missing docstring in public method
     - D104 # Missing docstring in public package
     - D107 # Missing docstring in __init__
@@ -49,8 +47,6 @@ pydocstyle:
     - D212 # Multi-line docstring summary should start at the first line
     - D407 # Missing dashed underline after section ('Arguments')
     - D412 # No blank lines allowed between a section header and its content ('Arguments')
-    - D413 # Missing blank line after last section ('Arguments')
-
 mypy:
   run: true
 
