@@ -1,5 +1,4 @@
 import os
-from typing import Tuple
 
 import psycopg2
 import pytest
@@ -74,7 +73,7 @@ class TestExpireTiles(CompareCase):
             geoms = [str(r[0]) for r in cursor.fetchall()]
             assert [geom_re] == geoms
 
-            def parse_coord(coord: str) -> Tuple[float, float]:
+            def parse_coord(coord: str) -> tuple[float, float]:
                 coord_split = coord.split(" ")
                 return [float(c) for c in coord_split]
 

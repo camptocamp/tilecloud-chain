@@ -15,6 +15,7 @@ import tempfile
 import threading
 import time
 from argparse import ArgumentParser, Namespace
+from collections.abc import Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from fractions import Fraction
@@ -22,22 +23,7 @@ from hashlib import sha1
 from io import BytesIO
 from itertools import product
 from math import ceil, sqrt
-from typing import (
-    IO,
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    TextIO,
-    Tuple,
-    TypedDict,
-    Union,
-    cast,
-)
+from typing import IO, TYPE_CHECKING, Any, Callable, Optional, TextIO, TypedDict, Union, cast
 
 import boto3
 import botocore.client
@@ -215,7 +201,7 @@ class Run:
     def __init__(
         self,
         gene: "TileGeneration",
-        functions: List[Callable[[Tile], Tile]],
+        functions: list[Callable[[Tile], Tile]],
     ) -> None:
         self.gene = gene
         self.functions = functions
@@ -320,7 +306,7 @@ class DatedConfig:
 class DatedGeoms:
     """Geoms with timestamps to be able to invalidate it on configuration change."""
 
-    def __init__(self, geoms: Dict[Union[str, int], BaseGeometry], mtime: float) -> None:
+    def __init__(self, geoms: dict[Union[str, int], BaseGeometry], mtime: float) -> None:
         self.geoms = geoms
         self.mtime = mtime
 
@@ -336,7 +322,7 @@ class DatedTileGrid:
 class DatedHosts:
     """Host with timestamps to be able to invalidate it on configuration change."""
 
-    def __init__(self, hosts: Dict[str, str], mtime: float) -> None:
+    def __init__(self, hosts: dict[str, str], mtime: float) -> None:
         self.hosts = hosts
         self.mtime = mtime
 
@@ -353,7 +339,7 @@ class LoggingInformation(TypedDict):
     meta_tilecoord: str
 
 
-LOGGING_CONTEXT: Dict[int, Dict[int, LoggingInformation]] = {}
+LOGGING_CONTEXT: dict[int, dict[int, LoggingInformation]] = {}
 
 
 class JsonLogHandler(c2cwsgiutils.pyramid_logging.JsonLogHandler):
@@ -404,21 +390,21 @@ class TileGeneration:
         multi_thread: bool = True,
         maxconsecutive_errors: bool = True,
     ):
-        self.geoms_cache: Dict[str, Dict[str, DatedGeoms]] = {}
-        self._close_actions: List["Close"] = []
+        self.geoms_cache: dict[str, dict[str, DatedGeoms]] = {}
+        self._close_actions: list["Close"] = []
         self.error_lock = threading.Lock()
-        self.error_files_: Dict[str, TextIO] = {}
-        self.functions_tiles: List[Callable[[Tile], Tile]] = []
-        self.functions_metatiles: List[Callable[[Tile], Tile]] = []
+        self.error_files_: dict[str, TextIO] = {}
+        self.functions_tiles: list[Callable[[Tile], Tile]] = []
+        self.functions_metatiles: list[Callable[[Tile], Tile]] = []
         self.functions = self.functions_metatiles
         self.metatilesplitter_thread_pool: Optional[ThreadPoolExecutor] = None
         self.multi_thread = multi_thread
         self.maxconsecutive_errors = maxconsecutive_errors
-        self.grid_cache: Dict[str, Dict[str, DatedTileGrid]] = {}
-        self.layer_legends: Dict[str, List[Legend]] = {}
+        self.grid_cache: dict[str, dict[str, DatedTileGrid]] = {}
+        self.layer_legends: dict[str, list[Legend]] = {}
         self.config_file = config_file
         self.base_config = base_config
-        self.configs: Dict[str, DatedConfig] = {}
+        self.configs: dict[str, DatedConfig] = {}
         self.hosts_cache: Optional[DatedHosts] = None
 
         self.options: Namespace = options or collections.namedtuple(  # type: ignore
@@ -498,7 +484,7 @@ class TileGeneration:
                 "it can be a single value, a range (3-9), a list of values (2,5,7)."
             )
             if self.options.zoom.find("-") >= 0:
-                splitted_zoom: List[str] = self.options.zoom.split("-")
+                splitted_zoom: list[str] = self.options.zoom.split("-")
                 if len(splitted_zoom) != 2:
                     _LOGGER.error(error_message)
                     error = True
@@ -591,7 +577,7 @@ class TileGeneration:
             _LOGGER.error("No provided configuration file")
             return DatedConfig({}, 0, "")
 
-    def get_hosts(self, silent: bool = False) -> Dict[str, str]:
+    def get_hosts(self, silent: bool = False) -> dict[str, str]:
         file_path = pathlib.Path(os.environ["TILEGENERATION_HOSTSFILE"])
         if not file_path.exists():
             if not silent:
@@ -622,10 +608,10 @@ class TileGeneration:
         config_file: str,
         ignore_error: bool,
         base_config: Optional[tilecloud_chain.configuration.Configuration] = None,
-    ) -> Tuple[DatedConfig, bool]:
+    ) -> tuple[DatedConfig, bool]:
         """Get the validated configuration for the file name."""
         with open(config_file, encoding="utf-8") as f:
-            config: Dict[str, Any] = {}
+            config: dict[str, Any] = {}
             config.update({} if base_config is None else base_config)
             ruamel = YAML()
             config.update(ruamel.load(f))
@@ -656,7 +642,7 @@ class TileGeneration:
         schema_data = pkgutil.get_data("tilecloud_chain", "schema.json")
         assert schema_data
         errors, _ = jsonschema_validator.validate(
-            config.file, cast(Dict[str, Any], config.config), json.loads(schema_data), default=True
+            config.file, cast(dict[str, Any], config.config), json.loads(schema_data), default=True
         )
 
         if errors:
@@ -728,7 +714,7 @@ class TileGeneration:
         self.daemon = daemon
 
     @staticmethod
-    def _primefactors(x: int) -> List[int]:
+    def _primefactors(x: int) -> list[int]:
         factorlist = []
         loop = 2
         while loop <= x:
@@ -739,7 +725,7 @@ class TileGeneration:
                 loop += 1
         return factorlist
 
-    def _resolution_scale(self, resolutions: Union[List[float], List[int]]) -> int:
+    def _resolution_scale(self, resolutions: Union[list[float], list[int]]) -> int:
         prime_fact = {}
         for resolution in resolutions:
             denominator = Fraction(str(resolution)).denominator
@@ -755,7 +741,7 @@ class TileGeneration:
             result *= fact**nb
         return result
 
-    def get_all_dimensions(self, layer: tilecloud_chain.configuration.Layer) -> List[Dict[str, str]]:
+    def get_all_dimensions(self, layer: tilecloud_chain.configuration.Layer) -> list[dict[str, str]]:
         assert layer is not None
 
         options_dimensions = {}
@@ -1013,9 +999,9 @@ class TileGeneration:
         scale = grid["resolution_scale"]
 
         tilegrid = FreeTileGrid(
-            resolutions=cast(List[int], [r * scale for r in grid["resolutions"]]),
+            resolutions=cast(list[int], [r * scale for r in grid["resolutions"]]),
             scale=scale,
-            max_extent=cast(Tuple[int, int, int, int], grid["bbox"]),
+            max_extent=cast(tuple[int, int, int, int], grid["bbox"]),
             tile_size=grid["tile_size"],
         )
 
@@ -1024,7 +1010,7 @@ class TileGeneration:
 
     def get_geoms(
         self, config: DatedConfig, layer_name: str, host: Optional[str] = None
-    ) -> Dict[Union[str, int], BaseGeometry]:
+    ) -> dict[Union[str, int], BaseGeometry]:
         dated_geoms = self.geoms_cache.get(config.file, {}).get(layer_name)
         if dated_geoms is not None and config.mtime == dated_geoms.mtime:
             return dated_geoms.geoms
@@ -1067,7 +1053,7 @@ class TileGeneration:
         else:
             extent = config.config["grids"][layer["grid"]]["bbox"]
 
-        geoms: Dict[Union[str, int], BaseGeometry] = {}
+        geoms: dict[Union[str, int], BaseGeometry] = {}
         if extent:
             geom = Polygon(
                 (
@@ -1201,8 +1187,8 @@ class TileGeneration:
     @staticmethod
     def _tilestream(
         tilecoords: Iterable[TileCoord],
-        default_metadata: Dict[str, str],
-        all_dimensions: List[Dict[str, str]],
+        default_metadata: dict[str, str],
+        all_dimensions: list[dict[str, str]],
     ) -> Iterator[Tile]:
         for tilecoord in tilecoords:
             for dimensions in all_dimensions:
@@ -1456,7 +1442,7 @@ class MultiAction:
         get_action: Callable[[str, str], Optional[Callable[[Tile], Optional[Tile]]]],
     ) -> None:
         self.get_action = get_action
-        self.actions: Dict[Tuple[str, str], Optional[Callable[[Tile], Optional[Tile]]]] = {}
+        self.actions: dict[tuple[str, str], Optional[Callable[[Tile], Optional[Tile]]]] = {}
 
     def __call__(self, tile: Tile) -> Optional[Tile]:
         layer = tile.metadata["layer"]
@@ -1556,7 +1542,7 @@ class IntersectGeometryFilter:
         )
 
     @staticmethod
-    def bbox_polygon(bbox: Tuple[float, float, float, float]) -> Polygon:
+    def bbox_polygon(bbox: tuple[float, float, float, float]) -> Polygon:
         return Polygon(((bbox[0], bbox[1]), (bbox[0], bbox[3]), (bbox[2], bbox[3]), (bbox[2], bbox[1])))
 
 
@@ -1710,7 +1696,7 @@ class TilesFileStore(TileStore):
 
                 yield Tile(
                     tilecoord,
-                    metadata=dict([cast(Tuple[str, str], e.split("=")) for e in splitted_line[1:]]),
+                    metadata=dict([cast(tuple[str, str], e.split("=")) for e in splitted_line[1:]]),
                 )
 
 
@@ -1728,7 +1714,7 @@ def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
     if "redis" in config.config:
         # Create a Redis queue
         conf = config.config["redis"]
-        tilestore_kwargs: Dict[str, Any] = {
+        tilestore_kwargs: dict[str, Any] = {
             "name": conf["queue"],
             "stop_if_empty": not daemon,
             "timeout": conf["timeout"],

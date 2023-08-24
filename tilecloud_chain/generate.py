@@ -7,7 +7,7 @@ import threading
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from getpass import getuser
-from typing import IO, Callable, List, Optional, cast
+from typing import IO, Callable, Optional, cast
 
 import boto3
 import prometheus_client
@@ -507,7 +507,7 @@ def detach() -> None:
         sys.exit(1)
 
 
-def main(args: Optional[List[str]] = None, out: Optional[IO[str]] = None) -> None:
+def main(args: Optional[list[str]] = None, out: Optional[IO[str]] = None) -> None:
     """Run the tiles generation."""
     try:
         parser = ArgumentParser(

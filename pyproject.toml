@@ -1,9 +1,9 @@
 [tool.black]
 line-length = 110
-target-version = ["py38"]
+target-version = ["py39"]
 
 [tool.mypy]
-python_version = 3.8
+python_version = 3.9
 warn_redundant_casts = true
 warn_unused_ignores = true
 ignore_missing_imports = true
@@ -34,7 +34,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Topic :: Scientific/Engineering :: GIS",
     "Typing :: Typed",
 ]
@@ -55,7 +54,7 @@ tilecloud_chain = "tilecloud_chain.scaffolds:Create"
 main = "tilecloud_chain.server:main"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.9,<3.11"
 c2cwsgiutils = { version = "6.0.0.dev153", extras = ["standard", "broadcast", "oauth2"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.8.2"

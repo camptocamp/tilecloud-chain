@@ -1,8 +1,9 @@
 import logging
 import sys
 from argparse import ArgumentParser, Namespace
+from collections.abc import Iterable, Iterator
 from datetime import timedelta
-from typing import Iterable, Iterator, Optional, Tuple
+from typing import Optional
 
 from tilecloud import Tile, TileStore
 from tilecloud_chain import Run, TileGeneration, add_common_options
@@ -90,7 +91,7 @@ def main() -> None:
 
 def _calculate_cost(
     gene: TileGeneration, layer_name: str, options: Namespace
-) -> Tuple[float, timedelta, float, int]:
+) -> tuple[float, timedelta, float, int]:
     nb_metatiles = {}
     nb_tiles = {}
     config = gene.get_config(options.config)

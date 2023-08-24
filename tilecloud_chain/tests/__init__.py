@@ -6,7 +6,7 @@ import sys
 import traceback
 from io import StringIO
 from logging import config
-from typing import Any, Callable, List, Tuple, Union
+from typing import Any, Callable, Union
 from unittest import TestCase
 
 import yaml
@@ -56,8 +56,8 @@ class CompareCase(TestCase):
         self.assertEqual(len(expected), len(result), repr(result))
 
     def run_cmd(
-        self, cmd: Union[List[str], str], main_func: Callable, get_error: bool = False
-    ) -> Tuple[str, str]:
+        self, cmd: Union[list[str], str], main_func: Callable, get_error: bool = False
+    ) -> tuple[str, str]:
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
         old_stderr = sys.stderr
@@ -78,7 +78,7 @@ class CompareCase(TestCase):
         return mystdout.getvalue(), mystderr.getvalue()
 
     def assert_cmd_equals(
-        self, cmd: Union[List[str], str], main_func: Callable, empty_err: bool = False, **kargs: Any
+        self, cmd: Union[list[str], str], main_func: Callable, empty_err: bool = False, **kargs: Any
     ) -> None:
         out, err = self.run_cmd(cmd, main_func)
         if empty_err:
@@ -99,9 +99,9 @@ class CompareCase(TestCase):
 
     def assert_main_equals(
         self,
-        cmd: Union[List[str], str],
+        cmd: Union[list[str], str],
         main_func: Callable,
-        expected: List[List[str]] = None,
+        expected: list[list[str]] = None,
         get_error: bool = False,
         **kargs: Any,
     ) -> None:
@@ -134,7 +134,7 @@ class CompareCase(TestCase):
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
     def assert_main_except_equals(
-        self, cmd: str, main_func: Callable, expected: List[List[str]], get_error: bool = False, **kargs: Any
+        self, cmd: str, main_func: Callable, expected: list[list[str]], get_error: bool = False, **kargs: Any
     ) -> None:
         sys.argv = cmd.split(" ")
         try:

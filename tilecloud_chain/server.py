@@ -31,7 +31,7 @@ import logging
 import mimetypes
 import os
 import time
-from typing import TYPE_CHECKING, Any, Dict, Generic, List, Optional, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, Union, cast
 from urllib.parse import parse_qs, urlencode
 
 import botocore.exceptions
@@ -120,9 +120,9 @@ class Server(Generic[Response]):
     def __init__(self) -> None:
         """Initialize."""
         try:
-            self.filter_cache: Dict[str, Dict[str, DatedFilter]] = {}
-            self.s3_client_cache: Dict[str, "botocore.client.S3"] = {}
-            self.store_cache: Dict[str, Dict[str, DatedStore]] = {}
+            self.filter_cache: dict[str, dict[str, DatedFilter]] = {}
+            self.s3_client_cache: dict[str, "botocore.client.S3"] = {}
+            self.store_cache: dict[str, dict[str, DatedStore]] = {}
 
             assert tilegeneration
 
@@ -138,7 +138,7 @@ class Server(Generic[Response]):
         return config.config.get("server", {}).get("expires", tilecloud_chain.configuration.EXPIRES_DEFAULT)
 
     @staticmethod
-    def get_static_allow_extension(config: tilecloud_chain.DatedConfig) -> List[str]:
+    def get_static_allow_extension(config: tilecloud_chain.DatedConfig) -> list[str]:
         """Get the allowed extensions in the static view."""
         return config.config["server"].get(
             "static_allow_extension", ["jpeg", "png", "xml", "js", "html", "css"]
@@ -169,9 +169,9 @@ class Server(Generic[Response]):
         return config.config["caches"][self.get_cache_name(config)]
 
     @staticmethod
-    def get_layers(config: tilecloud_chain.DatedConfig) -> List[str]:
+    def get_layers(config: tilecloud_chain.DatedConfig) -> list[str]:
         """Get the layer from the config."""
-        layers: List[str] = cast(List[str], config.config["layers"].keys())
+        layers: list[str] = cast(list[str], config.config["layers"].keys())
         return config.config["server"].get("layers", layers)
 
     def get_filter(
@@ -223,7 +223,7 @@ class Server(Generic[Response]):
     def _read(
         self,
         key_name: str,
-        headers: Dict[str, str],
+        headers: dict[str, str],
         config: tilecloud_chain.DatedConfig,
         **kwargs: Any,
     ) -> Response:
@@ -247,7 +247,7 @@ class Server(Generic[Response]):
     def _get(
         self,
         path: str,
-        headers: Dict[str, str],
+        headers: dict[str, str],
         config: tilecloud_chain.DatedConfig,
         **kwargs: Any,
     ) -> Response:
@@ -305,7 +305,7 @@ class Server(Generic[Response]):
         self,
         config: tilecloud_chain.DatedConfig,
         config_file: str,
-        environ: Dict[str, str],
+        environ: dict[str, str],
         start_response: bytes,
     ) -> Response:
         """Build the response on request."""
@@ -319,8 +319,8 @@ class Server(Generic[Response]):
 
     def serve(
         self,
-        path: Optional[List[str]],
-        params: Dict[str, str],
+        path: Optional[list[str]],
+        params: dict[str, str],
         config: tilecloud_chain.DatedConfig,
         **kwargs: Any,
     ) -> Response:
@@ -599,7 +599,7 @@ class Server(Generic[Response]):
         config: tilecloud_chain.DatedConfig,
         layer: tilecloud_chain.configuration.Layer,
         tile: Tile,
-        kwargs: Dict[str, Any],
+        kwargs: dict[str, Any],
     ) -> Response:
         """Get the tile on a cache of tile."""
         assert tilegeneration
@@ -657,7 +657,7 @@ class Server(Generic[Response]):
         self,
         config: tilecloud_chain.DatedConfig,
         data: bytes,
-        headers: Optional[Dict[str, str]] = None,
+        headers: Optional[dict[str, str]] = None,
         **kwargs: Any,
     ) -> Response:
         """Build the response, should be implemented in a sub class."""
@@ -672,7 +672,7 @@ class Server(Generic[Response]):
 
 
 if TYPE_CHECKING:
-    WsgiServerBase = Server[List[bytes]]
+    WsgiServerBase = Server[list[bytes]]
 else:
     WsgiServerBase = Server
 
@@ -694,7 +694,7 @@ class WsgiServer(WsgiServerBase):
         code: int,
         message: Optional[Union[Exception, str]] = "",
         **kwargs: Any,
-    ) -> List[bytes]:
+    ) -> list[bytes]:
         """Build the error."""
         assert message is not None
         kwargs["start_response"](self.HTTP_MESSAGES[code], [])
@@ -704,9 +704,9 @@ class WsgiServer(WsgiServerBase):
         self,
         config: tilecloud_chain.DatedConfig,
         data: bytes,
-        headers: Optional[Dict[str, str]] = None,
+        headers: Optional[dict[str, str]] = None,
         **kwargs: Any,
-    ) -> List[bytes]:
+    ) -> list[bytes]:
         """Build the response."""
         if headers is None:
             headers = {}
@@ -767,7 +767,7 @@ class PyramidServer(PyramidServerBase):
         self,
         config: tilecloud_chain.DatedConfig,
         data: bytes,
-        headers: Optional[Dict[str, str]] = None,
+        headers: Optional[dict[str, str]] = None,
         **kwargs: Any,
     ) -> pyramid.response.Response:
         """Build the Pyramid response."""

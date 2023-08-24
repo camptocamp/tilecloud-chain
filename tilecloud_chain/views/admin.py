@@ -33,7 +33,7 @@ import os
 import re
 import shlex
 import subprocess  # nosec
-from typing import IO, Any, Callable, Dict, List
+from typing import IO, Any, Callable
 from urllib.parse import urljoin
 
 import pyramid.httpexceptions
@@ -63,7 +63,7 @@ class Admin:
 
     @view_config(route_name="admin", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore
     @view_config(route_name="admin_slash", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore
-    def index(self) -> Dict[str, Any]:
+    def index(self) -> dict[str, Any]:
         """Get the admin index page."""
         assert self.gene
         config = self.gene.get_host_config(self.request.host)
@@ -157,7 +157,7 @@ class Admin:
 
         display_command = shlex.join(final_command)
         _LOG.info("Run the command `%s`", display_command)
-        env: Dict[str, str] = {}
+        env: dict[str, str] = {}
         env.update(os.environ)
         env["FRONTEND"] = "noninteractive"
 
@@ -167,7 +167,7 @@ class Admin:
         elif final_command[0] in ["generate-controller", "generate_controller"]:
             main = controller.main
         if main is not None:
-            return_dict: Dict[str, Any] = {}
+            return_dict: dict[str, Any] = {}
             proc = multiprocessing.Process(
                 target=_run_in_process, args=(final_command, env, main, return_dict)
             )
@@ -206,7 +206,7 @@ class Admin:
         }
 
     @view_config(route_name="admin_test", renderer="tilecloud_chain:templates/openlayers.html")  # type: ignore
-    def admin_test(self) -> Dict[str, Any]:
+    def admin_test(self) -> dict[str, Any]:
         assert self.gene
         config = self.gene.get_host_config(self.request.host)
         main_config = self.gene.get_main_config()
@@ -229,7 +229,7 @@ class Admin:
         }
 
 
-def _parse_stdout(stdout: str) -> List[str]:
+def _parse_stdout(stdout: str) -> list[str]:
     stdout_parsed = []
     for line in stdout.splitlines():
         try:
@@ -290,10 +290,10 @@ def _format_output(string: str, max_length: int = 1000) -> str:
 
 
 def _run_in_process(
-    final_command: List[str],
-    env: Dict[str, str],
-    main: Callable[[List[str], IO[str]], Any],
-    return_dict: Dict[str, Any],
+    final_command: list[str],
+    env: dict[str, str],
+    main: Callable[[list[str], IO[str]], Any],
+    return_dict: dict[str, Any],
 ) -> None:
     display_command = shlex.join(final_command)
     error = False
