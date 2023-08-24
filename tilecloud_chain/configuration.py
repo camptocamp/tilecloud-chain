@@ -3,7 +3,7 @@ Automatically generated file from a JSON schema.
 """
 
 
-from typing import Any, Dict, List, Literal, Tuple, TypedDict, Union
+from typing import Any, Literal, TypedDict, Union
 
 from typing_extensions import Required
 
@@ -156,7 +156,7 @@ The tiles cache definition, see https://github.com/camptocamp/tilecloud-chain/bl
 """
 
 
-CacheAzure = Union[Dict[str, str], "CacheAzureTyped"]
+CacheAzure = Union[dict[str, str], "CacheAzureTyped"]
 """
 Cache Azure.
 
@@ -192,7 +192,7 @@ class CacheAzureTyped(TypedDict, total=False):
     """
 
 
-CacheBsddb = Union[Dict[str, str], "CacheBsddbTyped"]
+CacheBsddb = Union[dict[str, str], "CacheBsddbTyped"]
 """
 Cache BSDDB.
 
@@ -211,7 +211,7 @@ class CacheBsddbTyped(TypedDict, total=False):
     folder: "CacheFolder"
 
 
-CacheFilesystem = Union[Dict[str, str], "CacheFilesystemTyped"]
+CacheFilesystem = Union[dict[str, str], "CacheFilesystemTyped"]
 """
 Cache filesystem.
 
@@ -240,7 +240,7 @@ default:
 """
 
 
-CacheHost = List[str]
+CacheHost = list[str]
 """
 Cache host.
 
@@ -256,11 +256,11 @@ The HTTP URL %host will be replaces by one of the hosts
 """
 
 
-CacheHttpUrls = List[str]
+CacheHttpUrls = list[str]
 """ Cache HTTP URLs. """
 
 
-CacheMbtiles = Union[Dict[str, str], "CacheMbtilesTyped"]
+CacheMbtiles = Union[dict[str, str], "CacheMbtilesTyped"]
 """
 Cache MBtiles.
 
@@ -279,7 +279,7 @@ class CacheMbtilesTyped(TypedDict, total=False):
     folder: "CacheFolder"
 
 
-CacheS3 = Union[Dict[str, str], "CacheS3Typed"]
+CacheS3 = Union[dict[str, str], "CacheS3Typed"]
 """
 Cache S3.
 
@@ -366,14 +366,14 @@ class CloudfrontCost(TypedDict, total=False):
 class Configuration(TypedDict, total=False):
     """TileCloud-chain configuration."""
 
-    defaults: Dict[str, Any]
+    defaults: dict[str, Any]
     """
     Defaults.
 
     Used to put YAML references
     """
 
-    grids: Dict[str, "Grid"]
+    grids: dict[str, "Grid"]
     r"""
     Grids.
 
@@ -383,7 +383,7 @@ class Configuration(TypedDict, total=False):
       pattern: ^[a-zA-Z0-9_\-~\.]+$
     """
 
-    caches: Dict[str, "Cache"]
+    caches: dict[str, "Cache"]
     r"""
     Caches.
 
@@ -393,7 +393,7 @@ class Configuration(TypedDict, total=False):
       pattern: ^[a-zA-Z0-9_\-~\.]+$
     """
 
-    layers: Dict[str, "Layer"]
+    layers: dict[str, "Layer"]
     r"""
     Layers.
 
@@ -403,7 +403,7 @@ class Configuration(TypedDict, total=False):
       pattern: ^[a-zA-Z0-9_\-~\.]+$
     """
 
-    process: Dict[str, "ProcessCommand"]
+    process: dict[str, "ProcessCommand"]
     """
     Process.
 
@@ -556,7 +556,7 @@ class Generation(TypedDict, total=False):
     default: default
     """
 
-    default_layers: List[str]
+    default_layers: list[str]
     """
     Default layers.
 
@@ -626,7 +626,7 @@ class Grid(TypedDict, total=False):
     The scale used to build a FreeTileGrid typically '2'
     """
 
-    resolutions: Required[List[Union[int, float]]]
+    resolutions: Required[list[Union[int, float]]]
     """
     Resolutions.
 
@@ -635,7 +635,7 @@ class Grid(TypedDict, total=False):
     Required property
     """
 
-    bbox: Required[List[Union[int, float]]]
+    bbox: Required[list[Union[int, float]]]
     """
     Bounding box.
 
@@ -686,7 +686,7 @@ class Grid(TypedDict, total=False):
     matrix_identifier: "MatrixIdentifier"
 
 
-Headers = Dict[str, "_HeadersAdditionalproperties"]
+Headers = dict[str, "_HeadersAdditionalproperties"]
 """
 Headers.
 
@@ -729,7 +729,7 @@ The layer definition, see https://github.com/camptocamp/tilecloud-chain/blob/mas
 """
 
 
-LayerBoundingBox = List[Union[int, float]]
+LayerBoundingBox = list[Union[int, float]]
 """
 Layer bounding box.
 
@@ -794,7 +794,7 @@ pattern: ^(?!(?i)(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGH
 """
 
 
-LayerDimensions = List["_LayerDimensionsItem"]
+LayerDimensions = list["_LayerDimensionsItem"]
 """
 layer dimensions.
 
@@ -862,7 +862,7 @@ The layer extension
 """
 
 
-LayerGeometries = List["_LayerGeometriesItem"]
+LayerGeometries = list["_LayerGeometriesItem"]
 """
 Layer geometries.
 
@@ -906,7 +906,7 @@ pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
 """
 
 
-LayerLegends = List["_LayerLegendsItem"]
+LayerLegends = list["_LayerLegendsItem"]
 """
 Layer legends.
 
@@ -977,7 +977,7 @@ class LayerMapnik(TypedDict, total=False):
     The resolution, default is 4
     """
 
-    layers_fields: Dict[str, "_LayersFieldsAdditionalproperties"]
+    layers_fields: dict[str, "_LayersFieldsAdditionalproperties"]
     """
     Layers fields.
 
@@ -1129,14 +1129,14 @@ class LayerWms(TypedDict, total=False):
     The layers use for query (To be used with the server)
     """
 
-    info_formats: List[str]
+    info_formats: list[str]
     """
     Info formats.
 
     The query info format
     """
 
-    params: Dict[str, "_ParametersAdditionalproperties"]
+    params: dict[str, "_ParametersAdditionalproperties"]
     """
     Parameters.
 
@@ -1247,7 +1247,7 @@ class Metadata(TypedDict, total=False):
     default: OGC WMTS
     """
 
-    keywords: List[str]
+    keywords: list[str]
     """
     Keywords.
 
@@ -1389,7 +1389,7 @@ class Phone(TypedDict, total=False):
     """
 
 
-ProcessCommand = List["_ProcessCommandItem"]
+ProcessCommand = list["_ProcessCommandItem"]
 """
 Process command.
 
@@ -1445,17 +1445,17 @@ class Redis(TypedDict, total=False):
     pattern: ^redis://[^:]+:[^:]+$
     """
 
-    sentinels: List["_SentinelsItem"]
+    sentinels: list["_SentinelsItem"]
     """
     Sentinels.
 
     The sentinels (main configuration)
     """
 
-    connection_kwargs: Dict[str, Any]
+    connection_kwargs: dict[str, Any]
     """ The Redis connection arguments (main configuration) """
 
-    sentinel_kwargs: Dict[str, Any]
+    sentinel_kwargs: dict[str, Any]
     """ The Redis sentinel arguments (main configuration) """
 
     service_name: str
@@ -1674,7 +1674,7 @@ class Server(TypedDict, total=False):
     The used cache name
     """
 
-    layers: List[str]
+    layers: list[str]
     """
     WMS Layers.
 
@@ -1690,7 +1690,7 @@ class Server(TypedDict, total=False):
     default: False
     """
 
-    static_allow_extension: List[str]
+    static_allow_extension: list[str]
     """
     Static allow extension.
 
@@ -1733,21 +1733,21 @@ class Server(TypedDict, total=False):
     default: 8
     """
 
-    predefined_commands: List["_PredefinedCommandsItem"]
+    predefined_commands: list["_PredefinedCommandsItem"]
     """
     Predefined commands.
 
     The predefined commands used to generate the tiles
     """
 
-    allowed_commands: List[str]
+    allowed_commands: list[str]
     """
     Allowed commands.
 
     The allowed commands (main configuration)
     """
 
-    allowed_arguments: List[str]
+    allowed_arguments: list[str]
     """
     Allowed arguments.
 
@@ -1860,7 +1860,7 @@ class _LayerDimensionsItem(TypedDict, total=False):
     name: Required["LayerDimensionName"]
     """ Required property """
 
-    generate: Required[List["_GenerateItem"]]
+    generate: Required[list["_GenerateItem"]]
     """
     Generate.
 
@@ -1869,7 +1869,7 @@ class _LayerDimensionsItem(TypedDict, total=False):
     Required property
     """
 
-    values: Required[List["_ValuesItem"]]
+    values: Required[list["_ValuesItem"]]
     """
     Values.
 
@@ -1988,7 +1988,7 @@ class _LayerLegendsItem(TypedDict, total=False):
     """
 
 
-_LayersFieldsAdditionalproperties = List[str]
+_LayersFieldsAdditionalproperties = list[str]
 """ The Mapnik layer fields """
 
 
@@ -2034,7 +2034,7 @@ class _ProcessCommandItem(TypedDict, total=False):
     arg: "Argument"
 
 
-_SentinelsItem = Tuple["SentinelHost", "SentinelPort"]
+_SentinelsItem = tuple["SentinelHost", "SentinelPort"]
 """
 A sentinel (main configuration)
 

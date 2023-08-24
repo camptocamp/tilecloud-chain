@@ -7,7 +7,8 @@ import os
 import struct
 import sys
 import threading
-from typing import TYPE_CHECKING, Any, Dict, Iterator, Optional, TypeVar, cast
+from collections.abc import Iterator
+from typing import TYPE_CHECKING, Any, Optional, TypeVar, cast
 
 import redis.sentinel
 from prometheus_client import Summary
@@ -191,7 +192,7 @@ def fetch(
     tilegeneration: tilecloud_chain.TileGeneration,
     layer: tilecloud_chain.configuration.Layer,
     tile: Tile,
-    kwargs: Dict[str, Any],
+    kwargs: dict[str, Any],
 ) -> Response:
     """Fetch a time in the cache (redis) or get it on the WMS server."""
     generator = _get_generator(tilegeneration)
@@ -218,7 +219,7 @@ def fetch(
                     return server.error(config, 500, "Error while generate the tile, see logs for details")
 
                 # Don't fetch the just generated tile
-                tiles: Dict[TileCoord, Tile] = cast(Dict[TileCoord, Tile], meta_tile.metadata["tiles"])
+                tiles: dict[TileCoord, Tile] = cast(dict[TileCoord, Tile], meta_tile.metadata["tiles"])
                 try:
                     fetched_tile = tiles[tile.tilecoord]
                 except KeyError:

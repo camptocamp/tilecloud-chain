@@ -8,7 +8,7 @@ from copy import copy
 from hashlib import sha1
 from io import BytesIO, StringIO
 from math import exp, log
-from typing import IO, List, Literal, Optional, Union, cast
+from typing import IO, Literal, Optional, Union, cast
 from urllib.parse import urlencode, urljoin
 
 import botocore.exceptions
@@ -37,7 +37,7 @@ _LOGGER = logging.getLogger(__name__)
 _GET_STATUS_SUMMARY = Summary("tilecloud_chain_get_status", "Number of get_stats", ["type", "queue"])
 
 
-def main(args: Optional[List[str]] = None, out: Optional[IO[str]] = None) -> None:
+def main(args: Optional[list[str]] = None, out: Optional[IO[str]] = None) -> None:
     """Generate the contextual file like the legends."""
 
     del out
@@ -248,7 +248,7 @@ def get_wmts_capabilities(
     return None
 
 
-def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> List[str]:
+def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:
     base_urls = []
     if "http_url" in cache:
         if "hosts" in cache:
@@ -268,7 +268,7 @@ def _fill_legend(
     gene: TileGeneration,
     cache: tilecloud_chain.configuration.Cache,
     server: Optional[tilecloud_chain.configuration.Server],
-    base_urls: List[str],
+    base_urls: list[str],
     config: Optional[DatedConfig] = None,
 ) -> None:
     if config is None:
@@ -393,7 +393,7 @@ def status(gene: TileGeneration) -> None:
     print("\n".join(get_status(gene)))
 
 
-def get_status(gene: TileGeneration) -> List[str]:
+def get_status(gene: TileGeneration) -> list[str]:
     """Get the tile generation status."""
     config = gene.get_main_config()
     store = get_queue_store(config, False)

@@ -1,5 +1,6 @@
 import time
-from typing import Any, Iterable, Iterator, Optional, TypeVar, cast
+from collections.abc import Iterable, Iterator
+from typing import Any, Optional, TypeVar, cast
 
 from prometheus_client import Summary
 

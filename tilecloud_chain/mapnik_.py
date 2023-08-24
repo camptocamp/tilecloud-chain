@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, Optional
 
 from tilecloud import Tile, TileStore
 from tilecloud.store.mapnik_ import MapnikTileStore
@@ -14,7 +14,7 @@ class MapnikDropActionTileStore(MapnikTileStore):
         self,
         store: Optional[TileStore] = None,
         queue_store: Optional[TileStore] = None,
-        count: Optional[List[Callable[[Optional[Tile]], Any]]] = None,
+        count: Optional[list[Callable[[Optional[Tile]], Any]]] = None,
         **kwargs: Any,
     ) -> None:
         """Initialize."""

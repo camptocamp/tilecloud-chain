@@ -1,7 +1,6 @@
 import os
 import shutil
 from itertools import product, repeat
-from typing import List, Tuple
 
 import pytest
 from testfixtures import LogCapture
@@ -846,7 +845,7 @@ class TestGenerate(CompareCase):
     #             regex=True)
     #         log_capture.check()
 
-    def _touch(self, tiles_pattern: str, tiles: List[Tuple[int, int]]) -> None:
+    def _touch(self, tiles_pattern: str, tiles: list[tuple[int, int]]) -> None:
         for tile in tiles:
             path = tiles_pattern % tile
             directory = os.path.dirname(path)
