@@ -1961,13 +1961,13 @@ certifi = "*"
 
 [[package]]
 name = "pyramid"
-version = "2.0.1"
+version = "2.0.2"
 description = "The Pyramid Web Framework, a Pylons project"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "pyramid-2.0.1-py3-none-any.whl", hash = "sha256:2f902589405ddc775e908bfdafebc92e836ffd85e1fd2a81dd724832cfae4d81"},
-    {file = "pyramid-2.0.1.tar.gz", hash = "sha256:fabfd745039e26ad5b0915fc396e8725c0f8a3d17b941f9611ecd1ed76cfe7da"},
+    {file = "pyramid-2.0.2-py3-none-any.whl", hash = "sha256:2e6585ac55c147f0a51bc00dadf72075b3bdd9a871b332ff9e5e04117ccd76fa"},
+    {file = "pyramid-2.0.2.tar.gz", hash = "sha256:372138a738e4216535cc76dcce6eddd5a1aaca95130f2354fb834264c06f18de"},
 ]
 
 [package.dependencies]
@@ -3280,4 +3280,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "22b6df2d38436173c857bfe80601ff8f11dc7933f28db88cf729cbf04b5d4cc2"
+content-hash = "e427a936ce517ae642c12de4d5e878da35e0dcc88852c6ad9dfc4b7e7d6d95c6"
