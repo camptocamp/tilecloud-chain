@@ -218,13 +218,13 @@ virtualenv = ["virtualenv (>=20.0.35)"]
 
 [[package]]
 name = "c2cwsgiutils"
-version = "6.0.0.dev153"
+version = "6.0.0.dev162"
 description = "Common utilities for Camptocamp WSGI applications"
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = ">=3.9,<4.0"
 files = [
-    {file = "c2cwsgiutils-6.0.0.dev153-py3-none-any.whl", hash = "sha256:db3a706b7d311e9020e1df579e16152f545cad1658189eba85b1d53ebeedd72e"},
-    {file = "c2cwsgiutils-6.0.0.dev153.tar.gz", hash = "sha256:b5c320b142a84ad2033a46a605d60c4fcd5f156ef48d636321d4fdd71705d23c"},
+    {file = "c2cwsgiutils-6.0.0.dev162-py3-none-any.whl", hash = "sha256:bfdb3a15c0b84828e8464a53af6a72ed4f9947a591639811131ac90befb1d43e"},
+    {file = "c2cwsgiutils-6.0.0.dev162.tar.gz", hash = "sha256:b4f19fe5c77e4877174656db27b756ab0d387f0962d9a9ac618509a1c2abc0a4"},
 ]
 
 [package.dependencies]
@@ -1857,13 +1857,13 @@ tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
 
 [[package]]
 name = "pyramid"
-version = "2.0.1"
+version = "2.0.2"
 description = "The Pyramid Web Framework, a Pylons project"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "pyramid-2.0.1-py3-none-any.whl", hash = "sha256:2f902589405ddc775e908bfdafebc92e836ffd85e1fd2a81dd724832cfae4d81"},
-    {file = "pyramid-2.0.1.tar.gz", hash = "sha256:fabfd745039e26ad5b0915fc396e8725c0f8a3d17b941f9611ecd1ed76cfe7da"},
+    {file = "pyramid-2.0.2-py3-none-any.whl", hash = "sha256:2e6585ac55c147f0a51bc00dadf72075b3bdd9a871b332ff9e5e04117ccd76fa"},
+    {file = "pyramid-2.0.2.tar.gz", hash = "sha256:372138a738e4216535cc76dcce6eddd5a1aaca95130f2354fb834264c06f18de"},
 ]
 
 [package.dependencies]
@@ -1944,13 +1944,13 @@ test = ["setuptools (>=60)", "zest.releaser[recommended]"]
 
 [[package]]
 name = "pytest"
-version = "7.4.0"
+version = "7.4.1"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pytest-7.4.0-py3-none-any.whl", hash = "sha256:78bf16451a2eb8c7a2ea98e32dc119fd2aa758f1d5d66dbf0a59d69a3969df32"},
-    {file = "pytest-7.4.0.tar.gz", hash = "sha256:b4bf8c45bd59934ed84001ad51e11b4ee40d40a1229d2c79f9c592b0a3f6bd8a"},
+    {file = "pytest-7.4.1-py3-none-any.whl", hash = "sha256:460c9a59b14e27c602eb5ece2e47bec99dc5fc5f6513cf924a7d03a578991b1f"},
+    {file = "pytest-7.4.1.tar.gz", hash = "sha256:2f2301e797521b23e4d2585a0a3d7b5e50fdddaaf7e7d6773ea26ddb17c213ab"},
 ]
 
 [package.dependencies]
@@ -2925,13 +2925,13 @@ cryptography = ">=35.0.0"
 
 [[package]]
 name = "types-redis"
-version = "4.6.0.4"
+version = "4.6.0.5"
 description = "Typing stubs for redis"
 optional = false
 python-versions = "*"
 files = [
-    {file = "types-redis-4.6.0.4.tar.gz", hash = "sha256:c475a9d3cf73dd696c3887d30644323fc56f5e00af96151035b3b5b52875c9b3"},
-    {file = "types_redis-4.6.0.4-py3-none-any.whl", hash = "sha256:03a1e1659ae4d8f6543bc2b8b11e94b1ee53937f313b1dc6f67dc7bde7d38fe0"},
+    {file = "types-redis-4.6.0.5.tar.gz", hash = "sha256:5f179d10bd3ca995a8134aafcddfc3e12d52b208437c4529ef27e68acb301f38"},
+    {file = "types_redis-4.6.0.5-py3-none-any.whl", hash = "sha256:4f662060247a2363c7a8f0b7e52915d68960870ff16a749a891eabcf87ed0be4"},
 ]
 
 [package.dependencies]
@@ -3278,4 +3278,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "2f562d84090b6bc40d44408b2656f8867c3b8cd9ff930e9abcec59c403fd3ed4"
+content-hash = "16cbeed5a470533a3b63e1b0db6ccf7bd61577768a9773b8c433606f7464ea12"

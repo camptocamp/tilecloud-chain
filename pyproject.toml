@@ -55,7 +55,7 @@ main = "tilecloud_chain.server:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
-c2cwsgiutils = { version = "6.0.0.dev153", extras = ["standard", "broadcast", "oauth2"] }
+c2cwsgiutils = { version = "6.0.0.dev162", extras = ["standard", "broadcast", "oauth2"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.8.2"
 tilecloud = { version = "1.10.0", extras = ["azure", "aws", "redis", "wsgi"] }
@@ -63,7 +63,7 @@ Jinja2 = "3.1.2"
 PyYAML = "6.0.1"
 Shapely = "2.0.1"
 jsonschema = "4.19.0"
-pyramid = "2.0.1"
+pyramid = "2.0.2"
 jsonschema-validator-new = "0.1.0"
 azure-storage-blob = "12.17.0"
 waitress = "2.1.2"
@@ -73,12 +73,12 @@ urllib3 = "1.26.16"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.10.2" }
-c2cwsgiutils = { version = "6.0.0.dev153", extras = ["test_images"] }
+c2cwsgiutils = { version = "6.0.0.dev162", extras = ["test_images"] }
 scikit-image = { version = "0.21.0" }
-pytest = "7.4.0"
+pytest = "7.4.1"
 testfixtures = "7.1.0"
 coverage = "7.3.0"
-types-redis = "4.6.0.4"
+types-redis = "4.6.0.5"
 types-requests = "2.31.0.2"
 
 [tool.poetry.group.dev.dependencies]
