@@ -112,6 +112,13 @@ class Authentication(TypedDict, total=False):
     """
 
     github_access_type: "GithubAccess"
+    """
+    GitHub access.
+
+    The kind of rights the user should have on the repository
+
+    default: pull
+    """
 
 
 AwsRegion = str
@@ -153,6 +160,8 @@ Cache = Union["CacheFilesystem", "CacheS3", "CacheAzure", "CacheMbtiles", "Cache
 Cache.
 
 The tiles cache definition, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-caches
+
+Aggregation type: anyOf
 """
 
 
@@ -171,10 +180,38 @@ See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 class CacheAzureTyped(TypedDict, total=False):
     type: Literal["azure"]
     wmtscapabilities_file: "CacheWmstCapabilitiesFile"
+    """
+    Cache WMST capabilities file.
+
+    The generated WMTS capabilities file name (by 'default 1.0.0/WMTSCapabilities.xml')
+    """
+
     http_url: "CacheHttpUrl"
+    """
+    Cache HTTP URL.
+
+    The HTTP URL %host will be replaces by one of the hosts
+    """
+
     hosts: "CacheHost"
+    """
+    Cache host.
+
+    The host used to build the HTTP URLs
+    """
+
     http_urls: "CacheHttpUrls"
+    """ Cache HTTP URLs. """
+
     folder: "CacheFolder"
+    """
+    Cache folder.
+
+    The root folder of the cache, default is ''
+
+    default:
+    """
+
     container: Required[str]
     """
     Container.
@@ -205,10 +242,37 @@ See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 class CacheBsddbTyped(TypedDict, total=False):
     type: Literal["bsddb"]
     wmtscapabilities_file: "CacheWmstCapabilitiesFile"
+    """
+    Cache WMST capabilities file.
+
+    The generated WMTS capabilities file name (by 'default 1.0.0/WMTSCapabilities.xml')
+    """
+
     http_url: "CacheHttpUrl"
+    """
+    Cache HTTP URL.
+
+    The HTTP URL %host will be replaces by one of the hosts
+    """
+
     hosts: "CacheHost"
+    """
+    Cache host.
+
+    The host used to build the HTTP URLs
+    """
+
     http_urls: "CacheHttpUrls"
+    """ Cache HTTP URLs. """
+
     folder: "CacheFolder"
+    """
+    Cache folder.
+
+    The root folder of the cache, default is ''
+
+    default:
+    """
 
 
 CacheFilesystem = Union[dict[str, str], "CacheFilesystemTyped"]
@@ -224,10 +288,37 @@ See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 class CacheFilesystemTyped(TypedDict, total=False):
     type: Literal["filesystem"]
     wmtscapabilities_file: "CacheWmstCapabilitiesFile"
+    """
+    Cache WMST capabilities file.
+
+    The generated WMTS capabilities file name (by 'default 1.0.0/WMTSCapabilities.xml')
+    """
+
     http_url: "CacheHttpUrl"
+    """
+    Cache HTTP URL.
+
+    The HTTP URL %host will be replaces by one of the hosts
+    """
+
     hosts: "CacheHost"
+    """
+    Cache host.
+
+    The host used to build the HTTP URLs
+    """
+
     http_urls: "CacheHttpUrls"
+    """ Cache HTTP URLs. """
+
     folder: "CacheFolder"
+    """
+    Cache folder.
+
+    The root folder of the cache, default is ''
+
+    default:
+    """
 
 
 CacheFolder = str
@@ -273,10 +364,37 @@ See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 class CacheMbtilesTyped(TypedDict, total=False):
     type: Literal["mbtiles"]
     wmtscapabilities_file: "CacheWmstCapabilitiesFile"
+    """
+    Cache WMST capabilities file.
+
+    The generated WMTS capabilities file name (by 'default 1.0.0/WMTSCapabilities.xml')
+    """
+
     http_url: "CacheHttpUrl"
+    """
+    Cache HTTP URL.
+
+    The HTTP URL %host will be replaces by one of the hosts
+    """
+
     hosts: "CacheHost"
+    """
+    Cache host.
+
+    The host used to build the HTTP URLs
+    """
+
     http_urls: "CacheHttpUrls"
+    """ Cache HTTP URLs. """
+
     folder: "CacheFolder"
+    """
+    Cache folder.
+
+    The root folder of the cache, default is ''
+
+    default:
+    """
 
 
 CacheS3 = Union[dict[str, str], "CacheS3Typed"]
@@ -292,9 +410,29 @@ See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 class CacheS3Typed(TypedDict, total=False):
     type: Literal["s3"]
     wmtscapabilities_file: "CacheWmstCapabilitiesFile"
+    """
+    Cache WMST capabilities file.
+
+    The generated WMTS capabilities file name (by 'default 1.0.0/WMTSCapabilities.xml')
+    """
+
     http_url: "CacheHttpUrl"
+    """
+    Cache HTTP URL.
+
+    The HTTP URL %host will be replaces by one of the hosts
+    """
+
     hosts: "CacheHost"
+    """
+    Cache host.
+
+    The host used to build the HTTP URLs
+    """
+
     http_urls: "CacheHttpUrls"
+    """ Cache HTTP URLs. """
+
     tiles_url: str
     """
     Tiles URL.
@@ -319,6 +457,14 @@ class CacheS3Typed(TypedDict, total=False):
     """
 
     region: "AwsRegion"
+    """
+    AWS region.
+
+    The region, default is 'eu-west-1'
+
+    pattern: ^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$
+    """
+
     cache_control: str
     """
     Cache control.
@@ -327,6 +473,13 @@ class CacheS3Typed(TypedDict, total=False):
     """
 
     folder: "CacheFolder"
+    """
+    Cache folder.
+
+    The root folder of the cache, default is ''
+
+    default:
+    """
 
 
 CacheWmstCapabilitiesFile = str
@@ -411,16 +564,81 @@ class Configuration(TypedDict, total=False):
     """
 
     generation: "Generation"
+    """
+    Generation.
+
+    The configuration used for the generation
+    """
+
     sqs: "Sqs"
+    """
+    SQS.
+
+    The Simple Queue Service configuration
+    """
+
     sns: "Sns"
+    """
+    SNS.
+
+    The Simple Notification Service configuration, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sns
+    """
+
     redis: "Redis"
+    """
+    Redis.
+
+    The Redis configuration (main configuration)
+    """
+
     openlayers: "Openlayers"
+    """
+    OpenLayers.
+
+    Configuration used to generate the OpenLayers example page
+    """
+
     server: "Server"
+    """
+    Server.
+
+    Configuration used by the tile server, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#distribute-the-tiles
+    """
+
     cost: "Cost"
+    """
+    Cost.
+
+    The configuration use to calculate the cast (unmaintained)
+    """
+
     metadata: "Metadata"
+    """
+    Metadata.
+
+    The configuration of the WMTS capabilities metadata
+    """
+
     provider: "Provider"
+    """
+    Provider.
+
+    The provider
+    """
+
     logging: "Logging"
+    """
+    Logging.
+
+    The logging configuration to database, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#logging (main configuration)
+    """
+
     authentication: "Authentication"
+    """
+    Authentication.
+
+    The authentication configuration
+    """
 
 
 class Contact(TypedDict, total=False):
@@ -437,6 +655,11 @@ class Contact(TypedDict, total=False):
     """ Position. """
 
     info: "Info"
+    """
+    Info.
+
+    The information
+    """
 
 
 class Cost(TypedDict, total=False):
@@ -456,8 +679,25 @@ class Cost(TypedDict, total=False):
     """
 
     s3: "S3Cost"
+    """
+    S3 cost.
+
+    The S3 cost (main configuration)
+    """
+
     cloudfront: "CloudfrontCost"
+    """
+    CloudFront cost.
+
+    The CloudFront cost (main configuration)
+    """
+
     sqs: "SqsCost"
+    """
+    SQS cost.
+
+    The SQS cost, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sqs (main configuration)
+    """
 
 
 DEFAULT_CACHE_DEFAULT = "default"
@@ -684,6 +924,13 @@ class Grid(TypedDict, total=False):
     """
 
     matrix_identifier: "MatrixIdentifier"
+    """
+    Matrix identifier.
+
+    The identifier to use in the tiles URL, recommend to be resolution (default)
+
+    default: zoom
+    """
 
 
 Headers = dict[str, "_HeadersAdditionalproperties"]
@@ -702,19 +949,22 @@ class Info(TypedDict, total=False):
     """
 
     phone: "Phone"
+    """
+    Phone.
+
+    The phone
+    """
+
     address: "Address"
+    """
+    Address.
 
-
-LAYER_META_BUFFER_DEFAULT = 128
-""" Default value of the field path 'Layer WMS meta_buffer' """
+    The address
+    """
 
 
 LAYER_META_DEFAULT = False
 """ Default value of the field path 'layer_meta' """
-
-
-LAYER_META_SIZE_DEFAULT = 5
-""" Default value of the field path 'Layer WMS meta_size' """
 
 
 LAYER_PIXEL_BUFFER_DEFAULT = 0
@@ -726,6 +976,8 @@ Layer = Union["LayerWms", "LayerMapnik"]
 Layer.
 
 The layer definition, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-layers
+
+Aggregation type: anyOf
 """
 
 
@@ -919,35 +1171,182 @@ class LayerMapnik(TypedDict, total=False):
 
     type: Literal["mapnik"]
     title: "LayerTitle"
+    """
+    Layer title.
+
+    The title, use to generate the capabilities
+    """
+
     grid: Required["LayerGrid"]
-    """ Required property """
+    """
+    Layer grid.
+
+    The used grid name
+
+    Required property
+    """
 
     bbox: "LayerBoundingBox"
+    """
+    Layer bounding box.
+
+    The bounding box where we will generate the tiles
+
+    minLength: 4
+    maxLength: 4
+    """
+
     min_resolution_seed: "LayerMinResolutionSeed"
+    """
+    layer min resolution seed.
+
+    The minimum resolutions to pre-generate
+    """
+
     px_buffer: "LayerPixelBuffer"
+    """
+    Layer pixel buffer.
+
+    The buffer in pixel used to calculate geometry intersection, default is 0
+
+    default: 0
+    """
+
     meta: "LayerMeta"
+    """
+    Layer meta.
+
+    Use meta-tiles, default is False, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles
+
+    default: False
+    """
+
     meta_size: "LayerMetaSize"
+    """
+    Layer meta size.
+
+    The meta-tile size in tiles, default is 5
+    """
+
     meta_buffer: "LayerMetaBuffer"
+    """
+    Layer meta buffer.
+
+    The meta-tiles buffer in pixels, default is 128
+    """
+
     layers: "LayerLayers"
+    """
+    Layer layers.
+
+    The WMS layers
+    """
+
     wmts_style: Required["LayerWmtsStyle"]
-    """ Required property """
+    r"""
+    Layer WMTS style.
+
+    The WMTS style
+
+    pattern: ^[a-zA-Z0-9_\-\+~\.]+$
+
+    Required property
+    """
 
     mime_type: Required["LayerMimeType"]
-    """ Required property """
+    r"""
+    Layer MIME type.
+
+    The MIME type of the tiles
+
+    pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
+
+    Required property
+    """
 
     extension: Required["LayerExtension"]
-    """ Required property """
+    """
+    Layer extension.
+
+    The layer extension
+
+    Required property
+    """
 
     dimensions: "LayerDimensions"
+    """
+    layer dimensions.
+
+    The WMTS dimensions
+    """
+
     legends: "LayerLegends"
+    """
+    Layer legends.
+
+    The provided legend
+    """
+
     legend_mime: "LayerLegendMime"
+    r"""
+    Layer legend MIME.
+
+    The mime type used to store the generated legend
+
+    pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
+    """
+
     legend_extension: "LayerLegendExtension"
+    """
+    Layer legend extension.
+
+    The extension used to store the generated legend
+
+    pattern: ^[a-zA-Z0-9]+$
+    """
+
     pre_hash_post_process: "LayerPreHashPostProcess"
+    """
+    Layer pre hash post process.
+
+    Do an image post process before the empty hash check
+    """
+
     post_process: "LayerPostProcess"
+    """
+    Layer post process.
+
+    Do an image post process after the empty hash check
+    """
+
     geoms: "LayerGeometries"
+    """
+    Layer geometries.
+
+    The geometries used to determine where we should create the tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-geomsql
+    """
+
     empty_tile_detection: "LayerEmptyTileDetection"
+    """
+    Layer empty tile detection.
+
+    The rules used to detect the empty tiles, use `generate-tiles --get-hash` to get what we can use, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-hash
+    """
+
     empty_metatile_detection: "LayerEmptyMetaTileDetection"
+    """
+    Layer empty meta-tile detection.
+
+    The rules used to detect the empty meta-tiles, use `generate-tiles --get-hash` to get what we can use, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-hash
+    """
+
     cost: "LayerCost"
+    """
+    Layer cost.
+
+    The rules used to calculate the cost
+    """
+
     mapfile: str
     """
     MapFile.
@@ -963,6 +1362,12 @@ class LayerMapnik(TypedDict, total=False):
     """
 
     output_format: "OutputFormat"
+    """
+    Output format.
+
+    The Mapnik output format, default is 'png'
+    """
+
     wms_url: str
     """
     WMS URL.
@@ -1075,37 +1480,184 @@ class LayerWms(TypedDict, total=False):
 
     type: Literal["wms"]
     title: "LayerTitle"
+    """
+    Layer title.
+
+    The title, use to generate the capabilities
+    """
+
     grid: Required["LayerGrid"]
-    """ Required property """
+    """
+    Layer grid.
+
+    The used grid name
+
+    Required property
+    """
 
     bbox: "LayerBoundingBox"
+    """
+    Layer bounding box.
+
+    The bounding box where we will generate the tiles
+
+    minLength: 4
+    maxLength: 4
+    """
+
     min_resolution_seed: "LayerMinResolutionSeed"
+    """
+    layer min resolution seed.
+
+    The minimum resolutions to pre-generate
+    """
+
     px_buffer: "LayerPixelBuffer"
+    """
+    Layer pixel buffer.
+
+    The buffer in pixel used to calculate geometry intersection, default is 0
+
+    default: 0
+    """
+
     meta: "LayerMeta"
+    """
+    Layer meta.
+
+    Use meta-tiles, default is False, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles
+
+    default: False
+    """
+
     meta_size: "LayerMetaSize"
+    """
+    Layer meta size.
+
+    The meta-tile size in tiles, default is 5
+    """
+
     meta_buffer: "LayerMetaBuffer"
+    """
+    Layer meta buffer.
+
+    The meta-tiles buffer in pixels, default is 128
+    """
+
     layers: Required["LayerLayers"]
-    """ Required property """
+    """
+    Layer layers.
+
+    The WMS layers
+
+    Required property
+    """
 
     wmts_style: Required["LayerWmtsStyle"]
-    """ Required property """
+    r"""
+    Layer WMTS style.
+
+    The WMTS style
+
+    pattern: ^[a-zA-Z0-9_\-\+~\.]+$
+
+    Required property
+    """
 
     mime_type: Required["LayerMimeType"]
-    """ Required property """
+    r"""
+    Layer MIME type.
+
+    The MIME type of the tiles
+
+    pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
+
+    Required property
+    """
 
     extension: Required["LayerExtension"]
-    """ Required property """
+    """
+    Layer extension.
+
+    The layer extension
+
+    Required property
+    """
 
     dimensions: "LayerDimensions"
+    """
+    layer dimensions.
+
+    The WMTS dimensions
+    """
+
     legends: "LayerLegends"
+    """
+    Layer legends.
+
+    The provided legend
+    """
+
     legend_mime: "LayerLegendMime"
+    r"""
+    Layer legend MIME.
+
+    The mime type used to store the generated legend
+
+    pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
+    """
+
     legend_extension: "LayerLegendExtension"
+    """
+    Layer legend extension.
+
+    The extension used to store the generated legend
+
+    pattern: ^[a-zA-Z0-9]+$
+    """
+
     pre_hash_post_process: "LayerPreHashPostProcess"
+    """
+    Layer pre hash post process.
+
+    Do an image post process before the empty hash check
+    """
+
     post_process: "LayerPostProcess"
+    """
+    Layer post process.
+
+    Do an image post process after the empty hash check
+    """
+
     geoms: "LayerGeometries"
+    """
+    Layer geometries.
+
+    The geometries used to determine where we should create the tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-geomsql
+    """
+
     empty_tile_detection: "LayerEmptyTileDetection"
+    """
+    Layer empty tile detection.
+
+    The rules used to detect the empty tiles, use `generate-tiles --get-hash` to get what we can use, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-hash
+    """
+
     empty_metatile_detection: "LayerEmptyMetaTileDetection"
+    """
+    Layer empty meta-tile detection.
+
+    The rules used to detect the empty meta-tiles, use `generate-tiles --get-hash` to get what we can use, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-hash
+    """
+
     cost: "LayerCost"
+    """
+    Layer cost.
+
+    The rules used to calculate the cost
+    """
+
     url: Required[str]
     """
     URL.
@@ -1144,6 +1696,12 @@ class LayerWms(TypedDict, total=False):
     """
 
     headers: "Headers"
+    """
+    Headers.
+
+    The headers that we send to the WMS backend
+    """
+
     version: str
     """
     Version.
@@ -1170,7 +1728,13 @@ class Logging(TypedDict, total=False):
     """
 
     database: Required["Database"]
-    """ Required property """
+    """
+    Database.
+
+    The database (main configuration)
+
+    Required property
+    """
 
 
 MAP_INITIAL_ZOOM_DEFAULT = 3
@@ -1415,6 +1979,11 @@ class Provider(TypedDict, total=False):
     """
 
     contact: "Contact"
+    """
+    Contact.
+
+    The contact
+    """
 
 
 QUEUE_DEFAULT = "tilecloud"
@@ -1657,6 +2226,8 @@ SentinelPort = Union[str, int]
 Sentinel port.
 
 The sentinel port (main configuration)
+
+Aggregation type: anyOf
 """
 
 
@@ -1772,6 +2343,13 @@ class Sns(TypedDict, total=False):
     """
 
     region: "AwsRegion"
+    """
+    AWS region.
+
+    The region, default is 'eu-west-1'
+
+    pattern: ^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$
+    """
 
 
 class Sqs(TypedDict, total=False):
@@ -1789,6 +2367,13 @@ class Sqs(TypedDict, total=False):
     """
 
     region: "AwsRegion"
+    """
+    AWS region.
+
+    The region, default is 'eu-west-1'
+
+    pattern: ^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$
+    """
 
 
 class SqsCost(TypedDict, total=False):
@@ -1856,9 +2441,25 @@ _LAYER_MAPNIK_META_SIZE_DEFAULT = 1
 """ Default value of the field path 'Layer Mapnik meta_size' """
 
 
+_LAYER_WMS_META_BUFFER_DEFAULT = 128
+""" Default value of the field path 'Layer WMS meta_buffer' """
+
+
+_LAYER_WMS_META_SIZE_DEFAULT = 5
+""" Default value of the field path 'Layer WMS meta_size' """
+
+
 class _LayerDimensionsItem(TypedDict, total=False):
     name: Required["LayerDimensionName"]
-    """ Required property """
+    r"""
+    Layer dimension name.
+
+    The dimension name
+
+    pattern: ^(?!(?i)(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\-~\.]+$
+
+    Required property
+    """
 
     generate: Required[list["_GenerateItem"]]
     """
@@ -2032,6 +2633,11 @@ class _ProcessCommandItem(TypedDict, total=False):
     """
 
     arg: "Argument"
+    """
+    Argument.
+
+    Used to build the %(args)
+    """
 
 
 _SentinelsItem = tuple["SentinelHost", "SentinelPort"]
