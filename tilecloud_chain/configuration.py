@@ -2011,7 +2011,7 @@ class Redis(TypedDict, total=False):
 
     The server URL (main configuration)
 
-    pattern: ^rediss?://[^:]+:[^:]+$
+    pattern: ^rediss?://([^:@/]*:[^:@/]*@)?[^:@/]+(:[0-9]+)?(/.*)?$
     """
 
     sentinels: list["_SentinelsItem"]

@@ -895,7 +895,7 @@
           "title": "URL",
           "description": "The server URL (main configuration)",
           "type": "string",
-          "pattern": "^rediss?://[^:]+:[^:]+$"
+          "pattern": "^rediss?://([^:@/]*:[^:@/]*@)?[^:@/]+(:[0-9]+)?(/.*)?$"
         },
         "sentinels": {
           "title": "Sentinels",
