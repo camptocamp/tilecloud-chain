@@ -301,7 +301,7 @@ Logging
 
 Tile logs can be saved to a PostgreSQL database with this configuration:
 
-..code:: yaml
+.. code:: yaml
 
     logging:
         database:
