@@ -55,7 +55,7 @@ main = "tilecloud_chain.server:main"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.11"
-c2cwsgiutils = { version = "6.0.1", extras = ["standard", "broadcast", "oauth2"] }
+c2cwsgiutils = { version = "6.0.1", extras = ["standard", "broadcast", "oauth2", "debug"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.8.2"
 tilecloud = { version = "1.10.0", extras = ["azure", "aws", "redis", "wsgi"] }

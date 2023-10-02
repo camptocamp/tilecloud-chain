@@ -233,6 +233,7 @@ cee_syslog_handler = "*"
 certifi = "*"
 cornice = "*"
 gunicorn = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
+objgraph = {version = "*", optional = true, markers = "extra == \"debug\" or extra == \"all\""}
 prometheus-client = "*"
 psycopg2 = "*"
 pyjwt = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"oauth2\" or extra == \"all\""}
@@ -1318,6 +1319,20 @@ files = [
 rsa = ["cryptography (>=3.0.0)"]
 signals = ["blinker (>=1.4.0)"]
 signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
+
+[[package]]
+name = "objgraph"
+version = "3.6.0"
+description = "Draws Python object reference graphs with graphviz"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "objgraph-3.6.0-py2.py3-none-any.whl", hash = "sha256:7c4aa57754c41bdd4ba67a8edfb44e45e248a1474444d0b9adca3cfd2717c485"},
+    {file = "objgraph-3.6.0.tar.gz", hash = "sha256:369567c37b4f2f928160b6f6ededcbea8fc7e929831877fd1056c78a900c17d3"},
+]
+
+[package.extras]
+ipython = ["graphviz"]
 
 [[package]]
 name = "packaging"
@@ -3277,4 +3292,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "399c1dc544d23fb944ff09316e7d4252455a9bc90a991e6040e951e281e27041"
+content-hash = "d2aa92733c794a11a04ca4225bc5534d67a6b93f67ac2dbdb1ed6b089fd9aea0"
