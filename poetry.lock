@@ -1136,17 +1136,17 @@ files = [
 
 [[package]]
 name = "msal"
-version = "1.22.0"
-description = "The Microsoft Authentication Library (MSAL) for Python library enables your app to access the Microsoft Cloud by supporting authentication of users with Microsoft Azure Active Directory accounts (AAD) and Microsoft Accounts (MSA) using industry standard OAuth2 and OpenID Connect."
+version = "1.24.1"
+description = "The Microsoft Authentication Library (MSAL) for Python library"
 optional = false
-python-versions = "*"
+python-versions = ">=2.7"
 files = [
-    {file = "msal-1.22.0-py2.py3-none-any.whl", hash = "sha256:9120b7eafdf061c92f7b3d744e5f325fca35873445fa8ffebb40b1086a13dd58"},
-    {file = "msal-1.22.0.tar.gz", hash = "sha256:8a82f5375642c1625c89058018430294c109440dce42ea667d466c2cab520acd"},
+    {file = "msal-1.24.1-py2.py3-none-any.whl", hash = "sha256:ce4320688f95c301ee74a4d0e9dbcfe029a63663a8cc61756f40d0d0d36574ad"},
+    {file = "msal-1.24.1.tar.gz", hash = "sha256:aa0972884b3c6fdec53d9a0bd15c12e5bd7b71ac1b66d746f54d128709f3f8f8"},
 ]
 
 [package.dependencies]
-cryptography = ">=0.6,<43"
+cryptography = ">=0.6,<44"
 PyJWT = {version = ">=1.0.0,<3", extras = ["crypto"]}
 requests = ">=2.0.0,<3"
 
@@ -3267,4 +3267,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "54bdd2a371ff7e664e45aeda51ab266f7683137a58fc6ba597f27118a61fd39f"
+content-hash = "c4a7dbf58787213bf6cb8724dfdd1e147da8f8c1dae137e5b86c7418740dc214"

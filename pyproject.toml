@@ -80,6 +80,7 @@ requests = "2.31.0"
 urllib3 = "1.26.16"
 scipy = "1.10.1"
 pillow = "10.0.1"
+msal = "1.24.1"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.8.4" }
