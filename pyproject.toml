@@ -68,8 +68,6 @@ jsonschema-validator-new = "0.1.0"
 azure-storage-blob = "12.18.2"
 waitress = "2.1.2"
 certifi = "2023.7.22"
-# Workaround to be able to do the lock file update
-urllib3 = "1.26.16"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.10.2" }
