@@ -66,7 +66,8 @@ _GEOMS_GET_SUMMARY = Summary("tilecloud_chain_geoms_get", "Geoms filter get", ["
 
 
 def formated_metadata(tile: Tile) -> str:
-    """Get human redable string of the metadata."""
+    """Get human readable string of the metadata."""
+
     metadata = dict(tile.metadata)
     if "tiles" in metadata:
         metadata["tiles"] = metadata["tiles"].keys()  # type: ignore
