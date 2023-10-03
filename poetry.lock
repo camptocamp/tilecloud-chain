@@ -179,18 +179,18 @@ files = [
 
 [[package]]
 name = "c2cwsgiutils"
-version = "5.0.1"
+version = "5.0.2"
 description = "Common utilities for Camptocamp WSGI applications"
 optional = false
 python-versions = "*"
 files = [
-    {file = "c2cwsgiutils-5.0.1-py3-none-any.whl", hash = "sha256:7b4d29593beec7bb9c310be4469223a3ba9087d6c10ba806c1ac92d4c95c3583"},
+    {file = "c2cwsgiutils-5.0.2-py3-none-any.whl", hash = "sha256:7aa23190b2c76a321bfb91e45c057da648f26e4d05665f168f706eacf217c9f6"},
 ]
 
 [package.extras]
 broadcast = ["redis"]
 profiler = ["linesman"]
-standard = ["SQLAlchemy", "SQLAlchemy-Utils", "alembic", "boltons", "cee-syslog-handler", "certifi", "charset-normalizer", "cornice", "deprecated", "graphviz", "greenlet", "gunicorn", "hupper", "idna", "importlib-metadata", "importlib-resources", "lxml", "mako", "markupsafe", "netifaces", "oauthlib", "objgraph", "packaging", "pastedeploy", "pipfile", "plaster", "plaster-pastedeploy", "psycopg2", "pyjwt", "pyparsing", "pyramid", "pyramid-tm", "pyyaml", "requests", "requests-oauthlib", "sentry-sdk", "setuptools", "six", "toml", "transaction", "translationstring", "ujson", "urllib3", "venusian", "waitress", "webob", "wrapt", "zipp", "zope.deprecation", "zope.interface", "zope.sqlalchemy"]
+standard = ["SQLAlchemy", "SQLAlchemy-Utils", "alembic", "boltons", "cee-syslog-handler", "certifi", "charset-normalizer", "cornice", "deprecated", "graphviz", "greenlet", "gunicorn", "hupper", "idna", "importlib-metadata", "importlib-resources", "lxml", "mako", "markupsafe", "netifaces", "oauthlib", "objgraph", "packaging", "pastedeploy", "pipfile", "plaster", "plaster-pastedeploy", "psycopg2", "pyjwt", "pyparsing", "pyramid", "pyramid-tm", "pyyaml", "requests", "requests-oauthlib", "sentry-sdk", "six", "toml", "transaction", "translationstring", "ujson", "urllib3", "venusian", "waitress", "webob", "wrapt", "zipp", "zope.deprecation", "zope.interface", "zope.sqlalchemy"]
 
 [[package]]
 name = "cee-syslog-handler"
@@ -1258,24 +1258,22 @@ with-vulture = ["vulture (>=1.5)"]
 
 [[package]]
 name = "psycopg2"
-version = "2.9.6"
+version = "2.9.8"
 description = "psycopg2 - Python-PostgreSQL Database Adapter"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "psycopg2-2.9.6-cp310-cp310-win32.whl", hash = "sha256:f7a7a5ee78ba7dc74265ba69e010ae89dae635eea0e97b055fb641a01a31d2b1"},
-    {file = "psycopg2-2.9.6-cp310-cp310-win_amd64.whl", hash = "sha256:f75001a1cbbe523e00b0ef896a5a1ada2da93ccd752b7636db5a99bc57c44494"},
-    {file = "psycopg2-2.9.6-cp311-cp311-win32.whl", hash = "sha256:53f4ad0a3988f983e9b49a5d9765d663bbe84f508ed655affdb810af9d0972ad"},
-    {file = "psycopg2-2.9.6-cp311-cp311-win_amd64.whl", hash = "sha256:b81fcb9ecfc584f661b71c889edeae70bae30d3ef74fa0ca388ecda50b1222b7"},
-    {file = "psycopg2-2.9.6-cp36-cp36m-win32.whl", hash = "sha256:11aca705ec888e4f4cea97289a0bf0f22a067a32614f6ef64fcf7b8bfbc53744"},
-    {file = "psycopg2-2.9.6-cp36-cp36m-win_amd64.whl", hash = "sha256:36c941a767341d11549c0fbdbb2bf5be2eda4caf87f65dfcd7d146828bd27f39"},
-    {file = "psycopg2-2.9.6-cp37-cp37m-win32.whl", hash = "sha256:869776630c04f335d4124f120b7fb377fe44b0a7645ab3c34b4ba42516951889"},
-    {file = "psycopg2-2.9.6-cp37-cp37m-win_amd64.whl", hash = "sha256:a8ad4a47f42aa6aec8d061fdae21eaed8d864d4bb0f0cade5ad32ca16fcd6258"},
-    {file = "psycopg2-2.9.6-cp38-cp38-win32.whl", hash = "sha256:2362ee4d07ac85ff0ad93e22c693d0f37ff63e28f0615a16b6635a645f4b9214"},
-    {file = "psycopg2-2.9.6-cp38-cp38-win_amd64.whl", hash = "sha256:d24ead3716a7d093b90b27b3d73459fe8cd90fd7065cf43b3c40966221d8c394"},
-    {file = "psycopg2-2.9.6-cp39-cp39-win32.whl", hash = "sha256:1861a53a6a0fd248e42ea37c957d36950da00266378746588eab4f4b5649e95f"},
-    {file = "psycopg2-2.9.6-cp39-cp39-win_amd64.whl", hash = "sha256:ded2faa2e6dfb430af7713d87ab4abbfc764d8d7fb73eafe96a24155f906ebf5"},
-    {file = "psycopg2-2.9.6.tar.gz", hash = "sha256:f15158418fd826831b28585e2ab48ed8df2d0d98f502a2b4fe619e7d5ca29011"},
+    {file = "psycopg2-2.9.8-cp310-cp310-win32.whl", hash = "sha256:2f8594f92bbb5d8b59ffec04e2686c416401e2d4297de1193f8e75235937e71d"},
+    {file = "psycopg2-2.9.8-cp310-cp310-win_amd64.whl", hash = "sha256:f9ecbf504c4eaff90139d5c9b95d47275f2b2651e14eba56392b4041fbf4c2b3"},
+    {file = "psycopg2-2.9.8-cp311-cp311-win32.whl", hash = "sha256:65f81e72136d8b9ac8abf5206938d60f50da424149a43b6073f1546063c0565e"},
+    {file = "psycopg2-2.9.8-cp311-cp311-win_amd64.whl", hash = "sha256:f7e62095d749359b7854143843f27edd7dccfcd3e1d833b880562aa5702d92b0"},
+    {file = "psycopg2-2.9.8-cp37-cp37m-win32.whl", hash = "sha256:81b21424023a290a40884c7f8b0093ba6465b59bd785c18f757e76945f65594c"},
+    {file = "psycopg2-2.9.8-cp37-cp37m-win_amd64.whl", hash = "sha256:67c2f32f3aba79afb15799575e77ee2db6b46b8acf943c21d34d02d4e1041d50"},
+    {file = "psycopg2-2.9.8-cp38-cp38-win32.whl", hash = "sha256:287a64ef168ef7fb9f382964705ff664b342bfff47e7242bf0a04ef203269dd5"},
+    {file = "psycopg2-2.9.8-cp38-cp38-win_amd64.whl", hash = "sha256:dcde3cad4920e29e74bf4e76c072649764914facb2069e6b7fa1ddbebcd49e9f"},
+    {file = "psycopg2-2.9.8-cp39-cp39-win32.whl", hash = "sha256:d4ad050ea50a16731d219c3a85e8f2debf49415a070f0b8331ccc96c81700d9b"},
+    {file = "psycopg2-2.9.8-cp39-cp39-win_amd64.whl", hash = "sha256:d39bb3959788b2c9d7bf5ff762e29f436172b241cd7b47529baac77746fd7918"},
+    {file = "psycopg2-2.9.8.tar.gz", hash = "sha256:3da6488042a53b50933244085f3f91803f1b7271f970f3e5536efa69314f6a49"},
 ]
 
 [[package]]
@@ -2295,17 +2293,17 @@ files = [
 
 [[package]]
 name = "urllib3"
-version = "1.26.16"
+version = "1.26.17"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 files = [
-    {file = "urllib3-1.26.16-py2.py3-none-any.whl", hash = "sha256:8d36afa7616d8ab714608411b4a3b13e58f463aee519024578e062e141dce20f"},
-    {file = "urllib3-1.26.16.tar.gz", hash = "sha256:8f135f6502756bde6b2a9b28989df5fbe87c9970cecaa69041edcce7f0589b14"},
+    {file = "urllib3-1.26.17-py2.py3-none-any.whl", hash = "sha256:94a757d178c9be92ef5539b8840d48dc9cf1b2709c9d6b588232a055c524458b"},
+    {file = "urllib3-1.26.17.tar.gz", hash = "sha256:24d6a242c28d29af46c3fae832c36db3bbebcc533dd1bb549172cd739c82df21"},
 ]
 
 [package.extras]
-brotli = ["brotli (>=1.0.9)", "brotlicffi (>=0.8.0)", "brotlipy (>=0.6.0)"]
+brotli = ["brotli (==1.0.9)", "brotli (>=1.0.9)", "brotlicffi (>=0.8.0)", "brotlipy (>=0.6.0)"]
 secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "ipaddress", "pyOpenSSL (>=0.14)", "urllib3-secure-extra"]
 socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
@@ -2523,4 +2521,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "97f907faaafcde45b5aea9516633accf4af4314de1f94f0cdddda8b75966e691"
+content-hash = "e62cace1a5130a92d67ba63c27b68b773d151fd18dd7ea3a9c713a225fc9b81b"
