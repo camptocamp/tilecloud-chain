@@ -38,7 +38,7 @@ repos:
             |^tilecloud_chain/schema\.json$
           )
   - repo: https://github.com/sbrunner/jsonschema2md2
-    rev: 0.9.0
+    rev: 1.0.0
     hooks:
       - id: jsonschema2md
         files: tilecloud_chain/schema\.json
