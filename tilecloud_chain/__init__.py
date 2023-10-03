@@ -65,7 +65,7 @@ _ERROR_COUNTER = Counter("tilecloud_chain_error_counter", "Number of errors", ["
 _GEOMS_GET_SUMMARY = Summary("tilecloud_chain_geoms_get", "Geoms filter get", ["layer", "host"])
 
 
-def formated_metadata(tile: Tile) -> str:
+def formatted_metadata(tile: Tile) -> str:
     """Get human readable string of the metadata."""
 
     metadata = dict(tile.metadata)
@@ -74,7 +74,7 @@ def formated_metadata(tile: Tile) -> str:
     return " ".join([f"{k}={metadata[k]}" for k in sorted(metadata.keys())])
 
 
-setattr(Tile, "formated_metadata", property(formated_metadata))
+setattr(Tile, "formated_metadata", property(formatted_metadata))
 
 
 def add_common_options(
@@ -1573,8 +1573,8 @@ def quote(arg: str) -> str:
     if " " in arg or "'" in arg or '"' in arg:
         if "'" in arg:
             if '"' in arg:
-                formated_arg = arg.replace("'", "\\'")
-                return f"'{formated_arg}'"
+                formatted_arg = arg.replace("'", "\\'")
+                return f"'{formatted_arg}'"
             return f'"{arg}"'
         else:
             return f"'{arg}'"

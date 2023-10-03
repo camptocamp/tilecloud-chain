@@ -330,13 +330,13 @@ class Generate:
                 assert config is not None
                 layer = config.config["layers"][layer_name]
                 all_dimensions = self._gene.get_all_dimensions(layer)
-                formated_dimensions = " - ".join(
+                formatted_dimensions = " - ".join(
                     [", ".join(["=".join(d) for d in dimensions.items()]) for dimensions in all_dimensions]
                 )
                 suffix = (
                     ""
                     if ((len(all_dimensions) == 1 and len(all_dimensions[0]) == 0) or layer["type"] != "wms")
-                    else f" ({formated_dimensions})"
+                    else f" ({formatted_dimensions})"
                 )
                 message = [f"The tile generation of layer '{layer_name}{suffix}' is finish"]
             else:
