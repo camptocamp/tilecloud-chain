@@ -225,26 +225,44 @@ virtualenv = ["virtualenv (>=20.0.35)"]
 
 [[package]]
 name = "c2cwsgiutils"
-version = "5.1.6"
+version = "5.1.7"
 description = "Common utilities for Camptocamp WSGI applications"
 optional = false
 python-versions = "*"
 files = [
-    {file = "c2cwsgiutils-5.1.6-py3-none-any.whl", hash = "sha256:c4491eb70d536b2f24c346be64f6f2a077e062489086fb752b567d79307c2068"},
+    {file = "c2cwsgiutils-5.1.7-py3-none-any.whl", hash = "sha256:2132afd1996f10a13c6d9b34de7d0643b8943075267a0d203d88b12fd86b7271"},
 ]
 
 [package.dependencies]
 alembic = {version = "*", optional = true, markers = "extra == \"standard\""}
+async-timeout = {version = "*", optional = true, markers = "extra == \"standard\""}
 boltons = {version = "*", optional = true, markers = "extra == \"standard\""}
 cee-syslog-handler = {version = "*", optional = true, markers = "extra == \"standard\""}
+certifi = {version = "*", optional = true, markers = "extra == \"standard\""}
+charset-normalizer = {version = "*", optional = true, markers = "extra == \"standard\""}
 cornice = {version = "*", optional = true, markers = "extra == \"standard\""}
+deprecated = {version = "*", optional = true, markers = "extra == \"standard\""}
+graphviz = {version = "*", optional = true, markers = "extra == \"standard\""}
+greenlet = {version = "*", optional = true, markers = "extra == \"standard\""}
 gunicorn = {version = "*", optional = true, markers = "extra == \"standard\""}
+hupper = {version = "*", optional = true, markers = "extra == \"standard\""}
+idna = {version = "*", optional = true, markers = "extra == \"standard\""}
+importlib-metadata = {version = "*", optional = true, markers = "extra == \"standard\""}
+importlib-resources = {version = "*", optional = true, markers = "extra == \"standard\""}
 lxml = {version = "*", optional = true, markers = "extra == \"standard\""}
+mako = {version = "*", optional = true, markers = "extra == \"standard\""}
+markupsafe = {version = "*", optional = true, markers = "extra == \"standard\""}
 netifaces = {version = "*", optional = true, markers = "extra == \"standard\""}
+oauthlib = {version = "*", optional = true, markers = "extra == \"standard\""}
 objgraph = {version = "*", optional = true, markers = "extra == \"standard\""}
+packaging = {version = "*", optional = true, markers = "extra == \"standard\""}
+pastedeploy = {version = "*", optional = true, markers = "extra == \"standard\""}
 pipfile = {version = "*", optional = true, markers = "extra == \"standard\""}
+plaster = {version = "*", optional = true, markers = "extra == \"standard\""}
+plaster-pastedeploy = {version = "*", optional = true, markers = "extra == \"standard\""}
 psycopg2 = {version = "*", optional = true, markers = "extra == \"standard\""}
 pyjwt = {version = "*", optional = true, markers = "extra == \"standard\""}
+pyparsing = {version = "*", optional = true, markers = "extra == \"standard\""}
 pyramid = {version = "*", optional = true, markers = "extra == \"standard\""}
 pyramid-tm = {version = "*", optional = true, markers = "extra == \"standard\""}
 pyyaml = {version = "*", optional = true, markers = "extra == \"standard\""}
@@ -255,14 +273,23 @@ scikit-image = {version = "*", optional = true, markers = "extra == \"test_image
 sentry-sdk = {version = "*", optional = true, markers = "extra == \"standard\""}
 sqlalchemy = {version = "*", optional = true, markers = "extra == \"standard\""}
 sqlalchemy-utils = {version = "*", optional = true, markers = "extra == \"standard\""}
+toml = {version = "*", optional = true, markers = "extra == \"standard\""}
+transaction = {version = "*", optional = true, markers = "extra == \"standard\""}
+translationstring = {version = "*", optional = true, markers = "extra == \"standard\""}
 ujson = {version = "*", optional = true, markers = "extra == \"standard\""}
+urllib3 = {version = "*", optional = true, markers = "extra == \"standard\""}
+venusian = {version = "*", optional = true, markers = "extra == \"standard\""}
 waitress = {version = "*", optional = true, markers = "extra == \"standard\""}
+webob = {version = "*", optional = true, markers = "extra == \"standard\""}
+wrapt = {version = "*", optional = true, markers = "extra == \"standard\""}
+zipp = {version = "*", optional = true, markers = "extra == \"standard\""}
+"zope.deprecation" = {version = "*", optional = true, markers = "extra == \"standard\""}
 "zope.interface" = {version = "*", optional = true, markers = "extra == \"standard\""}
 "zope.sqlalchemy" = {version = "*", optional = true, markers = "extra == \"standard\""}
 
 [package.extras]
 broadcast = ["redis"]
-standard = ["alembic", "boltons", "cee-syslog-handler", "cornice", "gunicorn", "lxml", "netifaces", "objgraph", "pipfile", "psycopg2", "pyjwt", "pyramid", "pyramid-tm", "pyyaml", "requests", "requests-oauthlib", "sentry-sdk", "sqlalchemy", "sqlalchemy-utils", "ujson", "waitress", "zope.interface", "zope.sqlalchemy"]
+standard = ["alembic", "async-timeout", "boltons", "cee-syslog-handler", "certifi", "charset-normalizer", "cornice", "deprecated", "graphviz", "greenlet", "gunicorn", "hupper", "idna", "importlib-metadata", "importlib-resources", "lxml", "mako", "markupsafe", "netifaces", "oauthlib", "objgraph", "packaging", "pastedeploy", "pipfile", "plaster", "plaster-pastedeploy", "psycopg2", "pyjwt", "pyparsing", "pyramid", "pyramid-tm", "pyyaml", "requests", "requests-oauthlib", "sentry-sdk", "sqlalchemy", "sqlalchemy-utils", "toml", "transaction", "translationstring", "ujson", "urllib3", "venusian", "waitress", "webob", "wrapt", "zipp", "zope.deprecation", "zope.interface", "zope.sqlalchemy"]
 test-images = ["scikit-image"]
 
 [[package]]
@@ -510,6 +537,23 @@ sdist = ["build"]
 ssh = ["bcrypt (>=3.1.5)"]
 test = ["pretend", "pytest (>=6.2.0)", "pytest-benchmark", "pytest-cov", "pytest-xdist"]
 test-randomorder = ["pytest-randomly"]
+
+[[package]]
+name = "deprecated"
+version = "1.2.14"
+description = "Python @deprecated decorator to deprecate old python classes, functions or methods."
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+files = [
+    {file = "Deprecated-1.2.14-py2.py3-none-any.whl", hash = "sha256:6fac8b097794a90302bdbb17b9b815e732d3c4720583ff1b198499d78470466c"},
+    {file = "Deprecated-1.2.14.tar.gz", hash = "sha256:e5323eb936458dccc2582dc6f9c322c852a775a27065ff2b0c4970b9d53d01b3"},
+]
+
+[package.dependencies]
+wrapt = ">=1.10,<2"
+
+[package.extras]
+dev = ["PyTest", "PyTest-Cov", "bump2version (<1)", "sphinx (<2)", "tox"]
 
 [[package]]
 name = "dill"
@@ -3012,17 +3056,17 @@ files = [
 
 [[package]]
 name = "urllib3"
-version = "1.26.16"
+version = "1.26.17"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 files = [
-    {file = "urllib3-1.26.16-py2.py3-none-any.whl", hash = "sha256:8d36afa7616d8ab714608411b4a3b13e58f463aee519024578e062e141dce20f"},
-    {file = "urllib3-1.26.16.tar.gz", hash = "sha256:8f135f6502756bde6b2a9b28989df5fbe87c9970cecaa69041edcce7f0589b14"},
+    {file = "urllib3-1.26.17-py2.py3-none-any.whl", hash = "sha256:94a757d178c9be92ef5539b8840d48dc9cf1b2709c9d6b588232a055c524458b"},
+    {file = "urllib3-1.26.17.tar.gz", hash = "sha256:24d6a242c28d29af46c3fae832c36db3bbebcc533dd1bb549172cd739c82df21"},
 ]
 
 [package.extras]
-brotli = ["brotli (>=1.0.9)", "brotlicffi (>=0.8.0)", "brotlipy (>=0.6.0)"]
+brotli = ["brotli (==1.0.9)", "brotli (>=1.0.9)", "brotlicffi (>=0.8.0)", "brotlipy (>=0.6.0)"]
 secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "ipaddress", "pyOpenSSL (>=0.14)", "urllib3-secure-extra"]
 socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
@@ -3267,4 +3311,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "c4a7dbf58787213bf6cb8724dfdd1e147da8f8c1dae137e5b86c7418740dc214"
+content-hash = "86b4d6a8a471ac760f9d86bff24b6f949994c7ed104d2c688212776fc0157d41"
