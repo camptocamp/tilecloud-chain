@@ -17,6 +17,7 @@ jobs:
           - '1.15'
           - '1.17'
           - '1.18'
+          - '1.19'
 
     steps:
       - run: pip install pyOpenSSL --upgrade
