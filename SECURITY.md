@@ -10,3 +10,4 @@
 | 1.16    | Unsupported     |
 | 1.17    | 23/06/2025      |
 | 1.18    | Best effort     |
+| 1.19    | Best effort     |
