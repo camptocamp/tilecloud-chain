@@ -8,6 +8,7 @@ ci:
     - jsonschema-gentypes
     - jsonschema2md
 
+    - jsonschema-validator
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
@@ -119,3 +120,16 @@ repos:
           - --output-format=pylint
         additional_dependencies:
           - prospector-profile-duplicated==0.3.0 # pypi
+  - repo: https://github.com/sbrunner/jsonschema-validator
+    rev: 0.1.0
+    hooks:
+      - id: jsonschema-validator
+        files: ^ci/config\.yaml$
+  - repo: https://github.com/mheap/json-schema-spell-checker
+    rev: master
+    hooks:
+      - id: json-schema-spell-checker
+        files: ^tilecloud_chain/schema\.json$
+        args:
+          - --fields=description,title
+          - --spelling=.github/spell-ignore-words.txt
