@@ -33,6 +33,12 @@
     </style>
   </head>
   <body class="px-5 py-4">
+    <script>
+      /* For dark mode */
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-bs-theme', 'dark');
+      }
+    </script>
     <div style="position: absolute; right: 3rem; top: 2rem">
       %if not request.identity.is_auth and auth_type == AuthenticationType.SECRET:
       <form>
@@ -49,7 +55,7 @@
       <p>
         Logged as: <a href="${request.identity.url}">${request.identity.name}</a>
         <a
-          class="btn btn-primary"
+          class="btn btn-outline-primary"
           style="vertical-align: baseline; margin-left: 0.5rem"
           href="${request.route_url('c2c_github_logout', _query={'came_from': request.current_route_url()})}"
           >Logout</a
@@ -61,38 +67,202 @@
     <hr />
     <span></span>
     %if has_access:
+    <!---->
+    %if job_status is None:
     <h2>Status</h2>
     <p>${'<br />'.join(status)|n}</p>
+    %endif
     <h2>Launch generation</h2>
-    <form id="command-form" class="form-inline">
-      <div class="input-group mb-3">
-        <input
-          id="command"
-          type="text"
-          name="command"
-          class="form-control"
-          placeholder="Command"
-          aria-label="Command"
-          aria-describedby="button-run"
-        />
-        <button class="btn btn-outline-primary" type="submit" id="button-run">Start</button>
+    <div class="dropdown">
+      <button
+        class="btn btn-outline-primary dropdown-toggle"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        Predefined commands
+      </button>
+      <ul class="dropdown-menu">
+        %for command in commands:
+        <li>
+          <button
+            class="btn btn-outline-primary command dropdown-item"
+            data-role="${command.get('command', '')}"
+            data-name="${command.get('name', 'Unnamed')}"
+          >
+            ${command.get('name', 'Unnamed')}
+          </button>
+        </li>
+        %endfor
+      </ul>
+    </div>
+    <p></p>
+    <form id="command-${'form' if jobs_status is None else 'postgres'}" class="form-inline">
+      <div class="input-group">
+        %if jobs_status is not None:
+        <div class="form-floating mb-3">
+          <input
+            id="name"
+            type="text"
+            name="name"
+            class="form-control"
+            id="floatingName"
+            placeholder="Name"
+            aria-label="Name"
+          />
+          <label for="floatingName">Name</label>
+        </div>
+
+        %endif
+        <div class="form-floating mb-3">
+          <input
+            id="command"
+            type="text"
+            name="command"
+            class="form-control"
+            id="floatingCommand"
+            placeholder="Command"
+            aria-label="Command"
+          />
+          <label for="floatingCommand">Command</label>
+        </div>
+        <button class="btn btn-primary mb-3" type="submit" id="button-run">Start</button>
       </div>
       %if secret is not None:
       <input type="hidden" name="secret" value="${request.params.get('secret')}" />
       %endif
     </form>
-    <div class="btn-group" role="group" style="margin-bottom: 1rem">
-      %for command in commands:
-      <button class="btn btn-outline-primary command" data-role="${command.get('command', '')}">
-        ${command.get('name', 'Unnamed')}
-      </button>
-      %endfor
-    </div>
     %endif
+    <!---->
+    %if jobs_status is None:
     <span id="result"></span>
+    %endif
 
     <h2>Test</h2>
     <p>See the result in <a href="/${admin_path}/test">the test page</a>.</p>
+
+    %if jobs_status:
+    <h2>Jobs</h2>
+    <div class="accordion" id="accordionJobs">
+      %for nb, (job, status, errors) in enumerate(jobs_status):
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button
+            class="accordion-button collapsed"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#collapse${nb}"
+            aria-controls="collapse${nb}"
+          >
+            ${job.name} (
+            <script>
+              window.document.write(new Date('${ job.created_at.isoformat() }').toLocaleString());
+            </script>
+            , ${job.status})
+            <!-- ${job.id} -->
+          </button>
+        </h2>
+        <div id="collapse${nb}" class="accordion-collapse collapse">
+          <div class="accordion-body">
+            <p>
+              <code>${job.command}</code><br />
+              %if job.message:
+              <!---->
+              %if '\\n' in job.message:
+              <!---->
+              Message:
+              <!---->
+              %for m in job.message.split('\\n'):
+              <!---->
+              {m}<br />
+              %endfor
+              <!---->
+              %else:
+              <!---->
+              Message: ${job.message}<br />
+              %endif
+              <!---->
+              %endif
+            </p>
+
+            %if job.status == 'started':
+            <p>
+              <button type="button" class="btn btn-outline-primary cancel" data-job-id="${job.id}">
+                Cancel the tiles generation
+              </button>
+            </p>
+            %elif job.status == 'error' and errors:
+            <p>
+              <button type="button" class="btn btn-outline-primary retry" data-job-id="${job.id}">
+                Retry to generate the tiles in error
+              </button>
+            </p>
+            %endif
+            <!---->
+            %if status:
+            <h4>Status</h4>
+            <p>
+              %for s in status:
+              <!---->
+              Zoom level ${s['zoom']}:
+              <!---->
+              <% comma = False %>
+              <!---->
+              %if 'generate' in s:
+              <!---->
+              <% comma = True %>
+              <span style="color: var(--bs-success-text-emphasis)"
+                >${s['generate']} meta tiles to generate</span
+              >
+              %endif
+              <!---->
+              %if 'pending' in s:
+              <!---->
+              %if comma:
+              <!---->
+              ,
+              <!---->
+              %endif
+              <!---->
+              <% comma = True %>
+              <span style="color: var(--bs-primary-text-emphasis)"
+                >${s['pending']} generating meta tiles</span
+              >
+              %endif
+              <!---->
+              %if 'error' in s:
+              <!---->
+              %if comma:
+              <!---->
+              ,
+              <!---->
+              %endif
+              <span style="color: var(--bs-danger-text-emphasis)">${s['error']} meta tiles in error</span>
+              %endif
+              <br />
+              %endfor
+            </p>
+            %endif
+            <!---->
+            %if errors:
+            <h4>Errors occur during the generation (max 5)</h4>
+            %for e in errors:
+            <!---->
+            <p>${e}</p>
+            %endfor
+            <!---->
+            %endif
+          </div>
+        </div>
+      </div>
+      %endfor
+    </div>
+    %endif
+    <!---->
+    %if footer is not None:
+    <br />
+    <div class="${ footer_classes }">${ footer }</div>
+    %endif
 
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
@@ -114,12 +284,8 @@
     ></script>
     <script>
       $(document).ready(function () {
-        /* For dark mode */
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          document.documentElement.setAttribute('data-bs-theme', 'dark');
-        }
-
         $('.command').click((handler) => {
+          $('#name').val(handler.target.dataset.name);
           $('#command').val(handler.target.dataset.role);
         });
         $('#command-form').submit((event) => {
@@ -147,6 +313,53 @@
             .catch((error) => {
               console.error(error);
               $('#result').html(`<div class="alert alert-danger" role="alert">${'$'}{error}</div>`);
+            });
+        });
+        $('#command-postgres').submit((event) => {
+          event.preventDefault();
+
+          fetch('${request.route_url("admin_create_job")}', {
+            body: new FormData(document.getElementById('command-postgres')),
+            method: 'POST',
+          })
+            .then((response) => {
+              window.location.reload();
+            })
+            .catch((error) => {
+              console.error(error);
+              $('#result').html(`<div class="alert alert-danger" role="alert">${'$'}{error}</div>`);
+            });
+        });
+        $('.cancel').click((event) => {
+          event.preventDefault();
+
+          let body = new FormData();
+          body.append('job_id', event.target.dataset.jobId);
+          fetch('${request.route_url("admin_cancel_job")}', {
+            method: 'POST',
+            body: body,
+          })
+            .then((response) => {
+              window.location.reload();
+            })
+            .catch((error) => {
+              window.alert(error);
+            });
+        });
+        $('.retry').click((event) => {
+          event.preventDefault();
+
+          let body = new FormData();
+          body.append('job_id', event.target.dataset.jobId);
+          fetch('${request.route_url("admin_retry_job")}', {
+            method: 'POST',
+            body: body,
+          })
+            .then((response) => {
+              window.location.reload();
+            })
+            .catch((error) => {
+              window.alert(error);
             });
         });
       });

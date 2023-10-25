@@ -11,6 +11,33 @@ ADMIN_PATH_DEFAULT = "admin"
 """ Default value of the field path 'Server admin_path' """
 
 
+ALLOWED_ARGUMENTS_DEFAULT = [
+    "--layer",
+    "--get-hash",
+    "--generate-legend-images",
+    "--get-bbox",
+    "--help",
+    "--ignore-errors",
+    "--bbox",
+    "--zoom",
+    "--test",
+    "--near",
+    "--time",
+    "--measure-generation-time",
+    "--no-geom",
+    "--dimensions",
+]
+""" Default value of the field path 'Server allowed_arguments' """
+
+
+ALLOWED_COMMANDS_DEFAULT = ["generate-tiles", "generate-controller", "generate-cost"]
+""" Default value of the field path 'Server allowed_commands' """
+
+
+AWS_REGION_DEFAULT = "eu-west-1"
+""" Default value of the field path 'aws_region' """
+
+
 class Address(TypedDict, total=False):
     """
     Address.
@@ -125,14 +152,19 @@ AwsRegion = str
 """
 AWS region.
 
-The region, default is 'eu-west-1'
+The region
 
 pattern: ^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$
+default: eu-west-1
 """
 
 
 CACHE_FOLDER_DEFAULT = ""
 """ Default value of the field path 'cache_folder' """
+
+
+CACHE_WMST_CAPABILITIES_FILE_DEFAULT = "1.0.0/WMTSCapabilities.xml"
+""" Default value of the field path 'cache_wmtscapabilities_file' """
 
 
 CENTER_X_DEFAULT = 2600000
@@ -183,7 +215,9 @@ class CacheAzureTyped(TypedDict, total=False):
     """
     Cache WMST capabilities file.
 
-    The generated WMTS capabilities file name (by 'default 1.0.0/WMTSCapabilities.xml')
+    The generated WMTS capabilities file name
+
+    default: 1.0.0/WMTSCapabilities.xml
     """
 
     http_url: "CacheHttpUrl"
@@ -207,7 +241,7 @@ class CacheAzureTyped(TypedDict, total=False):
     """
     Cache folder.
 
-    The root folder of the cache, default is ''
+    The root folder of the cache
 
     default:
     """
@@ -245,7 +279,9 @@ class CacheBsddbTyped(TypedDict, total=False):
     """
     Cache WMST capabilities file.
 
-    The generated WMTS capabilities file name (by 'default 1.0.0/WMTSCapabilities.xml')
+    The generated WMTS capabilities file name
+
+    default: 1.0.0/WMTSCapabilities.xml
     """
 
     http_url: "CacheHttpUrl"
@@ -269,7 +305,7 @@ class CacheBsddbTyped(TypedDict, total=False):
     """
     Cache folder.
 
-    The root folder of the cache, default is ''
+    The root folder of the cache
 
     default:
     """
@@ -291,7 +327,9 @@ class CacheFilesystemTyped(TypedDict, total=False):
     """
     Cache WMST capabilities file.
 
-    The generated WMTS capabilities file name (by 'default 1.0.0/WMTSCapabilities.xml')
+    The generated WMTS capabilities file name
+
+    default: 1.0.0/WMTSCapabilities.xml
     """
 
     http_url: "CacheHttpUrl"
@@ -315,7 +353,7 @@ class CacheFilesystemTyped(TypedDict, total=False):
     """
     Cache folder.
 
-    The root folder of the cache, default is ''
+    The root folder of the cache
 
     default:
     """
@@ -325,7 +363,7 @@ CacheFolder = str
 """
 Cache folder.
 
-The root folder of the cache, default is ''
+The root folder of the cache
 
 default:
 """
@@ -367,7 +405,9 @@ class CacheMbtilesTyped(TypedDict, total=False):
     """
     Cache WMST capabilities file.
 
-    The generated WMTS capabilities file name (by 'default 1.0.0/WMTSCapabilities.xml')
+    The generated WMTS capabilities file name
+
+    default: 1.0.0/WMTSCapabilities.xml
     """
 
     http_url: "CacheHttpUrl"
@@ -391,7 +431,7 @@ class CacheMbtilesTyped(TypedDict, total=False):
     """
     Cache folder.
 
-    The root folder of the cache, default is ''
+    The root folder of the cache
 
     default:
     """
@@ -413,7 +453,9 @@ class CacheS3Typed(TypedDict, total=False):
     """
     Cache WMST capabilities file.
 
-    The generated WMTS capabilities file name (by 'default 1.0.0/WMTSCapabilities.xml')
+    The generated WMTS capabilities file name
+
+    default: 1.0.0/WMTSCapabilities.xml
     """
 
     http_url: "CacheHttpUrl"
@@ -437,14 +479,18 @@ class CacheS3Typed(TypedDict, total=False):
     """
     Tiles URL.
 
-    The template tiles URL on S3, the argument can be region, bucket and folder (default is 'http://s3-{region}.amazonaws.com/{bucket}/{folder}')
+    The template tiles URL on S3, the argument can be region, bucket and folder
+
+    default: http://s3-{region}.amazonaws.com/{bucket}/{folder}
     """
 
     host: str
     """
     Host.
 
-    The S3 host, default is 's3-eu-west-1.amazonaws.com'
+    The S3 host
+
+    default: s3-eu-west-1.amazonaws.com
     """
 
     bucket: Required[str]
@@ -460,9 +506,10 @@ class CacheS3Typed(TypedDict, total=False):
     """
     AWS region.
 
-    The region, default is 'eu-west-1'
+    The region
 
     pattern: ^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$
+    default: eu-west-1
     """
 
     cache_control: str
@@ -476,7 +523,7 @@ class CacheS3Typed(TypedDict, total=False):
     """
     Cache folder.
 
-    The root folder of the cache, default is ''
+    The root folder of the cache
 
     default:
     """
@@ -486,7 +533,9 @@ CacheWmstCapabilitiesFile = str
 """
 Cache WMST capabilities file.
 
-The generated WMTS capabilities file name (by 'default 1.0.0/WMTSCapabilities.xml')
+The generated WMTS capabilities file name
+
+default: 1.0.0/WMTSCapabilities.xml
 """
 
 
@@ -591,6 +640,13 @@ class Configuration(TypedDict, total=False):
     The Redis configuration (main configuration)
     """
 
+    postgres: "Postgresql"
+    """
+    PostgreSQL.
+
+    The PostgreSQL configuration (main configuration), the schema is get from TILECLOUDCHAIN_POSTGRES_SCHEMA environment variable
+    """
+
     openlayers: "Openlayers"
     """
     OpenLayers.
@@ -673,7 +729,7 @@ class Cost(TypedDict, total=False):
     """
     Request per layers.
 
-    Tile request per hours, default is 10 000 000
+    Tile request per hours
 
     default: 10000000
     """
@@ -700,8 +756,16 @@ class Cost(TypedDict, total=False):
     """
 
 
+DATA_BUFFER_DEFAULT = 128
+""" Default value of the field path 'Layer Mapnik data_buffer' """
+
+
 DEFAULT_CACHE_DEFAULT = "default"
 """ Default value of the field path 'Generation default_cache' """
+
+
+DROP_EMPTY_UTFGRID_DEFAULT = False
+""" Default value of the field path 'Layer Mapnik drop_empty_utfgrid' """
 
 
 class Database(TypedDict, total=False):
@@ -722,7 +786,7 @@ class Database(TypedDict, total=False):
     """
     Port.
 
-    The port (main configuration), default is 5432
+    The port (main configuration)
 
     default: 5432
     """
@@ -772,6 +836,10 @@ EXPIRES_DEFAULT = 8
 """ Default value of the field path 'Server expires' """
 
 
+GENERATE_SALT_DEFAULT = False
+""" Default value of the field path 'Layer WMS generate_salt' """
+
+
 GEOMETRIES_REDIRECT_DEFAULT = False
 """ Default value of the field path 'Server geoms_redirect' """
 
@@ -814,7 +882,7 @@ class Generation(TypedDict, total=False):
     """
     Max consecutive errors.
 
-    The maximum number of consecutive errors (main configuration), default is 10
+    The maximum number of consecutive errors (main configuration)
 
     default: 10
     """
@@ -830,7 +898,7 @@ class Generation(TypedDict, total=False):
     """
     Number process.
 
-    Number of process used to generate the tiles (main configuration), default is 1
+    Number of process used to generate the tiles (main configuration)
 
     default: 1
     """
@@ -909,7 +977,7 @@ class Grid(TypedDict, total=False):
     """
     Unit.
 
-    The projection unit, default is 'm'
+    The projection unit
 
     default: m
     """
@@ -918,7 +986,7 @@ class Grid(TypedDict, total=False):
     """
     Tile size.
 
-    The tile size in pixel, default is 256
+    The tile size in pixel
 
     default: 256
     """
@@ -931,6 +999,10 @@ class Grid(TypedDict, total=False):
 
     default: zoom
     """
+
+
+HOST_DEFAULT = "s3-eu-west-1.amazonaws.com"
+""" Default value of the field path 'Cache S3 host' """
 
 
 Headers = dict[str, "_HeadersAdditionalproperties"]
@@ -963,8 +1035,16 @@ class Info(TypedDict, total=False):
     """
 
 
+LAYER_META_BUFFER_DEFAULT = 128
+""" Default value of the field path 'layer_meta_buffer' """
+
+
 LAYER_META_DEFAULT = False
 """ Default value of the field path 'layer_meta' """
+
+
+LAYER_META_SIZE_DEFAULT = 5
+""" Default value of the field path 'layer_meta_size' """
 
 
 LAYER_PIXEL_BUFFER_DEFAULT = 0
@@ -1207,7 +1287,7 @@ class LayerMapnik(TypedDict, total=False):
     """
     Layer pixel buffer.
 
-    The buffer in pixel used to calculate geometry intersection, default is 0
+    The buffer in pixel used to calculate geometry intersection
 
     default: 0
     """
@@ -1216,7 +1296,7 @@ class LayerMapnik(TypedDict, total=False):
     """
     Layer meta.
 
-    Use meta-tiles, default is False, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles
+    Use meta-tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles
 
     default: False
     """
@@ -1225,14 +1305,18 @@ class LayerMapnik(TypedDict, total=False):
     """
     Layer meta size.
 
-    The meta-tile size in tiles, default is 5
+    The meta-tile size in tiles
+
+    default: 5
     """
 
     meta_buffer: "LayerMetaBuffer"
     """
     Layer meta buffer.
 
-    The meta-tiles buffer in pixels, default is 128
+    The meta-tiles buffer in pixels
+
+    default: 128
     """
 
     layers: "LayerLayers"
@@ -1358,14 +1442,18 @@ class LayerMapnik(TypedDict, total=False):
     """
     Data buffer.
 
-    The data buffer, default is 128
+    The data buffer
+
+    default: 128
     """
 
     output_format: "OutputFormat"
     """
     Output format.
 
-    The Mapnik output format, default is 'png'
+    The Mapnik output format
+
+    default: png
     """
 
     wms_url: str
@@ -1379,7 +1467,9 @@ class LayerMapnik(TypedDict, total=False):
     """
     Resolution.
 
-    The resolution, default is 4
+    The resolution
+
+    default: 4
     """
 
     layers_fields: dict[str, "_LayersFieldsAdditionalproperties"]
@@ -1393,7 +1483,9 @@ class LayerMapnik(TypedDict, total=False):
     """
     Drop empty UTFGrid.
 
-    Drop if the tile is empty, default is False
+    Drop if the tile is empty
+
+    default: False
     """
 
 
@@ -1401,7 +1493,7 @@ LayerMeta = bool
 """
 Layer meta.
 
-Use meta-tiles, default is False, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles
+Use meta-tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles
 
 default: False
 """
@@ -1411,7 +1503,9 @@ LayerMetaBuffer = int
 """
 Layer meta buffer.
 
-The meta-tiles buffer in pixels, default is 128
+The meta-tiles buffer in pixels
+
+default: 128
 """
 
 
@@ -1419,7 +1513,9 @@ LayerMetaSize = int
 """
 Layer meta size.
 
-The meta-tile size in tiles, default is 5
+The meta-tile size in tiles
+
+default: 5
 """
 
 
@@ -1445,7 +1541,7 @@ LayerPixelBuffer = int
 """
 Layer pixel buffer.
 
-The buffer in pixel used to calculate geometry intersection, default is 0
+The buffer in pixel used to calculate geometry intersection
 
 default: 0
 """
@@ -1516,7 +1612,7 @@ class LayerWms(TypedDict, total=False):
     """
     Layer pixel buffer.
 
-    The buffer in pixel used to calculate geometry intersection, default is 0
+    The buffer in pixel used to calculate geometry intersection
 
     default: 0
     """
@@ -1525,7 +1621,7 @@ class LayerWms(TypedDict, total=False):
     """
     Layer meta.
 
-    Use meta-tiles, default is False, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles
+    Use meta-tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles
 
     default: False
     """
@@ -1534,14 +1630,18 @@ class LayerWms(TypedDict, total=False):
     """
     Layer meta size.
 
-    The meta-tile size in tiles, default is 5
+    The meta-tile size in tiles
+
+    default: 5
     """
 
     meta_buffer: "LayerMetaBuffer"
     """
     Layer meta buffer.
 
-    The meta-tiles buffer in pixels, default is 128
+    The meta-tiles buffer in pixels
+
+    default: 128
     """
 
     layers: Required["LayerLayers"]
@@ -1671,7 +1771,9 @@ class LayerWms(TypedDict, total=False):
     """
     Generate salt.
 
-    Should generate a salt to drop the cache, default is False
+    Should generate a salt to drop the cache
+
+    default: False
     """
 
     query_layers: str
@@ -1706,7 +1808,9 @@ class LayerWms(TypedDict, total=False):
     """
     Version.
 
-    The used WMS version (default is '1.1.1')
+    The used WMS version
+
+    default: 1.1.1
     """
 
 
@@ -1755,6 +1859,10 @@ MAX_ERRORS_AGE_DEFAULT = 86400
 
 MAX_ERRORS_NUMBER_DEFAULT = 100
 """ Default value of the field path 'Redis max_errors_nb' """
+
+
+MAX_PENDING_MINUTES_DEFAULT = 10
+""" Default value of the field path 'PostgreSQL max_pending_minutes' """
 
 
 MAX_RETRIES_DEFAULT = 5
@@ -1806,7 +1914,7 @@ class Metadata(TypedDict, total=False):
     """
     Service type.
 
-    The service type, default is 'OGC WMTS'
+    The service type
 
     default: OGC WMTS
     """
@@ -1841,6 +1949,10 @@ NUMBER_PROCESS_DEFAULT = 1
 """ Default value of the field path 'Generation number_process' """
 
 
+OUTPUT_FORMAT_DEFAULT = "png"
+""" Default value of the field path 'Layer Mapnik output_format' """
+
+
 class Openlayers(TypedDict, total=False):
     """
     OpenLayers.
@@ -1860,7 +1972,7 @@ class Openlayers(TypedDict, total=False):
 
     proj4js_def: str
     """
-    The proj4js definition.
+    Proj4js definition.
 
     The proj4js definition, get it from https://epsg.io/
 
@@ -1899,7 +2011,9 @@ OutputFormat = Union[Literal["png"], Literal["png256"], Literal["jpeg"], Literal
 """
 Output format.
 
-The Mapnik output format, default is 'png'
+The Mapnik output format
+
+default: png
 """
 OUTPUTFORMAT_PNG: Literal["png"] = "png"
 """The values for the 'Output format' enum"""
@@ -1931,6 +2045,10 @@ PREFIX_DEFAULT = "tilecloud_cache"
 """ Default value of the field path 'Redis prefix' """
 
 
+PROJ4JS_DEFINITION_DEFAULT = "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"
+""" Default value of the field path 'OpenLayers proj4js_def' """
+
+
 class Phone(TypedDict, total=False):
     """
     Phone.
@@ -1950,6 +2068,23 @@ class Phone(TypedDict, total=False):
     Fax.
 
     The fax number
+    """
+
+
+class Postgresql(TypedDict, total=False):
+    """
+    PostgreSQL.
+
+    The PostgreSQL configuration (main configuration), the schema is get from TILECLOUDCHAIN_POSTGRES_SCHEMA environment variable
+    """
+
+    max_pending_minutes: int
+    """
+    Max pending minutes.
+
+    The max pending minutes (main configuration)
+
+    default: 10
     """
 
 
@@ -1987,7 +2122,7 @@ class Provider(TypedDict, total=False):
 
 
 QUEUE_DEFAULT = "tilecloud"
-""" Default value of the field path 'Redis queue' """
+""" Default value of the field path 'SQS queue' """
 
 
 REQUEST_DEFAULT = 0.01
@@ -1996,6 +2131,10 @@ REQUEST_DEFAULT = 0.01
 
 REQUEST_PER_LAYERS_DEFAULT = 10000000
 """ Default value of the field path 'Cost request_per_layers' """
+
+
+RESOLUTION_DEFAULT = 4
+""" Default value of the field path 'Layer Mapnik resolution' """
 
 
 class Redis(TypedDict, total=False):
@@ -2031,7 +2170,7 @@ class Redis(TypedDict, total=False):
     """
     Service name.
 
-    The service name, default is 'mymaster' (main configuration)
+    The service name (main configuration)
 
     default: mymaster
     """
@@ -2059,7 +2198,7 @@ class Redis(TypedDict, total=False):
     """
     Timeout.
 
-    The timeout (main configuration), default is 5
+    The timeout (main configuration)
 
     default: 5
     """
@@ -2068,7 +2207,7 @@ class Redis(TypedDict, total=False):
     """
     Pending timeout.
 
-    The pending timeout (main configuration), default is 300
+    The pending timeout (main configuration)
 
     default: 300
     """
@@ -2077,7 +2216,7 @@ class Redis(TypedDict, total=False):
     """
     Max retries.
 
-    The max retries (main configuration), default is 5
+    The max retries (main configuration)
 
     default: 5
     """
@@ -2086,7 +2225,7 @@ class Redis(TypedDict, total=False):
     """
     Max errors age.
 
-    The max error age (main configuration), default is 86400 (1 day)
+    The max error age (main configuration), default is 1 day
 
     default: 86400
     """
@@ -2095,7 +2234,7 @@ class Redis(TypedDict, total=False):
     """
     Max errors number.
 
-    The max error number (main configuration), default is 100
+    The max error number (main configuration)
 
     default: 100
     """
@@ -2104,7 +2243,7 @@ class Redis(TypedDict, total=False):
     """
     Prefix.
 
-    The prefix (main configuration), default is 'tilecloud_cache'
+    The prefix (main configuration)
 
     default: tilecloud_cache
     """
@@ -2113,7 +2252,7 @@ class Redis(TypedDict, total=False):
     """
     Expiration.
 
-    The meta-tile in queue expiration (main configuration), default is 28800 (8 hours)
+    The meta-tile in queue expiration (main configuration), default is 8 hours
 
     default: 28800
     """
@@ -2122,7 +2261,7 @@ class Redis(TypedDict, total=False):
     """
     Pending count.
 
-    The pending count: the number of pending tiles get in one request (main configuration), default is 10
+    The pending count: the number of pending tiles get in one request (main configuration)
 
     default: 10
     """
@@ -2131,7 +2270,7 @@ class Redis(TypedDict, total=False):
     """
     Pending max count.
 
-    The pending max count: the maximum number of pending tiles get in one pass (if not generating other tiles, every second) (main configuration), default is 10000
+    The pending max count: the maximum number of pending tiles get in one pass (if not generating other tiles, every second) (main configuration)
 
     default: 10000
     """
@@ -2209,6 +2348,10 @@ SRS_DEFAULT = "EPSG:2056"
 """ Default value of the field path 'OpenLayers srs' """
 
 
+STATIC_ALLOW_EXTENSION_DEFAULT = ["jpeg", "png", "xml", "js", "html", "css"]
+""" Default value of the field path 'Server static_allow_extension' """
+
+
 STATIC_PATH_DEFAULT = "static"
 """ Default value of the field path 'Server static_path' """
 
@@ -2256,7 +2399,7 @@ class Server(TypedDict, total=False):
     """
     Geometries redirect.
 
-    Take care on the geometries, default is False
+    Take care on the geometries
 
     default: False
     """
@@ -2265,14 +2408,22 @@ class Server(TypedDict, total=False):
     """
     Static allow extension.
 
-    The allowed extension of static files, defaults to [jpeg, png, xml, js, html, css]
+    The allowed extension of static files
+
+    default:
+      - jpeg
+      - png
+      - xml
+      - js
+      - html
+      - css
     """
 
     wmts_path: str
     """
     WMTS path.
 
-    The sub-path for the WMTS (main configuration), default is 'wmts'
+    The sub-path for the WMTS (main configuration)
 
     default: wmts
     """
@@ -2281,7 +2432,7 @@ class Server(TypedDict, total=False):
     """
     Static path.
 
-    The sub-path for the static files (main configuration), default is 'static'
+    The sub-path for the static files (main configuration)
 
     default: static
     """
@@ -2290,7 +2441,7 @@ class Server(TypedDict, total=False):
     """
     Admin path.
 
-    The sub-path for the admin (main configuration), default is 'admin'
+    The sub-path for the admin (main configuration)
 
     default: admin
     """
@@ -2299,7 +2450,7 @@ class Server(TypedDict, total=False):
     """
     Expires.
 
-    The browser cache expiration, default is 8 (hours)
+    The browser cache expiration in hours
 
     default: 8
     """
@@ -2316,6 +2467,11 @@ class Server(TypedDict, total=False):
     Allowed commands.
 
     The allowed commands (main configuration)
+
+    default:
+      - generate-tiles
+      - generate-controller
+      - generate-cost
     """
 
     allowed_arguments: list[str]
@@ -2323,6 +2479,36 @@ class Server(TypedDict, total=False):
     Allowed arguments.
 
     The allowed arguments (main configuration)
+
+    default:
+      - --layer
+      - --get-hash
+      - --generate-legend-images
+      - --get-bbox
+      - --help
+      - --ignore-errors
+      - --bbox
+      - --zoom
+      - --test
+      - --near
+      - --time
+      - --measure-generation-time
+      - --no-geom
+      - --dimensions
+    """
+
+    admin_footer: str
+    """
+    admin footer.
+
+    The footer of the admin interface
+    """
+
+    admin_footer_classes: str
+    """
+    admin footer classes.
+
+    The CSS classes used on the footer of the admin interface
     """
 
 
@@ -2346,9 +2532,10 @@ class Sns(TypedDict, total=False):
     """
     AWS region.
 
-    The region, default is 'eu-west-1'
+    The region
 
     pattern: ^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$
+    default: eu-west-1
     """
 
 
@@ -2363,16 +2550,19 @@ class Sqs(TypedDict, total=False):
     """
     Queue.
 
-    The queue name, default is 'tilecloud'
+    The queue name
+
+    default: tilecloud
     """
 
     region: "AwsRegion"
     """
     AWS region.
 
-    The region, default is 'eu-west-1'
+    The region
 
     pattern: ^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$
+    default: eu-west-1
     """
 
 
@@ -2393,8 +2583,8 @@ class SqsCost(TypedDict, total=False):
     """
 
 
-THE_PROJ4JS_DEFINITION_DEFAULT = "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"
-""" Default value of the field path 'OpenLayers proj4js_def' """
+TILES_URL_DEFAULT = "http://s3-{region}.amazonaws.com/{bucket}/{folder}"
+""" Default value of the field path 'Cache S3 tiles_url' """
 
 
 TILE_GENERATION_TIME_DEFAULT = 30
@@ -2415,6 +2605,10 @@ TIMEOUT_DEFAULT = 5
 
 UNIT_DEFAULT = "m"
 """ Default value of the field path 'Grid unit' """
+
+
+VERSION_DEFAULT = "1.1.1"
+""" Default value of the field path 'Layer WMS version' """
 
 
 WMTS_PATH_DEFAULT = "wmts"
@@ -2627,7 +2821,7 @@ class _ProcessCommandItem(TypedDict, total=False):
     """
     Need out.
 
-    The command will generate an output in a file, default is False
+    The command will generate an output in a file
 
     default: False
     """

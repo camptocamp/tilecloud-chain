@@ -1142,17 +1142,10 @@ caches:
     http_url: https://%(host)s/%(bucket)s/%(folder)s/
     type: s3
 cost:
-  cloudfront:
-    download: 0.12
-    get: 0.009
+  cloudfront: {}
   request_per_layers: 10000000
-  s3:
-    download: 0.12
-    get: 0.01
-    put: 0.01
-    storage: 0.125
-  sqs:
-    request: 0.01
+  s3: {}
+  sqs: {}
 generation:
   default_cache: local
   default_layers:
@@ -1160,7 +1153,6 @@ generation:
   - polygon
   error_file: error.list
   maxconsecutive_errors: 2
-  number_process: 1
 grids:
   swissgrid_01:
     bbox:
@@ -1178,7 +1170,6 @@ grids:
     - 0.1
     srs: EPSG:21781
     tile_size: 256
-    unit: m
   swissgrid_025:
     bbox:
     - 420000
@@ -1193,7 +1184,6 @@ grids:
     - 0.25
     srs: EPSG:21781
     tile_size: 256
-    unit: m
   swissgrid_2_5:
     bbox:
     - 420000
@@ -1208,14 +1198,12 @@ grids:
     - 2.5
     srs: EPSG:21781
     tile_size: 256
-    unit: m
   swissgrid_5:
     bbox:
     - 420000
     - 30000
     - 900000
     - 350000
-    matrix_identifier: zoom
     proj4_literal: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=600000 +y_0=200000 +ellps=bessel
       +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     resolution_scale: 1
@@ -1227,7 +1215,6 @@ grids:
     - 5
     srs: EPSG:21781
     tile_size: 256
-    unit: m
 layers:
   all:
     bbox:
@@ -1259,7 +1246,6 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
@@ -1298,7 +1284,6 @@ layers:
     mime_type: image/png
     params:
       PARAM: value
-    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
@@ -1323,14 +1308,12 @@ layers:
     - connection: user=postgres password=postgres dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
-    layers: __all__
     mapfile: mapfile/test.mapnik
     meta: false
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
     output_format: png
-    px_buffer: 0
     type: mapnik
     wmts_style: default
   mapnik_grid:
@@ -1354,7 +1337,6 @@ layers:
     - connection: user=postgres password=postgres dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
-    layers: __all__
     layers_fields:
       line:
       - name
@@ -1368,7 +1350,6 @@ layers:
     meta_size: 8
     mime_type: application/utfgrid
     output_format: grid
-    px_buffer: 0
     resolution: 16
     type: mapnik
     wmts_style: default
@@ -1394,7 +1375,6 @@ layers:
     - connection: user=postgres password=postgres dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
-    layers: __all__
     layers_fields:
       point:
       - name
@@ -1404,7 +1384,6 @@ layers:
     meta_size: 8
     mime_type: application/utfgrid
     output_format: grid
-    px_buffer: 0
     resolution: 16
     type: mapnik
     wmts_style: default
@@ -1437,7 +1416,6 @@ layers:
     meta_size: 8
     mime_type: image/png
     min_resolution_seed: 10
-    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
@@ -1476,7 +1454,6 @@ layers:
     meta_size: 8
     mime_type: image/png
     min_resolution_seed: 10
-    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
@@ -1508,7 +1485,6 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
@@ -1546,7 +1522,6 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    px_buffer: 0
     px_buffer: 100
     type: wms
     url: http://mapserver:8080/mapserv
@@ -1585,7 +1560,6 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
@@ -1623,7 +1597,6 @@ layers:
     meta_buffer: 128
     meta_size: 8
     mime_type: image/png
-    px_buffer: 0
     type: wms
     url: http://mapserver:8080/mapserv
     wmts_style: default
@@ -1634,15 +1607,11 @@ metadata:
   keywords:
   - some
   - keywords
-  servicetype: OGC WMTS
   title: Some title
 openlayers:
   center_x: 600000
   center_y: 200000
-  zoom: 3
   srs: EPSG:21781
-  proj4js_def: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel
-    +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
 provider:
   contact:
     info:

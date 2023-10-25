@@ -25,8 +25,6 @@ PHONY: tests
 tests: build ## Run the unit tests
 	docker-compose stop --timeout=0
 	docker-compose down || true
-	C2C_AUTH_GITHUB_CLIENT_ID=$(shell gopass show gs/projects/github/oauth-apps/geoservices-int/client-id) \
-	C2C_AUTH_GITHUB_CLIENT_SECRET=$(shell gopass show gs/projects/github/oauth-apps/geoservices-int/client-secret) \
 	docker-compose up -d
 
 	# Wait for DB to be up
@@ -43,10 +41,10 @@ tests: build ## Run the unit tests
 	c2cciutils-docker-logs
 	docker-compose down
 
+PYTEST_ARGS ?= --last-failed
+
 PHONY: tests-fast
 tests-fast:
-	C2C_AUTH_GITHUB_CLIENT_ID=$(shell gopass show gs/projects/github/oauth-apps/geoservices-int/client-id) \
-	C2C_AUTH_GITHUB_CLIENT_SECRET=$(shell gopass show gs/projects/github/oauth-apps/geoservices-int/client-secret) \
 	docker-compose up -d
 
 	# Wait for DB to be up
@@ -56,4 +54,4 @@ tests-fast:
 		sleep 1; \
 	done
 
-	docker-compose exec -T test pytest -vv --color=yes --exitfirst #--last-failed
+	docker-compose exec -T test pytest -vvv --color=yes $(PYTEST_ARGS)

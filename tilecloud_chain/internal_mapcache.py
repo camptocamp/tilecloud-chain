@@ -15,7 +15,7 @@ from prometheus_client import Summary
 
 import tilecloud_chain.configuration
 from tilecloud import Tile, TileCoord, TileStore
-from tilecloud_chain import Run
+from tilecloud_chain import Run, configuration
 from tilecloud_chain.generate import Generate
 
 if TYPE_CHECKING:
@@ -205,7 +205,10 @@ def fetch(
         meta_tile = tile
         if layer["meta"]:
             meta_tile = Tile(
-                tilecoord=tile.tilecoord.metatilecoord(layer["meta_size"]), metadata=tile.metadata
+                tilecoord=tile.tilecoord.metatilecoord(
+                    layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
+                ),
+                metadata=tile.metadata,
             )
 
         with generator.lock(meta_tile):

@@ -1,1 +1,16 @@
 ro
+backend
+FreeTileGrid
+Proj4
+PostgreSQL
+the_geom
+my_table
+Mapnik
+args
+TILECLOUD_CHAIN_POSTGRES_SCHEMA
+Redis
+Gio
+CloudFront
+OpenLayers
+proj4js
+center

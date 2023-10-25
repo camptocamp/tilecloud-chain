@@ -52,7 +52,7 @@ import tilecloud.store.s3
 import tilecloud_chain.configuration
 import tilecloud_chain.security
 from tilecloud import Tile, TileCoord
-from tilecloud_chain import TileGeneration, controller, internal_mapcache
+from tilecloud_chain import TileGeneration, configuration, controller, internal_mapcache
 from tilecloud_chain.controller import get_azure_client
 
 _LOGGER = logging.getLogger(__name__)
@@ -126,8 +126,17 @@ class Server(Generic[Response]):
 
             assert tilegeneration
 
-            self.wmts_path = tilegeneration.get_main_config().config["server"]["wmts_path"]
-            self.static_path = tilegeneration.get_main_config().config["server"]["static_path"].split("/")
+            self.wmts_path = (
+                tilegeneration.get_main_config()
+                .config["server"]
+                .get("wmts_path", configuration.WMTS_PATH_DEFAULT)
+            )
+            self.static_path = (
+                tilegeneration.get_main_config()
+                .config["server"]
+                .get("static_path", configuration.STATIC_PATH_DEFAULT)
+                .split("/")
+            )
         except Exception:
             _LOGGER.exception("Initialization error")
             raise
@@ -147,7 +156,9 @@ class Server(Generic[Response]):
     @staticmethod
     def get_cache_name(config: tilecloud_chain.DatedConfig) -> str:
         """Get the cache name."""
-        return config.config["server"].get("cache", config.config["generation"]["default_cache"])
+        return config.config["server"].get(
+            "cache", config.config["generation"].get("default_cache", configuration.DEFAULT_CACHE_DEFAULT)
+        )
 
     def get_s3_client(self, config: tilecloud_chain.DatedConfig) -> "botocore.client.S3":
         """Get the AWS S3 client."""
@@ -187,7 +198,7 @@ class Server(Generic[Response]):
 
         layer_filter = (
             tilecloud_chain.IntersectGeometryFilter(gene=tilegeneration)
-            if config.config["server"]["geoms_redirect"]
+            if config.config["server"].get("geoms_redirect", configuration.GEOMETRIES_REDIRECT_DEFAULT)
             else None
         )
 
@@ -509,9 +520,15 @@ class Server(Generic[Response]):
                                 "STYLES": params["STYLE"],
                                 "FORMAT": params["FORMAT"],
                                 "INFO_FORMAT": params["INFO_FORMAT"],
-                                "WIDTH": config.config["grids"][layer["grid"]]["tile_size"],
-                                "HEIGHT": config.config["grids"][layer["grid"]]["tile_size"],
-                                "SRS": config.config["grids"][layer["grid"]]["srs"],
+                                "WIDTH": config.config["grids"][layer["grid"]].get(
+                                    "tile_size", configuration.TILE_SIZE_DEFAULT
+                                ),
+                                "HEIGHT": config.config["grids"][layer["grid"]].get(
+                                    "tile_size", configuration.TILE_SIZE_DEFAULT
+                                ),
+                                "SRS": config.config["grids"][layer["grid"]].get(
+                                    "srs", configuration.SRS_DEFAULT
+                                ),
                                 "BBOX": tilegeneration.get_grid(config, layer["grid"]).extent(tile.tilecoord),
                                 "X": params["I"],
                                 "Y": params["J"],
@@ -534,7 +551,7 @@ class Server(Generic[Response]):
 
             layer_filter = self.get_filter(config, params["LAYER"])
             if layer_filter:
-                meta_size = layer["meta_size"]
+                meta_size = layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
                 meta_tilecoord = (
                     TileCoord(
                         # TODO fix for matrix_identifier = resolution
@@ -866,27 +883,42 @@ def main(global_config: Any, **settings: Any) -> Router:
 
     config.add_route(
         "admin",
-        f"/{tilegeneration.get_main_config().config['server']['admin_path']}",
+        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}",
         request_method="GET",
     )
     config.add_route(
         "admin_slash",
-        f"/{tilegeneration.get_main_config().config['server']['admin_path']}/",
+        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/",
         request_method="GET",
     )
     config.add_route(
         "admin_run",
-        f"/{tilegeneration.get_main_config().config['server']['admin_path']}/run",
+        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/run",
+        request_method="POST",
+    )
+    config.add_route(
+        "admin_create_job",
+        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/create_job",
+        request_method="POST",
+    )
+    config.add_route(
+        "admin_cancel_job",
+        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/cancel_job",
+        request_method="POST",
+    )
+    config.add_route(
+        "admin_retry_job",
+        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/retry_job",
         request_method="POST",
     )
     config.add_route(
         "admin_test",
-        f"/{tilegeneration.get_main_config().config['server']['admin_path']}/test",
+        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/test",
         request_method="GET",
     )
 
     config.add_static_view(
-        name=f"/{tilegeneration.get_main_config().config['server']['admin_path']}/static",
+        name=f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/static",
         path="/app/tilecloud_chain/static",
     )
 

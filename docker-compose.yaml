@@ -50,8 +50,8 @@ services:
   application: &app
     image: camptocamp/tilecloud-chain
     environment: &app-env
-      TILECLOUD_LOG_LEVEL: DEBUG
-      TILECLOUD_CHAIN_LOG_LEVEL: DEBUG
+      TILECLOUD_LOG_LEVEL: INFO
+      TILECLOUD_CHAIN_LOG_LEVEL: INFO
       TILECLOUD_CHAIN_SESSION_SECRET: '1234'
       TILECLOUD_CHAIN_SESSION_SALT: '1234'
       C2C_AUTH_GITHUB_REPOSITORY: camptocamp/tilecloud-chain
@@ -72,6 +72,28 @@ services:
       <<: *app-env
       TEST_USER: Test
 
+  app_postgress:
+    <<: *app
+    environment:
+      <<: *app-env
+      TEST_USER: Test
+      SQL_LOG_LEVEL: DEBUG
+      TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+psycopg2://postgres:postgres@db:5432/tests
+    volumes:
+      - ./example/tilegeneration/config-postgress.yaml:/etc/tilegeneration/config.yaml:ro
+    ports:
+      - '9052:8080'
+
+  slave:
+    <<: *app
+    command:
+      - generate-tiles
+      - '--role=slave'
+      - '--daemon'
+    environment:
+      <<: *app-env
+      TILECLOUD_CHAIN_SLAVE: 'TRUE'
+
   test:
     image: camptocamp/tilecloud-chain-tests
     working_dir: /app
@@ -85,6 +107,7 @@ services:
       TILECLOUD_LOG_LEVEL: DEBUG
       TILECLOUD_CHAIN_LOG_LEVEL: DEBUG
       TILECLOUD_CHAIN_SESSION_SALT: a-long-secret-a-long-secret
+      TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+psycopg2://postgres:postgres@db:5432/tests
     command:
       - sleep
       - infinity
@@ -96,3 +119,16 @@ services:
       - ./results:/results
       - ./tilecloud_chain:/app/tilecloud_chain
       # - ../tilecloud/tilecloud:/usr/local/lib/python3.8/dist-packages/tilecloud
+
+  shell:
+    image: camptocamp/postgres:14-postgis-3
+    command:
+      - tail
+      - -f
+      - /dev/null
+    environment:
+      - PGHOST=db
+      - PGUSER=postgres
+      - PGPASSWORD=postgres
+      - PGDATABASE=tests
+      - PGPORT=5432

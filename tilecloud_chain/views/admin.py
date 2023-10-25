@@ -43,7 +43,8 @@ from c2cwsgiutils.auth import AuthenticationType, auth_type, auth_view
 from pyramid.view import view_config
 
 import tilecloud_chain.server
-from tilecloud_chain import controller, generate
+import tilecloud_chain.store.postgres
+from tilecloud_chain import configuration, controller, generate
 from tilecloud_chain.controller import get_status
 
 _LOG = logging.getLogger(__name__)
@@ -60,30 +61,50 @@ class Admin:
             self.request.registry.settings["tilegeneration_configfile"]
         )
         self.gene = tilecloud_chain.server.tilegeneration
+        assert self.gene is not None
+
+        main_config = self.gene.get_main_config()
+        self.postgresql_queue_store = (
+            tilecloud_chain.store.postgres.get_postgresql_queue_store(main_config)
+            if "postgres" in main_config.config
+            else None
+        )
 
     @view_config(route_name="admin", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore
     @view_config(route_name="admin_slash", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore
     def index(self) -> dict[str, Any]:
         """Get the admin index page."""
+
         assert self.gene
         config = self.gene.get_host_config(self.request.host)
         server_config = config.config.get("server", {})
         main_config = self.gene.get_main_config()
         main_server_config = main_config.config.get("server", {})
+        jobs_status = None
+        if "postgres" in main_config.config:
+            assert self.postgresql_queue_store is not None
+            config_filename = self.gene.get_host_config_file(self.request.host)
+            assert config_filename is not None
+            jobs_status = self.postgresql_queue_store.get_status(config_filename)
         return {
             "auth_type": auth_type(self.request.registry.settings),
             "has_access": self.request.has_permission("admin", config.config.get("authentication", {})),
             "commands": server_config.get("predefined_commands", []),
-            "status": get_status(self.gene),
+            "status": get_status(self.gene) if "postgres" not in config.config else None,
             "admin_path": main_server_config.get("admin_path", "admin"),
             "AuthenticationType": AuthenticationType,
+            "jobs_status": jobs_status,
+            "footer": config.config["server"].get("admin_footer"),
+            "footer_classes": config.config["server"].get("admin_footer_classes", ""),
         }
 
     @view_config(route_name="admin_run", renderer="fast_json")  # type: ignore
     def run(self) -> pyramid.response.Response:
         """Run the command given by the user."""
         assert self.gene
-        auth_view(self.request)
+
+        if "TEST_USER" not in os.environ:
+            auth_view(self.request)
 
         if "command" not in self.request.POST:
             self.request.response.status_code = 400
@@ -95,7 +116,7 @@ class Admin:
         allowed_commands = (
             self.gene.get_main_config()
             .config.get("server", {})
-            .get("allowed_commands", ["generate-tiles", "generate-controller", "generate-cost"])
+            .get("allowed_commands", configuration.ALLOWED_COMMANDS_DEFAULT)
         )
         if command not in allowed_commands:
             return {
@@ -110,31 +131,7 @@ class Admin:
         allowed_arguments = (
             self.gene.get_main_config()
             .config.get("server", {})
-            .get(
-                "allowed_arguments",
-                [
-                    "--layer",
-                    "--get-hash",
-                    "--generate-legend-images",
-                    "--dump-config",
-                    "--get-bbox",
-                    "--help",
-                    "--ignore-errors",
-                    "--bbox",
-                    "--zoom",
-                    "--test",
-                    "--near",
-                    "--time",
-                    "--measure-generation-time",
-                    "--no-geom",
-                    "--dimensions",
-                    "--quiet",
-                    "--verbose",
-                    "--debug",
-                    "--get-hash",
-                    "--get-bbox",
-                ],
-            )
+            .get("allowed_arguments", configuration.ALLOWED_ARGUMENTS_DEFAULT)
         )
         for arg in arguments.keys():
             if arg.startswith("-") and arg not in allowed_arguments:
@@ -205,6 +202,93 @@ class Admin:
             "error": completed_process.returncode != 0,
         }
 
+    @view_config(route_name="admin_create_job", renderer="fast_json")  # type: ignore[misc]
+    def create_job(self) -> dict[str, Any]:
+        """Create a job."""
+
+        if "TEST_USER" not in os.environ:
+            auth_view(self.request)
+
+        store = self.postgresql_queue_store
+        assert store is not None
+
+        if "command" not in self.request.POST:
+            self.request.response.status_code = 400
+            return {"success": False, "error": "The POST argument 'command' is required"}
+
+        if "name" not in self.request.POST:
+            self.request.response.status_code = 400
+            return {"success": False, "error": "The POST argument 'name' is required"}
+
+        try:
+            assert self.gene is not None
+            config_filename = self.gene.get_host_config_file(self.request.host)
+            assert config_filename is not None
+            store.create_job(self.request.POST["name"], self.request.POST["command"], config_filename)
+            return {
+                "success": True,
+            }
+        except tilecloud_chain.store.postgres.PostgresTileStoreException as e:
+            _LOG.exception("Error while creating the job")
+            self.request.response.status_code = 400
+            return {"success": False, "error": str(e)}
+
+    @view_config(route_name="admin_cancel_job", renderer="fast_json")  # type: ignore[misc]
+    def cancel_job(self) -> dict[str, Any]:
+        """Cancel a job."""
+
+        if "TEST_USER" not in os.environ:
+            auth_view(self.request)
+
+        store = self.postgresql_queue_store
+        assert store is not None
+
+        if "job_id" not in self.request.POST:
+            self.request.response.status_code = 400
+            return {"success": False, "error": "The POST argument 'job_id' is required"}
+
+        assert self.gene is not None
+
+        try:
+            config_filename = self.gene.get_host_config_file(self.request.host)
+            assert config_filename is not None
+            store.cancel(self.request.POST["job_id"], config_filename)
+            return {
+                "success": True,
+            }
+        except tilecloud_chain.store.postgres.PostgresTileStoreException as e:
+            _LOG.exception("Exception while cancelling the job")
+            self.request.response.status_code = 400
+            return {"success": False, "error": str(e)}
+
+    @view_config(route_name="admin_retry_job", renderer="fast_json")  # type: ignore[misc]
+    def retry_job(self) -> dict[str, Any]:
+        """Retry a job."""
+
+        if "TEST_USER" not in os.environ:
+            auth_view(self.request)
+
+        store = self.postgresql_queue_store
+        assert store is not None
+
+        if "job_id" not in self.request.POST:
+            self.request.response.status_code = 400
+            return {"success": False, "error": "The POST argument 'job_id' is required"}
+
+        assert self.gene is not None
+
+        try:
+            config_filename = self.gene.get_host_config_file(self.request.host)
+            assert config_filename is not None
+            store.retry(self.request.POST["job_id"], config_filename)
+            return {
+                "success": True,
+            }
+        except tilecloud_chain.store.postgres.PostgresTileStoreException as e:
+            _LOG.exception("Exception while retrying the job")
+            self.request.response.status_code = 400
+            return {"success": False, "error": str(e)}
+
     @view_config(route_name="admin_test", renderer="tilecloud_chain:templates/openlayers.html")  # type: ignore
     def admin_test(self) -> dict[str, Any]:
         assert self.gene
@@ -214,12 +298,14 @@ class Admin:
             "proj4js_def": re.sub(
                 r"\s+",
                 " ",
-                config.config["openlayers"]["proj4js_def"],
+                config.config["openlayers"]
+                .get("proj4js_def", configuration.PROJ4JS_DEFINITION_DEFAULT)
+                .strip(),
             ),
-            "srs": config.config["openlayers"]["srs"],
-            "center_x": config.config["openlayers"]["center_x"],
-            "center_y": config.config["openlayers"]["center_y"],
-            "zoom": config.config["openlayers"]["zoom"],
+            "srs": config.config["openlayers"].get("srs", configuration.SRS_DEFAULT),
+            "center_x": config.config["openlayers"].get("center_x", configuration.CENTER_X_DEFAULT),
+            "center_y": config.config["openlayers"].get("center_y", configuration.CENTER_Y_DEFAULT),
+            "zoom": config.config["openlayers"].get("zoom", configuration.MAP_INITIAL_ZOOM_DEFAULT),
             "http_url": urljoin(
                 self.request.current_route_url(),
                 "/" + main_config.config["server"].get("wmts_path", "wmts") + "/"

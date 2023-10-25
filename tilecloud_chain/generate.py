@@ -28,6 +28,7 @@ from tilecloud_chain import (
     TileGeneration,
     TilesFileStore,
     add_common_options,
+    configuration,
     get_queue_store,
     parse_tilecoord,
     quote,
@@ -147,7 +148,9 @@ class Generate:
     def add_local_process_filter(self) -> None:
         self._gene.imap(
             LocalProcessFilter(
-                self._gene.get_main_config().config["generation"]["number_process"],
+                self._gene.get_main_config()
+                .config["generation"]
+                .get("number_process", configuration.NUMBER_PROCESS_DEFAULT),
                 self._options.local_process_number,
             )
         )
@@ -184,7 +187,11 @@ class Generate:
             try:
                 z, x, y = (int(v) for v in self._options.get_hash.split("/"))
                 if layer.get("meta"):
-                    self._gene.set_tilecoords(config, [TileCoord(z, x, y, layer["meta_size"])], layer_name)
+                    self._gene.set_tilecoords(
+                        config,
+                        [TileCoord(z, x, y, layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT))],
+                        layer_name,
+                    )
                 else:
                     self._gene.set_tilecoords(config, [TileCoord(z, x, y)], layer_name)
             except ValueError:
@@ -218,7 +225,7 @@ class Generate:
                 self._options.daemon,
             )
         else:
-            self._gene.init(daemon=self._options.daemon)
+            self._gene.init(self._queue_tilestore, daemon=self._options.daemon)
 
         if self._options.role == "hash":
             self._gene.imap(HashLogger("empty_metatile_detection", self.out))
@@ -289,7 +296,7 @@ class Generate:
                     self._options is not None and self._options.daemon,
                 )
             )
-        self._gene.init(daemon=self._options.daemon)
+        self._gene.init(self._queue_tilestore, daemon=self._options.daemon)
 
     def generate_consume(self) -> None:
         if self._options.time is not None:
@@ -435,9 +442,11 @@ class TilestoreGetter:
                         WMSTileLayout(
                             url=layer["url"],
                             layers=layer["layers"],
-                            srs=config.config["grids"][layer["grid"]]["srs"],
+                            srs=config.config["grids"][layer["grid"]].get("srs", configuration.SRS_DEFAULT),
                             format=layer["mime_type"],
-                            border=layer["meta_buffer"] if layer["meta"] else 0,
+                            border=layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
+                            if layer["meta"]
+                            else 0,
                             tilegrid=self.gene._gene.get_grid(config, layer["grid"]),
                             params=params,
                         ),
@@ -465,7 +474,9 @@ class TilestoreGetter:
                     MapnikDropActionTileStore(
                         tilegrid=self.gene._gene.get_grid(config, layer["grid"]),
                         mapfile=layer["mapfile"],
-                        image_buffer=layer["meta_buffer"] if layer.get("meta") else 0,
+                        image_buffer=layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
+                        if layer.get("meta")
+                        else 0,
                         data_buffer=layer.get("data_buffer", 128),
                         output_format=layer.get("output_format", "png"),
                         resolution=layer.get("resolution", 4),
@@ -483,7 +494,9 @@ class TilestoreGetter:
                     MapnikTileStore(
                         tilegrid=self.gene._gene.get_grid(config, layer["grid"]),
                         mapfile=layer["mapfile"],
-                        image_buffer=layer["meta_buffer"] if layer.get("meta") else 0,
+                        image_buffer=layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
+                        if layer.get("meta")
+                        else 0,
                         data_buffer=layer.get("data_buffer", 128),
                         output_format=cast(str, layer.get("output_format", "png")),
                         proj4_literal=grid["proj4_literal"],
@@ -542,6 +555,11 @@ def main(args: Optional[list[str]] = None, out: Optional[IO[str]] = None) -> Non
             metavar="FILE",
             help="Generate the tiles from a tiles file, use the format z/x/y, or z/x/y:+n/+n for metatiles",
         )
+        parser.add_argument(
+            "--job-id",
+            help="The job id in case of Postgres queue",
+            type=int,
+        )
 
         options = parser.parse_args(args[1:] if args else sys.argv[1:])
 
@@ -563,6 +581,7 @@ def main(args: Optional[list[str]] = None, out: Optional[IO[str]] = None) -> Non
             and options.config is not None
             and "authorised_user" in gene.get_main_config().config.get("generation", {})
             and gene.get_main_config().config["generation"]["authorised_user"] != getuser()
+            and os.environ.get("TILECLOUD_CHAIN_SLAVE", "false").lower() != "true"
         ):
             _LOGGER.error(
                 "not authorized, authorized user is: %s.",
@@ -574,7 +593,9 @@ def main(args: Optional[list[str]] = None, out: Optional[IO[str]] = None) -> Non
             config = gene.get_config(options.config)
 
             if options.cache is None and options.config:
-                options.cache = config.config["generation"]["default_cache"]
+                options.cache = config.config["generation"].get(
+                    "default_cache", configuration.DEFAULT_CACHE_DEFAULT
+                )
 
         if options.tiles is not None and options.role not in ["local", "master"]:
             _LOGGER.error("The --tiles option work only with role local or master")
@@ -609,6 +630,9 @@ def main(args: Optional[list[str]] = None, out: Optional[IO[str]] = None) -> Non
         _LOGGER.exception("Exit with exception")
         if os.environ.get("TESTS", "false").lower() == "true":
             raise
+        sys.exit(1)
+
+    if gene.error != 0:
         sys.exit(1)
 
 

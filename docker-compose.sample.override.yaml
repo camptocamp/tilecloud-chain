@@ -17,6 +17,10 @@ services:
     ports:
       - '9051:8080'
 
+  slave:
+    volumes:
+      - ./tilecloud_chain:/app/tilecloud_chain:ro
+
   # test:
   #   volumes:
   #     - ./tilecloud_chain:/app/tilecloud_chain:ro
