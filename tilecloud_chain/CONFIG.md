@@ -18,11 +18,12 @@
 - **`sns`** _(object)_: The Simple Notification Service configuration, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sns. Cannot contain additional properties.
   - **`topic`** _(string, required)_: The topic.
   - **`region`**: Refer to _[#/definitions/aws_region](#definitions/aws_region)_.
+- **`queue_store`** _(string)_: The used queue store. Must be one of: `["redis", "sqs", "postgresql"]`. Default: `"redis"`.
 - **`redis`**: Refer to _[#/definitions/redis](#definitions/redis)_.
-- **`postgres`**: Refer to _[#/definitions/postgres](#definitions/postgres)_.
+- **`postgresql`**: Refer to _[#/definitions/postgresql](#definitions/postgresql)_.
 - **`openlayers`** _(object)_: Configuration used to generate the OpenLayers example page. Cannot contain additional properties.
   - **`srs`** _(string)_: The projection code. Default: `"EPSG:2056"`.
-  - **`proj4js_def`** _(string)_: The proj4js definition, get it from https://epsg.io/. Default: `"+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"`.
+  - **`proj4js_def`** _(string)_: The `proj4js` definition, get it from https://epsg.io/. Default: `"+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"`.
   - **`center_x`** _(number)_: The center easting. Default: `2600000`.
   - **`center_y`** _(number)_: The center northing. Default: `1200000`.
   - **`zoom`** _(number)_: The initial zoom. Default: `3`.
@@ -150,7 +151,7 @@
 - <a id="definitions/layer_geoms"></a>**`layer_geoms`** _(array)_: The geometries used to determine where we should create the tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-geomsql.
   - **Items** _(object)_: Cannot contain additional properties.
     - **`connection`** _(string, required)_: The PostgreSQL connection string.
-    - **`sql`** _(string, required)_: The SQL query that get the geometry in geom e.g. 'the_geom AS geom FROM my_table'.
+    - **`sql`** _(string, required)_: The SQL query that get the geometry in geom e.g. `the_geom AS geom FROM my_table`.
     - **`min_resolution`** _(number)_: The min resolution where the query is valid.
     - **`max_resolution`** _(number)_: The max resolution where the query is valid.
 - <a id="definitions/layer_empty_tile_detection"></a>**`layer_empty_tile_detection`** _(object)_: The rules used to detect the empty tiles, use `generate-tiles --get-hash` to get what we can use, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-hash. Cannot contain additional properties.
@@ -236,9 +237,9 @@
     - : Refer to _[#/definitions/layer_mapnik](#definitions/layer_mapnik)_.
 - <a id="definitions/process"></a>**`process`** _(array)_: A command.
   - **Items** _(object)_: Cannot contain additional properties.
-    - **`cmd`** _(string, required)_: The shell command, available parameters: %(in)s, %(out)s, %(args)s, %(x)s, %(y)s, %(z)s.
+    - **`cmd`** _(string, required)_: The shell command, available parameters: `%(in)s`, `%(out)s`,` %(args)s`, `%(x)s`, `%(y)s`, `%(z)s`.
     - **`need_out`** _(boolean)_: The command will generate an output in a file. Default: `false`.
-    - **`arg`** _(object)_: Used to build the %(args). Cannot contain additional properties.
+    - **`arg`** _(object)_: Used to build the `%(args)`. Cannot contain additional properties.
       - **`default`** _(string)_: The arguments used by default.
       - **`verbose`** _(string)_: The arguments used on verbose mode.
       - **`debug`** _(string)_: The arguments used on debug mode.
@@ -252,11 +253,12 @@
   - **`error_file`** _(string)_: File name generated with the tiles in error, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#tiles-error-file (main configuration).
   - **`number_process`** _(integer)_: Number of process used to generate the tiles (main configuration). Default: `1`.
 - <a id="definitions/aws_region"></a>**`aws_region`** _(string)_: The region. Default: `"eu-west-1"`.
-- <a id="definitions/postgres"></a>**`postgres`** _(object)_: The PostgreSQL configuration (main configuration), the schema is get from TILECLOUDCHAIN_POSTGRES_SCHEMA environment variable. Cannot contain additional properties.
+- <a id="definitions/postgresql"></a>**`postgresql`** _(object)_: The PostgreSQL configuration (main configuration), the schema can be configured with the `TILECLOUD_CHAIN_POSTGRESQL_SCHEMA` environment variable. Cannot contain additional properties.
+  - **`sqlalchemy_url`** _(string)_: The SQLAlchemy URL (like: `postgresql+psycopg2://username:password@host:5432/database`) (main configuration), can also be set in the `TILECLOUD_CHAIN_SQLALCHEMY_URL` environment variable.
   - **`max_pending_minutes`** _(integer)_: The max pending minutes (main configuration). Default: `10`.
 - <a id="definitions/redis"></a>**`redis`** _(object)_: The Redis configuration (main configuration). Cannot contain additional properties.
-  - **`url`** _(string)_: The server URL (main configuration).
-  - **`sentinels`** _(array)_: The sentinels (main configuration).
+  - **`url`** _(string)_: The server URL (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_URL` environment variable.
+  - **`sentinels`** _(array)_: The sentinels (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_SENTINELS` environment variable.
     - **Items** _(array)_: A sentinel (main configuration).
       - **Items**:
         - _string_: The sentinel host name (main configuration).
@@ -266,11 +268,11 @@
             - _integer_
   - **`connection_kwargs`** _(object)_: The Redis connection arguments (main configuration).
   - **`sentinel_kwargs`** _(object)_: The Redis sentinel arguments (main configuration).
-  - **`service_name`** _(string)_: The service name (main configuration). Default: `"mymaster"`.
-  - **`socket_timeout`** _(integer)_: The socket timeout (main configuration).
-  - **`db`** _(integer)_
-  - **`queue`** _(string)_: The queue name (main configuration). Default: `"tilecloud"`.
-  - **`timeout`** _(integer)_: The timeout (main configuration). Default: `5`.
+  - **`service_name`** _(string)_: The service name (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_SERVICE_NAME` environment variable. Default: `"mymaster"`.
+  - **`socket_timeout`** _(integer)_: The socket timeout (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_SOCKET_TIMEOUT` environment variable.
+  - **`db`** _(integer)_: The database number (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_DB` environment variable.
+  - **`queue`** _(string)_: The queue name (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_QUEUE` environment variable. Default: `"tilecloud"`.
+  - **`timeout`** _(integer)_: The timeout (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_TIMEOUT` environment variable. Default: `5`.
   - **`pending_timeout`** _(integer)_: The pending timeout (main configuration). Default: `300`.
   - **`max_retries`** _(integer)_: The max retries (main configuration). Default: `5`.
   - **`max_errors_age`** _(integer)_: The max error age (main configuration), default is 1 day. Default: `86400`.

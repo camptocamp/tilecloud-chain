@@ -92,7 +92,7 @@ class Argument(TypedDict, total=False):
     """
     Argument.
 
-    Used to build the %(args)
+    Used to build the `%(args)`
     """
 
     default: str
@@ -633,6 +633,15 @@ class Configuration(TypedDict, total=False):
     The Simple Notification Service configuration, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sns
     """
 
+    queue_store: "QueueStore"
+    """
+    Queue store.
+
+    The used queue store
+
+    default: redis
+    """
+
     redis: "Redis"
     """
     Redis.
@@ -640,11 +649,11 @@ class Configuration(TypedDict, total=False):
     The Redis configuration (main configuration)
     """
 
-    postgres: "Postgresql"
+    postgresql: "Postgresql"
     """
     PostgreSQL.
 
-    The PostgreSQL configuration (main configuration), the schema is get from TILECLOUDCHAIN_POSTGRES_SCHEMA environment variable
+    The PostgreSQL configuration (main configuration), the schema can be configured with the `TILECLOUD_CHAIN_POSTGRESQL_SCHEMA` environment variable
     """
 
     openlayers: "Openlayers"
@@ -1974,7 +1983,7 @@ class Openlayers(TypedDict, total=False):
     """
     Proj4js definition.
 
-    The proj4js definition, get it from https://epsg.io/
+    The `proj4js` definition, get it from https://epsg.io/
 
     default: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     """
@@ -2075,7 +2084,16 @@ class Postgresql(TypedDict, total=False):
     """
     PostgreSQL.
 
-    The PostgreSQL configuration (main configuration), the schema is get from TILECLOUDCHAIN_POSTGRES_SCHEMA environment variable
+    The PostgreSQL configuration (main configuration), the schema can be configured with the `TILECLOUD_CHAIN_POSTGRESQL_SCHEMA` environment variable
+    """
+
+    sqlalchemy_url: str
+    """
+    SQLAlchemy URL.
+
+    The SQLAlchemy URL (like: `postgresql+psycopg2://username:password@host:5432/database`) (main configuration), can also be set in the `TILECLOUD_CHAIN_SQLALCHEMY_URL` environment variable
+
+    pattern:
     """
 
     max_pending_minutes: int
@@ -2125,6 +2143,26 @@ QUEUE_DEFAULT = "tilecloud"
 """ Default value of the field path 'SQS queue' """
 
 
+QUEUE_STORE_DEFAULT = "redis"
+""" Default value of the field path 'TileCloud-chain configuration queue_store' """
+
+
+QueueStore = Union[Literal["redis"], Literal["sqs"], Literal["postgresql"]]
+"""
+Queue store.
+
+The used queue store
+
+default: redis
+"""
+QUEUESTORE_REDIS: Literal["redis"] = "redis"
+"""The values for the 'Queue store' enum"""
+QUEUESTORE_SQS: Literal["sqs"] = "sqs"
+"""The values for the 'Queue store' enum"""
+QUEUESTORE_POSTGRESQL: Literal["postgresql"] = "postgresql"
+"""The values for the 'Queue store' enum"""
+
+
 REQUEST_DEFAULT = 0.01
 """ Default value of the field path 'SQS cost request' """
 
@@ -2148,7 +2186,7 @@ class Redis(TypedDict, total=False):
     """
     URL.
 
-    The server URL (main configuration)
+    The server URL (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_URL` environment variable
 
     pattern: ^rediss?://([^:@/]*:[^:@/]*@)?[^:@/]+(:[0-9]+)?(/.*)?$
     """
@@ -2157,7 +2195,7 @@ class Redis(TypedDict, total=False):
     """
     Sentinels.
 
-    The sentinels (main configuration)
+    The sentinels (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_SENTINELS` environment variable
     """
 
     connection_kwargs: dict[str, Any]
@@ -2170,7 +2208,7 @@ class Redis(TypedDict, total=False):
     """
     Service name.
 
-    The service name (main configuration)
+    The service name (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_SERVICE_NAME` environment variable
 
     default: mymaster
     """
@@ -2179,17 +2217,21 @@ class Redis(TypedDict, total=False):
     """
     Socket timeout.
 
-    The socket timeout (main configuration)
+    The socket timeout (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_SOCKET_TIMEOUT` environment variable
     """
 
     db: int
-    """ Database. """
+    """
+    Database.
+
+    The database number (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_DB` environment variable
+    """
 
     queue: str
     """
     Queue.
 
-    The queue name (main configuration)
+    The queue name (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_QUEUE` environment variable
 
     default: tilecloud
     """
@@ -2198,7 +2240,7 @@ class Redis(TypedDict, total=False):
     """
     Timeout.
 
-    The timeout (main configuration)
+    The timeout (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_TIMEOUT` environment variable
 
     default: 5
     """
@@ -2699,7 +2741,7 @@ class _LayerGeometriesItem(TypedDict, total=False):
     """
     SQL.
 
-    The SQL query that get the geometry in geom e.g. 'the_geom AS geom FROM my_table'
+    The SQL query that get the geometry in geom e.g. `the_geom AS geom FROM my_table`
 
     Required property
     """
@@ -2812,7 +2854,7 @@ class _ProcessCommandItem(TypedDict, total=False):
     """
     Command.
 
-    The shell command, available parameters: %(in)s, %(out)s, %(args)s, %(x)s, %(y)s, %(z)s.
+    The shell command, available parameters: `%(in)s`, `%(out)s`,` %(args)s`, `%(x)s`, `%(y)s`, `%(z)s`.
 
     Required property
     """
@@ -2830,7 +2872,7 @@ class _ProcessCommandItem(TypedDict, total=False):
     """
     Argument.
 
-    Used to build the %(args)
+    Used to build the `%(args)`
     """
 
 

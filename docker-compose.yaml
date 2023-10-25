@@ -72,7 +72,7 @@ services:
       <<: *app-env
       TEST_USER: Test
 
-  app_postgress:
+  app_postgressql:
     <<: *app
     environment:
       <<: *app-env
@@ -80,7 +80,7 @@ services:
       SQL_LOG_LEVEL: DEBUG
       TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+psycopg2://postgres:postgres@db:5432/tests
     volumes:
-      - ./example/tilegeneration/config-postgress.yaml:/etc/tilegeneration/config.yaml:ro
+      - ./example/tilegeneration/config-postgressql.yaml:/etc/tilegeneration/config.yaml:ro
     ports:
       - '9052:8080'
 

@@ -1742,7 +1742,9 @@ def _await_message(_: Any) -> bool:
 def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
     """Get the quue tile store."""
 
-    if "postgres" in config.config:
+    queue_store = config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
+
+    if queue_store == "postgres":
         # Create a postgreSQL queue
         from tilecloud_chain.store.postgres import (  # pylint: disable=import-outside-toplevel
             get_postgresql_queue_store,
@@ -1752,13 +1754,17 @@ def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
             get_postgresql_queue_store(config),
             store_name="postgresql",
         )
-    elif "redis" in config.config:
+    elif queue_store == "redis":
         # Create a Redis queue
         conf = config.config["redis"]
         tilestore_kwargs: dict[str, Any] = {
-            "name": conf.get("queue", configuration.QUEUE_DEFAULT),
+            "name": os.environ.get(
+                "TILECLOUD_CHAIN_REDIS_QUEUE", conf.get("queue", configuration.QUEUE_DEFAULT)
+            ),
             "stop_if_empty": not daemon,
-            "timeout": conf.get("timeout", configuration.TIMEOUT_DEFAULT),
+            "timeout": os.environ.get(
+                "TILECLOUD_CHAIN_REDIS_TIMEOUT", conf.get("timeout", configuration.TIMEOUT_DEFAULT)
+            ),
             "pending_timeout": conf.get("pending_timeout", configuration.PENDING_TIMEOUT_DEFAULT),
             "max_retries": conf.get("max_retries", configuration.MAX_RETRIES_DEFAULT),
             "max_errors_age": conf.get("max_errors_age", configuration.MAX_ERRORS_AGE_DEFAULT),
@@ -1766,31 +1772,46 @@ def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
             "connection_kwargs": conf.get("connection_kwargs", {}),
             "sentinel_kwargs": conf.get("sentinel_kwargs"),
         }
-        if "socket_timeout" in conf:
-            tilestore_kwargs["connection_kwargs"]["socket_timeout"] = conf["socket_timeout"]
-        if "db" in conf:
-            tilestore_kwargs["connection_kwargs"]["db"] = conf["db"]
-        if "url" in conf:
-            tilestore_kwargs["url"] = conf["url"]
+        socket_timeout = os.environ.get("TILECLOUD_CHAIN_REDIS_SOCKET_TIMEOUT", conf.get("socket_timeout"))
+        if socket_timeout is not None:
+            tilestore_kwargs["connection_kwargs"]["socket_timeout"] = socket_timeout
+        db = os.environ.get("TILECLOUD_CHAIN_REDIS_DB", conf.get("db"))
+        if db is not None:
+            tilestore_kwargs["connection_kwargs"]["db"] = db
+        url = os.environ.get("TILECLOUD_CHAIN_REDIS_URL", conf.get("url"))
+        if url is not None:
+            tilestore_kwargs["url"] = url
         else:
-            tilestore_kwargs["sentinels"] = conf["sentinels"]
-            tilestore_kwargs["service_name"] = conf.get("service_name", "mymaster")
+            sentinels: list[tuple[str, Union[str, int]]] = []
+            if "TILECLOUD_CHAIN_REDIS_SENTINELs" in os.environ:
+                sentinels_string = os.environ["TILECLOUD_CHAIN_REDIS_SENTINELS"]
+                sentinels_tmp = [s.split(":") for s in sentinels_string.split(",")]
+                sentinels = [  # pylint: disable=unnecessary-comprehension
+                    (host, port) for host, port in sentinels_tmp
+                ]
+            elif "sentinels" in conf:
+                sentinels = conf["sentinels"]
+
+            tilestore_kwargs["sentinels"] = [(host, int(port)) for host, port in sentinels]
+            tilestore_kwargs["service_name"] = os.environ.get(
+                "TILECLOUD_CHAIN_REDIS_SERVICE_NAME",
+                conf.get("service_name", configuration.SERVICE_NAME_DEFAULT),
+            )
         if "pending_count" in conf:
             tilestore_kwargs["pending_count"] = conf["pending_count"]
         if "pending_max_count" in conf:
             tilestore_kwargs["pending_max_count"] = conf["pending_max_count"]
         return TimedTileStoreWrapper(RedisTileStore(**tilestore_kwargs), store_name="redis")
-    else:
+    elif queue_store == "sqs":
         # Create a SQS queue
         return TimedTileStoreWrapper(
             SQSTileStore(_get_sqs_queue(config), on_empty=_await_message if daemon else maybe_stop),
             store_name="SQS",
         )
+    raise NotImplementedError(f"Unknown queue store: {queue_store}")
 
 
-def _get_sqs_queue(
-    config: DatedConfig,
-) -> "botocore.client.SQS":
+def _get_sqs_queue(config: DatedConfig) -> "botocore.client.SQS":
     if "sqs" not in config.config:
         sys.exit("The config hasn't any configured queue")
     sqs = boto3.resource("sqs", region_name=config.config["sqs"].get("region", "eu-west-1"))

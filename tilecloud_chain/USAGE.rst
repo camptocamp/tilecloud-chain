@@ -368,13 +368,23 @@ Alternate mime type
 
 By default TileCloud support only the ``image/jpeg`` and ``image/png`` mime type.
 
+Queue store
+-----------
+
+We can store the queue in different store: Redis (``redis``), Amazone SQS (``sqs``) or PostgreSQL
+(``postgresql``), see the related section for the configuration.
+
+To configure witch store to use we should set the ``queue_store`` in the configuration file,
+default it's on Redis.
+
 PostgreSQL
 ----------
 
-Is it possible to store the queue in a PostgreSQL database, for that you should at least add
-``postgres: {}`` in your (main) configuration file, and set the ``TILECLOUDCHAIN_SQLALCHEMY_URL``
-environment variable to the SQLAlchemy URL of the database.
-You can also set the ``TILECLOUDCHAIN_POSTGRES_SCHEMA`` environment variable to the schema name.
+Is it possible to store the queue in a PostgreSQL database, for that you should at least set the
+``queue_store`` to ``postgresql`` in your (main) configuration file, and set the SqlAlchemy URL in the
+configuration file or in the ``TILECLOUD_CHAIN_SQLALCHEMY_URL`` environment variable.
+
+See the [configuration reference](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/CONFIG.md#definitions/postgresql) for the other configuration possibilities.
 
 With that the admin page is enhance with a job concept with enhanced status and they can be
 canceled, and restarted.

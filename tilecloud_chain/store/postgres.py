@@ -78,13 +78,13 @@ _STATUS_DONE = "done"
 _STATUS_CANCELLED = "cancelled"
 _STATUS_PENDING = "pending"
 
-_schema = os.environ.get("TILECLOUD_CHAIN_POSTGRES_SCHEMA", "tilecloud_chain")
+_schema = os.environ.get("TILECLOUD_CHAIN_POSTGRESQL_SCHEMA", "tilecloud_chain")
 
 
 def _encode_message(metatile: Tile) -> dict[str, Any]:
     metadata = dict(metatile.metadata)
-    if "postgres_id" in metadata:
-        del metadata["postgres_id"]
+    if "postgresql_id" in metadata:
+        del metadata["postgresql_id"]
     return {
         "z": metatile.tilecoord.z,
         "x": metatile.tilecoord.x,
@@ -108,8 +108,8 @@ def _decode_message(body: dict[str, Any], **kwargs: Any) -> Tile:
     return Tile(tilecoord, metadata=metadata, **kwargs)
 
 
-class PostgresTileStoreException(Exception):
-    """Postgres TileStore Exception."""
+class PostgresqlTileStoreException(Exception):
+    """PostgreSQL TileStore Exception."""
 
 
 class Base(DeclarativeBase):
@@ -167,8 +167,10 @@ class Queue(Base):
         return f"Queue {self.job_id}.{self.id} zoom={self.zoom} [{self.status}]"
 
 
-def _start_job(job_id: int, allowed_commands: list[str], allowed_arguments: list[str]) -> None:
-    engine = create_engine(os.environ["TILECLOUD_CHAIN_SQLALCHEMY_URL"])
+def _start_job(
+    job_id: int, sqlalchemy_url: str, allowed_commands: list[str], allowed_arguments: list[str]
+) -> None:
+    engine = create_engine(sqlalchemy_url)
     SessionMaker = sessionmaker(engine)  # noqa
 
     with SessionMaker() as session:
@@ -267,7 +269,7 @@ def _start_job(job_id: int, allowed_commands: list[str], allowed_arguments: list
         )
 
 
-class PostgresTileStore(TileStore):
+class PostgresqlTileStore(TileStore):
     """PostgreSQL queue."""
 
     def __init__(
@@ -275,15 +277,17 @@ class PostgresTileStore(TileStore):
         allowed_commands: list[str],
         allowed_arguments: list[str],
         max_pending_minutes: int,
+        sqlalchemy_url: str,
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
 
-        engine = create_engine(os.environ["TILECLOUD_CHAIN_SQLALCHEMY_URL"])
+        self.sqlalchemy_url = sqlalchemy_url
+        engine = create_engine(sqlalchemy_url)
 
         self.SessionMaker = sessionmaker(engine)
         if re.match(r"^[0-9a-zA-Z_]+$", _schema) is None:
-            raise PostgresTileStoreException(f"Invalid schema name: {_schema}")
+            raise PostgresqlTileStoreException(f"Invalid schema name: {_schema}")
 
         with engine.connect() as connection:
             connection.execute(sqlalchemy.text(f"CREATE SCHEMA IF NOT EXISTS {_schema}"))
@@ -321,7 +325,7 @@ class PostgresTileStore(TileStore):
                 .count()
             )
             if nb_job == 0:
-                raise PostgresTileStoreException(
+                raise PostgresqlTileStoreException(
                     f"Job {job_id} not found with the correct status, for the host"
                 )
             session.query(Queue).where(and_(Queue.job_id == job_id, Queue.status == _STATUS_ERROR)).update(
@@ -346,7 +350,7 @@ class PostgresTileStore(TileStore):
                 .one()
             )
             if job is None:
-                raise PostgresTileStoreException(
+                raise PostgresqlTileStoreException(
                     f"Job {job_id} not found, with the correct status, for the host"
                 )
             session.query(Queue).where(and_(Queue.job_id == job_id, Queue.status == _STATUS_CREATED)).delete()
@@ -451,7 +455,8 @@ class PostgresTileStore(TileStore):
                     session.commit()
             if job_id != -1:
                 proc = multiprocessing.Process(
-                    target=_start_job, args=(job_id, self.allowed_commands, self.allowed_arguments)
+                    target=_start_job,
+                    args=(job_id, self.sqlalchemy_url, self.allowed_commands, self.allowed_arguments),
                 )
                 proc.start()
 
@@ -537,7 +542,7 @@ class PostgresTileStore(TileStore):
                             continue
                         sqlalchemy_tile.status = _STATUS_PENDING  # type: ignore[assignment]
                         sqlalchemy_tile.started_at = datetime.now()  # type: ignore[assignment]
-                        meta_tile = _decode_message(sqlalchemy_tile.meta_tile, postgres_id=sqlalchemy_tile.id)  # type: ignore[arg-type]
+                        meta_tile = _decode_message(sqlalchemy_tile.meta_tile, postgresql_id=sqlalchemy_tile.id)  # type: ignore[arg-type]
                         session.commit()
                     yield meta_tile
                 except Exception:  # pylint: disable=broad-except
@@ -573,7 +578,7 @@ class PostgresTileStore(TileStore):
             if tile.error:
                 sqlalchemy_tile = (
                     session.query(Queue)
-                    .where(and_(Queue.status == _STATUS_PENDING, Queue.id == tile.postgres_id))  # type: ignore[attr-defined]
+                    .where(and_(Queue.status == _STATUS_PENDING, Queue.id == tile.postgresql_id))  # type: ignore[attr-defined]
                     .with_for_update(of=Queue)  # type: ignore[arg-type]
                     .first()
                 )
@@ -583,7 +588,7 @@ class PostgresTileStore(TileStore):
                     session.commit()
             else:
                 session.query(Queue).where(
-                    and_(Queue.status == _STATUS_PENDING, Queue.id == tile.postgres_id)  # type: ignore[attr-defined]
+                    and_(Queue.status == _STATUS_PENDING, Queue.id == tile.postgresql_id)  # type: ignore[attr-defined]
                 ).delete()
                 session.commit()
         return tile
@@ -596,13 +601,16 @@ class PostgresTileStore(TileStore):
             session.commit()
 
 
-def get_postgresql_queue_store(config: DatedConfig) -> PostgresTileStore:
+def get_postgresql_queue_store(config: DatedConfig) -> PostgresqlTileStore:
     """Get the postgreSQL queue tile store."""
 
-    conf = config.config["postgres"]
+    conf = config.config.get("postgresql", {})
+    sqlalchemy_url = os.environ.get("TILECLOUD_CHAIN_SQLALCHEMY_URL", conf.get("sqlalchemy_url"))
+    assert sqlalchemy_url is not None
 
-    return PostgresTileStore(
+    return PostgresqlTileStore(
         max_pending_minutes=conf.get("max_pending_minutes", configuration.MAX_PENDING_MINUTES_DEFAULT),
+        sqlalchemy_url=sqlalchemy_url,
         allowed_commands=config.config.get("server", {}).get(
             "allowed_commands", configuration.ALLOWED_COMMANDS_DEFAULT
         ),

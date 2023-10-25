@@ -228,7 +228,7 @@ class Admin:
             return {
                 "success": True,
             }
-        except tilecloud_chain.store.postgres.PostgresTileStoreException as e:
+        except tilecloud_chain.store.postgres.PostgresqlTileStoreException as e:
             _LOG.exception("Error while creating the job")
             self.request.response.status_code = 400
             return {"success": False, "error": str(e)}
@@ -256,7 +256,7 @@ class Admin:
             return {
                 "success": True,
             }
-        except tilecloud_chain.store.postgres.PostgresTileStoreException as e:
+        except tilecloud_chain.store.postgres.PostgresqlTileStoreException as e:
             _LOG.exception("Exception while cancelling the job")
             self.request.response.status_code = 400
             return {"success": False, "error": str(e)}
@@ -284,7 +284,7 @@ class Admin:
             return {
                 "success": True,
             }
-        except tilecloud_chain.store.postgres.PostgresTileStoreException as e:
+        except tilecloud_chain.store.postgres.PostgresqlTileStoreException as e:
             _LOG.exception("Exception while retrying the job")
             self.request.response.status_code = 400
             return {"success": False, "error": str(e)}

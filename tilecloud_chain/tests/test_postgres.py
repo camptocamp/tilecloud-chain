@@ -16,34 +16,26 @@ from tilecloud_chain.store.postgres import (
     _STATUS_PENDING,
     _STATUS_STARTED,
     Job,
-    PostgresTileStore,
+    PostgresqlTileStore,
     Queue,
     get_postgresql_queue_store,
 )
 
 
 @pytest.fixture
-def tilestore() -> PostgresTileStore:
-    return get_postgresql_queue_store(
-        DatedConfig(
-            {
-                "postgres": {},
-            },
-            0,
-            "config.yaml",
-        )
-    )
+def tilestore() -> PostgresqlTileStore:
+    return get_postgresql_queue_store(DatedConfig({}, 0, "config.yaml"))
 
 
 @pytest.fixture
 def SessionMaker() -> sessionmaker:
-    engine = create_engine(os.environ["TILECLOUDCHAIN_SQLALCHEMY_URL"])
+    engine = create_engine(os.environ["TILECLOUD_CHAIN_SQLALCHEMY_URL"])
     SessionMaker = sessionmaker(engine)  # noqa
     return SessionMaker
 
 
 @pytest.fixture
-def queue(SessionMaker: sessionmaker, tilestore: PostgresTileStore) -> tuple[int, int, int]:
+def queue(SessionMaker: sessionmaker, tilestore: PostgresqlTileStore) -> tuple[int, int, int]:
     tilestore.create_job("test", "generate-tiles", "config.yaml")
     with SessionMaker() as session:
         job = session.query(Job).filter(Job.name == "test").one()
@@ -80,7 +72,7 @@ def queue(SessionMaker: sessionmaker, tilestore: PostgresTileStore) -> tuple[int
         session.commit()
 
 
-def test_retry(queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresTileStore):
+def test_retry(queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore):
     job_id, _, _ = queue
 
     tile_1 = next(tilestore.list())
@@ -112,7 +104,7 @@ def test_retry(queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestor
         assert metatiles[0].status == _STATUS_CREATED
 
 
-def test_cancel(queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresTileStore):
+def test_cancel(queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore):
     job_id, _, _ = queue
 
     tile_1 = next(tilestore.list())
@@ -133,7 +125,7 @@ def test_cancel(queue: tuple[int, int, int], SessionMaker: sessionmaker, tilesto
 
 
 def test_maintenance_status_done(
-    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresTileStore
+    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore
 ):
     job_id, _, _ = queue
 
@@ -155,7 +147,7 @@ def test_maintenance_status_done(
 
 
 def test_maintenance_pending_tile(
-    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresTileStore
+    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore
 ):
     job_id, metatile_0_id, metatile_1_id = queue
 
@@ -177,7 +169,7 @@ def test_maintenance_pending_tile(
 
 
 def test_maintenance_pending_job(
-    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresTileStore
+    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore
 ):
     job_id, metatile_0_id, metatile_1_id = queue
     with SessionMaker() as session:
