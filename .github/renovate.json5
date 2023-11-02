@@ -83,5 +83,11 @@
       matchPackageNames: ['python'],
       enabled: false,
     },
+    /** Only LTS version of Node */
+    {
+      allowedVersions: '/(0|2|4|6|8)$/',
+      matchPackageNames: ['node'],
+      enabled: false,
+    },
   ],
 }

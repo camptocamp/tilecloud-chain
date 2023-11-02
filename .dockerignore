@@ -11,4 +11,5 @@
 !production.ini
 !gunicorn.conf.py
 !package*.json
+!.nvmrc
 !screenshot.js
