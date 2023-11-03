@@ -38,6 +38,7 @@ RUN poetry export --output=requirements.txt \
 # Base, the biggest thing is to install the Python packages
 FROM base-all as base
 
+# hadolint ignore=SC2086
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     --mount=type=cache,target=/root/.cache \
@@ -116,19 +117,25 @@ ENV PROMETHEUS_MULTIPROC_DIR=/prometheus-metrics
 # Do the lint, used by the tests
 FROM base as tests
 
+# Fail on error on pipe, see: https://github.com/hadolint/hadolint/wiki/DL4006.
+# Treat unset variables as an error when substituting.
+# Print commands and their arguments as they are executed.
+SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
+
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get install --assume-yes --no-install-recommends git curl gnupg \
     libglib2.0-0 libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 \
     libxdamage1 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2
 
+COPY .nvmrc /tmp
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
-    . /etc/os-release \
-    && echo "deb https://deb.nodesource.com/node_18.x ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/nodesource.list \
-    && curl --silent https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - \
+    NODE_MAJOR="$(cat /tmp/.nvmrc)" \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" > /etc/apt/sources.list.d/nodesource.list \
+    && curl --silent https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor --output=/etc/apt/keyrings/nodesource.gpg \
     && apt-get update \
-    && apt-get install --assume-yes --no-install-recommends 'nodejs=18.*'
+    && apt-get install --assume-yes --no-install-recommends "nodejs=${NODE_MAJOR}.*"
 
 COPY package.json package-lock.json ./
 RUN npm install --dev
