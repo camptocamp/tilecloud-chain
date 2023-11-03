@@ -43,7 +43,6 @@
     },
     /** Automerge the patch, the minor and the dev dependency */
     {
-      matchBaseBranches: ['master'],
       matchUpdateTypes: ['minor', 'patch'],
       automerge: true,
     },
@@ -87,6 +86,12 @@
     {
       allowedVersions: '/(0|2|4|6|8)$/',
       matchPackageNames: ['node'],
+      enabled: false,
+    },
+    /** Disable types-request update on version <= 1.19 */
+    {
+      matchPackageNames: ['types-request'],
+      matchBaseBranches: ['1.17', '1.18', '1.19'],
       enabled: false,
     },
   ],
