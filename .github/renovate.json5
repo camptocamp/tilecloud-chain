@@ -90,7 +90,7 @@
     },
     /** Disable types-request update on version <= 1.19 */
     {
-      matchPackageNames: ['types-request'],
+      matchPackageNames: ['types-requests'],
       matchBaseBranches: ['1.17', '1.18', '1.19'],
       enabled: false,
     },
