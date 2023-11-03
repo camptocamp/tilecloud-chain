@@ -56,13 +56,13 @@
         },
         "unit": {
           "title": "Unit",
-          "description": "The projection unit, default is 'm'",
+          "description": "The projection unit",
           "type": "string",
           "default": "m"
         },
         "tile_size": {
           "title": "Tile size",
-          "description": "The tile size in pixel, default is 256",
+          "description": "The tile size in pixel",
           "type": "integer",
           "default": 256
         },
@@ -78,8 +78,9 @@
     },
     "cache_wmtscapabilities_file": {
       "title": "Cache WMST capabilities file",
-      "description": "The generated WMTS capabilities file name (by 'default 1.0.0/WMTSCapabilities.xml')",
-      "type": "string"
+      "description": "The generated WMTS capabilities file name",
+      "type": "string",
+      "default": "1.0.0/WMTSCapabilities.xml"
     },
     "cache_http_url": {
       "title": "Cache HTTP URL",
@@ -103,7 +104,7 @@
     },
     "cache_folder": {
       "title": "Cache folder",
-      "description": "The root folder of the cache, default is ''",
+      "description": "The root folder of the cache",
       "type": "string",
       "default": ""
     },
@@ -136,13 +137,15 @@
         "http_urls": { "$ref": "#/definitions/cache_http_urls" },
         "tiles_url": {
           "title": "Tiles URL",
-          "description": "The template tiles URL on S3, the argument can be region, bucket and folder (default is 'http://s3-{region}.amazonaws.com/{bucket}/{folder}')",
-          "type": "string"
+          "description": "The template tiles URL on S3, the argument can be region, bucket and folder",
+          "type": "string",
+          "default": "http://s3-{region}.amazonaws.com/{bucket}/{folder}"
         },
         "host": {
           "title": "Host",
-          "description": "The S3 host, default is 's3-eu-west-1.amazonaws.com'",
-          "type": "string"
+          "description": "The S3 host",
+          "type": "string",
+          "default": "s3-eu-west-1.amazonaws.com"
         },
         "bucket": {
           "title": "Bucket",
@@ -270,25 +273,27 @@
     },
     "layer_px_buffer": {
       "title": "Layer pixel buffer",
-      "description": "The buffer in pixel used to calculate geometry intersection, default is 0",
+      "description": "The buffer in pixel used to calculate geometry intersection",
       "type": "integer",
       "default": 0
     },
     "layer_meta": {
       "title": "Layer meta",
-      "description": "Use meta-tiles, default is False, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles",
+      "description": "Use meta-tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles",
       "type": "boolean",
       "default": false
     },
     "layer_meta_size": {
       "title": "Layer meta size",
-      "description": "The meta-tile size in tiles, default is 5",
-      "type": "integer"
+      "description": "The meta-tile size in tiles",
+      "type": "integer",
+      "default": 5
     },
     "layer_meta_buffer": {
       "title": "Layer meta buffer",
-      "description": "The meta-tiles buffer in pixels, default is 128",
-      "type": "integer"
+      "description": "The meta-tiles buffer in pixels",
+      "type": "integer",
+      "default": 128
     },
     "layer_layers": {
       "title": "Layer layers",
@@ -447,7 +452,7 @@
           },
           "sql": {
             "title": "SQL",
-            "description": "The SQL query that get the geometry in geom e.g. 'the_geom AS geom FROM my_table'",
+            "description": "The SQL query that get the geometry in geom e.g. `the_geom AS geom FROM my_table`",
             "type": "string"
           },
           "min_resolution": {
@@ -615,8 +620,9 @@
         },
         "generate_salt": {
           "title": "Generate salt",
-          "description": "Should generate a salt to drop the cache, default is False",
-          "type": "boolean"
+          "description": "Should generate a salt to drop the cache",
+          "type": "boolean",
+          "default": false
         },
         "query_layers": {
           "title": "Query layers",
@@ -645,8 +651,9 @@
         },
         "version": {
           "title": "Version",
-          "description": "The used WMS version (default is '1.1.1')",
-          "type": "string"
+          "description": "The used WMS version",
+          "type": "string",
+          "default": "1.1.1"
         }
       },
       "required": ["layers", "url", "grid", "wmts_style", "mime_type", "extension"]
@@ -733,14 +740,16 @@
         },
         "data_buffer": {
           "title": "Data buffer",
-          "description": "The data buffer, default is 128",
-          "type": "integer"
+          "description": "The data buffer",
+          "type": "integer",
+          "default": 128
         },
         "output_format": {
           "title": "Output format",
-          "description": "The Mapnik output format, default is 'png'",
+          "description": "The Mapnik output format",
           "type": "string",
-          "enum": ["png", "png256", "jpeg", "grid"]
+          "enum": ["png", "png256", "jpeg", "grid"],
+          "default": "png"
         },
         "wms_url": {
           "title": "WMS URL",
@@ -749,8 +758,9 @@
         },
         "resolution": {
           "title": "Resolution",
-          "description": "The resolution, default is 4",
-          "type": "integer"
+          "description": "The resolution",
+          "type": "integer",
+          "default": 4
         },
         "layers_fields": {
           "title": "Layers fields",
@@ -766,8 +776,9 @@
         },
         "drop_empty_utfgrid": {
           "title": "Drop empty UTFGrid",
-          "description": "Drop if the tile is empty, default is False",
-          "type": "boolean"
+          "description": "Drop if the tile is empty",
+          "type": "boolean",
+          "default": false
         }
       },
       "required": ["grid", "wmts_style", "mime_type", "extension"]
@@ -794,18 +805,18 @@
         "properties": {
           "cmd": {
             "title": "Command",
-            "description": "The shell command, available parameters: %(in)s, %(out)s, %(args)s, %(x)s, %(y)s, %(z)s.",
+            "description": "The shell command, available parameters: `%(in)s`, `%(out)s`,` %(args)s`, `%(x)s`, `%(y)s`, `%(z)s`.",
             "type": "string"
           },
           "need_out": {
             "title": "Need out",
-            "description": "The command will generate an output in a file, default is False",
+            "description": "The command will generate an output in a file",
             "type": "boolean",
             "default": false
           },
           "arg": {
             "title": "Argument",
-            "description": "Used to build the %(args)",
+            "description": "Used to build the `%(args)`",
             "type": "object",
             "additionalProperties": false,
             "properties": {
@@ -862,7 +873,7 @@
         },
         "maxconsecutive_errors": {
           "title": "Max consecutive errors",
-          "description": "The maximum number of consecutive errors (main configuration), default is 10",
+          "description": "The maximum number of consecutive errors (main configuration)",
           "type": "integer",
           "default": 10
         },
@@ -873,7 +884,7 @@
         },
         "number_process": {
           "title": "Number process",
-          "description": "Number of process used to generate the tiles (main configuration), default is 1",
+          "description": "Number of process used to generate the tiles (main configuration)",
           "type": "integer",
           "default": 1
         }
@@ -881,9 +892,30 @@
     },
     "aws_region": {
       "title": "AWS region",
-      "description": "The region, default is 'eu-west-1'",
+      "description": "The region",
       "type": "string",
-      "pattern": "^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$"
+      "pattern": "^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$",
+      "default": "eu-west-1"
+    },
+    "postgresql": {
+      "title": "PostgreSQL",
+      "description": "The PostgreSQL configuration (main configuration), the schema can be configured with the `TILECLOUD_CHAIN_POSTGRESQL_SCHEMA` environment variable",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sqlalchemy_url": {
+          "title": "SQLAlchemy URL",
+          "description": "The SQLAlchemy URL (like: `postgresql+psycopg2://username:password@host:5432/database`) (main configuration), can also be set in the `TILECLOUD_CHAIN_SQLALCHEMY_URL` environment variable",
+          "type": "string",
+          "pattern": ""
+        },
+        "max_pending_minutes": {
+          "title": "Max pending minutes",
+          "description": "The max pending minutes (main configuration)",
+          "type": "integer",
+          "default": 10
+        }
+      }
     },
     "redis": {
       "title": "Redis",
@@ -893,13 +925,13 @@
       "properties": {
         "url": {
           "title": "URL",
-          "description": "The server URL (main configuration)",
+          "description": "The server URL (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_URL` environment variable",
           "type": "string",
           "pattern": "^rediss?://([^:@/]*:[^:@/]*@)?[^:@/]+(:[0-9]+)?(/.*)?$"
         },
         "sentinels": {
           "title": "Sentinels",
-          "description": "The sentinels (main configuration)",
+          "description": "The sentinels (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_SENTINELS` environment variable",
           "type": "array",
           "items": {
             "description": "A sentinel (main configuration)",
@@ -929,76 +961,77 @@
         },
         "service_name": {
           "title": "Service name",
-          "description": "The service name, default is 'mymaster' (main configuration)",
+          "description": "The service name (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_SERVICE_NAME` environment variable",
           "type": "string",
           "default": "mymaster"
         },
         "socket_timeout": {
           "title": "Socket timeout",
-          "description": "The socket timeout (main configuration)",
+          "description": "The socket timeout (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_SOCKET_TIMEOUT` environment variable",
           "type": "integer"
         },
         "db": {
           "title": "Database",
+          "description": "The database number (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_DB` environment variable",
           "type": "integer"
         },
         "queue": {
           "title": "Queue",
-          "description": "The queue name (main configuration)",
+          "description": "The queue name (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_QUEUE` environment variable",
           "type": "string",
           "default": "tilecloud"
         },
         "timeout": {
           "title": "Timeout",
-          "description": "The timeout (main configuration), default is 5",
+          "description": "The timeout (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_TIMEOUT` environment variable",
           "type": "integer",
           "default": 5
         },
         "pending_timeout": {
           "title": "Pending timeout",
-          "description": "The pending timeout (main configuration), default is 300",
+          "description": "The pending timeout (main configuration)",
           "type": "integer",
           "default": 300
         },
         "max_retries": {
           "title": "Max retries",
-          "description": "The max retries (main configuration), default is 5",
+          "description": "The max retries (main configuration)",
           "type": "integer",
           "default": 5
         },
         "max_errors_age": {
           "title": "Max errors age",
-          "description": "The max error age (main configuration), default is 86400 (1 day)",
+          "description": "The max error age (main configuration), default is 1 day",
           "type": "integer",
           "default": 86400
         },
         "max_errors_nb": {
           "title": "Max errors number",
-          "description": "The max error number (main configuration), default is 100",
+          "description": "The max error number (main configuration)",
           "type": "integer",
           "default": 100
         },
         "prefix": {
           "title": "Prefix",
-          "description": "The prefix (main configuration), default is 'tilecloud_cache'",
+          "description": "The prefix (main configuration)",
           "type": "string",
           "default": "tilecloud_cache"
         },
         "expiration": {
           "title": "Expiration",
-          "description": "The meta-tile in queue expiration (main configuration), default is 28800 (8 hours)",
+          "description": "The meta-tile in queue expiration (main configuration), default is 8 hours",
           "type": "integer",
           "default": 28800
         },
         "pending_count": {
           "title": "Pending count",
-          "description": "The pending count: the number of pending tiles get in one request (main configuration), default is 10",
+          "description": "The pending count: the number of pending tiles get in one request (main configuration)",
           "type": "integer",
           "default": 10
         },
         "pending_max_count": {
           "title": "Pending max count",
-          "description": "The pending max count: the maximum number of pending tiles get in one pass (if not generating other tiles, every second) (main configuration), default is 10000",
+          "description": "The pending max count: the maximum number of pending tiles get in one pass (if not generating other tiles, every second) (main configuration)",
           "type": "integer",
           "default": 10000
         }
@@ -1025,39 +1058,40 @@
         },
         "geoms_redirect": {
           "title": "Geometries redirect",
-          "description": "Take care on the geometries, default is False",
+          "description": "Take care on the geometries",
           "type": "boolean",
           "default": false
         },
         "static_allow_extension": {
           "title": "Static allow extension",
-          "description": "The allowed extension of static files, defaults to [jpeg, png, xml, js, html, css]",
+          "description": "The allowed extension of static files",
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "default": ["jpeg", "png", "xml", "js", "html", "css"]
         },
         "wmts_path": {
           "title": "WMTS path",
-          "description": "The sub-path for the WMTS (main configuration), default is 'wmts'",
+          "description": "The sub-path for the WMTS (main configuration)",
           "type": "string",
           "default": "wmts"
         },
         "static_path": {
           "title": "Static path",
-          "description": "The sub-path for the static files (main configuration), default is 'static'",
+          "description": "The sub-path for the static files (main configuration)",
           "type": "string",
           "default": "static"
         },
         "admin_path": {
           "title": "Admin path",
-          "description": "The sub-path for the admin (main configuration), default is 'admin'",
+          "description": "The sub-path for the admin (main configuration)",
           "type": "string",
           "default": "admin"
         },
         "expires": {
           "title": "Expires",
-          "description": "The browser cache expiration, default is 8 (hours)",
+          "description": "The browser cache expiration in hours",
           "type": "integer",
           "default": 8
         },
@@ -1088,7 +1122,8 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "default": ["generate-tiles", "generate-controller", "generate-cost"]
         },
         "allowed_arguments": {
           "title": "Allowed arguments",
@@ -1096,7 +1131,33 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "default": [
+            "--layer",
+            "--get-hash",
+            "--generate-legend-images",
+            "--get-bbox",
+            "--help",
+            "--ignore-errors",
+            "--bbox",
+            "--zoom",
+            "--test",
+            "--near",
+            "--time",
+            "--measure-generation-time",
+            "--no-geom",
+            "--dimensions"
+          ]
+        },
+        "admin_footer": {
+          "type": "string",
+          "title": "admin footer",
+          "description": "The footer of the admin interface"
+        },
+        "admin_footer_classes": {
+          "type": "string",
+          "title": "admin footer classes",
+          "description": "The CSS classes used on the footer of the admin interface"
         }
       }
     },
@@ -1108,7 +1169,7 @@
       "properties": {
         "request_per_layers": {
           "title": "Request per layers",
-          "description": "Tile request per hours, default is 10 000 000",
+          "description": "Tile request per hours",
           "type": "integer",
           "default": 10000000
         },
@@ -1198,7 +1259,7 @@
         },
         "servicetype": {
           "title": "Service type",
-          "description": "The service type, default is 'OGC WMTS'",
+          "description": "The service type",
           "type": "string",
           "default": "OGC WMTS"
         },
@@ -1339,7 +1400,7 @@
             },
             "port": {
               "title": "Port",
-              "description": "The port (main configuration), default is 5432",
+              "description": "The port (main configuration)",
               "type": "integer",
               "default": 5432
             },
@@ -1428,8 +1489,9 @@
       "properties": {
         "queue": {
           "title": "Queue",
-          "description": "The queue name, default is 'tilecloud'",
-          "type": "string"
+          "description": "The queue name",
+          "type": "string",
+          "default": "tilecloud"
         },
         "region": {
           "$ref": "#/definitions/aws_region"
@@ -1453,8 +1515,18 @@
       },
       "required": ["topic"]
     },
+    "queue_store": {
+      "title": "Queue store",
+      "description": "The used queue store",
+      "type": "string",
+      "enum": ["redis", "sqs", "postgresql"],
+      "default": "redis"
+    },
     "redis": {
       "$ref": "#/definitions/redis"
+    },
+    "postgresql": {
+      "$ref": "#/definitions/postgresql"
     },
     "openlayers": {
       "title": "OpenLayers",
@@ -1470,8 +1542,8 @@
           "default": "EPSG:2056"
         },
         "proj4js_def": {
-          "title": "The proj4js definition",
-          "description": "The proj4js definition, get it from https://epsg.io/",
+          "title": "Proj4js definition",
+          "description": "The `proj4js` definition, get it from https://epsg.io/",
           "type": "string",
           "default": "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"
         },

@@ -55,6 +55,7 @@ from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.store.redis import RedisTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.sqs import SQSTileStore, maybe_stop
+from tilecloud_chain import configuration
 from tilecloud_chain.multitilestore import MultiTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
@@ -177,7 +178,7 @@ def get_tile_matrix_identifier(
     grid: tilecloud_chain.configuration.Grid, resolution: Optional[float] = None, zoom: Optional[int] = None
 ) -> str:
     """Get an identifier for a tile matrix."""
-    if grid is None or grid["matrix_identifier"] == "zoom":
+    if grid is None or grid.get("matrix_identifier", configuration.MATRIX_IDENTIFIER_DEFAULT) == "zoom":
         return str(zoom)
     else:
         assert zoom is not None
@@ -209,7 +210,11 @@ class Run:
         self.safe = gene.options is None or not gene.options.debug
         daemon = gene.options is not None and getattr(gene.options, "daemon", False)
         self.max_consecutive_errors = (
-            MaximumConsecutiveErrors(gene.get_main_config().config["generation"]["maxconsecutive_errors"])
+            MaximumConsecutiveErrors(
+                gene.get_main_config()
+                .config["generation"]
+                .get("maxconsecutive_errors", configuration.MAX_CONSECUTIVE_ERRORS_DEFAULT)
+            )
             if not daemon and gene.maxconsecutive_errors
             else None
         )
@@ -643,7 +648,9 @@ class TileGeneration:
         schema_data = pkgutil.get_data("tilecloud_chain", "schema.json")
         assert schema_data
         errors, _ = jsonschema_validator.validate(
-            config.file, cast(dict[str, Any], config.config), json.loads(schema_data), default=True
+            config.file,
+            cast(dict[str, Any], config.config),
+            json.loads(schema_data),
         )
 
         if errors:
@@ -668,7 +675,7 @@ class TileGeneration:
             else:
                 grid["resolution_scale"] = self._resolution_scale(grid["resolutions"])
 
-            srs = int(grid["srs"].split(":")[1])
+            srs = int(grid.get("srs", configuration.SRS_DEFAULT).split(":")[1])
             if "proj4_literal" not in grid:
                 if srs == 3857:
                     grid["proj4_literal"] = (
@@ -688,7 +695,7 @@ class TileGeneration:
                         "+units=m +no_defs"
                     )
                 else:
-                    grid["proj4_literal"] = f"+init={grid['srs']}"
+                    grid["proj4_literal"] = f"+init={grid.get('srs', configuration.SRS_DEFAULT)}"
 
         layers = config.config.get("layers", {})
         for lname, layer in sorted(layers.items()):
@@ -861,7 +868,9 @@ class TileGeneration:
 
         def get_store(config_file: str, layer_name: str) -> TileStore:
             config = gene.get_config(config_file)
-            cache_name = cache or config.config["generation"]["default_cache"]
+            cache_name = cache or config.config["generation"].get(
+                "default_cache", configuration.DEFAULT_CACHE_DEFAULT
+            )
             cache_obj = config.config["caches"][cache_name]
             return self.get_store(config, cache_obj, layer_name)
 
@@ -902,8 +911,10 @@ class TileGeneration:
                 if layer.get("meta"):
                     return MetaTileSplitterTileStore(
                         layer["mime_type"],
-                        config.config["grids"][layer["grid"]]["tile_size"],
-                        layer["meta_buffer"],
+                        config.config["grids"][layer["grid"]].get(
+                            "tile_size", configuration.TILE_SIZE_DEFAULT
+                        ),
+                        layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT),
                     )
                 return None
 
@@ -1003,7 +1014,7 @@ class TileGeneration:
             resolutions=cast(list[int], [r * scale for r in grid["resolutions"]]),
             scale=scale,
             max_extent=cast(tuple[int, int, int, int], grid["bbox"]),
-            tile_size=grid["tile_size"],
+            tile_size=grid.get("tile_size", configuration.TILE_SIZE_DEFAULT),
         )
 
         self.grid_cache.setdefault(config.file, {})[grid_name] = DatedTileGrid(tilegrid, config.mtime)
@@ -1033,11 +1044,15 @@ class TileGeneration:
             bbox = config.config["grids"][layer["grid"]]["bbox"]
             diff = [position[0] - bbox[0], position[1] - bbox[1]]
             resolution = config.config["grids"][layer["grid"]]["resolutions"][self.options.zoom[0]]
-            mt_to_m = layer["meta_size"] * config.config["grids"][layer["grid"]]["tile_size"] * resolution
+            mt_to_m = (
+                layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
+                * config.config["grids"][layer["grid"]].get("tile_size", configuration.TILE_SIZE_DEFAULT)
+                * resolution
+            )
             mt = [float(d) / mt_to_m for d in diff]
 
             nb_tile = self.options.time * 3 if self.options.time is not None else self.options.test
-            nb_mt = nb_tile / (layer["meta_size"] ** 2)
+            nb_mt = nb_tile / (layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT) ** 2)
             nb_sqrt_mt = ceil(sqrt(nb_mt))
 
             mt_origin = [round(m - nb_sqrt_mt / 2) for m in mt]
@@ -1159,7 +1174,7 @@ class TileGeneration:
                     _LOGGER.warning("bounds empty for zoom %s", zoom)
                 else:
                     minx, miny, maxx, maxy = extent
-                    px_buffer = layer["px_buffer"]
+                    px_buffer = layer.get("px_buffer", configuration.LAYER_PIXEL_BUFFER_DEFAULT)
                     m_buffer = px_buffer * resolutions[zoom]
                     minx -= m_buffer
                     miny -= m_buffer
@@ -1181,7 +1196,13 @@ class TileGeneration:
                     )
 
         if layer["meta"]:
-            self.set_tilecoords(config, bounding_pyramid.metatilecoords(layer["meta_size"]), layer_name)
+            self.set_tilecoords(
+                config,
+                bounding_pyramid.metatilecoords(
+                    layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
+                ),
+                layer_name,
+            )
         else:
             self.set_tilecoords(config, bounding_pyramid, layer_name)
 
@@ -1205,6 +1226,8 @@ class TileGeneration:
         layer = config.config["layers"][layer_name]
 
         metadata = {"layer": layer_name, "config_file": config.file}
+        if hasattr(self.options, "job_id") and self.options.job_id:
+            metadata["job_id"] = self.options.job_id
         if self.options.host is not None:
             metadata["host"] = self.options.host
         self.tilestream = self._tilestream(tilecoords, metadata, self.get_all_dimensions(layer))
@@ -1345,7 +1368,8 @@ class TileGeneration:
             self.metatilesplitter_thread_pool.shutdown()
             self.metatilesplitter_thread_pool = None
 
-        assert threading.active_count() == 1, ", ".join([str(t) for t in threading.enumerate()])
+        if os.environ.get("TILECLOUD_CHAIN_SLAVE", "false").lower() != "true":
+            assert threading.active_count() == 1, ", ".join([str(t) for t in threading.enumerate()])
 
         self.error += run.error
         self.duration = datetime.now() - start
@@ -1529,7 +1553,12 @@ class IntersectGeometryFilter:
         grid_name = layer["grid"]
         grid = config.config["grids"][grid_name]
         tile_grid = self.gene.get_grid(config, grid_name)
-        px_buffer = layer["px_buffer"] + layer["meta_buffer"] if layer["meta"] else 0
+        px_buffer = (
+            layer.get("px_buffer", configuration.LAYER_PIXEL_BUFFER_DEFAULT)
+            + layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
+            if layer["meta"]
+            else 0
+        )
         geoms = self.gene.get_geoms(config, layer_name, host=host)
         return self.bbox_polygon(  # type: ignore
             tile_grid.extent(tilecoord, grid["resolutions"][tilecoord.z] * px_buffer)
@@ -1629,7 +1658,7 @@ class Process:
                 if self.options.quiet and "quiet" in cmd["arg"]:
                     args.append(cmd["arg"]["quiet"])
 
-                if cmd["need_out"]:
+                if cmd.get("need_out", configuration.NEED_OUT_DEFAULT):
                     fd_out, name_out = tempfile.mkstemp()
                     os.unlink(name_out)
                 else:
@@ -1655,7 +1684,7 @@ class Process:
                     tile.data = None
                     return tile
 
-                if cmd["need_out"]:
+                if cmd.get("need_out", configuration.NEED_OUT_DEFAULT):
                     os.close(fd_in)
                     os.remove(name_in)
                     name_in = name_out
@@ -1711,46 +1740,78 @@ def _await_message(_: Any) -> bool:
 
 
 def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
-    """Get the quue tile store (Redis or SQS)."""
-    if "redis" in config.config:
+    """Get the quue tile store."""
+
+    queue_store = config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
+
+    if queue_store == "postgres":
+        # Create a postgreSQL queue
+        from tilecloud_chain.store.postgres import (  # pylint: disable=import-outside-toplevel
+            get_postgresql_queue_store,
+        )
+
+        return TimedTileStoreWrapper(
+            get_postgresql_queue_store(config),
+            store_name="postgresql",
+        )
+    elif queue_store == "redis":
         # Create a Redis queue
         conf = config.config["redis"]
         tilestore_kwargs: dict[str, Any] = {
-            "name": conf["queue"],
+            "name": os.environ.get(
+                "TILECLOUD_CHAIN_REDIS_QUEUE", conf.get("queue", configuration.QUEUE_DEFAULT)
+            ),
             "stop_if_empty": not daemon,
-            "timeout": conf["timeout"],
-            "pending_timeout": conf["pending_timeout"],
-            "max_retries": conf["max_retries"],
-            "max_errors_age": conf["max_errors_age"],
-            "max_errors_nb": conf["max_errors_nb"],
+            "timeout": os.environ.get(
+                "TILECLOUD_CHAIN_REDIS_TIMEOUT", conf.get("timeout", configuration.TIMEOUT_DEFAULT)
+            ),
+            "pending_timeout": conf.get("pending_timeout", configuration.PENDING_TIMEOUT_DEFAULT),
+            "max_retries": conf.get("max_retries", configuration.MAX_RETRIES_DEFAULT),
+            "max_errors_age": conf.get("max_errors_age", configuration.MAX_ERRORS_AGE_DEFAULT),
+            "max_errors_nb": conf.get("max_errors_nb", configuration.MAX_ERRORS_NUMBER_DEFAULT),
             "connection_kwargs": conf.get("connection_kwargs", {}),
             "sentinel_kwargs": conf.get("sentinel_kwargs"),
         }
-        if "socket_timeout" in conf:
-            tilestore_kwargs["connection_kwargs"]["socket_timeout"] = conf["socket_timeout"]
-        if "db" in conf:
-            tilestore_kwargs["connection_kwargs"]["db"] = conf["db"]
-        if "url" in conf:
-            tilestore_kwargs["url"] = conf["url"]
+        socket_timeout = os.environ.get("TILECLOUD_CHAIN_REDIS_SOCKET_TIMEOUT", conf.get("socket_timeout"))
+        if socket_timeout is not None:
+            tilestore_kwargs["connection_kwargs"]["socket_timeout"] = socket_timeout
+        db = os.environ.get("TILECLOUD_CHAIN_REDIS_DB", conf.get("db"))
+        if db is not None:
+            tilestore_kwargs["connection_kwargs"]["db"] = db
+        url = os.environ.get("TILECLOUD_CHAIN_REDIS_URL", conf.get("url"))
+        if url is not None:
+            tilestore_kwargs["url"] = url
         else:
-            tilestore_kwargs["sentinels"] = conf["sentinels"]
-            tilestore_kwargs["service_name"] = conf.get("service_name", "mymaster")
+            sentinels: list[tuple[str, Union[str, int]]] = []
+            if "TILECLOUD_CHAIN_REDIS_SENTINELs" in os.environ:
+                sentinels_string = os.environ["TILECLOUD_CHAIN_REDIS_SENTINELS"]
+                sentinels_tmp = [s.split(":") for s in sentinels_string.split(",")]
+                sentinels = [  # pylint: disable=unnecessary-comprehension
+                    (host, port) for host, port in sentinels_tmp
+                ]
+            elif "sentinels" in conf:
+                sentinels = conf["sentinels"]
+
+            tilestore_kwargs["sentinels"] = [(host, int(port)) for host, port in sentinels]
+            tilestore_kwargs["service_name"] = os.environ.get(
+                "TILECLOUD_CHAIN_REDIS_SERVICE_NAME",
+                conf.get("service_name", configuration.SERVICE_NAME_DEFAULT),
+            )
         if "pending_count" in conf:
             tilestore_kwargs["pending_count"] = conf["pending_count"]
         if "pending_max_count" in conf:
             tilestore_kwargs["pending_max_count"] = conf["pending_max_count"]
         return TimedTileStoreWrapper(RedisTileStore(**tilestore_kwargs), store_name="redis")
-    else:
+    elif queue_store == "sqs":
         # Create a SQS queue
         return TimedTileStoreWrapper(
             SQSTileStore(_get_sqs_queue(config), on_empty=_await_message if daemon else maybe_stop),
             store_name="SQS",
         )
+    raise NotImplementedError(f"Unknown queue store: {queue_store}")
 
 
-def _get_sqs_queue(
-    config: DatedConfig,
-) -> "botocore.client.SQS":
+def _get_sqs_queue(config: DatedConfig) -> "botocore.client.SQS":
     if "sqs" not in config.config:
         sys.exit("The config hasn't any configured queue")
     sqs = boto3.resource("sqs", region_name=config.config["sqs"].get("region", "eu-west-1"))

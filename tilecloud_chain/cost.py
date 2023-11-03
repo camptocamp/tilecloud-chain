@@ -6,7 +6,7 @@ from datetime import timedelta
 from typing import Optional
 
 from tilecloud import Tile, TileStore
-from tilecloud_chain import Run, TileGeneration, add_common_options
+from tilecloud_chain import Run, TileGeneration, add_common_options, configuration
 from tilecloud_chain.format import duration_format
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ def main() -> None:
         if options.layer:
             layer = config.config["layers"][options.layer]
             (all_size, all_time, all_price, all_tiles) = _calculate_cost(gene, options.layer, options)
-            tile_size = layer["cost"]["tile_size"] / (1024.0 * 1024)
+            tile_size = layer["cost"].get("tile_size", configuration.TILE_SIZE_DEFAULT) / (1024.0 * 1024)
         else:
             all_time = timedelta()
             all_price = 0
@@ -53,7 +53,7 @@ def main() -> None:
                 layer = config.config["layers"][layer_name]
                 gene.create_log_tiles_error(layer_name)
                 (size, time, price, tiles) = _calculate_cost(gene, layer_name, options)
-                tile_size += layer["cost"]["tile_size"] / (1024.0 * 1024)
+                tile_size += layer["cost"].get("tile_size", configuration.TILE_SIZE_DEFAULT) / (1024.0 * 1024)
                 all_time += time
                 all_price += price
                 all_size += size
@@ -65,23 +65,27 @@ def main() -> None:
             print(f"Total generation time: {duration_format(all_time)} [d h:mm:ss]")
             print(f"Total generation cost: {all_price:0.2f} [$]")
         print()
-        s3_cost = all_size * gene.get_main_config().config["cost"]["s3"]["storage"] / (1024.0 * 1024 * 1024)
+        s3_cost = (
+            all_size
+            * gene.get_main_config().config["cost"]["s3"].get("storage", configuration.S3_STORAGE_DEFAULT)
+            / (1024.0 * 1024 * 1024)
+        )
         print(f"S3 Storage: {s3_cost:0.2f} [$/month]")
         s3_get_cost = (
-            gene.get_main_config().config["cost"]["s3"]["get"]
-            * config.config["cost"]["request_per_layers"]
+            gene.get_main_config().config["cost"]["s3"].get("get", configuration.S3_GET_DEFAULT)
+            * config.config["cost"].get("request_per_layers", configuration.REQUEST_PER_LAYERS_DEFAULT)
             / 10000.0
-            + gene.get_main_config().config["cost"]["s3"]["download"]
-            * config.config["cost"]["request_per_layers"]
+            + gene.get_main_config().config["cost"]["s3"].get("download", configuration.S3_DOWNLOAD_DEFAULT)
+            * config.config["cost"].get("request_per_layers", configuration.REQUEST_PER_LAYERS_DEFAULT)
             * tile_size
         )
         print(f"S3 get: {s3_get_cost:0.2f} [$/month]")
         #    if 'cloudfront' in gene.config['cost']:
         #        print('CloudFront: %0.2f [$/month]' % ()
         #            gene.config['cost']['cloudfront']['get'] *
-        #            gene.config['cost']['request_per_layers'] / 10000.0 +
-        #            gene.config['cost']['cloudfront']['download'] *
-        #            gene.config['cost']['request_per_layers'] * tile_size)
+        #            gene.config['cost'].get("request_per_layers", configuration.REQUESTS_PER_LAYERS_DEFAULT) / 10000.0 +
+        #            gene.config['cost']['cloudfront'].get("download", configuration.CLOUDFRONT_DOWNLOAD_DEFAULT) *
+        #            gene.config['cost'].get("request_per_layers", configuration.REQUESTS_PER_LAYERS_DEFAULT) * tile_size)
     except SystemExit:
         raise
     except:  # pylint: disable=bare-except
@@ -99,17 +103,22 @@ def _calculate_cost(
 
     meta = layer["meta"]
     if options.cost_algo == "area":
-        tile_size = config.config["grids"][layer["grid"]]["tile_size"]
+        tile_size = config.config["grids"][layer["grid"]].get("tile_size", configuration.TILE_SIZE_DEFAULT)
         for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
             if "min_resolution_seed" in layer and resolution < layer["min_resolution_seed"]:
                 continue
 
             print(f"Calculate zoom {zoom}.")
 
-            px_buffer = layer["px_buffer"] + layer["meta_buffer"] if meta else 0
+            px_buffer = (
+                layer.get("px_buffer", configuration.LAYER_PIXEL_BUFFER_DEFAULT)
+                + layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
+                if meta
+                else 0
+            )
             m_buffer = px_buffer * resolution
             if meta:
-                size = tile_size * layer["meta_size"] * resolution
+                size = tile_size * layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT) * resolution
                 meta_buffer = size * 0.7 + m_buffer
                 meta_geom = gene.get_geoms(config, layer_name)[zoom].buffer(meta_buffer, 1)
                 nb_metatiles[zoom] = int(round(meta_geom.area / size**2))
@@ -181,16 +190,27 @@ def _calculate_cost(
         print(f"{nb_tile} tiles in zoom {z}.")
         all_tiles += nb_tile
         if meta:
-            time = times[z] + layer["cost"]["tile_generation_time"] * nb_tile
+            time = (
+                times[z]
+                + layer["cost"].get("tile_generation_time", configuration.TILE_GENERATION_TIME_DEFAULT)
+                * nb_tile
+            )
         else:
-            time = layer["cost"]["tileonly_generation_time"] * nb_tile
-        size = layer["cost"]["tile_size"] * nb_tile
+            time = (
+                layer["cost"].get("tileonly_generation_time", configuration.TILE_ONLY_GENERATION_TIME_DEFAULT)
+                * nb_tile
+            )
+        size = layer["cost"].get("tile_size", configuration.TILE_SIZE_DEFAULT) * nb_tile
         all_size += size
 
         all_time += time
         td = timedelta(milliseconds=time)
         print(f"Time to generate: {duration_format(td)} [d h:mm:ss]")
-        c = gene.get_main_config().config["cost"]["s3"]["put"] * nb_tile / 1000.0
+        c = (
+            gene.get_main_config().config["cost"]["s3"].get("put", configuration.S3_PUT_DEFAULT)
+            * nb_tile
+            / 1000.0
+        )
         price += c
         print(f"S3 PUT: {c:0.2f} [$]")
 
@@ -199,7 +219,11 @@ def _calculate_cost(
                 nb_sqs = nb_metatiles[z] * 3
             else:
                 nb_sqs = nb_tile * 3
-            c = nb_sqs * gene.get_main_config().config["cost"]["sqs"]["request"] / 1000000.0
+            c = (
+                nb_sqs
+                * gene.get_main_config().config["cost"]["sqs"].get("request", configuration.REQUEST_DEFAULT)
+                / 1000000.0
+            )
             price += c
             print(f"SQS usage: {c:0.2f} [$]")
 

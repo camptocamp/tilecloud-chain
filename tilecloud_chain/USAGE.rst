@@ -368,6 +368,29 @@ Alternate mime type
 
 By default TileCloud support only the ``image/jpeg`` and ``image/png`` mime type.
 
+Queue store
+-----------
+
+We can store the queue in different store: Redis (``redis``), Amazone SQS (``sqs``) or PostgreSQL
+(``postgresql``), see the related section for the configuration.
+
+To configure witch store to use we should set the ``queue_store`` in the configuration file,
+default it's on Redis.
+
+PostgreSQL
+----------
+
+Is it possible to store the queue in a PostgreSQL database, for that you should at least set the
+``queue_store`` to ``postgresql`` in your (main) configuration file, and set the SqlAlchemy URL in the
+configuration file or in the ``TILECLOUD_CHAIN_SQLALCHEMY_URL`` environment variable.
+
+See the [configuration reference](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/CONFIG.md#definitions/postgresql) for the other configuration possibilities.
+
+With that the admin page is enhance with a job concept with enhanced status and they can be
+canceled, and restarted.
+
+Note that you should have an external process to clean the old jobs in the database.
+
 Amazon services
 ---------------
 
@@ -581,7 +604,7 @@ Available commands
 -  ``generate-copy`` copy the tiles from a cache to an other.
 -  ``generate-process`` process the tiles using a configured process.
 -  ``generate-cost`` estimate the cost.
--  ``import_expiretiles`` import the osm2pgsql expire-tiles file as geoms in the database.
+-  ``import-expiretiles`` import the osm2pgsql expire-tiles file as geoms in the database.
 
 Each commands have a ``--help`` option to give a full arguments help.
 

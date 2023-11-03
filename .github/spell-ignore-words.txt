@@ -1,1 +1,12 @@
 ro
+backend
+center
+Gio
+SQLAlchemy
+FreeTileGrid
+Proj4
+PostgreSQL
+Mapnik
+Redis
+CloudFront
+OpenLayers

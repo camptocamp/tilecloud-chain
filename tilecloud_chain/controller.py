@@ -29,6 +29,7 @@ from tilecloud_chain import (
     DatedConfig,
     TileGeneration,
     add_common_options,
+    configuration,
     get_queue_store,
     get_tile_matrix_identifier,
 )
@@ -77,7 +78,9 @@ def main(args: Optional[list[str]] = None, out: Optional[IO[str]] = None) -> Non
             sys.exit(0)
 
         if options.cache is None:
-            options.cache = config.config["generation"]["default_cache"]
+            options.cache = config.config["generation"].get(
+                "default_cache", configuration.DEFAULT_CACHE_DEFAULT
+            )
 
         if options.dump_config:
             _validate_generate_wmts_capabilities(config.config["caches"][options.cache], options.cache, True)
@@ -243,6 +246,7 @@ def get_wmts_capabilities(
                 ceil=math.ceil,
                 int=int,
                 sorted=sorted,
+                configuration=configuration,
             ),
         )
     return None
@@ -399,6 +403,6 @@ def get_status(gene: TileGeneration) -> list[str]:
     store = get_queue_store(config, False)
     type_: Union[Literal["redis"], Literal["sqs"]] = "redis" if "redis" in config.config else "sqs"
     conf = config.config[type_]
-    with _GET_STATUS_SUMMARY.labels(type_, conf["queue"]).time():
+    with _GET_STATUS_SUMMARY.labels(type_, conf.get("queue", configuration.QUEUE_DEFAULT)).time():
         status_ = store.get_status()
     return [name + ": " + str(value) for name, value in status_.items()]

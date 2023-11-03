@@ -77,7 +77,8 @@ docker-compose -p tilecloud exec test python setup.py nosetests --logging-filter
 
 ## Documentation
 
-As documentation you can read the `https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst`.
+As documentation you can read the [USAGE.rst](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst)
+and the [configuration reference](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/CONFIG.md).
 
 ## VSCode
 

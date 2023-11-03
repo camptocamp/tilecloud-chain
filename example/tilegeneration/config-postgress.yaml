@@ -153,6 +153,8 @@ provider:
         country: Switzerland
         email: info@example.com
 
+postgres: {}
+
 redis:
   socket_timeout: 30
   sentinels:
@@ -171,3 +173,8 @@ server:
       command: generate-tiles --layer=ortho
     - name: Generate the legend images
       command: generate-controller --generate-legend-images
+    - name: Get the hash of plan
+      command: generate-tiles --layer plan --get-hash 10/0/0
+
+  admin_footer: The old jobs will be automatically removed
+  admin_footer_classes: alert alert-dark
