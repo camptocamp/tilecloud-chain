@@ -153,7 +153,7 @@ provider:
         country: Switzerland
         email: info@example.com
 
-postgres: {}
+postgresql: {}
 
 redis:
   socket_timeout: 30

@@ -4,8 +4,8 @@ services:
   db:
     image: camptocamp/postgres:14-postgis-3
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgresql
+      POSTGRES_PASSWORD: postgresql
       POSTGRES_DB: tests
     volumes:
       - ./docker/test-db:/docker-entrypoint-initdb.d:ro
@@ -72,15 +72,15 @@ services:
       <<: *app-env
       TEST_USER: Test
 
-  app_postgressql:
+  app_postgresql:
     <<: *app
     environment:
       <<: *app-env
       TEST_USER: Test
       SQL_LOG_LEVEL: DEBUG
-      TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+psycopg2://postgres:postgres@db:5432/tests
+      TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+psycopg2://postgresql:postgresql@db:5432/tests
     volumes:
-      - ./example/tilegeneration/config-postgressql.yaml:/etc/tilegeneration/config.yaml:ro
+      - ./example/tilegeneration/config-postgresql.yaml:/etc/tilegeneration/config.yaml:ro
     ports:
       - '9052:8080'
 
@@ -100,14 +100,14 @@ services:
     environment:
       CI: 'true'
       TESTS: 'true'
-      PGPASSWORD: postgres
+      PGPASSWORD: postgresql
       TILE_NB_THREAD: 2
       METATILE_NB_THREAD: 2
       SERVER_NB_THREAD: 2
       TILECLOUD_LOG_LEVEL: DEBUG
       TILECLOUD_CHAIN_LOG_LEVEL: DEBUG
       TILECLOUD_CHAIN_SESSION_SALT: a-long-secret-a-long-secret
-      TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+psycopg2://postgres:postgres@db:5432/tests
+      TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+psycopg2://postgresql:postgresql@db:5432/tests
     command:
       - sleep
       - infinity
@@ -128,7 +128,7 @@ services:
       - /dev/null
     environment:
       - PGHOST=db
-      - PGUSER=postgres
-      - PGPASSWORD=postgres
+      - PGUSER=postgresql
+      - PGPASSWORD=postgresql
       - PGDATABASE=tests
       - PGPORT=5432

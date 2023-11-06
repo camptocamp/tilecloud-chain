@@ -91,7 +91,7 @@ layers:
     layers: point
     geoms:
       - sql: the_geom AS geom FROM tests.point
-        connection: user=postgres password=postgres dbname=tests host=db
+        connection: user=postgresql password=postgresql dbname=tests host=db
     min_resolution_seed: 10
   point_px_buffer:
     <<: *layer
@@ -100,7 +100,7 @@ layers:
     px_buffer: 100
     geoms:
       - sql: the_geom AS geom FROM tests.point
-        connection: user=postgres password=postgres dbname=tests host=db
+        connection: user=postgresql password=postgresql dbname=tests host=db
     empty_metatile_detection:
       size: 20743
       hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -113,7 +113,7 @@ layers:
     layers: point
     geoms:
       - sql: the_geom AS geom FROM tests.point
-        connection: user=postgres password=postgres dbname=tests host=db
+        connection: user=postgresql password=postgresql dbname=tests host=db
     min_resolution_seed: 10
     empty_metatile_detection:
       size: 20743
@@ -139,7 +139,7 @@ layers:
       PARAM: value
     geoms:
       - sql: the_geom AS geom FROM tests.line
-        connection: user=postgres password=postgres dbname=tests host=db
+        connection: user=postgresql password=postgresql dbname=tests host=db
     empty_metatile_detection:
       size: 20743
       hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -153,7 +153,7 @@ layers:
     meta: false
     geoms:
       - sql: the_geom AS geom FROM tests.polygon
-        connection: user=postgres password=postgres dbname=tests host=db
+        connection: user=postgresql password=postgresql dbname=tests host=db
     empty_metatile_detection:
       size: 20743
       hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -167,7 +167,7 @@ layers:
     grid: swissgrid_01
     geoms:
       - sql: the_geom AS geom FROM tests.polygon
-        connection: user=postgres password=postgres dbname=tests host=db
+        connection: user=postgresql password=postgresql dbname=tests host=db
     empty_metatile_detection:
       size: 20743
       hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
@@ -189,7 +189,7 @@ layers:
     output_format: png
     geoms:
       - sql: the_geom AS geom FROM tests.polygon
-        connection: user=postgres password=postgres dbname=tests host=db
+        connection: user=postgresql password=postgresql dbname=tests host=db
   mapnik_grid:
     <<: *layer
     type: mapnik
@@ -202,7 +202,7 @@ layers:
     resolution: 16
     geoms:
       - sql: the_geom AS geom FROM tests.polygon
-        connection: user=postgres password=postgres dbname=tests host=db
+        connection: user=postgresql password=postgresql dbname=tests host=db
     layers_fields:
       point:
         - name
@@ -224,7 +224,7 @@ layers:
     resolution: 16
     geoms:
       - sql: the_geom AS geom FROM tests.polygon
-        connection: user=postgres password=postgres dbname=tests host=db
+        connection: user=postgresql password=postgresql dbname=tests host=db
     layers_fields:
       point:
         - name

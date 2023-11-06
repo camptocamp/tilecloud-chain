@@ -25,8 +25,8 @@
             <Parameter name="dbname">tests</Parameter>
             <Parameter name="host">db</Parameter>
             <Parameter name="port">5432</Parameter>
-            <Parameter name="user">postgres</Parameter>
-            <Parameter name="password">postgres</Parameter>
+            <Parameter name="user">postgresql</Parameter>
+            <Parameter name="password">postgresql</Parameter>
             <Parameter name="estimate_extent">false</Parameter>
             <Parameter name="extent">420000, 30000, 900000, 350000</Parameter>
         </Datasource>
@@ -41,8 +41,8 @@
             <Parameter name="dbname">tests</Parameter>
             <Parameter name="host">db</Parameter>
             <Parameter name="port">5432</Parameter>
-            <Parameter name="user">postgres</Parameter>
-            <Parameter name="password">postgres</Parameter>
+            <Parameter name="user">postgresql</Parameter>
+            <Parameter name="password">postgresql</Parameter>
             <Parameter name="estimate_extent">false</Parameter>
             <Parameter name="extent">420000, 30000, 900000, 350000</Parameter>
         </Datasource>
@@ -57,8 +57,8 @@
             <Parameter name="dbname">tests</Parameter>
             <Parameter name="host">db</Parameter>
             <Parameter name="port">5432</Parameter>
-            <Parameter name="user">postgres</Parameter>
-            <Parameter name="password">postgres</Parameter>
+            <Parameter name="user">postgresql</Parameter>
+            <Parameter name="password">postgresql</Parameter>
             <Parameter name="estimate_extent">false</Parameter>
             <Parameter name="extent">420000, 30000, 900000, 350000</Parameter>
         </Datasource>

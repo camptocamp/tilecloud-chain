@@ -43,7 +43,7 @@ from c2cwsgiutils.auth import AuthenticationType, auth_type, auth_view
 from pyramid.view import view_config
 
 import tilecloud_chain.server
-import tilecloud_chain.store.postgres
+import tilecloud_chain.store.postgresql
 from tilecloud_chain import configuration, controller, generate
 from tilecloud_chain.controller import get_status
 
@@ -64,9 +64,10 @@ class Admin:
         assert self.gene is not None
 
         main_config = self.gene.get_main_config()
+        queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
         self.postgresql_queue_store = (
-            tilecloud_chain.store.postgres.get_postgresql_queue_store(main_config)
-            if "postgres" in main_config.config
+            tilecloud_chain.store.postgresql.get_postgresql_queue_store(main_config)
+            if queue_store == "postgresql"
             else None
         )
 
@@ -81,7 +82,8 @@ class Admin:
         main_config = self.gene.get_main_config()
         main_server_config = main_config.config.get("server", {})
         jobs_status = None
-        if "postgres" in main_config.config:
+        queue_store = config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
+        if queue_store == "postgresql":
             assert self.postgresql_queue_store is not None
             config_filename = self.gene.get_host_config_file(self.request.host)
             assert config_filename is not None
@@ -90,7 +92,7 @@ class Admin:
             "auth_type": auth_type(self.request.registry.settings),
             "has_access": self.request.has_permission("admin", config.config.get("authentication", {})),
             "commands": server_config.get("predefined_commands", []),
-            "status": get_status(self.gene) if "postgres" not in config.config else None,
+            "status": get_status(self.gene) if queue_store != "postgresql" else None,
             "admin_path": main_server_config.get("admin_path", "admin"),
             "AuthenticationType": AuthenticationType,
             "jobs_status": jobs_status,
@@ -228,7 +230,7 @@ class Admin:
             return {
                 "success": True,
             }
-        except tilecloud_chain.store.postgres.PostgresqlTileStoreException as e:
+        except tilecloud_chain.store.postgresql.PostgresqlTileStoreException as e:
             _LOG.exception("Error while creating the job")
             self.request.response.status_code = 400
             return {"success": False, "error": str(e)}
@@ -256,7 +258,7 @@ class Admin:
             return {
                 "success": True,
             }
-        except tilecloud_chain.store.postgres.PostgresqlTileStoreException as e:
+        except tilecloud_chain.store.postgresql.PostgresqlTileStoreException as e:
             _LOG.exception("Exception while cancelling the job")
             self.request.response.status_code = 400
             return {"success": False, "error": str(e)}
@@ -284,7 +286,7 @@ class Admin:
             return {
                 "success": True,
             }
-        except tilecloud_chain.store.postgres.PostgresqlTileStoreException as e:
+        except tilecloud_chain.store.postgresql.PostgresqlTileStoreException as e:
             _LOG.exception("Exception while retrying the job")
             self.request.response.status_code = 400
             return {"success": False, "error": str(e)}

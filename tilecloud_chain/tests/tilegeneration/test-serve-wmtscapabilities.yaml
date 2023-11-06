@@ -35,7 +35,7 @@ layers:
     query_layers: point
     geoms:
       - sql: the_geom AS geom FROM tests.point
-        connection: user=postgres password=postgres dbname=tests host=db
+        connection: user=postgresql password=postgresql dbname=tests host=db
     min_resolution_seed: 10
     empty_metatile_detection:
       size: 20743

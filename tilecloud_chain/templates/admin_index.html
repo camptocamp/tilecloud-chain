@@ -97,7 +97,7 @@
       </ul>
     </div>
     <p></p>
-    <form id="command-${'form' if jobs_status is None else 'postgres'}" class="form-inline">
+    <form id="command-${'form' if jobs_status is None else 'postgresql'}" class="form-inline">
       <div class="input-group">
         %if jobs_status is not None:
         <div class="form-floating mb-3">
@@ -315,11 +315,11 @@
               $('#result').html(`<div class="alert alert-danger" role="alert">${'$'}{error}</div>`);
             });
         });
-        $('#command-postgres').submit((event) => {
+        $('#command-postgresql').submit((event) => {
           event.preventDefault();
 
           fetch('${request.route_url("admin_create_job")}', {
-            body: new FormData(document.getElementById('command-postgres')),
+            body: new FormData(document.getElementById('command-postgresql')),
             method: 'POST',
           })
             .then((response) => {
