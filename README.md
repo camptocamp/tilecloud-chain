@@ -33,6 +33,12 @@ Legacy features:
 - sqlite (mbtiles) support
 - mapnik support (should be updated for Python3)
 
+## Screenshot
+
+Screenshot of the admin page with queue stored on PostgreSQL:
+
+![TileCloud Chain](./admin-screenshot.png)
+
 ## Get it
 
 Create the config file `tilegeneration/config.yaml` see as [example](https://github.com/camptocamp/tilecloud-chain/blob/master/example/tilegeneration/config.yaml).
