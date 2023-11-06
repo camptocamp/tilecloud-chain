@@ -82,7 +82,7 @@ class Admin:
         main_config = self.gene.get_main_config()
         main_server_config = main_config.config.get("server", {})
         jobs_status = None
-        queue_store = config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
+        queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
         if queue_store == "postgresql":
             assert self.postgresql_queue_store is not None
             config_filename = self.gene.get_host_config_file(self.request.host)
