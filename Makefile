@@ -28,7 +28,7 @@ tests: build ## Run the unit tests
 	docker-compose up -d
 
 	# Wait for DB to be up
-	while ! docker-compose exec -T test psql -h db -p 5432 -U postgres -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests; \
+	while ! docker-compose exec -T test psql -h db -p 5432 -U postgresql -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests; \
 	do \
 		echo "Waiting for DB to be UP"; \
 		sleep 1; \
@@ -48,7 +48,7 @@ tests-fast:
 	docker-compose up -d
 
 	# Wait for DB to be up
-	while ! docker-compose exec -T test psql -h db -p 5432 -U postgres -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests; \
+	while ! docker-compose exec -T test psql -h db -p 5432 -U postgresql -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests; \
 	do \
 		echo "Waiting for DB to be UP"; \
 		sleep 1; \

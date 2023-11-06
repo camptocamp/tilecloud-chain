@@ -1746,7 +1746,7 @@ def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
 
     if queue_store == "postgresql":
         # Create a postgreSQL queue
-        from tilecloud_chain.store.postgres import (  # pylint: disable=import-outside-toplevel
+        from tilecloud_chain.store.postgresql import (  # pylint: disable=import-outside-toplevel
             get_postgresql_queue_store,
         )
 

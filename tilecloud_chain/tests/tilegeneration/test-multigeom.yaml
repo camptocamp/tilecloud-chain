@@ -41,9 +41,9 @@ layers:
     layers: point,polygon
     geoms:
       - sql: the_geom AS geom FROM tests.polygon
-        connection: user=postgres password=postgres dbname=tests host=db
+        connection: user=postgresql password=postgresql dbname=tests host=db
       - sql: the_geom AS geom FROM tests.point
-        connection: user=postgres password=postgres dbname=tests host=db
+        connection: user=postgresql password=postgresql dbname=tests host=db
         min_resolution: 10
         max_resolution: 20
 

@@ -1272,7 +1272,7 @@ layers:
       size: 334
     extension: png
     geoms:
-    - connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.line
     grid: swissgrid_5
     headers:
@@ -1305,7 +1305,7 @@ layers:
       - '2012'
     extension: png
     geoms:
-    - connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
     mapfile: mapfile/test.mapnik
@@ -1334,7 +1334,7 @@ layers:
       - '2012'
     extension: json
     geoms:
-    - connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
     layers_fields:
@@ -1372,7 +1372,7 @@ layers:
     drop_empty_utfgrid: true
     extension: json
     geoms:
-    - connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
     layers_fields:
@@ -1404,7 +1404,7 @@ layers:
       - '2012'
     extension: png
     geoms:
-    - connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.point
     grid: swissgrid_5
     headers:
@@ -1442,7 +1442,7 @@ layers:
       size: 334
     extension: png
     geoms:
-    - connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.point
     grid: swissgrid_5
     headers:
@@ -1511,7 +1511,7 @@ layers:
       size: 334
     extension: png
     geoms:
-    - connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.point
     grid: swissgrid_5
     headers:
@@ -1549,7 +1549,7 @@ layers:
       size: 334
     extension: png
     geoms:
-    - connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_5
     headers:
@@ -1586,7 +1586,7 @@ layers:
       size: 334
     extension: png
     geoms:
-    - connection: user=postgres password=postgres dbname=tests host=db
+    - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
     grid: swissgrid_01
     headers:

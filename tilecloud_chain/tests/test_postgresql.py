@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 from tilecloud import Tile, TileCoord
 from tilecloud_chain import DatedConfig
-from tilecloud_chain.store.postgres import (
+from tilecloud_chain.store.postgresql import (
     _STATUS_CANCELLED,
     _STATUS_CREATED,
     _STATUS_DONE,

@@ -168,9 +168,9 @@ Example:
 .. code:: yaml
 
     geoms:
-    -   connection: user=postgres password=postgres dbname=tests host=localhost
+    -   connection: user=postgresql password=postgresql dbname=tests host=localhost
         sql: the_geom AS geom FROM tests.polygon
-    -   connection: user=postgres password=postgres dbname=tests host=localhost
+    -   connection: user=postgresql password=postgresql dbname=tests host=localhost
         sql: the_geom AS geom FROM tests.point
         min_resolution: 10
         max_resolution: 20
