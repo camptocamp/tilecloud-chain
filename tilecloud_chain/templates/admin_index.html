@@ -168,7 +168,7 @@
               <code>${job.command}</code>
             </p>
             %if job.message:
-            <pre>${job.message.strip()}</pre>
+            <pre>${job.message.strip() | n,h}</pre>
             %endif
             <!---->
             %if job.status == 'started':
@@ -234,7 +234,7 @@
             <h4>Errors occur during the generation (max 5)</h4>
             %for e in errors:
             <!---->
-            <pre>${e}</pre>
+            <pre>${e | n,h}</pre>
             %endfor
             <!---->
             %endif
