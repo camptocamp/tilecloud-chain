@@ -2781,13 +2781,13 @@ all = ["defusedxml", "fsspec", "imagecodecs (>=2023.1.23)", "lxml", "matplotlib"
 
 [[package]]
 name = "tilecloud"
-version = "1.10.0"
+version = "1.11.0"
 description = "Tools for managing tiles"
 optional = false
-python-versions = ">=3.8,<3.11"
+python-versions = ">=3.9"
 files = [
-    {file = "tilecloud-1.10.0-py3-none-any.whl", hash = "sha256:769668fd3e3649313390651b8df85eb9fd9d145172605f080600c27290761162"},
-    {file = "tilecloud-1.10.0.tar.gz", hash = "sha256:a5e55379345887f0df58f71d927fcd259a443ea274eb54a061503f25060d097f"},
+    {file = "tilecloud-1.11.0-py3-none-any.whl", hash = "sha256:08e2693a3eb977a19c005ca675cc884e54edbec7ae401e8b983292c8c0db1af9"},
+    {file = "tilecloud-1.11.0.tar.gz", hash = "sha256:de74559f955fdc30cdedff65bd750b5f68c40af7df92d8578d77e8ba8f261078"},
 ]
 
 [package.dependencies]
@@ -3255,4 +3255,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "fc8b5e0697c0c6050746c6969e3b3e10743cda3fb3624cd2236bfec48f5a2f8f"
+content-hash = "8845c8ea19e3d01dd75391a576d966e7bc2625025e150e4c435c6ead11bef8ef"
