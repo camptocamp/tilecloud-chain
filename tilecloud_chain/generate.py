@@ -443,7 +443,7 @@ class TilestoreGetter:
                             url=layer["url"],
                             layers=layer["layers"],
                             srs=config.config["grids"][layer["grid"]].get("srs", configuration.SRS_DEFAULT),
-                            format=layer["mime_type"],
+                            format_pattern=layer["mime_type"],
                             border=layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
                             if layer["meta"]
                             else 0,
