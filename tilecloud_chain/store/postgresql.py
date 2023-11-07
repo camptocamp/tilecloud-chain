@@ -235,9 +235,10 @@ def _start_job(
         except Exception:
             _LOGGER.exception("Error while running the command `%s`", display_command)
             error = True
-        except SystemExit:
-            _LOGGER.exception("Error while running the command `%s`", display_command)
-            error = True
+        except SystemExit as exception:
+            if exception.code != 0:
+                _LOGGER.exception("Error while running the command `%s`", display_command)
+                error = True
 
         with SessionMaker() as session:
             job = session.query(Job).where(Job.id == job_id).with_for_update(of=Job).one()  # type: ignore[arg-type]
@@ -401,6 +402,7 @@ class PostgresqlTileStore(TileStore):
                     result_by_zoom_level.setdefault(zoom, {})["error"] = nb_tiles
 
                 status = [{"zoom": zoom, **data} for zoom, data in result_by_zoom_level.items()]
+                status = sorted(status, key=lambda x: x["zoom"])
 
                 result.append(
                     (
