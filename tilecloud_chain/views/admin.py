@@ -96,8 +96,8 @@ class Admin:
             "admin_path": main_server_config.get("admin_path", "admin"),
             "AuthenticationType": AuthenticationType,
             "jobs_status": jobs_status,
-            "footer": config.config["server"].get("admin_footer"),
-            "footer_classes": config.config["server"].get("admin_footer_classes", ""),
+            "footer": main_server_config.get("admin_footer"),
+            "footer_classes": main_server_config.get("admin_footer_classes", ""),
         }
 
     @view_config(route_name="admin_run", renderer="fast_json")  # type: ignore
