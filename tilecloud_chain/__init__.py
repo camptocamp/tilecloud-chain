@@ -780,7 +780,7 @@ class TileGeneration:
             layer=layer_name,
             url=cache["folder"],
             style=layer["wmts_style"],
-            format="." + layer["extension"],
+            format_pattern="." + layer["extension"],
             dimensions_name=[dimension["name"] for dimension in layer.get("dimensions", [])],
             tile_matrix_set=layer["grid"],
             tile_matrix=lambda z: get_tile_matrix_identifier(grid, zoom=z),
