@@ -169,7 +169,9 @@
             </p>
             %if job.message:
             <pre>${job.message.strip()}</pre>
-            %endif %if job.status == 'started':
+            %endif
+            <!---->
+            %if job.status == 'started':
             <p>
               <button type="button" class="btn btn-outline-primary cancel" data-job-id="${job.id}">
                 Cancel the tiles generation
