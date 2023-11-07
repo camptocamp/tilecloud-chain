@@ -165,18 +165,11 @@
         <div id="collapse${nb}" class="accordion-collapse collapse">
           <div class="accordion-body">
             <p>
-              <code>${job.command}</code><br />
-              %if job.message:
-              <!---->
-              %for m in job.message.strip().split('\n'):
-              <!---->
-              ${m}<br />
-              %endfor
-              <!---->
-              %endif
+              <code>${job.command}</code>
             </p>
-
-            %if job.status == 'started':
+            %if job.message:
+            <pre>${job.message.strip()}</pre>
+            %endif %if job.status == 'started':
             <p>
               <button type="button" class="btn btn-outline-primary cancel" data-job-id="${job.id}">
                 Cancel the tiles generation
