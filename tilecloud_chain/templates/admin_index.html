@@ -166,10 +166,14 @@
           <div class="accordion-body">
             <p>
               <code>${job.command}</code><br />
-              %for m in job.message.split('\\n'):
+              %if job.message:
               <!---->
-              {m}<br />
+              %for m in job.message.strip().split('\n'):
+              <!---->
+              ${m}<br />
               %endfor
+              <!---->
+              %endif
             </p>
 
             %if job.status == 'started':
