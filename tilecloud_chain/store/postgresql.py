@@ -401,6 +401,7 @@ class PostgresqlTileStore(TileStore):
                     result_by_zoom_level.setdefault(zoom, {})["error"] = nb_tiles
 
                 status = [{"zoom": zoom, **data} for zoom, data in result_by_zoom_level.items()]
+                status = sorted(status, key=lambda x: x["zoom"])
 
                 result.append(
                     (
