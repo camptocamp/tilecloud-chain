@@ -18,11 +18,8 @@ jobs:
 
     env:
       REDIS_URL: redis://localhost:6379
-      PATH: /bin:/usr/bin:/usr/local/bin:/home/runner/.local/bin
-      SUMMON_PROVIDER: /usr/local/bin/gopass
 
     steps:
-      - run: docker system prune --all --force
       - uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch }}
@@ -57,11 +54,11 @@ jobs:
           while ! docker-compose exec -T test psql -h db -p 5432 -U postgresql -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests
           do
             echo "Waiting for DB to be UP"
+            docker-compose logs
             sleep 1
           done
 
-          # nosetests is for version 1.14
-          docker-compose exec -T test pytest || docker-compose exec -T test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
+          docker-compose exec -T test pytest
 
           docker-compose down
 
