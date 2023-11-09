@@ -54,7 +54,6 @@ jobs:
           while ! docker-compose exec -T test psql -h db -p 5432 -U postgresql -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests
           do
             echo "Waiting for DB to be UP"
-            docker-compose logs
             sleep 1
           done
         timeout-minutes: 2
