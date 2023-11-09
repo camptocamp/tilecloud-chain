@@ -46,7 +46,7 @@ jobs:
           docker build --tag=camptocamp/tilecloud-chain .
           git --no-pager diff --check `git log --oneline | tail -1 | cut --fields=1 --delimiter=' '`
 
-      - name: Test
+      - name: Start
         run: |
           docker-compose up -d
 
@@ -57,7 +57,9 @@ jobs:
             docker-compose logs
             sleep 1
           done
-
+        timeout-minutes: 2
+      - name: Test
+        run: |
           docker-compose exec -T test pytest
 
           docker-compose down
