@@ -8,7 +8,7 @@ import struct
 import sys
 import threading
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, Any, Optional, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, cast
 
 import redis.sentinel
 from prometheus_client import Summary
@@ -55,20 +55,37 @@ class RedisStore(TileStore):
         super().__init__(**kwargs)
 
         connection_kwargs = {}
-        if "socket_timeout" in config:
-            connection_kwargs["socket_timeout"] = config["socket_timeout"]
-        if "db" in config:
-            connection_kwargs["db"] = config["db"]
-        if "url" in config:
-            self._master = redis.Redis.from_url(config["url"], **connection_kwargs)  # type: ignore
+        socket_timeout = os.environ.get("TILECLOUD_CHAIN_REDIS_SOCKET_TIMEOUT", config.get("socket_timeout"))
+        if socket_timeout is not None:
+            connection_kwargs["socket_timeout"] = int(socket_timeout)
+        db = os.environ.get("TILECLOUD_CHAIN_REDIS_DB", config.get("db"))
+        if db is not None:
+            connection_kwargs["db"] = int(db)
+        url = os.environ.get("TILECLOUD_CHAIN_REDIS_URL", config.get("url"))
+        if url is not None:
+            self._master = redis.Redis.from_url(url, **connection_kwargs)  # type: ignore
             self._slave = self._master
         else:
-            sentinels = [(host, int(port)) for host, port in config["sentinels"]]
+            sentinels: list[tuple[str, Union[str, int]]] = []
+            if "TILECLOUD_CHAIN_REDIS_SENTINELs" in os.environ:
+                sentinels_string = os.environ["TILECLOUD_CHAIN_REDIS_SENTINELS"]
+                sentinels_tmp = [s.split(":") for s in sentinels_string.split(",")]
+                sentinels = [  # pylint: disable=unnecessary-comprehension
+                    (host, port) for host, port in sentinels_tmp
+                ]
+            else:
+                sentinels = config["sentinels"]
+
+            sentinels = [(host, int(port)) for host, port in sentinels]
             sentinel = redis.sentinel.Sentinel(sentinels, **connection_kwargs)  # type: ignore
-            self._master = sentinel.master_for(config.get("service_name", "mymaster"))
-            self._slave = sentinel.slave_for(config.get("service_name", "mymaster"))
-        self._prefix = config["prefix"]
-        self._expiration = config["expiration"]
+            service_name = os.environ.get(
+                "TILECLOUD_CHAIN_REDIS_SERVICE_NAME",
+                config.get("service_name", tilecloud_chain.configuration.SERVICE_NAME_DEFAULT),
+            )
+            self._master = sentinel.master_for(service_name)
+            self._slave = sentinel.slave_for(service_name)
+        self._prefix = config.get("prefix", tilecloud_chain.configuration.PREFIX_DEFAULT)
+        self._expiration = config.get("expiration", tilecloud_chain.configuration.EXPIRATION_DEFAULT)
 
     def get_one(self, tile: Tile) -> Optional[Tile]:
         """See in superclass."""
@@ -113,7 +130,7 @@ class Generator:
 
     def __init__(self, tilegeneration: tilecloud_chain.TileGeneration) -> None:
         """Initialize."""
-        redis_config = tilegeneration.get_main_config().config["redis"]
+        redis_config = tilegeneration.get_main_config().config.get("redis", {})
         self._cache_store = RedisStore(redis_config)
         log_level = os.environ.get("TILE_MAPCACHE_LOGLEVEL")
         generator = Generate(
