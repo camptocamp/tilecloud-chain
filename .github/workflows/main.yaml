@@ -49,10 +49,9 @@ jobs:
 
           docker-compose exec -T test pytest
 
-          docker-compose down
-
       - run: docker-compose logs
         if: always()
+      - run: docker-compose down
 
       - name: Publish
         run: c2cciutils-publish
