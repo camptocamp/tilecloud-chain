@@ -11,3 +11,4 @@
 | 1.17    | 23/06/2025      |
 | 1.18    | Best effort     |
 | 1.19    | Best effort     |
+| 1.20    | Best effort     |
