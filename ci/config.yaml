@@ -1,10 +1,11 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/camptocamp/c2cciutils/master/c2cciutils/schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/camptocamp/c2cciutils/1.1/c2cciutils/schema.json
 
 checks:
   codespell:
     ignore_re:
       - poetry\.lock
 
+  required_workflows: false
 publish:
   docker:
     images:
