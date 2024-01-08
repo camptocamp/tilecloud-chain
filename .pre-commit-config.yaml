@@ -23,7 +23,7 @@ repos:
       - id: trailing-whitespace
       - id: mixed-line-ending
   - repo: https://github.com/mheap/json-schema-spell-checker
-    rev: master
+    rev: main
     hooks:
       - id: json-schema-spell-checker
         files: tilecloud_chain/schema.json
