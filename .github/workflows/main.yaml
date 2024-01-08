@@ -25,6 +25,8 @@ jobs:
     steps:
       - run: docker system prune --all --force
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: camptocamp/initialise-gopass-summon-action@v2
         with:
