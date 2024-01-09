@@ -88,10 +88,10 @@
       matchPackageNames: ['node'],
       enabled: false,
     },
-    /** Disable types-request update on version <= 1.19 */
+    /** Disable types-request update on version <= 1.20 */
     {
       matchPackageNames: ['types-requests'],
-      matchBaseBranches: ['1.17', '1.18', '1.19'],
+      matchBaseBranches: ['1.17', '1.18', '1.19', '1.20'],
       enabled: false,
     },
   ],
