@@ -34,7 +34,7 @@ repos:
           - --en-us
           - --spelling=.github/spell-ignore-words.txt
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.3
+    rev: v3.1.0
     hooks:
       - id: prettier
         additional_dependencies:
@@ -49,7 +49,7 @@ repos:
             |^tilecloud_chain/schema\.json$
           )
   - repo: https://github.com/sbrunner/jsonschema2md2
-    rev: 1.0.0
+    rev: 1.1.0
     hooks:
       - id: jsonschema2md
         files: tilecloud_chain/schema\.json
@@ -58,7 +58,7 @@ repos:
           - tilecloud_chain/schema.json
           - tilecloud_chain/CONFIG.md
   - repo: https://github.com/sbrunner/hooks
-    rev: 0.5.0
+    rev: 0.7.0
     hooks:
       - id: copyright
       - id: poetry-check
@@ -113,13 +113,13 @@ repos:
     hooks:
       - id: autoflake
   - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
       - id: isort
         args:
           - --project=tilecloud
   - repo: https://github.com/psf/black
-    rev: 23.10.1
+    rev: 23.12.1
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/prospector
@@ -131,4 +131,4 @@ repos:
           - --die-on-tool-error
           - --output-format=pylint
         additional_dependencies:
-          - prospector-profile-duplicated==0.3.0 # pypi
+          - prospector-profile-duplicated==0.5.1 # pypi
