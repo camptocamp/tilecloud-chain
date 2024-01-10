@@ -4,13 +4,13 @@
 
 - **`defaults`** _(object)_: Used to put YAML references.
 - **`grids`** _(object)_: The WMTS grid definitions by grid name, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-grids. Can contain additional properties.
-  - **Additional Properties**: Refer to _[#/definitions/grid](#definitions/grid)_.
+  - **Additional properties**: Refer to _[#/definitions/grid](#definitions/grid)_.
 - **`caches`** _(object)_: The tiles caches definitions by name, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-caches. Can contain additional properties.
-  - **Additional Properties**: Refer to _[#/definitions/cache](#definitions/cache)_.
+  - **Additional properties**: Refer to _[#/definitions/cache](#definitions/cache)_.
 - **`layers`** _(object)_: The layers definitions by name, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-layers. Can contain additional properties.
-  - **Additional Properties**: Refer to _[#/definitions/layer](#definitions/layer)_.
+  - **Additional properties**: Refer to _[#/definitions/layer](#definitions/layer)_.
 - **`process`** _(object)_: List of available commands by name, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#process. Can contain additional properties.
-  - **Additional Properties**: Refer to _[#/definitions/process](#definitions/process)_.
+  - **Additional properties**: Refer to _[#/definitions/process](#definitions/process)_.
 - **`generation`**: Refer to _[#/definitions/generation](#definitions/generation)_.
 - **`sqs`** _(object)_: The Simple Queue Service configuration. Cannot contain additional properties.
   - **`queue`** _(string)_: The queue name. Default: `"tilecloud"`.
@@ -39,7 +39,7 @@
 ## Definitions
 
 - <a id="definitions/headers"></a>**`headers`** _(object)_: The headers that we send to the WMS backend. Can contain additional properties.
-  - **Additional Properties** _(string)_: The header value.
+  - **Additional properties** _(string)_: The header value.
 - <a id="definitions/grid"></a>**`grid`** _(object)_: The WMTS grid definition, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-grids. Cannot contain additional properties.
   - **`resolution_scale`** _(integer)_: The scale used to build a FreeTileGrid typically '2'.
   - **`resolutions`** _(array, required)_: The resolutions in pixel per meter.
@@ -59,7 +59,7 @@
   - **Items** _(string)_
 - <a id="definitions/cache_folder"></a>**`cache_folder`** _(string)_: The root folder of the cache. Default: `""`.
 - <a id="definitions/cache_filesystem"></a>**`cache_filesystem`** _(object)_: Can contain additional properties.
-  - **Additional Properties** _(string)_
+  - **Additional properties** _(string)_
   - **`type`**
   - **`wmtscapabilities_file`**: Refer to _[#/definitions/cache_wmtscapabilities_file](#definitions/cache_wmtscapabilities_file)_.
   - **`http_url`**: Refer to _[#/definitions/cache_http_url](#definitions/cache_http_url)_.
@@ -67,7 +67,7 @@
   - **`http_urls`**: Refer to _[#/definitions/cache_http_urls](#definitions/cache_http_urls)_.
   - **`folder`**: Refer to _[#/definitions/cache_folder](#definitions/cache_folder)_.
 - <a id="definitions/cache_s3"></a>**`cache_s3`** _(object)_: Can contain additional properties.
-  - **Additional Properties** _(string)_
+  - **Additional properties** _(string)_
   - **`type`**
   - **`wmtscapabilities_file`**: Refer to _[#/definitions/cache_wmtscapabilities_file](#definitions/cache_wmtscapabilities_file)_.
   - **`http_url`**: Refer to _[#/definitions/cache_http_url](#definitions/cache_http_url)_.
@@ -80,7 +80,7 @@
   - **`cache_control`** _(string)_: The Cache-Control used to store tiles on S3.
   - **`folder`**: Refer to _[#/definitions/cache_folder](#definitions/cache_folder)_.
 - <a id="definitions/cache_azure"></a>**`cache_azure`** _(object)_: Azure Blob Storage. Can contain additional properties.
-  - **Additional Properties** _(string)_
+  - **Additional properties** _(string)_
   - **`type`**
   - **`wmtscapabilities_file`**: Refer to _[#/definitions/cache_wmtscapabilities_file](#definitions/cache_wmtscapabilities_file)_.
   - **`http_url`**: Refer to _[#/definitions/cache_http_url](#definitions/cache_http_url)_.
@@ -90,7 +90,7 @@
   - **`container`** _(string, required)_: The Azure container name.
   - **`cache_control`** _(string)_: The Cache-Control used to store tiles on Azure.
 - <a id="definitions/cache_mbtiles"></a>**`cache_mbtiles`** _(object)_: Can contain additional properties.
-  - **Additional Properties** _(string)_
+  - **Additional properties** _(string)_
   - **`type`**
   - **`wmtscapabilities_file`**: Refer to _[#/definitions/cache_wmtscapabilities_file](#definitions/cache_wmtscapabilities_file)_.
   - **`http_url`**: Refer to _[#/definitions/cache_http_url](#definitions/cache_http_url)_.
@@ -98,7 +98,7 @@
   - **`http_urls`**: Refer to _[#/definitions/cache_http_urls](#definitions/cache_http_urls)_.
   - **`folder`**: Refer to _[#/definitions/cache_folder](#definitions/cache_folder)_.
 - <a id="definitions/cache_bsddb"></a>**`cache_bsddb`** _(object)_: Can contain additional properties.
-  - **Additional Properties** _(string)_
+  - **Additional properties** _(string)_
   - **`type`**
   - **`wmtscapabilities_file`**: Refer to _[#/definitions/cache_wmtscapabilities_file](#definitions/cache_wmtscapabilities_file)_.
   - **`http_url`**: Refer to _[#/definitions/cache_http_url](#definitions/cache_http_url)_.
@@ -195,7 +195,7 @@
   - **`info_formats`** _(array)_: The query info format.
     - **Items** _(string)_
   - **`params`** _(object)_: Additional parameters to the WMS query (like dimension). Can contain additional properties.
-    - **Additional Properties** _(string)_: The parameter value.
+    - **Additional properties** _(string)_: The parameter value.
   - **`headers`**: Refer to _[#/definitions/headers](#definitions/headers)_.
   - **`version`** _(string)_: The used WMS version. Default: `"1.1.1"`.
 - <a id="definitions/layer_mapnik"></a>**`layer_mapnik`** _(object)_: Cannot contain additional properties.
@@ -228,7 +228,7 @@
   - **`wms_url`** _(string)_: A WMS fallback URL (deprecated).
   - **`resolution`** _(integer)_: The resolution. Default: `4`.
   - **`layers_fields`** _(object)_: The Mapnik layers fields. Can contain additional properties.
-    - **Additional Properties** _(array)_: The Mapnik layer fields.
+    - **Additional properties** _(array)_: The Mapnik layer fields.
       - **Items** _(string)_
   - **`drop_empty_utfgrid`** _(boolean)_: Drop if the tile is empty. Default: `false`.
 - <a id="definitions/layer"></a>**`layer`**: The layer definition, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-layers.
