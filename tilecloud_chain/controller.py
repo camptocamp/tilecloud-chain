@@ -1,8 +1,10 @@
+import concurrent.futures
 import logging
 import math
 import os
 import pkgutil
 import sys
+import time
 from argparse import ArgumentParser
 from copy import copy
 from hashlib import sha1
@@ -206,6 +208,7 @@ def get_wmts_capabilities(
 ) -> Optional[str]:
     """Get the WMTS capabilities for a configuration file."""
 
+    start = time.perf_counter()
     if config is None:
         assert gene.config_file
         config = gene.get_config(gene.config_file)
@@ -219,6 +222,7 @@ def get_wmts_capabilities(
 
         data = pkgutil.get_data("tilecloud_chain", "wmts_get_capabilities.jinja")
         assert data
+        _LOGGER.debug("Get WMTS capabilities in %s", time.perf_counter() - start)
         return cast(
             str,
             jinja2_template(
@@ -268,6 +272,33 @@ def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:
     return base_urls
 
 
+def _legend_metadata(
+    cache: tilecloud_chain.configuration.Cache,
+    layer: tilecloud_chain.configuration.Layer,
+    base_url: str,
+    path: str,
+) -> Optional[tilecloud_chain.Legend]:
+    img = _get(path, cache)
+    if img is not None:
+        new_legend: tilecloud_chain.Legend = {
+            "mime_type": layer["legend_mime"],
+            "href": os.path.join(base_url, path),
+        }
+        try:
+            with Image.open(BytesIO(img)) as pil_img:
+                new_legend["width"] = pil_img.size[0]
+                new_legend["height"] = pil_img.size[1]
+        except Exception:  # pragma: nocover
+            _LOGGER.warning(
+                "Unable to read legend image '%s', with '%s'",
+                path,
+                repr(img),
+                exc_info=True,
+            )
+        return new_legend
+    return None
+
+
 def _fill_legend(
     gene: TileGeneration,
     cache: tilecloud_chain.configuration.Cache,
@@ -279,6 +310,48 @@ def _fill_legend(
         assert gene.config_file
         config = gene.get_config(gene.config_file)
 
+    start = time.perf_counter()
+    legend_image_future = {}
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=int(os.environ.get("TILECLOUD_CHAIN_CONCURRENT_GET_LEGEND", "10"))
+    ) as executor:
+        for layer_name, layer in config.config["layers"].items():
+            if (
+                "legend_mime" in layer
+                and "legend_extension" in layer
+                and layer_name not in gene.layer_legends
+            ):
+                for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+                    path = "/".join(
+                        [
+                            "1.0.0",
+                            layer_name,
+                            layer["wmts_style"],
+                            f"legend{zoom}.{layer['legend_extension']}",
+                        ]
+                    )
+                    legend_image_future[
+                        executor.submit(
+                            _legend_metadata,
+                            cache,
+                            layer,
+                            os.path.join(base_urls[0], server.get("static_path", "static") if server else ""),
+                            path,
+                        )
+                    ] = (layer_name, resolution)
+
+    legend_image_metadata: dict[str, dict[float, Optional[tilecloud_chain.Legend]]] = {}
+    for future in concurrent.futures.as_completed(legend_image_future):
+        layer_name, resolution = legend_image_future[future]
+        try:
+            legend_image_metadata.setdefault(layer_name, {})[resolution] = future.result()
+        except Exception as exc:
+            _LOGGER.warning(
+                "Unable to get legend image for layer '%s', resolution '%s': %s", layer_name, resolution, exc
+            )
+
+    _LOGGER.debug("Get %i legend images in %s", len(legend_image_future), time.perf_counter() - start)
+
     for layer_name, layer in config.config["layers"].items():
         previous_legend: Optional[tilecloud_chain.Legend] = None
         previous_resolution = None
@@ -286,39 +359,15 @@ def _fill_legend(
             gene.layer_legends[layer_name] = []
             legends = gene.layer_legends[layer_name]
             for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
-                path = "/".join(
-                    [
-                        "1.0.0",
-                        layer_name,
-                        layer["wmts_style"],
-                        f"legend{zoom}.{layer['legend_extension']}",
-                    ]
-                )
-                img = _get(path, cache)
-                if img is not None:
-                    new_legend: tilecloud_chain.Legend = {
-                        "mime_type": layer["legend_mime"],
-                        "href": os.path.join(
-                            base_urls[0], server.get("static_path", "static") + "/" if server else "", path
-                        ),
-                    }
+                new_legend = legend_image_metadata.get(layer_name, {}).get(resolution)
+
+                if new_legend is not None:
                     legends.append(new_legend)
                     if previous_legend is not None:
                         assert previous_resolution is not None
                         middle_res = exp((log(previous_resolution) + log(resolution)) / 2)
                         previous_legend["min_resolution"] = middle_res
                         new_legend["max_resolution"] = middle_res
-                    try:
-                        pil_img = Image.open(BytesIO(img))
-                        new_legend["width"] = pil_img.size[0]
-                        new_legend["height"] = pil_img.size[1]
-                    except Exception:  # pragma: nocover
-                        _LOGGER.warning(
-                            "Unable to read legend image '%s', with '%s'",
-                            path,
-                            repr(img),
-                            exc_info=True,
-                        )
                     previous_legend = new_legend
                 previous_resolution = resolution
 

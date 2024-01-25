@@ -755,6 +755,8 @@ Environment variables
 - ``TILE_CHUNK_SIZE``: Default to ``1``, the chunk size to process the tiles after the meta tiles.
 - ``TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH``: Default to ``1000``, the maximum number of character of the
   output to be display in the admin interface.
+- ``TILECLOUD_CHAIN_CONCURRENT_GET_LEGEND``: Default to ``10``, the number of concurrent request to get the
+  legend images during the generation of the capabilities.
 - ``LOG_TYPE``: Default to ``console``, can also be ``json`` to log in JSON for ``Logstash``.
 - ``TILECLOUD_CHAIN_LOG_LEVEL`` Default to ``INFO``,
   ``TILECLOUD_LOG_LEVEL`` Default to ``INFO``,
