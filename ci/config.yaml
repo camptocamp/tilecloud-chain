@@ -8,3 +8,5 @@ publish:
   pypi:
     versions:
       - version_tag
+checks:
+  codespell: false
