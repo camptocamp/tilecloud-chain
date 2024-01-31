@@ -14,8 +14,8 @@ env:
 
 jobs:
   main:
-    runs-on: ubuntu-22.04
     name: Continuous integration
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     if: "!startsWith(github.event.head_commit.message, '[skip ci] ')"
 
@@ -48,8 +48,10 @@ jobs:
           SKIP: poetry-lock
       - run: git diff && false
         if: failure()
-      - name: Checks
-        run: c2cciutils-checks
+      - name: Print environment information
+        run: c2cciutils-env
+        env:
+          GITHUB_EVENT: ${{ toJson(github) }}
 
       - name: Build
         run: make build
