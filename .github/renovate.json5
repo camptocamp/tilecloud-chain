@@ -15,9 +15,18 @@
   baseBranches: ['1.15', '1.17', '1.18', '1.19', '1.20', 'master'],
   'pre-commit': { enabled: true },
   regexManagers: [
+    /** Do updates on pre-commit additional dependencies */
     {
-      fileMatch: ['^.pre-commit-config.yaml$'],
+      fileMatch: ['^\\.pre\\-commit\\-config\\.yaml$'],
       matchStrings: [" +- '?(?<depName>[^' @=]+)(@|==)(?<currentValue>[^' @=]+)'? # (?<datasource>.+)"],
+    },
+    /** Do update on the schema present in the ci/config.yaml */
+    {
+      fileMatch: ['^ci/config\\.yaml$'],
+      matchStrings: [
+        '.*https://raw\\.githubusercontent\\.com/(?<depName>[^\\s]+)/(?<currentValue>[0-9\\.]+)/.*',
+      ],
+      datasourceTemplate: 'github-tags',
     },
   ],
   packageRules: [
@@ -46,16 +55,18 @@
       matchUpdateTypes: ['minor', 'patch'],
       automerge: true,
     },
+    /** Auto merge the dev dependency update */
     {
       matchDepTypes: ['devDependencies'],
       automerge: true,
     },
-    /** Group the patch and the minor */
+    /** Group and auto merge the patch updates */
     {
       matchUpdateTypes: ['patch'],
       groupName: 'all patch versions',
       automerge: true,
     },
+    /** Group and auto merge the minor updates */
     {
       matchUpdateTypes: ['minor'],
       groupName: 'all minor versions',
@@ -70,9 +81,9 @@
       separateMajorMinor: false,
       separateMinorPatch: false,
     },
-    /** Accept only the patch on the stabilization branches */
+    /** Accept only the patch on stabilization branches */
     {
-      matchBaseBranches: ['/1\\..*/'],
+      matchBaseBranches: ['/^[0-9]+\\.[0-9]+$/'],
       matchUpdateTypes: ['major', 'minor', 'pin', 'digest', 'lockFileMaintenance', 'rollback', 'bump'],
       enabled: false,
     },
@@ -93,6 +104,19 @@
       matchPackageNames: ['types-requests'],
       matchBaseBranches: ['1.17', '1.18', '1.19', '1.20'],
       enabled: false,
+    },
+    /** Support the 4 parts of shellcheck-py version with a v prefix */
+    {
+      matchPackageNames: ['shellcheck-py/shellcheck-py'],
+      versioning: 'regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\.(?<build>\\d+)$',
+    },
+    /** Group and auto merge the CI dependencies */
+    {
+      matchFileNames: ['.github/**', '.pre-commit-config.yaml', 'ci/**'],
+      groupName: 'CI dependencies',
+      automerge: true,
+      separateMajorMinor: false,
+      separateMinorPatch: false,
     },
   ],
 }

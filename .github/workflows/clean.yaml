@@ -5,10 +5,11 @@ on:
   pull_request:
     types:
       - closed
+
 jobs:
   clean:
-    runs-on: ubuntu-22.04
     name: Clean docker hub tags
+    runs-on: ubuntu-22.04
     timeout-minutes: 5
 
     steps:
