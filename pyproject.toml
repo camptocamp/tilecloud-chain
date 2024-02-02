@@ -67,7 +67,7 @@ pyramid = "2.0.2"
 jsonschema-validator-new = "0.1.0"
 azure-storage-blob = "12.19.0"
 waitress = "2.1.2"
-certifi = "2023.11.17"
+certifi = "2024.2.2"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.10.2" }
