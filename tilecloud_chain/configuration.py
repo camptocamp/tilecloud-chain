@@ -2876,11 +2876,7 @@ class _ProcessCommandItem(TypedDict, total=False):
 
 
 _SentinelsItem = tuple["SentinelHost", "SentinelPort"]
-"""
-A sentinel (main configuration)
-
-additionalItems: False
-"""
+""" A sentinel (main configuration) """
 
 
 _ValuesItem = str
