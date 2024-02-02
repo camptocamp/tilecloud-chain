@@ -310,9 +310,11 @@ class Admin:
             "zoom": config.config["openlayers"].get("zoom", configuration.MAP_INITIAL_ZOOM_DEFAULT),
             "http_url": urljoin(
                 self.request.current_route_url(),
-                "/" + main_config.config["server"].get("wmts_path", "wmts") + "/"
-                if "server" in config.config
-                else "/",
+                (
+                    "/" + main_config.config["server"].get("wmts_path", "wmts") + "/"
+                    if "server" in config.config
+                    else "/"
+                ),
             ),
         }
 
