@@ -219,9 +219,11 @@ class Generate:
                 )
             )
             self._gene.init(
-                self._queue_tilestore
-                if "error_file" in self._gene.get_main_config().config["generation"]
-                else None,
+                (
+                    self._queue_tilestore
+                    if "error_file" in self._gene.get_main_config().config["generation"]
+                    else None
+                ),
                 self._options.daemon,
             )
         else:
@@ -444,9 +446,11 @@ class TilestoreGetter:
                             layers=layer["layers"],
                             srs=config.config["grids"][layer["grid"]].get("srs", configuration.SRS_DEFAULT),
                             format_pattern=layer["mime_type"],
-                            border=layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
-                            if layer["meta"]
-                            else 0,
+                            border=(
+                                layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
+                                if layer["meta"]
+                                else 0
+                            ),
                             tilegrid=self.gene._gene.get_grid(config, layer["grid"]),
                             params=params,
                         ),
@@ -474,9 +478,11 @@ class TilestoreGetter:
                     MapnikDropActionTileStore(
                         tilegrid=self.gene._gene.get_grid(config, layer["grid"]),
                         mapfile=layer["mapfile"],
-                        image_buffer=layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
-                        if layer.get("meta")
-                        else 0,
+                        image_buffer=(
+                            layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
+                            if layer.get("meta")
+                            else 0
+                        ),
                         data_buffer=layer.get("data_buffer", 128),
                         output_format=layer.get("output_format", "png"),
                         resolution=layer.get("resolution", 4),
@@ -494,9 +500,11 @@ class TilestoreGetter:
                     MapnikTileStore(
                         tilegrid=self.gene._gene.get_grid(config, layer["grid"]),
                         mapfile=layer["mapfile"],
-                        image_buffer=layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
-                        if layer.get("meta")
-                        else 0,
+                        image_buffer=(
+                            layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
+                            if layer.get("meta")
+                            else 0
+                        ),
                         data_buffer=layer.get("data_buffer", 128),
                         output_format=cast(str, layer.get("output_format", "png")),
                         proj4_literal=grid["proj4_literal"],
