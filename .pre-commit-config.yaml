@@ -45,10 +45,10 @@ repos:
     hooks:
       - id: jsonschema-gentypes
         files: |-
-          (?x)(
-            ĵsonschema-gentypes.yaml$
-            |^tilecloud_chain/schema\.json$
-          )
+          (?x)^(
+            jsonschema-gentypes\.yaml
+            |^tilecloud_chain/schema\.json
+          )$
   - repo: https://github.com/sbrunner/jsonschema2md2
     rev: 1.1.0
     hooks:
