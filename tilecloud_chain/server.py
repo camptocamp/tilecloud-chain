@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2023 by Stéphane Brunner
+# Copyright (c) 2013-2024 by Stéphane Brunner
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,12 +35,13 @@ from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, Union, cast
 from urllib.parse import parse_qs, urlencode
 
 import botocore.exceptions
+import c2cwsgiutils.db
+import c2cwsgiutils.health_check
 import c2cwsgiutils.pyramid
 import pyramid.response
 import pyramid.session
 import requests
 from azure.core.exceptions import ResourceNotFoundError
-from c2cwsgiutils import health_check
 from prometheus_client import Summary
 from pyramid.config import Configurator
 from pyramid.httpexceptions import HTTPException, exception_response
@@ -54,6 +55,7 @@ import tilecloud_chain.security
 from tilecloud import Tile, TileCoord
 from tilecloud_chain import TileGeneration, configuration, controller, internal_mapcache
 from tilecloud_chain.controller import get_azure_client
+from tilecloud_chain.store import postgresql
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -876,7 +878,13 @@ def main(global_config: Any, **settings: Any) -> Router:
     assert tilegeneration
 
     config.include(c2cwsgiutils.pyramid.includeme)
-    health_check.HealthCheck(config)
+    dbsession = c2cwsgiutils.db.init(config, "sqlalchemy", "sqlalchemy_slave")
+
+    config.scan("github_app_geo_project.views")
+
+    health_check = c2cwsgiutils.health_check.HealthCheck(config)
+    health_check.add_db_session_check(dbsession, at_least_one_model=postgresql.Queue)
+
     add_mako_renderer(config, ".html")
     config.set_security_policy(tilecloud_chain.security.SecurityPolicy())
     config.add_forbidden_view(forbidden)

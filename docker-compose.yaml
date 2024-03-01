@@ -100,6 +100,10 @@ services:
     environment:
       CI: 'true'
       TESTS: 'true'
+      # https://docs.pylonsproject.org/projects/pyramid/en/1.6-branch/narr/environment.html
+      PYRAMID_DEBUG_ALL: TRUE
+      PYRAMID_RELOAD_ALL: TRUE
+      PYRAMID_DEFAULT_LOCALE_NAME: en
       PGPASSWORD: postgresql
       TILE_NB_THREAD: 2
       METATILE_NB_THREAD: 2
