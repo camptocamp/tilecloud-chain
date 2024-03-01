@@ -1,5 +1,5 @@
 poetry==1.5.1
-poetry-dynamic-versioning==0.21.4
+poetry-dynamic-versioning==0.21.5
 poetry-plugin-tweak-dependencies-version==1.4.0
 pip==23.3.2
 cryptography>=39.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
