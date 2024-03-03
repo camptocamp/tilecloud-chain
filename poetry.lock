@@ -2749,19 +2749,19 @@ pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
 name = "testfixtures"
-version = "7.2.0"
+version = "8.1.0"
 description = "A collection of helpers and mock objects for unit tests and doc tests."
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 files = [
-    {file = "testfixtures-7.2.0-py3-none-any.whl", hash = "sha256:4efe4fd0366d3f67919550c7718b5147159a238a0266420417260f685564a1ec"},
-    {file = "testfixtures-7.2.0.tar.gz", hash = "sha256:8c8c20dd30ea113548507584a1daae779248dbaa5712672c7abb9709f0fbf8b2"},
+    {file = "testfixtures-8.1.0-py3-none-any.whl", hash = "sha256:ec70aa421ed18004f0aff31fa8f319fd2322253f557796a2f754d785dc40495d"},
+    {file = "testfixtures-8.1.0.tar.gz", hash = "sha256:80848990304859c3a2b68dfe4bcaf77b6e6425a3925047bc25a52755277bfa6d"},
 ]
 
 [package.extras]
 build = ["setuptools-git", "twine", "wheel"]
-docs = ["django", "furo", "sphinx", "sybil (>=3)", "twisted", "zope.component"]
-test = ["django", "mypy", "pytest (>=3.6)", "pytest-cov", "pytest-django", "sybil (>=3)", "twisted", "zope.component"]
+docs = ["django", "furo", "sphinx", "sybil (>=6)", "twisted"]
+test = ["django", "mypy", "pytest (>=7.1)", "pytest-cov", "pytest-django", "sybil (>=6)", "twisted"]
 
 [[package]]
 name = "tifffile"
@@ -3256,4 +3256,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "78b824f6fd4f57ae2859e84e43620b5e171fa6fe52c4b0604ce0511c45c0c3d5"
+content-hash = "78b78dcd562a6c95904929eba56d4b3e303d1c0a6353de1a1be1282c21347d95"
