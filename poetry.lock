@@ -3055,18 +3055,18 @@ testing = ["coverage", "pytest", "pytest-cov"]
 
 [[package]]
 name = "waitress"
-version = "2.1.2"
+version = "3.0.0"
 description = "Waitress WSGI server"
 optional = false
-python-versions = ">=3.7.0"
+python-versions = ">=3.8.0"
 files = [
-    {file = "waitress-2.1.2-py3-none-any.whl", hash = "sha256:7500c9625927c8ec60f54377d590f67b30c8e70ef4b8894214ac6e4cad233d2a"},
-    {file = "waitress-2.1.2.tar.gz", hash = "sha256:780a4082c5fbc0fde6a2fcfe5e26e6efc1e8f425730863c04085769781f51eba"},
+    {file = "waitress-3.0.0-py3-none-any.whl", hash = "sha256:2a06f242f4ba0cc563444ca3d1998959447477363a2d7e9b8b4d75d35cfd1669"},
+    {file = "waitress-3.0.0.tar.gz", hash = "sha256:005da479b04134cdd9dd602d1ee7c49d79de0537610d653674cc6cbde222b8a1"},
 ]
 
 [package.extras]
 docs = ["Sphinx (>=1.8.1)", "docutils", "pylons-sphinx-themes (>=1.0.9)"]
-testing = ["coverage (>=5.0)", "pytest", "pytest-cover"]
+testing = ["coverage (>=5.0)", "pytest", "pytest-cov"]
 
 [[package]]
 name = "webob"
@@ -3256,4 +3256,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.11"
-content-hash = "e4813f7a1cd21793d4aeeb98e2fe8b212e2c710dfb5e53667cff990de6e85771"
+content-hash = "927f6c0d0149b5d49cec350f77ee7c0033fa3888e6e5c79413c7a86e8ac5f5bf"
