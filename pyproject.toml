@@ -57,7 +57,7 @@ main = "tilecloud_chain.server:main"
 python = ">=3.9,<3.11"
 c2cwsgiutils = { version = "6.0.4", extras = ["standard", "broadcast", "oauth2", "debug"] }
 pyramid-mako = "1.1.0"
-python-dateutil = "2.8.2"
+python-dateutil = "2.9.0.post0"
 tilecloud = { version = "1.11.0", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.2"
 PyYAML = "6.0.1"
