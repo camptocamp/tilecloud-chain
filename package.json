@@ -1,6 +1,6 @@
 {
   "devDependencies": {
-    "commander": "11.1.0",
+    "commander": "12.0.0",
     "puppeteer": "21.11.0"
   },
   "type": "module"
