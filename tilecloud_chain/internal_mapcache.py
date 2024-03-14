@@ -21,7 +21,7 @@ from tilecloud_chain.generate import Generate
 if TYPE_CHECKING:
     from tilecloud_chain.server import Server
 
-MAX_GENERATION_TIME = 60
+MAX_GENERATION_TIME = int(os.environ.get("TILEGENERATION_MAX_GENERATION_TIME", "60"))
 LOG = logging.getLogger(__name__)
 lock = threading.Lock()
 executing_lock = threading.Lock()
