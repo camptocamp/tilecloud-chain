@@ -747,6 +747,7 @@ Environment variables
   configuration file to use.
 - ``TILEGENERATION_HOSTSFILE``: Default to ``/etc/tilegeneration/hosts.yaml``, the hosts to config file
   mapping file to use.
+- ``TILEGENERATION_MAX_GENERATION_TIME``: Default to ``60``, the maximum time to generate the tiles (lock timeout) in second.
 - ``TILE_NB_THREAD``: Default is ``2``, the number of thread used to generate the tiles (If we use meta tiles)
 - ``METATILE_NB_THREAD``: Default is ``25``, the number of thread used to generate the meta tiles (If we use
   meta tiles, also to generate the tiles)
