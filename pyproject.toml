@@ -79,7 +79,7 @@ requests = "2.31.0"
 # Workaround to be able to do the lock file update
 urllib3 = "1.26.18"
 scipy = "1.10.1"
-pillow = "10.2.0"
+pillow = "10.3.0"
 msal = "1.24.1"
 
 [tool.poetry.dev-dependencies]
