@@ -364,26 +364,27 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                                 response.content,
                                 exc_info=True,
                             )
-                    width = max(i.size[0] for i in legends)
-                    height = sum(i.size[1] for i in legends)
-                    image = Image.new("RGBA", (width, height))
-                    y = 0
-                    for i in legends:
-                        image.paste(i, (0, y))
-                        y += i.size[1]
-                    string_io = BytesIO()
-                    image.save(string_io, FORMAT_BY_CONTENT_TYPE[layer["legend_mime"]])
-                    result = string_io.getvalue()
-                    new_hash = sha1(result).hexdigest()  # nosec
-                    if new_hash != previous_hash:
-                        previous_hash = new_hash
-                        _send(
-                            result,
-                            f"1.0.0/{layer_name}/{layer['wmts_style']}/"
-                            f"legend{zoom}.{layer['legend_extension']}",
-                            layer["legend_mime"],
-                            cache,
-                        )
+                    if legends:
+                        width = max(i.size[0] for i in legends)
+                        height = sum(i.size[1] for i in legends)
+                        image = Image.new("RGBA", (width, height))
+                        y = 0
+                        for i in legends:
+                            image.paste(i, (0, y))
+                            y += i.size[1]
+                        string_io = BytesIO()
+                        image.save(string_io, FORMAT_BY_CONTENT_TYPE[layer["legend_mime"]])
+                        result = string_io.getvalue()
+                        new_hash = sha1(result).hexdigest()  # nosec
+                        if new_hash != previous_hash:
+                            previous_hash = new_hash
+                            _send(
+                                result,
+                                f"1.0.0/{layer_name}/{layer['wmts_style']}/"
+                                f"legend{zoom}.{layer['legend_extension']}",
+                                layer["legend_mime"],
+                                cache,
+                            )
 
 
 def _get_resource(resource: str) -> bytes:
