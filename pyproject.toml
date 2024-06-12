@@ -44,6 +44,7 @@ requests = "2.32.2"
 urllib3 = "1.26.18"
 msal = "1.24.1"
 idna = "3.7"
+azure-identity = "1.16.1"
 
 [tool.poetry.dev-dependencies]
 coverage = "6.3.3"
