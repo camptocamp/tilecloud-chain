@@ -74,21 +74,20 @@ typing-extensions = ">=4.0.1"
 
 [[package]]
 name = "azure-identity"
-version = "1.8.0"
+version = "1.16.1"
 description = "Microsoft Azure Identity Library for Python"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.8"
 files = [
-    {file = "azure-identity-1.8.0.zip", hash = "sha256:020ff0e47157852e4aac8a3adb06841827147f27a94cbe74a904425d8e62d93c"},
-    {file = "azure_identity-1.8.0-py3-none-any.whl", hash = "sha256:8d87aff09b8dabe3c99bb934798dcdeb2f2d49614ecc4f0425cc888faafd64ae"},
+    {file = "azure-identity-1.16.1.tar.gz", hash = "sha256:6d93f04468f240d59246d8afde3091494a5040d4f141cad0f49fc0c399d0d91e"},
+    {file = "azure_identity-1.16.1-py3-none-any.whl", hash = "sha256:8fb07c25642cd4ac422559a8b50d3e77f73dcc2bbfaba419d06d6c9d7cff6726"},
 ]
 
 [package.dependencies]
-azure-core = ">=1.11.0,<2.0.0"
+azure-core = ">=1.23.0"
 cryptography = ">=2.5"
-msal = ">=1.12.0,<2.0.0"
-msal-extensions = ">=0.3.0,<0.4.0"
-six = ">=1.12.0"
+msal = ">=1.24.0"
+msal-extensions = ">=0.3.0"
 
 [[package]]
 name = "azure-storage-blob"
@@ -2561,4 +2560,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "03a299ed7df333e33a889c6c316c8e2f95658f0359ce586e5cdcb179223fb441"
+content-hash = "b4ca14135f362c17346712bb7a487e7f4f8ba6d0a6a66904219ad63f00d553ea"
