@@ -18,7 +18,7 @@ import requests
 import ruamel.yaml
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
-from azure.storage.blob import BlobServiceClient, ContentSettings
+from azure.storage.blob import BlobServiceClient, ContainerClient, ContentSettings
 from bottle import jinja2_template
 from PIL import Image
 from prometheus_client import Summary
@@ -104,15 +104,22 @@ def main(args: Optional[list[str]] = None, out: Optional[IO[str]] = None) -> Non
         sys.exit(1)
 
 
-def get_azure_client() -> BlobServiceClient:
+def get_azure_container_client(container: str) -> ContainerClient:
     """Get the Azure blog storage client."""
     if "AZURE_STORAGE_CONNECTION_STRING" in os.environ and os.environ["AZURE_STORAGE_CONNECTION_STRING"]:
-        return BlobServiceClient.from_connection_string(os.environ["AZURE_STORAGE_CONNECTION_STRING"])
+        return BlobServiceClient.from_connection_string(
+            os.environ["AZURE_STORAGE_CONNECTION_STRING"]
+        ).get_container_client(container=container)
+    elif "AZURE_STORAGE_BLOB_CONTAINER_URL" in os.environ:
+        container_client = ContainerClient.from_container_url(os.environ["AZURE_STORAGE_BLOB_CONTAINER_URL"])
+        if os.environ.get("AZURE_STORAGE_BLOB_VALIDATE_CONTAINER_NAME", "true").lower() == "true":
+            assert container == container_client.container_name
+        return container_client
     else:
         return BlobServiceClient(
             account_url=os.environ["AZURE_STORAGE_ACCOUNT_URL"],
             credential=DefaultAzureCredential(),
-        )
+        ).get_container_client(container=container)
 
 
 def _send(
@@ -134,7 +141,8 @@ def _send(
     if cache["type"] == "azure":
         cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
         key_name = os.path.join(f"{cache['folder']}", path)
-        blob = get_azure_client().get_blob_client(container=cache_azure["container"], blob=key_name)
+        container = get_azure_container_client(cache_azure["container"])
+        blob = container.get_blob_client(key_name)
         blob.upload_blob(data, overwrite=True)
 
         blob.upload_blob(
@@ -177,7 +185,9 @@ def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> Optional[byte
         cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
         key_name = os.path.join(f"{cache['folder']}", path)
         try:
-            blob = get_azure_client().get_blob_client(container=cache_azure["container"], blob=key_name)
+            blob = get_azure_container_client(container=cache_azure["container"]).get_blob_client(
+                blob=key_name
+            )
             return blob.download_blob().readall()
         except ResourceNotFoundError:
             return None
