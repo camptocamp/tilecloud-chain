@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2023 by Stéphane Brunner
+# Copyright (c) 2013-2024 by Stéphane Brunner
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,7 @@ import tilecloud_chain.configuration
 import tilecloud_chain.security
 from tilecloud import Tile, TileCoord
 from tilecloud_chain import TileGeneration, configuration, controller, internal_mapcache
-from tilecloud_chain.controller import get_azure_client
+from tilecloud_chain.controller import get_azure_container_client
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -281,8 +281,8 @@ class Server(Generic[Response]):
             key_name = os.path.join(cache_azure["folder"], path)
             try:
                 with _GET_TILE.labels(storage="azure").time():
-                    blob = get_azure_client().get_blob_client(
-                        container=cache_azure["container"], blob=key_name
+                    blob = get_azure_container_client(container=cache_azure["container"]).get_blob_client(
+                        blob=key_name
                     )
                 properties = blob.get_blob_properties()
                 data = blob.download_blob().readall()
