@@ -12,3 +12,4 @@
 | 1.18    | Best effort     |
 | 1.19    | Best effort     |
 | 1.20    | Best effort     |
+| 1.21.0  | Best effort     |
