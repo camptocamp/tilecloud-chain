@@ -77,7 +77,7 @@ sentry-sdk = "1.14.0"
 redis = "4.4.4"
 requests = "2.32.2"
 # Workaround to be able to do the lock file update
-urllib3 = "1.26.18"
+urllib3 = "1.26.19"
 scipy = "1.10.1"
 pillow = "10.3.0"
 msal = "1.24.1"
