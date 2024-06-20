@@ -59,7 +59,7 @@ c2cwsgiutils = { version = "6.0.4", extras = ["standard", "broadcast", "oauth2",
 pyramid-mako = "1.1.0"
 python-dateutil = "2.9.0.post0"
 tilecloud = { version = "1.11.0", extras = ["azure", "aws", "redis", "wsgi"] }
-Jinja2 = "3.1.2"
+Jinja2 = "3.1.4"
 PyYAML = "6.0.1"
 Shapely = "2.0.1"
 jsonschema = "4.21.1"
@@ -68,6 +68,14 @@ jsonschema-validator-new = "0.1.0"
 azure-storage-blob = "12.19.0"
 waitress = "3.0.0"
 certifi = "2024.2.2"
+azure-identity = "1.16.1"
+cryptography = "42.0.8"
+gunicorn = "22.0.0"
+idna = "3.7"
+msal = "1.24.1"
+pillow = "10.3.0"
+requests = "2.32.2"
+urllib3 = "1.26.19"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.10.2" }
