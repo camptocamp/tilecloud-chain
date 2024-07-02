@@ -976,7 +976,7 @@
           "type": "integer"
         },
         "queue": {
-          "title": "Queue",
+          "title": "Redis queue",
           "description": "The queue name (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_QUEUE` environment variable",
           "type": "string",
           "default": "tilecloud"
@@ -1488,7 +1488,7 @@
       "additionalProperties": false,
       "properties": {
         "queue": {
-          "title": "Queue",
+          "title": "SQS queue",
           "description": "The queue name",
           "type": "string",
           "default": "tilecloud"
