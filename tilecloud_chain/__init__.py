@@ -1761,7 +1761,7 @@ def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
         conf = config.config["redis"]
         tilestore_kwargs: dict[str, Any] = {
             "name": os.environ.get(
-                "TILECLOUD_CHAIN_REDIS_QUEUE", conf.get("queue", configuration.QUEUE_DEFAULT)
+                "TILECLOUD_CHAIN_REDIS_QUEUE", conf.get("queue", configuration.REDIS_QUEUE_DEFAULT)
             ),
             "stop_if_empty": not daemon,
             "timeout": os.environ.get(
