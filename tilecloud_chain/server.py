@@ -52,8 +52,13 @@ import tilecloud.store.s3
 import tilecloud_chain.configuration
 import tilecloud_chain.security
 from tilecloud import Tile, TileCoord
-from tilecloud_chain import TileGeneration, configuration, controller, internal_mapcache
-from tilecloud_chain.controller import get_azure_container_client
+from tilecloud_chain import (
+    TileGeneration,
+    configuration,
+    controller,
+    get_azure_container_client,
+    internal_mapcache,
+)
 
 _LOGGER = logging.getLogger(__name__)
 

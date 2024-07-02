@@ -31,6 +31,8 @@ import c2cwsgiutils.pyramid_logging
 import c2cwsgiutils.setup_process
 import jsonschema_validator
 import psycopg2
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobServiceClient, ContainerClient, ContentSettings
 from c2cwsgiutils import sentry
 from PIL import Image
 from prometheus_client import Counter, Summary
@@ -377,6 +379,26 @@ class TileFilter(logging.Filter):
             record.tcc_available_thread_id = ", ".join([str(e) for e in LOGGING_CONTEXT.get(os.getpid(), {})])
 
         return True
+
+
+def get_azure_container_client(container: str) -> ContainerClient:
+    """Get the Azure blog storage client."""
+    if "AZURE_STORAGE_CONNECTION_STRING" in os.environ and os.environ["AZURE_STORAGE_CONNECTION_STRING"]:
+        return BlobServiceClient.from_connection_string(
+            os.environ["AZURE_STORAGE_CONNECTION_STRING"]
+        ).get_container_client(container=container)
+    elif "AZURE_STORAGE_BLOB_CONTAINER_URL" in os.environ:
+        container_client = ContainerClient.from_container_url(os.environ["AZURE_STORAGE_BLOB_CONTAINER_URL"])
+        if os.environ.get("AZURE_STORAGE_BLOB_VALIDATE_CONTAINER_NAME", "true").lower() == "true":
+            assert (
+                container == container_client.container_name
+            ), f"Container name mismatch: {container} != {container_client.container_name}"
+        return container_client
+    else:
+        return BlobServiceClient(
+            account_url=os.environ["AZURE_STORAGE_ACCOUNT_URL"],
+            credential=DefaultAzureCredential(),
+        ).get_container_client(container=container)
 
 
 class TileGeneration:
@@ -802,9 +824,9 @@ class TileGeneration:
             cache_azure = cast(tilecloud_chain.configuration.CacheAzureTyped, cache)
             # on Azure
             cache_tilestore = AzureStorageBlobTileStore(
-                container=cache_azure["container"],
                 tilelayout=layout,
                 cache_control=cache_azure.get("cache_control"),
+                client=get_azure_container_client(cache_azure["container"]),
             )
         elif cache["type"] == "mbtiles":
             metadata = {}
