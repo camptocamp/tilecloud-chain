@@ -60,7 +60,7 @@
 - <a id="definitions/cache_folder"></a>**`cache_folder`** _(string)_: The root folder of the cache. Default: `""`.
 - <a id="definitions/cache_filesystem"></a>**`cache_filesystem`** _(object)_: Can contain additional properties.
   - **Additional properties** _(string)_
-  - **`type`**
+  - **`type`**: Must be: `"filesystem"`.
   - **`wmtscapabilities_file`**: Refer to _[#/definitions/cache_wmtscapabilities_file](#definitions/cache_wmtscapabilities_file)_.
   - **`http_url`**: Refer to _[#/definitions/cache_http_url](#definitions/cache_http_url)_.
   - **`hosts`**: Refer to _[#/definitions/cache_hosts](#definitions/cache_hosts)_.
@@ -68,7 +68,7 @@
   - **`folder`**: Refer to _[#/definitions/cache_folder](#definitions/cache_folder)_.
 - <a id="definitions/cache_s3"></a>**`cache_s3`** _(object)_: Can contain additional properties.
   - **Additional properties** _(string)_
-  - **`type`**
+  - **`type`**: Must be: `"s3"`.
   - **`wmtscapabilities_file`**: Refer to _[#/definitions/cache_wmtscapabilities_file](#definitions/cache_wmtscapabilities_file)_.
   - **`http_url`**: Refer to _[#/definitions/cache_http_url](#definitions/cache_http_url)_.
   - **`hosts`**: Refer to _[#/definitions/cache_hosts](#definitions/cache_hosts)_.
@@ -81,7 +81,7 @@
   - **`folder`**: Refer to _[#/definitions/cache_folder](#definitions/cache_folder)_.
 - <a id="definitions/cache_azure"></a>**`cache_azure`** _(object)_: Azure Blob Storage. Can contain additional properties.
   - **Additional properties** _(string)_
-  - **`type`**
+  - **`type`**: Must be: `"azure"`.
   - **`wmtscapabilities_file`**: Refer to _[#/definitions/cache_wmtscapabilities_file](#definitions/cache_wmtscapabilities_file)_.
   - **`http_url`**: Refer to _[#/definitions/cache_http_url](#definitions/cache_http_url)_.
   - **`hosts`**: Refer to _[#/definitions/cache_hosts](#definitions/cache_hosts)_.
@@ -91,7 +91,7 @@
   - **`cache_control`** _(string)_: The Cache-Control used to store tiles on Azure.
 - <a id="definitions/cache_mbtiles"></a>**`cache_mbtiles`** _(object)_: Can contain additional properties.
   - **Additional properties** _(string)_
-  - **`type`**
+  - **`type`**: Must be: `"mbtiles"`.
   - **`wmtscapabilities_file`**: Refer to _[#/definitions/cache_wmtscapabilities_file](#definitions/cache_wmtscapabilities_file)_.
   - **`http_url`**: Refer to _[#/definitions/cache_http_url](#definitions/cache_http_url)_.
   - **`hosts`**: Refer to _[#/definitions/cache_hosts](#definitions/cache_hosts)_.
@@ -99,7 +99,7 @@
   - **`folder`**: Refer to _[#/definitions/cache_folder](#definitions/cache_folder)_.
 - <a id="definitions/cache_bsddb"></a>**`cache_bsddb`** _(object)_: Can contain additional properties.
   - **Additional properties** _(string)_
-  - **`type`**
+  - **`type`**: Must be: `"bsddb"`.
   - **`wmtscapabilities_file`**: Refer to _[#/definitions/cache_wmtscapabilities_file](#definitions/cache_wmtscapabilities_file)_.
   - **`http_url`**: Refer to _[#/definitions/cache_http_url](#definitions/cache_http_url)_.
   - **`hosts`**: Refer to _[#/definitions/cache_hosts](#definitions/cache_hosts)_.
@@ -166,7 +166,7 @@
   - **`metatile_generation_time`** _(number)_: The time to generate a meta-tile. Default: `30`.
   - **`tile_size`** _(number)_: The tile mean size in bytes. Default: `20`.
 - <a id="definitions/layer_wms"></a>**`layer_wms`** _(object)_: Cannot contain additional properties.
-  - **`type`**
+  - **`type`**: Must be: `"wms"`.
   - **`title`**: Refer to _[#/definitions/layer_title](#definitions/layer_title)_.
   - **`grid`**: Refer to _[#/definitions/layer_grid](#definitions/layer_grid)_.
   - **`bbox`**: Refer to _[#/definitions/layer_bbox](#definitions/layer_bbox)_.
@@ -199,7 +199,7 @@
   - **`headers`**: Refer to _[#/definitions/headers](#definitions/headers)_.
   - **`version`** _(string)_: The used WMS version. Default: `"1.1.1"`.
 - <a id="definitions/layer_mapnik"></a>**`layer_mapnik`** _(object)_: Cannot contain additional properties.
-  - **`type`**
+  - **`type`**: Must be: `"mapnik"`.
   - **`title`**: Refer to _[#/definitions/layer_title](#definitions/layer_title)_.
   - **`grid`**: Refer to _[#/definitions/layer_grid](#definitions/layer_grid)_.
   - **`bbox`**: Refer to _[#/definitions/layer_bbox](#definitions/layer_bbox)_.
