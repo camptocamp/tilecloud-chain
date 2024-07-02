@@ -581,11 +581,10 @@ class Server(Generic[Response]):
             with _GET_TILE.labels(storage=cache["type"]).time():
                 tile2 = store.get_one(tile)
 
-            if tile2:
+            if tile2 and tile2.data is not None:
                 if tile2.error:
                     return self.error(config, 500, tile2.error, **kwargs)
 
-                assert tile2.data
                 assert tile2.content_type
                 return self.response(
                     config,
