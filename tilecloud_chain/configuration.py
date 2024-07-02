@@ -2138,10 +2138,6 @@ class Provider(TypedDict, total=False):
     """
 
 
-QUEUE_DEFAULT = "tilecloud"
-""" Default value of the field path 'SQS queue' """
-
-
 QUEUE_STORE_DEFAULT = "redis"
 """ Default value of the field path 'TileCloud-chain configuration queue_store' """
 
@@ -2160,6 +2156,10 @@ QUEUESTORE_SQS: Literal["sqs"] = "sqs"
 """The values for the 'Queue store' enum"""
 QUEUESTORE_POSTGRESQL: Literal["postgresql"] = "postgresql"
 """The values for the 'Queue store' enum"""
+
+
+REDIS_QUEUE_DEFAULT = "tilecloud"
+""" Default value of the field path 'Redis queue' """
 
 
 REQUEST_DEFAULT = 0.01
@@ -2228,7 +2228,7 @@ class Redis(TypedDict, total=False):
 
     queue: str
     """
-    Queue.
+    Redis queue.
 
     The queue name (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_QUEUE` environment variable
 
@@ -2383,6 +2383,10 @@ SERVICE_NAME_DEFAULT = "mymaster"
 
 SERVICE_TYPE_DEFAULT = "OGC WMTS"
 """ Default value of the field path 'Metadata servicetype' """
+
+
+SQS_QUEUE_DEFAULT = "tilecloud"
+""" Default value of the field path 'SQS queue' """
 
 
 SRS_DEFAULT = "EPSG:2056"
@@ -2589,7 +2593,7 @@ class Sqs(TypedDict, total=False):
 
     queue: str
     """
-    Queue.
+    SQS queue.
 
     The queue name
 
