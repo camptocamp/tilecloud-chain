@@ -52,8 +52,13 @@ import tilecloud.store.s3
 import tilecloud_chain.configuration
 import tilecloud_chain.security
 from tilecloud import Tile, TileCoord
-from tilecloud_chain import TileGeneration, configuration, controller, internal_mapcache
-from tilecloud_chain.controller import get_azure_container_client
+from tilecloud_chain import (
+    TileGeneration,
+    configuration,
+    controller,
+    get_azure_container_client,
+    internal_mapcache,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -581,11 +586,10 @@ class Server(Generic[Response]):
             with _GET_TILE.labels(storage=cache["type"]).time():
                 tile2 = store.get_one(tile)
 
-            if tile2:
+            if tile2 and tile2.data is not None:
                 if tile2.error:
                     return self.error(config, 500, tile2.error, **kwargs)
 
-                assert tile2.data
                 assert tile2.content_type
                 return self.response(
                     config,

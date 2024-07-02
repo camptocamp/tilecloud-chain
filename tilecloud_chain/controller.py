@@ -17,8 +17,7 @@ import botocore.exceptions
 import requests
 import ruamel.yaml
 from azure.core.exceptions import ResourceNotFoundError
-from azure.identity import DefaultAzureCredential
-from azure.storage.blob import BlobServiceClient, ContainerClient, ContentSettings
+from azure.storage.blob import ContentSettings
 from bottle import jinja2_template
 from PIL import Image
 from prometheus_client import Summary
@@ -32,6 +31,7 @@ from tilecloud_chain import (
     TileGeneration,
     add_common_options,
     configuration,
+    get_azure_container_client,
     get_queue_store,
     get_tile_matrix_identifier,
 )
@@ -102,24 +102,6 @@ def main(args: Optional[list[str]] = None, out: Optional[IO[str]] = None) -> Non
         if os.environ.get("TESTS", "false").lower() == "true":
             raise
         sys.exit(1)
-
-
-def get_azure_container_client(container: str) -> ContainerClient:
-    """Get the Azure blog storage client."""
-    if "AZURE_STORAGE_CONNECTION_STRING" in os.environ and os.environ["AZURE_STORAGE_CONNECTION_STRING"]:
-        return BlobServiceClient.from_connection_string(
-            os.environ["AZURE_STORAGE_CONNECTION_STRING"]
-        ).get_container_client(container=container)
-    elif "AZURE_STORAGE_BLOB_CONTAINER_URL" in os.environ:
-        container_client = ContainerClient.from_container_url(os.environ["AZURE_STORAGE_BLOB_CONTAINER_URL"])
-        if os.environ.get("AZURE_STORAGE_BLOB_VALIDATE_CONTAINER_NAME", "true").lower() == "true":
-            assert container == container_client.container_name
-        return container_client
-    else:
-        return BlobServiceClient(
-            account_url=os.environ["AZURE_STORAGE_ACCOUNT_URL"],
-            credential=DefaultAzureCredential(),
-        ).get_container_client(container=container)
 
 
 def _send(
