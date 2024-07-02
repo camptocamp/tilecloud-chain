@@ -59,7 +59,7 @@ repos:
           - tilecloud_chain/schema.json
           - tilecloud_chain/CONFIG.md
   - repo: https://github.com/sbrunner/hooks
-    rev: 0.7.0
+    rev: 1.0.0
     hooks:
       - id: copyright
       - id: poetry-check
