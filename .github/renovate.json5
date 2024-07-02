@@ -97,10 +97,10 @@
       matchDepNames: ['node'],
       enabled: false,
     },
-    /** Disable types-request update on version <= 1.20 */
+    /** Disable types-request update on version <= 1.21 */
     {
       matchDepNames: ['types-requests'],
-      matchBaseBranches: ['1.17', '1.18', '1.19', '1.20'],
+      matchBaseBranches: ['1.17', '1.18', '1.19', '1.20', '1.21'],
       enabled: false,
     },
     /** Support the 4 parts of shellcheck-py version with a v prefix */
