@@ -462,6 +462,6 @@ def get_status(gene: TileGeneration) -> list[str]:
     store = get_queue_store(config, False)
     type_: Union[Literal["redis"], Literal["sqs"]] = "redis" if "redis" in config.config else "sqs"
     conf = config.config[type_]
-    with _GET_STATUS_SUMMARY.labels(type_, conf.get("queue", configuration.QUEUE_DEFAULT)).time():
+    with _GET_STATUS_SUMMARY.labels(type_, conf.get("queue", configuration.REDIS_QUEUE_DEFAULT)).time():
         status_ = store.get_status()
     return [name + ": " + str(value) for name, value in status_.items()]
