@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2023 by Camptocamp
+# Copyright (c) 2018-2024 by Camptocamp
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -71,32 +71,40 @@ class Admin:
             else None
         )
 
+    def _check_access(self, rase_on_no_access: bool = True) -> tuple[bool, tilecloud_chain.DatedConfig]:
+        assert self.gene
+        config = self.gene.get_host_config(self.request.host)
+        has_access = self.request.has_permission("admin", config.config.get("authentication", {}))
+        if not has_access and rase_on_no_access:
+            raise pyramid.httpexceptions.HTTPForbidden()
+        return has_access, config
+
     @view_config(route_name="admin", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore
     @view_config(route_name="admin_slash", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore
     def index(self) -> dict[str, Any]:
         """Get the admin index page."""
 
         assert self.gene
-        config = self.gene.get_host_config(self.request.host)
+        has_access, config = self._check_access(False)
         server_config = config.config.get("server", {})
         main_config = self.gene.get_main_config()
         main_server_config = main_config.config.get("server", {})
         jobs_status = None
         queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
-        if queue_store == "postgresql":
+        if queue_store == "postgresql" and has_access:
             assert self.postgresql_queue_store is not None
             config_filename = self.gene.get_host_config_file(self.request.host)
             assert config_filename is not None
             jobs_status = self.postgresql_queue_store.get_status(config_filename)
         return {
             "auth_type": auth_type(self.request.registry.settings),
-            "has_access": self.request.has_permission("admin", config.config.get("authentication", {})),
+            "has_access": has_access,
             "commands": server_config.get("predefined_commands", []),
             "status": get_status(self.gene) if queue_store != "postgresql" else None,
             "admin_path": main_server_config.get("admin_path", "admin"),
             "AuthenticationType": AuthenticationType,
             "jobs_status": jobs_status,
-            "footer": main_server_config.get("admin_footer"),
+            "footer": main_server_config.get("admin_footer") if has_access else None,
             "footer_classes": main_server_config.get("admin_footer_classes", ""),
         }
 
@@ -107,6 +115,7 @@ class Admin:
 
         if "TEST_USER" not in os.environ:
             auth_view(self.request)
+            self._check_access()
 
         if "command" not in self.request.POST:
             self.request.response.status_code = 400
@@ -210,6 +219,7 @@ class Admin:
 
         if "TEST_USER" not in os.environ:
             auth_view(self.request)
+            self._check_access()
 
         store = self.postgresql_queue_store
         assert store is not None
@@ -241,6 +251,7 @@ class Admin:
 
         if "TEST_USER" not in os.environ:
             auth_view(self.request)
+            self._check_access()
 
         store = self.postgresql_queue_store
         assert store is not None
@@ -269,6 +280,7 @@ class Admin:
 
         if "TEST_USER" not in os.environ:
             auth_view(self.request)
+            self._check_access()
 
         store = self.postgresql_queue_store
         assert store is not None
