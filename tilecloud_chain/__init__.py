@@ -826,7 +826,7 @@ class TileGeneration:
             cache_tilestore = AzureStorageBlobTileStore(
                 tilelayout=layout,
                 cache_control=cache_azure.get("cache_control"),
-                client=get_azure_container_client(cache_azure["container"]),
+                container_client=get_azure_container_client(cache_azure["container"]),
             )
         elif cache["type"] == "mbtiles":
             metadata = {}
