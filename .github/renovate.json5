@@ -28,6 +28,11 @@
       ],
       datasourceTemplate: 'github-tags',
     },
+    /** Manage unpkg */
+    {
+      fileMatch: ['\\.html$'],
+      matchStrings: ['unpkg\\.com/(?<depName>[^@]+)@(?<currentValue>[^/]+)'],
+    },
   ],
   packageRules: [
     /** Docker images versioning */
