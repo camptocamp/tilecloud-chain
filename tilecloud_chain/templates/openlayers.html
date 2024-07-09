@@ -103,7 +103,7 @@
               tileGrid: options.tileGrid,
             };
             resolutions =  options.tileGrid.getResolutions()
-            layers.push(
+            layers.unshift(
               new ol.layer.Tile({
                 opacity: 1,
                 source: new ol.source.WMTS(options),
