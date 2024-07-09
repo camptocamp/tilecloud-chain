@@ -93,6 +93,7 @@
           let layers = [];
           let resolutions = [];
           let tileGridOptions = {};
+          let visible = true;
           for (wmtsLayer of result.Contents.Layer) {
             const options = ol.source.WMTS.optionsFromCapabilities(result, {
               projection: "${srs}",
@@ -103,13 +104,15 @@
               tileGrid: options.tileGrid,
             };
             resolutions =  options.tileGrid.getResolutions()
-            layers.push(
+            layers.unshift(
               new ol.layer.Tile({
                 opacity: 1,
+                visible: visible,
                 source: new ol.source.WMTS(options),
                 title: wmtsLayer.Title
               })
             );
+            visible = false;
           }
           layers.push(
             new ol.layer.Tile({
