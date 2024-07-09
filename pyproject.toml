@@ -84,6 +84,7 @@ msal = "1.24.1"
 idna = "3.7"
 gunicorn = "22.0.0"
 azure-identity = "1.16.1"
+zipp = "3.19.1"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.8.4" }
