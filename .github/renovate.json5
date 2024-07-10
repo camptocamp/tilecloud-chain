@@ -28,6 +28,18 @@
       ],
       datasourceTemplate: 'github-tags',
     },
+    /** Manage unpkg */
+    {
+      fileMatch: ['.*\\.html$'],
+      matchStrings: ['unpkg\\.com/(?<depName>[^@]+)@(?<currentValue>[^/]+)'],
+      datasourceTemplate: 'npm',
+    },
+    /** Manage jsdelivr */
+    {
+      fileMatch: ['.*\\.html$'],
+      matchStrings: ['cdn\\.jsdelivr\\.net/npm/(?<depName>[^@]+)@(?<currentValue>[^/]+)'],
+      datasourceTemplate: 'npm',
+    },
   ],
   packageRules: [
     /** Docker images versioning */
