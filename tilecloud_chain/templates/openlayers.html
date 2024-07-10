@@ -106,6 +106,8 @@
             resolutions =  options.tileGrid.getResolutions()
             layers.unshift(
               new ol.layer.Tile({
+                // To have radio buttons
+                type: 'base',
                 opacity: 1,
                 visible: visible,
                 source: new ol.source.WMTS(options),
