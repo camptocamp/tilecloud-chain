@@ -33,7 +33,8 @@ class TestGenerate(CompareCase):
                 cmd=f".build/venv/bin/generate_copy {d} -c tilegeneration/test-copy.yaml src dst",
                 main_func=copy_.main,
                 regex=True,
-                expected="""The tile copy of layer 'point_hash' is finish
+                expected=(
+                    """The tile copy of layer 'point_hash' is finish
 Nb copy tiles: 1
 Nb errored tiles: 0
 Nb dropped tiles: 0
@@ -43,8 +44,9 @@ Time per tile: [0-9]+ ms
 Size per tile: 10(.0)? o
 
 """
-                if d != "-q"
-                else "",
+                    if d != "-q"
+                    else ""
+                ),
                 empty_err=True,
             )
         with open("/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png") as f:
@@ -70,7 +72,8 @@ image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
                 "tilegeneration/test-copy.yaml --cache src optipng".format(d),
                 main_func=copy_.process,
                 regex=True,
-                expected="""The tile process of layer 'point_hash' is finish
+                expected=(
+                    """The tile process of layer 'point_hash' is finish
 Nb process tiles: 1
 Nb errored tiles: 0
 Nb dropped tiles: 0
@@ -80,8 +83,9 @@ Time per tile: [0-9]+ ms
 Size per tile: 103(.0)? o
 
 """
-                if d != "-q"
-                else "",
+                    if d != "-q"
+                    else ""
+                ),
                 empty_err=True,
             )
             statinfo = os.stat(

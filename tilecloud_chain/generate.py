@@ -196,9 +196,11 @@ class Generate:
                 )
             )
             self._gene.init(
-                self._queue_tilestore
-                if "error_file" in self._gene.get_main_config().config["generation"]
-                else None,
+                (
+                    self._queue_tilestore
+                    if "error_file" in self._gene.get_main_config().config["generation"]
+                    else None
+                ),
                 self._options.daemon,
             )
         else:

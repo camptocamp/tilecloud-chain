@@ -99,9 +99,11 @@ def add_common_options(
     parser.add_argument(
         "-c",
         "--config",
-        default=os.environ.get("TILEGENERATION_CONFIGFILE", "tilegeneration/config.yaml")
-        if default_config_file
-        else None,
+        default=(
+            os.environ.get("TILEGENERATION_CONFIGFILE", "tilegeneration/config.yaml")
+            if default_config_file
+            else None
+        ),
         help="path to the configuration file",
         metavar="FILE",
     )
