@@ -1,3 +1,9 @@
 [tool.black]
 line-length = 110
 target-version = ['py38']
+
+[tool.poetry]
+name = "tilecloud-chain"
+version = "0.0.0"
+description = "Tools to generate tiles from WMS or Mapnik, to S3, Berkeley DB, MBTiles, or local filesystem in WMTS layout using Amazon cloud services."
+authors = ["Camptocamp <info@camptocamp.com>"]
