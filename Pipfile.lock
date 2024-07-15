@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b3d5091d81ef3f56f3ed393934ee02a45c023fc76e2927867ffe2d0e2e25eb00"
+            "sha256": "11fbf30e805afb561764776b0a6bfbba647bdd00e650299715c076e359854a6b"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -21,7 +21,7 @@
                 "sha256:4640d96be84d82d02ed59ea2b7105a0f7b33abe8703703cd0ab0bf87c427522f",
                 "sha256:7405140ff1230c310e51dc27b3145b9092d659ce68ff733fb0cefe3ee42be028"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==4.0.3"
         },
         "azure-core": {
@@ -240,7 +240,7 @@
                 "sha256:fd1abc0d89e30cc4e02e4064dc67fcc51bd941eb395c502aac3ec19fab46b519",
                 "sha256:ff8fa367d09b717b2a17a052544193ad76cd49979c805768879cb63d9ca50561"
             ],
-            "markers": "python_version >= '3.7'",
+            "markers": "python_full_version >= '3.7.0'",
             "version": "==3.3.2"
         },
         "cornice": {
@@ -739,11 +739,11 @@
         },
         "setuptools": {
             "hashes": [
-                "sha256:d0b9a8433464d5800cbe05094acf5c6d52a91bfac9b52bcfc4d41382be5d5d31",
-                "sha256:e197a19aa8ec9722928f2206f8de752def0e4c9fc6953527360d1c36d94ddb2f"
+                "sha256:54faa7f2e8d2d11bcd2c07bed282eef1046b5c080d1c32add737d7b5817b1ad4",
+                "sha256:f211a66637b8fa059bb28183da127d4e86396c991a942b028c6650d4319c3fd0"
             ],
             "index": "pypi",
-            "version": "==65.5.1"
+            "version": "==70.0.0"
         },
         "shapely": {
             "hashes": [
