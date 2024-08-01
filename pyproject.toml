@@ -23,7 +23,7 @@ objgraph = "3.5.0" # c2cwsgiutils
 psycopg2 = "2.9.9" # c2cwsgiutils
 pyramid-tm = "2.4" # c2cwsgiutils
 sentry-sdk = "2.8.0" # c2cwsgiutils
-sqlalchemy = "1.4.52" # c2cwsgiutils
+sqlalchemy = "1.4.53" # c2cwsgiutils
 transaction = "3.0.1" # c2cwsgiutils
 ujson = "5.4.*" # c2cwsgiutils
 cornice = "6.0.1" # c2cwsgiutils
@@ -45,7 +45,7 @@ urllib3 = "1.26.19"
 msal = "1.24.1"
 idna = "3.7"
 azure-identity = "1.16.1"
-zipp = "3.19.1"
+zipp = "3.19.2"
 
 [tool.poetry.dev-dependencies]
 coverage = "6.3.3"
