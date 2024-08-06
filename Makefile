@@ -23,14 +23,14 @@ prospector: ## Run Prospector
 
 PHONY: tests
 tests: build ## Run the unit tests
-	docker-compose stop --timeout=0
-	docker-compose down || true
+	docker compose stop --timeout=0
+	docker compose down || true
 	C2C_AUTH_GITHUB_CLIENT_ID=$(shell gopass show gs/projects/github/oauth-apps/geoservices-int/client-id) \
 	C2C_AUTH_GITHUB_CLIENT_SECRET=$(shell gopass show gs/projects/github/oauth-apps/geoservices-int/client-secret) \
-	docker-compose up -d
+	docker compose up -d
 
 	# Wait for DB to be up
-	while ! docker-compose exec -T test psql -h db -p 5432 -U postgres -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests; \
+	while ! docker compose exec -T test psql -h db -p 5432 -U postgres -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests; \
 	do \
 		echo "Waiting for DB to be UP"; \
 		sleep 1; \
@@ -38,22 +38,22 @@ tests: build ## Run the unit tests
 
 	c2cciutils-docker-logs
 
-	docker-compose exec -T test pytest -vv --color=yes
+	docker compose exec -T test pytest -vv --color=yes
 
 	c2cciutils-docker-logs
-	docker-compose down
+	docker compose down
 
 PHONY: tests-fast
 tests-fast:
 	C2C_AUTH_GITHUB_CLIENT_ID=$(shell gopass show gs/projects/github/oauth-apps/geoservices-int/client-id) \
 	C2C_AUTH_GITHUB_CLIENT_SECRET=$(shell gopass show gs/projects/github/oauth-apps/geoservices-int/client-secret) \
-	docker-compose up -d
+	docker compose up -d
 
 	# Wait for DB to be up
-	while ! docker-compose exec -T test psql -h db -p 5432 -U postgres -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests; \
+	while ! docker compose exec -T test psql -h db -p 5432 -U postgres -v ON_ERROR_STOP=1 -c "SELECT 1" -d tests; \
 	do \
 		echo "Waiting for DB to be UP"; \
 		sleep 1; \
 	done
 
-	docker-compose exec -T test pytest -vv --color=yes --exitfirst #--last-failed
+	docker compose exec -T test pytest -vv --color=yes --exitfirst #--last-failed
