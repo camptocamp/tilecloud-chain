@@ -1,4 +1,4 @@
-# Copyright (c) 2023 by Camptocamp
+# Copyright (c) 2023-2024 by Camptocamp
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -129,7 +129,7 @@ class Job(Base):
     status = Column(Unicode, nullable=False, default=_STATUS_CREATED, index=True)
     message = Column(Unicode)
     created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=sqlalchemy.sql.functions.now(), index=True  # type: ignore[no-untyped-call]
+        DateTime(timezone=True), nullable=False, server_default=sqlalchemy.sql.functions.now(), index=True
     )
     started_at = Column(DateTime(timezone=True), index=True)
 
@@ -176,7 +176,7 @@ def _start_job(
     with SessionMaker() as session:
         job = session.query(Job).where(Job.id == job_id).one()
 
-    command = shlex.split(job.command)  # type: ignore[arg-type]
+    command = shlex.split(job.command)
     command0 = command[0].replace("_", "-")
 
     if command0 not in allowed_commands:
@@ -241,7 +241,7 @@ def _start_job(
                 error = True
 
         with SessionMaker() as session:
-            job = session.query(Job).where(Job.id == job_id).with_for_update(of=Job).one()  # type: ignore[arg-type]
+            job = session.query(Job).where(Job.id == job_id).with_for_update(of=Job).one()
             job.status = _STATUS_ERROR if error else _STATUS_STARTED  # type: ignore[assignment]
             job.message = out.getvalue()[: int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000))]  # type: ignore[assignment]
             session.commit()
@@ -379,7 +379,7 @@ class PostgresqlTileStore(TileStore):
                 result_by_zoom_level: dict[int, dict[str, int]] = {}
 
                 for nb_tiles, zoom in (
-                    session.query(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)  # type: ignore[no-untyped-call]
+                    session.query(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
                     .where(and_(Queue.status == _STATUS_CREATED, Queue.job_id == job.id))
                     .group_by(Queue.zoom)
                     .all()
@@ -387,14 +387,14 @@ class PostgresqlTileStore(TileStore):
                     result_by_zoom_level.setdefault(zoom, {})["generate"] = nb_tiles
 
                 for nb_tiles, zoom in (
-                    session.query(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)  # type: ignore[no-untyped-call]
+                    session.query(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
                     .where(and_(Queue.status == _STATUS_PENDING, Queue.job_id == job.id))
                     .group_by(Queue.zoom)
                     .all()
                 ):
                     result_by_zoom_level.setdefault(zoom, {})["pending"] = nb_tiles
                 for nb_tiles, zoom in (
-                    session.query(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)  # type: ignore[no-untyped-call]
+                    session.query(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
                     .where(and_(Queue.status == _STATUS_ERROR, Queue.job_id == job.id))
                     .group_by(Queue.zoom)
                     .all()
@@ -446,7 +446,7 @@ class PostgresqlTileStore(TileStore):
             with self.SessionMaker() as session:
                 job = (
                     session.query(Job)
-                    .with_for_update(of=Job, skip_locked=True)  # type: ignore[arg-type]
+                    .with_for_update(of=Job, skip_locked=True)
                     .where(Job.status == _STATUS_CREATED)
                     .first()
                 )
@@ -466,7 +466,7 @@ class PostgresqlTileStore(TileStore):
             with self.SessionMaker() as session:
                 for job in (
                     session.query(Job)
-                    .with_for_update(of=Job, skip_locked=True)  # type: ignore[arg-type]
+                    .with_for_update(of=Job, skip_locked=True)
                     .where(Job.status == _STATUS_STARTED)
                     .all()
                 ):
@@ -535,7 +535,7 @@ class PostgresqlTileStore(TileStore):
                     with self.SessionMaker() as session:
                         sqlalchemy_tile = (
                             session.query(Queue)
-                            .with_for_update(of=Queue, skip_locked=True)  # type: ignore[arg-type]
+                            .with_for_update(of=Queue, skip_locked=True)
                             .order_by(Queue.id.asc())
                             .where(and_(Queue.status == _STATUS_CREATED, Queue.job_id == job_id))
                             .first()
@@ -581,7 +581,7 @@ class PostgresqlTileStore(TileStore):
                 sqlalchemy_tile = (
                     session.query(Queue)
                     .where(and_(Queue.status == _STATUS_PENDING, Queue.id == tile.postgresql_id))  # type: ignore[attr-defined]
-                    .with_for_update(of=Queue)  # type: ignore[arg-type]
+                    .with_for_update(of=Queue)
                     .first()
                 )
                 if sqlalchemy_tile is not None:
