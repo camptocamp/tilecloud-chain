@@ -173,7 +173,7 @@ class Server(Generic[Response]):
         for n in range(10):
             try:
                 client = tilecloud.store.s3.get_client(cache_s3.get("host"))
-                self.s3_client_cache[cast(str, cache_s3.get("host", "aws"))] = client
+                self.s3_client_cache[cache_s3.get("host", "aws")] = client
                 return client
             except KeyError as e:
                 error = e
