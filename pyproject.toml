@@ -62,20 +62,20 @@ tilecloud = { version = "1.12.2", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.4"
 PyYAML = "6.0.1"
 Shapely = "2.0.5"
-jsonschema = "4.22.0"
+jsonschema = "4.23.0"
 pyramid = "2.0.2"
 jsonschema-validator-new = "0.1.0"
-azure-storage-blob = "12.20.0"
+azure-storage-blob = "12.22.0"
 waitress = "3.0.0"
-certifi = "2024.6.2"
+certifi = "2024.7.4"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.10.3" }
 c2cwsgiutils = { version = "6.0.8", extras = ["test_images"] }
 scikit-image = { version = "0.24.0" }
-pytest = "8.2.2"
+pytest = "8.3.2"
 testfixtures = "8.3.0"
-coverage = "7.5.4"
+coverage = "7.6.1"
 types-redis = "4.6.0.20240726"
 types-requests = "2.32.0.20240712"
 
