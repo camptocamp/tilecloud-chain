@@ -130,7 +130,7 @@ def _send(
         blob.upload_blob(
             data,
             overwrite=True,
-            content_settings=ContentSettings(  # type: ignore
+            content_settings=ContentSettings(
                 content_type=mime_type,
                 content_encoding="utf-8",
                 cache_control=cache_azure["cache_control"],
