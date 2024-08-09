@@ -72,13 +72,13 @@ Setup your environment:
 ```bash
 touch tilecloud_chain/OpenLayers.js
 docker build --tag camptocamp/tilecloud-chain .
-docker-compose -p tilecloud up
+docker compose -p tilecloud up
 ```
 
 To run the tests:
 
 ```bash
-docker-compose -p tilecloud exec test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
+docker compose -p tilecloud exec test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
 ```
 
 ## Documentation
