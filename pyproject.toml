@@ -77,6 +77,7 @@ gunicorn = "22.0.0"
 requests = "2.32.3"
 azure-identity = "1.16.1"
 sentry-sdk = "2.8.0"
+webob = "1.8.8"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.10.3" }
