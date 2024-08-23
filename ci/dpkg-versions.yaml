@@ -149,7 +149,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/libprocps8: 2:3.3.17-6ubuntu2.1
   ubuntu_22_04/libproj22: 8.2.1-1
   ubuntu_22_04/libpsl5: 0.21.0-1.2build2
-  ubuntu_22_04/libpython3-stdlib: 3.10.6-1~22.04
+  ubuntu_22_04/libpython3-stdlib: 3.10.6-1~22.04.1
   ubuntu_22_04/libpython3.10: 3.10.12-1~22.04.5
   ubuntu_22_04/libpython3.10-minimal: 3.10.12-1~22.04.5
   ubuntu_22_04/libpython3.10-stdlib: 3.10.12-1~22.04.5
@@ -229,10 +229,10 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/procps: 2:3.3.17-6ubuntu2.1
   ubuntu_22_04/proj-data: 8.2.1-1
   ubuntu_22_04/python-is-python3: 3.9.2-2
-  ubuntu_22_04/python3: 3.10.6-1~22.04
+  ubuntu_22_04/python3: 3.10.6-1~22.04.1
   ubuntu_22_04/python3-distutils: 3.10.8-1~22.04
   ubuntu_22_04/python3-lib2to3: 3.10.8-1~22.04
-  ubuntu_22_04/python3-minimal: 3.10.6-1~22.04
+  ubuntu_22_04/python3-minimal: 3.10.6-1~22.04.1
   ubuntu_22_04/python3-numpy: 1:1.21.5-1ubuntu22.04.1
   ubuntu_22_04/python3-pil: 9.0.1-1ubuntu0.3
   ubuntu_22_04/python3-pip: 22.0.2+dfsg-1ubuntu0.4
