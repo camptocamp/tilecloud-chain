@@ -54,7 +54,7 @@ repos:
             |^tilecloud_chain/schema\.json
           )$
   - repo: https://github.com/sbrunner/jsonschema2md2
-    rev: 1.2.0
+    rev: 1.3.0
     hooks:
       - id: jsonschema2md
         files: tilecloud_chain/schema\.json
@@ -124,7 +124,7 @@ repos:
         args:
           - --project=tilecloud
   - repo: https://github.com/psf/black
-    rev: 24.4.2
+    rev: 24.8.0
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/prospector
