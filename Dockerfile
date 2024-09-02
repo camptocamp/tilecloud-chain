@@ -17,7 +17,10 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
         fonts-dejavu \
         optipng jpegoptim \
         postgresql-client net-tools iputils-ping \
-        python3-pip
+        python3-pip python3-venv \
+    && python3 -m venv /venv
+
+ENV PATH=/venv/bin:$PATH
 
 # Used to convert the locked packages by poetry to pip requirements format
 # We don't directly use `poetry install` because it force to use a virtual environment.
@@ -47,8 +50,8 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     && apt-get update \
     && apt-get install --assume-yes --no-install-recommends ${DEV_PACKAGES} \
     && python3 -m pip install --disable-pip-version-check --no-deps --requirement=/poetry/requirements.txt \
-    && python3 -m compileall /usr/local/lib/python* /usr/lib/python* \
-    && strip /usr/local/lib/python*/dist-packages/shapely/*.so \
+    && python3 -m compileall /venv/lib/python* /usr/lib/python* \
+    && strip /venv/lib/python*/dist-packages/shapely/*.so \
     && apt-get remove --purge --autoremove --yes ${DEV_PACKAGES} binutils
 
 # From c2cwsgiutils
