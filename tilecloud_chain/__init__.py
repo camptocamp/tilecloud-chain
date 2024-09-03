@@ -254,10 +254,16 @@ class Run:
                     _LOGGER.debug("[%s] Drop", tilecoord)
                     return None
                 if tile.error:
-                    if tile.content_type and tile.content_type.startswith("application/vnd.ogc.se_xml"):
+                    if tile.content_type and (
+                        tile.content_type in ["application/xml", "text/xml"]
+                        or tile.content_type.startswith("application/vnd.ogc.se_xml;")
+                        or tile.content_type.startswith("text/html;")
+                    ):
                         assert isinstance(tile.error, str)
                         tile.error = f"WMS server error: {self._re_rm_xml_tag.sub('', tile.error)}"
-                    _LOGGER.warning("Error with tile %s:\n%s", tile.tilecoord, tile.error)
+                    _LOGGER.warning(
+                        "Error with tile %s %s:\n%s", tile.tilecoord, tile.formated_metadata, tile.error
+                    )
                     _ERROR_COUNTER.labels(
                         tile.metadata.get("layer", "none"), tile.metadata.get("host", "none")
                     ).inc()
