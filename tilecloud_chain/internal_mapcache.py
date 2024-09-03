@@ -244,8 +244,13 @@ def fetch(
                 generator.compute_tile(meta_tile)
 
                 if meta_tile.error:
-                    LOG.error("Tile '%s' in error: %s", meta_tile.tilecoord, meta_tile.error)
-                    return server.error(config, 500, "Error while generate the tile, see logs for details")
+                    LOG.error(
+                        "Tile %s %s in error: %s",
+                        meta_tile.tilecoord,
+                        meta_tile.formated_metadata,
+                        meta_tile.error,
+                    )
+                    return server.error(config, 502, "Error while generate the tile, see logs for details")
 
                 # Don't fetch the just generated tile
                 tiles: dict[TileCoord, Tile] = cast(dict[TileCoord, Tile], meta_tile.metadata["tiles"])
@@ -253,8 +258,9 @@ def fetch(
                     fetched_tile = tiles[tile.tilecoord]
                 except KeyError:
                     LOG.exception(
-                        "Try to get the tile '%s', from the available: '%s'",
+                        "Try to get the tile %s %s, from the available: '%s'",
                         tile.tilecoord,
+                        tile.formated_metadata,
                         ", ".join([str(e) for e in tiles.keys()]),
                     )
                     raise
