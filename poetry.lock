@@ -2832,13 +2832,13 @@ all = ["defusedxml", "fsspec", "imagecodecs (>=2023.1.23)", "lxml", "matplotlib"
 
 [[package]]
 name = "tilecloud"
-version = "1.12.2"
+version = "1.12.3"
 description = "Tools for managing tiles"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "tilecloud-1.12.2-py3-none-any.whl", hash = "sha256:f4be3ecb3de142d527519eca4ac9d2859a8538d12cc00da7504c462413f898d6"},
-    {file = "tilecloud-1.12.2.tar.gz", hash = "sha256:b2306eaacb022f6066076f57b833e361b7aa794b80c7b557e074b1d312968535"},
+    {file = "tilecloud-1.12.3-py3-none-any.whl", hash = "sha256:f1b9e33a281b93e43e8e7928140dbc39af97281e99487cdc91bca31ef63ad5b9"},
+    {file = "tilecloud-1.12.3.tar.gz", hash = "sha256:09ce90b847575b5f0b24e82bf075846e8878cd1fb6eb351e9f39c4b0a0aba2b2"},
 ]
 
 [package.dependencies]
@@ -2846,11 +2846,13 @@ azure-identity = {version = "*", optional = true, markers = "extra == \"azure\" 
 azure-storage-blob = {version = "*", optional = true, markers = "extra == \"azure\" or extra == \"all\""}
 boto3 = {version = "*", optional = true, markers = "extra == \"aws\" or extra == \"all\""}
 bottle = "*"
+certifi = "*"
 Pillow = "*"
 pyproj = "*"
 pyramid = {version = "*", optional = true, markers = "extra == \"wsgi\" or extra == \"all\""}
 redis = {version = "*", optional = true, markers = "extra == \"redis\" or extra == \"all\""}
 requests = "*"
+webob = "*"
 
 [package.extras]
 all = ["azure-identity", "azure-storage-blob", "boto3", "prometheus_client", "pyramid", "redis"]
@@ -2953,13 +2955,13 @@ cryptography = ">=35.0.0"
 
 [[package]]
 name = "types-redis"
-version = "4.6.0.20240819"
+version = "4.6.0.20240903"
 description = "Typing stubs for redis"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "types-redis-4.6.0.20240819.tar.gz", hash = "sha256:08f51f550ad41d0152bd98d77ac9d6d8f761369121710a213642f6036b9a7183"},
-    {file = "types_redis-4.6.0.20240819-py3-none-any.whl", hash = "sha256:86db9af6f0033154e12bc22c77236cef0907b995fda8c9f0f0eacd59943ed2fc"},
+    {file = "types-redis-4.6.0.20240903.tar.gz", hash = "sha256:4bab1a378dbf23c2c95c370dfdb89a8f033957c4fd1a53fee71b529c182fe008"},
+    {file = "types_redis-4.6.0.20240903-py3-none-any.whl", hash = "sha256:0e7537e5c085fe96b7d468d5edae0cf667b4ba4b62c6e4a5dfc340bd3b868c23"},
 ]
 
 [package.dependencies]
@@ -3306,4 +3308,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "8e90988bcf63b743ff7a8d80dea27a7abd260c38b70a053464d7e9e82e32fa01"
+content-hash = "b543cefb4d422091df468dc682313011c40e88518f915955d3cbb627181357c1"
