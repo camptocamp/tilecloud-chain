@@ -176,7 +176,16 @@ class Generator:
 
         with _GET_TILE.labels("wms").time():
             self.run(tile)
+        if tile.error:
+            LOG.error("Tile %s %s in error: %s", tile.tilecoord, tile.formated_metadata, tile.error)
+            return
         for tile_ in tile.metadata["tiles"].values():  # type: ignore
+            if tile_.error:
+                LOG.error("Tile %s %s in error: %s", tile_.tilecoord, tile_.formated_metadata, tile_.error)
+                return
+            if tile_.data is None:
+                LOG.error("Tile %s %s in error: no data", tile_.tilecoord, tile_.formated_metadata)
+                return
             self._cache_store.put_one(tile_)
 
     @contextlib.contextmanager
