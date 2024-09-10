@@ -126,5 +126,12 @@
       groupName: 'CI dependencies',
       automerge: true,
     },
+    /** Automatically update all versions of cryptography to fic CVE */
+    {
+      matchDepNames: ['cryptography'],
+      enabled: true,
+      automerge: true,
+      schedule: 'at any time',
+    },
   ],
 }
