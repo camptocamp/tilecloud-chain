@@ -34,7 +34,7 @@ repos:
         additional_dependencies:
           - prettier@2.8.4
   - repo: https://github.com/camptocamp/jsonschema-gentypes
-    rev: 2.7.2
+    rev: 2.8.1
     hooks:
       - id: jsonschema-gentypes
         files: |-
@@ -52,7 +52,7 @@ repos:
           - tilecloud_chain/schema.json
           - tilecloud_chain/CONFIG.md
   - repo: https://github.com/sbrunner/hooks
-    rev: 1.0.0
+    rev: 1.1.0
     hooks:
       - id: copyright
       - id: poetry-check
@@ -132,6 +132,6 @@ repos:
       - id: jsonschema-validator
         files: ^ci/config\.yaml$
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 37.428.3
+    rev: 37.440.7
     hooks:
       - id: renovate-config-validator
