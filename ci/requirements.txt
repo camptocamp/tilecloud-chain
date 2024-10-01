@@ -1,4 +1,4 @@
-c2cciutils[checks,publish]==1.4.20
+c2cciutils[checks,publish]==1.4.21
 importlib-metadata<8.0.0 # issue with twine, see: https://github.com/python/importlib_metadata/issues/492
 poetry-dynamic-versioning==0.21.5
 poetry-plugin-export==1.2.0
