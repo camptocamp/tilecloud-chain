@@ -938,21 +938,24 @@ Size per tile: 4[0-9][0-9] o
                             r"Start the layer 'point_error' generation",
                             r"0/0/0:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 "
                             r"host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
-                            r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): "
+                            r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: URL: http:[^ ]+"
+                            r"msWMSLoadGetMapParams\(\): "
                             r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
                             r"A layer might be disabled for this request\. Check wms/ows_enable_request "
-                            r"settings\.URL: http:.*'",
+                            r"settings\.'",
                             r"0/0/8:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 "
                             r"host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
-                            r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): "
+                            r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: URL: http:[^ ]+"
+                            r"msWMSLoadGetMapParams\(\): "
                             r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
                             r"A layer might be disabled for this request\. Check wms/ows_enable_request "
-                            r"settings\.URL: http:.*'",
+                            r"settings\.'",
                             r"0/8/0:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 "
                             r"host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
-                            r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: msWMSLoadGetMapParams\(\): "
+                            r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: URL: http:[^ ]+"
+                            r"msWMSLoadGetMapParams\(\): "
                             r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
-                            r"A layer might be disabled for this request\. Check wms/ows_enable_request settings\.URL: http:.*'",
+                            r"A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'",
                             "",
                         ]
                     ),
