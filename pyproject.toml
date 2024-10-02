@@ -58,7 +58,7 @@ python = ">=3.10,<3.12"
 c2cwsgiutils = { version = "6.0.8", extras = ["standard", "broadcast", "oauth2", "debug"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.9.0.post0"
-tilecloud = { version = "1.12.2", extras = ["azure", "aws", "redis", "wsgi"] }
+tilecloud = { version = "1.12.3", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.4"
 PyYAML = "6.0.2"
 Shapely = "2.0.6"
@@ -73,11 +73,11 @@ certifi = "2024.7.4"
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.10.3" }
 c2cwsgiutils = { version = "6.0.8", extras = ["test_images"] }
 scikit-image = { version = "0.24.0" }
-pytest = "8.3.2"
+pytest = "8.3.3"
 testfixtures = "8.3.0"
 coverage = "7.6.1"
-types-redis = "4.6.0.20240819"
-types-requests = "2.32.0.20240712"
+types-redis = "4.6.0.20240903"
+types-requests = "2.32.0.20240914"
 
 [tool.poetry.group.dev.dependencies]
 prospector-profile-duplicated = "1.5.0"
