@@ -5,3 +5,4 @@ certifi>=2022.12.7 # not directly required, pinned by Snyk to avoid a vulnerabil
 requests>=2.31.0 # not directly required, pinned by Snyk to avoid a vulnerability
 pygments>=2.15.0 # not directly required, pinned by Snyk to avoid a vulnerability
 cryptography>=41.0.5 # not directly required, pinned by Snyk to avoid a vulnerability
+virtualenv>=20.26.6 # not directly required, pinned by Snyk to avoid a vulnerability
