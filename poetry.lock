@@ -107,23 +107,23 @@ typing-extensions = ">=4.0.0"
 
 [[package]]
 name = "azure-storage-blob"
-version = "12.22.0"
+version = "12.23.1"
 description = "Microsoft Azure Blob Storage Client Library for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "azure-storage-blob-12.22.0.tar.gz", hash = "sha256:b3804bb4fe8ab1c32771fa464053da772a682c2737b19da438a3f4e5e3b3736e"},
-    {file = "azure_storage_blob-12.22.0-py3-none-any.whl", hash = "sha256:bb7d2d824ce3f11f14a27ee7d9281289f7e072ac8311c52e3652672455b7d5e8"},
+    {file = "azure_storage_blob-12.23.1-py3-none-any.whl", hash = "sha256:1c2238aa841d1545f42714a5017c010366137a44a0605da2d45f770174bfc6b4"},
+    {file = "azure_storage_blob-12.23.1.tar.gz", hash = "sha256:a587e54d4e39d2a27bd75109db164ffa2058fe194061e5446c5a89bca918272f"},
 ]
 
 [package.dependencies]
-azure-core = ">=1.28.0"
+azure-core = ">=1.30.0"
 cryptography = ">=2.1.4"
 isodate = ">=0.6.1"
 typing-extensions = ">=4.6.0"
 
 [package.extras]
-aio = ["azure-core[aio] (>=1.28.0)"]
+aio = ["azure-core[aio] (>=1.30.0)"]
 
 [[package]]
 name = "bandit"
@@ -288,13 +288,13 @@ files = [
 
 [[package]]
 name = "certifi"
-version = "2024.7.4"
+version = "2024.8.30"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "certifi-2024.7.4-py3-none-any.whl", hash = "sha256:c198e21b1289c2ab85ee4e67bb4b4ef3ead0892059901a8d5b622f24a1101e90"},
-    {file = "certifi-2024.7.4.tar.gz", hash = "sha256:5a1e7645bc0ec61a09e26c36f6106dd4cf40c6db3a1fb6352b0244e7fb057c7b"},
+    {file = "certifi-2024.8.30-py3-none-any.whl", hash = "sha256:922820b53db7a7257ffbda3f597266d435245903d80737e34f8a45ff3e3230d8"},
+    {file = "certifi-2024.8.30.tar.gz", hash = "sha256:bec941d2aa8195e248a60b31ff9f0558284cf01a52591ceda73ea9afffd69fd9"},
 ]
 
 [[package]]
@@ -1708,33 +1708,33 @@ twisted = ["twisted"]
 
 [[package]]
 name = "prospector"
-version = "1.10.3"
+version = "1.11.0"
 description = "Prospector is a tool to analyse Python code by aggregating the result of other tools."
 optional = false
-python-versions = ">=3.7.2,<4.0"
+python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "prospector-1.10.3-py3-none-any.whl", hash = "sha256:8567df2218cdc97d29f297ee3e3b54b96b3a2dab835931955c3a7bbd95aff6f7"},
-    {file = "prospector-1.10.3.tar.gz", hash = "sha256:f29ab19fd430869eb34490761af77406d2cfedd9b50292cf4d8db0288c9d764a"},
+    {file = "prospector-1.11.0-py3-none-any.whl", hash = "sha256:2b112842e5a19d6f77c886d89f57b619c19b47afdf6db31019d85d93e0bdc29d"},
+    {file = "prospector-1.11.0.tar.gz", hash = "sha256:49236fe334652d1229a85bc10789ac4390cc5027f6becda989ea473f893dde57"},
 ]
 
 [package.dependencies]
-bandit = {version = ">=1.5.1", optional = true, markers = "extra == \"with_bandit\" or extra == \"with_everything\""}
+bandit = {version = ">=1.5.1", optional = true, markers = "extra == \"with-bandit\" or extra == \"with_everything\""}
 dodgy = ">=0.2.1,<0.3.0"
-flake8 = "<6.0.0"
+flake8 = "<7.0.0"
 GitPython = ">=3.1.27,<4.0.0"
 mccabe = ">=0.7.0,<0.8.0"
-mypy = {version = ">=0.600", optional = true, markers = "extra == \"with_mypy\" or extra == \"with_everything\""}
+mypy = {version = ">=0.600", optional = true, markers = "extra == \"with-mypy\" or extra == \"with_everything\""}
 packaging = "*"
 pep8-naming = ">=0.3.3,<=0.10.0"
 pycodestyle = ">=2.9.0"
 pydocstyle = ">=2.0.0"
-pyflakes = ">=2.2.0,<3"
-pylint = ">=2.8.3"
+pyflakes = ">=2.2.0,<4"
+pylint = ">=2.8.3,<3.0"
 pylint-celery = "0.3"
 pylint-django = ">=2.5,<2.6"
 pylint-flask = "0.6"
 pylint-plugin-utils = ">=0.7,<0.8"
-pyroma = {version = ">=2.4", optional = true, markers = "extra == \"with_pyroma\" or extra == \"with_everything\""}
+pyroma = {version = ">=2.4", optional = true, markers = "extra == \"with-pyroma\" or extra == \"with_everything\""}
 PyYAML = "*"
 requirements-detector = ">=1.2.0"
 setoptconf-tmp = ">=0.3.1,<0.4.0"
@@ -3504,4 +3504,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "577ef2cf98f226b21357d1d9796299ea2c53a36c0722e376f7556b254ec4d0c2"
+content-hash = "a68c6dc0b6542314911d7345bb4d3ab81aaf7f6443022b459b9a71a0924f7614"
