@@ -66,12 +66,12 @@ Shapely = "2.0.6"
 jsonschema = "4.23.0"
 pyramid = "2.0.2"
 jsonschema-validator-new = "0.1.0"
-azure-storage-blob = "12.22.0"
+azure-storage-blob = "12.23.1"
 waitress = "3.0.0"
-certifi = "2024.7.4"
+certifi = "2024.8.30"
 
 [tool.poetry.dev-dependencies]
-prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.10.3" }
+prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.11.0" }
 c2cwsgiutils = { version = "6.0.8", extras = ["test_images"] }
 scikit-image = { version = "0.24.0" }
 pytest = "8.3.3"
