@@ -150,5 +150,10 @@
       matchDepNames: ['python'],
       groupName: 'Python',
     },
+    /** Ungroup Gdal */
+    {
+      matchDepNames: ['ghcr.io/osgeo/gdal'],
+      groupName: 'Gdal',
+    },
   ],
 }
