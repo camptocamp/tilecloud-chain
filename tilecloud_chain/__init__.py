@@ -284,7 +284,7 @@ class Run:
                         self.error += 1
                     return tile
             except Exception:
-                _LOGGER.debug("Run error", stack_info=True)
+                _LOGGER.debug("Run error", exc_info=True)
                 raise
 
         if self.max_consecutive_errors is not None:
