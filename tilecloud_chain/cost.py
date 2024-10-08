@@ -1,3 +1,7 @@
+"""
+Calculate the cost of the generation.
+"""
+
 import logging
 import sys
 from argparse import ArgumentParser, Namespace
@@ -152,6 +156,15 @@ def _calculate_cost(
                         assert metatile is not None
                         for tilecoord in metatile.tilecoord:
                             yield Tile(tilecoord)
+
+                def put_one(self, tile: Tile) -> Tile:
+                    raise NotImplementedError
+
+                def get_one(self, tile: Tile) -> Optional[Tile]:
+                    raise NotImplementedError
+
+                def delete_one(self, tile: Tile) -> Tile:
+                    raise NotImplementedError
 
             gene.add_metatile_splitter(MetaTileSplitter())
 

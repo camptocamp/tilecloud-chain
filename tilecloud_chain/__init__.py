@@ -1,3 +1,7 @@
+"""
+TileCloud Chain.
+"""
+
 import collections
 import json
 import logging
@@ -244,7 +248,7 @@ class Run:
                 if self.safe:
                     try:
                         tile = func(tile)
-                    except Exception as e:
+                    except Exception as e:  # pylint: disable=broad-exception-caught
                         _LOGGER.exception("[%s] Fail to process function %s", tilecoord, func)
                         tile.error = e
                 else:
@@ -573,6 +577,7 @@ class TileGeneration:
         )
 
     def get_tile_config(self, tile: Tile) -> DatedConfig:
+        """Get the configuration for the given tile."""
         return self.get_config(tile.metadata["config_file"])
 
     def get_config(
@@ -605,6 +610,7 @@ class TileGeneration:
         return config
 
     def get_main_config(self) -> DatedConfig:
+        """Get the main configuration."""
         if "TILEGENERATION_MAIN_CONFIGFILE" in os.environ and os.environ["TILEGENERATION_MAIN_CONFIGFILE"]:
             return self.get_config(os.environ["TILEGENERATION_MAIN_CONFIGFILE"], False)
         elif self.config_file:
@@ -614,6 +620,7 @@ class TileGeneration:
             return DatedConfig({}, 0, "")
 
     def get_hosts(self, silent: bool = False) -> dict[str, str]:
+        """Get the hosts from the hosts file."""
         file_path = pathlib.Path(os.environ["TILEGENERATION_HOSTSFILE"])
         if not file_path.exists():
             if not silent:
@@ -748,6 +755,7 @@ class TileGeneration:
         return not (error or errors)
 
     def init(self, queue_store: Optional[TileStore] = None, daemon: bool = False) -> None:
+        """Initialize the tile generation."""
         self.queue_store = queue_store
         self.daemon = daemon
 
@@ -780,6 +788,7 @@ class TileGeneration:
         return result
 
     def get_all_dimensions(self, layer: tilecloud_chain.configuration.Layer) -> list[dict[str, str]]:
+        """Get all the dimensions."""
         assert layer is not None
 
         options_dimensions = {}
@@ -804,6 +813,7 @@ class TileGeneration:
         layer_name: str,
         read_only: bool = False,
     ) -> TileStore:
+        """Get the tile store."""
         layer = config.config["layers"][layer_name]
         grid = config.config["grids"][layer["grid"]]
         layout = WMTSTileLayout(
@@ -888,12 +898,14 @@ class TileGeneration:
     def get_grid_name(
         config: DatedConfig, layer: tilecloud_chain.configuration.Layer, name: Optional[Any] = None
     ) -> tilecloud_chain.configuration.Grid:
+        """Get the grid name."""
         if name is None:
             name = layer["grid"]
 
         return config.config["grids"][name]
 
     def get_tilesstore(self, cache: Optional[str] = None) -> TimedTileStoreWrapper:
+        """Get the tile store."""
         gene = self
 
         def get_store(config_file: str, layer_name: str) -> TileStore:
@@ -911,9 +923,11 @@ class TileGeneration:
         return cache_tilestore
 
     def add_geom_filter(self) -> None:
+        """Add a geometry filter to the chain."""
         self.imap(IntersectGeometryFilter(gene=self), "Intersect with geom")
 
     def add_logger(self) -> None:
+        """Add a logger to the chain."""
         if (
             not self.options.quiet
             and not self.options.verbose
@@ -931,6 +945,7 @@ class TileGeneration:
             self.imap(Logger(_LOGGER, logging.INFO, "%(tilecoord)s, %(formated_metadata)s"))
 
     def add_metatile_splitter(self, store: Optional[TileStore] = None) -> None:
+        """Add a metatile splitter to the chain."""
         assert self.functions != self.functions_tiles, "add_metatile_splitter should not be called twice"
         if store is None:
             gene = self
@@ -993,6 +1008,7 @@ class TileGeneration:
         self.functions = self.functions_tiles
 
     def create_log_tiles_error(self, layer: str) -> Optional[TextIO]:
+        """Create the error file for the given layer."""
         if "error_file" in self.get_main_config().config.get("generation", {}):
             now = datetime.now()
             time_ = now.strftime("%d-%m-%Y %H:%M:%S")
@@ -1007,13 +1023,16 @@ class TileGeneration:
         return None
 
     def close(self) -> None:
+        """Close the tile generation."""
         for file_ in self.error_files_.values():
             file_.close()
 
     def get_log_tiles_error_file(self, layer: str) -> Optional[TextIO]:
+        """Get the error file for the given layer."""
         return self.error_files_[layer] if layer in self.error_files_ else self.create_log_tiles_error(layer)
 
     def log_tiles_error(self, tile: Optional[Tile] = None, message: Optional[str] = None) -> None:
+        """Log the error message for the given tile."""
         if tile is None:
             return
         config = self.get_tile_config(tile)
@@ -1033,6 +1052,7 @@ class TileGeneration:
             io.write(f"{tilecoord}# [{time_}]{out_message}\n")
 
     def get_grid(self, config: DatedConfig, grid_name: str) -> TileGrid:
+        """Get the grid for the given name."""
         dated_grid = self.grid_cache.get(config.file, {}).get(grid_name)
         if dated_grid is not None and config.mtime == dated_grid.mtime:
             return dated_grid.grid
@@ -1053,6 +1073,7 @@ class TileGeneration:
     def get_geoms(
         self, config: DatedConfig, layer_name: str, host: Optional[str] = None
     ) -> dict[Union[str, int], BaseGeometry]:
+        """Get the geometries for the given layer."""
         dated_geoms = self.geoms_cache.get(config.file, {}).get(layer_name)
         if dated_geoms is not None and config.mtime == dated_geoms.mtime:
             return dated_geoms.geoms
@@ -1145,6 +1166,7 @@ class TileGeneration:
         return geoms
 
     def init_tilecoords(self, config: DatedConfig, layer_name: str) -> None:
+        """Initialize the tilestream for the given layer."""
         layer = config.config["layers"][layer_name]
         resolutions = config.config["grids"][layer["grid"]]["resolutions"]
 
@@ -1252,6 +1274,7 @@ class TileGeneration:
                 yield Tile(tilecoord, metadata=metadata)
 
     def set_tilecoords(self, config: DatedConfig, tilecoords: Iterable[TileCoord], layer_name: str) -> None:
+        """Set the tilestream for the given tilecoords."""
         assert tilecoords is not None
         layer = config.config["layers"][layer_name]
 
@@ -1263,19 +1286,23 @@ class TileGeneration:
         self.tilestream = self._tilestream(tilecoords, metadata, self.get_all_dimensions(layer))
 
     def set_store(self, store: TileStore) -> None:
+        """Set the store for the tilestream."""
         self.tilestream = cast(Iterator[Tile], store.list())
 
     def counter(self) -> "Count":
+        """Count the number of generated tile."""
         count = Count()
         self.imap(count)
         return count
 
     def counter_size(self) -> "CountSize":
+        """Count the number of generated tile and measure the total generated size."""
         count = CountSize()
         self.imap(count)
         return count
 
     def process(self, name: Optional[str] = None, key: str = "post_process") -> None:
+        """Add a process to the tilestream."""
         gene = self
 
         def get_process(config_file: str, layer_name: str) -> Optional[Process]:
@@ -1291,10 +1318,12 @@ class TileGeneration:
         self.imap(MultiAction(get_process))
 
     def get(self, store: TileStore, time_message: Optional[str] = None) -> None:
+        """Get the tiles from the store."""
         assert store is not None
         self.imap(store.get_one, time_message)
 
     def put(self, store: TileStore, time_message: Optional[str] = None) -> None:
+        """Put the tiles in the store."""
         assert store is not None
 
         def put_internal(tile: Tile) -> Tile:
@@ -1304,6 +1333,7 @@ class TileGeneration:
         self.imap(put_internal, time_message)
 
     def delete(self, store: TileStore, time_message: Optional[str] = None) -> None:
+        """Delete the tiles from the store."""
         assert store is not None
 
         def delete_internal(tile: Tile) -> Tile:
@@ -1313,6 +1343,7 @@ class TileGeneration:
         self.imap(delete_internal, time_message)
 
     def imap(self, func: Any, time_message: Optional[str] = None) -> None:
+        """Add a function to the tilestream."""
         assert func is not None
 
         class Func:
@@ -1331,6 +1362,7 @@ class TileGeneration:
         self.functions.append(Func(func, time_message))
 
     def consume(self, test: Optional[int] = None) -> None:
+        """Consume the tilestream."""
         assert self.tilestream is not None
 
         test = self.options.test if test is None else test
@@ -1560,6 +1592,7 @@ class LocalProcessFilter:
         self.process_nb = int(process_nb)
 
     def filter(self, tilecoord: TileCoord) -> bool:
+        """Filter the tilecoord."""
         nb = round(tilecoord.z + tilecoord.x / tilecoord.n + tilecoord.y / tilecoord.n)
         return nb % self.nb_process == self.process_nb
 
@@ -1579,6 +1612,7 @@ class IntersectGeometryFilter:
     def filter_tilecoord(
         self, config: DatedConfig, tilecoord: TileCoord, layer_name: str, host: Optional[str] = None
     ) -> bool:
+        """Filter the tilecoord."""
         layer = config.config["layers"][layer_name]
         grid_name = layer["grid"]
         grid = config.config["grids"][grid_name]
@@ -1603,6 +1637,7 @@ class IntersectGeometryFilter:
 
     @staticmethod
     def bbox_polygon(bbox: tuple[float, float, float, float]) -> Polygon:
+        """Create a polygon from a bbox."""
         return Polygon(((bbox[0], bbox[1]), (bbox[0], bbox[3]), (bbox[2], bbox[3]), (bbox[2], bbox[1])))
 
 
@@ -1758,6 +1793,15 @@ class TilesFileStore(TileStore):
                     tilecoord,
                     metadata=dict([cast(tuple[str, str], e.split("=")) for e in splitted_line[1:]]),
                 )
+
+    def get_one(self, tile: Tile) -> Optional[Tile]:
+        raise NotImplementedError()
+
+    def put_one(self, tile: Tile) -> Tile:
+        raise NotImplementedError()
+
+    def delete_one(self, tile: Tile) -> Tile:
+        raise NotImplementedError()
 
 
 def _await_message(_: Any) -> bool:

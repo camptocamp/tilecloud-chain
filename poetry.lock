@@ -1709,6 +1709,17 @@ files = [
 ]
 
 [[package]]
+name = "prospector-profile-utils"
+version = "1.9.1"
+description = "Some utility Prospector profiles."
+optional = false
+python-versions = "*"
+files = [
+    {file = "prospector_profile_utils-1.9.1-py2.py3-none-any.whl", hash = "sha256:b458d8c4d59bdb1547e4630a2c6de4971946c4f0999443db6a9eef6d216b26b8"},
+    {file = "prospector_profile_utils-1.9.1.tar.gz", hash = "sha256:008efa6797a85233fd8093dcb9d86f5fa5d89673e431c15cb1496a91c9b2c601"},
+]
+
+[[package]]
 name = "psycopg2"
 version = "2.9.9"
 description = "psycopg2 - Python-PostgreSQL Database Adapter"
@@ -3374,4 +3385,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "2f6ffd3e8bb125ae618fd10a62170f8bd8274c54a70449a4072a28e6fd9c75fe"
+content-hash = "f85c06c3a5ebdf800b782fe9b878a9b9dd772f7d6214b6d9734862d4b7ef2d4e"

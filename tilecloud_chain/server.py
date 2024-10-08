@@ -1,3 +1,7 @@
+"""
+The server to serve the tiles.
+"""
+
 # Copyright (c) 2013-2024 by Stéphane Brunner
 # All rights reserved.
 #
@@ -64,18 +68,18 @@ _LOGGER = logging.getLogger(__name__)
 
 _GET_TILE = Summary("tilecloud_chain_get_tile", "Time to get the tiles", ["storage"])
 
-tilegeneration = None
+_TILEGENERATION = None
 
 
 def init_tilegeneration(config_file: Optional[str]) -> None:
     """Initialize the tile generation."""
 
-    global tilegeneration  # pylint: disable=global-statement
-    if tilegeneration is None:
+    global _TILEGENERATION  # pylint: disable=global-statement
+    if _TILEGENERATION is None:
         if config_file is not None:
             _LOGGER.info("Use config file: '%s'", config_file)
         log_level = os.environ.get("TILE_SERVER_LOGLEVEL")
-        tilegeneration = TileGeneration(
+        _TILEGENERATION = TileGeneration(
             config_file,
             collections.namedtuple(  # type: ignore
                 "Options",
@@ -129,15 +133,15 @@ class Server(Generic[Response]):
             self.s3_client_cache: dict[str, "botocore.client.S3"] = {}
             self.store_cache: dict[str, dict[str, DatedStore]] = {}
 
-            assert tilegeneration
+            assert _TILEGENERATION
 
             self.wmts_path = (
-                tilegeneration.get_main_config()
+                _TILEGENERATION.get_main_config()
                 .config["server"]
                 .get("wmts_path", configuration.WMTS_PATH_DEFAULT)
             )
             self.static_path = (
-                tilegeneration.get_main_config()
+                _TILEGENERATION.get_main_config()
                 .config["server"]
                 .get("static_path", configuration.STATIC_PATH_DEFAULT)
                 .split("/")
@@ -199,10 +203,10 @@ class Server(Generic[Response]):
         if dated_filter is not None and dated_filter.mtime == config.mtime:
             return dated_filter.filter
 
-        assert tilegeneration
+        assert _TILEGENERATION
 
         layer_filter = (
-            tilecloud_chain.IntersectGeometryFilter(gene=tilegeneration)
+            tilecloud_chain.IntersectGeometryFilter(gene=_TILEGENERATION)
             if config.config["server"].get("geoms_redirect", configuration.GEOMETRIES_REDIRECT_DEFAULT)
             else None
         )
@@ -217,9 +221,9 @@ class Server(Generic[Response]):
         if dated_store is not None and dated_store.mtime == config.mtime:
             return dated_store.store
 
-        assert tilegeneration
+        assert _TILEGENERATION
 
-        store = tilegeneration.get_store(config, self.get_cache(config), layer_name, read_only=True)
+        store = _TILEGENERATION.get_store(config, self.get_cache(config), layer_name, read_only=True)
         self.store_cache.setdefault(config.file, {})[layer_name] = DatedStore(store, config.mtime)
         return store
 
@@ -268,7 +272,7 @@ class Server(Generic[Response]):
         **kwargs: Any,
     ) -> Response:
         """Get capabilities or other static files."""
-        assert tilegeneration
+        assert _TILEGENERATION
         cache = self.get_cache(config)
 
         if cache["type"] == "s3":
@@ -277,7 +281,7 @@ class Server(Generic[Response]):
             try:
                 with _GET_TILE.labels(storage="s3").time():
                     return self._read(key_name, headers, config, **kwargs)
-            except Exception:
+            except Exception:  # pylint: disable=broad-exception-caught
                 del self.s3_client_cache[cache_s3.get("host", "aws")]
                 with _GET_TILE.labels(storage="s3").time():
                     return self._read(key_name, headers, config, **kwargs)
@@ -353,7 +357,7 @@ class Server(Generic[Response]):
         try:
             dimensions = []
             metadata = {}
-            assert tilegeneration
+            assert _TILEGENERATION
 
             if path:
                 if tuple(path[: len(self.static_path)]) == tuple(self.static_path):
@@ -456,7 +460,7 @@ class Server(Generic[Response]):
                     return self._get(wmtscapabilities_file, headers, config=config, **kwargs)
                 else:
                     body = controller.get_wmts_capabilities(
-                        tilegeneration, self.get_cache_name(config), config=config
+                        _TILEGENERATION, self.get_cache_name(config), config=config
                     )
                     assert body
                     headers["Content-Type"] = "application/xml"
@@ -534,7 +538,9 @@ class Server(Generic[Response]):
                                 "SRS": config.config["grids"][layer["grid"]].get(
                                     "srs", configuration.SRS_DEFAULT
                                 ),
-                                "BBOX": tilegeneration.get_grid(config, layer["grid"]).extent(tile.tilecoord),
+                                "BBOX": _TILEGENERATION.get_grid(config, layer["grid"]).extent(
+                                    tile.tilecoord
+                                ),
                                 "X": params["I"],
                                 "Y": params["J"],
                             }
@@ -623,8 +629,8 @@ class Server(Generic[Response]):
         kwargs: dict[str, Any],
     ) -> Response:
         """Get the tile on a cache of tile."""
-        assert tilegeneration
-        return internal_mapcache.fetch(config, self, tilegeneration, layer, tile, kwargs)
+        assert _TILEGENERATION
+        return internal_mapcache.fetch(config, self, _TILEGENERATION, layer, tile, kwargs)
 
     def forward(
         self,
@@ -808,7 +814,7 @@ class PyramidServer(PyramidServerBase):
         return request.host
 
 
-pyramid_server = None
+_PYRAMID_SERVER = None
 
 
 class PyramidView:
@@ -818,14 +824,14 @@ class PyramidView:
         """Init the Pyramid view."""
         self.request = request
 
-        global pyramid_server  # pylint: disable=global-statement
+        global _PYRAMID_SERVER  # pylint: disable=global-statement
 
         init_tilegeneration(request.registry.settings.get("tilegeneration_configfile"))
 
-        if pyramid_server is None:
-            pyramid_server = PyramidServer()
+        if _PYRAMID_SERVER is None:
+            _PYRAMID_SERVER = PyramidServer()
 
-        self.server = pyramid_server
+        self.server = _PYRAMID_SERVER
 
     def __call__(self) -> pyramid.response.Response:
         """Call the Pyramid view."""
@@ -838,12 +844,12 @@ class PyramidView:
         for param, value in self.request.params.items():
             params[param.upper()] = value
 
-        assert tilegeneration
+        assert _TILEGENERATION
         return self.server.serve(
             path,
             params,
             host=self.request.host,
-            config=tilegeneration.get_host_config(self.request.host),
+            config=_TILEGENERATION.get_host_config(self.request.host),
             request=self.request,
         )
 
@@ -877,7 +883,7 @@ def main(global_config: Any, **settings: Any) -> Router:
     )
 
     init_tilegeneration(settings.get("tilegeneration_configfile"))
-    assert tilegeneration
+    assert _TILEGENERATION
 
     config.include(c2cwsgiutils.pyramid.includeme)
     health_check.HealthCheck(config)
@@ -887,42 +893,42 @@ def main(global_config: Any, **settings: Any) -> Router:
 
     config.add_route(
         "admin",
-        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}",
+        f"/{_TILEGENERATION.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}",
         request_method="GET",
     )
     config.add_route(
         "admin_slash",
-        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/",
+        f"/{_TILEGENERATION.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/",
         request_method="GET",
     )
     config.add_route(
         "admin_run",
-        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/run",
+        f"/{_TILEGENERATION.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/run",
         request_method="POST",
     )
     config.add_route(
         "admin_create_job",
-        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/create_job",
+        f"/{_TILEGENERATION.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/create_job",
         request_method="POST",
     )
     config.add_route(
         "admin_cancel_job",
-        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/cancel_job",
+        f"/{_TILEGENERATION.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/cancel_job",
         request_method="POST",
     )
     config.add_route(
         "admin_retry_job",
-        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/retry_job",
+        f"/{_TILEGENERATION.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/retry_job",
         request_method="POST",
     )
     config.add_route(
         "admin_test",
-        f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/test",
+        f"/{_TILEGENERATION.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/test",
         request_method="GET",
     )
 
     config.add_static_view(
-        name=f"/{tilegeneration.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/static",
+        name=f"/{_TILEGENERATION.get_main_config().config['server'].get('admin_path', configuration.ADMIN_PATH_DEFAULT)}/static",
         path="/app/tilecloud_chain/static",
     )
 

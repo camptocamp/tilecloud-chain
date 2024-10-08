@@ -1,3 +1,7 @@
+"""
+MapnikTileStore with drop action if the generated tile is empty.
+"""
+
 import logging
 from typing import Any, Callable, Optional
 

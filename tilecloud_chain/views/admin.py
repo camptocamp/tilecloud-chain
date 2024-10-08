@@ -1,3 +1,7 @@
+"""
+The admin views.
+"""
+
 # Copyright (c) 2018-2024 by Camptocamp
 # All rights reserved.
 #
@@ -60,7 +64,7 @@ class Admin:
         tilecloud_chain.server.init_tilegeneration(
             self.request.registry.settings["tilegeneration_configfile"]
         )
-        self.gene = tilecloud_chain.server.tilegeneration
+        self.gene = tilecloud_chain.server._TILEGENERATION
         assert self.gene is not None
 
         main_config = self.gene.get_main_config()
@@ -277,7 +281,6 @@ class Admin:
     @view_config(route_name="admin_retry_job", renderer="fast_json")  # type: ignore[misc]
     def retry_job(self) -> dict[str, Any]:
         """Retry a job."""
-
         if "TEST_USER" not in os.environ:
             auth_view(self.request)
             self._check_access()
@@ -305,6 +308,7 @@ class Admin:
 
     @view_config(route_name="admin_test", renderer="tilecloud_chain:templates/openlayers.html")  # type: ignore
     def admin_test(self) -> dict[str, Any]:
+        """Test the admin view."""
         assert self.gene
         config = self.gene.get_host_config(self.request.host)
         main_config = self.gene.get_main_config()
@@ -405,7 +409,7 @@ def _run_in_process(
             os.environ[key] = value
         _LOG.debug("Running the command `%s` using the function directly", display_command)
         main(final_command, out)
-    except Exception:
+    except Exception:  # pylint: disable=broad-exception-caught
         _LOG.exception("Error while running the command `%s`", display_command)
         error = True
     return_dict["out"] = _format_output(

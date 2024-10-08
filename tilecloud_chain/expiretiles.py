@@ -1,3 +1,7 @@
+"""
+Import the osm2pgsql expire-tiles file to Postgres.
+"""
+
 import logging
 import sys
 from argparse import ArgumentParser

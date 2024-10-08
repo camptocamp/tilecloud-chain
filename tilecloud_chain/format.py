@@ -1,3 +1,7 @@
+"""
+Format functions.
+"""
+
 from datetime import timedelta
 
 
