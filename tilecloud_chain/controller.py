@@ -409,8 +409,8 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                                 response.content,
                                 exc_info=True,
                             )
-                    width = max(i.size[0] for i in legends)
-                    height = sum(i.size[1] for i in legends)
+                    width = max(i.size[0] for i in legends) if legends else 0
+                    height = sum(i.size[1] for i in legends) if legends else 0
                     image = Image.new("RGBA", (width, height))
                     y = 0
                     for i in legends:
@@ -429,12 +429,6 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                             layer["legend_mime"],
                             cache,
                         )
-
-
-def _get_resource(resource: str) -> bytes:
-    path = os.path.join(os.path.dirname(__file__), resource)
-    with open(path, "rb") as f:
-        return f.read()
 
 
 def status(gene: TileGeneration) -> None:
