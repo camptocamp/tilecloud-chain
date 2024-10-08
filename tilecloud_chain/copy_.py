@@ -1,3 +1,7 @@
+"""
+Copy the tiles from a cache to an other.
+"""
+
 import logging
 import os
 import sys
@@ -25,6 +29,9 @@ class Copy:
         destination: str,
         task_name: str,
     ) -> None:
+        """
+        Copy the tiles from a cache to an other.
+        """
         self._copy(options, gene, layer, source, destination, task_name)
 
     def _copy(

@@ -1,3 +1,7 @@
+"""
+Internal Mapcache.
+"""
+
 import collections
 import contextlib
 import datetime
@@ -21,11 +25,11 @@ from tilecloud_chain.generate import Generate
 if TYPE_CHECKING:
     from tilecloud_chain.server import Server
 
-MAX_GENERATION_TIME = int(os.environ.get("TILEGENERATION_MAX_GENERATION_TIME", "60"))
-LOG = logging.getLogger(__name__)
-lock = threading.Lock()
-executing_lock = threading.Lock()
-_generator = None
+_MAX_GENERATION_TIME = int(os.environ.get("TILEGENERATION_MAX_GENERATION_TIME", "60"))
+_LOG = logging.getLogger(__name__)
+_lock = threading.Lock()
+_executing_lock = threading.Lock()
+_GENERATOR = None
 
 _GET_TILE = Summary("tilecloud_chain_get_generated_tile", "Time to get the generated tiles", ["storage"])
 
@@ -92,17 +96,17 @@ class RedisStore(TileStore):
         key = self._get_key(tile)
         data = self._slave.get(key)
         if data is None:
-            LOG.debug("Tile not found: %s/%s", tile.metadata["layer"], tile.tilecoord)
+            _LOG.debug("Tile not found: %s/%s", tile.metadata["layer"], tile.tilecoord)
             return None
         _decode_tile(data, tile)
-        LOG.debug("Tile found: %s/%s", tile.metadata["layer"], tile.tilecoord)
+        _LOG.debug("Tile found: %s/%s", tile.metadata["layer"], tile.tilecoord)
         return tile
 
     def put_one(self, tile: Tile) -> Tile:
         """See in superclass."""
         key = self._get_key(tile)
         self._master.set(key, _encode_tile(tile), ex=self._expiration)
-        LOG.info("Tile saved: %s/%s", tile.metadata["layer"], tile.tilecoord)
+        _LOG.info("Tile saved: %s/%s", tile.metadata["layer"], tile.tilecoord)
         return tile
 
     def delete_one(self, tile: Tile) -> Tile:
@@ -121,7 +125,7 @@ class RedisStore(TileStore):
     def lock(self, tile: Tile) -> Iterator[None]:
         """Lock a tile."""
         key = self._get_key(tile) + "_l"
-        with self._master.lock(key, timeout=MAX_GENERATION_TIME):
+        with self._master.lock(key, timeout=_MAX_GENERATION_TIME):
             yield
 
 
@@ -177,14 +181,14 @@ class Generator:
         with _GET_TILE.labels("wms").time():
             self.run(tile)
         if tile.error:
-            LOG.error("Tile %s %s in error: %s", tile.tilecoord, tile.formated_metadata, tile.error)
+            _LOG.error("Tile %s %s in error: %s", tile.tilecoord, tile.formated_metadata, tile.error)
             return
         for tile_ in tile.metadata["tiles"].values():  # type: ignore
             if tile_.error:
-                LOG.error("Tile %s %s in error: %s", tile_.tilecoord, tile_.formated_metadata, tile_.error)
+                _LOG.error("Tile %s %s in error: %s", tile_.tilecoord, tile_.formated_metadata, tile_.error)
                 return
             if tile_.data is None:
-                LOG.error("Tile %s %s in error: no data", tile_.tilecoord, tile_.formated_metadata)
+                _LOG.error("Tile %s %s in error: no data", tile_.tilecoord, tile_.formated_metadata)
                 return
             self._cache_store.put_one(tile_)
 
@@ -196,17 +200,17 @@ class Generator:
 
 
 def _get_generator(tilegeneration: tilecloud_chain.TileGeneration) -> Generator:
-    if _generator is None:
+    if _GENERATOR is None:
         return _init_generator(tilegeneration)
-    return _generator
+    return _GENERATOR
 
 
 def _init_generator(tilegeneration: tilecloud_chain.TileGeneration) -> Generator:
-    with lock:
-        global _generator  # pylint: disable=global-statement
-        if _generator is None:
-            _generator = Generator(tilegeneration)
-        return _generator
+    with _lock:
+        global _GENERATOR  # pylint: disable=global-statement
+        if _GENERATOR is None:
+            _GENERATOR = Generator(tilegeneration)
+        return _GENERATOR
 
 
 Response = TypeVar("Response")
@@ -244,7 +248,7 @@ def fetch(
                 generator.compute_tile(meta_tile)
 
                 if meta_tile.error:
-                    LOG.error(
+                    _LOG.error(
                         "Tile %s %s in error: %s",
                         meta_tile.tilecoord,
                         meta_tile.formated_metadata,
@@ -257,7 +261,7 @@ def fetch(
                 try:
                     fetched_tile = tiles[tile.tilecoord]
                 except KeyError:
-                    LOG.exception(
+                    _LOG.exception(
                         "Try to get the tile %s %s, from the available: '%s'",
                         tile.tilecoord,
                         tile.formated_metadata,

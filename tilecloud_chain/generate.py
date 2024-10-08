@@ -1,3 +1,7 @@
+"""
+Generate the tiles, generate the queue, ...
+"""
+
 import logging
 import os
 import random
@@ -86,6 +90,7 @@ class Generate:
             self._generate_tiles()
 
     def gene(self, layer_name: Optional[str] = None) -> None:
+        """Generate the tiles."""
         if self._count_tiles is not None:
             self._count_tiles.nb = 0
         if self._count_tiles_dropped is not None:
@@ -146,6 +151,9 @@ class Generate:
             assert self._cache_tilestore is not None
 
     def add_local_process_filter(self) -> None:
+        """
+        Add the local process filter to the gene.
+        """
         self._gene.imap(
             LocalProcessFilter(
                 self._gene.get_main_config()
@@ -301,6 +309,9 @@ class Generate:
         self._gene.init(self._queue_tilestore, daemon=self._options.daemon)
 
     def generate_consume(self) -> None:
+        """
+        Consume the tiles and log the time if needed.
+        """
         if self._options.time is not None:
             options = self._options
 
@@ -332,6 +343,9 @@ class Generate:
             self._gene.consume()
 
     def generate_resume(self, layer_name: Optional[str]) -> None:
+        """
+        Generate the resume message and close the tilestore connection.
+        """
         config = self._gene.get_config(self._gene.config_file) if self._gene.config_file is not None else None
         if self._options.time is None:
             layer = None

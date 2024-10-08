@@ -1,7 +1,9 @@
 inherits:
+  - utils:base
+  - utils:no-design-checks
+  - utils:fix
   - duplicated
-strictness: veryhigh
-max-line-length: 110
+
 doc-warnings: true
 
 ignore-paths:
@@ -9,54 +11,14 @@ ignore-paths:
 
 pylint:
   disable:
-    - too-many-statements
-    - too-many-branches
-    - too-many-instance-attributes
-    - too-many-locals
-    - too-many-return-statements
-    - too-many-boolean-expressions
-    - too-many-arguments
-    - too-many-nested-blocks
-    - too-many-lines
-    - too-many-public-methods
-    - too-few-public-methods
-    - line-too-long # done by black
-    - no-else-return
-    - no-else-break
-    - invalid-name
-    - broad-except
-    - abstract-method
-    - duplicate-string-formatting-argument
-    - cyclic-import
-    - missing-module-docstring
-    - missing-function-docstring
     - missing-timeout # done globally by c2cwsgiutils
-
-pycodestyle:
-  disable:
-    - E722 # Do not use bare 'except'
-    - E501 # Line too long
 
 pydocstyle:
   disable:
-    - D102 # Missing docstring in public method
+    - D202 # No blank lines allowed after function docstring
     - D104 # Missing docstring in public package
     - D107 # Missing docstring in __init__
-    - D202 # No blank lines allowed after function docstring (found 1)
-    - D203 # 1 blank line required before class docstring (found 0)
-    - D212 # Multi-line docstring summary should start at the first line
-    - D407 # Missing dashed underline after section ('Arguments')
-    - D412 # No blank lines allowed between a section header and its content ('Arguments')
-mypy:
-  run: true
-
-mccabe:
-  run: false
 
 bandit:
-  run: true
   options:
     config: .bandit.yaml
-
-pyorama:
-  run: true

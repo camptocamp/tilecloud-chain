@@ -181,8 +181,8 @@ class TestServe(CompareCase):
   """,
             )
 
-            server.pyramid_server = None
-            server.tilegeneration = None
+            server._PYRAMID_SERVER = None
+            server._TILEGENERATION = None
             request = DummyRequest()
             request.registry.settings = {
                 "tilegeneration_configfile": "tilegeneration/test-nosns.yaml",
@@ -704,8 +704,8 @@ class TestServe(CompareCase):
   """,
             )
 
-            server.pyramid_server = None
-            server.tilegeneration = None
+            server._PYRAMID_SERVER = None
+            server._TILEGENERATION = None
             request = DummyRequest()
             request.registry.settings = {
                 "tilegeneration_configfile": "tilegeneration/test-serve.yaml",
@@ -786,8 +786,8 @@ class TestServe(CompareCase):
   """,
             )
 
-            server.pyramid_server = None
-            server.tilegeneration = None
+            server._PYRAMID_SERVER = None
+            server._TILEGENERATION = None
             request = DummyRequest()
             request.registry.settings = {
                 "tilegeneration_configfile": "tilegeneration/test-bsddb.yaml",
@@ -847,8 +847,8 @@ class TestServe(CompareCase):
             log_capture.check()
 
     def test_serve_gfi(self) -> None:
-        server.pyramid_server = None
-        server.tilegeneration = None
+        server._PYRAMID_SERVER = None
+        server._TILEGENERATION = None
         request = DummyRequest()
         request.registry.settings = {
             "tilegeneration_configfile": "tilegeneration/test-serve.yaml",
@@ -883,8 +883,8 @@ class TestServe(CompareCase):
 """,
         )
 
-        server.pyramid_server = None
-        server.tilegeneration = None
+        server._PYRAMID_SERVER = None
+        server._TILEGENERATION = None
         request = DummyRequest()
         request.registry.settings = {
             "tilegeneration_configfile": "tilegeneration/test-serve.yaml",
@@ -963,8 +963,8 @@ Size per tile: 4[0-9][0-9] o
 """,
         )
 
-        server.pyramid_server = None
-        server.tilegeneration = None
+        server._PYRAMID_SERVER = None
+        server._TILEGENERATION = None
         serve = app_factory({}, configfile="tilegeneration/test-serve.yaml")
 
         global code, headers
@@ -979,7 +979,7 @@ Size per tile: 4[0-9][0-9] o
                 headers[key] = value
 
         result = serve(
-            server.tilegeneration.get_main_config(),
+            server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {
                 "QUERY_STRING": "&".join(
@@ -1020,7 +1020,7 @@ Size per tile: 4[0-9][0-9] o
         )
 
         result = serve(
-            server.tilegeneration.get_main_config(),
+            server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {
                 "QUERY_STRING": "",
@@ -1041,7 +1041,7 @@ Size per tile: 4[0-9][0-9] o
         )
 
         serve(
-            server.tilegeneration.get_main_config(),
+            server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png"},
             start_response,
@@ -1049,7 +1049,7 @@ Size per tile: 4[0-9][0-9] o
         self.assertEqual(code, "204 No Content")
 
         serve(
-            server.tilegeneration.get_main_config(),
+            server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png"},
             start_response,
@@ -1058,7 +1058,7 @@ Size per tile: 4[0-9][0-9] o
         self.assertEqual(headers["Cache-Control"], "max-age=28800")
 
         result = serve(
-            server.tilegeneration.get_main_config(),
+            server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/WMTSCapabilities.xml"},
             start_response,
@@ -1075,8 +1075,8 @@ Size per tile: 4[0-9][0-9] o
 
     def test_ondemend_wmtscapabilities(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
-            server.pyramid_server = None
-            server.tilegeneration = None
+            server._PYRAMID_SERVER = None
+            server._TILEGENERATION = None
             request = DummyRequest()
             request.registry.settings = {
                 "tilegeneration_configfile": "tilegeneration/test-serve-wmtscapabilities.yaml",

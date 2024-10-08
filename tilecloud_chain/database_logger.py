@@ -1,3 +1,7 @@
+"""
+Log the generated tiles in a database.
+"""
+
 import logging
 import sys
 import time

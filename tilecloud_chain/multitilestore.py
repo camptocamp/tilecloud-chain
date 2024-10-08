@@ -1,3 +1,7 @@
+"""
+Redirect to the corresponding Tilestore for the layer and config file.
+"""
+
 import logging
 from collections.abc import Iterable, Iterator
 from itertools import chain, groupby, starmap
@@ -29,7 +33,6 @@ class MultiTileStore(TileStore):
         Return true if this store contains ``tile``.
 
         Arguments:
-
             tile: Tile
         """
         layer = tile.metadata["layer"]
@@ -43,7 +46,6 @@ class MultiTileStore(TileStore):
         Delete ``tile`` and return ``tile``.
 
         Arguments:
-
             tile: Tile
         """
         layer = tile.metadata["layer"]
@@ -63,7 +65,6 @@ class MultiTileStore(TileStore):
         Store ``tile`` in the store.
 
         Arguments:
-
             tile: Tile
         """
         layer = tile.metadata["layer"]
@@ -77,7 +78,6 @@ class MultiTileStore(TileStore):
         Add data to ``tile``, or return ``None`` if ``tile`` is not in the store.
 
         Arguments:
-
             tile: Tile
         """
         layer = tile.metadata["layer"]

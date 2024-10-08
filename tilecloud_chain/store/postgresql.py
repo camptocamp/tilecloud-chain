@@ -1,3 +1,7 @@
+"""
+PostgreSQL queue.
+"""
+
 # Copyright (c) 2023-2024 by Camptocamp
 # All rights reserved.
 #
@@ -232,7 +236,7 @@ def _start_job(
             _LOGGER.info("Running the command `%s` using the function directly", display_command)
             main(final_command, out)
             _LOGGER.info("Successfully ran the command `%s` using the function directly", display_command)
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             _LOGGER.exception("Error while running the command `%s`", display_command)
             error = True
         except SystemExit as exception:
@@ -286,7 +290,7 @@ class PostgresqlTileStore(TileStore):
         self.sqlalchemy_url = sqlalchemy_url
         engine = create_engine(sqlalchemy_url)
 
-        self.SessionMaker = sessionmaker(engine)
+        self.SessionMaker = sessionmaker(engine)  # pylint: disable=invalid-name
         if re.match(r"^[0-9a-zA-Z_]+$", _schema) is None:
             raise PostgresqlTileStoreException(f"Invalid schema name: {_schema}")
 
@@ -601,6 +605,10 @@ class PostgresqlTileStore(TileStore):
         with self.SessionMaker() as session:
             session.query(Queue).delete()
             session.commit()
+
+    def get_one(self, tile: Tile) -> Tile:
+        """Get the meta tile from the queue."""
+        raise NotImplementedError()
 
 
 def get_postgresql_queue_store(config: DatedConfig) -> PostgresqlTileStore:

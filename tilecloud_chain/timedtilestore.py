@@ -1,3 +1,7 @@
+"""
+A wrapper around a TileStore that adds timer metrics.
+"""
+
 import time
 from collections.abc import Iterable, Iterator
 from typing import Any, Optional, TypeVar, cast
@@ -6,7 +10,7 @@ from prometheus_client import Summary
 
 from tilecloud import BoundingPyramid, Tile, TileStore
 
-_OPTIONAL_TILE_OR_NOT = TypeVar("_OPTIONAL_TILE_OR_NOT", Optional[Tile], Tile)
+_OptionalTileOrNot = TypeVar("_OptionalTileOrNot", Optional[Tile], Tile)
 
 _TILESTORE_OPERATION_SUMMARY = Summary(
     "tilecloud_chain_tilestore", "Number of tilestore contains", ["layer", "host", "store", "operation"]
@@ -24,8 +28,8 @@ class TimedTileStoreWrapper(TileStore):
         self._store_name = store_name
 
     def _time_iteration(
-        self, generator: Iterable[_OPTIONAL_TILE_OR_NOT], operation: str
-    ) -> Iterator[_OPTIONAL_TILE_OR_NOT]:
+        self, generator: Iterable[_OptionalTileOrNot], operation: str
+    ) -> Iterator[_OptionalTileOrNot]:
         while True:
             start = time.perf_counter()
             try:
@@ -36,8 +40,7 @@ class TimedTileStoreWrapper(TileStore):
                 if isinstance(exception.__cause__, StopIteration):
                     # since python 3.7, a StopIteration is wrapped in a RuntimeError (PEP 479)
                     break
-                else:
-                    raise
+                raise
             _TILESTORE_OPERATION_SUMMARY.labels(
                 tile.metadata.get("layer", "none"),
                 tile.metadata.get("host", "none"),

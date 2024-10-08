@@ -1,3 +1,7 @@
+"""
+Security policy for the pyramid application.
+"""
+
 import os
 from typing import Optional, Union
 
@@ -38,6 +42,9 @@ class User:
         self.is_admin = c2cwsgiutils.auth.check_access(self.request)
 
     def has_access(self, auth_config: AuthConfig) -> bool:
+        """
+        Check if the user has access to the tenant.
+        """
         if self.is_admin:
             return True
         if "github_repository" in auth_config:

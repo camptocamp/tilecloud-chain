@@ -1,3 +1,7 @@
+"""
+Generate the contextual file like the legends.
+"""
+
 import concurrent.futures
 import logging
 import math
@@ -280,7 +284,7 @@ def _legend_metadata(
             with Image.open(BytesIO(img)) as pil_img:
                 new_legend["width"] = pil_img.size[0]
                 new_legend["height"] = pil_img.size[1]
-        except Exception:  # pragma: nocover
+        except Exception:  # pylint: disable=broad-exception-caught
             _LOGGER.warning(
                 "Unable to read legend image '%s', with '%s'",
                 path,
@@ -337,7 +341,7 @@ def _fill_legend(
         layer_name, resolution = legend_image_future[future]
         try:
             legend_image_metadata.setdefault(layer_name, {})[resolution] = future.result()
-        except Exception as exc:
+        except Exception as exc:  # pylint: disable=broad-exception-caught
             _LOGGER.warning(
                 "Unable to get legend image for layer '%s', resolution '%s': %s", layer_name, resolution, exc
             )
@@ -396,7 +400,7 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                         )
                         try:
                             legends.append(Image.open(BytesIO(response.content)))
-                        except Exception:  # pragma: nocover
+                        except Exception:  # pylint: disable=broad-exception-caught
                             _LOGGER.warning(
                                 "Unable to read legend image for layer '%s'-'%s', resolution '%s': %s",
                                 layer_name,
