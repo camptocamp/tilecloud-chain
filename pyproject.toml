@@ -71,7 +71,7 @@ waitress = "3.0.0"
 certifi = "2024.8.30"
 
 [tool.poetry.dev-dependencies]
-prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.11.0" }
+prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.12.0" }
 c2cwsgiutils = { version = "6.0.8", extras = ["test_images"] }
 scikit-image = { version = "0.24.0" }
 pytest = "8.3.3"
@@ -81,7 +81,7 @@ types-redis = "4.6.0.20241004"
 types-requests = "2.32.0.20240914"
 
 [tool.poetry.group.dev.dependencies]
-prospector-profile-duplicated = "1.5.0"
+prospector-profile-duplicated = "1.6.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version", "poetry-plugin-drop-python-upper-constraint"]
