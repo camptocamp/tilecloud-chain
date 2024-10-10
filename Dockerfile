@@ -1,5 +1,5 @@
 # Base of all section, install the apt packages
-FROM ghcr.io/osgeo/gdal:ubuntu-small-3.8.5 as base-all
+FROM ghcr.io/osgeo/gdal:ubuntu-small-3.8.5 AS base-all
 LABEL maintainer Camptocamp "info@camptocamp.com"
 
 # Fail on error on pipe, see: https://github.com/hadolint/hadolint/wiki/DL4006.
@@ -24,7 +24,7 @@ ENV PATH=/venv/bin:$PATH
 
 # Used to convert the locked packages by poetry to pip requirements format
 # We don't directly use `poetry install` because it force to use a virtual environment.
-FROM base-all as poetry
+FROM base-all AS poetry
 
 # Install Poetry
 WORKDIR /tmp
@@ -39,7 +39,7 @@ RUN poetry export --output=requirements.txt \
     && poetry export --with=dev --output=requirements-dev.txt
 
 # Base, the biggest thing is to install the Python packages
-FROM base-all as base
+FROM base-all AS base
 
 # hadolint ignore=SC2086
 RUN --mount=type=cache,target=/var/lib/apt/lists \
@@ -103,7 +103,7 @@ EXPOSE 8080
 WORKDIR /app/
 
 # The final part
-FROM base as runner
+FROM base AS runner
 
 COPY . /app/
 ARG VERSION=dev
@@ -118,7 +118,7 @@ RUN mkdir -p /prometheus-metrics \
 ENV PROMETHEUS_MULTIPROC_DIR=/prometheus-metrics
 
 # Do the lint, used by the tests
-FROM base as tests
+FROM base AS tests
 
 # Fail on error on pipe, see: https://github.com/hadolint/hadolint/wiki/DL4006.
 # Treat unset variables as an error when substituting.
@@ -127,10 +127,11 @@ SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
-    apt-get install --assume-yes --no-install-recommends git curl gnupg \
-    libglib2.0-0 libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 \
-    libxdamage1 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 liboss4-salsa-asound2
-
+    apt-get update \
+    && apt-get install --assume-yes --no-install-recommends software-properties-common gpg-agent \
+    && add-apt-repository ppa:savoury1/pipewire \
+    && add-apt-repository ppa:savoury1/chromium \
+    && apt-get install --assume-yes --no-install-recommends chromium-browser git curl gnupg
 COPY .nvmrc /tmp
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
@@ -139,9 +140,9 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     && curl --silent https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor --output=/etc/apt/keyrings/nodesource.gpg \
     && apt-get update \
     && apt-get install --assume-yes --no-install-recommends "nodejs=${NODE_MAJOR}.*"
-
 COPY package.json package-lock.json ./
-RUN npm install --dev
+RUN npm install --dev --ignore-scripts
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/poetry \
