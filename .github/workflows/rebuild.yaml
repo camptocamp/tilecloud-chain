@@ -13,9 +13,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        branch:
-          - '1.17'
-          - '1.18'
+        include:
+          - branch: '1.17'
+            python-version: '3.11'
+          - branch: '1.18'
+            python-version: '3.11'
 
     env:
       REDIS_URL: redis://localhost:6379
@@ -32,7 +34,9 @@ jobs:
           github-gopass-ci-token: ${{secrets.GOPASS_CI_GITHUB_TOKEN}}
           patterns: pypi docker
 
-      - run: echo "${HOME}/.local/bin" >> ${GITHUB_PATH}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
       - run: python3 -m pip install --user --requirement=ci/requirements.txt
 
       - name: Checks
