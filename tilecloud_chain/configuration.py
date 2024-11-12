@@ -2091,8 +2091,6 @@ class Postgresql(TypedDict, total=False):
     SQLAlchemy URL.
 
     The SQLAlchemy URL (like: `postgresql+psycopg2://username:password@host:5432/database`) (main configuration), can also be set in the `TILECLOUD_CHAIN_SQLALCHEMY_URL` environment variable
-
-    pattern:
     """
 
     max_pending_minutes: int
