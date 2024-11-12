@@ -56,7 +56,7 @@ main = "tilecloud_chain.server:main"
 [tool.poetry.dependencies]
 # Minimal version should also be set in the jsonschema-gentypes.yaml file
 python = ">=3.10,<3.13"
-c2cwsgiutils = { version = "6.0.8", extras = ["standard", "broadcast", "oauth2", "debug"] }
+c2cwsgiutils = { version = "6.0.9", extras = ["standard", "broadcast", "oauth2", "debug"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.9.0.post0"
 tilecloud = { version = "1.12.3", extras = ["azure", "aws", "redis", "wsgi"] }
@@ -74,7 +74,7 @@ certifi = "2024.8.30"
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.12.1" }
 prospector-profile-duplicated = "1.6.0"
 prospector-profile-utils = "1.9.1"
-c2cwsgiutils = { version = "6.0.8", extras = ["test_images"] }
+c2cwsgiutils = { version = "6.0.9", extras = ["test_images"] }
 scikit-image = { version = "0.24.0" }
 pytest = "8.3.3"
 testfixtures = "8.3.0"

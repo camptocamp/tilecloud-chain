@@ -220,13 +220,13 @@ virtualenv = ["virtualenv (>=20.0.35)"]
 
 [[package]]
 name = "c2cwsgiutils"
-version = "6.0.8"
+version = "6.0.9"
 description = "Common utilities for Camptocamp WSGI applications"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "c2cwsgiutils-6.0.8-py3-none-any.whl", hash = "sha256:2190e9e064ff7190e434767a13c132911e53d0d15fe99e0072da6e7c9586880f"},
-    {file = "c2cwsgiutils-6.0.8.tar.gz", hash = "sha256:b416a20a8490e30deed307811fba1b93d662c5d849fc36b0f94927f0440f2048"},
+    {file = "c2cwsgiutils-6.0.9-py3-none-any.whl", hash = "sha256:77e91d0bb74a62ab58b10e493b34a94e4a223dd33f35edef30d7b79d5424c374"},
+    {file = "c2cwsgiutils-6.0.9.tar.gz", hash = "sha256:f93ee7cb03a7d72cbb6699710963eb0d0cba25b0afae9a56ff5617b639b2b11d"},
 ]
 
 [package.dependencies]
@@ -235,6 +235,7 @@ cee_syslog_handler = "*"
 certifi = "*"
 cornice = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
 gunicorn = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
+idna = "*"
 objgraph = {version = "*", optional = true, markers = "extra == \"debug\" or extra == \"all\""}
 pillow = "*"
 prometheus-client = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
@@ -254,6 +255,7 @@ SQLAlchemy = {version = "*", optional = true, markers = "extra == \"standard\" o
 SQLAlchemy-Utils = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
 ujson = "*"
 urllib3 = "*"
+webob = "*"
 "zope.interface" = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
 "zope.sqlalchemy" = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
 
@@ -3392,4 +3394,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "e3da20d1ac9029c2a64cc17e654fdf9d8900710a48f8ea2f4e41eb70d3911878"
+content-hash = "a678808a9c161741a762ef4aee6bd2779dcf4dbb2b1777b9db6f79a7a4024117"
