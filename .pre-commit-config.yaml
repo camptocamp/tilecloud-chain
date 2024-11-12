@@ -117,7 +117,7 @@ repos:
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/prospector
-    rev: v1.12.1
+    rev: v1.13.0
     hooks:
       - id: prospector
         args:
@@ -126,9 +126,9 @@ repos:
           - --output-format=pylint
         additional_dependencies:
           - prospector-profile-duplicated==1.6.0 # pypi
-          - prospector-profile-utils==1.9.1 # pypi
+          - prospector-profile-utils==1.10.1 # pypi
   - repo: https://github.com/sbrunner/jsonschema-validator
-    rev: 0.1.0
+    rev: 0.3.2
     hooks:
       - id: jsonschema-validator
         files: ^ci/config\.yaml$
