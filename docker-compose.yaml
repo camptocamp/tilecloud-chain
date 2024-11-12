@@ -1,5 +1,3 @@
-version: '2.2'
-
 services:
   db:
     image: camptocamp/postgres:17-postgis-3
@@ -11,7 +9,7 @@ services:
       - ./docker/test-db:/docker-entrypoint-initdb.d:ro
 
   mapserver:
-    image: camptocamp/mapserver:8.2
+    image: camptocamp/mapserver:8.0
     environment:
       MS_DEBUGLEVEL: '5'
       MAPSERVER_CATCH_SEGV: '1'
