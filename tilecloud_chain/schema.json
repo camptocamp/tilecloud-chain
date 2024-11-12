@@ -321,7 +321,7 @@
       "title": "Layer dimension name",
       "description": "The dimension name",
       "type": "string",
-      "pattern": "^(?!(?i)(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\\-~\\.]+$"
+      "pattern": "(?i)^(?!(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\\-~\\.]+$"
     },
     "layer_dimensions": {
       "title": "layer dimensions",
