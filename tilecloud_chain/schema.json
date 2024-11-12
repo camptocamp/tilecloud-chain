@@ -906,8 +906,7 @@
         "sqlalchemy_url": {
           "title": "SQLAlchemy URL",
           "description": "The SQLAlchemy URL (like: `postgresql+psycopg2://username:password@host:5432/database`) (main configuration), can also be set in the `TILECLOUD_CHAIN_SQLALCHEMY_URL` environment variable",
-          "type": "string",
-          "pattern": ""
+          "type": "string"
         },
         "max_pending_minutes": {
           "title": "Max pending minutes",
