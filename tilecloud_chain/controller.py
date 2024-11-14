@@ -98,7 +98,7 @@ def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
 
     except SystemExit:
         raise
-    except:  # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except # noqa: E722
         _LOGGER.exception("Exit with exception")
         if os.environ.get("TESTS", "false").lower() == "true":
             raise
@@ -348,7 +348,7 @@ def _fill_legend(
         if "legend_mime" in layer and "legend_extension" in layer and layer_name not in gene.layer_legends:
             gene.layer_legends[layer_name] = []
             legends = gene.layer_legends[layer_name]
-            for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+            for _, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
                 new_legend = legend_image_metadata.get(layer_name, {}).get(resolution)
 
                 if new_legend is not None:
@@ -412,7 +412,7 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                 string_io = BytesIO()
                 image.save(string_io, FORMAT_BY_CONTENT_TYPE[layer["legend_mime"]])
                 result = string_io.getvalue()
-                new_hash = sha1(result).hexdigest()  # nosec
+                new_hash = sha1(result).hexdigest()  # nosec # noqa: S303
                 if new_hash != previous_hash:
                     previous_hash = new_hash
                     _send(

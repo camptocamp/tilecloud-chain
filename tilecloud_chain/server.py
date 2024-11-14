@@ -643,7 +643,7 @@ class Server(Generic[Response]):
             headers["Cache-Control"] = "no-cache"
             headers["Pragma"] = "no-cache"
 
-        response = requests.get(url, headers=headers)  # nosec
+        response = requests.get(url, headers=headers)
         if response.status_code == 200:
             response_headers = dict(response.headers)
             if no_cache:
@@ -802,6 +802,7 @@ class PyramidServer(PyramidServerBase):
         return request.response
 
     def get_host(self, **kwargs: Any) -> str:
+        """Get the host used in Prometheus stats and in the JSON logs."""
         request: pyramid.request.Request = kwargs["request"]
         assert isinstance(request.host, str)
         return request.host

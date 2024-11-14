@@ -182,6 +182,6 @@ def main() -> None:
         print("Import successful")
     except SystemExit:
         raise
-    except:  # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except # noqa: E722
         logger.exception("Exit with exception")
         sys.exit(1)

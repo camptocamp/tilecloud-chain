@@ -25,7 +25,7 @@ from hashlib import sha1
 from io import BytesIO
 from itertools import product
 from math import ceil, sqrt
-from typing import IO, TYPE_CHECKING, Any, Optional, TextIO, TypedDict, Union, cast
+from typing import IO, TYPE_CHECKING, Any, TextIO, TypedDict, cast
 
 import boto3
 import botocore.client
@@ -35,7 +35,7 @@ import jsonschema_validator
 import psycopg2
 import tilecloud.filter.error
 from azure.identity import DefaultAzureCredential
-from azure.storage.blob import BlobServiceClient, ContainerClient, ContentSettings
+from azure.storage.blob import BlobServiceClient, ContainerClient
 from c2cwsgiutils import sentry
 from PIL import Image
 from prometheus_client import Counter, Summary
@@ -230,6 +230,7 @@ class Run:
         )
 
     def __call__(self, tile: Tile | None) -> Tile | None:
+        """Run the tile generation."""
         if tile is None:
             return None
 
@@ -302,6 +303,7 @@ class Close:
         self.db = db
 
     def __call__(self) -> None:
+        """Close the database."""
         self.db.close()
 
 
@@ -376,6 +378,7 @@ class TileFilter(logging.Filter):
     """A logging filter that adds request information to CEE logs."""
 
     def filter(self, record: Any) -> bool:
+        """Add the request information to the log record."""
         thread_id = threading.current_thread().native_id
         assert thread_id is not None
         log_info = LOGGING_CONTEXT.get(os.getpid(), {}).get(thread_id)
@@ -1137,7 +1140,7 @@ class TileGeneration:
                     (extent[2], extent[1]),
                 )
             )
-            for z, r in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+            for z, _ in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
                 geoms[z] = geom
 
         if self.options.near is None and self.options.geom:
@@ -1145,7 +1148,7 @@ class TileGeneration:
                 with _GEOMS_GET_SUMMARY.labels(layer_name, host if host else self.options.host).time():
                     connection = psycopg2.connect(g["connection"])
                     cursor = connection.cursor()
-                    sql = f"SELECT ST_AsBinary(geom) FROM (SELECT {g['sql']}) AS g"  # nosec
+                    sql = f"SELECT ST_AsBinary(geom) FROM (SELECT {g['sql']}) AS g"  # nosec # noqa: S608
                     _LOGGER.info("Execute SQL: %s.", sql)
                     cursor.execute(sql)
                     geom_list = [loads_wkb(bytes(r[0])) for r in cursor.fetchall()]
@@ -1454,6 +1457,7 @@ class Count:
         self.lock = threading.Lock()
 
     def __call__(self, tile: Tile | None = None) -> Tile | None:
+        """Count the number of generated tile."""
         with self.lock:
             self.nb += 1
         return tile
@@ -1468,6 +1472,7 @@ class CountSize:
         self.lock = threading.Lock()
 
     def __call__(self, tile: Tile | None = None) -> Tile | None:
+        """Count the number of generated tile and measure the total generated size."""
         if tile and tile.data:
             with self.lock:
                 self.nb += 1
@@ -1499,8 +1504,9 @@ class HashDropper:
         self.count = count
 
     def __call__(self, tile: Tile) -> Tile | None:
+        """Drop the tile if the size and hash are the same as the specified ones."""
         assert tile.data
-        if len(tile.data) != self.size or sha1(tile.data).hexdigest() != self.sha1code:  # nosec
+        if len(tile.data) != self.size or sha1(tile.data).hexdigest() != self.sha1code:  # noqa: S324
             return tile
         else:
             if self.store is not None:
@@ -1539,6 +1545,7 @@ class MultiAction:
         self.actions: dict[tuple[str, str], Callable[[Tile], Tile | None] | None] = {}
 
     def __call__(self, tile: Tile) -> Tile | None:
+        """Run the action."""
         layer = tile.metadata["layer"]
         config_file = tile.metadata["config_file"]
         action = self.actions.get((config_file, layer))
@@ -1559,6 +1566,7 @@ class HashLogger:
         self.out = out
 
     def __call__(self, tile: Tile) -> Tile:
+        """Log the tile size and hash."""
         ref = None
         try:
             assert tile.data
@@ -1579,7 +1587,7 @@ class HashLogger:
             f"""Tile: {tile.tilecoord} {tile.formated_metadata}
     {self.block}:
         size: {len(tile.data)}
-        hash: {sha1(tile.data).hexdigest()}""",  # nosec
+        hash: {sha1(tile.data).hexdigest()}""",  # noqa: E501
             file=self.out,
         )
         return tile
@@ -1604,6 +1612,7 @@ class LocalProcessFilter:
         return nb % self.nb_process == self.process_nb
 
     def __call__(self, tile: Tile) -> Tile | None:
+        """Filter the tile."""
         return tile if self.filter(tile.tilecoord) else None
 
 
@@ -1636,6 +1645,7 @@ class IntersectGeometryFilter:
         ).intersects(geoms[tilecoord.z])
 
     def __call__(self, tile: Tile) -> Tile | None:
+        """Filter the tile on a geometry."""
         return (
             tile
             if self.filter_tilecoord(self.gene.get_tile_config(tile), tile.tilecoord, tile.metadata["layer"])
@@ -1655,6 +1665,7 @@ class DropEmpty:
         self.gene = gene
 
     def __call__(self, tile: Tile) -> Tile | None:
+        """Filter the enpty tile."""
         config = self.gene.get_tile_config(tile)
         if not tile or not tile.data:
             _LOGGER.error(
@@ -1712,6 +1723,7 @@ class Process:
         self.options = options
 
     def __call__(self, tile: Tile) -> Tile | None:
+        """Process the tile."""
         if tile and tile.data:
             fd_in, name_in = tempfile.mkstemp()
             with open(name_in, "wb") as file_in:
@@ -1781,6 +1793,7 @@ class TilesFileStore(TileStore):
         self.tiles_file = open(tiles_file, encoding="utf-8")  # pylint: disable=consider-using-with
 
     def list(self) -> Iterator[Tile]:
+        """List the tiles."""
         while True:
             line = self.tiles_file.readline()
             if not line:
@@ -1804,12 +1817,15 @@ class TilesFileStore(TileStore):
                 )
 
     def get_one(self, tile: Tile) -> Tile | None:
+        """Get the tile."""
         raise NotImplementedError()
 
     def put_one(self, tile: Tile) -> Tile:
+        """Put the tile."""
         raise NotImplementedError()
 
     def delete_one(self, tile: Tile) -> Tile:
+        """Delete the tile."""
         raise NotImplementedError()
 
 

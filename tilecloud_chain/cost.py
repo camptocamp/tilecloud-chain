@@ -90,7 +90,7 @@ def main() -> None:
         #            gene.config['cost'].get("request_per_layers", configuration.REQUESTS_PER_LAYERS_DEFAULT) * tile_size)
     except SystemExit:
         raise
-    except:  # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except # noqa: E722
         logger.exception("Exit with exception")
         sys.exit(1)
 

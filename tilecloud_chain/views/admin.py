@@ -184,7 +184,7 @@ class Admin:
             proc.join()
             return return_dict
 
-        completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check
+        completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check # noqa: S603
             final_command,
             capture_output=True,
             env=env,
@@ -341,7 +341,7 @@ def _parse_stdout(stdout: str) -> list[str]:
                     full_message = json_message["full_message"].replace("\n", "<br />")
                     msg += f"<br />{full_message}"
                 stdout_parsed.append(msg)
-        except:  # pylint: disable=bare-except
+        except:  # pylint: disable=bare-except # noqa: E722
             stdout_parsed.append(line)
     return stdout_parsed
 

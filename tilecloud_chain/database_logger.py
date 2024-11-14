@@ -99,6 +99,7 @@ class DatabaseLoggerInit(DatabaseLoggerCommon):
             (self.run,) = cursor.fetchone()
 
     def __call__(self, tile: Tile) -> Tile:
+        """Log the generated tiles in a database."""
         tile.metadata["run"] = self.run
         return tile
 
@@ -107,6 +108,7 @@ class DatabaseLogger(DatabaseLoggerCommon):
     """Log the generated tiles in a database."""
 
     def __call__(self, tile: Tile) -> Tile:
+        """Log the generated tiles in a database."""
         if tile is None:
             _LOGGER.warning("The tile is None")
             return None

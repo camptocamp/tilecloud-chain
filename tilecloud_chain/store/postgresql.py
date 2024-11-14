@@ -248,7 +248,7 @@ def _start_job(
 
     _LOGGER.info("Run the command `%s`", display_command)
 
-    completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check
+    completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check # noqa: S603
         final_command,
         capture_output=True,
         env=env,

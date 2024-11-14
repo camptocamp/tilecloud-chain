@@ -51,6 +51,7 @@ class LogTilesContext:
         self.gene = gene
 
     def __call__(self, tile: Tile) -> Tile:
+        """Add logs tile context."""
         tilecloud_chain.LOGGING_CONTEXT.setdefault(os.getpid(), {})[threading.current_thread().native_id] = {  # type: ignore
             "host": tile.metadata.get("host"),
             "layer": tile.metadata.get("layer"),
@@ -435,6 +436,7 @@ class TilestoreGetter:
         self.gene = gene
 
     def __call__(self, config_file: str, layer_name: str) -> TileStore | None:
+        """Get the tilestore based on the layername config file any layer type."""
         config = self.gene._gene.get_config(config_file)
         layer = config.config["layers"][layer_name]
         if layer["type"] == "wms":
@@ -442,7 +444,7 @@ class TilestoreGetter:
             if "STYLES" not in params:
                 params["STYLES"] = ",".join(layer["wmts_style"] for _ in layer["layers"].split(","))
             if layer.get("generate_salt", False):
-                params["SALT"] = str(random.randint(0, 999999))  # nosec
+                params["SALT"] = str(random.randint(0, 999999))  # nosec # noqa: S311
 
             # Get the metatile image from the WMS server
             return TimedTileStoreWrapper(
@@ -642,7 +644,7 @@ def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
             gene.close()
     except SystemExit:
         raise
-    except:  # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except # noqa: E722
         _LOGGER.exception("Exit with exception")
         if os.environ.get("TESTS", "false").lower() == "true":
             raise
