@@ -1,6 +1,4 @@
-"""
-Internal Mapcache.
-"""
+"""Internal Mapcache."""
 
 import collections
 import contextlib
@@ -12,13 +10,13 @@ import struct
 import sys
 import threading
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 import redis.sentinel
 from prometheus_client import Summary
+from tilecloud import Tile, TileCoord, TileStore
 
 import tilecloud_chain.configuration
-from tilecloud import Tile, TileCoord, TileStore
 from tilecloud_chain import Run, configuration
 from tilecloud_chain.generate import Generate
 
@@ -70,7 +68,7 @@ class RedisStore(TileStore):
             self._master = redis.Redis.from_url(url, **connection_kwargs)  # type: ignore
             self._slave = self._master
         else:
-            sentinels: list[tuple[str, Union[str, int]]] = []
+            sentinels: list[tuple[str, str | int]] = []
             if "TILECLOUD_CHAIN_REDIS_SENTINELs" in os.environ:
                 sentinels_string = os.environ["TILECLOUD_CHAIN_REDIS_SENTINELS"]
                 sentinels_tmp = [s.split(":") for s in sentinels_string.split(",")]
@@ -91,7 +89,7 @@ class RedisStore(TileStore):
         self._prefix = config.get("prefix", tilecloud_chain.configuration.PREFIX_DEFAULT)
         self._expiration = config.get("expiration", tilecloud_chain.configuration.EXPIRATION_DEFAULT)
 
-    def get_one(self, tile: Tile) -> Optional[Tile]:
+    def get_one(self, tile: Tile) -> Tile | None:
         """See in superclass."""
         key = self._get_key(tile)
         data = self._slave.get(key)
@@ -169,15 +167,13 @@ class Generator:
         generator._generate_tiles()
         self.run = Run(tilegeneration, tilegeneration.functions_metatiles)
 
-    def read_from_cache(self, tile: Tile) -> Optional[Tile]:
+    def read_from_cache(self, tile: Tile) -> Tile | None:
         """Get the tile from the cache (Redis)."""
-
         with _GET_TILE.labels("redis").time():
             return self._cache_store.get_one(tile)
 
     def compute_tile(self, tile: Tile) -> None:
         """Create the tile."""
-
         with _GET_TILE.labels("wms").time():
             self.run(tile)
         if tile.error:
@@ -265,7 +261,7 @@ def fetch(
                         "Try to get the tile %s %s, from the available: '%s'",
                         tile.tilecoord,
                         tile.formated_metadata,
-                        ", ".join([str(e) for e in tiles.keys()]),
+                        ", ".join([str(e) for e in tiles]),
                     )
                     raise
 

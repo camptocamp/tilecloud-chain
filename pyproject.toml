@@ -1,19 +1,19 @@
 [tool.black]
 line-length = 110
-target-version = ["py39"]
-
-[tool.mypy]
-python_version = "3.9"
-warn_redundant_casts = true
-warn_unused_ignores = true
-ignore_missing_imports = true
-strict = true
+target-version = ["py310"]
 
 [tool.isort]
 profile = "black"
 line_length = 110
 known_first_party = "tilecloud"
 known_third_party = "c2cwsgiutils"
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
 
 [tool.poetry]
 name = "tilecloud-chain"
@@ -26,16 +26,19 @@ license = "BSD-2-Clause"
 keywords = ["gis", "tilecloud", "chain"]
 packages = [{ include = "tilecloud_chain" }]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Environment :: Web Environment",
-    "Framework :: Pyramid",
-    "Intended Audience :: Other Audience",
-    "License :: OSI Approved :: BSD License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Topic :: Scientific/Engineering :: GIS",
-    "Typing :: Typed",
+    'Development Status :: 5 - Production/Stable',
+    'Environment :: Web Environment',
+    'Framework :: Pyramid',
+    'Intended Audience :: Other Audience',
+    'License :: OSI Approved :: BSD License',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Topic :: Scientific/Engineering :: GIS',
+    'Typing :: Typed',
 ]
 include = ["tilecloud_chain/py.typed", "tilecloud_chain/*.rst", "tilecloud_chain/*.md"]
 
@@ -56,7 +59,7 @@ main = "tilecloud_chain.server:main"
 [tool.poetry.dependencies]
 # Minimal version should also be set in the jsonschema-gentypes.yaml file
 python = ">=3.10,<3.13"
-c2cwsgiutils = { version = "6.0.9", extras = ["standard", "broadcast", "oauth2", "debug"] }
+c2cwsgiutils = { version = "6.1.3", extras = ["standard", "broadcast", "oauth2", "debug"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.9.0.post0"
 tilecloud = { version = "1.12.3", extras = ["azure", "aws", "redis", "wsgi"] }
@@ -65,16 +68,16 @@ PyYAML = "6.0.2"
 Shapely = "2.0.6"
 jsonschema = "4.23.0"
 pyramid = "2.0.2"
-jsonschema-validator-new = "0.1.0"
+jsonschema-validator-new = "0.3.2"
 azure-storage-blob = "12.23.1"
 waitress = "3.0.1"
 certifi = "2024.8.30"
 
 [tool.poetry.group.dev.dependencies]
-prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.12.1" }
-prospector-profile-duplicated = "1.6.0"
-prospector-profile-utils = "1.9.1"
-c2cwsgiutils = { version = "6.0.9", extras = ["test_images"] }
+prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.13.1" }
+prospector-profile-duplicated = "1.7.0"
+prospector-profile-utils = "1.11.1"
+c2cwsgiutils = { version = "6.1.3", extras = ["test_images"] }
 scikit-image = { version = "0.24.0" }
 pytest = "8.3.3"
 testfixtures = "8.3.0"

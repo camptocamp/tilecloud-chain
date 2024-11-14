@@ -1,6 +1,4 @@
-"""
-TileCloud Chain.
-"""
+"""TileCloud Chain."""
 
 import collections
 import json
@@ -19,7 +17,7 @@ import tempfile
 import threading
 import time
 from argparse import ArgumentParser, Namespace
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from fractions import Fraction
@@ -27,7 +25,7 @@ from hashlib import sha1
 from io import BytesIO
 from itertools import product
 from math import ceil, sqrt
-from typing import IO, TYPE_CHECKING, Any, Callable, Optional, TextIO, TypedDict, Union, cast
+from typing import IO, TYPE_CHECKING, Any, TextIO, TypedDict, cast
 
 import boto3
 import botocore.client
@@ -35,8 +33,9 @@ import c2cwsgiutils.pyramid_logging
 import c2cwsgiutils.setup_process
 import jsonschema_validator
 import psycopg2
+import tilecloud.filter.error
 from azure.identity import DefaultAzureCredential
-from azure.storage.blob import BlobServiceClient, ContainerClient, ContentSettings
+from azure.storage.blob import BlobServiceClient, ContainerClient
 from c2cwsgiutils import sentry
 from PIL import Image
 from prometheus_client import Counter, Summary
@@ -45,10 +44,6 @@ from shapely.geometry.base import BaseGeometry
 from shapely.geometry.polygon import Polygon
 from shapely.ops import unary_union
 from shapely.wkb import loads as loads_wkb
-
-import tilecloud.filter.error
-import tilecloud_chain.configuration
-import tilecloud_chain.security
 from tilecloud import BoundingPyramid, Tile, TileCoord, TileGrid, TileStore, consume
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
 from tilecloud.filter.logger import Logger
@@ -61,6 +56,9 @@ from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.store.redis import RedisTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.sqs import SQSTileStore, maybe_stop
+
+import tilecloud_chain.configuration
+import tilecloud_chain.security
 from tilecloud_chain import configuration
 from tilecloud_chain.multitilestore import MultiTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
@@ -74,14 +72,13 @@ _GEOMS_GET_SUMMARY = Summary("tilecloud_chain_geoms_get", "Geoms filter get", ["
 
 def formatted_metadata(tile: Tile) -> str:
     """Get human readable string of the metadata."""
-
     metadata = dict(tile.metadata)
     if "tiles" in metadata:
-        metadata["tiles"] = metadata["tiles"].keys()  # type: ignore
+        metadata["tiles"] = metadata["tiles"].keys()  # type: ignore[attr-defined]
     return " ".join([f"{k}={metadata[k]}" for k in sorted(metadata.keys())])
 
 
-setattr(Tile, "formated_metadata", property(formatted_metadata))
+Tile.formated_metadata = property(formatted_metadata)  # type: ignore[method-assign,assignment]
 
 
 def add_common_options(
@@ -183,7 +180,7 @@ def add_common_options(
 
 
 def get_tile_matrix_identifier(
-    grid: tilecloud_chain.configuration.Grid, resolution: Optional[float] = None, zoom: Optional[int] = None
+    grid: tilecloud_chain.configuration.Grid, resolution: float | None = None, zoom: int | None = None
 ) -> str:
     """Get an identifier for a tile matrix."""
     if grid is None or grid.get("matrix_identifier", configuration.MATRIX_IDENTIFIER_DEFAULT) == "zoom":
@@ -232,7 +229,8 @@ class Run:
             _LOGGER, logging.ERROR, "Error in tile: %(tilecoord)s, %(formated_metadata)s, %(error)r"
         )
 
-    def __call__(self, tile: Optional[Tile]) -> Optional[Tile]:
+    def __call__(self, tile: Tile | None) -> Tile | None:
+        """Run the tile generation."""
         if tile is None:
             return None
 
@@ -253,7 +251,12 @@ class Run:
                         tile.error = e
                 else:
                     tile = func(tile)
-                _LOGGER.debug("[%s] %s in %s", tilecoord, func.time_message if getattr(func, "time_message", None) is not None else func, str(datetime.now() - n))  # type: ignore
+                _LOGGER.debug(
+                    "[%s] %s in %s",
+                    tilecoord,
+                    func.time_message if getattr(func, "time_message", None) is not None else func,  # type: ignore
+                    str(datetime.now() - n),
+                )
                 if tile is None:
                     _LOGGER.debug("[%s] Drop", tilecoord)
                     return None
@@ -300,6 +303,7 @@ class Close:
         self.db = db
 
     def __call__(self) -> None:
+        """Close the database."""
         self.db.close()
 
 
@@ -326,7 +330,7 @@ class DatedConfig:
 class DatedGeoms:
     """Geoms with timestamps to be able to invalidate it on configuration change."""
 
-    def __init__(self, geoms: dict[Union[str, int], BaseGeometry], mtime: float) -> None:
+    def __init__(self, geoms: dict[str | int, BaseGeometry], mtime: float) -> None:
         self.geoms = geoms
         self.mtime = mtime
 
@@ -354,8 +358,8 @@ class MissingErrorFileException(Exception):
 class LoggingInformation(TypedDict):
     """Logging information."""
 
-    host: Optional[str]
-    layer: Optional[str]
+    host: str | None
+    layer: str | None
     meta_tilecoord: str
 
 
@@ -365,7 +369,7 @@ LOGGING_CONTEXT: dict[int, dict[int, LoggingInformation]] = {}
 class JsonLogHandler(c2cwsgiutils.pyramid_logging.JsonLogHandler):
     """Log to stdout in JSON."""
 
-    def __init__(self, stream: Optional[TextIO] = None):
+    def __init__(self, stream: TextIO | None = None):
         super().__init__(stream)
         self.addFilter(TileFilter())
 
@@ -374,6 +378,7 @@ class TileFilter(logging.Filter):
     """A logging filter that adds request information to CEE logs."""
 
     def filter(self, record: Any) -> bool:
+        """Add the request information to the log record."""
         thread_id = threading.current_thread().native_id
         assert thread_id is not None
         log_info = LOGGING_CONTEXT.get(os.getpid(), {}).get(thread_id)
@@ -414,30 +419,30 @@ def get_azure_container_client(container: str) -> ContainerClient:
 class TileGeneration:
     """Base class of all the tile generation."""
 
-    tilestream: Optional[Iterator[Tile]] = None
+    tilestream: Iterator[Tile] | None = None
     duration: timedelta = timedelta()
     error = 0
-    queue_store: Optional[TileStore] = None
+    queue_store: TileStore | None = None
     daemon = False
 
     def __init__(
         self,
-        config_file: Optional[str] = None,
-        options: Optional[Namespace] = None,
-        layer_name: Optional[str] = None,
-        base_config: Optional[tilecloud_chain.configuration.Configuration] = None,
+        config_file: str | None = None,
+        options: Namespace | None = None,
+        layer_name: str | None = None,
+        base_config: tilecloud_chain.configuration.Configuration | None = None,
         configure_logging: bool = True,
         multi_thread: bool = True,
         maxconsecutive_errors: bool = True,
     ):
         self.geoms_cache: dict[str, dict[str, DatedGeoms]] = {}
-        self._close_actions: list["Close"] = []
+        self._close_actions: list[Close] = []
         self.error_lock = threading.Lock()
         self.error_files_: dict[str, TextIO] = {}
         self.functions_tiles: list[Callable[[Tile], Tile]] = []
         self.functions_metatiles: list[Callable[[Tile], Tile]] = []
         self.functions = self.functions_metatiles
-        self.metatilesplitter_thread_pool: Optional[ThreadPoolExecutor] = None
+        self.metatilesplitter_thread_pool: ThreadPoolExecutor | None = None
         self.multi_thread = multi_thread
         self.maxconsecutive_errors = maxconsecutive_errors
         self.grid_cache: dict[str, dict[str, DatedTileGrid]] = {}
@@ -445,13 +450,22 @@ class TileGeneration:
         self.config_file = config_file
         self.base_config = base_config
         self.configs: dict[str, DatedConfig] = {}
-        self.hosts_cache: Optional[DatedHosts] = None
+        self.hosts_cache: DatedHosts | None = None
 
         self.options: Namespace = options or collections.namedtuple(  # type: ignore
             "Options",
             ["verbose", "debug", "quiet", "bbox", "zoom", "test", "near", "time", "geom", "ignore_error"],
         )(
-            False, False, False, None, None, None, None, None, True, False  # type: ignore
+            False,  # type: ignore
+            False,
+            False,
+            None,
+            None,
+            None,
+            None,
+            None,
+            True,
+            False,
         )
         del options
         if not hasattr(self.options, "bbox"):
@@ -469,51 +483,50 @@ class TileGeneration:
         if not hasattr(self.options, "ignore_error"):
             self.options.ignore_error = False
 
-        if configure_logging:
-            if os.environ.get("CI", "false").lower() != "true":
-                ###
-                # logging configuration
-                # https://docs.python.org/3/library/logging.config.html#logging-config-dictschema
-                ###
-                logging.config.dictConfig(
-                    {
-                        "version": 1,
-                        "root": {
-                            "level": os.environ["OTHER_LOG_LEVEL"],
-                            "handlers": [os.environ["LOG_TYPE"]],
+        if configure_logging and os.environ.get("CI", "false").lower() != "true":
+            ###
+            # logging configuration
+            # https://docs.python.org/3/library/logging.config.html#logging-config-dictschema
+            ###
+            logging.config.dictConfig(
+                {
+                    "version": 1,
+                    "root": {
+                        "level": os.environ["OTHER_LOG_LEVEL"],
+                        "handlers": [os.environ["LOG_TYPE"]],
+                    },
+                    "loggers": {
+                        "gunicorn.error": {"level": os.environ["GUNICORN_LOG_LEVEL"]},
+                        # "level = INFO" logs SQL queries.
+                        # "level = DEBUG" logs SQL queries and results.
+                        # "level = WARN" logs neither.  (Recommended for production systems.)
+                        "sqlalchemy.engine": {"level": os.environ["SQL_LOG_LEVEL"]},
+                        "c2cwsgiutils": {"level": os.environ["C2CWSGIUTILS_LOG_LEVEL"]},
+                        "tilecloud": {"level": os.environ["TILECLOUD_LOG_LEVEL"]},
+                        "tilecloud_chain": {"level": os.environ["TILECLOUD_CHAIN_LOG_LEVEL"]},
+                    },
+                    "handlers": {
+                        "console": {
+                            "class": "logging.StreamHandler",
+                            "formatter": "generic",
+                            "stream": "ext://sys.stdout",
                         },
-                        "loggers": {
-                            "gunicorn.error": {"level": os.environ["GUNICORN_LOG_LEVEL"]},
-                            # "level = INFO" logs SQL queries.
-                            # "level = DEBUG" logs SQL queries and results.
-                            # "level = WARN" logs neither.  (Recommended for production systems.)
-                            "sqlalchemy.engine": {"level": os.environ["SQL_LOG_LEVEL"]},
-                            "c2cwsgiutils": {"level": os.environ["C2CWSGIUTILS_LOG_LEVEL"]},
-                            "tilecloud": {"level": os.environ["TILECLOUD_LOG_LEVEL"]},
-                            "tilecloud_chain": {"level": os.environ["TILECLOUD_CHAIN_LOG_LEVEL"]},
+                        "json": {
+                            "class": "tilecloud_chain.JsonLogHandler",
+                            "formatter": "generic",
+                            "stream": "ext://sys.stdout",
                         },
-                        "handlers": {
-                            "console": {
-                                "class": "logging.StreamHandler",
-                                "formatter": "generic",
-                                "stream": "ext://sys.stdout",
-                            },
-                            "json": {
-                                "class": "tilecloud_chain.JsonLogHandler",
-                                "formatter": "generic",
-                                "stream": "ext://sys.stdout",
-                            },
-                        },
-                        "formatters": {
-                            "generic": {
-                                "format": "%(asctime)s [%(process)d] [%(levelname)-5.5s] %(message)s",
-                                "datefmt": "[%Y-%m-%d %H:%M:%S %z]",
-                                "class": "logging.Formatter",
-                            }
-                        },
-                    }
-                )
-                sentry.includeme()
+                    },
+                    "formatters": {
+                        "generic": {
+                            "format": "%(asctime)s [%(process)d] [%(levelname)-5.5s] %(message)s",
+                            "datefmt": "[%Y-%m-%d %H:%M:%S %z]",
+                            "class": "logging.Formatter",
+                        }
+                    },
+                }
+            )
+            sentry.includeme()
 
         assert "generation" in self.get_main_config().config, self.get_main_config().config
 
@@ -553,7 +566,7 @@ class TileGeneration:
             assert layer_name is not None
             self.create_log_tiles_error(layer_name)
 
-    def get_host_config_file(self, host: Optional[str]) -> Optional[str]:
+    def get_host_config_file(self, host: str | None) -> str | None:
         """Get the configuration file name for the given host."""
         if self.config_file:
             return self.config_file
@@ -565,7 +578,7 @@ class TileGeneration:
         _LOGGER.debug("For the host %s, use config file: %s", host, config_file)
         return config_file
 
-    def get_host_config(self, host: Optional[str]) -> DatedConfig:
+    def get_host_config(self, host: str | None) -> DatedConfig:
         """Get the configuration for the given host."""
         config_file = self.get_host_config_file(host)
         if not config_file:
@@ -584,7 +597,7 @@ class TileGeneration:
         self,
         config_file: str,
         ignore_error: bool = True,
-        base_config: Optional[tilecloud_chain.configuration.Configuration] = None,
+        base_config: tilecloud_chain.configuration.Configuration | None = None,
     ) -> DatedConfig:
         """Get the validated configuration for the file name, with cache management."""
         assert config_file
@@ -596,7 +609,7 @@ class TileGeneration:
             else:
                 sys.exit(1)
 
-        config: Optional[DatedConfig] = self.configs.get(config_file)
+        config: DatedConfig | None = self.configs.get(config_file)
         if config is not None and config.mtime == config_path.stat().st_mtime:
             return config
 
@@ -650,7 +663,7 @@ class TileGeneration:
         self,
         config_file: str,
         ignore_error: bool,
-        base_config: Optional[tilecloud_chain.configuration.Configuration] = None,
+        base_config: tilecloud_chain.configuration.Configuration | None = None,
     ) -> tuple[DatedConfig, bool]:
         """Get the validated configuration for the file name."""
         with open(config_file, encoding="utf-8") as f:
@@ -745,16 +758,14 @@ class TileGeneration:
                 _LOGGER.error("The layer '%s' is of type Mapnik/Grid, that can't support matatiles.", lname)
                 error = True
 
-        if error:
-            if not (
-                ignore_error
-                or os.environ.get("TILEGENERATION_IGNORE_CONFIG_ERROR", "FALSE").lower() == "true"
-            ):
-                sys.exit(1)
+        if error and not (
+            ignore_error or os.environ.get("TILEGENERATION_IGNORE_CONFIG_ERROR", "FALSE").lower() == "true"
+        ):
+            sys.exit(1)
 
         return not (error or errors)
 
-    def init(self, queue_store: Optional[TileStore] = None, daemon: bool = False) -> None:
+    def init(self, queue_store: TileStore | None = None, daemon: bool = False) -> None:
         """Initialize the tile generation."""
         self.queue_store = queue_store
         self.daemon = daemon
@@ -771,7 +782,7 @@ class TileGeneration:
                 loop += 1
         return factorlist
 
-    def _resolution_scale(self, resolutions: Union[list[float], list[int]]) -> int:
+    def _resolution_scale(self, resolutions: list[float] | list[int]) -> int:
         prime_fact = {}
         for resolution in resolutions:
             denominator = Fraction(str(resolution)).denominator
@@ -864,7 +875,6 @@ class TileGeneration:
             for dimension in layer["dimensions"]:
                 metadata["dimension_" + dimension["name"]] = dimension["default"]
             import bsddb3 as bsddb  # pylint: disable=import-outside-toplevel,import-error
-
             from tilecloud.store.bsddb import BSDDBTileStore  # pylint: disable=import-outside-toplevel
 
             # on bsddb file
@@ -896,7 +906,7 @@ class TileGeneration:
 
     @staticmethod
     def get_grid_name(
-        config: DatedConfig, layer: tilecloud_chain.configuration.Layer, name: Optional[Any] = None
+        config: DatedConfig, layer: tilecloud_chain.configuration.Layer, name: Any | None = None
     ) -> tilecloud_chain.configuration.Grid:
         """Get the grid name."""
         if name is None:
@@ -904,7 +914,7 @@ class TileGeneration:
 
         return config.config["grids"][name]
 
-    def get_tilesstore(self, cache: Optional[str] = None) -> TimedTileStoreWrapper:
+    def get_tilesstore(self, cache: str | None = None) -> TimedTileStoreWrapper:
         """Get the tile store."""
         gene = self
 
@@ -944,13 +954,13 @@ class TileGeneration:
         elif not self.options.quiet and getattr(self.options, "role", None) != "server":
             self.imap(Logger(_LOGGER, logging.INFO, "%(tilecoord)s, %(formated_metadata)s"))
 
-    def add_metatile_splitter(self, store: Optional[TileStore] = None) -> None:
+    def add_metatile_splitter(self, store: TileStore | None = None) -> None:
         """Add a metatile splitter to the chain."""
         assert self.functions != self.functions_tiles, "add_metatile_splitter should not be called twice"
         if store is None:
             gene = self
 
-            def get_splitter(config_file: str, layer_name: str) -> Optional[MetaTileSplitterTileStore]:
+            def get_splitter(config_file: str, layer_name: str) -> MetaTileSplitterTileStore | None:
                 config = gene.get_config(config_file)
                 layer = config.config["layers"][layer_name]
                 if layer.get("meta"):
@@ -1007,7 +1017,7 @@ class TileGeneration:
         self.imap(meta_get)
         self.functions = self.functions_tiles
 
-    def create_log_tiles_error(self, layer: str) -> Optional[TextIO]:
+    def create_log_tiles_error(self, layer: str) -> TextIO | None:
         """Create the error file for the given layer."""
         if "error_file" in self.get_main_config().config.get("generation", {}):
             now = datetime.now()
@@ -1027,11 +1037,11 @@ class TileGeneration:
         for file_ in self.error_files_.values():
             file_.close()
 
-    def get_log_tiles_error_file(self, layer: str) -> Optional[TextIO]:
+    def get_log_tiles_error_file(self, layer: str) -> TextIO | None:
         """Get the error file for the given layer."""
         return self.error_files_[layer] if layer in self.error_files_ else self.create_log_tiles_error(layer)
 
-    def log_tiles_error(self, tile: Optional[Tile] = None, message: Optional[str] = None) -> None:
+    def log_tiles_error(self, tile: Tile | None = None, message: str | None = None) -> None:
         """Log the error message for the given tile."""
         if tile is None:
             return
@@ -1071,8 +1081,8 @@ class TileGeneration:
         return tilegrid
 
     def get_geoms(
-        self, config: DatedConfig, layer_name: str, host: Optional[str] = None
-    ) -> dict[Union[str, int], BaseGeometry]:
+        self, config: DatedConfig, layer_name: str, host: str | None = None
+    ) -> dict[str | int, BaseGeometry]:
         """Get the geometries for the given layer."""
         dated_geoms = self.geoms_cache.get(config.file, {}).get(layer_name)
         if dated_geoms is not None and config.mtime == dated_geoms.mtime:
@@ -1120,7 +1130,7 @@ class TileGeneration:
         else:
             extent = config.config["grids"][layer["grid"]]["bbox"]
 
-        geoms: dict[Union[str, int], BaseGeometry] = {}
+        geoms: dict[str | int, BaseGeometry] = {}
         if extent:
             geom = Polygon(
                 (
@@ -1130,7 +1140,7 @@ class TileGeneration:
                     (extent[2], extent[1]),
                 )
             )
-            for z, r in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+            for z, _ in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
                 geoms[z] = geom
 
         if self.options.near is None and self.options.geom:
@@ -1138,7 +1148,7 @@ class TileGeneration:
                 with _GEOMS_GET_SUMMARY.labels(layer_name, host if host else self.options.host).time():
                     connection = psycopg2.connect(g["connection"])
                     cursor = connection.cursor()
-                    sql = f"SELECT ST_AsBinary(geom) FROM (SELECT {g['sql']}) AS g"  # nosec
+                    sql = f"SELECT ST_AsBinary(geom) FROM (SELECT {g['sql']}) AS g"  # nosec # noqa: S608
                     _LOGGER.info("Execute SQL: %s.", sql)
                     cursor.execute(sql)
                     geom_list = [loads_wkb(bytes(r[0])) for r in cursor.fetchall()]
@@ -1301,11 +1311,11 @@ class TileGeneration:
         self.imap(count)
         return count
 
-    def process(self, name: Optional[str] = None, key: str = "post_process") -> None:
+    def process(self, name: str | None = None, key: str = "post_process") -> None:
         """Add a process to the tilestream."""
         gene = self
 
-        def get_process(config_file: str, layer_name: str) -> Optional[Process]:
+        def get_process(config_file: str, layer_name: str) -> Process | None:
             config = gene.get_config(config_file)
             layer = config.config["layers"][layer_name]
             name_ = name
@@ -1317,12 +1327,12 @@ class TileGeneration:
 
         self.imap(MultiAction(get_process))
 
-    def get(self, store: TileStore, time_message: Optional[str] = None) -> None:
+    def get(self, store: TileStore, time_message: str | None = None) -> None:
         """Get the tiles from the store."""
         assert store is not None
         self.imap(store.get_one, time_message)
 
-    def put(self, store: TileStore, time_message: Optional[str] = None) -> None:
+    def put(self, store: TileStore, time_message: str | None = None) -> None:
         """Put the tiles in the store."""
         assert store is not None
 
@@ -1332,7 +1342,7 @@ class TileGeneration:
 
         self.imap(put_internal, time_message)
 
-    def delete(self, store: TileStore, time_message: Optional[str] = None) -> None:
+    def delete(self, store: TileStore, time_message: str | None = None) -> None:
         """Delete the tiles from the store."""
         assert store is not None
 
@@ -1342,14 +1352,14 @@ class TileGeneration:
 
         self.imap(delete_internal, time_message)
 
-    def imap(self, func: Any, time_message: Optional[str] = None) -> None:
+    def imap(self, func: Any, time_message: str | None = None) -> None:
         """Add a function to the tilestream."""
         assert func is not None
 
         class Func:
             """Function with an additional field used to names it in timing messages."""
 
-            def __init__(self, func: Callable[[Tile], Tile], time_message: Optional[str]) -> None:
+            def __init__(self, func: Callable[[Tile], Tile], time_message: str | None) -> None:
                 self.func = func
                 self.time_message = time_message
 
@@ -1361,7 +1371,7 @@ class TileGeneration:
 
         self.functions.append(Func(func, time_message))
 
-    def consume(self, test: Optional[int] = None) -> None:
+    def consume(self, test: int | None = None) -> None:
         """Consume the tilestream."""
         assert self.tilestream is not None
 
@@ -1446,7 +1456,8 @@ class Count:
         self.nb = 0
         self.lock = threading.Lock()
 
-    def __call__(self, tile: Optional[Tile] = None) -> Optional[Tile]:
+    def __call__(self, tile: Tile | None = None) -> Tile | None:
+        """Count the number of generated tile."""
         with self.lock:
             self.nb += 1
         return tile
@@ -1460,7 +1471,8 @@ class CountSize:
         self.size = 0
         self.lock = threading.Lock()
 
-    def __call__(self, tile: Optional[Tile] = None) -> Optional[Tile]:
+    def __call__(self, tile: Tile | None = None) -> Tile | None:
+        """Count the number of generated tile and measure the total generated size."""
         if tile and tile.data:
             with self.lock:
                 self.nb += 1
@@ -1481,9 +1493,9 @@ class HashDropper:
         self,
         size: int,
         sha1code: str,
-        store: Optional[TileStore] = None,
-        queue_store: Optional[TileStore] = None,
-        count: Optional[Count] = None,
+        store: TileStore | None = None,
+        queue_store: TileStore | None = None,
+        count: Count | None = None,
     ) -> None:
         self.size = size
         self.sha1code = sha1code
@@ -1491,9 +1503,10 @@ class HashDropper:
         self.queue_store = queue_store
         self.count = count
 
-    def __call__(self, tile: Tile) -> Optional[Tile]:
+    def __call__(self, tile: Tile) -> Tile | None:
+        """Drop the tile if the size and hash are the same as the specified ones."""
         assert tile.data
-        if len(tile.data) != self.size or sha1(tile.data).hexdigest() != self.sha1code:  # nosec
+        if len(tile.data) != self.size or sha1(tile.data).hexdigest() != self.sha1code:  # noqa: S324
             return tile
         else:
             if self.store is not None:
@@ -1526,12 +1539,13 @@ class MultiAction:
 
     def __init__(
         self,
-        get_action: Callable[[str, str], Optional[Callable[[Tile], Optional[Tile]]]],
+        get_action: Callable[[str, str], Callable[[Tile], Tile | None] | None],
     ) -> None:
         self.get_action = get_action
-        self.actions: dict[tuple[str, str], Optional[Callable[[Tile], Optional[Tile]]]] = {}
+        self.actions: dict[tuple[str, str], Callable[[Tile], Tile | None] | None] = {}
 
-    def __call__(self, tile: Tile) -> Optional[Tile]:
+    def __call__(self, tile: Tile) -> Tile | None:
+        """Run the action."""
         layer = tile.metadata["layer"]
         config_file = tile.metadata["config_file"]
         action = self.actions.get((config_file, layer))
@@ -1547,11 +1561,12 @@ class MultiAction:
 class HashLogger:
     """Log the tile size and hash."""
 
-    def __init__(self, block: str, out: Optional[IO[str]]) -> None:
+    def __init__(self, block: str, out: IO[str] | None) -> None:
         self.block = block
         self.out = out
 
     def __call__(self, tile: Tile) -> Tile:
+        """Log the tile size and hash."""
         ref = None
         try:
             assert tile.data
@@ -1572,7 +1587,7 @@ class HashLogger:
             f"""Tile: {tile.tilecoord} {tile.formated_metadata}
     {self.block}:
         size: {len(tile.data)}
-        hash: {sha1(tile.data).hexdigest()}""",  # nosec
+        hash: {sha1(tile.data).hexdigest()}""",  # noqa: E501
             file=self.out,
         )
         return tile
@@ -1596,7 +1611,8 @@ class LocalProcessFilter:
         nb = round(tilecoord.z + tilecoord.x / tilecoord.n + tilecoord.y / tilecoord.n)
         return nb % self.nb_process == self.process_nb
 
-    def __call__(self, tile: Tile) -> Optional[Tile]:
+    def __call__(self, tile: Tile) -> Tile | None:
+        """Filter the tile."""
         return tile if self.filter(tile.tilecoord) else None
 
 
@@ -1610,7 +1626,7 @@ class IntersectGeometryFilter:
         self.gene = gene
 
     def filter_tilecoord(
-        self, config: DatedConfig, tilecoord: TileCoord, layer_name: str, host: Optional[str] = None
+        self, config: DatedConfig, tilecoord: TileCoord, layer_name: str, host: str | None = None
     ) -> bool:
         """Filter the tilecoord."""
         layer = config.config["layers"][layer_name]
@@ -1628,7 +1644,8 @@ class IntersectGeometryFilter:
             tile_grid.extent(tilecoord, grid["resolutions"][tilecoord.z] * px_buffer)
         ).intersects(geoms[tilecoord.z])
 
-    def __call__(self, tile: Tile) -> Optional[Tile]:
+    def __call__(self, tile: Tile) -> Tile | None:
+        """Filter the tile on a geometry."""
         return (
             tile
             if self.filter_tilecoord(self.gene.get_tile_config(tile), tile.tilecoord, tile.metadata["layer"])
@@ -1647,7 +1664,8 @@ class DropEmpty:
     def __init__(self, gene: TileGeneration) -> None:
         self.gene = gene
 
-    def __call__(self, tile: Tile) -> Optional[Tile]:
+    def __call__(self, tile: Tile) -> Tile | None:
+        """Filter the enpty tile."""
         config = self.gene.get_tile_config(tile)
         if not tile or not tile.data:
             _LOGGER.error(
@@ -1704,7 +1722,8 @@ class Process:
         self.config = config
         self.options = options
 
-    def __call__(self, tile: Tile) -> Optional[Tile]:
+    def __call__(self, tile: Tile) -> Tile | None:
+        """Process the tile."""
         if tile and tile.data:
             fd_in, name_in = tempfile.mkstemp()
             with open(name_in, "wb") as file_in:
@@ -1739,7 +1758,9 @@ class Process:
                 }
                 _LOGGER.debug("[%s] process: %s", tile.tilecoord, command)
                 result = subprocess.run(  # pylint: disable=subprocess-run-check
-                    command, shell=True, capture_output=True  # nosec
+                    command,
+                    shell=True,
+                    capture_output=True,  # nosec
                 )
                 if result.returncode != 0:
                     tile.error = (
@@ -1772,6 +1793,7 @@ class TilesFileStore(TileStore):
         self.tiles_file = open(tiles_file, encoding="utf-8")  # pylint: disable=consider-using-with
 
     def list(self) -> Iterator[Tile]:
+        """List the tiles."""
         while True:
             line = self.tiles_file.readline()
             if not line:
@@ -1794,13 +1816,16 @@ class TilesFileStore(TileStore):
                     metadata=dict([cast(tuple[str, str], e.split("=")) for e in splitted_line[1:]]),
                 )
 
-    def get_one(self, tile: Tile) -> Optional[Tile]:
+    def get_one(self, tile: Tile) -> Tile | None:
+        """Get the tile."""
         raise NotImplementedError()
 
     def put_one(self, tile: Tile) -> Tile:
+        """Put the tile."""
         raise NotImplementedError()
 
     def delete_one(self, tile: Tile) -> Tile:
+        """Delete the tile."""
         raise NotImplementedError()
 
 
@@ -1815,7 +1840,6 @@ def _await_message(_: Any) -> bool:
 
 def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
     """Get the quue tile store."""
-
     queue_store = config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
 
     if queue_store == "postgresql":
@@ -1856,7 +1880,7 @@ def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
         if url is not None:
             tilestore_kwargs["url"] = url
         else:
-            sentinels: list[tuple[str, Union[str, int]]] = []
+            sentinels: list[tuple[str, str | int]] = []
             if "TILECLOUD_CHAIN_REDIS_SENTINELs" in os.environ:
                 sentinels_string = os.environ["TILECLOUD_CHAIN_REDIS_SENTINELS"]
                 sentinels_tmp = [s.split(":") for s in sentinels_string.split(",")]

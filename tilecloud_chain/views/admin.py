@@ -1,6 +1,4 @@
-"""
-The admin views.
-"""
+"""The admin views."""
 
 # Copyright (c) 2018-2024 by Camptocamp
 # All rights reserved.
@@ -28,7 +26,6 @@ The admin views.
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 import io
 import json
 import logging
@@ -37,7 +34,8 @@ import os
 import re
 import shlex
 import subprocess  # nosec
-from typing import IO, Any, Callable
+from collections.abc import Callable
+from typing import IO, Any
 from urllib.parse import urljoin
 
 import pyramid.httpexceptions
@@ -87,7 +85,6 @@ class Admin:
     @view_config(route_name="admin_slash", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore
     def index(self) -> dict[str, Any]:
         """Get the admin index page."""
-
         assert self.gene
         has_access, config = self._check_access(False)
         server_config = config.config.get("server", {})
@@ -148,7 +145,7 @@ class Admin:
             .config.get("server", {})
             .get("allowed_arguments", configuration.ALLOWED_ARGUMENTS_DEFAULT)
         )
-        for arg in arguments.keys():
+        for arg in arguments:
             if arg.startswith("-") and arg not in allowed_arguments:
                 self.request.response.status_code = 400
                 return {
@@ -187,7 +184,7 @@ class Admin:
             proc.join()
             return return_dict
 
-        completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check
+        completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check # noqa: S603
             final_command,
             capture_output=True,
             env=env,
@@ -220,7 +217,6 @@ class Admin:
     @view_config(route_name="admin_create_job", renderer="fast_json")  # type: ignore[misc]
     def create_job(self) -> dict[str, Any]:
         """Create a job."""
-
         if "TEST_USER" not in os.environ:
             auth_view(self.request)
             self._check_access()
@@ -252,7 +248,6 @@ class Admin:
     @view_config(route_name="admin_cancel_job", renderer="fast_json")  # type: ignore[misc]
     def cancel_job(self) -> dict[str, Any]:
         """Cancel a job."""
-
         if "TEST_USER" not in os.environ:
             auth_view(self.request)
             self._check_access()
@@ -346,7 +341,7 @@ def _parse_stdout(stdout: str) -> list[str]:
                     full_message = json_message["full_message"].replace("\n", "<br />")
                     msg += f"<br />{full_message}"
                 stdout_parsed.append(msg)
-        except:  # pylint: disable=bare-except
+        except:  # pylint: disable=bare-except # noqa: E722
             stdout_parsed.append(line)
     return stdout_parsed
 
@@ -359,9 +354,8 @@ def _format_output(string: str, max_length: int = 1000) -> str:
         if line.startswith("{"):
             try:
                 parsed = json.loads(line)
-                if "source_facility" in parsed:
-                    if not parsed.startswith("tilecloud"):
-                        continue
+                if "source_facility" in parsed and not parsed.startswith("tilecloud"):
+                    continue
 
                 if result:
                     result += "\n"

@@ -1,15 +1,13 @@
-"""
-Calculate the cost of the generation.
-"""
+"""Calculate the cost of the generation."""
 
 import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from collections.abc import Iterable, Iterator
 from datetime import timedelta
-from typing import Optional
 
 from tilecloud import Tile, TileStore
+
 from tilecloud_chain import Run, TileGeneration, add_common_options, configuration
 from tilecloud_chain.format import duration_format
 
@@ -92,7 +90,7 @@ def main() -> None:
         #            gene.config['cost'].get("request_per_layers", configuration.REQUESTS_PER_LAYERS_DEFAULT) * tile_size)
     except SystemExit:
         raise
-    except:  # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except # noqa: E722
         logger.exception("Exit with exception")
         sys.exit(1)
 
@@ -150,7 +148,7 @@ def _calculate_cost(
             class MetaTileSplitter(TileStore):
                 """Convert the metatile flow to tile flow."""
 
-                def get(self, tiles: Iterable[Optional[Tile]]) -> Iterator[Tile]:
+                def get(self, tiles: Iterable[Tile | None]) -> Iterator[Tile]:
                     assert tiles is not None
                     for metatile in tiles:
                         assert metatile is not None
@@ -160,7 +158,7 @@ def _calculate_cost(
                 def put_one(self, tile: Tile) -> Tile:
                     raise NotImplementedError
 
-                def get_one(self, tile: Tile) -> Optional[Tile]:
+                def get_one(self, tile: Tile) -> Tile | None:
                     raise NotImplementedError
 
                 def delete_one(self, tile: Tile) -> Tile:
@@ -228,10 +226,7 @@ def _calculate_cost(
         print(f"S3 PUT: {c:0.2f} [$]")
 
         if "sqs" in gene.get_main_config().config:
-            if meta:
-                nb_sqs = nb_metatiles[z] * 3
-            else:
-                nb_sqs = nb_tile * 3
+            nb_sqs = nb_metatiles[z] * 3 if meta else nb_tile * 3
             c = (
                 nb_sqs
                 * gene.get_main_config().config["cost"]["sqs"].get("request", configuration.REQUEST_DEFAULT)

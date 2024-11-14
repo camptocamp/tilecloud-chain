@@ -1,6 +1,4 @@
-"""
-PostgreSQL queue.
-"""
+"""PostgreSQL queue."""
 
 # Copyright (c) 2023-2024 by Camptocamp
 # All rights reserved.
@@ -28,7 +26,6 @@ PostgreSQL queue.
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 import io
 import logging
 import multiprocessing
@@ -47,8 +44,8 @@ from prometheus_client import Counter, Gauge, Summary
 from sqlalchemy import JSON, Column, DateTime, Integer, Unicode, and_
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
-
 from tilecloud import Tile, TileCoord, TileStore
+
 from tilecloud_chain import DatedConfig, configuration, controller, generate
 
 _LOGGER = logging.getLogger(__name__)
@@ -139,7 +136,6 @@ class Job(Base):
 
     def __repr__(self) -> str:
         """Return the representation of the job."""
-
         return f"Job {self.id} {self.name} [{self.status}]"
 
 
@@ -167,7 +163,6 @@ class Queue(Base):
 
     def __repr__(self) -> str:
         """Return the representation of the queue entry."""
-
         return f"Queue {self.job_id}.{self.id} zoom={self.zoom} [{self.status}]"
 
 
@@ -196,7 +191,7 @@ def _start_job(
     if command0 == "generate-tiles":
         add_role = "--get-hash" not in arguments and "--get-bbox" not in arguments
 
-    for arg in arguments.keys():
+    for arg in arguments:
         if arg.startswith("-") and arg not in allowed_arguments:
             job.status = _STATUS_ERROR  # type: ignore[assignment]
             job.error = (  # type: ignore[attr-defined]
@@ -253,7 +248,7 @@ def _start_job(
 
     _LOGGER.info("Run the command `%s`", display_command)
 
-    completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check
+    completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check # noqa: S603
         final_command,
         capture_output=True,
         env=env,
@@ -308,7 +303,6 @@ class PostgresqlTileStore(TileStore):
 
     def create_job(self, name: str, command: str, config_filename: str) -> None:
         """Create a job."""
-
         with self.SessionMaker() as session:
             job = Job(name=name, command=command, config_filename=config_filename)
             session.add(job)
@@ -316,7 +310,6 @@ class PostgresqlTileStore(TileStore):
 
     def retry(self, job_id: int, config_filename: str) -> None:
         """Retry a job."""
-
         with self.SessionMaker() as session:
             nb_job = (
                 session.query(Job)
@@ -341,7 +334,6 @@ class PostgresqlTileStore(TileStore):
 
     def cancel(self, job_id: int, config_filename: str) -> None:
         """Cancel a job."""
-
         with self.SessionMaker() as session:
             job = (
                 session.query(Job)
@@ -371,7 +363,6 @@ class PostgresqlTileStore(TileStore):
         - the status of the job
         - the last 5 meta tiles errors
         """
-
         result = []
         with self.SessionMaker() as session:
             for job in (
@@ -433,7 +424,6 @@ class PostgresqlTileStore(TileStore):
         - manage the too long pending tile generation
         - Create the job list to be process
         """
-
         with _MAINTENANCE_SUMMARY.time():
             # Restart the too long pending jobs (queue generation)
             with self.SessionMaker() as session:
@@ -520,7 +510,6 @@ class PostgresqlTileStore(TileStore):
 
     def list(self) -> Iterator[Tile]:
         """List the meta tiles in the queue."""
-
         while True:
             if not self.jobs:
                 self._maintenance()
@@ -548,7 +537,10 @@ class PostgresqlTileStore(TileStore):
                             continue
                         sqlalchemy_tile.status = _STATUS_PENDING  # type: ignore[assignment]
                         sqlalchemy_tile.started_at = datetime.now()  # type: ignore[assignment]
-                        meta_tile = _decode_message(sqlalchemy_tile.meta_tile, postgresql_id=sqlalchemy_tile.id)  # type: ignore[arg-type]
+                        meta_tile = _decode_message(
+                            sqlalchemy_tile.meta_tile,  # type: ignore[arg-type]
+                            postgresql_id=sqlalchemy_tile.id,
+                        )
                         session.commit()
                     yield meta_tile
                 except Exception:  # pylint: disable=broad-except
@@ -558,7 +550,6 @@ class PostgresqlTileStore(TileStore):
 
     def put_one(self, tile: Tile) -> Tile:
         """Put the meta tile in the queue."""
-
         with self.SessionMaker() as session:
             session.add(
                 Queue(
@@ -572,14 +563,12 @@ class PostgresqlTileStore(TileStore):
 
     def put(self, tiles: Iterable[Tile]) -> Iterator[Tile]:
         """Put the meta tiles in the queue."""
-
         for meta_tile in tiles:
             self.put_one(meta_tile)
             yield meta_tile
 
     def delete_one(self, tile: Tile) -> Tile:
         """Delete the meta tile from the queue."""
-
         with self.SessionMaker() as session:
             if tile.error:
                 sqlalchemy_tile = (
@@ -601,7 +590,6 @@ class PostgresqlTileStore(TileStore):
 
     def delete_all(self) -> None:
         """Delete all the queue."""
-
         with self.SessionMaker() as session:
             session.query(Queue).delete()
             session.commit()
@@ -613,7 +601,6 @@ class PostgresqlTileStore(TileStore):
 
 def get_postgresql_queue_store(config: DatedConfig) -> PostgresqlTileStore:
     """Get the postgreSQL queue tile store."""
-
     conf = config.config.get("postgresql", {})
     sqlalchemy_url = os.environ.get("TILECLOUD_CHAIN_SQLALCHEMY_URL", conf.get("sqlalchemy_url"))
     assert sqlalchemy_url is not None

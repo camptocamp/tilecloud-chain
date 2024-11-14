@@ -1,6 +1,4 @@
-"""
-Generate the contextual file like the legends.
-"""
+"""Generate the contextual file like the legends."""
 
 import concurrent.futures
 import logging
@@ -14,22 +12,22 @@ from copy import copy
 from hashlib import sha1
 from io import BytesIO, StringIO
 from math import exp, log
-from typing import IO, Literal, Optional, Union, cast
+from typing import IO, Literal, cast
 from urllib.parse import urlencode, urljoin
 
 import botocore.exceptions
 import requests
 import ruamel.yaml
+import tilecloud.store.redis
+import tilecloud.store.s3
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import ContentSettings
 from bottle import jinja2_template
 from PIL import Image
 from prometheus_client import Summary
-
-import tilecloud.store.redis
-import tilecloud.store.s3
-import tilecloud_chain.configuration
 from tilecloud.lib.PIL_ import FORMAT_BY_CONTENT_TYPE
+
+import tilecloud_chain.configuration
 from tilecloud_chain import (
     DatedConfig,
     TileGeneration,
@@ -44,9 +42,8 @@ _LOGGER = logging.getLogger(__name__)
 _GET_STATUS_SUMMARY = Summary("tilecloud_chain_get_status", "Number of get_stats", ["type", "queue"])
 
 
-def main(args: Optional[list[str]] = None, out: Optional[IO[str]] = None) -> None:
+def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
     """Generate the contextual file like the legends."""
-
     del out
 
     try:
@@ -101,16 +98,14 @@ def main(args: Optional[list[str]] = None, out: Optional[IO[str]] = None) -> Non
 
     except SystemExit:
         raise
-    except:  # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except # noqa: E722
         _LOGGER.exception("Exit with exception")
         if os.environ.get("TESTS", "false").lower() == "true":
             raise
         sys.exit(1)
 
 
-def _send(
-    data: Union[bytes, str], path: str, mime_type: str, cache: tilecloud_chain.configuration.Cache
-) -> None:
+def _send(data: bytes | str, path: str, mime_type: str, cache: tilecloud_chain.configuration.Cache) -> None:
     if cache["type"] == "s3":
         cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
         client = tilecloud.store.s3.get_client(cache_s3.get("host"))
@@ -153,7 +148,7 @@ def _send(
             f.write(data)
 
 
-def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> Optional[bytes]:
+def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes | None:
     if cache["type"] == "s3":
         cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
         client = tilecloud.store.s3.get_client(cache_s3.get("host"))
@@ -200,10 +195,9 @@ def _validate_generate_wmts_capabilities(
 
 
 def get_wmts_capabilities(
-    gene: TileGeneration, cache_name: str, exit_: bool = False, config: Optional[DatedConfig] = None
-) -> Optional[str]:
+    gene: TileGeneration, cache_name: str, exit_: bool = False, config: DatedConfig | None = None
+) -> str | None:
     """Get the WMTS capabilities for a configuration file."""
-
     start = time.perf_counter()
     if config is None:
         assert gene.config_file
@@ -273,7 +267,7 @@ def _legend_metadata(
     layer: tilecloud_chain.configuration.Layer,
     base_url: str,
     path: str,
-) -> Optional[tilecloud_chain.Legend]:
+) -> tilecloud_chain.Legend | None:
     img = _get(path, cache)
     if img is not None:
         new_legend: tilecloud_chain.Legend = {
@@ -298,9 +292,9 @@ def _legend_metadata(
 def _fill_legend(
     gene: TileGeneration,
     cache: tilecloud_chain.configuration.Cache,
-    server: Optional[tilecloud_chain.configuration.Server],
+    server: tilecloud_chain.configuration.Server | None,
     base_urls: list[str],
-    config: Optional[DatedConfig] = None,
+    config: DatedConfig | None = None,
 ) -> None:
     if config is None:
         assert gene.config_file
@@ -336,7 +330,7 @@ def _fill_legend(
                         )
                     ] = (layer_name, resolution)
 
-    legend_image_metadata: dict[str, dict[float, Optional[tilecloud_chain.Legend]]] = {}
+    legend_image_metadata: dict[str, dict[float, tilecloud_chain.Legend | None]] = {}
     for future in concurrent.futures.as_completed(legend_image_future):
         layer_name, resolution = legend_image_future[future]
         try:
@@ -349,12 +343,12 @@ def _fill_legend(
     _LOGGER.debug("Get %i legend images in %s", len(legend_image_future), time.perf_counter() - start)
 
     for layer_name, layer in config.config["layers"].items():
-        previous_legend: Optional[tilecloud_chain.Legend] = None
+        previous_legend: tilecloud_chain.Legend | None = None
         previous_resolution = None
         if "legend_mime" in layer and "legend_extension" in layer and layer_name not in gene.layer_legends:
             gene.layer_legends[layer_name] = []
             legends = gene.layer_legends[layer_name]
-            for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+            for _, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
                 new_legend = legend_image_metadata.get(layer_name, {}).get(resolution)
 
                 if new_legend is not None:
@@ -374,61 +368,60 @@ def _generate_legend_images(gene: TileGeneration) -> None:
     cache = config.config["caches"][gene.options.cache]
 
     for layer_name, layer in config.config["layers"].items():
-        if "legend_mime" in layer and "legend_extension" in layer:
-            if layer["type"] == "wms":
-                session = requests.session()
-                session.headers.update(layer["headers"])
-                previous_hash = None
-                for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
-                    legends = []
-                    for wmslayer in layer["layers"].split(","):
-                        response = session.get(
-                            layer["url"]
-                            + "?"
-                            + urlencode(
-                                {
-                                    "SERVICE": "WMS",
-                                    "VERSION": layer.get("version", "1.0.0"),
-                                    "REQUEST": "GetLegendGraphic",
-                                    "LAYER": wmslayer,
-                                    "FORMAT": layer["legend_mime"],
-                                    "TRANSPARENT": "TRUE" if layer["legend_mime"] == "image/png" else "FALSE",
-                                    "STYLE": layer["wmts_style"],
-                                    "SCALE": resolution / 0.00028,
-                                }
-                            )
+        if "legend_mime" in layer and "legend_extension" in layer and layer["type"] == "wms":
+            session = requests.session()
+            session.headers.update(layer["headers"])
+            previous_hash = None
+            for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+                legends = []
+                for wmslayer in layer["layers"].split(","):
+                    response = session.get(
+                        layer["url"]
+                        + "?"
+                        + urlencode(
+                            {
+                                "SERVICE": "WMS",
+                                "VERSION": layer.get("version", "1.0.0"),
+                                "REQUEST": "GetLegendGraphic",
+                                "LAYER": wmslayer,
+                                "FORMAT": layer["legend_mime"],
+                                "TRANSPARENT": "TRUE" if layer["legend_mime"] == "image/png" else "FALSE",
+                                "STYLE": layer["wmts_style"],
+                                "SCALE": resolution / 0.00028,
+                            }
                         )
-                        try:
-                            legends.append(Image.open(BytesIO(response.content)))
-                        except Exception:  # pylint: disable=broad-exception-caught
-                            _LOGGER.warning(
-                                "Unable to read legend image for layer '%s'-'%s', resolution '%s': %s",
-                                layer_name,
-                                wmslayer,
-                                resolution,
-                                response.content,
-                                exc_info=True,
-                            )
-                    width = max(i.size[0] for i in legends) if legends else 0
-                    height = sum(i.size[1] for i in legends) if legends else 0
-                    image = Image.new("RGBA", (width, height))
-                    y = 0
-                    for i in legends:
-                        image.paste(i, (0, y))
-                        y += i.size[1]
-                    string_io = BytesIO()
-                    image.save(string_io, FORMAT_BY_CONTENT_TYPE[layer["legend_mime"]])
-                    result = string_io.getvalue()
-                    new_hash = sha1(result).hexdigest()  # nosec
-                    if new_hash != previous_hash:
-                        previous_hash = new_hash
-                        _send(
-                            result,
-                            f"1.0.0/{layer_name}/{layer['wmts_style']}/"
-                            f"legend{zoom}.{layer['legend_extension']}",
-                            layer["legend_mime"],
-                            cache,
+                    )
+                    try:
+                        legends.append(Image.open(BytesIO(response.content)))
+                    except Exception:  # pylint: disable=broad-exception-caught
+                        _LOGGER.warning(
+                            "Unable to read legend image for layer '%s'-'%s', resolution '%s': %s",
+                            layer_name,
+                            wmslayer,
+                            resolution,
+                            response.content,
+                            exc_info=True,
                         )
+                width = max(i.size[0] for i in legends) if legends else 0
+                height = sum(i.size[1] for i in legends) if legends else 0
+                image = Image.new("RGBA", (width, height))
+                y = 0
+                for i in legends:
+                    image.paste(i, (0, y))
+                    y += i.size[1]
+                string_io = BytesIO()
+                image.save(string_io, FORMAT_BY_CONTENT_TYPE[layer["legend_mime"]])
+                result = string_io.getvalue()
+                new_hash = sha1(result).hexdigest()  # nosec # noqa: S303
+                if new_hash != previous_hash:
+                    previous_hash = new_hash
+                    _send(
+                        result,
+                        f"1.0.0/{layer_name}/{layer['wmts_style']}/"
+                        f"legend{zoom}.{layer['legend_extension']}",
+                        layer["legend_mime"],
+                        cache,
+                    )
 
 
 def status(gene: TileGeneration) -> None:
@@ -440,7 +433,7 @@ def get_status(gene: TileGeneration) -> list[str]:
     """Get the tile generation status."""
     config = gene.get_main_config()
     store = get_queue_store(config, False)
-    type_: Union[Literal["redis"], Literal["sqs"]] = "redis" if "redis" in config.config else "sqs"
+    type_: Literal["redis"] | Literal["sqs"] = "redis" if "redis" in config.config else "sqs"
     conf = config.config[type_]
     with _GET_STATUS_SUMMARY.labels(type_, conf.get("queue", configuration.REDIS_QUEUE_DEFAULT)).time():
         status_ = store.get_status()

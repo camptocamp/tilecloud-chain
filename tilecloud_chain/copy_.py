@@ -1,6 +1,4 @@
-"""
-Copy the tiles from a cache to an other.
-"""
+"""Copy the tiles from a cache to an other."""
 
 import logging
 import os
@@ -29,9 +27,7 @@ class Copy:
         destination: str,
         task_name: str,
     ) -> None:
-        """
-        Copy the tiles from a cache to an other.
-        """
+        """Copy the tiles from a cache to an other."""
         self._copy(options, gene, layer, source, destination, task_name)
 
     def _copy(
@@ -120,7 +116,7 @@ def main() -> None:
                 copy.copy(options, gene, layer, options.source, options.dest, "copy")
     except SystemExit:
         raise
-    except:  # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except # noqa: E722
         logger.exception("Exit with exception")
         if os.environ.get("TESTS", "false").lower() == "true":
             raise
@@ -155,6 +151,6 @@ def process() -> None:
                 copy.copy(options, gene, layer, options.cache, options.cache, "process")
     except SystemExit:
         raise
-    except:  # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except # noqa: E722
         logger.exception("Exit with exception")
         sys.exit(1)

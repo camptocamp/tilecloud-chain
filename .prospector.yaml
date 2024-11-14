@@ -2,23 +2,17 @@ inherits:
   - utils:base
   - utils:no-design-checks
   - utils:fix
+  - utils:unsafe
+  - utils:c2cwsgiutils
   - duplicated
-
-doc-warnings: true
 
 ignore-paths:
   - tilecloud_chain/configuration.py
 
-pylint:
-  disable:
-    - missing-timeout # done globally by c2cwsgiutils
-
-pydocstyle:
-  disable:
-    - D202 # No blank lines allowed after function docstring
-    - D104 # Missing docstring in public package
-    - D107 # Missing docstring in __init__
-
-bandit:
+mypy:
   options:
-    config: .bandit.yaml
+    python-version: '3.10'
+
+ruff:
+  options:
+    target-version: py310

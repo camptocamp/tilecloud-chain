@@ -1,6 +1,4 @@
-"""
-Log the generated tiles in a database.
-"""
+"""Log the generated tiles in a database."""
 
 import logging
 import sys
@@ -8,9 +6,9 @@ import time
 
 import psycopg2.sql
 from prometheus_client import Summary
+from tilecloud import Tile
 
 import tilecloud_chain.configuration
-from tilecloud import Tile
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -101,6 +99,7 @@ class DatabaseLoggerInit(DatabaseLoggerCommon):
             (self.run,) = cursor.fetchone()
 
     def __call__(self, tile: Tile) -> Tile:
+        """Log the generated tiles in a database."""
         tile.metadata["run"] = self.run
         return tile
 
@@ -109,6 +108,7 @@ class DatabaseLogger(DatabaseLoggerCommon):
     """Log the generated tiles in a database."""
 
     def __call__(self, tile: Tile) -> Tile:
+        """Log the generated tiles in a database."""
         if tile is None:
             _LOGGER.warning("The tile is None")
             return None
@@ -123,26 +123,25 @@ class DatabaseLogger(DatabaseLoggerCommon):
         layer = tile.metadata.get("layer", "- No layer -")
         run = tile.metadata.get("run", -1)
 
-        with _INSERT_SUMMARY.labels(layer).time():
-            with self.connection.cursor() as cursor:
-                try:
-                    cursor.execute(
-                        psycopg2.sql.SQL(
-                            "INSERT INTO {} (layer, run, action, tile) "
-                            "VALUES (%(layer)s, %(run)s, %(action)s::varchar(7), %(tile)s)"
-                        ).format(psycopg2.sql.Identifier(self.schema), psycopg2.sql.Identifier(self.table)),
-                        {"layer": layer, "action": action, "tile": str(tile.tilecoord), "run": run},
-                    )
-                except psycopg2.IntegrityError:
-                    self.connection.rollback()
-                    cursor.execute(
-                        psycopg2.sql.SQL(
-                            "UPDATE {} SET action = %(action)s "
-                            "WHERE layer = %(layer)s AND run = %(run)s AND tile = %(tile)s"
-                        ).format(psycopg2.sql.Identifier(self.schema), psycopg2.sql.Identifier(self.table)),
-                        {"layer": layer, "action": action, "tile": str(tile.tilecoord), "run": run},
-                    )
+        with _INSERT_SUMMARY.labels(layer).time(), self.connection.cursor() as cursor:
+            try:
+                cursor.execute(
+                    psycopg2.sql.SQL(
+                        "INSERT INTO {} (layer, run, action, tile) "
+                        "VALUES (%(layer)s, %(run)s, %(action)s::varchar(7), %(tile)s)"
+                    ).format(psycopg2.sql.Identifier(self.schema), psycopg2.sql.Identifier(self.table)),
+                    {"layer": layer, "action": action, "tile": str(tile.tilecoord), "run": run},
+                )
+            except psycopg2.IntegrityError:
+                self.connection.rollback()
+                cursor.execute(
+                    psycopg2.sql.SQL(
+                        "UPDATE {} SET action = %(action)s "
+                        "WHERE layer = %(layer)s AND run = %(run)s AND tile = %(tile)s"
+                    ).format(psycopg2.sql.Identifier(self.schema), psycopg2.sql.Identifier(self.table)),
+                    {"layer": layer, "action": action, "tile": str(tile.tilecoord), "run": run},
+                )
 
-                self.connection.commit()
+            self.connection.commit()
 
         return tile

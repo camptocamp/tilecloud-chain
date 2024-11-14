@@ -1,5 +1,3 @@
-version: '2.2'
-
 services:
   db:
     image: camptocamp/postgres:17-postgis-3

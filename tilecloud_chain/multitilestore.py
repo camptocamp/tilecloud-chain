@@ -1,11 +1,8 @@
-"""
-Redirect to the corresponding Tilestore for the layer and config file.
-"""
+"""Redirect to the corresponding Tilestore for the layer and config file."""
 
 import logging
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from itertools import chain, groupby, starmap
-from typing import Callable, Optional
 
 from tilecloud import Tile, TileStore
 
@@ -15,13 +12,13 @@ logger = logging.getLogger(__name__)
 class MultiTileStore(TileStore):
     """Redirect to the corresponding Tilestore for the layer and config file."""
 
-    def __init__(self, get_store: Callable[[str, str], Optional[TileStore]]) -> None:
+    def __init__(self, get_store: Callable[[str, str], TileStore | None]) -> None:
         """Initialize."""
         TileStore.__init__(self)
         self.get_store = get_store
-        self.stores: dict[tuple[str, str], Optional[TileStore]] = {}
+        self.stores: dict[tuple[str, str], TileStore | None] = {}
 
-    def _get_store(self, config_file: str, layer: str) -> Optional[TileStore]:
+    def _get_store(self, config_file: str, layer: str) -> TileStore | None:
         store = self.stores.get((config_file, layer))
         if store is None:
             store = self.get_store(config_file, layer)
@@ -73,7 +70,7 @@ class MultiTileStore(TileStore):
         assert store is not None
         return store.put_one(tile)
 
-    def get_one(self, tile: Tile) -> Optional[Tile]:
+    def get_one(self, tile: Tile) -> Tile | None:
         """
         Add data to ``tile``, or return ``None`` if ``tile`` is not in the store.
 
@@ -86,10 +83,10 @@ class MultiTileStore(TileStore):
         assert store is not None
         return store.get_one(tile)
 
-    def get(self, tiles: Iterable[Optional[Tile]]) -> Iterator[Optional[Tile]]:
+    def get(self, tiles: Iterable[Tile | None]) -> Iterator[Tile | None]:
         """See in superclass."""
 
-        def apply(key: tuple[str, str], tiles: Iterator[Tile]) -> Iterable[Optional[Tile]]:
+        def apply(key: tuple[str, str], tiles: Iterator[Tile]) -> Iterable[Tile | None]:
             store = self._get_store(*key)
             if store is None:
                 return tiles
@@ -118,6 +115,6 @@ class MultiTileStore(TileStore):
         return chain.from_iterable(starmap(apply, groupby(tiles, self._get_layer)))
 
     @staticmethod
-    def _get_layer(tile: Optional[Tile]) -> tuple[str, str]:
+    def _get_layer(tile: Tile | None) -> tuple[str, str]:
         assert tile is not None
         return (tile.metadata["config_file"], tile.metadata["layer"])

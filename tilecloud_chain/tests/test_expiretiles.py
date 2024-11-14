@@ -142,7 +142,7 @@ class TestExpireTiles(CompareCase):
             log_capture.check()
 
     def test_expire_tiles_empty(self) -> None:
-        with LogCapture("tilecloud_chain", level=30) as log_capture:
+        with LogCapture("tilecloud_chain", level=30):
             self.assert_cmd_equals(
                 cmd=[
                     ".build/venv/bin/import_expiretiles",
