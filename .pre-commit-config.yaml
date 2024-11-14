@@ -110,7 +110,7 @@ repos:
           - --output-format=pylint
         additional_dependencies:
           - prospector-profile-duplicated==1.7.0 # pypi
-          - prospector-profile-utils==1.10.3 # pypi
+          - prospector-profile-utils==1.11.1 # pypi
           - ruff==0.7.3 # pypi
   - repo: https://github.com/sbrunner/jsonschema-validator
     rev: 0.3.2
@@ -118,7 +118,7 @@ repos:
       - id: jsonschema-validator
         files: ^ci/config\.yaml$
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 39.10.1
+    rev: 39.15.1
     hooks:
       - id: renovate-config-validator
   - repo: https://github.com/sbrunner/python-versions-hook
