@@ -74,11 +74,11 @@ def formatted_metadata(tile: Tile) -> str:
     """Get human readable string of the metadata."""
     metadata = dict(tile.metadata)
     if "tiles" in metadata:
-        metadata["tiles"] = metadata["tiles"].keys()  # type: ignore
+        metadata["tiles"] = metadata["tiles"].keys()  # type: ignore[attr-defined]
     return " ".join([f"{k}={metadata[k]}" for k in sorted(metadata.keys())])
 
 
-Tile.formated_metadata = property(formatted_metadata)
+Tile.formated_metadata = property(formatted_metadata)  # type: ignore[method-assign,assignment]
 
 
 def add_common_options(
@@ -254,9 +254,9 @@ class Run:
                 _LOGGER.debug(
                     "[%s] %s in %s",
                     tilecoord,
-                    func.time_message if getattr(func, "time_message", None) is not None else func,
+                    func.time_message if getattr(func, "time_message", None) is not None else func,  # type: ignore
                     str(datetime.now() - n),
-                )  # type: ignore
+                )
                 if tile is None:
                     _LOGGER.debug("[%s] Drop", tilecoord)
                     return None
@@ -456,7 +456,7 @@ class TileGeneration:
             "Options",
             ["verbose", "debug", "quiet", "bbox", "zoom", "test", "near", "time", "geom", "ignore_error"],
         )(
-            False,
+            False,  # type: ignore
             False,
             False,
             None,
@@ -465,7 +465,7 @@ class TileGeneration:
             None,
             None,
             True,
-            False,  # type: ignore
+            False,
         )
         del options
         if not hasattr(self.options, "bbox"):

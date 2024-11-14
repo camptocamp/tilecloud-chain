@@ -538,8 +538,9 @@ class PostgresqlTileStore(TileStore):
                         sqlalchemy_tile.status = _STATUS_PENDING  # type: ignore[assignment]
                         sqlalchemy_tile.started_at = datetime.now()  # type: ignore[assignment]
                         meta_tile = _decode_message(
-                            sqlalchemy_tile.meta_tile, postgresql_id=sqlalchemy_tile.id
-                        )  # type: ignore[arg-type]
+                            sqlalchemy_tile.meta_tile,  # type: ignore[arg-type]
+                            postgresql_id=sqlalchemy_tile.id,
+                        )
                         session.commit()
                     yield meta_tile
                 except Exception:  # pylint: disable=broad-except
