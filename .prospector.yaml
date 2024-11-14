@@ -8,3 +8,11 @@ inherits:
 
 ignore-paths:
   - tilecloud_chain/configuration.py
+
+mypy:
+  options:
+    python-version: '3.10'
+
+ruff:
+  options:
+    target-version: py310
