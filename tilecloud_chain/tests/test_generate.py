@@ -4,8 +4,8 @@ from itertools import product, repeat
 
 import pytest
 from testfixtures import LogCapture
-
 from tilecloud.store.redis import RedisTileStore
+
 from tilecloud_chain import controller, generate
 from tilecloud_chain.tests import CompareCase
 
@@ -30,8 +30,8 @@ class TestGenerate(CompareCase):
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             for d in ("-d", ""):
                 self.assert_cmd_equals(
-                    cmd=".build/venv/bin/generate_tiles {} --get-hash 4/0/0 "
-                    "-c tilegeneration/test.yaml -l point".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} --get-hash 4/0/0 "
+                    "-c tilegeneration/test.yaml -l point",
                     main_func=generate.main,
                     expected="""Tile: 4/0/0:+8/+8 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=point
             empty_metatile_detection:
@@ -50,8 +50,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", "-q"):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_exit_equals(
-                    cmd=".build/venv/bin/generate_tiles {} --get-hash 0/7/5 "
-                    "-c tilegeneration/test.yaml -l all".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} --get-hash 0/7/5 "
+                    "-c tilegeneration/test.yaml -l all",
                     main_func=generate.main,
                 )
                 log_capture.check(
@@ -66,22 +66,22 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test.yaml --get-bbox 4/4/4 -l point".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test.yaml --get-bbox 4/4/4 -l point",
                     main_func=generate.main,
                     expected="""Tile bounds: [425120,343600,426400,344880]
 """,
                 )
                 self.assert_cmd_equals(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test.yaml --get-bbox 4/4/4:+1/+1 -l point".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test.yaml --get-bbox 4/4/4:+1/+1 -l point",
                     main_func=generate.main,
                     expected="""Tile bounds: [425120,343600,426400,344880]
     """,
                 )
                 self.assert_cmd_equals(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test.yaml --get-bbox 4/4/4:+2/+2 -l point".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test.yaml --get-bbox 4/4/4:+2/+2 -l point",
                     main_func=generate.main,
                     expected="""Tile bounds: [425120,342320,427680,344880]
     """,
@@ -93,8 +93,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "--get-hash 4/0/0 -c tilegeneration/test.yaml -l mapnik".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "--get-hash 4/0/0 -c tilegeneration/test.yaml -l mapnik",
                     main_func=generate.main,
                     expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml
             empty_tile_detection:
@@ -108,8 +108,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "--get-hash 4/0/0 -c tilegeneration/test.yaml -l all".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "--get-hash 4/0/0 -c tilegeneration/test.yaml -l all",
                     main_func=generate.main,
                     expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=all
     empty_metatile_detection:
@@ -171,8 +171,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml -t 1 "
-                    "--dimensions DATE=2013" % d,
+                    cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml -t 1 "
+                    "--dimensions DATE=2013",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2013/swissgrid_5/%i/%i/%i.png",
@@ -300,12 +300,12 @@ class TestGenerate(CompareCase):
             y3 = [e[1] for e in xy3]
             for d in ("-d", ""):
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 0".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png",
-                    tiles=list(zip(repeat("polygon2", len(x)), repeat("1", len(x)), x, y)),
+                    tiles=list(zip(repeat("polygon2", len(x)), repeat("1", len(x)), x, y, strict=False)),
                     regex=True,
                     expected=r"""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
     Nb generated metatiles: 1
@@ -322,12 +322,14 @@ class TestGenerate(CompareCase):
     """,
                 )
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 1".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 1",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png",
-                    tiles=list(zip(repeat("polygon2", len(x2)), repeat("0_2", len(x2)), x2, y2)),
+                    tiles=list(
+                        zip(repeat("polygon2", len(x2)), repeat("0_2", len(x2)), x2, y2, strict=False)
+                    ),
                     regex=True,
                     expected=r"""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
     Nb generated metatiles: 1
@@ -344,12 +346,14 @@ class TestGenerate(CompareCase):
     """,
                 )
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 2".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 2",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png",
-                    tiles=list(zip(repeat("polygon2", len(x3)), repeat("0_1", len(x3)), x3, y3)),
+                    tiles=list(
+                        zip(repeat("polygon2", len(x3)), repeat("0_1", len(x3)), x3, y3, strict=False)
+                    ),
                     regex=True,
                     expected=r"""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
     Nb generated metatiles: 1
@@ -371,8 +375,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml "
-                    "-l point_hash --bbox 700000 250000 800000 300000" % d,
+                    cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml "
+                    "-l point_hash --bbox 700000 250000 800000 300000",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s",
@@ -401,8 +405,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test-nosns.yaml -l point_hash --zoom 1".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test-nosns.yaml -l point_hash --zoom 1",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png",
@@ -428,8 +432,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test-nosns.yaml -l point_hash --zoom 1-3".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test-nosns.yaml -l point_hash --zoom 1-3",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png",
@@ -463,8 +467,8 @@ class TestGenerate(CompareCase):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
                     cmd=(
-                        ".build/venv/bin/generate_tiles {} -c tilegeneration/test-nosns.yaml -l point_hash"
-                    ).format(d),
+                        f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml -l point_hash"
+                    ),
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png",
@@ -499,8 +503,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml "
-                    "-l point_px_buffer --zoom 0-2" % d,
+                    cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml "
+                    "-l point_px_buffer --zoom 0-2",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/point_px_buffer/default/2012/swissgrid_5/%i/%i/%i.png",
@@ -527,8 +531,8 @@ class TestGenerate(CompareCase):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
                     cmd=(
-                        ".build/venv/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml "
-                        "-l point_hash --zoom 0,2,3" % d
+                        f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml "
+                        "-l point_hash --zoom 0,2,3"
                     ),
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -562,8 +566,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test-nosns.yaml -l polygon -z 0".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test-nosns.yaml -l polygon -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png",
@@ -583,9 +587,9 @@ class TestGenerate(CompareCase):
                 )
 
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles %s "
+                    cmd=f".build/venv/bin/generate_tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l polygon -z 0"
-                    " -b 550000 170000 560000 180000" % d,
+                    " -b 550000 170000 560000 180000",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png",
@@ -605,9 +609,9 @@ class TestGenerate(CompareCase):
                 )
 
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles %s "
+                    cmd=f".build/venv/bin/generate_tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l polygon -z 0"
-                    " -b 550000.0 170000.0 560000.0 180000.0" % d,
+                    " -b 550000.0 170000.0 560000.0 180000.0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png",
@@ -627,8 +631,8 @@ class TestGenerate(CompareCase):
                 )
 
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test-nosns.yaml -l all -z 0".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test-nosns.yaml -l all -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/all/default/2012/swissgrid_5/0/%i/%i.png",
@@ -652,8 +656,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test-nosns.yaml -l point_hash -z 0".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test-nosns.yaml -l point_hash -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/point_hash/default/2012/swissgrid_5/0/%i/%i.png",
@@ -680,8 +684,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test-nosns.yaml -l mapnik -z 0".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test-nosns.yaml -l mapnik -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/mapnik/default/2012/swissgrid_5/0/%i/%i.png",
@@ -706,8 +710,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test-nosns.yaml -l mapnik_grid -z 0".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test-nosns.yaml -l mapnik_grid -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/mapnik_grid/default/2012/swissgrid_5/0/%i/%i.json",
@@ -750,8 +754,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test-nosns.yaml -l mapnik_grid_drop -z 0".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test-nosns.yaml -l mapnik_grid_drop -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/mapnik_grid_drop/default/2012/swissgrid_5/0/%i/%i.json",
@@ -790,8 +794,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.run_cmd(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test-nosns.yaml -t 2 -v -l polygon".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test-nosns.yaml -t 2 -v -l polygon",
                     main_func=generate.main,
                 )
                 log_capture.check()
@@ -800,8 +804,8 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test.yaml --time 2 -l polygon".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    "-c tilegeneration/test.yaml --time 2 -l polygon",
                     main_func=generate.main,
                     expected=r"""size: 770
     size: 862
@@ -820,8 +824,7 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
-                    cmd=".build/venv/bin/generate_tiles {} "
-                    "-c tilegeneration/test.yaml --time 2 -l all".format(d),
+                    cmd=f".build/venv/bin/generate_tiles {d} " "-c tilegeneration/test.yaml --time 2 -l all",
                     main_func=generate.main,
                     expected=r"""size: 1010
     size: 1010
@@ -864,8 +867,8 @@ class TestGenerate(CompareCase):
             )
             self.assert_tiles_generated_deleted(
                 cmd=(
-                    ".build/venv/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml "
-                    "-l point_hash_no_meta -z 0" % d
+                    f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml "
+                    "-l point_hash_no_meta -z 0"
                 ),
                 main_func=generate.main,
                 directory="/tmp/tiles/",
@@ -895,8 +898,8 @@ Size per tile: 4[0-9][0-9] o
             )
             self.assert_tiles_generated_deleted(
                 cmd=(
-                    ".build/venv/bin/generate_tiles %s -c tilegeneration/test-nosns.yaml "
-                    "-l point_hash_no_meta -z 0" % d
+                    f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml "
+                    "-l point_hash_no_meta -z 0"
                 ),
                 main_func=generate.main,
                 directory="/tmp/tiles/",

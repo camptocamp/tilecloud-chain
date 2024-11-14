@@ -1,6 +1,4 @@
-"""
-Format functions.
-"""
+"""Format functions."""
 
 from datetime import timedelta
 

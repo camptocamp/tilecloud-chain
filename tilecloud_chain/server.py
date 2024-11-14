@@ -1,6 +1,4 @@
-"""
-The server to serve the tiles.
-"""
+"""The server to serve the tiles."""
 
 # Copyright (c) 2013-2024 by Stéphane Brunner
 # All rights reserved.
@@ -35,7 +33,7 @@ import logging
 import mimetypes
 import os
 import time
-from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 from urllib.parse import parse_qs, urlencode
 
 import botocore.exceptions
@@ -43,6 +41,7 @@ import c2cwsgiutils.pyramid
 import pyramid.response
 import pyramid.session
 import requests
+import tilecloud.store.s3
 from azure.core.exceptions import ResourceNotFoundError
 from c2cwsgiutils import health_check
 from prometheus_client import Summary
@@ -51,11 +50,10 @@ from pyramid.httpexceptions import HTTPException, exception_response
 from pyramid.request import Request
 from pyramid.router import Router
 from pyramid_mako import add_mako_renderer
+from tilecloud import Tile, TileCoord
 
-import tilecloud.store.s3
 import tilecloud_chain.configuration
 import tilecloud_chain.security
-from tilecloud import Tile, TileCoord
 from tilecloud_chain import (
     TileGeneration,
     configuration,
@@ -71,9 +69,8 @@ _GET_TILE = Summary("tilecloud_chain_get_tile", "Time to get the tiles", ["stora
 _TILEGENERATION = None
 
 
-def init_tilegeneration(config_file: Optional[str]) -> None:
+def init_tilegeneration(config_file: str | None) -> None:
     """Initialize the tile generation."""
-
     global _TILEGENERATION  # pylint: disable=global-statement
     if _TILEGENERATION is None:
         if config_file is not None:
@@ -117,7 +114,7 @@ class DatedStore:
 class DatedFilter:
     """Filter with timestamp to be able to invalidate it on configuration change."""
 
-    def __init__(self, layer_filter: Optional[tilecloud_chain.IntersectGeometryFilter], mtime: float) -> None:
+    def __init__(self, layer_filter: tilecloud_chain.IntersectGeometryFilter | None, mtime: float) -> None:
         """Initialize."""
         self.filter = layer_filter
         self.mtime = mtime
@@ -130,7 +127,7 @@ class Server(Generic[Response]):
         """Initialize."""
         try:
             self.filter_cache: dict[str, dict[str, DatedFilter]] = {}
-            self.s3_client_cache: dict[str, "botocore.client.S3"] = {}
+            self.s3_client_cache: dict[str, botocore.client.S3] = {}
             self.store_cache: dict[str, dict[str, DatedStore]] = {}
 
             assert _TILEGENERATION
@@ -196,7 +193,7 @@ class Server(Generic[Response]):
 
     def get_filter(
         self, config: tilecloud_chain.DatedConfig, layer_name: str
-    ) -> Optional[tilecloud_chain.IntersectGeometryFilter]:
+    ) -> tilecloud_chain.IntersectGeometryFilter | None:
         """Get the filter from the config."""
         dated_filter = self.filter_cache.get(config.file, {}).get(layer_name)
 
@@ -339,13 +336,12 @@ class Server(Generic[Response]):
 
     def serve(
         self,
-        path: Optional[list[str]],
+        path: list[str] | None,
         params: dict[str, str],
         config: tilecloud_chain.DatedConfig,
         **kwargs: Any,
     ) -> Response:
         """Serve the WMTS requests."""
-
         if not config or not config.config:
             return self.error(
                 config,
@@ -636,7 +632,7 @@ class Server(Generic[Response]):
         self,
         config: tilecloud_chain.DatedConfig,
         url: str,
-        headers: Optional[Any] = None,
+        headers: Any | None = None,
         no_cache: bool = False,
         **kwargs: Any,
     ) -> Response:
@@ -673,27 +669,24 @@ class Server(Generic[Response]):
         self,
         config: tilecloud_chain.DatedConfig,
         code: int,
-        message: Optional[Union[Exception, str]] = "",
+        message: Exception | str | None = "",
         **kwargs: Any,
     ) -> Response:
         """Build the error, should be implemented in a sub class."""
-
         raise NotImplementedError
 
     def response(
         self,
         config: tilecloud_chain.DatedConfig,
         data: bytes,
-        headers: Optional[dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
         **kwargs: Any,
     ) -> Response:
         """Build the response, should be implemented in a sub class."""
-
         raise NotImplementedError
 
     def get_host(self, **kwargs: Any) -> str:
         """Get the host used in Prometheus stats and in the JSON logs, should be implemented in a sub class."""
-
         del kwargs
         return "localhost"
 
@@ -719,7 +712,7 @@ class WsgiServer(WsgiServerBase):
         self,
         config: tilecloud_chain.DatedConfig,
         code: int,
-        message: Optional[Union[Exception, str]] = "",
+        message: Exception | str | None = "",
         **kwargs: Any,
     ) -> list[bytes]:
         """Build the error."""
@@ -731,7 +724,7 @@ class WsgiServer(WsgiServerBase):
         self,
         config: tilecloud_chain.DatedConfig,
         data: bytes,
-        headers: Optional[dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
         **kwargs: Any,
     ) -> list[bytes]:
         """Build the response."""
@@ -744,7 +737,7 @@ class WsgiServer(WsgiServerBase):
 
 def app_factory(
     global_config: Any,
-    configfile: Optional[str] = os.environ.get("TILEGENERATION_CONFIGFILE"),
+    configfile: str | None = os.environ.get("TILEGENERATION_CONFIGFILE"),
     **local_conf: Any,
 ) -> WsgiServer:
     """Create the WSGI server."""
@@ -769,7 +762,7 @@ class PyramidServer(PyramidServerBase):
         self,
         config: tilecloud_chain.DatedConfig,
         code: int,
-        message: Optional[Union[Exception, str]] = None,
+        message: Exception | str | None = None,
         **kwargs: Any,
     ) -> pyramid.response.Response:
         """Build the Pyramid response on error."""
@@ -794,7 +787,7 @@ class PyramidServer(PyramidServerBase):
         self,
         config: tilecloud_chain.DatedConfig,
         data: bytes,
-        headers: Optional[dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
         **kwargs: Any,
     ) -> pyramid.response.Response:
         """Build the Pyramid response."""

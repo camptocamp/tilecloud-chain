@@ -5,8 +5,8 @@ import pytest
 from sqlalchemy import and_
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
-
 from tilecloud import Tile, TileCoord
+
 from tilecloud_chain import DatedConfig
 from tilecloud_chain.store.postgresql import (
     _STATUS_CANCELLED,

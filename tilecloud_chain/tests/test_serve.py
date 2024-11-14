@@ -6,7 +6,7 @@ from pyramid.httpexceptions import HTTPBadRequest, HTTPNoContent
 from pyramid.testing import DummyRequest
 from testfixtures import LogCapture
 
-from tilecloud_chain import controller, generate, server
+from tilecloud_chain import generate, server
 from tilecloud_chain.server import PyramidView, app_factory
 from tilecloud_chain.tests import CompareCase
 

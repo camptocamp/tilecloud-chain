@@ -68,8 +68,8 @@ image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
             self.assertEqual(statinfo.st_size, 755)
 
             self.assert_cmd_equals(
-                cmd=".build/venv/bin/generate_process {} -c "
-                "tilegeneration/test-copy.yaml --cache src optipng".format(d),
+                cmd=f".build/venv/bin/generate_process {d} -c "
+                "tilegeneration/test-copy.yaml --cache src optipng",
                 main_func=copy_.process,
                 regex=True,
                 expected=(

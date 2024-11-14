@@ -1,9 +1,8 @@
-"""
-MapnikTileStore with drop action if the generated tile is empty.
-"""
+"""MapnikTileStore with drop action if the generated tile is empty."""
 
 import logging
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 from tilecloud import Tile, TileStore
 from tilecloud.store.mapnik_ import MapnikTileStore
@@ -16,9 +15,9 @@ class MapnikDropActionTileStore(MapnikTileStore):
 
     def __init__(
         self,
-        store: Optional[TileStore] = None,
-        queue_store: Optional[TileStore] = None,
-        count: Optional[list[Callable[[Optional[Tile]], Any]]] = None,
+        store: TileStore | None = None,
+        queue_store: TileStore | None = None,
+        count: list[Callable[[Tile | None], Any]] | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize."""
@@ -27,7 +26,7 @@ class MapnikDropActionTileStore(MapnikTileStore):
         self.count = count or []
         MapnikTileStore.__init__(self, **kwargs)
 
-    def get_one(self, tile: Tile) -> Optional[Tile]:
+    def get_one(self, tile: Tile) -> Tile | None:
         """See in superclass."""
         result = MapnikTileStore.get_one(self, tile)
         if result is None:

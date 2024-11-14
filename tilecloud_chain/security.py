@@ -1,9 +1,6 @@
-"""
-Security policy for the pyramid application.
-"""
+"""Security policy for the pyramid application."""
 
 import os
-from typing import Optional, Union
 
 import c2cwsgiutils.auth
 import pyramid.request
@@ -14,22 +11,22 @@ from pyramid.security import Allowed, Denied
 class User:
     """The user definition."""
 
-    login: Optional[str]
-    name: Optional[str]
-    url: Optional[str]
+    login: str | None
+    name: str | None
+    url: str | None
     is_auth: bool
-    token: Optional[str]
+    token: str | None
     is_admin: bool
     request: pyramid.request.Request
 
     def __init__(
         self,
         auth_type: str,
-        login: Optional[str],
-        name: Optional[str],
-        url: Optional[str],
+        login: str | None,
+        name: str | None,
+        url: str | None,
         is_auth: bool,
-        token: Optional[str],
+        token: str | None,
         request: pyramid.request.Request,
     ) -> None:
         self.auth_type = auth_type
@@ -42,9 +39,7 @@ class User:
         self.is_admin = c2cwsgiutils.auth.check_access(self.request)
 
     def has_access(self, auth_config: AuthConfig) -> bool:
-        """
-        Check if the user has access to the tenant.
-        """
+        """Check if the user has access to the tenant."""
         if self.is_admin:
             return True
         if "github_repository" in auth_config:
@@ -58,7 +53,6 @@ class SecurityPolicy:
 
     def identity(self, request: pyramid.request.Request) -> User:
         """Return app-specific user object."""
-
         if not hasattr(request, "user"):
             if "TEST_USER" in os.environ:
                 user = User(
@@ -81,12 +75,11 @@ class SecurityPolicy:
                     c2cuser.get("token"),
                     request,
                 )
-            setattr(request, "user", user)
+            request.user = user
         return request.user  # type: ignore
 
-    def authenticated_userid(self, request: pyramid.request.Request) -> Optional[str]:
+    def authenticated_userid(self, request: pyramid.request.Request) -> str | None:
         """Return a string ID for the user."""
-
         identity = self.identity(request)
 
         if identity is None:
@@ -96,9 +89,8 @@ class SecurityPolicy:
 
     def permits(
         self, request: pyramid.request.Request, context: AuthConfig, permission: str
-    ) -> Union[Allowed, Denied]:
+    ) -> Allowed | Denied:
         """Allow access to everything if signed in."""
-
         identity = self.identity(request)
 
         if identity is None:

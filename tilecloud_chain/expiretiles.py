@@ -1,6 +1,4 @@
-"""
-Import the osm2pgsql expire-tiles file to Postgres.
-"""
+"""Import the osm2pgsql expire-tiles file to Postgres."""
 
 import logging
 import sys
@@ -9,8 +7,8 @@ from argparse import ArgumentParser
 import psycopg2.sql
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import unary_union
-
 from tilecloud.grid.quad import QuadTileGrid
+
 from tilecloud_chain import parse_tilecoord
 
 logger = logging.getLogger(__name__)

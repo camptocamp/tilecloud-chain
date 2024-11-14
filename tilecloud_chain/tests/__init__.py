@@ -4,9 +4,10 @@ import re
 import shutil
 import sys
 import traceback
+from collections.abc import Callable
 from io import StringIO
 from logging import config
-from typing import Any, Callable, Union
+from typing import Any, Union
 from unittest import TestCase
 
 import yaml
@@ -37,7 +38,7 @@ class CompareCase(TestCase):
         result = re.sub("\n[^\n]*\r", "\n", result)
         result = re.sub("^[^\n]*\r", "", result)
         result = result.split("\n")
-        for n, test in enumerate(zip(expected, result)):
+        for n, test in enumerate(zip(expected, result, strict=False)):
             if test[0] != "PASS...":
                 try:
                     if regex:
@@ -55,9 +56,7 @@ class CompareCase(TestCase):
                     raise e
         self.assertEqual(len(expected), len(result), repr(result))
 
-    def run_cmd(
-        self, cmd: Union[list[str], str], main_func: Callable, get_error: bool = False
-    ) -> tuple[str, str]:
+    def run_cmd(self, cmd: list[str] | str, main_func: Callable, get_error: bool = False) -> tuple[str, str]:
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
         old_stderr = sys.stderr
@@ -78,15 +77,12 @@ class CompareCase(TestCase):
         return mystdout.getvalue(), mystderr.getvalue()
 
     def assert_cmd_equals(
-        self, cmd: Union[list[str], str], main_func: Callable, empty_err: bool = False, **kargs: Any
+        self, cmd: list[str] | str, main_func: Callable, empty_err: bool = False, **kargs: Any
     ) -> None:
         out, err = self.run_cmd(cmd, main_func)
         if empty_err:
             self.assertEqual(err, "")
-        if isinstance(out, bytes):
-            out = out.decode("utf-8")
-        else:
-            out = str(out)
+        out = out.decode("utf-8") if isinstance(out, bytes) else str(out)
         self.assert_result_equals(result=out, **kargs)
 
     def assert_cmd_exit_equals(self, cmd: str, main_func: Callable) -> None:
@@ -99,7 +95,7 @@ class CompareCase(TestCase):
 
     def assert_main_equals(
         self,
-        cmd: Union[list[str], str],
+        cmd: list[str] | str,
         main_func: Callable,
         expected: list[list[str]] = None,
         get_error: bool = False,
@@ -148,7 +144,7 @@ class CompareCase(TestCase):
         except AssertionError:
             raise
         except Exception:
-            assert False, traceback.format_exc()
+            raise AssertionError(traceback.format_exc())
 
         if expected:
             for expect in expected:
@@ -180,7 +176,7 @@ class CompareCase(TestCase):
     ) -> None:
         self.assert_cmd_equals(expected=expected, **kargs)
         count = 0
-        for path, dirs, files in os.walk(directory):
+        for path, _dirs, files in os.walk(directory):
             if len(files) != 0:
                 log.info((path, files))
                 print((path, files))

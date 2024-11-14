@@ -1,6 +1,4 @@
-"""
-Generate the tiles, generate the queue, ...
-"""
+"""Generate the tiles, generate the queue, ..."""
 
 import logging
 import os
@@ -9,19 +7,20 @@ import socket
 import sys
 import threading
 from argparse import ArgumentParser, Namespace
+from collections.abc import Callable
 from datetime import datetime
 from getpass import getuser
-from typing import IO, Callable, Optional, cast
+from typing import IO, cast
 
 import boto3
 import prometheus_client
-
 import tilecloud.filter.error
-import tilecloud_chain
 from tilecloud import Tile, TileCoord, TileStore
 from tilecloud.filter.logger import Logger
 from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.store.url import URLTileStore
+
+import tilecloud_chain
 from tilecloud_chain import (
     Count,
     CountSize,
@@ -65,15 +64,15 @@ class Generate:
     """Generate the tiles, generate the queue, ..."""
 
     def __init__(
-        self, options: Namespace, gene: TileGeneration, out: Optional[IO[str]], server: bool = False
+        self, options: Namespace, gene: TileGeneration, out: IO[str] | None, server: bool = False
     ) -> None:
-        self._count_metatiles: Optional[Count] = None
-        self._count_metatiles_dropped: Optional[Count] = None
-        self._count_tiles: Optional[Count] = None
-        self._count_tiles_dropped: Optional[Count] = None
-        self._count_tiles_stored: Optional[CountSize] = None
-        self._queue_tilestore: Optional[TileStore] = None
-        self._cache_tilestore: Optional[TileStore] = None
+        self._count_metatiles: Count | None = None
+        self._count_metatiles_dropped: Count | None = None
+        self._count_tiles: Count | None = None
+        self._count_tiles_dropped: Count | None = None
+        self._count_tiles_stored: CountSize | None = None
+        self._queue_tilestore: TileStore | None = None
+        self._cache_tilestore: TileStore | None = None
         self._options = options
         self._gene = gene
         self.out = out
@@ -89,7 +88,7 @@ class Generate:
         if self._options.role != "master" and not server:
             self._generate_tiles()
 
-    def gene(self, layer_name: Optional[str] = None) -> None:
+    def gene(self, layer_name: str | None = None) -> None:
         """Generate the tiles."""
         if self._count_tiles is not None:
             self._count_tiles.nb = 0
@@ -151,9 +150,7 @@ class Generate:
             assert self._cache_tilestore is not None
 
     def add_local_process_filter(self) -> None:
-        """
-        Add the local process filter to the gene.
-        """
+        """Add the local process filter to the gene."""
         self._gene.imap(
             LocalProcessFilter(
                 self._gene.get_main_config()
@@ -163,7 +160,7 @@ class Generate:
             )
         )
 
-    def _generate_queue(self, layer_name: Optional[str]) -> None:
+    def _generate_queue(self, layer_name: str | None) -> None:
         if self._options.tiles:
             self._gene.set_store(TilesFileStore(self._options.tiles))
             return
@@ -243,7 +240,7 @@ class Generate:
             assert self._count_metatiles_dropped is not None
             self._gene.imap(MultiAction(HashDropperGetter(self, True, self._count_metatiles_dropped)))
 
-        def add_elapsed_togenerate(metatile: Tile) -> Optional[Tile]:
+        def add_elapsed_togenerate(metatile: Tile) -> Tile | None:
             if metatile is not None:
                 metatile.elapsed_togenerate = metatile.tilecoord.n**2  # type: ignore
                 return metatile
@@ -309,9 +306,7 @@ class Generate:
         self._gene.init(self._queue_tilestore, daemon=self._options.daemon)
 
     def generate_consume(self) -> None:
-        """
-        Consume the tiles and log the time if needed.
-        """
+        """Consume the tiles and log the time if needed."""
         if self._options.time is not None:
             options = self._options
 
@@ -342,10 +337,8 @@ class Generate:
         else:
             self._gene.consume()
 
-    def generate_resume(self, layer_name: Optional[str]) -> None:
-        """
-        Generate the resume message and close the tilestore connection.
-        """
+    def generate_resume(self, layer_name: str | None) -> None:
+        """Generate the resume message and close the tilestore connection."""
         config = self._gene.get_config(self._gene.config_file) if self._gene.config_file is not None else None
         if self._options.time is None:
             layer = None
@@ -441,7 +434,7 @@ class TilestoreGetter:
     def __init__(self, gene: Generate):
         self.gene = gene
 
-    def __call__(self, config_file: str, layer_name: str) -> Optional[TileStore]:
+    def __call__(self, config_file: str, layer_name: str) -> TileStore | None:
         config = self.gene._gene.get_config(config_file)
         layer = config.config["layers"][layer_name]
         if layer["type"] == "wms":
@@ -476,6 +469,7 @@ class TilestoreGetter:
         elif layer["type"] == "mapnik":
             try:
                 from tilecloud.store.mapnik_ import MapnikTileStore  # pylint: disable=import-outside-toplevel
+
                 from tilecloud_chain.mapnik_ import (  # pylint: disable=import-outside-toplevel
                     MapnikDropActionTileStore,
                 )
@@ -542,7 +536,7 @@ def detach() -> None:
         sys.exit(1)
 
 
-def main(args: Optional[list[str]] = None, out: Optional[IO[str]] = None) -> None:
+def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
     """Run the tiles generation."""
     try:
         parser = ArgumentParser(
@@ -666,7 +660,7 @@ class HashDropperGetter:
         self.meta = meta
         self.count = count
 
-    def __call__(self, config_file: str, layer_name: str) -> Callable[[Tile], Optional[Tile]]:
+    def __call__(self, config_file: str, layer_name: str) -> Callable[[Tile], Tile | None]:
         """Call."""
         layer = self.gene._gene.get_config(config_file).config["layers"][layer_name]
         conf_name = "empty_metatile_detection" if self.meta else "empty_tile_detection"

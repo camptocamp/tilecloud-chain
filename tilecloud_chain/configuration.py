@@ -1,6 +1,4 @@
-"""
-Automatically generated file from a JSON schema.
-"""
+"""Automatically generated file from a JSON schema."""
 
 from typing import Any, Literal, TypedDict, Union
 
@@ -545,7 +543,7 @@ class CloudfrontCost(TypedDict, total=False):
     The CloudFront cost (main configuration)
     """
 
-    get: Union[int, float]
+    get: int | float
     """
     CloudFront Get.
 
@@ -554,7 +552,7 @@ class CloudfrontCost(TypedDict, total=False):
     default: 0.009
     """
 
-    download: Union[int, float]
+    download: int | float
     """
     CloudFront Download.
 
@@ -575,7 +573,7 @@ class Configuration(TypedDict, total=False):
     """
 
     grids: dict[str, "Grid"]
-    r"""
+    """
     Grids.
 
     The WMTS grid definitions by grid name, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-grids
@@ -585,7 +583,7 @@ class Configuration(TypedDict, total=False):
     """
 
     caches: dict[str, "Cache"]
-    r"""
+    """
     Caches.
 
     The tiles caches definitions by name, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-caches
@@ -595,7 +593,7 @@ class Configuration(TypedDict, total=False):
     """
 
     layers: dict[str, "Layer"]
-    r"""
+    """
     Layers.
 
     The layers definitions by name, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-layers
@@ -942,7 +940,7 @@ class Grid(TypedDict, total=False):
     The scale used to build a FreeTileGrid typically '2'
     """
 
-    resolutions: Required[list[Union[int, float]]]
+    resolutions: Required[list[int | float]]
     """
     Resolutions.
 
@@ -951,7 +949,7 @@ class Grid(TypedDict, total=False):
     Required property
     """
 
-    bbox: Required[list[Union[int, float]]]
+    bbox: Required[list[int | float]]
     """
     Bounding box.
 
@@ -1069,7 +1067,7 @@ Aggregation type: anyOf
 """
 
 
-LayerBoundingBox = list[Union[int, float]]
+LayerBoundingBox = list[int | float]
 """
 Layer bounding box.
 
@@ -1087,7 +1085,7 @@ class LayerCost(TypedDict, total=False):
     The rules used to calculate the cost
     """
 
-    tileonly_generation_time: Union[int, float]
+    tileonly_generation_time: int | float
     """
     tile only generation time.
 
@@ -1096,7 +1094,7 @@ class LayerCost(TypedDict, total=False):
     default: 40
     """
 
-    tile_generation_time: Union[int, float]
+    tile_generation_time: int | float
     """
     tile generation time.
 
@@ -1105,7 +1103,7 @@ class LayerCost(TypedDict, total=False):
     default: 30
     """
 
-    metatile_generation_time: Union[int, float]
+    metatile_generation_time: int | float
     """
     Meta tile generation time.
 
@@ -1114,7 +1112,7 @@ class LayerCost(TypedDict, total=False):
     default: 30
     """
 
-    tile_size: Union[int, float]
+    tile_size: int | float
     """
     Cost tile size.
 
@@ -1125,7 +1123,7 @@ class LayerCost(TypedDict, total=False):
 
 
 LayerDimensionName = str
-r"""
+"""
 Layer dimension name.
 
 The dimension name
@@ -1237,7 +1235,7 @@ pattern: ^[a-zA-Z0-9]+$
 
 
 LayerLegendMime = str
-r"""
+"""
 Layer legend MIME.
 
 The mime type used to store the generated legend
@@ -1335,7 +1333,7 @@ class LayerMapnik(TypedDict, total=False):
     """
 
     wmts_style: Required["LayerWmtsStyle"]
-    r"""
+    """
     Layer WMTS style.
 
     The WMTS style
@@ -1346,7 +1344,7 @@ class LayerMapnik(TypedDict, total=False):
     """
 
     mime_type: Required["LayerMimeType"]
-    r"""
+    """
     Layer MIME type.
 
     The MIME type of the tiles
@@ -1380,7 +1378,7 @@ class LayerMapnik(TypedDict, total=False):
     """
 
     legend_mime: "LayerLegendMime"
-    r"""
+    """
     Layer legend MIME.
 
     The mime type used to store the generated legend
@@ -1528,7 +1526,7 @@ default: 5
 
 
 LayerMimeType = str
-r"""
+"""
 Layer MIME type.
 
 The MIME type of the tiles
@@ -1662,7 +1660,7 @@ class LayerWms(TypedDict, total=False):
     """
 
     wmts_style: Required["LayerWmtsStyle"]
-    r"""
+    """
     Layer WMTS style.
 
     The WMTS style
@@ -1673,7 +1671,7 @@ class LayerWms(TypedDict, total=False):
     """
 
     mime_type: Required["LayerMimeType"]
-    r"""
+    """
     Layer MIME type.
 
     The MIME type of the tiles
@@ -1707,7 +1705,7 @@ class LayerWms(TypedDict, total=False):
     """
 
     legend_mime: "LayerLegendMime"
-    r"""
+    """
     Layer legend MIME.
 
     The mime type used to store the generated legend
@@ -1823,7 +1821,7 @@ class LayerWms(TypedDict, total=False):
 
 
 LayerWmtsStyle = str
-r"""
+"""
 Layer WMTS style.
 
 The WMTS style
@@ -1987,7 +1985,7 @@ class Openlayers(TypedDict, total=False):
     default: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     """
 
-    center_x: Union[int, float]
+    center_x: int | float
     """
     Center x.
 
@@ -1996,7 +1994,7 @@ class Openlayers(TypedDict, total=False):
     default: 2600000
     """
 
-    center_y: Union[int, float]
+    center_y: int | float
     """
     Center y.
 
@@ -2005,7 +2003,7 @@ class Openlayers(TypedDict, total=False):
     default: 1200000
     """
 
-    zoom: Union[int, float]
+    zoom: int | float
     """
     Map initial zoom.
 
@@ -2322,7 +2320,7 @@ class S3Cost(TypedDict, total=False):
     The S3 cost (main configuration)
     """
 
-    storage: Union[int, float]
+    storage: int | float
     """
     S3 Storage.
 
@@ -2331,7 +2329,7 @@ class S3Cost(TypedDict, total=False):
     default: 0.125
     """
 
-    put: Union[int, float]
+    put: int | float
     """
     S3 Put.
 
@@ -2340,7 +2338,7 @@ class S3Cost(TypedDict, total=False):
     default: 0.01
     """
 
-    get: Union[int, float]
+    get: int | float
     """
     S3 Get.
 
@@ -2349,7 +2347,7 @@ class S3Cost(TypedDict, total=False):
     default: 0.01
     """
 
-    download: Union[int, float]
+    download: int | float
     """
     S3 Download.
 
@@ -2616,7 +2614,7 @@ class SqsCost(TypedDict, total=False):
     The SQS cost, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sqs (main configuration)
     """
 
-    request: Union[int, float]
+    request: int | float
     """
     Request.
 
@@ -2659,7 +2657,7 @@ WMTS_PATH_DEFAULT = "wmts"
 
 
 _GenerateItem = str
-r""" pattern: ^[a-zA-Z0-9_\-\+~\.]+$ """
+""" pattern: ^[a-zA-Z0-9_\-\+~\.]+$ """
 
 
 _HeadersAdditionalproperties = str
@@ -2688,7 +2686,7 @@ _LAYER_WMS_META_SIZE_DEFAULT = 5
 
 class _LayerDimensionsItem(TypedDict, total=False):
     name: Required["LayerDimensionName"]
-    r"""
+    """
     Layer dimension name.
 
     The dimension name
@@ -2717,7 +2715,7 @@ class _LayerDimensionsItem(TypedDict, total=False):
     """
 
     default: Required[str]
-    r"""
+    """
     Default.
 
     The default value present in the capabilities
@@ -2747,14 +2745,14 @@ class _LayerGeometriesItem(TypedDict, total=False):
     Required property
     """
 
-    min_resolution: Union[int, float]
+    min_resolution: int | float
     """
     Min resolution.
 
     The min resolution where the query is valid
     """
 
-    max_resolution: Union[int, float]
+    max_resolution: int | float
     """
     Max resolution.
 
@@ -2764,7 +2762,7 @@ class _LayerGeometriesItem(TypedDict, total=False):
 
 class _LayerLegendsItem(TypedDict, total=False):
     mime_type: Required[str]
-    r"""
+    """
     MIME type.
 
     The mime type used in the WMS request
@@ -2882,4 +2880,4 @@ _SentinelsItem = tuple["SentinelHost", "SentinelPort"]
 
 
 _ValuesItem = str
-r""" pattern: ^[a-zA-Z0-9_\-\+~\.]+$ """
+""" pattern: ^[a-zA-Z0-9_\-\+~\.]+$ """
