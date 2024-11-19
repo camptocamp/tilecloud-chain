@@ -44,7 +44,8 @@ import requests
 import tilecloud.store.s3
 from azure.core.exceptions import ResourceNotFoundError
 from c2cwsgiutils import health_check
-from prometheus_client import Summary
+from c2cwsgiutils.prometheus import MemoryMapCollector
+from prometheus_client import REGISTRY, Summary
 from pyramid.config import Configurator
 from pyramid.httpexceptions import HTTPException, exception_response
 from pyramid.request import Request
@@ -930,5 +931,9 @@ def main(global_config: Any, **settings: Any) -> Router:
     config.add_view(PyramidView, route_name="tiles")
 
     config.scan("tilecloud_chain.views")
+
+    if os.environ.get("TILECLOUD_CHAIN_PROMETHEUS_MEMORY_MAP", "false").lower() in ("true", "1", "on"):
+        REGISTRY.register(MemoryMapCollector("rss"))
+        REGISTRY.register(MemoryMapCollector("size"))
 
     return config.make_wsgi_app()
