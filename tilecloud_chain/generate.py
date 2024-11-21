@@ -1,5 +1,6 @@
 """Generate the tiles, generate the queue, ..."""
 
+import gc
 import logging
 import os
 import random
@@ -13,6 +14,7 @@ from getpass import getuser
 from typing import IO, cast
 
 import boto3
+import objgraph
 import prometheus_client
 import tilecloud.filter.error
 from tilecloud import Tile, TileCoord, TileStore
@@ -42,6 +44,21 @@ from tilecloud_chain.multitilestore import MultiTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _objgraph(tile: Tile) -> Tile:
+    """Log the objgraph."""
+    for generation in range(3):
+        gc.collect(generation)
+    values = [
+        f"{name}: {number} {diff}"
+        for name, number, diff in objgraph.growth(
+            limit=int(os.environ.get("TILECLOUD_CHAIN_OBJGRAPH_LIMIT", "10"))
+        )
+    ]
+    if values:
+        _LOGGER.debug("Objgraph growth in queue:\n%s", "\n".join(values))
+    return tile
 
 
 class LogTilesContext:
@@ -110,6 +127,9 @@ class Generate:
 
         if self._options.role != "slave" or self._options.tiles:
             self._generate_queue(layer_name)
+
+        if os.environ.get("TILECLOUD_CHAIN_OBJGRAPH_GENE", "0").lower() in ("1", "true", "on"):
+            self._gene.imap(_objgraph)
 
         self.generate_consume()
         self.generate_resume(layer_name)
