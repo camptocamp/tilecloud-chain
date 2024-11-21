@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import gc
 import io
 import logging
 import multiprocessing
@@ -38,6 +39,7 @@ from collections.abc import Iterable, Iterator
 from datetime import datetime, timedelta
 from typing import Any, cast
 
+import objgraph
 import sqlalchemy
 import sqlalchemy.sql.functions
 from prometheus_client import Counter, Gauge, Summary
@@ -525,6 +527,22 @@ class PostgresqlTileStore(TileStore):
                     continue
                 job_id = self.jobs.pop(config_filename)
                 try:
+                    if os.environ.get("TILECLOUD_CHAIN_OBJGRAPH_POSTGRESQL", "0").lower() in (
+                        "1",
+                        "true",
+                        "on",
+                    ):
+                        for generation in range(3):
+                            gc.collect(generation)
+                        values = [
+                            f"{name}: {number} {diff}"
+                            for name, number, diff in objgraph.growth(
+                                limit=int(os.environ.get("TILECLOUD_CHAIN_OBJGRAPH_LIMIT", "10"))
+                            )
+                        ]
+                        if values:
+                            _LOGGER.debug("Objgraph growth in postgresql:\n%s", "\n".join(values))
+
                     with self.SessionMaker() as session:
                         sqlalchemy_tile = (
                             session.query(Queue)
