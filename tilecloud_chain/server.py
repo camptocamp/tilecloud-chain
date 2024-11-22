@@ -32,19 +32,27 @@ import json
 import logging
 import mimetypes
 import os
+import resource
 import time
+from collections.abc import Generator
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 from urllib.parse import parse_qs, urlencode
 
 import botocore.exceptions
+import c2cwsgiutils.prometheus
 import c2cwsgiutils.pyramid
+import prometheus_client
+import prometheus_client.core
+import prometheus_client.metrics_core
+import prometheus_client.multiprocess
+import prometheus_client.registry
+import psutil
 import pyramid.response
 import pyramid.session
 import requests
 import tilecloud.store.s3
 from azure.core.exceptions import ResourceNotFoundError
 from c2cwsgiutils import health_check
-from c2cwsgiutils.prometheus import MemoryMapCollector
 from prometheus_client import REGISTRY, Summary
 from pyramid.config import Configurator
 from pyramid.httpexceptions import HTTPException, exception_response
@@ -863,9 +871,57 @@ def forbidden(request: pyramid.request.Request) -> pyramid.response.Response:
     )
 
 
+class _ResourceCollector(prometheus_client.registry.Collector):
+    """Collect the resources used by Python."""
+
+    def collect(self) -> Generator[prometheus_client.core.GaugeMetricFamily, None, None]:
+        """Get the gauge from smap file."""
+        gauge = prometheus_client.core.GaugeMetricFamily(
+            c2cwsgiutils.prometheus.build_metric_name("python_resource"),
+            "Python resources",
+            labels=["name"],
+        )
+        r = resource.getrusage(resource.RUSAGE_SELF)
+        for field in dir(r):
+            if field.startswith("ru_"):
+                gauge.add_metric([field[3:]], getattr(r, field))
+        yield gauge
+
+
+class _MemoryInfoCollector(prometheus_client.registry.Collector):
+    """Collect the resources used by Python."""
+
+    process = psutil.Process(os.getpid())
+
+    def collect(self) -> Generator[prometheus_client.core.GaugeMetricFamily, None, None]:
+        """Get the gauge from smap file."""
+        gauge = prometheus_client.core.GaugeMetricFamily(
+            c2cwsgiutils.prometheus.build_metric_name("python_memory_info"),
+            "Python memory info",
+            labels=["name"],
+        )
+        memory_info = self.process.memory_info()
+        gauge.add_metric(["rss"], memory_info.rss)
+        gauge.add_metric(["vms"], memory_info.vms)
+        gauge.add_metric(["shared"], memory_info.shared)
+        gauge.add_metric(["text"], memory_info.text)
+        gauge.add_metric(["lib"], memory_info.lib)
+        gauge.add_metric(["data"], memory_info.data)
+        gauge.add_metric(["dirty"], memory_info.dirty)
+        yield gauge
+
+
 def main(global_config: Any, **settings: Any) -> Router:
     """Start the server in Pyramid."""
     del global_config  # unused
+
+    REGISTRY.register(c2cwsgiutils.prometheus.MemoryMapCollector("pss"))
+    if os.environ.get("TILECLOUD_CHAIN_PROMETHEUS_MEMORY_MAP", "false").lower() in ("true", "1", "on"):
+        REGISTRY.register(c2cwsgiutils.prometheus.MemoryMapCollector("rss"))
+        REGISTRY.register(c2cwsgiutils.prometheus.MemoryMapCollector("size"))
+    REGISTRY.register(_ResourceCollector())
+    REGISTRY.register(_MemoryInfoCollector())
+    prometheus_client.start_http_server(int(os.environ["C2C_PROMETHEUS_PORT"]))
 
     config = Configurator(settings=settings)
 
@@ -931,9 +987,5 @@ def main(global_config: Any, **settings: Any) -> Router:
     config.add_view(PyramidView, route_name="tiles")
 
     config.scan("tilecloud_chain.views")
-
-    if os.environ.get("TILECLOUD_CHAIN_PROMETHEUS_MEMORY_MAP", "false").lower() in ("true", "1", "on"):
-        REGISTRY.register(MemoryMapCollector("rss"))
-        REGISTRY.register(MemoryMapCollector("size"))
 
     return config.make_wsgi_app()
