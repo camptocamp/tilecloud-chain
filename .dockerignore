@@ -7,9 +7,7 @@
 !MANIFEST.in
 !tilecloud_chain/*
 !docker/run
-!development.ini
-!production.ini
-!gunicorn.conf.py
+!application.ini
 !package*.json
 !.nvmrc
 !screenshot.js

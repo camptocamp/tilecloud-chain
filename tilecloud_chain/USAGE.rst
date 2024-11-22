@@ -574,24 +574,13 @@ To use the pyramid view use the following configuration:
 Internal WSGI server
 ~~~~~~~~~~~~~~~~~~~~
 
-in ``production.ini``:
+in ``application.ini``:
 
 .. code::
 
     [app:tiles]
     use = egg:tilecloud_chain#server
     configfile = %(here)s/tilegeneration/config.yaml
-
-with the Apache configuration:
-
-.. code::
-
-    WSGIDaemonProcess tiles:${instanceid} display-name=%{GROUP} user=${modwsgi_user}
-    WSGIScriptAlias /${instanceid}/tiles ${directory}/apache/wmts.wsgi
-    <Location /${instanceid}/tiles>
-        WSGIProcessGroup tiles:${instanceid}
-        WSGIApplicationGroup %{GLOBAL}
-    </Location>
 
 Commands
 --------

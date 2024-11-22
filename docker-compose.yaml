@@ -85,7 +85,7 @@ services:
   slave:
     <<: *app
     command:
-      - generate-tiles
+      - /venv/bin/generate-tiles
       - '--role=slave'
       - '--daemon'
     environment:

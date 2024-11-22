@@ -56,7 +56,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
 
 # From c2cwsgiutils
 
-CMD ["gunicorn", "--paste=/app/production.ini"]
+CMD ["/venv/bin/pserve", "c2c:///app/application.ini"]
 
 ENV LOG_TYPE=console \
     DEVELOPMENT=0 \
@@ -86,7 +86,7 @@ ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
     TILECLOUD_CHAIN_LOG_LEVEL=INFO \
     TILECLOUD_LOG_LEVEL=INFO \
     C2CWSGIUTILS_LOG_LEVEL=WARN \
-    GUNICORN_LOG_LEVEL=WARN \
+    WAITRESS_LOG_LEVEL=INFO \
     SQL_LOG_LEVEL=WARN \
     OTHER_LOG_LEVEL=WARN \
     VISIBLE_ENTRY_POINT=/ \
@@ -96,7 +96,8 @@ ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
     TILE_QUEUE_SIZE=2 \
     TILE_CHUNK_SIZE=1 \
     TILE_SERVER_LOGLEVEL=quiet \
-    TILE_MAPCACHE_LOGLEVEL=verbose
+    TILE_MAPCACHE_LOGLEVEL=verbose \
+    WAITRESS_THREADS=10
 
 EXPOSE 8080
 
@@ -112,10 +113,6 @@ RUN --mount=type=cache,target=/root/.cache \
     POETRY_DYNAMIC_VERSIONING_BYPASS=${VERSION} python3 -m pip install --disable-pip-version-check --no-deps --editable=. \
     && mv docker/run /usr/bin/ \
     && python3 -m compileall -q /app/tilecloud_chain
-
-RUN mkdir -p /prometheus-metrics \
-    && chmod a+rwx /prometheus-metrics
-ENV PROMETHEUS_MULTIPROC_DIR=/prometheus-metrics
 
 # Do the lint, used by the tests
 FROM base AS tests

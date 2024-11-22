@@ -1,13 +1,13 @@
-version: '2.2'
-
 services:
   application: &app
     ports:
       - '9050:8080'
     command:
-      - pserve
+      - /venv/bin/pserve
       - --reload
-      - c2c:///app/development.ini
+      - c2c:///app/application.ini
+    environment:
+      - DEVELOPMENT=TRUE
     volumes:
       - ./tilecloud_chain:/app/tilecloud_chain:ro
       # - ../tilecloud/tilecloud:/usr/local/lib/python3.10/dist-packages/tilecloud:ro
