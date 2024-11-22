@@ -54,6 +54,7 @@ jobs:
           path: /tmp/pre-commit.patch
           retention-days: 1
         if: failure()
+
       - name: Print environment information
         run: c2cciutils-env
         env:
@@ -64,20 +65,13 @@ jobs:
 
       - name: Checks
         run: make checks
-      - run: git diff --exit-code --patch > /tmp/ruff.patch || true && git reset --hard
-        if: failure()
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Apply Ruff lint fix.patch
-          path: /tmp/ruff.patch
-          retention-days: 1
-        if: failure()
 
       - name: Tests
         run: make tests
 
       - run: c2cciutils-docker-logs
         if: always()
+
       - uses: actions/upload-artifact@v4
         with:
           name: results
