@@ -1,4 +1,4 @@
-# TileCloud Chain
+# TileCloud-chain
 
 The goal of TileCloud Chain is to provide tools around tile generation on a chain like:
 
@@ -52,53 +52,27 @@ Only the latest release is supported and version &lt; 1.11 contains security iss
 Build it:
 
 ```bash
-git submodule update --recursive
-python3 -m venv .build/venv
-.build/venv/bin/pip install -r requirements.txt
-.build/venv/bin/pip install -e .
-.build/venv/bin/pip install -r dev-requirements.txt
+make build
 ```
 
 ## Run prospector
 
 ```bash
-.build/venv/bin/prospector
+make prospector
 ```
 
 ## Run the tests
 
-Setup your environment:
-
-```bash
-touch tilecloud_chain/OpenLayers.js
-docker build --tag camptocamp/tilecloud-chain .
-docker compose -p tilecloud up
-```
-
 To run the tests:
 
 ```bash
-docker compose -p tilecloud exec test python setup.py nosetests --logging-filter=tilecloud,tilecloud_chain --attr '!'nopy3
+make tests
 ```
 
 ## Documentation
 
 As documentation you can read the [USAGE.rst](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst)
 and the [configuration reference](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/CONFIG.md).
-
-## VSCode
-
-You can add that in your workspace configuration to use the JSON schema:
-
-```json
-{
-  "yaml.schemas": {
-    "../tilecloud-chain/tilecloud_chain/schema.json": [
-      "tilecloud-chain/tilecloud_chain/tests/tilegeneration/*.yaml"
-    ]
-  }
-}
-```
 
 ## Contributing
 
