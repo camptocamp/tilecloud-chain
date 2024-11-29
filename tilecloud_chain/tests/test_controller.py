@@ -1,6 +1,8 @@
 import os
 import shutil
 
+from PIL import Image
+
 from tilecloud_chain import TileGeneration, controller
 from tilecloud_chain.tests import CompareCase
 
@@ -1662,6 +1664,28 @@ sqs:
         self.assertEqual(quote("a'b\"c"), "'a\\'b\"c'")
         self.assertEqual(quote('ab"c'), "'ab\"c'")
         self.assertEqual(quote(""), "''")
+
+    def test_generate_legend_images(self) -> None:
+        self.assert_tiles_generated(
+            cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends.yaml --generate-legend-images",
+            main_func=controller.main,
+            directory="/tmp/tiles/1.0.0/",
+            tiles_pattern="%s/default/legend%i.png",
+            tiles=[("point", 0), ("line", 0), ("line", 2), ("polygon", 0), ("all", 0), ("all", 2)],
+        )
+
+        im = Image.open("/tmp/tiles/1.0.0/point/default/legend0.png")
+        self.assertEqual(im.size, (64, 20))
+        im = Image.open("/tmp/tiles/1.0.0/line/default/legend0.png")
+        self.assertEqual(im.size, (71, 35))
+        im = Image.open("/tmp/tiles/1.0.0/line/default/legend2.png")
+        self.assertEqual(im.size, (71, 35))
+        im = Image.open("/tmp/tiles/1.0.0/polygon/default/legend0.png")
+        self.assertEqual(im.size, (81, 23))
+        im = Image.open("/tmp/tiles/1.0.0/all/default/legend0.png")
+        self.assertEqual(im.size, (81, 78))
+        im = Image.open("/tmp/tiles/1.0.0/all/default/legend2.png")
+        self.assertEqual(im.size, (81, 78))
 
     def test_legends(self) -> None:
         self.assert_tiles_generated(
