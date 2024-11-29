@@ -375,7 +375,8 @@ def _generate_legend_images(gene: TileGeneration) -> None:
             for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
                 legends = []
                 for wmslayer in layer["layers"].split(","):
-                    url = ( layer["url"]
+                    url = (
+                        layer["url"]
                         + "?"
                         + urlencode(
                             {
@@ -390,7 +391,13 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                             }
                         )
                     )
-                    _LOGGER.debug("Get legend image for layer '%s'-'%s', resolution '%s': %s", layer_name, wmslayer, resolution, url)
+                    _LOGGER.debug(
+                        "Get legend image for layer '%s'-'%s', resolution '%s': %s",
+                        layer_name,
+                        wmslayer,
+                        resolution,
+                        url,
+                    )
                     response = session.get(url)
                     try:
                         legends.append(Image.open(BytesIO(response.content)))
