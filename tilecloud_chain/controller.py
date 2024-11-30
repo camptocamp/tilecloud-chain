@@ -410,8 +410,8 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                             response.content,
                             exc_info=True,
                         )
-                width = max(i.size[0] for i in legends) if legends else 0
-                height = sum(i.size[1] for i in legends) if legends else 0
+                width = max(1, max(i.size[0] for i in legends) if legends else 0)
+                height = max(1, sum(i.size[1] for i in legends) if legends else 0)
                 image = Image.new("RGBA", (width, height))
                 y = 0
                 for i in legends:
