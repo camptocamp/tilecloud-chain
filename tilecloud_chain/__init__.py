@@ -1578,7 +1578,8 @@ class HashLogger:
             if ref is None:
                 ref = px
             elif px != ref:
-                _LOGGER.error("Error: image is not uniform.")
+                print("Error: image is not uniform.")
+                _LOGGER.debug("Error: image is not uniform.")
                 sys.exit(1)
 
         assert tile.data
