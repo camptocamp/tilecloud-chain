@@ -14,7 +14,7 @@ ALLOWED_ARGUMENTS_DEFAULT = [
     "--generate-legend-images",
     "--get-bbox",
     "--help",
-    "--ignore-errors",
+    "--ignore-error",
     "--bbox",
     "--zoom",
     "--test",
@@ -2527,7 +2527,7 @@ class Server(TypedDict, total=False):
       - --generate-legend-images
       - --get-bbox
       - --help
-      - --ignore-errors
+      - --ignore-error
       - --bbox
       - --zoom
       - --test
