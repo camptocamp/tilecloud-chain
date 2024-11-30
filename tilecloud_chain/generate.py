@@ -611,6 +611,7 @@ def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
             config_file=options.config or os.environ.get("TILEGENERATION_CONFIGFILE"),
             options=options,
             multi_thread=options.get_hash is None,
+            out=out,
         )
 
         if (

@@ -209,9 +209,11 @@ class Run:
         self,
         gene: "TileGeneration",
         functions: list[Callable[[Tile], Tile]],
+        out: IO[str] | None = None,
     ) -> None:
         self.gene = gene
         self.functions = functions
+        self.out = out
         self.safe = gene.options is None or not gene.options.debug
         daemon = gene.options is not None and getattr(gene.options, "daemon", False)
         self.max_consecutive_errors = (
@@ -268,7 +270,11 @@ class Run:
                     ):
                         assert isinstance(tile.error, str)
                         tile.error = f"WMS server error: {self._re_rm_xml_tag.sub('', tile.error)}"
-                    print(f"Error with tile {tile.tilecoord} {tile.formated_metadata}:\n{tile.error}")
+                    if self.out:
+                        print(
+                            f"Error with tile {tile.tilecoord} {tile.formated_metadata}:\n{tile.error}",
+                            file=self.out,
+                        )
                     _LOGGER.warning(
                         "Error with tile %s %s:\n%s", tile.tilecoord, tile.formated_metadata, tile.error
                     )
@@ -435,6 +441,7 @@ class TileGeneration:
         configure_logging: bool = True,
         multi_thread: bool = True,
         maxconsecutive_errors: bool = True,
+        out: IO[str] | None = None,
     ):
         self.geoms_cache: dict[str, dict[str, DatedGeoms]] = {}
         self._close_actions: list[Close] = []
@@ -446,6 +453,7 @@ class TileGeneration:
         self.metatilesplitter_thread_pool: ThreadPoolExecutor | None = None
         self.multi_thread = multi_thread
         self.maxconsecutive_errors = maxconsecutive_errors
+        self.out = out
         self.grid_cache: dict[str, dict[str, DatedTileGrid]] = {}
         self.layer_legends: dict[str, list[Legend]] = {}
         self.config_file = config_file
@@ -975,7 +983,7 @@ class TileGeneration:
 
             store = TimedTileStoreWrapper(MultiTileStore(get_splitter), store_name="splitter")
 
-        run = Run(self, self.functions_tiles)
+        run = Run(self, self.functions_tiles, out=self.out)
         nb_thread = int(os.environ.get("TILE_NB_THREAD", "1"))
         if nb_thread == 1 or not self.multi_thread:
 
@@ -1379,7 +1387,7 @@ class TileGeneration:
 
         start = datetime.now()
 
-        run = Run(self, self.functions_metatiles)
+        run = Run(self, self.functions_metatiles, out=self.out)
 
         if test is None:
             if TYPE_CHECKING:
@@ -1579,7 +1587,7 @@ class HashLogger:
             if ref is None:
                 ref = px
             elif px != ref:
-                print("Error: image is not uniform.")
+                print("Error: image is not uniform.", file=self.out)
                 _LOGGER.debug("Error: image is not uniform.")
                 sys.exit(1)
 

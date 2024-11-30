@@ -13,7 +13,6 @@ ALLOWED_ARGUMENTS_DEFAULT = [
     "--get-hash",
     "--generate-legend-images",
     "--get-bbox",
-    "--help",
     "--ignore-error",
     "--bbox",
     "--zoom",
@@ -2526,7 +2525,6 @@ class Server(TypedDict, total=False):
       - --get-hash
       - --generate-legend-images
       - --get-bbox
-      - --help
       - --ignore-error
       - --bbox
       - --zoom
