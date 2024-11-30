@@ -398,16 +398,83 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                         resolution,
                         url,
                     )
-                    response = session.get(url)
+                    try:
+                        response = session.get(url)
+                    except Exception as e:  # pylint: disable=broad-exception-caught
+                        print(
+                            "\n".join(
+                                [
+                                    f"Unable to get legend image for layer '{layer_name}'-'{wmslayer}', resolution '{resolution}'",
+                                    url,
+                                    str(e),
+                                ]
+                            )
+                        )
+                        _LOGGER.debug(
+                            "Unable to get legend image for layer '%s'-'%s', resolution '%s'",
+                            layer_name,
+                            wmslayer,
+                            resolution,
+                            exc_info=True,
+                        )
+                        continue
+                    if response.status_code != 200:
+                        print(
+                            "\n".join(
+                                [
+                                    f"Unable to get legend image for layer '{layer_name}'-'{wmslayer}', resolution '{resolution}'",
+                                    url,
+                                    f"status code: {response.status_code}: {response.reason}",
+                                    response.text,
+                                ]
+                            )
+                        )
+                        _LOGGER.debug(
+                            "Unable to get legend image for layer '%s'-'%s', resolution '%s': %s",
+                            layer_name,
+                            wmslayer,
+                            resolution,
+                            response.text,
+                        )
+                        continue
+                    if not response.headers["Content-Type"].startswith(layer["legend_mime"].split("/")[0]):
+                        print(
+                            "\n".join(
+                                [
+                                    f"Unable to get legend image for layer '{layer_name}'-'{wmslayer}', resolution '{resolution}'",
+                                    url,
+                                    f"Content-Type: {response.headers['Content-Type']}",
+                                    response.text,
+                                ]
+                            )
+                        )
+                        _LOGGER.debug(
+                            "Unable to get legend image for layer '%s'-'%s', resolution '%s', content-type: %s: %s",
+                            layer_name,
+                            wmslayer,
+                            resolution,
+                            response.headers["Content-Type"],
+                            response.text,
+                        )
+                        continue
                     try:
                         legends.append(Image.open(BytesIO(response.content)))
                     except Exception:  # pylint: disable=broad-exception-caught
-                        _LOGGER.warning(
+                        print(
+                            "\n".join(
+                                [
+                                    f"Unable to read legend image for layer '{layer_name}'-'{wmslayer}', resolution '{resolution}'",
+                                    url,
+                                    response.text,
+                                ]
+                            )
+                        )
+                        _LOGGER.debug(
                             "Unable to read legend image for layer '%s'-'%s', resolution '%s': %s",
                             layer_name,
                             wmslayer,
                             resolution,
-                            response.content,
+                            response.text,
                             exc_info=True,
                         )
                 width = max(1, max(i.size[0] for i in legends) if legends else 0)
