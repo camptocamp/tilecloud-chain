@@ -138,45 +138,6 @@
     <span id="result"></span>
     %endif
 
-    <!---->
-    %if request.identity.is_auth:
-    <h3>Usage</h3>
-    <h4><code>generate-tiles</code></h4>
-    <p>Generate the tiles.</p>
-    <p>Arguments:</p>
-    <ul>
-      <li>
-        <code>--layer=NAME</code>: the layer name to generate, it not specified all the layers are generated.
-      </li>
-      <li>
-        <code>--get-hash=Z/X/Y</code>: get the hash configuration for the layer (requires
-        <code>--layer</code>).
-      </li>
-      <li>
-        <code>--get-bbox=Z/X/Y[:-N/+N]</code>: get the bbox of a tile, use the specified tile
-        <code>Z/X/Y</code>, or <code>Z/X/Y:+N/+N</code> for metatiles (requires <code>--layer</code>).
-      </li>
-      <li>
-        <code>--dimensions DIMENSION=VALUE [DIMENSION=VALUE ...]</code>: overwrite the dimensions values
-        specified in the config file.
-      </li>
-      <li>
-        <code>--zoom=ZOOM</code> restrict to specified zoom level, or a zooms range (2-5), or a zooms list
-        (2,4,5).
-      </li>
-      <li><code>--bbox MINX MINY MAXX MAXY</code>: restrict to specified bounding box.</li>
-      <li>
-        <code>--near X Y</code>: This option is a good replacement of <code>--bbox</code>, to used with
-        <code>--time</code> or <code>--test</code> and <code>--zoom</code>, implies <code>--no-geom</code>. It
-        automatically measure a bbox around the X Y position that corresponds to the metatiles.
-      </li>
-      <li><code>--test N</code>: test with generating N tiles.</li>
-    </ul>
-
-    <h4><code>generate-controller --generate-legend-images</code></h4>
-    <p>Generate the legend images.</p>
-    %endif
-
     <h2>Test</h2>
     <p>See the result in <a href="/${admin_path}/test">the test page</a>.</p>
 
@@ -287,6 +248,62 @@
     %if footer is not None:
     <br />
     <div class="${ footer_classes }">${ footer }</div>
+    %endif
+
+    <!---->
+    %if request.identity.is_auth:
+    <h3>Command help</h3>
+    <h4>Examples</h4>
+
+    <p><code>generate-tiles</code>: Generate all the layers.</p>
+    <p><code>generate-tiles --layer=LAYER</code>: Generate the <code>LAYER</code> map.</p>
+    <p>
+      <code>generate-tiles --layer=LAYER --zoom=2-5</code>: Generate the <code>LAYER</code> map for the zoom
+      levels 2 to 5.
+    </p>
+    <p>
+      <code>generate-tiles --layer=LAYER --bbox MINX MINY MAXX MAXY</code>: Generate the
+      <code>LAYER</code> map for the specified bounding box.
+    </p>
+    <p><code>generate-controller --generate-legend-images</code>: Generate the legend images.</p>
+    <p>
+      <code>generate-tiles --layer=LAYER --get-hash=15/0/0</code>: Get the hash for the <code>LAYER</code>.
+    </p>
+    <p><code>generate-tiles --layer=LAYER --get-bbox=0/0/0</code>: Get the bbox of the tile.</p>
+
+    <h4><code>generate-tiles</code></h4>
+    <p>Generate the tiles.</p>
+    <p>Arguments:</p>
+    <ul>
+      <li>
+        <code>--layer=NAME</code>: the layer name to generate, it not specified all the layers are generated.
+      </li>
+      <li>
+        <code>--get-hash=Z/X/Y</code>: get the hash configuration for the layer (requires
+        <code>--layer</code>).
+      </li>
+      <li>
+        <code>--get-bbox=Z/X/Y[:-N/+N]</code>: get the bbox of a tile, use the specified tile
+        <code>Z/X/Y</code>, or <code>Z/X/Y:+N/+N</code> for metatiles (requires <code>--layer</code>).
+      </li>
+      <li>
+        <code>--dimensions DIMENSION=VALUE [DIMENSION=VALUE ...]</code>: overwrite the dimensions values
+        specified in the config file.
+      </li>
+      <li>
+        <code>--zoom=ZOOM</code> restrict to specified zoom level, or a zooms range (2-5), or a zooms list
+        (2,4,5).
+      </li>
+      <li><code>--bbox MINX MINY MAXX MAXY</code>: restrict to specified bounding box.</li>
+      <li>
+        <code>--near X Y</code>: This option is a good replacement of <code>--bbox</code>, to used with
+        <code>--time</code> or <code>--test</code> and <code>--zoom</code>, implies <code>--no-geom</code>. It
+        automatically measure a bbox around the X Y position that corresponds to the metatiles.
+      </li>
+      <li><code>--test N</code>: test with generating N tiles.</li>
+    </ul>
+    <h4><code>generate-controller --generate-legend-images</code></h4>
+    <p>Generate the legend images.</p>
     %endif
 
     <script
