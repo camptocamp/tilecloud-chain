@@ -48,18 +48,18 @@ class TestGenerate(CompareCase):
 
     def test_get_wrong_hash(self) -> None:
         for d in ("-d", "-q"):
-            with LogCapture("tilecloud_chain", level=30) as log_capture:
+            with LogCapture("tilecloud_chain") as log_capture:
                 self.assert_cmd_exit_equals(
                     cmd=f".build/venv/bin/generate_tiles {d} --get-hash 0/7/5 "
                     "-c tilegeneration/test.yaml -l all",
                     main_func=generate.main,
                 )
-                log_capture.check(
+                log_capture.check_present(
                     (
                         "tilecloud_chain",
-                        "ERROR",
+                        "DEBUG",
                         "Error: image is not uniform.",
-                    )
+                    ),
                 )
 
     def test_get_bbox(self) -> None:

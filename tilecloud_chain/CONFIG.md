@@ -298,7 +298,7 @@
       - **`name`** _(string)_: The name used in the admin interface.
   - **`allowed_commands`** _(array)_: The allowed commands (main configuration). Default: `["generate-tiles", "generate-controller", "generate-cost"]`.
     - **Items** _(string)_
-  - **`allowed_arguments`** _(array)_: The allowed arguments (main configuration). Default: `["--layer", "--get-hash", "--generate-legend-images", "--get-bbox", "--help", "--ignore-errors", "--bbox", "--zoom", "--test", "--near", "--time", "--measure-generation-time", "--no-geom", "--dimensions"]`.
+  - **`allowed_arguments`** _(array)_: The allowed arguments (main configuration). Default: `["--layer", "--get-hash", "--generate-legend-images", "--get-bbox", "--help", "--ignore-error", "--bbox", "--zoom", "--test", "--near", "--time", "--measure-generation-time", "--no-geom", "--dimensions"]`.
     - **Items** _(string)_
   - **`admin_footer`** _(string)_: The footer of the admin interface.
   - **`admin_footer_classes`** _(string)_: The CSS classes used on the footer of the admin interface.
