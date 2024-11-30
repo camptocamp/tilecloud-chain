@@ -268,6 +268,7 @@ class Run:
                     ):
                         assert isinstance(tile.error, str)
                         tile.error = f"WMS server error: {self._re_rm_xml_tag.sub('', tile.error)}"
+                    print(f"Error with tile {tile.tilecoord} {tile.formated_metadata}:\n{tile.error}")
                     _LOGGER.warning(
                         "Error with tile %s %s:\n%s", tile.tilecoord, tile.formated_metadata, tile.error
                     )
