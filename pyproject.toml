@@ -59,7 +59,7 @@ main = "tilecloud_chain.server:main"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-c2cwsgiutils = { version = "5.1.7", extras = ["standard", "broadcast"] }
+c2cwsgiutils = { version = "5.1.9", extras = ["standard", "broadcast"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.8.2"
 tilecloud = { version = "1.9.3", extras = ["azure", "aws", "redis", "wsgi"] }
@@ -89,7 +89,7 @@ webob = "1.8.9"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.8.4" }
-c2cwsgiutils = { version = "5.1.7", extras = ["test_images"] }
+c2cwsgiutils = { version = "5.1.9", extras = ["test_images"] }
 scikit-image = { version = "0.19.3" }
 pytest = "7.2.2"
 testfixtures = "7.0.4"
