@@ -10,7 +10,7 @@ authors = []
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-c2cwsgiutils = "5.0.2"
+c2cwsgiutils = "5.0.4"
 pyramid-mako = "1.1.0"
 python-dateutil = "2.8.2"
 tilecloud = "1.8.2"
