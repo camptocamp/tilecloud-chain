@@ -1136,7 +1136,6 @@
             "--get-hash",
             "--generate-legend-images",
             "--get-bbox",
-            "--help",
             "--ignore-error",
             "--bbox",
             "--zoom",

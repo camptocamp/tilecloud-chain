@@ -16,6 +16,7 @@ from typing import IO, Literal, cast
 from urllib.parse import urlencode, urljoin
 
 import botocore.exceptions
+import PIL.ImageFile
 import requests
 import ruamel.yaml
 import tilecloud.store.redis
@@ -44,8 +45,6 @@ _GET_STATUS_SUMMARY = Summary("tilecloud_chain_get_status", "Number of get_stats
 
 def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
     """Generate the contextual file like the legends."""
-    del out
-
     try:
         parser = ArgumentParser(
             description="Used to generate the contextual file like the capabilities, the legends, "
@@ -72,7 +71,7 @@ def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
         )
 
         options = parser.parse_args(args[1:] if args else sys.argv[1:])
-        gene = TileGeneration(options.config, options, layer_name=options.layer)
+        gene = TileGeneration(options.config, options, layer_name=options.layer, out=out)
         assert gene.config_file
         config = gene.get_config(gene.config_file)
 
@@ -94,7 +93,7 @@ def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
             sys.exit(0)
 
         if options.legends:
-            _generate_legend_images(gene)
+            _generate_legend_images(gene, out)
 
     except SystemExit:
         raise
@@ -362,7 +361,113 @@ def _fill_legend(
                 previous_resolution = resolution
 
 
-def _generate_legend_images(gene: TileGeneration) -> None:
+def _get_legend_image(
+    layer_name: str,
+    wms_layer: str,
+    resolution: float,
+    url: str,
+    session: requests.Session,
+    main_mime_type: str,
+    out: IO[str] | None = None,
+) -> PIL.ImageFile.ImageFile | None:
+    _LOGGER.debug(
+        "Get legend image for layer '%s'-'%s', resolution '%s': %s",
+        layer_name,
+        wms_layer,
+        resolution,
+        url,
+    )
+    try:
+        response = session.get(url)
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        if out is not None:
+            print(
+                "\n".join(
+                    [
+                        f"Unable to get legend image for layer '{layer_name}'-'{wms_layer}', resolution '{resolution}'",
+                        url,
+                        str(e),
+                    ]
+                ),
+                file=out,
+            )
+        _LOGGER.debug(
+            "Unable to get legend image for layer '%s'-'%s', resolution '%s'",
+            layer_name,
+            wms_layer,
+            resolution,
+            exc_info=True,
+        )
+        return None
+    if response.status_code != 200:
+        if out is not None:
+            print(
+                "\n".join(
+                    [
+                        f"Unable to get legend image for layer '{layer_name}'-'{wms_layer}', resolution '{resolution}'",
+                        url,
+                        f"status code: {response.status_code}: {response.reason}",
+                        response.text,
+                    ]
+                ),
+                file=out,
+            )
+        _LOGGER.debug(
+            "Unable to get legend image for layer '%s'-'%s', resolution '%s': %s",
+            layer_name,
+            wms_layer,
+            resolution,
+            response.text,
+        )
+        return None
+    if not response.headers["Content-Type"].startswith(main_mime_type):
+        if out is not None:
+            print(
+                "\n".join(
+                    [
+                        f"Unable to get legend image for layer '{layer_name}'-'{wms_layer}', resolution '{resolution}'",
+                        url,
+                        f"Content-Type: {response.headers['Content-Type']}",
+                        response.text,
+                    ]
+                ),
+                file=out,
+            )
+        _LOGGER.debug(
+            "Unable to get legend image for layer '%s'-'%s', resolution '%s', content-type: %s: %s",
+            layer_name,
+            wms_layer,
+            resolution,
+            response.headers["Content-Type"],
+            response.text,
+        )
+        return None
+    try:
+        return Image.open(BytesIO(response.content))
+    except Exception:  # pylint: disable=broad-exception-caught
+        if out is not None:
+            print(
+                "\n".join(
+                    [
+                        f"Unable to read legend image for layer '{layer_name}'-'{wms_layer}', resolution '{resolution}'",
+                        url,
+                        response.text,
+                    ]
+                ),
+                file=out,
+            )
+        _LOGGER.debug(
+            "Unable to read legend image for layer '%s'-'%s', resolution '%s': %s",
+            layer_name,
+            wms_layer,
+            resolution,
+            response.text,
+            exc_info=True,
+        )
+        return None
+
+
+def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) -> None:
     assert gene.config_file
     config = gene.get_config(gene.config_file)
     cache = config.config["caches"][gene.options.cache]
@@ -374,7 +479,7 @@ def _generate_legend_images(gene: TileGeneration) -> None:
             previous_hash = None
             for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
                 legends = []
-                for wmslayer in layer["layers"].split(","):
+                for wms_layer in layer["layers"].split(","):
                     url = (
                         layer["url"]
                         + "?"
@@ -383,7 +488,7 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                                 "SERVICE": "WMS",
                                 "VERSION": layer.get("version", "1.0.0"),
                                 "REQUEST": "GetLegendGraphic",
-                                "LAYER": wmslayer,
+                                "LAYER": wms_layer,
                                 "FORMAT": layer["legend_mime"],
                                 "TRANSPARENT": "TRUE" if layer["legend_mime"] == "image/png" else "FALSE",
                                 "STYLE": layer["wmts_style"],
@@ -391,92 +496,18 @@ def _generate_legend_images(gene: TileGeneration) -> None:
                             }
                         )
                     )
-                    _LOGGER.debug(
-                        "Get legend image for layer '%s'-'%s', resolution '%s': %s",
+                    legend_image = _get_legend_image(
                         layer_name,
-                        wmslayer,
+                        wms_layer,
                         resolution,
                         url,
+                        session,
+                        layer["legend_mime"].split("/")[0],
+                        out,
                     )
-                    try:
-                        response = session.get(url)
-                    except Exception as e:  # pylint: disable=broad-exception-caught
-                        print(
-                            "\n".join(
-                                [
-                                    f"Unable to get legend image for layer '{layer_name}'-'{wmslayer}', resolution '{resolution}'",
-                                    url,
-                                    str(e),
-                                ]
-                            )
-                        )
-                        _LOGGER.debug(
-                            "Unable to get legend image for layer '%s'-'%s', resolution '%s'",
-                            layer_name,
-                            wmslayer,
-                            resolution,
-                            exc_info=True,
-                        )
-                        continue
-                    if response.status_code != 200:
-                        print(
-                            "\n".join(
-                                [
-                                    f"Unable to get legend image for layer '{layer_name}'-'{wmslayer}', resolution '{resolution}'",
-                                    url,
-                                    f"status code: {response.status_code}: {response.reason}",
-                                    response.text,
-                                ]
-                            )
-                        )
-                        _LOGGER.debug(
-                            "Unable to get legend image for layer '%s'-'%s', resolution '%s': %s",
-                            layer_name,
-                            wmslayer,
-                            resolution,
-                            response.text,
-                        )
-                        continue
-                    if not response.headers["Content-Type"].startswith(layer["legend_mime"].split("/")[0]):
-                        print(
-                            "\n".join(
-                                [
-                                    f"Unable to get legend image for layer '{layer_name}'-'{wmslayer}', resolution '{resolution}'",
-                                    url,
-                                    f"Content-Type: {response.headers['Content-Type']}",
-                                    response.text,
-                                ]
-                            )
-                        )
-                        _LOGGER.debug(
-                            "Unable to get legend image for layer '%s'-'%s', resolution '%s', content-type: %s: %s",
-                            layer_name,
-                            wmslayer,
-                            resolution,
-                            response.headers["Content-Type"],
-                            response.text,
-                        )
-                        continue
-                    try:
-                        legends.append(Image.open(BytesIO(response.content)))
-                    except Exception:  # pylint: disable=broad-exception-caught
-                        print(
-                            "\n".join(
-                                [
-                                    f"Unable to read legend image for layer '{layer_name}'-'{wmslayer}', resolution '{resolution}'",
-                                    url,
-                                    response.text,
-                                ]
-                            )
-                        )
-                        _LOGGER.debug(
-                            "Unable to read legend image for layer '%s'-'%s', resolution '%s': %s",
-                            layer_name,
-                            wmslayer,
-                            resolution,
-                            response.text,
-                            exc_info=True,
-                        )
+                    if legend_image is not None:
+                        legends.append(legend_image)
+
                 width = max(1, max(i.size[0] for i in legends) if legends else 0)
                 height = max(1, sum(i.size[1] for i in legends) if legends else 0)
                 image = Image.new("RGBA", (width, height))

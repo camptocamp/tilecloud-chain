@@ -233,13 +233,13 @@ def _start_job(
             _LOGGER.info("Running the command `%s` using the function directly", display_command)
             main(final_command, out)
             _LOGGER.info("Successfully ran the command `%s` using the function directly", display_command)
-        except Exception:  # pylint: disable=broad-exception-caught
-            _LOGGER.exception("Error while running the command `%s`", display_command)
-            error = True
         except SystemExit as exception:
             if exception.code != 0:
                 _LOGGER.exception("Error while running the command `%s`", display_command)
                 error = True
+        except Exception:  # pylint: disable=broad-exception-caught
+            _LOGGER.exception("Error while running the command `%s`", display_command)
+            error = True
 
         with SessionMaker() as session:
             job = session.query(Job).where(Job.id == job_id).with_for_update(of=Job).one()
