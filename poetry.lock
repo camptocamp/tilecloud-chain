@@ -224,12 +224,12 @@ virtualenv = ["virtualenv (>=20.0.35)"]
 
 [[package]]
 name = "c2cwsgiutils"
-version = "5.1.7"
+version = "5.1.9"
 description = "Common utilities for Camptocamp WSGI applications"
 optional = false
 python-versions = "*"
 files = [
-    {file = "c2cwsgiutils-5.1.7-py3-none-any.whl", hash = "sha256:2132afd1996f10a13c6d9b34de7d0643b8943075267a0d203d88b12fd86b7271"},
+    {file = "c2cwsgiutils-5.1.9-py3-none-any.whl", hash = "sha256:bd2cd24e3375b13cd0772286a07c5b2f4dba3f1b8b33ba8e66a00087f8fa5b68"},
 ]
 
 [package.dependencies]
@@ -268,7 +268,7 @@ pyyaml = {version = "*", optional = true, markers = "extra == \"standard\""}
 redis = {version = "*", optional = true, markers = "extra == \"broadcast\""}
 requests = {version = "*", optional = true, markers = "extra == \"standard\""}
 requests-oauthlib = {version = "*", optional = true, markers = "extra == \"standard\""}
-scikit-image = {version = "*", optional = true, markers = "extra == \"test_images\""}
+scikit-image = {version = "*", optional = true, markers = "extra == \"test-images\""}
 sentry-sdk = {version = "*", optional = true, markers = "extra == \"standard\""}
 sqlalchemy = {version = "*", optional = true, markers = "extra == \"standard\""}
 sqlalchemy-utils = {version = "*", optional = true, markers = "extra == \"standard\""}
@@ -3363,4 +3363,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "eb913ee86c55ad494346dc03e824d9f726da316d90f6bf403162f114648159de"
+content-hash = "9ca80991e574b837e4538d6619d14a0b517b0d5c2af8ea6f6b2b861a374cfce9"
