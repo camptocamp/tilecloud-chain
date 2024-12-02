@@ -234,7 +234,7 @@ def _start_job(
             main(final_command, out)
             _LOGGER.info("Successfully ran the command `%s` using the function directly", display_command)
         except SystemExit as exception:
-            if exception.code != 0:
+            if exception.code is not None and exception.code != 0:
                 _LOGGER.exception("Error while running the command `%s`", display_command)
                 error = True
         except Exception:  # pylint: disable=broad-exception-caught
