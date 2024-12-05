@@ -1,14 +1,6 @@
-ci:
-  autoupdate_schedule: quarterly
-  skip:
-    - copyright
-    - poetry-check
-    - poetry-lock
-    - ripsecrets
-    - jsonschema-gentypes
-    - jsonschema2md
+default_language_version:
+  python: python3.10
 
-    - jsonschema-validator
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
