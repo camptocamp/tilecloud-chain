@@ -54,7 +54,7 @@ tilecloud_chain = "tilecloud_chain.scaffolds:Create"
 main = "tilecloud_chain.server:main"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
+python = ">=3.9.2,<3.11"
 c2cwsgiutils = { version = "6.0.9", extras = ["standard", "broadcast", "oauth2", "debug"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.8.2"
@@ -69,7 +69,6 @@ azure-storage-blob = "12.18.3"
 waitress = "3.0.2"
 certifi = "2024.7.4"
 cryptography = "44.0.0"
-msal = "1.24.1"
 pillow = "10.3.0"
 urllib3 = "1.26.20"
 idna = "3.7"
