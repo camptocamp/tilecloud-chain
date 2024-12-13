@@ -23,7 +23,7 @@
 - **`postgresql`**: Refer to _[#/definitions/postgresql](#definitions/postgresql)_.
 - **`openlayers`** _(object)_: Configuration used to generate the OpenLayers example page. Cannot contain additional properties.
   - **`srs`** _(string)_: The projection code. Default: `"EPSG:2056"`.
-  - **`proj4js_def`** _(string)_: The `proj4js` definition, get it from https://epsg.io/. Default: `"+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"`.
+  - **`proj4js_def`** _(string)_: The `proj4js` definition, by default it will be build with pyproj.
   - **`center_x`** _(number)_: The center easting. Default: `2600000`.
   - **`center_y`** _(number)_: The center northing. Default: `1200000`.
   - **`zoom`** _(number)_: The initial zoom. Default: `3`.

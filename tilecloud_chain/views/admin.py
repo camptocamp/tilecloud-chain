@@ -31,13 +31,13 @@ import json
 import logging
 import multiprocessing
 import os
-import re
 import shlex
 import subprocess  # nosec
 from collections.abc import Callable
 from typing import IO, Any
 from urllib.parse import urljoin
 
+import pyproj
 import pyramid.httpexceptions
 import pyramid.request
 import pyramid.response
@@ -307,15 +307,13 @@ class Admin:
         assert self.gene
         config = self.gene.get_host_config(self.request.host)
         main_config = self.gene.get_main_config()
+        srs = config.config["openlayers"].get("srs", configuration.SRS_DEFAULT)
+        proj4js_def = config.config["openlayers"].get("proj4js_def")
+        if proj4js_def is None:
+            proj4js_def = pyproj.CRS.from_string(srs).to_proj4()
         return {
-            "proj4js_def": re.sub(
-                r"\s+",
-                " ",
-                config.config["openlayers"]
-                .get("proj4js_def", configuration.PROJ4JS_DEFINITION_DEFAULT)
-                .strip(),
-            ),
-            "srs": config.config["openlayers"].get("srs", configuration.SRS_DEFAULT),
+            "proj4js_def": proj4js_def,
+            "srs": srs,
             "center_x": config.config["openlayers"].get("center_x", configuration.CENTER_X_DEFAULT),
             "center_y": config.config["openlayers"].get("center_y", configuration.CENTER_Y_DEFAULT),
             "zoom": config.config["openlayers"].get("zoom", configuration.MAP_INITIAL_ZOOM_DEFAULT),
