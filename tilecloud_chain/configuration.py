@@ -909,7 +909,7 @@ class Generation(TypedDict, total=False):
     """
 
 
-GithubAccess = Union[Literal["push"], Literal["pull"], Literal["admin"]]
+GithubAccess = Literal["push"] | Literal["pull"] | Literal["admin"]
 """
 GitHub access.
 
@@ -1534,7 +1534,7 @@ pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
 """
 
 
-LayerMinResolutionSeed = Union[int, float]
+LayerMinResolutionSeed = int | float
 """
 layer min resolution seed.
 
@@ -1878,7 +1878,7 @@ META_TILE_GENERATION_TIME_DEFAULT = 30
 """ Default value of the field path 'Layer cost metatile_generation_time' """
 
 
-MatrixIdentifier = Union[Literal["zoom"], Literal["resolution"]]
+MatrixIdentifier = Literal["zoom"] | Literal["resolution"]
 """
 Matrix identifier.
 
@@ -2012,7 +2012,7 @@ class Openlayers(TypedDict, total=False):
     """
 
 
-OutputFormat = Union[Literal["png"], Literal["png256"], Literal["jpeg"], Literal["grid"]]
+OutputFormat = Literal["png"] | Literal["png256"] | Literal["jpeg"] | Literal["grid"]
 """
 Output format.
 
@@ -2137,7 +2137,7 @@ QUEUE_STORE_DEFAULT = "redis"
 """ Default value of the field path 'TileCloud-chain configuration queue_store' """
 
 
-QueueStore = Union[Literal["redis"], Literal["sqs"], Literal["postgresql"]]
+QueueStore = Literal["redis"] | Literal["sqs"] | Literal["postgresql"]
 """
 Queue store.
 
@@ -2404,7 +2404,7 @@ The sentinel host name (main configuration)
 """
 
 
-SentinelPort = Union[str, int]
+SentinelPort = str | int
 """
 Sentinel port.
 
