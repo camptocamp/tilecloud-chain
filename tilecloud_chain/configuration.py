@@ -1979,9 +1979,7 @@ class Openlayers(TypedDict, total=False):
     """
     Proj4js definition.
 
-    The `proj4js` definition, get it from https://epsg.io/
-
-    default: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
+    The `proj4js` definition, by default it will be build with pyproj
     """
 
     center_x: int | float
@@ -2048,10 +2046,6 @@ PORT_DEFAULT = 5432
 
 PREFIX_DEFAULT = "tilecloud_cache"
 """ Default value of the field path 'Redis prefix' """
-
-
-PROJ4JS_DEFINITION_DEFAULT = "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"
-""" Default value of the field path 'OpenLayers proj4js_def' """
 
 
 class Phone(TypedDict, total=False):
