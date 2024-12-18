@@ -184,11 +184,12 @@ class Generator:
             if tile_.error:
                 _LOG.error("Tile %s %s in error: %s", tile_.tilecoord, tile_.formated_metadata, tile_.error)
                 success = False
-            if tile_.data is None:
+            elif tile_.data is None:
                 _LOG.error("Tile %s %s in error: no data", tile_.tilecoord, tile_.formated_metadata)
                 success = False
-            _LOG.debug("Tile %s %s generated", tile_.tilecoord, tile_.formated_metadata)
-            self._cache_store.put_one(tile_)
+            else:
+                _LOG.debug("Tile %s %s generated", tile_.tilecoord, tile_.formated_metadata)
+                self._cache_store.put_one(tile_)
         return success
 
     @contextlib.contextmanager
