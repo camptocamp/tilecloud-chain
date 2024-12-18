@@ -179,15 +179,17 @@ class Generator:
         if tile.error:
             _LOG.error("Tile %s %s in error: %s", tile.tilecoord, tile.formated_metadata, tile.error)
             return False
+        success = True
         for tile_ in tile.metadata["tiles"].values():  # type: ignore
             if tile_.error:
                 _LOG.error("Tile %s %s in error: %s", tile_.tilecoord, tile_.formated_metadata, tile_.error)
-                return False
+                success = False
             if tile_.data is None:
                 _LOG.error("Tile %s %s in error: no data", tile_.tilecoord, tile_.formated_metadata)
-                return False
+                success = False
+            _LOG.debug("Tile %s %s generated", tile_.tilecoord, tile_.formated_metadata)
             self._cache_store.put_one(tile_)
-        return True
+        return success
 
     @contextlib.contextmanager
     def lock(self, tile: Tile) -> Iterator[None]:
