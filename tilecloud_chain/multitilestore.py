@@ -25,6 +25,12 @@ class MultiTileStore(TileStore):
             self.stores[(config_file, layer)] = store
         return store
 
+    def _get_store_tile(self, tile: Tile) -> TileStore | None:
+        """Return the store corresponding to the tile."""
+        layer = tile.metadata["layer"]
+        config_file = tile.metadata["config_file"]
+        return self._get_store(config_file, layer)
+
     def __contains__(self, tile: Tile) -> bool:
         """
         Return true if this store contains ``tile``.
@@ -32,9 +38,7 @@ class MultiTileStore(TileStore):
         Arguments:
             tile: Tile
         """
-        layer = tile.metadata["layer"]
-        config_file = tile.metadata["config_file"]
-        store = self._get_store(config_file, layer)
+        store = self._get_store_tile(tile)
         assert store is not None
         return tile in store
 
@@ -45,9 +49,7 @@ class MultiTileStore(TileStore):
         Arguments:
             tile: Tile
         """
-        layer = tile.metadata["layer"]
-        config_file = tile.metadata["config_file"]
-        store = self._get_store(config_file, layer)
+        store = self._get_store_tile(tile)
         assert store is not None
         return store.delete_one(tile)
 
@@ -64,9 +66,7 @@ class MultiTileStore(TileStore):
         Arguments:
             tile: Tile
         """
-        layer = tile.metadata["layer"]
-        config_file = tile.metadata["config_file"]
-        store = self._get_store(config_file, layer)
+        store = self._get_store_tile(tile)
         assert store is not None
         return store.put_one(tile)
 
@@ -77,9 +77,7 @@ class MultiTileStore(TileStore):
         Arguments:
             tile: Tile
         """
-        layer = tile.metadata["layer"]
-        config_file = tile.metadata["config_file"]
-        store = self._get_store(config_file, layer)
+        store = self._get_store_tile(tile)
         assert store is not None
         return store.get_one(tile)
 
@@ -117,13 +115,13 @@ class MultiTileStore(TileStore):
     def __str__(self) -> str:
         """Return a string representation of the object."""
         stores = {str(store) for store in self.stores.values()}
-        keys = {f"{config_file}/{layer}" for config_file, layer in self.stores}
+        keys = {f"{config_file}:{layer}" for config_file, layer in self.stores}
         return f"{self.__class__.__name__}({', '.join(stores)} - {', '.join(keys)})"
 
     def __repr__(self) -> str:
         """Return a string representation of the object."""
         stores = {repr(store) for store in self.stores.values()}
-        keys = {f"{config_file}/{layer}" for config_file, layer in self.stores}
+        keys = {f"{config_file}:{layer}" for config_file, layer in self.stores}
         return f"{self.__class__.__name__}({', '.join(stores)} - {', '.join(keys)})"
 
     @staticmethod
