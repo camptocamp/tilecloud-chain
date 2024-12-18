@@ -208,7 +208,7 @@ class Run:
     def __init__(
         self,
         gene: "TileGeneration",
-        functions: list[Callable[[Tile], Tile]],
+        functions: list[Callable[[Tile], Tile | None]],
         out: IO[str] | None = None,
     ) -> None:
         self.gene = gene
@@ -250,6 +250,7 @@ class Run:
                         tile = func(tile)
                     except Exception as e:  # pylint: disable=broad-exception-caught
                         _LOGGER.exception("[%s] Fail to process function %s", tilecoord, func)
+                        assert tile is not None
                         tile.error = e
                 else:
                     tile = func(tile)
@@ -447,9 +448,9 @@ class TileGeneration:
         self._close_actions: list[Close] = []
         self.error_lock = threading.Lock()
         self.error_files_: dict[str, TextIO] = {}
-        self.functions_tiles: list[Callable[[Tile], Tile]] = []
-        self.functions_metatiles: list[Callable[[Tile], Tile]] = []
-        self.functions = self.functions_metatiles
+        self.functions_tiles: list[Callable[[Tile], Tile | None]] = []
+        self.functions_metatiles: list[Callable[[Tile], Tile | None]] = []
+        self.functions: list[Callable[[Tile], Tile | None]] = self.functions_metatiles
         self.metatilesplitter_thread_pool: ThreadPoolExecutor | None = None
         self.multi_thread = multi_thread
         self.maxconsecutive_errors = maxconsecutive_errors
@@ -1367,15 +1368,18 @@ class TileGeneration:
         class Func:
             """Function with an additional field used to names it in timing messages."""
 
-            def __init__(self, func: Callable[[Tile], Tile], time_message: str | None) -> None:
+            def __init__(self, func: Callable[[Tile], Tile | None], time_message: str | None) -> None:
                 self.func = func
                 self.time_message = time_message
 
-            def __call__(self, tile: Tile) -> Tile:
+            def __call__(self, tile: Tile) -> Tile | None:
                 return self.func(tile)
 
             def __str__(self) -> str:
                 return f"Func: {self.func}"
+
+            def __repr__(self) -> str:
+                return f"Func: {self.func!r}"
 
         self.functions.append(Func(func, time_message))
 
