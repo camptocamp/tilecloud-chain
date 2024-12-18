@@ -3022,13 +3022,13 @@ zarr = ["fsspec", "zarr"]
 
 [[package]]
 name = "tilecloud"
-version = "1.12.3"
+version = "1.12.4"
 description = "Tools for managing tiles"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "tilecloud-1.12.3-py3-none-any.whl", hash = "sha256:f1b9e33a281b93e43e8e7928140dbc39af97281e99487cdc91bca31ef63ad5b9"},
-    {file = "tilecloud-1.12.3.tar.gz", hash = "sha256:09ce90b847575b5f0b24e82bf075846e8878cd1fb6eb351e9f39c4b0a0aba2b2"},
+    {file = "tilecloud-1.12.4-py3-none-any.whl", hash = "sha256:1b235ac3c7a900a46f611bd19ee253933677cfa2c6be72afcffa6e1fdcccc6d6"},
+    {file = "tilecloud-1.12.4.tar.gz", hash = "sha256:22e4befa52d0cc1a01292ae47a84db3a42f32bbb3549dcbb353ddbb4b980ea4d"},
 ]
 
 [package.dependencies]
@@ -3037,6 +3037,7 @@ azure-storage-blob = {version = "*", optional = true, markers = "extra == \"azur
 boto3 = {version = "*", optional = true, markers = "extra == \"aws\" or extra == \"all\""}
 bottle = "*"
 certifi = "*"
+cryptography = "*"
 Pillow = "*"
 pyproj = "*"
 pyramid = {version = "*", optional = true, markers = "extra == \"wsgi\" or extra == \"all\""}
@@ -3472,4 +3473,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "4f4dfbbd4d603af1537c0b09742c92f1e551355eeb44d21493ee3a4afe65b2f5"
+content-hash = "71baea91365940ad995be8fd50a2443f7541e1a41bf52b0a67084d6166c8ba6b"
