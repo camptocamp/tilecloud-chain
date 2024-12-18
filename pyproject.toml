@@ -62,7 +62,7 @@ python = ">=3.10,<3.13"
 c2cwsgiutils = { version = "6.1.5", extras = ["standard", "broadcast", "oauth2", "debug"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.9.0.post0"
-tilecloud = { version = "1.12.4", extras = ["azure", "aws", "redis", "wsgi"] }
+tilecloud = { version = "1.12.5", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.4"
 PyYAML = "6.0.2"
 Shapely = "2.0.6"
