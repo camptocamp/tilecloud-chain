@@ -121,4 +121,8 @@ class TimedTileStoreWrapper(TileStore):
 
     def __str__(self) -> str:
         """Get string representation."""
-        return f"tilecloud_chain.timedtilestore.TimedTileStoreWrapper: {self._tile_store}"
+        return f"{self.__class__.__name__}({self._tile_store}"
+
+    def __repr__(self) -> str:
+        """Get string representation."""
+        return f"{self.__class__.__name__}({self._tile_store!r})"
