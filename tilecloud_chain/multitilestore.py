@@ -116,13 +116,15 @@ class MultiTileStore(TileStore):
 
     def __str__(self) -> str:
         """Return a string representation of the object."""
-        stores = {str(store) for store in self.stores.values() if store is not None}
-        return f"{self.__class__.__name__}({', '.join(stores)})"
+        stores = {str(store) for store in self.stores.values()}
+        keys = {f"{config_file}/{layer}" for config_file, layer in self.stores}
+        return f"{self.__class__.__name__}({', '.join(stores)} - {', '.join(keys)})"
 
     def __repr__(self) -> str:
         """Return a string representation of the object."""
-        stores = {repr(store) for store in self.stores.values() if store is not None}
-        return f"{self.__class__.__name__}({', '.join(stores)})"
+        stores = {repr(store) for store in self.stores.values()}
+        keys = {f"{config_file}/{layer}" for config_file, layer in self.stores}
+        return f"{self.__class__.__name__}({', '.join(stores)} - {', '.join(keys)})"
 
     @staticmethod
     def _get_layer(tile: Tile | None) -> tuple[str, str]:
