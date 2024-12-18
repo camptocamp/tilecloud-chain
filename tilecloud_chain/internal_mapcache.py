@@ -172,21 +172,22 @@ class Generator:
         with _GET_TILE.labels("redis").time():
             return self._cache_store.get_one(tile)
 
-    def compute_tile(self, tile: Tile) -> None:
+    def compute_tile(self, tile: Tile) -> bool:
         """Create the tile."""
         with _GET_TILE.labels("wms").time():
             self.run(tile)
         if tile.error:
             _LOG.error("Tile %s %s in error: %s", tile.tilecoord, tile.formated_metadata, tile.error)
-            return
+            return False
         for tile_ in tile.metadata["tiles"].values():  # type: ignore
             if tile_.error:
                 _LOG.error("Tile %s %s in error: %s", tile_.tilecoord, tile_.formated_metadata, tile_.error)
-                return
+                return False
             if tile_.data is None:
                 _LOG.error("Tile %s %s in error: no data", tile_.tilecoord, tile_.formated_metadata)
-                return
+                return False
             self._cache_store.put_one(tile_)
+        return True
 
     @contextlib.contextmanager
     def lock(self, tile: Tile) -> Iterator[None]:
@@ -241,7 +242,9 @@ def fetch(
             fetched_tile = generator.read_from_cache(tile)
             if fetched_tile is None:
                 backend = "wms-generate"
-                generator.compute_tile(meta_tile)
+                success = generator.compute_tile(meta_tile)
+                if not success:
+                    return server.error(config, 500, "Error while generate the tile, see logs for details")
 
                 if meta_tile.error:
                     _LOG.error(
@@ -263,7 +266,7 @@ def fetch(
                         tile.formated_metadata,
                         ", ".join([str(e) for e in tiles]),
                     )
-                    raise
+                    return server.error(config, 500, "Error while getting the tile, see logs for details")
 
     response_headers = {
         "Expires": (
