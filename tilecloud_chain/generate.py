@@ -543,6 +543,12 @@ class TilestoreGetter:
                 )
         return None
 
+    def __str__(self) -> str:
+        return self.__class__.__name__
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
 
 def detach() -> None:
     """Detach to the parent process."""
