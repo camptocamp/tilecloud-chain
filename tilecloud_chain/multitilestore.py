@@ -29,7 +29,11 @@ class MultiTileStore(TileStore):
         self.stores: dict[tuple[str, str], _DatedStore | None] = {}
 
     def _get_store(self, config_file: str, layer: str) -> TileStore | None:
-        mtime = Path(config_file).stat().st_mtime
+        config_path = Path(config_file)
+        if not config_path.exists():
+            logger.warning("Config file %s does not exist", config_file)
+            return None
+        mtime = config_path.stat().st_mtime
         store = self.stores.get((config_file, layer))
         if store is not None and store.mtime != mtime:
             store = None

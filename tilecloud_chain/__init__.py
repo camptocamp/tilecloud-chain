@@ -19,6 +19,7 @@ import time
 from argparse import ArgumentParser, Namespace
 from collections.abc import Callable, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from fractions import Fraction
 from hashlib import sha1
@@ -1542,6 +1543,14 @@ class HashDropper:
             return None
 
 
+@dataclass
+class _DatedAction:
+    """Dated action."""
+
+    mtime: float
+    action: Callable[[Tile], Tile | None]
+
+
 class MultiAction:
     """
     Used to perform an action based on the tile's layer name.
@@ -1554,20 +1563,46 @@ class MultiAction:
         get_action: Callable[[str, str], Callable[[Tile], Tile | None] | None],
     ) -> None:
         self.get_action = get_action
-        self.actions: dict[tuple[str, str], Callable[[Tile], Tile | None] | None] = {}
+        self.actions: dict[tuple[str, str], _DatedAction | None] = {}
+
+    def _get_action(self, config_file: str, layer: str) -> Callable[[Tile], Tile | None] | None:
+        """Get the action based on the tile's layer name."""
+        config_path = pathlib.Path(config_file)
+        if not config_path.exists():
+            _LOGGER.warning("Config file %s does not exist", config_file)
+            return None
+        mtime = config_path.stat().st_mtime
+        action = self.actions.get((config_file, layer))
+        if action is not None and action.mtime != mtime:
+            action = None
+        if action is None:
+            action_item = self.get_action(config_file, layer)
+            if action_item is not None:
+                action = _DatedAction(mtime, action_item)
+                self.actions[(config_file, layer)] = action
+        return action.action if action is not None else None
 
     def __call__(self, tile: Tile) -> Tile | None:
         """Run the action."""
         layer = tile.metadata["layer"]
         config_file = tile.metadata["config_file"]
-        action = self.actions.get((config_file, layer))
-        if action is None:
-            action = self.get_action(config_file, layer)
-            self.actions[(config_file, layer)] = action
+        action = self._get_action(config_file, layer)
         if action:
             _LOGGER.debug("[%s] Run action %s.", tile.tilecoord, action)
             return action(tile)
         return tile
+
+    def __str__(self) -> str:
+        """Return a string representation of the object."""
+        actions = {str(action) for action in self.actions.values()}
+        keys = {f"{config_file}:{layer}" for config_file, layer in self.actions}
+        return f"{self.__class__.__name__}({', '.join(actions)} - {', '.join(keys)})"
+
+    def __repr__(self) -> str:
+        """Return a string representation of the object."""
+        actions = {repr(action) for action in self.actions.values()}
+        keys = {f"{config_file}:{layer}" for config_file, layer in self.actions}
+        return f"{self.__class__.__name__}({', '.join(actions)} - {', '.join(keys)})"
 
 
 class HashLogger:
