@@ -2,11 +2,21 @@
 
 import logging
 from collections.abc import Callable, Iterable, Iterator
+from dataclasses import dataclass
 from itertools import chain, groupby, starmap
+from pathlib import Path
 
 from tilecloud import Tile, TileStore
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class _DatedStore:
+    """Store the date and the store."""
+
+    mtime: float
+    store: TileStore
 
 
 class MultiTileStore(TileStore):
@@ -16,14 +26,19 @@ class MultiTileStore(TileStore):
         """Initialize."""
         TileStore.__init__(self)
         self.get_store = get_store
-        self.stores: dict[tuple[str, str], TileStore | None] = {}
+        self.stores: dict[tuple[str, str], _DatedStore | None] = {}
 
     def _get_store(self, config_file: str, layer: str) -> TileStore | None:
+        mtime = Path(config_file).stat().st_mtime
         store = self.stores.get((config_file, layer))
+        if store is not None and store.mtime != mtime:
+            store = None
         if store is None:
-            store = self.get_store(config_file, layer)
-            self.stores[(config_file, layer)] = store
-        return store
+            tile_store = self.get_store(config_file, layer)
+            if tile_store is not None:
+                store = _DatedStore(mtime, tile_store)
+                self.stores[(config_file, layer)] = store
+        return store.store if store is not None else None
 
     def _get_store_tile(self, tile: Tile) -> TileStore | None:
         """Return the store corresponding to the tile."""
