@@ -1475,6 +1475,12 @@ class Count:
             self.nb += 1
         return tile
 
+    def __str__(self) -> str:
+        return f"Count: {self.nb}"
+
+    def __repr__(self) -> str:
+        return f"Count: {self.nb}"
+
 
 class CountSize:
     """Count the number of generated tile and measure the total generated size."""
@@ -1491,6 +1497,12 @@ class CountSize:
                 self.nb += 1
                 self.size += len(tile.data)
         return tile
+
+    def __str__(self) -> str:
+        return f"CountSize: {self.nb} {self.size}"
+
+    def __repr__(self) -> str:
+        return f"CountSize: {self.nb} {self.size}"
 
 
 class HashDropper:
