@@ -216,7 +216,7 @@ def get_wmts_capabilities(
             str,
             jinja2_template(
                 data.decode("utf-8"),
-                layers=config.config["layers"],
+                layers=config.config.get("layers", {}),
                 layer_legends=gene.layer_legends,
                 grids=config.config["grids"],
                 getcapabilities=urljoin(  # type: ignore
@@ -304,7 +304,7 @@ def _fill_legend(
     with concurrent.futures.ThreadPoolExecutor(
         max_workers=int(os.environ.get("TILECLOUD_CHAIN_CONCURRENT_GET_LEGEND", "10"))
     ) as executor:
-        for layer_name, layer in config.config["layers"].items():
+        for layer_name, layer in config.config.get("layers", {}).items():
             if (
                 "legend_mime" in layer
                 and "legend_extension" in layer
@@ -341,7 +341,7 @@ def _fill_legend(
 
     _LOGGER.debug("Get %i legend images in %s", len(legend_image_future), time.perf_counter() - start)
 
-    for layer_name, layer in config.config["layers"].items():
+    for layer_name, layer in config.config.get("layers", {}).items():
         previous_legend: tilecloud_chain.Legend | None = None
         previous_resolution = None
         if "legend_mime" in layer and "legend_extension" in layer and layer_name not in gene.layer_legends:
@@ -472,14 +472,14 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
     config = gene.get_config(gene.config_file)
     cache = config.config["caches"][gene.options.cache]
 
-    for layer_name, layer in config.config["layers"].items():
+    for layer_name, layer in config.config.get("layers", {}).items():
         if "legend_mime" in layer and "legend_extension" in layer and layer["type"] == "wms":
             session = requests.session()
             session.headers.update(layer["headers"])
             previous_hash = None
             for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
                 legends = []
-                for wms_layer in layer["layers"].split(","):
+                for wms_layer in layer.get("layers", "").split(","):
                     url = (
                         layer["url"]
                         + "?"
