@@ -590,7 +590,20 @@ class PostgresqlTileStore(TileStore):
         with self.SessionMaker() as session:
             if tile.error:
                 if isinstance(tile.error, Exception):
-                    _LOGGER.warning("Error while processing the tile %s", tile, exc_info=tile.error)
+                    _LOGGER.warning(
+                        "Error while processing the tile %s %s",
+                        tile.tilecoord,
+                        tile.formated_metadata,
+                        exc_info=tile.error,
+                    )
+
+                if not hasattr(tile, "postgresql_id"):
+                    _LOGGER.error(
+                        "The tile %s %s does not have the postgresql_id attribute",
+                        tile.tilecoord,
+                        tile.formated_metadata,
+                    )
+                    return tile
                 sqlalchemy_tile = (
                     session.query(Queue)
                     .where(and_(Queue.status == _STATUS_PENDING, Queue.id == tile.postgresql_id))  # type: ignore[attr-defined]
