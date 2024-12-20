@@ -105,7 +105,7 @@ class CompareCase(TestCase):
             for expect in expected:
                 if os.path.exists(expect[0]):
                     os.remove(expect[0])
-        if type(cmd) == list:
+        if type(cmd) is list:
             sys.argv = cmd
         else:
             sys.argv = re.sub(" +", " ", cmd).split(" ")

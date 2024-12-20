@@ -197,7 +197,7 @@ class Server(Generic[Response]):
     @staticmethod
     def get_layers(config: tilecloud_chain.DatedConfig) -> list[str]:
         """Get the layer from the config."""
-        layers: list[str] = cast(list[str], config.config["layers"].keys())
+        layers: list[str] = cast(list[str], config.config.get("layers", {}).keys())
         return config.config["server"].get("layers", layers)
 
     def get_filter(
@@ -220,7 +220,7 @@ class Server(Generic[Response]):
         self.filter_cache.setdefault(config.file, {})[layer_name] = DatedFilter(layer_filter, config.mtime)
         return layer_filter
 
-    def get_store(self, config: tilecloud_chain.DatedConfig, layer_name: str) -> tilecloud.TileStore:
+    def get_store(self, config: tilecloud_chain.DatedConfig, layer_name: str) -> tilecloud.TileStore | None:
         """Get the store from the config."""
         dated_store = self.store_cache.get(config.file, {}).get(layer_name)
 
@@ -230,12 +230,17 @@ class Server(Generic[Response]):
         assert _TILEGENERATION
 
         store = _TILEGENERATION.get_store(config, self.get_cache(config), layer_name, read_only=True)
+        if store is None:
+            return None
         self.store_cache.setdefault(config.file, {})[layer_name] = DatedStore(store, config.mtime)
         return store
 
     @staticmethod
     def get_max_zoom_seed(config: tilecloud_chain.DatedConfig, layer_name: str) -> int:
         """Get the max zoom to be bet in the stored cache."""
+        if layer_name not in config.config.get("layers", {}):
+            _LOGGER.warning("Layer '%s' not found in the configuration file '%s'", layer_name, config.file)
+            return 999999
         layer = config.config["layers"][layer_name]
         if "min_resolution_seed" in layer:
             max_zoom_seed = -1
@@ -529,8 +534,8 @@ class Server(Generic[Response]):
                                 "SERVICE": "WMS",
                                 "VERSION": layer.get("version", "1.1.1"),
                                 "REQUEST": "GetFeatureInfo",
-                                "LAYERS": layer["layers"],
-                                "QUERY_LAYERS": layer["query_layers"],
+                                "LAYERS": layer.get("layers", ""),
+                                "QUERY_LAYERS": layer.get("query_layers", layer.get("layers", "")),
                                 "STYLES": params["STYLE"],
                                 "FORMAT": params["FORMAT"],
                                 "INFO_FORMAT": params["INFO_FORMAT"],

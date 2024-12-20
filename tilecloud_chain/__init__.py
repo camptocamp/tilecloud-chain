@@ -26,7 +26,7 @@ from hashlib import sha1
 from io import BytesIO
 from itertools import product
 from math import ceil, sqrt
-from typing import IO, TYPE_CHECKING, Any, TextIO, TypedDict, cast
+from typing import IO, TYPE_CHECKING, Any, Literal, TextIO, TypedDict, cast
 
 import boto3
 import botocore.client
@@ -833,8 +833,11 @@ class TileGeneration:
         cache: tilecloud_chain.configuration.Cache,
         layer_name: str,
         read_only: bool = False,
-    ) -> TileStore:
+    ) -> TileStore | None:
         """Get the tile store."""
+        if layer_name not in config.config.get("layers", {}):
+            _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
+            return None
         layer = config.config["layers"][layer_name]
         grid = config.config["grids"][layer["grid"]]
         layout = WMTSTileLayout(
@@ -928,7 +931,7 @@ class TileGeneration:
         """Get the tile store."""
         gene = self
 
-        def get_store(config_file: str, layer_name: str) -> TileStore:
+        def get_store(config_file: str, layer_name: str) -> TileStore | None:
             config = gene.get_config(config_file)
             cache_name = cache or config.config["generation"].get(
                 "default_cache", configuration.DEFAULT_CACHE_DEFAULT
@@ -972,6 +975,9 @@ class TileGeneration:
 
             def get_splitter(config_file: str, layer_name: str) -> MetaTileSplitterTileStore | None:
                 config = gene.get_config(config_file)
+                if layer_name not in config.config.get("layers", {}):
+                    _LOGGER.warning("Layer %s not found in config %s", layer_name, config_file)
+                    return None
                 layer = config.config["layers"][layer_name]
                 if layer.get("meta"):
                     return MetaTileSplitterTileStore(
@@ -1098,6 +1104,9 @@ class TileGeneration:
         if dated_geoms is not None and config.mtime == dated_geoms.mtime:
             return dated_geoms.geoms
 
+        if layer_name not in config.config.get("layers", {}):
+            _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
+            return {}
         layer = config.config["layers"][layer_name]
 
         if self.options.near is not None or (
@@ -1187,6 +1196,9 @@ class TileGeneration:
 
     def init_tilecoords(self, config: DatedConfig, layer_name: str) -> None:
         """Initialize the tilestream for the given layer."""
+        if layer_name not in config.config.get("layers", {}):
+            _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
+            return
         layer = config.config["layers"][layer_name]
         resolutions = config.config["grids"][layer["grid"]]["resolutions"]
 
@@ -1296,6 +1308,9 @@ class TileGeneration:
     def set_tilecoords(self, config: DatedConfig, tilecoords: Iterable[TileCoord], layer_name: str) -> None:
         """Set the tilestream for the given tilecoords."""
         assert tilecoords is not None
+        if layer_name not in config.config.get("layers", {}):
+            _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
+            return
         layer = config.config["layers"][layer_name]
 
         metadata = {"layer": layer_name, "config_file": config.file}
@@ -1327,6 +1342,9 @@ class TileGeneration:
 
         def get_process(config_file: str, layer_name: str) -> Process | None:
             config = gene.get_config(config_file)
+            if layer_name not in config.config.get("layers", {}):
+                _LOGGER.warning("Layer %s not found in config %s", layer_name, config_file)
+                return None
             layer = config.config["layers"][layer_name]
             name_ = name
             if name_ is None:
@@ -1575,7 +1593,7 @@ class MultiAction:
         get_action: Callable[[str, str], Callable[[Tile], Tile | None] | None],
     ) -> None:
         self.get_action = get_action
-        self.actions: dict[tuple[str, str], _DatedAction | None] = {}
+        self.actions: dict[tuple[str, str], _DatedAction] = {}
 
     def _get_action(self, config_file: str, layer: str) -> Callable[[Tile], Tile | None] | None:
         """Get the action based on the tile's layer name."""
@@ -1606,13 +1624,13 @@ class MultiAction:
 
     def __str__(self) -> str:
         """Return a string representation of the object."""
-        actions = {str(action) for action in self.actions.values()}
+        actions = {str(action.action) for action in self.actions.values()}
         keys = {f"{config_file}:{layer}" for config_file, layer in self.actions}
         return f"{self.__class__.__name__}({', '.join(actions)} - {', '.join(keys)})"
 
     def __repr__(self) -> str:
         """Return a string representation of the object."""
-        actions = {repr(action) for action in self.actions.values()}
+        actions = {repr(action.action) for action in self.actions.values()}
         keys = {f"{config_file}:{layer}" for config_file, layer in self.actions}
         return f"{self.__class__.__name__}({', '.join(actions)} - {', '.join(keys)})"
 
@@ -1689,6 +1707,9 @@ class IntersectGeometryFilter:
         self, config: DatedConfig, tilecoord: TileCoord, layer_name: str, host: str | None = None
     ) -> bool:
         """Filter the tilecoord."""
+        if layer_name not in config.config.get("layers", {}):
+            _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
+            return True
         layer = config.config["layers"][layer_name]
         grid_name = layer["grid"]
         grid = config.config["grids"][grid_name]
@@ -1780,7 +1801,15 @@ class Process:
 
     def __init__(self, config: tilecloud_chain.configuration.ProcessCommand, options: Namespace) -> None:
         self.config = config
-        self.options = options
+        self.options: list[Literal["verbose"] | Literal["debug"] | Literal["quiet"] | Literal["default"]] = []
+        if options.verbose:
+            self.options.append("verbose")
+        if options.debug:
+            self.options.append("debug")
+        if options.quiet:
+            self.options.append("quiet")
+        if not self.options:
+            self.options.append("default")
 
     def __call__(self, tile: Tile) -> Tile | None:
         """Process the tile."""
@@ -1791,16 +1820,9 @@ class Process:
 
             for cmd in self.config:
                 args = []
-                if (
-                    not self.options.verbose and not self.options.debug and not self.options.quiet
-                ) and "default" in cmd["arg"]:
-                    args.append(cmd["arg"]["default"])
-                if self.options.verbose and "verbose" in cmd["arg"]:
-                    args.append(cmd["arg"]["verbose"])
-                if self.options.debug and "debug" in cmd["arg"]:
-                    args.append(cmd["arg"]["debug"])
-                if self.options.quiet and "quiet" in cmd["arg"]:
-                    args.append(cmd["arg"]["quiet"])
+                for option in self.options:
+                    if option in cmd["arg"]:
+                        args.append(cmd["arg"][option])
 
                 if cmd.get("need_out", configuration.NEED_OUT_DEFAULT):
                     fd_out, name_out = tempfile.mkstemp()
@@ -1842,6 +1864,12 @@ class Process:
             os.remove(name_in)
 
         return tile
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}({', '.join(self.options)} - {self.config})"
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 
 class TilesFileStore(TileStore):
