@@ -589,6 +589,8 @@ class PostgresqlTileStore(TileStore):
         """Delete the meta tile from the queue."""
         with self.SessionMaker() as session:
             if tile.error:
+                if isinstance(tile.error, Exception):
+                    _LOGGER.warning("Error while processing the tile %s", tile, exc_info=tile.error)
                 sqlalchemy_tile = (
                     session.query(Queue)
                     .where(and_(Queue.status == _STATUS_PENDING, Queue.id == tile.postgresql_id))  # type: ignore[attr-defined]
