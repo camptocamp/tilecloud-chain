@@ -195,6 +195,11 @@ class Generate:
         assert layer_name is not None
         assert self._gene.config_file is not None
         config = self._gene.get_config(self._gene.config_file)
+        if layer_name not in config.config.get("layers", {}):
+            _LOGGER.warning(
+                "Layer '%s' not found in the configuration file '%s'", layer_name, self._gene.config_file
+            )
+            sys.exit(1)
         layer = config.config["layers"][layer_name]
 
         if self._options.get_bbox:
@@ -215,6 +220,11 @@ class Generate:
             self._gene.init_tilecoords(config, layer_name)
 
         elif self._options.role == "hash":
+            if layer_name not in config.config.get("layers", {}):
+                _LOGGER.warning(
+                    "Layer '%s' not found in the configuration file '%s'", layer_name, self._gene.config_file
+                )
+                sys.exit(1)
             layer = config.config["layers"][layer_name]
             try:
                 z, x, y = (int(v) for v in self._options.get_hash.split("/"))
@@ -371,6 +381,13 @@ class Generate:
             layer = None
             if layer_name is not None:
                 assert config is not None
+                if layer_name not in config.config.get("layers", {}):
+                    _LOGGER.warning(
+                        "Layer '%s' not found in the configuration file '%s'",
+                        layer_name,
+                        self._gene.config_file,
+                    )
+                    sys.exit(1)
                 layer = config.config["layers"][layer_name]
                 all_dimensions = self._gene.get_all_dimensions(layer)
                 formatted_dimensions = " - ".join(
@@ -464,11 +481,14 @@ class TilestoreGetter:
     def __call__(self, config_file: str, layer_name: str) -> TileStore | None:
         """Get the tilestore based on the layername config file any layer type."""
         config = self.gene._gene.get_config(config_file)
+        if layer_name not in config.config.get("layers", {}):
+            _LOGGER.warning("Layer '%s' not found in the configuration file '%s'", layer_name, config_file)
+            return None
         layer = config.config["layers"][layer_name]
         if layer["type"] == "wms":
             params = layer.get("params", {}).copy()
             if "STYLES" not in params:
-                params["STYLES"] = ",".join(layer["wmts_style"] for _ in layer["layers"].split(","))
+                params["STYLES"] = ",".join(layer["wmts_style"] for _ in layer.get("layers", "").split(","))
             if layer.get("generate_salt", False):
                 params["SALT"] = str(random.randint(0, 999999))  # nosec # noqa: S311
 
@@ -478,7 +498,7 @@ class TilestoreGetter:
                     tilelayouts=(
                         WMSTileLayout(
                             url=layer["url"],
-                            layers=layer["layers"],
+                            layers=layer.get("layers", ""),
                             srs=config.config["grids"][layer["grid"]].get("srs", configuration.SRS_DEFAULT),
                             format_pattern=layer["mime_type"],
                             border=(
@@ -667,7 +687,7 @@ def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
             else:
                 if options.config:
                     for layer in config.config["generation"].get(
-                        "default_layers", config.config["layers"].keys()
+                        "default_layers", config.config.get("layers", {}).keys()
                     ):
                         generate.gene(layer)
         except tilecloud.filter.error.TooManyErrors:
@@ -697,7 +717,11 @@ class HashDropperGetter:
 
     def __call__(self, config_file: str, layer_name: str) -> Callable[[Tile], Tile | None]:
         """Call."""
-        layer = self.gene._gene.get_config(config_file).config["layers"][layer_name]
+        config = self.gene._gene.get_config(config_file)
+        if layer_name not in config.config.get("layers", {}):
+            _LOGGER.warning("Layer '%s' not found in the configuration file '%s'", layer_name, config_file)
+            return lambda tile: tile
+        layer = config.config["layers"][layer_name]
         conf_name = "empty_metatile_detection" if self.meta else "empty_tile_detection"
         if conf_name in layer:
             empty_tile = layer["empty_metatile_detection"] if self.meta else layer["empty_tile_detection"]
