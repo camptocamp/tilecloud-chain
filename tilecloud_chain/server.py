@@ -186,6 +186,7 @@ class Server(Generic[Response]):
                 self.s3_client_cache[cache_s3.get("host", "aws")] = client
                 return client
             except KeyError as e:
+                _LOGGER.warning("Error while getting the S3 client: %s", e, exc_info=True)
                 error = e
             time.sleep(n * 10)
         raise error
