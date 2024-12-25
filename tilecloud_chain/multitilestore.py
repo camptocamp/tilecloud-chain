@@ -1,12 +1,13 @@
 """Redirect to the corresponding Tilestore for the layer and config file."""
 
 import logging
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass
-from itertools import chain, groupby, starmap
 from pathlib import Path
 
-from tilecloud import Tile, TileStore
+from tilecloud import Tile
+
+from tilecloud_chain.store import AsyncTileStore
 
 logger = logging.getLogger(__name__)
 
@@ -16,19 +17,18 @@ class _DatedStore:
     """Store the date and the store."""
 
     mtime: float
-    store: TileStore
+    store: AsyncTileStore
 
 
-class MultiTileStore(TileStore):
+class MultiTileStore(AsyncTileStore):
     """Redirect to the corresponding Tilestore for the layer and config file."""
 
-    def __init__(self, get_store: Callable[[str, str], TileStore | None]) -> None:
+    def __init__(self, get_store: Callable[[str, str], AsyncTileStore | None]) -> None:
         """Initialize."""
-        TileStore.__init__(self)
         self.get_store = get_store
         self.stores: dict[tuple[str, str], _DatedStore | None] = {}
 
-    def _get_store(self, config_file: str, layer: str) -> TileStore | None:
+    def _get_store(self, config_file: str, layer: str) -> AsyncTileStore | None:
         config_path = Path(config_file)
         if not config_path.exists():
             logger.warning("Config file %s does not exist", config_file)
@@ -44,13 +44,13 @@ class MultiTileStore(TileStore):
                 self.stores[(config_file, layer)] = store
         return store.store if store is not None else None
 
-    def _get_store_tile(self, tile: Tile) -> TileStore | None:
+    def _get_store_tile(self, tile: Tile) -> AsyncTileStore | None:
         """Return the store corresponding to the tile."""
         layer = tile.metadata["layer"]
         config_file = tile.metadata["config_file"]
         return self._get_store(config_file, layer)
 
-    def __contains__(self, tile: Tile) -> bool:
+    async def __contains__(self, tile: Tile) -> bool:
         """
         Return true if this store contains ``tile``.
 
@@ -61,7 +61,7 @@ class MultiTileStore(TileStore):
         assert store is not None
         return tile in store
 
-    def delete_one(self, tile: Tile) -> Tile:
+    async def delete_one(self, tile: Tile) -> Tile:
         """
         Delete ``tile`` and return ``tile``.
 
@@ -70,15 +70,15 @@ class MultiTileStore(TileStore):
         """
         store = self._get_store_tile(tile)
         assert store is not None
-        return store.delete_one(tile)
+        return await store.delete_one(tile)
 
-    def list(self) -> Iterator[Tile]:
+    async def list(self) -> AsyncIterator[Tile]:
         """Generate all the tiles in the store, but without their data."""
         # Too dangerous to list all tiles in all stores. Return an empty iterator instead
         while False:
             yield
 
-    def put_one(self, tile: Tile) -> Tile:
+    async def put_one(self, tile: Tile) -> Tile:
         """
         Store ``tile`` in the store.
 
@@ -87,9 +87,9 @@ class MultiTileStore(TileStore):
         """
         store = self._get_store_tile(tile)
         assert store is not None
-        return store.put_one(tile)
+        return await store.put_one(tile)
 
-    def get_one(self, tile: Tile) -> Tile | None:
+    async def get_one(self, tile: Tile) -> Tile | None:
         """
         Add data to ``tile``, or return ``None`` if ``tile`` is not in the store.
 
@@ -98,38 +98,7 @@ class MultiTileStore(TileStore):
         """
         store = self._get_store_tile(tile)
         assert store is not None
-        return store.get_one(tile)
-
-    def get(self, tiles: Iterable[Tile | None]) -> Iterator[Tile | None]:
-        """See in superclass."""
-
-        def apply(key: tuple[str, str], tiles: Iterator[Tile]) -> Iterable[Tile | None]:
-            store = self._get_store(*key)
-            if store is None:
-                return tiles
-            return store.get(tiles)
-
-        return chain.from_iterable(starmap(apply, groupby(tiles, self._get_layer)))
-
-    def put(self, tiles: Iterable[Tile]) -> Iterator[Tile]:
-        """See in superclass."""
-
-        def apply(key: tuple[str, str], tiles: Iterator[Tile]) -> Iterator[Tile]:
-            store = self._get_store(*key)
-            assert store is not None
-            return store.put(tiles)
-
-        return chain.from_iterable(starmap(apply, groupby(tiles, self._get_layer)))
-
-    def delete(self, tiles: Iterable[Tile]) -> Iterator[Tile]:
-        """See in superclass."""
-
-        def apply(key: tuple[str, str], tiles: Iterator[Tile]) -> Iterator[Tile]:
-            store = self._get_store(*key)
-            assert store is not None
-            return store.delete(tiles)
-
-        return chain.from_iterable(starmap(apply, groupby(tiles, self._get_layer)))
+        return await store.get_one(tile)
 
     def __str__(self) -> str:
         """Return a string representation of the object."""

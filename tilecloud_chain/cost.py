@@ -1,5 +1,6 @@
 """Calculate the cost of the generation."""
 
+import asyncio
 import logging
 import sys
 from argparse import ArgumentParser, Namespace
@@ -10,11 +11,17 @@ from tilecloud import Tile, TileStore
 
 from tilecloud_chain import Run, TileGeneration, add_common_options, configuration
 from tilecloud_chain.format import duration_format
+from tilecloud_chain.store import TileStoreWrapper
 
-logger = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
 
 
 def main() -> None:
+    """Calculate the cost, main function."""
+    asyncio.run(_async_main())
+
+
+async def _async_main() -> None:
     """Calculate the cost, main function."""
     try:
         parser = ArgumentParser(description="Used to calculate the generation cost", prog=sys.argv[0])
@@ -44,7 +51,7 @@ def main() -> None:
         all_tiles = 0
         if options.layer:
             layer = config.config["layers"][options.layer]
-            (all_size, all_time, all_price, all_tiles) = _calculate_cost(gene, options.layer, options)
+            (all_size, all_time, all_price, all_tiles) = await _calculate_cost(gene, options.layer, options)
             tile_size = layer["cost"].get("tile_size", configuration.TILE_SIZE_DEFAULT) / (1024.0 * 1024)
         else:
             all_time = timedelta()
@@ -54,7 +61,7 @@ def main() -> None:
                 print(f"===== {layer_name} =====")
                 layer = config.config["layers"][layer_name]
                 gene.create_log_tiles_error(layer_name)
-                (size, time, price, tiles) = _calculate_cost(gene, layer_name, options)
+                (size, time, price, tiles) = await _calculate_cost(gene, layer_name, options)
                 tile_size += layer["cost"].get("tile_size", configuration.TILE_SIZE_DEFAULT) / (1024.0 * 1024)
                 all_time += time
                 all_price += price
@@ -91,11 +98,11 @@ def main() -> None:
     except SystemExit:
         raise
     except:  # pylint: disable=bare-except # noqa: E722
-        logger.exception("Exit with exception")
+        _LOGGER.exception("Exit with exception")
         sys.exit(1)
 
 
-def _calculate_cost(
+async def _calculate_cost(
     gene: TileGeneration, layer_name: str, options: Namespace
 ) -> tuple[float, timedelta, float, int]:
     nb_metatiles = {}
@@ -135,7 +142,7 @@ def _calculate_cost(
 
         if meta:
 
-            def count_metatile(tile: Tile) -> Tile:
+            async def count_metatile(tile: Tile) -> Tile:
                 if tile:
                     if tile.tilecoord.z in nb_metatiles:
                         nb_metatiles[tile.tilecoord.z] += 1
@@ -164,12 +171,12 @@ def _calculate_cost(
                 def delete_one(self, tile: Tile) -> Tile:
                     raise NotImplementedError
 
-            gene.add_metatile_splitter(MetaTileSplitter())
+            await gene.add_metatile_splitter(TileStoreWrapper(MetaTileSplitter()))
 
             # Only keep tiles that intersect geometry
             gene.add_geom_filter()
 
-        def count_tile(tile: Tile) -> Tile:
+        async def count_tile(tile: Tile) -> Tile:
             if tile:
                 if tile.tilecoord.z in nb_tiles:
                     nb_tiles[tile.tilecoord.z] += 1
@@ -182,9 +189,9 @@ def _calculate_cost(
 
         run = Run(gene, gene.functions_metatiles)
         assert gene.tilestream
-        for tile in gene.tilestream:
+        async for tile in gene.tilestream:
             tile.metadata["layer"] = layer_name
-            run(tile)
+            await run(tile)
 
     times = {}
     print()

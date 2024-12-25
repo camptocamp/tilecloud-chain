@@ -1,5 +1,6 @@
 """Generate the tiles, generate the queue, ..."""
 
+import asyncio
 import gc
 import logging
 import os
@@ -8,7 +9,7 @@ import socket
 import sys
 import threading
 from argparse import ArgumentParser, Namespace
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from datetime import datetime
 from getpass import getuser
 from typing import IO, cast
@@ -17,10 +18,9 @@ import boto3
 import objgraph
 import prometheus_client
 import tilecloud.filter.error
-from tilecloud import Tile, TileCoord, TileStore
+from tilecloud import Tile, TileCoord
 from tilecloud.filter.logger import Logger
 from tilecloud.layout.wms import WMSTileLayout
-from tilecloud.store.url import URLTileStore
 
 import tilecloud_chain
 from tilecloud_chain import (
@@ -41,12 +41,14 @@ from tilecloud_chain import (
 from tilecloud_chain.database_logger import DatabaseLogger, DatabaseLoggerInit
 from tilecloud_chain.format import default_int, duration_format, size_format
 from tilecloud_chain.multitilestore import MultiTileStore
+from tilecloud_chain.store import AsyncTileStore, CallWrapper
+from tilecloud_chain.store.url import URLTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
 _LOGGER = logging.getLogger(__name__)
 
 
-def _objgraph(tile: Tile) -> Tile:
+async def _objgraph(tile: Tile) -> Tile:
     """Log the objgraph."""
     for generation in range(3):
         gc.collect(generation)
@@ -88,15 +90,18 @@ class Generate:
     """Generate the tiles, generate the queue, ..."""
 
     def __init__(
-        self, options: Namespace, gene: TileGeneration, out: IO[str] | None, server: bool = False
+        self,
+        options: Namespace,
+        gene: TileGeneration,
+        out: IO[str] | None,
     ) -> None:
         self._count_metatiles: Count | None = None
         self._count_metatiles_dropped: Count | None = None
         self._count_tiles: Count | None = None
         self._count_tiles_dropped: Count | None = None
         self._count_tiles_stored: CountSize | None = None
-        self._queue_tilestore: TileStore | None = None
-        self._cache_tilestore: TileStore | None = None
+        self._queue_tilestore: AsyncTileStore | None = None
+        self._cache_tilestore: AsyncTileStore | None = None
         self._options = options
         self._gene = gene
         self.out = out
@@ -108,11 +113,13 @@ class Generate:
         if getattr(self._options, "tiles", None) is not None:
             self._options.role = "slave"
 
+    async def init(self, server: bool = False) -> None:
+        """Initialize the generation."""
         self._generate_init()
         if self._options.role != "master" and not server:
-            self._generate_tiles()
+            await self._generate_tiles()
 
-    def gene(self, layer_name: str | None = None) -> None:
+    async def gene(self, layer_name: str | None = None) -> None:
         """Generate the tiles."""
         if self._count_tiles is not None:
             self._count_tiles.nb = 0
@@ -137,7 +144,7 @@ class Generate:
         if os.environ.get("TILECLOUD_CHAIN_OBJGRAPH_GENE", "0").lower() in ("1", "true", "on"):
             self._gene.imap(_objgraph)
 
-        self.generate_consume()
+        await self.generate_consume()
         self.generate_resume(layer_name)
 
     def _generate_init(self) -> None:
@@ -240,13 +247,19 @@ class Generate:
                 _LOGGER.exception("Tile '%s' is not in the format 'z/x/y'", self._options.get_hash)
                 sys.exit(1)
 
-    def _generate_tiles(self) -> None:
+    async def _generate_tiles(self) -> None:
         if self._options.role in ("slave") and not self._options.tiles:
             assert self._queue_tilestore is not None
             # Get the metatiles from the SQS/Redis queue
             self._gene.set_store(self._queue_tilestore)
-            self._gene.imap(lambda tile: tile if "layer" in tile.metadata else None)
-            self._gene.imap(LogTilesContext(self._gene))
+
+            async def _layer_filter(tile: Tile) -> Tile | None:
+                if "layer" in tile.metadata:
+                    return tile
+                return None
+
+            self._gene.imap(_layer_filter)
+            self._gene.imap(CallWrapper(LogTilesContext(self._gene)))
 
         if self._options.role != "server":
             self._count_metatiles = self._gene.counter()
@@ -277,7 +290,7 @@ class Generate:
             assert self._count_metatiles_dropped is not None
             self._gene.imap(MultiAction(HashDropperGetter(self, True, self._count_metatiles_dropped)))
 
-        def add_elapsed_togenerate(metatile: Tile) -> Tile | None:
+        async def add_elapsed_togenerate(metatile: Tile) -> Tile | None:
             if metatile is not None:
                 metatile.elapsed_togenerate = metatile.tilecoord.n**2  # type: ignore
                 return metatile
@@ -286,8 +299,8 @@ class Generate:
         self._gene.imap(add_elapsed_togenerate)
 
         # Split the metatile image into individual tiles
-        self._gene.add_metatile_splitter()
-        self._gene.imap(Logger(_LOGGER, logging.INFO, "%(tilecoord)s, %(formated_metadata)s"))
+        await self._gene.add_metatile_splitter()
+        self._gene.imap(CallWrapper(Logger(_LOGGER, logging.INFO, "%(tilecoord)s, %(formated_metadata)s")))
 
         if self._count_tiles is not None:
             self._gene.imap(self._count_tiles)
@@ -308,7 +321,7 @@ class Generate:
 
             if self._options.time:
 
-                def log_size(tile: Tile) -> Tile:
+                async def log_size(tile: Tile) -> Tile:
                     assert tile.data is not None
                     sys.stdout.write(f"size: {len(tile.data)}\n")
                     return tile
@@ -320,15 +333,15 @@ class Generate:
 
         if self._options.role == "slave" and not self._options.tiles:
 
-            def delete_from_store(tile: Tile) -> Tile:
+            async def delete_from_store(tile: Tile) -> Tile:
                 assert self._queue_tilestore is not None
                 if hasattr(tile, "metatile"):
                     metatile: Tile = tile.metatile
                     metatile.elapsed_togenerate -= 1  # type: ignore
                     if metatile.elapsed_togenerate == 0:  # type: ignore
-                        self._queue_tilestore.delete_one(metatile)
+                        await self._queue_tilestore.delete_one(metatile)
                 else:
-                    self._queue_tilestore.delete_one(tile)
+                    await self._queue_tilestore.delete_one(tile)
                 return tile
 
             self._gene.imap(delete_from_store)
@@ -342,7 +355,7 @@ class Generate:
             )
         self._gene.init(self._queue_tilestore, daemon=self._options.daemon)
 
-    def generate_consume(self) -> None:
+    async def generate_consume(self) -> None:
         """Consume the tiles and log the time if needed."""
         if self._options.time is not None:
             options = self._options
@@ -353,7 +366,7 @@ class Generate:
                 n = 0
                 t1 = None
 
-                def __call__(self, tile: Tile) -> Tile:
+                async def __call__(self, tile: Tile) -> Tile:
                     self.n += 1
                     assert options.time
                     if self.n == options.time:
@@ -370,9 +383,9 @@ class Generate:
 
             self._gene.imap(LogTime())
 
-            self._gene.consume(self._options.time * 3)
+            await self._gene.consume(self._options.time * 3)
         else:
-            self._gene.consume()
+            await self._gene.consume()
 
     def generate_resume(self, layer_name: str | None) -> None:
         """Generate the resume message and close the tilestore connection."""
@@ -478,7 +491,7 @@ class TilestoreGetter:
     def __init__(self, gene: Generate):
         self.gene = gene
 
-    def __call__(self, config_file: str, layer_name: str) -> TileStore | None:
+    def __call__(self, config_file: str, layer_name: str) -> AsyncTileStore | None:
         """Get the tilestore based on the layername config file any layer type."""
         config = self.gene._gene.get_config(config_file)
         if layer_name not in config.config.get("layers", {}):
@@ -516,10 +529,9 @@ class TilestoreGetter:
             )
         elif layer["type"] == "mapnik":
             try:
-                from tilecloud.store.mapnik_ import MapnikTileStore  # pylint: disable=import-outside-toplevel
-
                 from tilecloud_chain.mapnik_ import (  # pylint: disable=import-outside-toplevel
                     MapnikDropActionTileStore,
+                    MapnikTileStore,
                 )
             except ImportError:
                 if os.environ.get("CI", "FALSE") == "FALSE":  # pragma nocover
@@ -591,6 +603,11 @@ def detach() -> None:
 
 
 def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
+    """Run the tiles generation."""
+    asyncio.run(_async_main(args, out))
+
+
+async def _async_main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
     """Run the tiles generation."""
     try:
         parser = ArgumentParser(
@@ -674,10 +691,11 @@ def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
 
         try:
             generate = Generate(options, gene, out)
+            await generate.init()
             if options.role == "slave":
-                generate.gene()
+                await generate.gene()
             elif options.layer:
-                generate.gene(options.layer)
+                await generate.gene(options.layer)
             elif options.get_bbox:
                 _LOGGER.error("With --get-bbox option you need to specify a layer")
                 sys.exit(1)
@@ -689,7 +707,7 @@ def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
                     for layer in config.config["generation"].get(
                         "default_layers", config.config.get("layers", {}).keys()
                     ):
-                        generate.gene(layer)
+                        await generate.gene(layer)
         except tilecloud.filter.error.TooManyErrors:
             _LOGGER.exception("Too many errors")
             sys.exit(1)
@@ -715,12 +733,16 @@ class HashDropperGetter:
         self.meta = meta
         self.count = count
 
-    def __call__(self, config_file: str, layer_name: str) -> Callable[[Tile], Tile | None]:
+    def __call__(self, config_file: str, layer_name: str) -> Callable[[Tile], Awaitable[Tile | None]]:
         """Call."""
+
+        async def _no_op(tile: Tile) -> Tile:
+            return tile
+
         config = self.gene._gene.get_config(config_file)
         if layer_name not in config.config.get("layers", {}):
             _LOGGER.warning("Layer '%s' not found in the configuration file '%s'", layer_name, config_file)
-            return lambda tile: tile
+            return _no_op
         layer = config.config["layers"][layer_name]
         conf_name = "empty_metatile_detection" if self.meta else "empty_tile_detection"
         if conf_name in layer:
@@ -732,7 +754,7 @@ class HashDropperGetter:
                 queue_store=self.gene._gene.queue_store,
                 count=self.count,
             )
-        return lambda tile: tile
+        return _no_op
 
 
 if __name__ == "__main__":

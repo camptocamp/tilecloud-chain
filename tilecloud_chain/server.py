@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import asyncio
 import collections
 import datetime
 import json
@@ -70,6 +71,7 @@ from tilecloud_chain import (
     get_azure_container_client,
     internal_mapcache,
 )
+from tilecloud_chain.store import AsyncTileStore
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -114,7 +116,7 @@ Response = TypeVar("Response")
 class DatedStore:
     """Store with timestamp to be able to invalidate it on configuration change."""
 
-    def __init__(self, store: tilecloud.TileStore, mtime: float) -> None:
+    def __init__(self, store: AsyncTileStore, mtime: float) -> None:
         """Initialize."""
         self.store = store
         self.mtime = mtime
@@ -221,7 +223,7 @@ class Server(Generic[Response]):
         self.filter_cache.setdefault(config.file, {})[layer_name] = DatedFilter(layer_filter, config.mtime)
         return layer_filter
 
-    def get_store(self, config: tilecloud_chain.DatedConfig, layer_name: str) -> tilecloud.TileStore | None:
+    def get_store(self, config: tilecloud_chain.DatedConfig, layer_name: str) -> AsyncTileStore | None:
         """Get the store from the config."""
         dated_store = self.store_cache.get(config.file, {}).get(layer_name)
 
@@ -276,7 +278,7 @@ class Server(Generic[Response]):
             else:
                 raise
 
-    def _get(
+    async def _get(
         self,
         path: str,
         headers: dict[str, str],
@@ -305,11 +307,11 @@ class Server(Generic[Response]):
                     blob = get_azure_container_client(container=cache_azure["container"]).get_blob_client(
                         blob=key_name
                     )
-                properties = blob.get_blob_properties()
-                data = blob.download_blob().readall()
+                properties = await blob.get_blob_properties()
+                data = await (await blob.download_blob()).readall()
                 return self.response(
                     config,
-                    data if isinstance(data, bytes) else data.encode("utf-8"),  # type: ignore
+                    data,
                     {
                         "Content-Encoding": cast(str, properties.content_settings.content_encoding),
                         "Content-Type": cast(str, properties.content_settings.content_type),
@@ -372,19 +374,21 @@ class Server(Generic[Response]):
 
             if path:
                 if tuple(path[: len(self.static_path)]) == tuple(self.static_path):
-                    return self._get(
-                        "/".join(path[len(self.static_path) :]),
-                        {
-                            "Expires": (
-                                datetime.datetime.utcnow()
-                                + datetime.timedelta(hours=self.get_expires_hours(config))
-                            ).isoformat(),
-                            "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
-                            "Access-Control-Allow-Origin": "*",
-                            "Access-Control-Allow-Methods": "GET",
-                        },
-                        config=config,
-                        **kwargs,
+                    return asyncio.get_event_loop().run_until_complete(
+                        self._get(
+                            "/".join(path[len(self.static_path) :]),
+                            {
+                                "Expires": (
+                                    datetime.datetime.utcnow()
+                                    + datetime.timedelta(hours=self.get_expires_hours(config))
+                                ).isoformat(),
+                                "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
+                                "Access-Control-Allow-Origin": "*",
+                                "Access-Control-Allow-Methods": "GET",
+                            },
+                            config=config,
+                            **kwargs,
+                        )
                     )
                 elif len(path) >= 1 and path[0] != self.wmts_path:
                     return self.error(
@@ -468,10 +472,14 @@ class Server(Generic[Response]):
                 cache = self.get_cache(config)
                 if "wmtscapabilities_file" in cache:
                     wmtscapabilities_file = cache["wmtscapabilities_file"]
-                    return self._get(wmtscapabilities_file, headers, config=config, **kwargs)
+                    return asyncio.get_event_loop().run_until_complete(
+                        self._get(wmtscapabilities_file, headers, config=config, **kwargs)
+                    )
                 else:
-                    body = controller.get_wmts_capabilities(
-                        _TILEGENERATION, self.get_cache_name(config), config=config
+                    body = asyncio.get_event_loop().run_until_complete(
+                        controller.get_wmts_capabilities(
+                            _TILEGENERATION, self.get_cache_name(config), config=config
+                        )
                     )
                     assert body
                     headers["Content-Type"] = "application/xml"
@@ -568,71 +576,85 @@ class Server(Generic[Response]):
             if params["FORMAT"] != layer["mime_type"]:
                 return self.error(config, 400, f"Wrong Format '{params['FORMAT']}'", **kwargs)
 
-            if tile.tilecoord.z > self.get_max_zoom_seed(config, params["LAYER"]):
-                return self._map_cache(config, layer, tile, kwargs)
+            return asyncio.get_event_loop().run_until_complete(
+                self._get_tile(config, layer, tile, params, **kwargs)
+            )
 
-            layer_filter = self.get_filter(config, params["LAYER"])
-            if layer_filter:
-                meta_size = layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
-                meta_tilecoord = (
-                    TileCoord(
-                        # TODO fix for matrix_identifier = resolution
-                        tile.tilecoord.z,
-                        round(tile.tilecoord.x / meta_size * meta_size),
-                        round(tile.tilecoord.y / meta_size * meta_size),
-                        meta_size,
-                    )
-                    if meta_size != 1
-                    else tile.tilecoord
-                )
-                if not layer_filter.filter_tilecoord(
-                    config, meta_tilecoord, params["LAYER"], host=self.get_host(**kwargs)
-                ):
-                    return self._map_cache(config, layer, tile, kwargs)
-
-            store = self.get_store(config, params["LAYER"])
-            if store is None:
-                return self.error(
-                    config,
-                    400,
-                    f"No store found for layer '{params['LAYER']}'",
-                    **kwargs,
-                )
-
-            cache = self.get_cache(config)
-            with _GET_TILE.labels(storage=cache["type"]).time():
-                tile2 = store.get_one(tile)
-
-            if tile2 and tile2.data is not None:
-                if tile2.error:
-                    return self.error(config, 500, tile2.error, **kwargs)
-
-                assert tile2.content_type
-                return self.response(
-                    config,
-                    tile2.data,
-                    headers={
-                        "Content-Type": tile2.content_type,
-                        "Expires": (
-                            datetime.datetime.utcnow()
-                            + datetime.timedelta(hours=self.get_expires_hours(config))
-                        ).isoformat(),
-                        "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
-                        "Access-Control-Allow-Origin": "*",
-                        "Access-Control-Allow-Methods": "GET",
-                        "Tile-Backend": "Cache",
-                    },
-                    **kwargs,
-                )
-            else:
-                return self.error(config, 204, **kwargs)
         except HTTPException:
             raise
         except Exception:
             _LOGGER.exception("An unknown error occurred")
             raise
 
-    def _map_cache(
+    async def _get_tile(
+        self,
+        config: tilecloud_chain.DatedConfig,
+        layer: tilecloud_chain.configuration.Layer,
+        tile: Tile,
+        params: dict[str, str],
+        **kwargs: Any,
+    ) -> Response:
+        if tile.tilecoord.z > self.get_max_zoom_seed(config, params["LAYER"]):
+            return await self._map_cache(config, layer, tile, kwargs)
+
+        layer_filter = self.get_filter(config, params["LAYER"])
+        if layer_filter:
+            meta_size = layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
+            meta_tilecoord = (
+                TileCoord(
+                    # TODO fix for matrix_identifier = resolution
+                    tile.tilecoord.z,
+                    round(tile.tilecoord.x / meta_size * meta_size),
+                    round(tile.tilecoord.y / meta_size * meta_size),
+                    meta_size,
+                )
+                if meta_size != 1
+                else tile.tilecoord
+            )
+            if not layer_filter.filter_tilecoord(
+                config, meta_tilecoord, params["LAYER"], host=self.get_host(**kwargs)
+            ):
+                return asyncio.get_event_loop().run_until_complete(
+                    self._map_cache(config, layer, tile, kwargs)
+                )
+
+        store = self.get_store(config, params["LAYER"])
+        if store is None:
+            return self.error(
+                config,
+                400,
+                f"No store found for layer '{params['LAYER']}'",
+                **kwargs,
+            )
+
+        cache = self.get_cache(config)
+        with _GET_TILE.labels(storage=cache["type"]).time():
+            tile2 = await store.get_one(tile)
+
+        if tile2 and tile2.data is not None:
+            if tile2.error:
+                return self.error(config, 500, tile2.error, **kwargs)
+
+            assert tile2.content_type
+            return self.response(
+                config,
+                tile2.data,
+                headers={
+                    "Content-Type": tile2.content_type,
+                    "Expires": (
+                        datetime.datetime.utcnow() + datetime.timedelta(hours=self.get_expires_hours(config))
+                    ).isoformat(),
+                    "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET",
+                    "Tile-Backend": "Cache",
+                },
+                **kwargs,
+            )
+        else:
+            return self.error(config, 204, **kwargs)
+
+    async def _map_cache(
         self,
         config: tilecloud_chain.DatedConfig,
         layer: tilecloud_chain.configuration.Layer,
@@ -641,7 +663,7 @@ class Server(Generic[Response]):
     ) -> Response:
         """Get the tile on a cache of tile."""
         assert _TILEGENERATION
-        return internal_mapcache.fetch(config, self, _TILEGENERATION, layer, tile, kwargs)
+        return await internal_mapcache.fetch(config, self, _TILEGENERATION, layer, tile, kwargs)
 
     def forward(
         self,
