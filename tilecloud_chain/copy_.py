@@ -1,5 +1,6 @@
 """Copy the tiles from a cache to an other."""
 
+import asyncio
 import logging
 import os
 import sys
@@ -18,37 +19,26 @@ class Copy:
 
     count = None
 
-    def copy(
-        self,
-        options: Namespace,
-        gene: TileGeneration,
-        layer: str,
-        source: str,
-        destination: str,
-        task_name: str,
-    ) -> None:
-        """Copy the tiles from a cache to an other."""
-        self._copy(options, gene, layer, source, destination, task_name)
-
-    def _copy(
+    async def copy(
         self,
         options: Namespace,
         gene: TileGeneration,
         layer_name: str,
         source: str,
-        dest: str,
+        destination: str,
         task_name: str,
     ) -> None:
-        # disable metatiles
+        """Copy the tiles from a cache to an other."""
         assert gene.config_file
         config = gene.get_config(gene.config_file)
         layer = config.config["layers"][layer_name]
+        # disable metatiles
         cast(tilecloud_chain.configuration.LayerWms, layer)["meta"] = False
         count_tiles_dropped = Count()
 
         gene.create_log_tiles_error(layer_name)
         source_tilestore = gene.get_tilesstore(source)
-        dest_tilestore = gene.get_tilesstore(dest)
+        dest_tilestore = gene.get_tilesstore(destination)
         gene.init_tilecoords(config, layer_name)
         gene.add_geom_filter()
         gene.add_logger()
@@ -70,7 +60,7 @@ class Copy:
         gene.imap(DropEmpty(gene))
         self.count = gene.counter_size()
         gene.put(dest_tilestore, "Store the tiles")
-        gene.consume()
+        await gene.consume()
         if not options.quiet:
             print(
                 f"""The tile {task_name} of layer '{layer_name}' is finish
@@ -86,6 +76,11 @@ Size per tile: {self.count.size / self.count.nb if self.count.nb != 0 else -1} o
 
 
 def main() -> None:
+    """Copy the tiles from a cache to an other."""
+    asyncio.run(_async_main())
+
+
+async def _async_main() -> None:
     """Copy the tiles from a cache to an other."""
     try:
         parser = ArgumentParser(
@@ -104,7 +99,7 @@ def main() -> None:
 
         if options.layer:
             copy = Copy()
-            copy.copy(options, gene, options.layer, options.source, options.dest, "copy")
+            await copy.copy(options, gene, options.layer, options.source, options.dest, "copy")
         else:
             layers = (
                 config.config["generation"]["default_layers"]
@@ -113,7 +108,7 @@ def main() -> None:
             )
             for layer in layers:
                 copy = Copy()
-                copy.copy(options, gene, layer, options.source, options.dest, "copy")
+                await copy.copy(options, gene, layer, options.source, options.dest, "copy")
     except SystemExit:
         raise
     except:  # pylint: disable=bare-except # noqa: E722
@@ -125,6 +120,11 @@ def main() -> None:
 
 def process() -> None:
     """Copy the tiles from a cache to an other."""
+    asyncio.run(_async_process())
+
+
+async def _async_process() -> None:
+    """Copy the tiles from a cache to an other."""
     try:
         parser = ArgumentParser(
             description="Used to copy the tiles from a cache to an other", prog=sys.argv[0]
@@ -134,11 +134,11 @@ def process() -> None:
 
         options = parser.parse_args()
 
-        gene = TileGeneration(options.config, options, multi_thread=False)
+        gene = TileGeneration(options.config, options, multi_task=False)
 
         copy = Copy()
         if options.layer:
-            copy.copy(options, gene, options.layer, options.cache, options.cache, "process")
+            await copy.copy(options, gene, options.layer, options.cache, options.cache, "process")
         else:
             assert gene.config_file
             config = gene.get_config(gene.config_file)
@@ -148,7 +148,7 @@ def process() -> None:
                 else config.config["layers"].keys()
             )
             for layer in layers_name:
-                copy.copy(options, gene, layer, options.cache, options.cache, "process")
+                await copy.copy(options, gene, layer, options.cache, options.cache, "process")
     except SystemExit:
         raise
     except:  # pylint: disable=bare-except # noqa: E722

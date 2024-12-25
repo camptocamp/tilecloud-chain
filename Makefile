@@ -41,7 +41,7 @@ tests: build ## Run the unit tests
 	c2cciutils-docker-logs
 	docker compose down
 
-PYTEST_ARGS ?= --last-failed
+PYTEST_ARGS ?= --last-failed --full-trace
 
 PHONY: tests-fast
 tests-fast:
