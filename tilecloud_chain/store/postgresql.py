@@ -35,7 +35,7 @@ import re
 import shlex
 import subprocess  # nosec
 import time
-from collections.abc import Iterable, Iterator
+from collections.abc import AsyncIterator
 from datetime import datetime, timedelta
 from typing import Any, cast
 
@@ -46,9 +46,10 @@ from prometheus_client import Counter, Gauge, Summary
 from sqlalchemy import JSON, Column, DateTime, Integer, Unicode, and_
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
-from tilecloud import Tile, TileCoord, TileStore
+from tilecloud import Tile, TileCoord
 
 from tilecloud_chain import DatedConfig, configuration, controller, generate
+from tilecloud_chain.store import AsyncTileStore
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -271,7 +272,7 @@ def _start_job(
         )
 
 
-class PostgresqlTileStore(TileStore):
+class PostgresqlTileStore(AsyncTileStore):
     """PostgreSQL queue."""
 
     def __init__(
@@ -510,7 +511,7 @@ class PostgresqlTileStore(TileStore):
         if not self.jobs:
             time.sleep(10)
 
-    def list(self) -> Iterator[Tile]:
+    async def list(self) -> AsyncIterator[Tile]:
         """List the meta tiles in the queue."""
         while True:
             if not self.jobs:
@@ -566,7 +567,7 @@ class PostgresqlTileStore(TileStore):
                     _READ_ERROR_COUNTER.labels(job_id, config_filename).inc()
                     time.sleep(1)
 
-    def put_one(self, tile: Tile) -> Tile:
+    async def put_one(self, tile: Tile) -> Tile:
         """Put the meta tile in the queue."""
         with self.SessionMaker() as session:
             session.add(
@@ -579,13 +580,7 @@ class PostgresqlTileStore(TileStore):
             session.commit()
         return tile
 
-    def put(self, tiles: Iterable[Tile]) -> Iterator[Tile]:
-        """Put the meta tiles in the queue."""
-        for meta_tile in tiles:
-            self.put_one(meta_tile)
-            yield meta_tile
-
-    def delete_one(self, tile: Tile) -> Tile:
+    async def delete_one(self, tile: Tile) -> Tile:
         """Delete the meta tile from the queue."""
         with self.SessionMaker() as session:
             if tile.error:
@@ -629,13 +624,7 @@ class PostgresqlTileStore(TileStore):
                 session.commit()
         return tile
 
-    def delete_all(self) -> None:
-        """Delete all the queue."""
-        with self.SessionMaker() as session:
-            session.query(Queue).delete()
-            session.commit()
-
-    def get_one(self, tile: Tile) -> Tile:
+    async def get_one(self, tile: Tile) -> Tile:
         """Get the meta tile from the queue."""
         raise NotImplementedError()
 
