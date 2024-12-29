@@ -76,7 +76,7 @@ services:
       <<: *app-env
       TEST_USER: Test
       SQL_LOG_LEVEL: DEBUG
-      TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+psycopg2://postgresql:postgresql@db:5432/tests
+      TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+pyscopg://postgresql:postgresql@db:5432/tests
     volumes:
       - ./example/tilegeneration/config-postgresql.yaml:/etc/tilegeneration/config.yaml:ro
     ports:
@@ -105,7 +105,7 @@ services:
       TILECLOUD_LOG_LEVEL: DEBUG
       TILECLOUD_CHAIN_LOG_LEVEL: DEBUG
       TILECLOUD_CHAIN_SESSION_SALT: a-long-secret-a-long-secret
-      TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+psycopg2://postgresql:postgresql@db:5432/tests
+      TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+psycopg://postgresql:postgresql@db:5432/tests
     command:
       - sleep
       - infinity

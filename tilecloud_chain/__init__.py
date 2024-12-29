@@ -1888,7 +1888,7 @@ def _await_message(_: Any) -> bool:
         raise StopAsyncIteration  # pylint: disable=raise-missing-from
 
 
-def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
+async def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
     """Get the quue tile store."""
     queue_store = config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
 
@@ -1899,7 +1899,7 @@ def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
         )
 
         return TimedTileStoreWrapper(
-            get_postgresql_queue_store(config),
+            await get_postgresql_queue_store(config),
             store_name="postgresql",
         )
     elif queue_store == "redis":
