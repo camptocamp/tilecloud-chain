@@ -123,15 +123,15 @@ class NoneTileStore(AsyncTileStore):
         """See in superclass."""
         raise NotImplementedError()
 
-    async def get_one(self, tile):
+    async def get_one(self, tile: Tile) -> Tile | None:
         """See in superclass."""
         return tile
 
-    async def list(self):
+    async def list(self) -> AsyncIterator[Tile]:
         """See in superclass."""
         raise NotImplementedError()
 
-    async def get(self, tiles):
+    async def get(self, tiles: AsyncIterator[Tile]) -> AsyncIterator[Tile | None]:
         """See in superclass."""
         async for tile in tiles:
             yield tile
