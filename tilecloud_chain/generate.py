@@ -482,7 +482,7 @@ class TilestoreGetter:
             # Get the metatile image from the WMS server
             return TimedTileStoreWrapper(
                 URLTileStore(
-                    tilelayouts=(
+                    tile_layouts=(
                         WMSTileLayout(
                             url=layer["url"],
                             layers=layer.get("layers", ""),
