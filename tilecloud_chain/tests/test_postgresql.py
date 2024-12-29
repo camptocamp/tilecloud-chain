@@ -1,3 +1,4 @@
+import asyncio
 import os
 from datetime import datetime, timedelta
 
@@ -23,8 +24,8 @@ from tilecloud_chain.store.postgresql import (
 
 
 @pytest.fixture
-def tilestore() -> PostgresqlTileStore:
-    return get_postgresql_queue_store(DatedConfig({}, 0, "config.yaml"))
+def tilestore(event_loop: asyncio.AbstractEventLoop) -> PostgresqlTileStore:
+    return event_loop.run_until_complete(get_postgresql_queue_store(DatedConfig({}, 0, "config.yaml")))
 
 
 @pytest.fixture
@@ -36,27 +37,35 @@ def SessionMaker() -> sessionmaker:
 
 @pytest.fixture
 def queue(SessionMaker: sessionmaker, tilestore: PostgresqlTileStore) -> tuple[int, int, int]:
-    tilestore.create_job("test", "generate-tiles", "config.yaml")
+    with SessionMaker() as session:
+        for job in session.query(Job).filter(Job.name == "test").all():
+            session.delete(job)
+        session.commit()
+    asyncio.get_event_loop().run_until_complete(tilestore.create_job("test", "generate-tiles", "config.yaml"))
     with SessionMaker() as session:
         job = session.query(Job).filter(Job.name == "test").one()
         job.status = _STATUS_STARTED
         job_id = job.id
         session.commit()
 
-    tilestore.put_one(
-        Tile(
-            TileCoord(0, 0, 0),
-            metadata={
-                "job_id": job_id,
-            },
+    asyncio.get_event_loop().run_until_complete(
+        tilestore.put_one(
+            Tile(
+                TileCoord(0, 0, 0),
+                metadata={
+                    "job_id": job_id,
+                },
+            )
         )
     )
-    tilestore.put_one(
-        Tile(
-            TileCoord(1, 0, 0),
-            metadata={
-                "job_id": job_id,
-            },
+    asyncio.get_event_loop().run_until_complete(
+        tilestore.put_one(
+            Tile(
+                TileCoord(1, 0, 0),
+                metadata={
+                    "job_id": job_id,
+                },
+            )
         )
     )
 
@@ -72,23 +81,23 @@ def queue(SessionMaker: sessionmaker, tilestore: PostgresqlTileStore) -> tuple[i
         session.commit()
 
 
-def test_retry(queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore):
+async def test_retry(queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore):
     job_id, _, _ = queue
 
-    tile_1 = next(tilestore.list())
-    tile_2 = next(tilestore.list())
+    tile_1 = await anext(tilestore.list())
+    tile_2 = await anext(tilestore.list())
 
     tile_1.error = "test error"
 
-    tilestore.delete_one(tile_1)
-    tilestore.delete_one(tile_2)
+    await tilestore.delete_one(tile_1)
+    await tilestore.delete_one(tile_2)
 
     with SessionMaker() as session:
         metatiles = session.query(Queue).filter(Queue.job_id == job_id).all()
         assert len(metatiles) == 1
         assert metatiles[0].error == "test error"
 
-    tilestore._maintenance()
+    await tilestore._maintenance()
 
     with SessionMaker() as session:
         job = session.query(Job).filter(Job.id == job_id).one()
@@ -104,12 +113,14 @@ def test_retry(queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestor
         assert metatiles[0].status == _STATUS_CREATED
 
 
-def test_cancel(queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore):
+async def test_cancel(
+    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore
+):
     job_id, _, _ = queue
 
     tile_1 = next(tilestore.list())
 
-    tilestore.delete_one(tile_1)
+    await tilestore.delete_one(tile_1)
 
     with SessionMaker() as session:
         metatiles = session.query(Queue).filter(Queue.job_id == job_id).all()
@@ -124,7 +135,7 @@ def test_cancel(queue: tuple[int, int, int], SessionMaker: sessionmaker, tilesto
         assert job.status == _STATUS_CANCELLED
 
 
-def test_maintenance_status_done(
+async def test_maintenance_status_done(
     queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore
 ):
     job_id, _, _ = queue
@@ -139,14 +150,14 @@ def test_maintenance_status_done(
         metatiles = session.query(Queue).filter(Queue.job_id == job_id).all()
         assert len(metatiles) == 0
 
-    tilestore._maintenance()
+    await tilestore._maintenance()
 
     with SessionMaker() as session:
         job = session.query(Job).filter(Job.id == job_id).one()
         assert job.status == _STATUS_DONE
 
 
-def test_maintenance_pending_tile(
+async def test_maintenance_pending_tile(
     queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore
 ):
     job_id, metatile_0_id, metatile_1_id = queue
@@ -160,7 +171,7 @@ def test_maintenance_pending_tile(
         metatile_1.started_at = datetime.now() - timedelta(hours=1)
         session.commit()
 
-    tilestore._maintenance()
+    await tilestore._maintenance()
     with SessionMaker() as session:
         metatile_0 = session.query(Queue).filter(Queue.id == metatile_0_id).one()
         assert metatile_0.status == _STATUS_CREATED
@@ -168,7 +179,7 @@ def test_maintenance_pending_tile(
         assert metatile_1.status == _STATUS_CREATED
 
 
-def test_maintenance_pending_job(
+async def test_maintenance_pending_job(
     queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore
 ):
     job_id, metatile_0_id, metatile_1_id = queue
@@ -177,7 +188,7 @@ def test_maintenance_pending_job(
         job.status = _STATUS_PENDING
         job.started_at = datetime.now() - timedelta(hours=1)
 
-    tilestore._maintenance()
+    await tilestore._maintenance()
 
     with SessionMaker() as session:
         job = session.query(Job).filter(Job.id == job_id).one()

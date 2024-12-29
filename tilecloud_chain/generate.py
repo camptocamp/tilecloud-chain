@@ -90,7 +90,7 @@ class Generate:
 
     async def init(self, server: bool = False) -> None:
         """Initialize the generation."""
-        self._generate_init()
+        await self._generate_init()
         if self._options.role != "master" and not server:
             await self._generate_tiles()
 
@@ -122,14 +122,14 @@ class Generate:
         await self.generate_consume()
         self.generate_resume(layer_name)
 
-    def _generate_init(self) -> None:
+    async def _generate_init(self) -> None:
         if self._options.role != "server":
             self._count_metatiles_dropped = Count()
             self._count_tiles = Count()
             self._count_tiles_dropped = Count()
 
         if self._options.role in ("master", "slave") and not self._options.tiles:
-            self._queue_tilestore = get_queue_store(self._gene.get_main_config(), self._options.daemon)
+            self._queue_tilestore = await get_queue_store(self._gene.get_main_config(), self._options.daemon)
 
         if self._options.role in ("local", "master"):
             self._gene.add_geom_filter()

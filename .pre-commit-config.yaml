@@ -108,6 +108,10 @@ repos:
           - --tool=ruff
           - --die-on-tool-error
           - --output-format=pylint
+        exclude: |
+          (?x)^(
+            tilecloud_chain/tests/.*
+          )$
         additional_dependencies:
           - prospector-profile-duplicated==1.10.0 # pypi
           - prospector-profile-utils==1.14.1 # pypi

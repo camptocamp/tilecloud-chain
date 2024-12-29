@@ -45,6 +45,11 @@ _GET_STATUS_SUMMARY = Summary("tilecloud_chain_get_status", "Number of get_stats
 
 def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
     """Generate the contextual file like the legends."""
+    asyncio.run(_async_main(args, out))
+
+
+async def _async_main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
+    """Generate the contextual file like the legends."""
     try:
         parser = ArgumentParser(
             description="Used to generate the contextual file like the capabilities, the legends, "
@@ -76,7 +81,7 @@ def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
         config = gene.get_config(gene.config_file)
 
         if options.status:
-            status(gene)
+            await status(gene)
             sys.exit(0)
 
         if options.cache is None:
@@ -525,15 +530,15 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                     )
 
 
-def status(gene: TileGeneration) -> None:
+async def status(gene: TileGeneration) -> None:
     """Print th tilegeneration status."""
-    print("\n".join(get_status(gene)))
+    print("\n".join(await get_status(gene)))
 
 
-def get_status(gene: TileGeneration) -> list[str]:
+async def get_status(gene: TileGeneration) -> list[str]:
     """Get the tile generation status."""
     config = gene.get_main_config()
-    store = get_queue_store(config, False)
+    store = await get_queue_store(config, False)
     type_: Literal["redis"] | Literal["sqs"] = "redis" if "redis" in config.config else "sqs"
     conf = config.config[type_]
     with _GET_STATUS_SUMMARY.labels(type_, conf.get("queue", configuration.REDIS_QUEUE_DEFAULT)).time():

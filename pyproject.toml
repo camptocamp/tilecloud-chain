@@ -77,6 +77,8 @@ psutil = "6.1.1"
 pyproj = "3.7.0"
 psycopg = { version = "3.2.3", extras = ["binary"] }
 aiohttp = "3.11.11"
+sqlalchemy = { version = "2.0.36", extras = ["asyncio"] }
+pytest-asyncio = "0.25.0"
 
 [tool.poetry.group.dev.dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.13.3" }
