@@ -42,7 +42,7 @@ async def _async_main() -> None:
             options=options,
             layer_name=options.layer,
             base_config={"cost": {}},
-            multi_thread=False,
+            multi_task=False,
         )
         config = gene.get_config(options.config)
 

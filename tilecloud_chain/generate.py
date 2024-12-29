@@ -1,13 +1,13 @@
 """Generate the tiles, generate the queue, ..."""
 
 import asyncio
+import contextvars
 import gc
 import logging
 import os
 import random
 import socket
 import sys
-import threading
 from argparse import ArgumentParser, Namespace
 from collections.abc import Awaitable, Callable
 from datetime import datetime
@@ -22,7 +22,6 @@ from tilecloud import Tile, TileCoord
 from tilecloud.filter.logger import Logger
 from tilecloud.layout.wms import WMSTileLayout
 
-import tilecloud_chain
 from tilecloud_chain import (
     Count,
     CountSize,
@@ -71,11 +70,9 @@ class LogTilesContext:
 
     def __call__(self, tile: Tile) -> Tile:
         """Add logs tile context."""
-        tilecloud_chain.LOGGING_CONTEXT.setdefault(os.getpid(), {})[threading.current_thread().native_id] = {  # type: ignore
-            "host": tile.metadata.get("host"),
-            "layer": tile.metadata.get("layer"),
-            "meta_tilecoord": str(tile.tilecoord),
-        }
+        contextvars.ContextVar("host").set(tile.metadata.get("host"))
+        contextvars.ContextVar("layer").set(tile.metadata.get("layer"))
+        contextvars.ContextVar("meta_tilecoord").set(str(tile.tilecoord))
 
         return tile
 
@@ -659,7 +656,7 @@ async def _async_main(args: list[str] | None = None, out: IO[str] | None = None)
         gene = TileGeneration(
             config_file=options.config or os.environ.get("TILEGENERATION_CONFIGFILE"),
             options=options,
-            multi_thread=options.get_hash is None,
+            multi_task=options.get_hash is None,
             out=out,
         )
 

@@ -23,33 +23,22 @@ class Copy:
         self,
         options: Namespace,
         gene: TileGeneration,
-        layer: str,
+        layer_name: str,
         source: str,
         destination: str,
         task_name: str,
     ) -> None:
         """Copy the tiles from a cache to an other."""
-        await self._copy(options, gene, layer, source, destination, task_name)
-
-    async def _copy(
-        self,
-        options: Namespace,
-        gene: TileGeneration,
-        layer_name: str,
-        source: str,
-        dest: str,
-        task_name: str,
-    ) -> None:
-        # disable metatiles
         assert gene.config_file
         config = gene.get_config(gene.config_file)
         layer = config.config["layers"][layer_name]
+        # disable metatiles
         cast(tilecloud_chain.configuration.LayerWms, layer)["meta"] = False
         count_tiles_dropped = Count()
 
         gene.create_log_tiles_error(layer_name)
         source_tilestore = gene.get_tilesstore(source)
-        dest_tilestore = gene.get_tilesstore(dest)
+        dest_tilestore = gene.get_tilesstore(destination)
         gene.init_tilecoords(config, layer_name)
         gene.add_geom_filter()
         gene.add_logger()
@@ -71,7 +60,7 @@ class Copy:
         gene.imap(DropEmpty(gene))
         self.count = gene.counter_size()
         gene.put(dest_tilestore, "Store the tiles")
-        await gene.consume()
+        await gene.consume(should_exit=False)
         if not options.quiet:
             print(
                 f"""The tile {task_name} of layer '{layer_name}' is finish
@@ -129,7 +118,12 @@ async def _async_main() -> None:
         sys.exit(1)
 
 
-async def process() -> None:
+def process() -> None:
+    """Copy the tiles from a cache to an other."""
+    asyncio.run(_async_process())
+
+
+async def _async_process() -> None:
     """Copy the tiles from a cache to an other."""
     try:
         parser = ArgumentParser(
@@ -140,7 +134,7 @@ async def process() -> None:
 
         options = parser.parse_args()
 
-        gene = TileGeneration(options.config, options, multi_thread=False)
+        gene = TileGeneration(options.config, options, multi_task=False)
 
         copy = Copy()
         if options.layer:

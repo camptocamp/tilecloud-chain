@@ -105,7 +105,7 @@ def init_tilegeneration(config_file: str | None) -> None:
                 False,
             ),
             configure_logging=False,
-            multi_thread=False,
+            multi_task=False,
             maxconsecutive_errors=False,
         )
 

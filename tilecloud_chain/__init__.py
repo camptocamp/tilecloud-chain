@@ -2,6 +2,7 @@
 
 import asyncio
 import collections
+import contextvars
 import json
 import logging
 import logging.config
@@ -15,7 +16,6 @@ import sqlite3
 import subprocess  # nosec
 import sys
 import tempfile
-import threading
 import time
 from argparse import ArgumentParser, Namespace
 from collections.abc import AsyncIterator, Awaitable, Callable, Iterable
@@ -34,7 +34,6 @@ import c2cwsgiutils.pyramid_logging
 import c2cwsgiutils.setup_process
 import jsonschema_validator
 import psycopg2
-import tilecloud.filter.error
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob.aio import BlobServiceClient, ContainerClient
 from c2cwsgiutils import sentry
@@ -46,7 +45,7 @@ from shapely.geometry.polygon import Polygon
 from shapely.ops import unary_union
 from shapely.wkb import loads as loads_wkb
 from tilecloud import BoundingPyramid, Tile, TileCoord, TileGrid
-from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
+from tilecloud.filter.error import LogErrors
 from tilecloud.filter.logger import Logger
 from tilecloud.grid.free import FreeTileGrid
 from tilecloud.layout.wmts import WMTSTileLayout
@@ -60,6 +59,7 @@ from tilecloud.store.sqs import SQSTileStore, maybe_stop
 import tilecloud_chain.configuration
 import tilecloud_chain.security
 from tilecloud_chain import configuration
+from tilecloud_chain.filter.error import MaximumConsecutiveErrors, TooManyErrors
 from tilecloud_chain.multitilestore import MultiTileStore
 from tilecloud_chain.store import AsyncTileStore, CallWrapper, NoneTileStore, TileStoreWrapper
 from tilecloud_chain.store.azure_storage_blob import AzureStorageBlobTileStore
@@ -228,7 +228,7 @@ class Run:
             else None
         )
         self.error = 0
-        self.error_lock = threading.Lock()
+        self.error_lock = asyncio.Lock()
         self.error_logger = LogErrors(
             _LOGGER, logging.ERROR, "Error in tile: %(tilecoord)s, %(formated_metadata)s, %(error)r"
         )
@@ -293,7 +293,7 @@ class Run:
 
                     if self.gene.queue_store is not None:
                         await self.gene.queue_store.delete_one(tile)
-                    with self.error_lock:
+                    async with self.error_lock:
                         self.error += 1
                     return tile
             except Exception:
@@ -373,9 +373,6 @@ class LoggingInformation(TypedDict):
     meta_tilecoord: str
 
 
-LOGGING_CONTEXT: dict[int, dict[int, LoggingInformation]] = {}
-
-
 class JsonLogHandler(c2cwsgiutils.pyramid_logging.JsonLogHandler):
     """Log to stdout in JSON."""
 
@@ -389,19 +386,9 @@ class TileFilter(logging.Filter):
 
     def filter(self, record: Any) -> bool:
         """Add the request information to the log record."""
-        thread_id = threading.current_thread().native_id
-        assert thread_id is not None
-        log_info = LOGGING_CONTEXT.get(os.getpid(), {}).get(thread_id)
-
-        if log_info is not None:
-            record.tcc_host = log_info["host"]
-            record.tcc_layer = log_info["layer"]
-            record.tcc_meta_tilecoord = log_info["meta_tilecoord"]
-        else:
-            record.tcc_process_id = os.getpid()
-            record.tcc_thread_id = thread_id
-            record.tcc_available_process_id = ", ".join([str(e) for e in LOGGING_CONTEXT])
-            record.tcc_available_thread_id = ", ".join([str(e) for e in LOGGING_CONTEXT.get(os.getpid(), {})])
+        record.tcc_host = contextvars.ContextVar("host").get()
+        record.tcc_layer = contextvars.ContextVar("layer").get()
+        record.tcc_meta_tilecoord = contextvars.ContextVar("meta_tilecoord").get()
 
         return True
 
@@ -442,13 +429,13 @@ class TileGeneration:
         layer_name: str | None = None,
         base_config: tilecloud_chain.configuration.Configuration | None = None,
         configure_logging: bool = True,
-        multi_thread: bool = True,
+        multi_task: bool = True,
         maxconsecutive_errors: bool = True,
         out: IO[str] | None = None,
     ):
         self.geoms_cache: dict[str, dict[str, DatedGeoms]] = {}
         self._close_actions: list[Close] = []
-        self.error_lock = threading.Lock()
+        self.error_lock = asyncio.Lock()
         self.error_files_: dict[str, TextIO] = {}
         self.functions_tiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
         self.functions_metatiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
@@ -459,7 +446,7 @@ class TileGeneration:
         self.layer_legends: dict[str, list[Legend]] = {}
         self.config_file = config_file
         self.base_config = base_config
-        self.multi_thread = multi_thread
+        self.multi_task = multi_task
         self.configs: dict[str, DatedConfig] = {}
         self.hosts_cache: DatedHosts | None = None
 
@@ -1021,7 +1008,7 @@ class TileGeneration:
                     tasks.append(run(tile))
                 await asyncio.gather(*tasks)
 
-                with self.error_lock:
+                async with self.error_lock:
                     self.error += run.error
             return metatile
 
@@ -1399,7 +1386,7 @@ class TileGeneration:
 
         self.functions.append(Func(func, time_message))
 
-    async def consume(self, test: int | None = None) -> None:
+    async def consume(self, test: int | None = None, should_exit: bool = True) -> None:
         """Consume the tilestream."""
         assert self.tilestream is not None
 
@@ -1409,10 +1396,10 @@ class TileGeneration:
 
         run = Run(self, self.functions_metatiles, out=self.out)
 
-        if test is None:
-            nb_tasks = int(os.environ.get("TILECLOUD_CHAIN_NB_TASKS", "1")) if self.multi_thread else 1
+        should_exit_error = False
 
-            should_exit_error = False
+        if test is None:
+            nb_tasks = int(os.environ.get("TILECLOUD_CHAIN_NB_TASKS", "1")) if self.multi_task else 1
 
             async def target() -> None:
                 _LOGGER.debug("Start run")
@@ -1424,9 +1411,10 @@ class TileGeneration:
                         tile = await anext(self.tilestream)
                         try:
                             await run(tile)
-                        except tilecloud.filter.error.TooManyErrors:
+                        except TooManyErrors:
                             _LOGGER.exception("Too many errors")
                             should_exit_error = True
+                            end = True
                         except queue.Empty:
                             pass
                     except StopAsyncIteration:
@@ -1445,6 +1433,12 @@ class TileGeneration:
         self.duration = datetime.now() - start
         for ca in self._close_actions:
             ca()
+
+        if should_exit:
+            if should_exit_error:
+                sys.exit(1)
+            else:
+                sys.exit()
 
 
 class Count:
@@ -1473,12 +1467,12 @@ class CountSize:
     def __init__(self) -> None:
         self.nb = 0
         self.size = 0
-        self.lock = threading.Lock()
+        self.lock = asyncio.Lock()
 
     async def __call__(self, tile: Tile | None = None) -> Tile | None:
         """Count the number of generated tile and measure the total generated size."""
         if tile and tile.data:
-            with self.lock:
+            async with self.lock:
                 self.nb += 1
                 self.size += len(tile.data)
         return tile

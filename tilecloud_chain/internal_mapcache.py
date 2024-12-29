@@ -26,7 +26,6 @@ if TYPE_CHECKING:
 _MAX_GENERATION_TIME = int(os.environ.get("TILEGENERATION_MAX_GENERATION_TIME", "60"))
 _LOG = logging.getLogger(__name__)
 _lock = threading.Lock()
-_executing_lock = threading.Lock()
 _GENERATOR = None
 
 _GET_TILE = Summary("tilecloud_chain_get_generated_tile", "Time to get the generated tiles", ["storage"])
