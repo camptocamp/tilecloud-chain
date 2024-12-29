@@ -7,7 +7,7 @@ from pathlib import Path
 
 from tilecloud import Tile
 
-from tilecloud_chain.store import AsyncTileStore
+from tilecloud_chain.store import AsyncTilesIterator, AsyncTileStore
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +99,20 @@ class MultiTileStore(AsyncTileStore):
         store = self._get_store_tile(tile)
         assert store is not None
         return await store.get_one(tile)
+
+    async def get(self, tiles: AsyncIterator[Tile]) -> AsyncIterator[Tile | None]:
+        """
+        Add data to the tiles, or return ``None`` if the tile is not in the store.
+
+        Arguments:
+            tiles: AsyncIterator[Tile]
+        """
+        async for tile in tiles:
+            store = self._get_store_tile(tile)
+            assert store is not None
+
+            async for new_tile in store.get(AsyncTilesIterator([tile])()):
+                yield new_tile
 
     def __str__(self) -> str:
         """Return a string representation of the object."""

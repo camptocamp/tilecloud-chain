@@ -14,7 +14,6 @@ _OptionalTileOrNot = TypeVar("_OptionalTileOrNot", Tile | None, Tile)
 _TILESTORE_OPERATION_SUMMARY = Summary(
     "tilecloud_chain_tilestore", "Number of tilestore contains", ["layer", "host", "store", "operation"]
 )
-_LEN_SUMMARY = Summary("tilecloud_chain_tilestore_len", "Number of tilestore len", ["store"])
 
 
 class TimedTileStoreWrapper(AsyncTileStore):
@@ -84,6 +83,12 @@ class TimedTileStoreWrapper(AsyncTileStore):
             tile.metadata.get("layer", "none"), tile.metadata.get("host", "none"), self._store_name, "put_one"
         ).time():
             return await self._tile_store.put_one(tile)
+
+    async def get(self, tiles: AsyncIterator[Tile]) -> AsyncIterator[Tile | None]:
+        """See in superclass."""
+        with _TILESTORE_OPERATION_SUMMARY.labels("none", "none", self._store_name, "get").time():
+            async for tile in self._tile_store.get(tiles):
+                yield tile
 
     def __getattr__(self, item: str) -> Any:
         """See in superclass."""

@@ -88,6 +88,11 @@ class AzureStorageBlobTileStore(AsyncTileStore):
             tile.error = exc
         return tile
 
+    async def get(self, tiles: AsyncIterator[Tile]) -> AsyncIterator[Tile | None]:
+        """Get tiles from the store."""
+        async for tile in tiles:
+            yield await self.get_one(tile)
+
     async def list(self) -> AsyncIterator[Tile]:
         """List all the tiles in the store."""
         prefix = getattr(self.tilelayout, "prefix", "")

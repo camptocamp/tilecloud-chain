@@ -49,8 +49,10 @@ class AsyncTileStore:
             tiles: AsyncIterator[Tile]
 
         """
-        async for tile in tiles:
-            yield await self.get_one(tile)
+        raise NotImplementedError
+        yield Tile(TileCoord(0, 0, 0))  # pylint: disable=unreachable
+        # async for tile in tiles:
+        #     yield await self.get_one(tile)
 
     async def list(self) -> AsyncIterator[Tile]:
         """Generate all the tiles in the store, but without their data."""
@@ -120,3 +122,16 @@ class CallWrapper:
     async def __call__(self, tile: Tile) -> Tile | None:
         """See in superclass."""
         return self.function(tile)
+
+
+class AsyncTilesIterator:
+    """An async iterator."""
+
+    def __init__(self, tiles: list[Tile]) -> None:
+        """Initialize."""
+        self._tiles = tiles
+
+    async def __call__(self) -> AsyncIterator[Tile]:
+        """Async iterator of the tiles."""
+        for tile in self._tiles:
+            yield tile

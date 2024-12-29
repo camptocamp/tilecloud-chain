@@ -351,6 +351,14 @@ class Server(Generic[Response]):
 
         return self.serve(path, params, config=config, config_file=config_file, start_response=start_response)
 
+    def _get_event_loop(self) -> asyncio.AbstractEventLoop:
+        try:
+            return asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            return loop
+
     def serve(
         self,
         path: list[str] | None,
@@ -374,7 +382,7 @@ class Server(Generic[Response]):
 
             if path:
                 if tuple(path[: len(self.static_path)]) == tuple(self.static_path):
-                    return asyncio.get_event_loop().run_until_complete(
+                    return self._get_event_loop().run_until_complete(
                         self._get(
                             "/".join(path[len(self.static_path) :]),
                             {
@@ -472,11 +480,11 @@ class Server(Generic[Response]):
                 cache = self.get_cache(config)
                 if "wmtscapabilities_file" in cache:
                     wmtscapabilities_file = cache["wmtscapabilities_file"]
-                    return asyncio.get_event_loop().run_until_complete(
+                    return self._get_event_loop().run_until_complete(
                         self._get(wmtscapabilities_file, headers, config=config, **kwargs)
                     )
                 else:
-                    body = asyncio.get_event_loop().run_until_complete(
+                    body = self._get_event_loop().run_until_complete(
                         controller.get_wmts_capabilities(
                             _TILEGENERATION, self.get_cache_name(config), config=config
                         )
@@ -576,7 +584,7 @@ class Server(Generic[Response]):
             if params["FORMAT"] != layer["mime_type"]:
                 return self.error(config, 400, f"Wrong Format '{params['FORMAT']}'", **kwargs)
 
-            return asyncio.get_event_loop().run_until_complete(
+            return self._get_event_loop().run_until_complete(
                 self._get_tile(config, layer, tile, params, **kwargs)
             )
 
@@ -614,9 +622,7 @@ class Server(Generic[Response]):
             if not layer_filter.filter_tilecoord(
                 config, meta_tilecoord, params["LAYER"], host=self.get_host(**kwargs)
             ):
-                return asyncio.get_event_loop().run_until_complete(
-                    self._map_cache(config, layer, tile, kwargs)
-                )
+                return self._get_event_loop().run_until_complete(self._map_cache(config, layer, tile, kwargs))
 
         store = self.get_store(config, params["LAYER"])
         if store is None:
