@@ -1,7 +1,6 @@
 """Generate the tiles, generate the queue, ..."""
 
 import asyncio
-import contextvars
 import gc
 import logging
 import os
@@ -60,27 +59,6 @@ async def _objgraph(tile: Tile) -> Tile:
     if values:
         _LOGGER.debug("Objgraph growth in queue:\n%s", "\n".join(values))
     return tile
-
-
-class LogTilesContext:
-    """Logging tile context."""
-
-    def __init__(self, gene: TileGeneration):
-        self.gene = gene
-
-    def __call__(self, tile: Tile) -> Tile:
-        """Add logs tile context."""
-        contextvars.ContextVar("host").set(tile.metadata.get("host"))
-        contextvars.ContextVar("layer").set(tile.metadata.get("layer"))
-        contextvars.ContextVar("meta_tilecoord").set(str(tile.tilecoord))
-
-        return tile
-
-    def __str__(self) -> str:
-        return self.__class__.__name__
-
-    def __repr__(self) -> str:
-        return self.__str__()
 
 
 class Generate:
@@ -256,7 +234,6 @@ class Generate:
                 return None
 
             self._gene.imap(_layer_filter)
-            self._gene.imap(CallWrapper(LogTilesContext(self._gene)))
 
         if self._options.role != "server":
             self._count_metatiles = self._gene.counter()

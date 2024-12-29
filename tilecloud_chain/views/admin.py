@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import asyncio
 import io
 import json
 import logging
@@ -236,7 +237,9 @@ class Admin:
             assert self.gene is not None
             config_filename = self.gene.get_host_config_file(self.request.host)
             assert config_filename is not None
-            store.create_job(self.request.POST["name"], self.request.POST["command"], config_filename)
+            asyncio.get_event_loop().run_until_complete(
+                store.create_job(self.request.POST["name"], self.request.POST["command"], config_filename)
+            )
             return {
                 "success": True,
             }
@@ -264,7 +267,9 @@ class Admin:
         try:
             config_filename = self.gene.get_host_config_file(self.request.host)
             assert config_filename is not None
-            store.cancel(self.request.POST["job_id"], config_filename)
+            asyncio.get_event_loop().run_until_complete(
+                store.cancel(self.request.POST["job_id"], config_filename)
+            )
             return {
                 "success": True,
             }
@@ -292,7 +297,9 @@ class Admin:
         try:
             config_filename = self.gene.get_host_config_file(self.request.host)
             assert config_filename is not None
-            store.retry(self.request.POST["job_id"], config_filename)
+            asyncio.get_event_loop().run_until_complete(
+                store.retry(self.request.POST["job_id"], config_filename)
+            )
             return {
                 "success": True,
             }

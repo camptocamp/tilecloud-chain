@@ -10,7 +10,6 @@ import math
 import os
 import pathlib
 import pkgutil
-import queue
 import re
 import sqlite3
 import subprocess  # nosec
