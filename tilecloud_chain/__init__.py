@@ -1410,8 +1410,6 @@ class TileGeneration:
         run = Run(self, self.functions_metatiles, out=self.out)
 
         if test is None:
-            end = False
-
             nb_tasks = int(os.environ.get("TILECLOUD_CHAIN_NB_TASKS", "1")) if self.multi_thread else 1
 
             should_exit_error = False
@@ -1419,6 +1417,7 @@ class TileGeneration:
             async def target() -> None:
                 _LOGGER.debug("Start run")
                 nonlocal should_exit_error
+                end = False
                 while not end:
                     try:
                         assert self.tilestream is not None
@@ -1431,13 +1430,13 @@ class TileGeneration:
                         except queue.Empty:
                             pass
                     except StopAsyncIteration:
+                        if not self.daemon:
+                            end = True
                         pass
                 _LOGGER.debug("End run")
 
             tasks = [asyncio.create_task(target(), name=f"Run {i}") for i in range(nb_tasks)]
             await asyncio.gather(*tasks)
-
-            end = True
 
         else:
             for _ in range(test):
