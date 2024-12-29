@@ -130,6 +130,7 @@ class NoneTileStore(AsyncTileStore):
     async def list(self) -> AsyncIterator[Tile]:
         """See in superclass."""
         raise NotImplementedError()
+        yield Tile(TileCoord(0, 0, 0))  # pylint: disable=unreachable
 
     async def get(self, tiles: AsyncIterator[Tile]) -> AsyncIterator[Tile | None]:
         """See in superclass."""
