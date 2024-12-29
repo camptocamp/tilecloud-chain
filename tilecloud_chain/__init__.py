@@ -1432,7 +1432,6 @@ class TileGeneration:
                     except StopAsyncIteration:
                         if not self.daemon:
                             end = True
-                        pass
                 _LOGGER.debug("End run")
 
             tasks = [asyncio.create_task(target(), name=f"Run {i}") for i in range(nb_tasks)]
