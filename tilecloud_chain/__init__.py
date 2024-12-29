@@ -1890,7 +1890,7 @@ def _await_message(_: Any) -> bool:
         time.sleep(10)
         return False
     except KeyboardInterrupt:
-        raise StopIteration  # pylint: disable=raise-missing-from
+        raise StopAsyncIteration  # pylint: disable=raise-missing-from
 
 
 def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:

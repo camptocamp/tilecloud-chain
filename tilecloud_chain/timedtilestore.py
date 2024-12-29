@@ -30,10 +30,10 @@ class TimedTileStoreWrapper(AsyncTileStore):
             start = time.perf_counter()
             try:
                 tile = await anext(self._tile_store.list())
-            except StopIteration:
+            except StopAsyncIteration:
                 break
             except RuntimeError as exception:
-                if isinstance(exception.__cause__, StopIteration):
+                if isinstance(exception.__cause__, StopAsyncIteration):
                     # since python 3.7, a StopIteration is wrapped in a RuntimeError (PEP 479)
                     break
                 raise
