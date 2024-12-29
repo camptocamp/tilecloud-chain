@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://raw.githubusercontent.com/camptocamp/tilecloud-chain/master/tilecloud_chain/schema.json",
+  "type": "object",
+  "title": "TileCloud-chain host limit configuration",
+  "description": "The configuration of the concurrent request limit on a host",
+  "additionalProperties": false,
+  "definitions": {},
+  "properties": {
+    "default": {
+      "type": "integer",
+      "title": "Default limit",
+      "default": 1
+    },
+    "hosts": {
+      "type": "object",
+      "title": "Hosts",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    }
+  }
+}

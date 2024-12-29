@@ -132,8 +132,13 @@ class Generator:
 
     def __init__(self, tilegeneration: tilecloud_chain.TileGeneration) -> None:
         """Initialize."""
+        self._tilegeneration = tilegeneration
         redis_config = tilegeneration.get_main_config().config.get("redis", {})
         self._cache_store = RedisStore(redis_config)
+        self.run: Run | None = None
+
+    async def init(self) -> None:
+        """Initialize the generator."""
         log_level = os.environ.get("TILE_MAPCACHE_LOGLEVEL")
         generator = Generate(
             collections.namedtuple(  # type: ignore
@@ -160,22 +165,23 @@ class Generator:
                 None,
                 None,
             ),
-            tilegeneration,
+            self._tilegeneration,
             out=sys.stdout,
-            server=True,
         )
-        generator._generate_tiles()
-        self.run = Run(tilegeneration, tilegeneration.functions_metatiles)
+        await generator.init(server=True)
+        await generator._generate_tiles()  # pylint: disable=protected-access
+        self.run = Run(self._tilegeneration, self._tilegeneration.functions_metatiles)
 
     def read_from_cache(self, tile: Tile) -> Tile | None:
         """Get the tile from the cache (Redis)."""
         with _GET_TILE.labels("redis").time():
             return self._cache_store.get_one(tile)
 
-    def compute_tile(self, tile: Tile) -> bool:
+    async def compute_tile(self, tile: Tile) -> bool:
         """Create the tile."""
         with _GET_TILE.labels("wms").time():
-            self.run(tile)
+            assert self.run is not None
+            await self.run(tile)
         if tile.error:
             _LOG.error("Tile %s %s in error: %s", tile.tilecoord, tile.formated_metadata, tile.error)
             return False
@@ -199,24 +205,25 @@ class Generator:
             yield
 
 
-def _get_generator(tilegeneration: tilecloud_chain.TileGeneration) -> Generator:
+async def _get_generator(tilegeneration: tilecloud_chain.TileGeneration) -> Generator:
     if _GENERATOR is None:
-        return _init_generator(tilegeneration)
+        return await _init_generator(tilegeneration)
     return _GENERATOR
 
 
-def _init_generator(tilegeneration: tilecloud_chain.TileGeneration) -> Generator:
+async def _init_generator(tilegeneration: tilecloud_chain.TileGeneration) -> Generator:
     with _lock:
         global _GENERATOR  # pylint: disable=global-statement
         if _GENERATOR is None:
             _GENERATOR = Generator(tilegeneration)
+            await _GENERATOR.init()
         return _GENERATOR
 
 
 Response = TypeVar("Response")
 
 
-def fetch(
+async def fetch(
     config: tilecloud_chain.DatedConfig,
     server: "Server[Response]",
     tilegeneration: tilecloud_chain.TileGeneration,
@@ -225,7 +232,7 @@ def fetch(
     kwargs: dict[str, Any],
 ) -> Response:
     """Fetch a time in the cache (redis) or get it on the WMS server."""
-    generator = _get_generator(tilegeneration)
+    generator = await _get_generator(tilegeneration)
     fetched_tile = generator.read_from_cache(tile)
     backend = "redis"
     if fetched_tile is None:

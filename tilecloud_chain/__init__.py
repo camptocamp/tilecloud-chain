@@ -1,5 +1,6 @@
 """TileCloud Chain."""
 
+import asyncio
 import collections
 import json
 import logging
@@ -17,8 +18,7 @@ import tempfile
 import threading
 import time
 from argparse import ArgumentParser, Namespace
-from collections.abc import Callable, Iterable, Iterator
-from concurrent.futures import ThreadPoolExecutor
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from fractions import Fraction
@@ -26,7 +26,7 @@ from hashlib import sha1
 from io import BytesIO
 from itertools import product
 from math import ceil, sqrt
-from typing import IO, TYPE_CHECKING, Any, Literal, TextIO, TypedDict, cast
+from typing import IO, Any, Literal, TextIO, TypedDict, cast
 
 import boto3
 import botocore.client
@@ -36,7 +36,7 @@ import jsonschema_validator
 import psycopg2
 import tilecloud.filter.error
 from azure.identity import DefaultAzureCredential
-from azure.storage.blob import BlobServiceClient, ContainerClient
+from azure.storage.blob.aio import BlobServiceClient, ContainerClient
 from c2cwsgiutils import sentry
 from PIL import Image
 from prometheus_client import Counter, Summary
@@ -45,12 +45,11 @@ from shapely.geometry.base import BaseGeometry
 from shapely.geometry.polygon import Polygon
 from shapely.ops import unary_union
 from shapely.wkb import loads as loads_wkb
-from tilecloud import BoundingPyramid, Tile, TileCoord, TileGrid, TileStore, consume
+from tilecloud import BoundingPyramid, Tile, TileCoord, TileGrid
 from tilecloud.filter.error import LogErrors, MaximumConsecutiveErrors
 from tilecloud.filter.logger import Logger
 from tilecloud.grid.free import FreeTileGrid
 from tilecloud.layout.wmts import WMTSTileLayout
-from tilecloud.store.azure_storage_blob import AzureStorageBlobTileStore
 from tilecloud.store.filesystem import FilesystemTileStore
 from tilecloud.store.mbtiles import MBTilesTileStore
 from tilecloud.store.metatile import MetaTileSplitterTileStore
@@ -62,6 +61,8 @@ import tilecloud_chain.configuration
 import tilecloud_chain.security
 from tilecloud_chain import configuration
 from tilecloud_chain.multitilestore import MultiTileStore
+from tilecloud_chain.store import AsyncTileStore, CallWrapper, TileStoreWrapper
+from tilecloud_chain.store.azure_storage_blob import AzureStorageBlobTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
 _LOGGER = logging.getLogger(__name__)
@@ -209,7 +210,7 @@ class Run:
     def __init__(
         self,
         gene: "TileGeneration",
-        functions: list[Callable[[Tile], Tile | None]],
+        functions: list[Callable[[Tile], Awaitable[Tile | None]]],
         out: IO[str] | None = None,
     ) -> None:
         self.gene = gene
@@ -232,7 +233,7 @@ class Run:
             _LOGGER, logging.ERROR, "Error in tile: %(tilecoord)s, %(formated_metadata)s, %(error)r"
         )
 
-    def __call__(self, tile: Tile | None) -> Tile | None:
+    async def __call__(self, tile: Tile | None) -> Tile | None:
         """Run the tile generation."""
         if tile is None:
             return None
@@ -248,13 +249,13 @@ class Run:
                 n = datetime.now()
                 if self.safe:
                     try:
-                        tile = func(tile)
+                        tile = await func(tile)
                     except Exception as e:  # pylint: disable=broad-exception-caught
                         _LOGGER.exception("[%s] Fail to process function %s", tilecoord, func)
                         assert tile is not None
                         tile.error = e
                 else:
-                    tile = func(tile)
+                    tile = await func(tile)
                 _LOGGER.debug(
                     "[%s] %s in %s",
                     tilecoord,
@@ -291,7 +292,7 @@ class Run:
                         self.max_consecutive_errors(tile)
 
                     if self.gene.queue_store is not None:
-                        self.gene.queue_store.delete_one(tile)
+                        await self.gene.queue_store.delete_one(tile)
                     with self.error_lock:
                         self.error += 1
                     return tile
@@ -421,17 +422,17 @@ def get_azure_container_client(container: str) -> ContainerClient:
     else:
         return BlobServiceClient(
             account_url=os.environ["AZURE_STORAGE_ACCOUNT_URL"],
-            credential=DefaultAzureCredential(),
+            credential=DefaultAzureCredential(),  # type: ignore[arg-type]
         ).get_container_client(container=container)
 
 
 class TileGeneration:
     """Base class of all the tile generation."""
 
-    tilestream: Iterator[Tile] | None = None
+    tilestream: AsyncIterator[Tile] | None = None
     duration: timedelta = timedelta()
     error = 0
-    queue_store: TileStore | None = None
+    queue_store: AsyncTileStore | None = None
     daemon = False
 
     def __init__(
@@ -449,17 +450,16 @@ class TileGeneration:
         self._close_actions: list[Close] = []
         self.error_lock = threading.Lock()
         self.error_files_: dict[str, TextIO] = {}
-        self.functions_tiles: list[Callable[[Tile], Tile | None]] = []
-        self.functions_metatiles: list[Callable[[Tile], Tile | None]] = []
-        self.functions: list[Callable[[Tile], Tile | None]] = self.functions_metatiles
-        self.metatilesplitter_thread_pool: ThreadPoolExecutor | None = None
-        self.multi_thread = multi_thread
+        self.functions_tiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
+        self.functions_metatiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
+        self.functions: list[Callable[[Tile], Awaitable[Tile | None]]] = self.functions_metatiles
         self.maxconsecutive_errors = maxconsecutive_errors
         self.out = out
         self.grid_cache: dict[str, dict[str, DatedTileGrid]] = {}
         self.layer_legends: dict[str, list[Legend]] = {}
         self.config_file = config_file
         self.base_config = base_config
+        self.multi_thread = multi_thread
         self.configs: dict[str, DatedConfig] = {}
         self.hosts_cache: DatedHosts | None = None
 
@@ -775,7 +775,7 @@ class TileGeneration:
 
         return not (error or errors)
 
-    def init(self, queue_store: TileStore | None = None, daemon: bool = False) -> None:
+    def init(self, queue_store: AsyncTileStore | None = None, daemon: bool = False) -> None:
         """Initialize the tile generation."""
         self.queue_store = queue_store
         self.daemon = daemon
@@ -833,7 +833,7 @@ class TileGeneration:
         cache: tilecloud_chain.configuration.Cache,
         layer_name: str,
         read_only: bool = False,
-    ) -> TileStore | None:
+    ) -> AsyncTileStore | None:
         """Get the tile store."""
         if layer_name not in config.config.get("layers", {}):
             _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
@@ -854,11 +854,13 @@ class TileGeneration:
         if cache["type"] == "s3":
             cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
             # on s3
-            cache_tilestore: TileStore = S3TileStore(
-                cache_s3["bucket"],
-                layout,
-                s3_host=cache.get("host", "s3-eu-west-1.amazonaws.com"),
-                cache_control=cache.get("cache_control"),
+            cache_tilestore: AsyncTileStore = TileStoreWrapper(
+                S3TileStore(
+                    cache_s3["bucket"],
+                    layout,
+                    s3_host=cache.get("host", "s3-eu-west-1.amazonaws.com"),
+                    cache_control=cache.get("cache_control"),
+                )
             )
         elif cache["type"] == "azure":
             cache_azure = cast(tilecloud_chain.configuration.CacheAzureTyped, cache)
@@ -878,10 +880,12 @@ class TileGeneration:
             )
             if not os.path.exists(os.path.dirname(filename)):
                 os.makedirs(os.path.dirname(filename))
-            cache_tilestore = MBTilesTileStore(
-                sqlite3.connect(filename),
-                content_type=layer["mime_type"],
-                tilecoord_in_topleft=True,
+            cache_tilestore = TileStoreWrapper(
+                MBTilesTileStore(
+                    sqlite3.connect(filename),
+                    content_type=layer["mime_type"],
+                    tilecoord_in_topleft=True,
+                )
             )
         elif cache["type"] == "bsddb":
             metadata = {}
@@ -902,15 +906,19 @@ class TileGeneration:
 
             self._close_actions.append(Close(db))
 
-            cache_tilestore = BSDDBTileStore(
-                db,
-                content_type=layer["mime_type"],
+            cache_tilestore = TileStoreWrapper(
+                BSDDBTileStore(
+                    db,
+                    content_type=layer["mime_type"],
+                )
             )
         elif cache["type"] == "filesystem":
             # on filesystem
-            cache_tilestore = FilesystemTileStore(
-                layout,
-                content_type=layer["mime_type"],
+            cache_tilestore = TileStoreWrapper(
+                FilesystemTileStore(
+                    layout,
+                    content_type=layer["mime_type"],
+                )
             )
         else:
             sys.exit("unknown cache type: " + cache["type"])
@@ -931,7 +939,7 @@ class TileGeneration:
         """Get the tile store."""
         gene = self
 
-        def get_store(config_file: str, layer_name: str) -> TileStore | None:
+        def get_store(config_file: str, layer_name: str) -> AsyncTileStore | None:
             config = gene.get_config(config_file)
             cache_name = cache or config.config["generation"].get(
                 "default_cache", configuration.DEFAULT_CACHE_DEFAULT
@@ -958,77 +966,64 @@ class TileGeneration:
             and os.environ.get("FRONTEND") != "noninteractive"
         ):
 
-            def log_tiles(tile: Tile) -> Tile:
+            async def log_tiles(tile: Tile) -> Tile:
                 sys.stdout.write(f"{tile.tilecoord} {tile.formated_metadata}                         \r")
                 sys.stdout.flush()
                 return tile
 
             self.imap(log_tiles)
         elif not self.options.quiet and getattr(self.options, "role", None) != "server":
-            self.imap(Logger(_LOGGER, logging.INFO, "%(tilecoord)s, %(formated_metadata)s"))
+            self.imap(CallWrapper(Logger(_LOGGER, logging.INFO, "%(tilecoord)s, %(formated_metadata)s")))
 
-    def add_metatile_splitter(self, store: TileStore | None = None) -> None:
+    async def add_metatile_splitter(self, store: AsyncTileStore | None = None) -> None:
         """Add a metatile splitter to the chain."""
         assert self.functions != self.functions_tiles, "add_metatile_splitter should not be called twice"
         if store is None:
             gene = self
 
-            def get_splitter(config_file: str, layer_name: str) -> MetaTileSplitterTileStore | None:
+            def get_splitter(config_file: str, layer_name: str) -> AsyncTileStore | None:
                 config = gene.get_config(config_file)
                 if layer_name not in config.config.get("layers", {}):
                     _LOGGER.warning("Layer %s not found in config %s", layer_name, config_file)
                     return None
                 layer = config.config["layers"][layer_name]
                 if layer.get("meta"):
-                    return MetaTileSplitterTileStore(
-                        layer["mime_type"],
-                        config.config["grids"][layer["grid"]].get(
-                            "tile_size", configuration.TILE_SIZE_DEFAULT
-                        ),
-                        layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT),
+                    return TileStoreWrapper(
+                        MetaTileSplitterTileStore(
+                            layer["mime_type"],
+                            config.config["grids"][layer["grid"]].get(
+                                "tile_size", configuration.TILE_SIZE_DEFAULT
+                            ),
+                            layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT),
+                        )
                     )
                 return None
 
             store = TimedTileStoreWrapper(MultiTileStore(get_splitter), store_name="splitter")
 
         run = Run(self, self.functions_tiles, out=self.out)
-        nb_thread = int(os.environ.get("TILE_NB_THREAD", "1"))
-        if nb_thread == 1 or not self.multi_thread:
 
-            def meta_get(metatile: Tile) -> Tile:
-                assert store is not None
-                substream = store.get((metatile,))
+        async def meta_get(metatile: Tile) -> Tile:
+            assert store is not None
 
-                if getattr(self.options, "role", "") == "hash":
-                    tile = next(substream)
+            async def _async_metatile() -> AsyncIterator[Tile]:
+                yield metatile
+
+            substream = store.get(_async_metatile())
+            if getattr(self.options, "role", "") == "hash":
+                tile = await anext(substream)
+                assert tile is not None
+                await run(tile)
+            else:
+                tasks = []
+                async for tile in substream:
                     assert tile is not None
-                    run(tile)
-                else:
-                    for tile in substream:
-                        assert tile is not None
-                        tile.metadata.update(metatile.metadata)
-                        run(tile)
-                with self.error_lock:
-                    self.error += run.error
-                return metatile
-
-        else:
-
-            def meta_get(metatile: Tile) -> Tile:
-                assert store is not None
-                if self.metatilesplitter_thread_pool is None:
-                    self.metatilesplitter_thread_pool = ThreadPoolExecutor(nb_thread)
-
-                substream = store.get((metatile,))
-
-                for _ in self.metatilesplitter_thread_pool.map(
-                    run, substream, chunksize=int(os.environ.get("TILE_CHUNK_SIZE", "1"))
-                ):
-                    pass
+                    tasks.append(run(tile))
+                await asyncio.gather(*tasks)
 
                 with self.error_lock:
                     self.error += run.error
-                return metatile
+            return metatile
 
         self.imap(meta_get)
         self.functions = self.functions_tiles
@@ -1291,11 +1286,11 @@ class TileGeneration:
             self.set_tilecoords(config, bounding_pyramid, layer_name)
 
     @staticmethod
-    def _tilestream(
+    async def _tilestream(
         tilecoords: Iterable[TileCoord],
         default_metadata: dict[str, str],
         all_dimensions: list[dict[str, str]],
-    ) -> Iterator[Tile]:
+    ) -> AsyncIterator[Tile]:
         for tilecoord in tilecoords:
             for dimensions in all_dimensions:
                 metadata = {}
@@ -1320,9 +1315,9 @@ class TileGeneration:
             metadata["host"] = self.options.host
         self.tilestream = self._tilestream(tilecoords, metadata, self.get_all_dimensions(layer))
 
-    def set_store(self, store: TileStore) -> None:
+    def set_store(self, store: AsyncTileStore) -> None:
         """Set the store for the tilestream."""
-        self.tilestream = cast(Iterator[Tile], store.list())
+        self.tilestream = store.list()
 
     def counter(self) -> "Count":
         """Count the number of generated tile."""
@@ -1355,44 +1350,46 @@ class TileGeneration:
 
         self.imap(MultiAction(get_process))
 
-    def get(self, store: TileStore, time_message: str | None = None) -> None:
+    def get(self, store: AsyncTileStore, time_message: str | None = None) -> None:
         """Get the tiles from the store."""
         assert store is not None
         self.imap(store.get_one, time_message)
 
-    def put(self, store: TileStore, time_message: str | None = None) -> None:
+    def put(self, store: AsyncTileStore, time_message: str | None = None) -> None:
         """Put the tiles in the store."""
         assert store is not None
 
-        def put_internal(tile: Tile) -> Tile:
-            store.put_one(tile)
+        async def put_internal(tile: Tile) -> Tile:
+            await store.put_one(tile)
             return tile
 
         self.imap(put_internal, time_message)
 
-    def delete(self, store: TileStore, time_message: str | None = None) -> None:
+    def delete(self, store: AsyncTileStore, time_message: str | None = None) -> None:
         """Delete the tiles from the store."""
         assert store is not None
 
-        def delete_internal(tile: Tile) -> Tile:
-            store.delete_one(tile)
+        async def delete_internal(tile: Tile) -> Tile:
+            await store.delete_one(tile)
             return tile
 
         self.imap(delete_internal, time_message)
 
-    def imap(self, func: Any, time_message: str | None = None) -> None:
+    def imap(self, func: Callable[[Tile], Awaitable[Tile | None]], time_message: str | None = None) -> None:
         """Add a function to the tilestream."""
         assert func is not None
 
         class Func:
             """Function with an additional field used to names it in timing messages."""
 
-            def __init__(self, func: Callable[[Tile], Tile | None], time_message: str | None) -> None:
+            def __init__(
+                self, func: Callable[[Tile], Awaitable[Tile | None]], time_message: str | None
+            ) -> None:
                 self.func = func
                 self.time_message = time_message
 
-            def __call__(self, tile: Tile) -> Tile | None:
-                return self.func(tile)
+            async def __call__(self, tile: Tile) -> Tile | None:
+                return await self.func(tile)
 
             def __str__(self) -> str:
                 return f"Func: {self.func}"
@@ -1402,7 +1399,7 @@ class TileGeneration:
 
         self.functions.append(Func(func, time_message))
 
-    def consume(self, test: int | None = None) -> None:
+    async def consume(self, test: int | None = None) -> None:
         """Consume the tilestream."""
         assert self.tilestream is not None
 
@@ -1413,63 +1410,38 @@ class TileGeneration:
         run = Run(self, self.functions_metatiles, out=self.out)
 
         if test is None:
-            if TYPE_CHECKING:
-                buffer: queue.Queue[Tile] = queue.Queue(int(os.environ.get("TILE_QUEUE_SIZE", "2")))
-            else:
-                buffer = queue.Queue(int(os.environ.get("TILE_QUEUE_SIZE", "2")))
             end = False
 
-            nb_thread = int(os.environ.get("METATILE_NB_THREAD", "1"))
+            nb_tasks = int(os.environ.get("TILECLOUD_CHAIN_NB_TASKS", "1")) if self.multi_thread else 1
 
-            if nb_thread == 1 or not self.multi_thread:
-                consume(map(run, self.tilestream), None)
-            else:
-                should_exit_error = False
+            should_exit_error = False
 
-                def target() -> None:
-                    _LOGGER.debug("Start run")
-                    nonlocal should_exit_error
-                    while not end or not buffer.empty():
+            async def target() -> None:
+                _LOGGER.debug("Start run")
+                nonlocal should_exit_error
+                while not end:
+                    try:
+                        assert self.tilestream is not None
+                        tile = await anext(self.tilestream)
                         try:
-                            run(buffer.get(timeout=1))
+                            await run(tile)
                         except tilecloud.filter.error.TooManyErrors:
                             _LOGGER.exception("Too many errors")
                             should_exit_error = True
                         except queue.Empty:
                             pass
-                    _LOGGER.debug("End run")
+                    except StopAsyncIteration:
+                        pass
+                _LOGGER.debug("End run")
 
-                threads = [threading.Thread(target=target, name=f"Run {i}") for i in range(nb_thread)]
-                for thread in threads:
-                    thread.start()
+            tasks = [asyncio.create_task(target(), name=f"Run {i}") for i in range(nb_tasks)]
+            asyncio.gather(*tasks)
 
-                for tile in self.tilestream:
-                    while True:
-                        try:
-                            buffer.put(tile, timeout=1)
-                            break
-                        except queue.Full:
-                            if should_exit_error:
-                                sys.exit(1)
-
-                end = True
-
-                for thread in threads:
-                    thread.join(30)
-
-            if self.metatilesplitter_thread_pool is not None:
-                self.metatilesplitter_thread_pool.shutdown()
-                self.metatilesplitter_thread_pool = None
-
-            assert buffer.empty(), buffer.qsize()
+            end = True
 
         else:
             for _ in range(test):
-                run(next(self.tilestream))
-
-        if self.metatilesplitter_thread_pool is not None:
-            self.metatilesplitter_thread_pool.shutdown()
-            self.metatilesplitter_thread_pool = None
+                await run(await anext(self.tilestream))
 
         if os.environ.get("TILECLOUD_CHAIN_SLAVE", "false").lower() != "true":
             assert threading.active_count() == 1, ", ".join([str(t) for t in threading.enumerate()])
@@ -1485,11 +1457,11 @@ class Count:
 
     def __init__(self) -> None:
         self.nb = 0
-        self.lock = threading.Lock()
+        self.lock = asyncio.Lock()
 
-    def __call__(self, tile: Tile | None = None) -> Tile | None:
+    async def __call__(self, tile: Tile | None = None) -> Tile | None:
         """Count the number of generated tile."""
-        with self.lock:
+        async with self.lock:
             self.nb += 1
         return tile
 
@@ -1508,7 +1480,7 @@ class CountSize:
         self.size = 0
         self.lock = threading.Lock()
 
-    def __call__(self, tile: Tile | None = None) -> Tile | None:
+    async def __call__(self, tile: Tile | None = None) -> Tile | None:
         """Count the number of generated tile and measure the total generated size."""
         if tile and tile.data:
             with self.lock:
@@ -1536,8 +1508,8 @@ class HashDropper:
         self,
         size: int,
         sha1code: str,
-        store: TileStore | None = None,
-        queue_store: TileStore | None = None,
+        store: AsyncTileStore | None = None,
+        queue_store: AsyncTileStore | None = None,
         count: Count | None = None,
     ) -> None:
         self.size = size
@@ -1546,7 +1518,7 @@ class HashDropper:
         self.queue_store = queue_store
         self.count = count
 
-    def __call__(self, tile: Tile) -> Tile | None:
+    async def __call__(self, tile: Tile) -> Tile | None:
         """Drop the tile if the size and hash are the same as the specified ones."""
         assert tile.data
         if len(tile.data) != self.size or sha1(tile.data).hexdigest() != self.sha1code:  # noqa: S324
@@ -1555,20 +1527,20 @@ class HashDropper:
             if self.store is not None:
                 if tile.tilecoord.n != 1:
                     for tilecoord in tile.tilecoord:
-                        self.store.delete_one(Tile(tilecoord, metadata=tile.metadata))
+                        await self.store.delete_one(Tile(tilecoord, metadata=tile.metadata))
                 else:
-                    self.store.delete_one(tile)
+                    await self.store.delete_one(tile)
             _LOGGER.info("The tile %s %s is dropped", tile.tilecoord, tile.formated_metadata)
             if hasattr(tile, "metatile"):
                 metatile: Tile = tile.metatile
                 metatile.elapsed_togenerate -= 1  # type: ignore
                 if metatile.elapsed_togenerate == 0 and self.queue_store is not None:  # type: ignore
-                    self.queue_store.delete_one(metatile)
+                    await self.queue_store.delete_one(metatile)
             elif self.queue_store is not None:
-                self.queue_store.delete_one(tile)
+                await self.queue_store.delete_one(tile)
 
             if self.count:
-                self.count()
+                await self.count()
 
             return None
 
@@ -1578,7 +1550,7 @@ class _DatedAction:
     """Dated action."""
 
     mtime: float
-    action: Callable[[Tile], Tile | None]
+    action: Callable[[Tile], Awaitable[Tile | None]]
 
 
 class MultiAction:
@@ -1590,12 +1562,12 @@ class MultiAction:
 
     def __init__(
         self,
-        get_action: Callable[[str, str], Callable[[Tile], Tile | None] | None],
+        get_action: Callable[[str, str], Callable[[Tile], Awaitable[Tile | None]] | None],
     ) -> None:
         self.get_action = get_action
         self.actions: dict[tuple[str, str], _DatedAction] = {}
 
-    def _get_action(self, config_file: str, layer: str) -> Callable[[Tile], Tile | None] | None:
+    def _get_action(self, config_file: str, layer: str) -> Callable[[Tile], Awaitable[Tile | None]] | None:
         """Get the action based on the tile's layer name."""
         config_path = pathlib.Path(config_file)
         if not config_path.exists():
@@ -1612,14 +1584,14 @@ class MultiAction:
                 self.actions[(config_file, layer)] = action
         return action.action if action is not None else None
 
-    def __call__(self, tile: Tile) -> Tile | None:
+    async def __call__(self, tile: Tile) -> Tile | None:
         """Run the action."""
         layer = tile.metadata["layer"]
         config_file = tile.metadata["config_file"]
         action = self._get_action(config_file, layer)
         if action:
             _LOGGER.debug("[%s] Run action %s.", tile.tilecoord, action)
-            return action(tile)
+            return await action(tile)
         return tile
 
     def __str__(self) -> str:
@@ -1642,7 +1614,7 @@ class HashLogger:
         self.block = block
         self.out = out
 
-    def __call__(self, tile: Tile) -> Tile:
+    async def __call__(self, tile: Tile) -> Tile:
         """Log the tile size and hash."""
         ref = None
         try:
@@ -1689,7 +1661,7 @@ class LocalProcessFilter:
         nb = round(tilecoord.z + tilecoord.x / tilecoord.n + tilecoord.y / tilecoord.n)
         return nb % self.nb_process == self.process_nb
 
-    def __call__(self, tile: Tile) -> Tile | None:
+    async def __call__(self, tile: Tile) -> Tile | None:
         """Filter the tile."""
         return tile if self.filter(tile.tilecoord) else None
 
@@ -1725,7 +1697,7 @@ class IntersectGeometryFilter:
             tile_grid.extent(tilecoord, grid["resolutions"][tilecoord.z] * px_buffer)
         ).intersects(geoms[tilecoord.z])
 
-    def __call__(self, tile: Tile) -> Tile | None:
+    async def __call__(self, tile: Tile) -> Tile | None:
         """Filter the tile on a geometry."""
         return (
             tile
@@ -1745,7 +1717,7 @@ class DropEmpty:
     def __init__(self, gene: TileGeneration) -> None:
         self.gene = gene
 
-    def __call__(self, tile: Tile) -> Tile | None:
+    async def __call__(self, tile: Tile) -> Tile | None:
         """Filter the enpty tile."""
         config = self.gene.get_tile_config(tile)
         if not tile or not tile.data:
@@ -1811,7 +1783,7 @@ class Process:
         if not self.options:
             self.options.append("default")
 
-    def __call__(self, tile: Tile) -> Tile | None:
+    async def __call__(self, tile: Tile) -> Tile | None:
         """Process the tile."""
         if tile and tile.data:
             fd_in, name_in = tempfile.mkstemp()
@@ -1872,7 +1844,7 @@ class Process:
         return self.__str__()
 
 
-class TilesFileStore(TileStore):
+class TilesFileStore(AsyncTileStore):
     """Load tiles to be generate from a file."""
 
     def __init__(self, tiles_file: str):
@@ -1880,7 +1852,7 @@ class TilesFileStore(TileStore):
 
         self.tiles_file = open(tiles_file, encoding="utf-8")  # pylint: disable=consider-using-with
 
-    def list(self) -> Iterator[Tile]:
+    async def list(self) -> AsyncIterator[Tile]:
         """List the tiles."""
         while True:
             line = self.tiles_file.readline()
@@ -1904,15 +1876,15 @@ class TilesFileStore(TileStore):
                     metadata=dict([cast(tuple[str, str], e.split("=")) for e in splitted_line[1:]]),
                 )
 
-    def get_one(self, tile: Tile) -> Tile | None:
+    async def get_one(self, tile: Tile) -> Tile | None:
         """Get the tile."""
         raise NotImplementedError()
 
-    def put_one(self, tile: Tile) -> Tile:
+    async def put_one(self, tile: Tile) -> Tile:
         """Put the tile."""
         raise NotImplementedError()
 
-    def delete_one(self, tile: Tile) -> Tile:
+    async def delete_one(self, tile: Tile) -> Tile:
         """Delete the tile."""
         raise NotImplementedError()
 
@@ -1987,11 +1959,13 @@ def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWrapper:
             tilestore_kwargs["pending_count"] = conf["pending_count"]
         if "pending_max_count" in conf:
             tilestore_kwargs["pending_max_count"] = conf["pending_max_count"]
-        return TimedTileStoreWrapper(RedisTileStore(**tilestore_kwargs), store_name="redis")
+        return TimedTileStoreWrapper(TileStoreWrapper(RedisTileStore(**tilestore_kwargs)), store_name="redis")
     elif queue_store == "sqs":
         # Create a SQS queue
         return TimedTileStoreWrapper(
-            SQSTileStore(_get_sqs_queue(config), on_empty=_await_message if daemon else maybe_stop),
+            TileStoreWrapper(
+                SQSTileStore(_get_sqs_queue(config), on_empty=_await_message if daemon else maybe_stop)
+            ),
             store_name="SQS",
         )
     raise NotImplementedError(f"Unknown queue store: {queue_store}")
