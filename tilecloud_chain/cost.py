@@ -160,7 +160,7 @@ async def _calculate_cost(
                     for metatile in tiles:
                         assert metatile is not None
                         for tilecoord in metatile.tilecoord:
-                            yield Tile(tilecoord)
+                            yield Tile(tilecoord, metadata=metatile.metadata)
 
                 def put_one(self, tile: Tile) -> Tile:
                     raise NotImplementedError
