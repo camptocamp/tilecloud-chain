@@ -19,3 +19,8 @@ generate:
     root_name: Configuration
     api_arguments:
       additional_properties: Only explicit
+  - source: tilecloud_chain/host-limit-schema.json
+    destination: tilecloud_chain/host_limit.py
+    root_name: HostLimit
+    api_arguments:
+      additional_properties: Only explicit
