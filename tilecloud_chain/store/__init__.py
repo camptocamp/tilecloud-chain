@@ -112,6 +112,31 @@ class TileStoreWrapper(AsyncTileStore):
         return getattr(self.tile_store, item)
 
 
+class NoneTileStore(AsyncTileStore):
+    """A tile store that does nothing."""
+
+    async def __contains__(self, tile: Tile) -> bool:
+        """See in superclass."""
+        raise NotImplementedError()
+
+    async def delete_one(self, tile: Tile) -> Tile:
+        """See in superclass."""
+        raise NotImplementedError()
+
+    async def get_one(self, tile):
+        """See in superclass."""
+        return tile
+
+    async def list(self):
+        """See in superclass."""
+        raise NotImplementedError()
+
+    async def get(self, tiles):
+        """See in superclass."""
+        async for tile in tiles:
+            yield tile
+
+
 class CallWrapper:
     """Wrap a function call."""
 

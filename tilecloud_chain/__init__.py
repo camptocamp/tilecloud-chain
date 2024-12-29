@@ -61,7 +61,7 @@ import tilecloud_chain.configuration
 import tilecloud_chain.security
 from tilecloud_chain import configuration
 from tilecloud_chain.multitilestore import MultiTileStore
-from tilecloud_chain.store import AsyncTileStore, CallWrapper, TileStoreWrapper
+from tilecloud_chain.store import AsyncTileStore, CallWrapper, NoneTileStore, TileStoreWrapper
 from tilecloud_chain.store.azure_storage_blob import AzureStorageBlobTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
@@ -997,7 +997,7 @@ class TileGeneration:
                             layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT),
                         )
                     )
-                return None
+                return NoneTileStore()
 
             store = TimedTileStoreWrapper(MultiTileStore(get_splitter), store_name="splitter")
 
