@@ -1435,16 +1435,13 @@ class TileGeneration:
                 _LOGGER.debug("End run")
 
             tasks = [asyncio.create_task(target(), name=f"Run {i}") for i in range(nb_tasks)]
-            asyncio.gather(*tasks)
+            await asyncio.gather(*tasks)
 
             end = True
 
         else:
             for _ in range(test):
                 await run(await anext(self.tilestream))
-
-        if os.environ.get("TILECLOUD_CHAIN_SLAVE", "false").lower() != "true":
-            assert threading.active_count() == 1, ", ".join([str(t) for t in threading.enumerate()])
 
         self.error += run.error
         self.duration = datetime.now() - start

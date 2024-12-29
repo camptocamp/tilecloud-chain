@@ -30,9 +30,6 @@ class MultiTileStore(AsyncTileStore):
 
     def _get_store(self, config_file: str, layer: str) -> AsyncTileStore | None:
         config_path = Path(config_file)
-        if not config_path.exists():
-            logger.warning("Config file %s does not exist", config_file)
-            return None
         mtime = config_path.stat().st_mtime
         store = self.stores.get((config_file, layer))
         if store is not None and store.mtime != mtime:
@@ -109,7 +106,7 @@ class MultiTileStore(AsyncTileStore):
         """
         async for tile in tiles:
             store = self._get_store_tile(tile)
-            assert store is not None
+            assert store is not None, f"No store found for tile {tile.tilecoord} {tile.formated_metadata}"
 
             async for new_tile in store.get(AsyncTilesIterator([tile])()):
                 yield new_tile
