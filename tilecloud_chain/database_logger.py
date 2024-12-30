@@ -4,7 +4,7 @@ import logging
 import sys
 import time
 
-import psycopg2.sql
+import psycopg.sql
 from prometheus_client import Summary
 from tilecloud import Tile
 
@@ -19,40 +19,50 @@ class DatabaseLoggerCommon:
     """Log the generated tiles in a database."""
 
     def __init__(self, config: tilecloud_chain.configuration.Logging, daemon: bool):
-        db_params = config["database"]
+        self._db_params = config["database"]
+        self._daemon = daemon
+        self.connection: psycopg.AsyncConnection | None = None
+        self.schema: str | None = None
+        self.table: str | None = None
+
+    async def _init(self) -> None:
         while True:
             try:
-                self.connection = psycopg2.connect(
-                    dbname=db_params["dbname"],
-                    host=db_params.get("host"),
-                    port=db_params.get("port"),
-                    user=db_params.get("user"),
-                    password=db_params.get("password"),
+                self.connection = await psycopg.AsyncConnection.connect(
+                    dbname=self._db_params["dbname"],
+                    host=self._db_params.get("host"),
+                    port=self._db_params.get("port"),
+                    user=self._db_params.get("user"),
+                    password=self._db_params.get("password"),
                 )
                 break
-            except psycopg2.OperationalError:
+            except psycopg.OperationalError:
                 _LOGGER.warning("Failed connecting to the database. Will try again in 1s", exc_info=True)
-                if daemon:
+                if self._daemon:
                     time.sleep(1)
                 else:
                     sys.exit(2)
-        if "." in db_params["table"]:
-            schema, table = db_params["table"].split(".")
+        assert self.connection is not None
+
+        if "." in self._db_params["table"]:
+            schema, table = self._db_params["table"].split(".")
         else:
             schema = "public"
-            table = db_params["table"]
+            table = self._db_params["table"]
 
-        with self.connection.cursor() as cursor:
-            cursor.execute(
+        async with self.connection.cursor() as cursor:
+            await cursor.execute(
                 "SELECT EXISTS(SELECT 1 FROM pg_tables WHERE schemaname=%s AND tablename=%s)", (schema, table)
             )
-            schema = psycopg2.extensions.quote_ident(schema, self.connection)
-            table = psycopg2.extensions.quote_ident(table, self.connection)
+            schema = psycopg.sql.quote(schema, self.connection)
+            table = psycopg.sql.quote(table, self.connection)
 
-            if not cursor.fetchone()[0]:
+            elem = await cursor.fetchone()
+            assert elem is not None
+            if not elem[0]:
                 try:
-                    cursor.execute(
-                        psycopg2.sql.SQL(
+                    await cursor.execute(
+                        psycopg.sql.SQL(
                             "CREATE TABLE {}.{} ("
                             "  id BIGSERIAL PRIMARY KEY,"
                             "  layer CHARACTER VARYING(80) NOT NULL,"
@@ -60,25 +70,25 @@ class DatabaseLoggerCommon:
                             "  action CHARACTER VARYING(7) NOT NULL,"
                             "  tile TEXT NOT NULL,"
                             "  UNIQUE (layer, run, tile))"
-                        ).format(psycopg2.sql.Identifier(schema), psycopg2.sql.Identifier(table))
+                        ).format(psycopg.sql.Identifier(schema), psycopg.sql.Identifier(table))
                     )
-                    self.connection.commit()
-                except psycopg2.DatabaseError:
+                    await self.connection.commit()
+                except psycopg.DatabaseError:
                     logging.exception("Unable to create table %s.%s", schema, table)
                     sys.exit(1)
             else:
                 try:
-                    cursor.execute(
-                        psycopg2.sql.SQL(
+                    await cursor.execute(
+                        psycopg.sql.SQL(
                             "INSERT INTO {}.{}(layer, run, action, tile) VALUES (%s, %s, %s, %s)"
-                        ).format(psycopg2.sql.Identifier(schema), psycopg2.sql.Identifier(table)),
+                        ).format(psycopg.sql.Identifier(schema), psycopg.sql.Identifier(table)),
                         ("test_layer", -1, "test", "-1x-1"),
                     )
-                except psycopg2.DatabaseError:
+                except psycopg.DatabaseError:
                     logging.exception("Unable to insert logging data into %s.%s", schema, table)
                     sys.exit(1)
                 finally:
-                    self.connection.rollback()
+                    await self.connection.rollback()
 
         self.schema = schema
         self.table = table
@@ -90,25 +100,44 @@ class DatabaseLoggerInit(DatabaseLoggerCommon):
     def __init__(self, config: tilecloud_chain.configuration.Logging, daemon: bool) -> None:
         super().__init__(config, daemon)
 
-        with self.connection.cursor() as cursor:
-            cursor.execute(
-                psycopg2.sql.SQL("SELECT COALESCE(MAX(run), 0) + 1 FROM {}.{}").format(
-                    psycopg2.sql.Identifier(self.schema), psycopg2.sql.Identifier(self.table)
+        self.init = False
+        self.run = -1
+
+    async def _init(self) -> None:
+        assert self.connection is not None
+        assert self.schema is not None
+        assert self.table is not None
+
+        async with self.connection.cursor() as cursor:
+            await cursor.execute(
+                psycopg.sql.SQL("SELECT COALESCE(MAX(run), 0) + 1 FROM {}.{}").format(
+                    psycopg.sql.Identifier(self.schema), psycopg.sql.Identifier(self.table)
                 )
             )
-            (self.run,) = cursor.fetchone()
+            elem = await cursor.fetchone()
+            assert elem is not None
+            (self.run,) = elem
+        self.init = True
 
-    def __call__(self, tile: Tile) -> Tile:
+    async def __call__(self, tile: Tile) -> Tile:
         """Log the generated tiles in a database."""
-        tile.metadata["run"] = self.run
+        if not self.init:
+            await self._init()
+        tile.metadata["run"] = self.run  # type: ignore[assignment]
         return tile
 
 
 class DatabaseLogger(DatabaseLoggerCommon):
     """Log the generated tiles in a database."""
 
-    def __call__(self, tile: Tile) -> Tile:
+    async def __call__(self, tile: Tile) -> Tile:
         """Log the generated tiles in a database."""
+        if self.connection is None:
+            await self._init()
+        assert self.connection is not None
+        assert self.schema is not None
+        assert self.table is not None
+
         if tile is None:
             _LOGGER.warning("The tile is None")
             return None
@@ -123,25 +152,26 @@ class DatabaseLogger(DatabaseLoggerCommon):
         layer = tile.metadata.get("layer", "- No layer -")
         run = tile.metadata.get("run", -1)
 
-        with _INSERT_SUMMARY.labels(layer).time(), self.connection.cursor() as cursor:
-            try:
-                cursor.execute(
-                    psycopg2.sql.SQL(
-                        "INSERT INTO {} (layer, run, action, tile) "
-                        "VALUES (%(layer)s, %(run)s, %(action)s::varchar(7), %(tile)s)"
-                    ).format(psycopg2.sql.Identifier(self.schema), psycopg2.sql.Identifier(self.table)),
-                    {"layer": layer, "action": action, "tile": str(tile.tilecoord), "run": run},
-                )
-            except psycopg2.IntegrityError:
-                self.connection.rollback()
-                cursor.execute(
-                    psycopg2.sql.SQL(
-                        "UPDATE {} SET action = %(action)s "
-                        "WHERE layer = %(layer)s AND run = %(run)s AND tile = %(tile)s"
-                    ).format(psycopg2.sql.Identifier(self.schema), psycopg2.sql.Identifier(self.table)),
-                    {"layer": layer, "action": action, "tile": str(tile.tilecoord), "run": run},
-                )
+        with _INSERT_SUMMARY.labels(layer).time():
+            async with self.connection.cursor() as cursor:
+                try:
+                    await cursor.execute(
+                        psycopg.sql.SQL(
+                            "INSERT INTO {} (layer, run, action, tile) "
+                            "VALUES (%(layer)s, %(run)s, %(action)s::varchar(7), %(tile)s)"
+                        ).format(psycopg.sql.Identifier(self.schema), psycopg.sql.Identifier(self.table)),
+                        {"layer": layer, "action": action, "tile": str(tile.tilecoord), "run": run},
+                    )
+                except psycopg.IntegrityError:
+                    await self.connection.rollback()
+                    await cursor.execute(
+                        psycopg.sql.SQL(
+                            "UPDATE {} SET action = %(action)s "
+                            "WHERE layer = %(layer)s AND run = %(run)s AND tile = %(tile)s"
+                        ).format(psycopg.sql.Identifier(self.schema), psycopg.sql.Identifier(self.table)),
+                        {"layer": layer, "action": action, "tile": str(tile.tilecoord), "run": run},
+                    )
 
-            self.connection.commit()
+                await self.connection.commit()
 
         return tile
