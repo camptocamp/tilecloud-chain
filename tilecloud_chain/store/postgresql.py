@@ -284,10 +284,7 @@ class PostgresqlTileStore(AsyncTileStore):
         allowed_arguments: list[str],
         max_pending_minutes: int,
         sqlalchemy_url: str,
-        **kwargs: Any,
     ):
-        super().__init__(**kwargs)
-
         self.sqlalchemy_url = sqlalchemy_url
 
         # Used to mix the generation for each the projects
@@ -303,9 +300,9 @@ class PostgresqlTileStore(AsyncTileStore):
         engine = create_async_engine(self.sqlalchemy_url)
 
         async with engine.connect() as connection:
-            await connection.execute(sqlalchemy.schema.CreateSchema(_schema))
-            await connection.commit()
+            await connection.execute(sqlalchemy.schema.CreateSchema(_schema, if_not_exists=True))
             await connection.run_sync(Base.metadata.create_all)
+            await connection.commit()
 
         self.SessionMaker = async_sessionmaker(engine)  # pylint: disable=invalid-name
 
@@ -665,13 +662,13 @@ class PostgresqlTileStore(AsyncTileStore):
         raise NotImplementedError()
 
 
-def get_postgresql_queue_store(config: DatedConfig) -> PostgresqlTileStore:
+async def get_postgresql_queue_store(config: DatedConfig) -> PostgresqlTileStore:
     """Get the postgreSQL queue tile store."""
     conf = config.config.get("postgresql", {})
     sqlalchemy_url = os.environ.get("TILECLOUD_CHAIN_SQLALCHEMY_URL", conf.get("sqlalchemy_url"))
     assert sqlalchemy_url is not None
 
-    return PostgresqlTileStore(
+    tilestore = PostgresqlTileStore(
         max_pending_minutes=conf.get("max_pending_minutes", configuration.MAX_PENDING_MINUTES_DEFAULT),
         sqlalchemy_url=sqlalchemy_url,
         allowed_commands=config.config.get("server", {}).get(
@@ -681,3 +678,5 @@ def get_postgresql_queue_store(config: DatedConfig) -> PostgresqlTileStore:
             "allowed_arguments", configuration.ALLOWED_ARGUMENTS_DEFAULT
         ),
     )
+    await tilestore.init()
+    return tilestore
