@@ -31,7 +31,6 @@ import io
 import logging
 import multiprocessing
 import os
-import re
 import shlex
 import subprocess  # nosec
 import time
@@ -41,6 +40,7 @@ from typing import Any, cast
 
 import objgraph
 import sqlalchemy
+import sqlalchemy.schema
 import sqlalchemy.sql.functions
 from prometheus_client import Counter, Gauge, Summary
 from sqlalchemy import JSON, Column, DateTime, Integer, Unicode, and_, delete, select, update
@@ -302,14 +302,12 @@ class PostgresqlTileStore(AsyncTileStore):
         """Initialize the store."""
         engine = create_async_engine(self.sqlalchemy_url)
 
-        self.SessionMaker = async_sessionmaker(engine)  # pylint: disable=invalid-name
-        if re.match(r"^[0-9a-zA-Z_]+$", _schema) is None:
-            raise PostgresqlTileStoreException(f"Invalid schema name: {_schema}")
-
         async with engine.connect() as connection:
-            await connection.execute(sqlalchemy.text(f"CREATE SCHEMA IF NOT EXISTS {_schema}"))
+            await connection.execute(sqlalchemy.schema.CreateSchema(_schema))
             await connection.commit()
             await connection.run_sync(Base.metadata.create_all)
+
+        self.SessionMaker = async_sessionmaker(engine)  # pylint: disable=invalid-name
 
     async def create_job(self, name: str, command: str, config_filename: str) -> None:
         """Create a job."""
