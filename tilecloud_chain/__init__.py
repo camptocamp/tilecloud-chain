@@ -72,6 +72,11 @@ _ERROR_COUNTER = Counter("tilecloud_chain_error_counter", "Number of errors", ["
 _GEOMS_GET_SUMMARY = Summary("tilecloud_chain_geoms_get", "Geoms filter get", ["layer", "host"])
 
 
+_HOST_CONTEXT: contextvars.ContextVar[str | None] = contextvars.ContextVar("host")
+_LAYER_CONTEXT: contextvars.ContextVar[str | None] = contextvars.ContextVar("layer")
+_META_TILE_COORD_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar("meta_tilecoord")
+
+
 def formatted_metadata(tile: Tile) -> str:
     """Get human readable string of the metadata."""
     metadata = dict(tile.metadata)
@@ -386,9 +391,9 @@ class TileFilter(logging.Filter):
 
     def filter(self, record: Any) -> bool:
         """Add the request information to the log record."""
-        record.tcc_host = contextvars.ContextVar("host").get()
-        record.tcc_layer = contextvars.ContextVar("layer").get()
-        record.tcc_meta_tilecoord = contextvars.ContextVar("meta_tilecoord").get()
+        record.tcc_host = _HOST_CONTEXT.get()
+        record.tcc_layer = _LAYER_CONTEXT.get()
+        record.tcc_meta_tilecoord = _META_TILE_COORD_CONTEXT.get()
 
         return True
 
@@ -1409,14 +1414,21 @@ class TileGeneration:
                     try:
                         assert self.tilestream is not None
                         tile = await anext(self.tilestream)
+
+                        host_token = _HOST_CONTEXT.set(tile.metadata.get("host"))
+                        layer_token = _LAYER_CONTEXT.set(tile.metadata.get("layer"))
+                        meta_tilecoord_token = _META_TILE_COORD_CONTEXT.set(str(tile.tilecoord))
+
                         try:
                             await run(tile)
                         except TooManyErrors:
                             _LOGGER.exception("Too many errors")
                             should_exit_error = True
                             end = True
-                        except queue.Empty:
-                            pass
+                        finally:
+                            _HOST_CONTEXT.reset(host_token)
+                            _LAYER_CONTEXT.reset(layer_token)
+                            _META_TILE_COORD_CONTEXT.reset(meta_tilecoord_token)
                     except StopAsyncIteration:
                         if not self.daemon:
                             end = True

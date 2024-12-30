@@ -303,6 +303,7 @@ class PostgresqlTileStore(AsyncTileStore):
         self.allowed_commands = allowed_commands
         self.allowed_arguments = allowed_arguments
         self.max_pending_minutes = max_pending_minutes
+        self.SessionMaker: async_sessionmaker[AsyncSession] | None = None  # pylint: disable=invalid-name
 
     def create_job(self, name: str, command: str, config_filename: str) -> None:
         """Create a job."""
@@ -366,6 +367,9 @@ class PostgresqlTileStore(AsyncTileStore):
         - the status of the job
         - the last 5 meta tiles errors
         """
+        if self.SessionMaker is None:
+            await self.init()
+            assert self.SessionMaker is not None
         result = []
         with self.SessionMaker() as session:
             for job in (
@@ -427,6 +431,9 @@ class PostgresqlTileStore(AsyncTileStore):
         - manage the too long pending tile generation
         - Create the job list to be process
         """
+        if self.SessionMaker is None:
+            await self.init()
+            assert self.SessionMaker is not None
         with _MAINTENANCE_SUMMARY.time():
             # Restart the too long pending jobs (queue generation)
             with self.SessionMaker() as session:
@@ -513,6 +520,9 @@ class PostgresqlTileStore(AsyncTileStore):
 
     async def list(self) -> AsyncIterator[Tile]:
         """List the meta tiles in the queue."""
+        if self.SessionMaker is None:
+            await self.init()
+            assert self.SessionMaker is not None
         while True:
             if not self.jobs:
                 self._maintenance()
