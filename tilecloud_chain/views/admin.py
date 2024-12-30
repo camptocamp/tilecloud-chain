@@ -69,7 +69,9 @@ class Admin:
         main_config = self.gene.get_main_config()
         queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
         self.postgresql_queue_store = (
-            tilecloud_chain.store.postgresql.get_postgresql_queue_store(main_config)
+            asyncio.get_event_loop().run_until_complete(
+                tilecloud_chain.store.postgresql.get_postgresql_queue_store(main_config)
+            )
             if queue_store == "postgresql"
             else None
         )
