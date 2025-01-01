@@ -2829,13 +2829,13 @@ all = ["defusedxml", "fsspec", "imagecodecs (>=2023.1.23)", "lxml", "matplotlib"
 
 [[package]]
 name = "tilecloud"
-version = "1.12.3"
+version = "1.12.6"
 description = "Tools for managing tiles"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "tilecloud-1.12.3-py3-none-any.whl", hash = "sha256:f1b9e33a281b93e43e8e7928140dbc39af97281e99487cdc91bca31ef63ad5b9"},
-    {file = "tilecloud-1.12.3.tar.gz", hash = "sha256:09ce90b847575b5f0b24e82bf075846e8878cd1fb6eb351e9f39c4b0a0aba2b2"},
+    {file = "tilecloud-1.12.6-py3-none-any.whl", hash = "sha256:a2faa6278562796f84195a16676d7030e6501afe616ede8bf1dc79b349b19157"},
+    {file = "tilecloud-1.12.6.tar.gz", hash = "sha256:1ad807a2ddcec223e33ebdcae88f326b0722afd4c74cd60a2512d05f44f28bdc"},
 ]
 
 [package.dependencies]
@@ -2844,6 +2844,7 @@ azure-storage-blob = {version = "*", optional = true, markers = "extra == \"azur
 boto3 = {version = "*", optional = true, markers = "extra == \"aws\" or extra == \"all\""}
 bottle = "*"
 certifi = "*"
+cryptography = "*"
 Pillow = "*"
 pyproj = "*"
 pyramid = {version = "*", optional = true, markers = "extra == \"wsgi\" or extra == \"all\""}
@@ -3305,4 +3306,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "7a62b0567e5afe2c6c98cb91f6cb5a4fa67c4015f18f29b2d8704b334ef89cef"
+content-hash = "c329452a407f511770ee623f993f6ca4293ab15b12de6070ec8db4245152c56d"
