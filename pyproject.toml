@@ -63,7 +63,7 @@ c2cwsgiutils = { version = "5.1.9", extras = ["standard", "broadcast"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.8.2"
 tilecloud = { version = "1.9.3", extras = ["azure", "aws", "redis", "wsgi"] }
-Jinja2 = "3.1.4"
+Jinja2 = "3.1.5"
 PyYAML = "6.0.2"
 Shapely = "2.0.6"
 jsonschema = "4.17.3"
