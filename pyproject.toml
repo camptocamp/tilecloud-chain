@@ -62,8 +62,8 @@ python = ">=3.10,<3.13"
 c2cwsgiutils = { version = "6.1.5", extras = ["standard", "broadcast", "oauth2", "debug"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.9.0.post0"
-tilecloud = { version = "1.12.3", extras = ["azure", "aws", "redis", "wsgi"] }
-Jinja2 = "3.1.4"
+tilecloud = { version = "1.12.6", extras = ["azure", "aws", "redis", "wsgi"] }
+Jinja2 = "3.1.5"
 PyYAML = "6.0.2"
 Shapely = "2.0.6"
 jsonschema = "4.23.0"
@@ -73,7 +73,7 @@ azure-storage-blob = "12.23.1"
 waitress = "3.0.2"
 certifi = "2024.8.30"
 Paste = "3.10.1"
-psutil = "6.1.0"
+psutil = "6.1.1"
 pyproj = "3.7.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -84,7 +84,7 @@ c2cwsgiutils = { version = "6.1.5", extras = ["test_images"] }
 scikit-image = { version = "0.24.0" }
 pytest = "8.3.4"
 testfixtures = "8.3.0"
-coverage = "7.6.8"
+coverage = "7.6.10"
 types-redis = "4.6.0.20241004"
 types-requests = "2.32.0.20241016"
 
