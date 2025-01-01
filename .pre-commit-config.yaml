@@ -13,7 +13,7 @@ repos:
       - id: trailing-whitespace
       - id: mixed-line-ending
   - repo: https://github.com/sbrunner/integrity-updater
-    rev: 0.2.0
+    rev: 1.0.2
     hooks:
       - id: integrity-updater
   - repo: https://github.com/mheap/json-schema-spell-checker
@@ -113,7 +113,7 @@ repos:
           - prospector-profile-utils==1.14.1 # pypi
           - ruff==0.8.4 # pypi
   - repo: https://github.com/sbrunner/jsonschema-validator
-    rev: 0.3.2
+    rev: 1.0.0
     hooks:
       - id: jsonschema-validator
         files: ^ci/config\.yaml$
