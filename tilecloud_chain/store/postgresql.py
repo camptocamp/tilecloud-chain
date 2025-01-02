@@ -257,19 +257,20 @@ async def _start_job(
     completed_process = await asyncio.create_subprocess_exec(
         *final_command, env=env, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
+    stdout, stderr = await result.communicate()
 
     job.status = _STATUS_STARTED if completed_process.returncode == 0 else _STATUS_ERROR  # type: ignore[assignment]
-    job.message = completed_process.stdout.decode()  # type: ignore[assignment]
-    if completed_process.stderr:
-        job.message += "\nError:\n" + completed_process.stderr.decode()  # type: ignore[assignment]
+    job.message = stdout.decode()  # type: ignore[assignment]
+    if stderr:
+        job.message += "\nError:\n" + stderr.decode()  # type: ignore[assignment]
 
     if completed_process.returncode != 0:
         _LOGGER.warning(
             "The command `%s` exited with an error code: %s\nstdout:\n%s\nstderr:\n%s",
             display_command,
             completed_process.returncode,
-            completed_process.stdout.decode(),
-            completed_process.stderr.decode(),
+            stdout.decode(),
+            stderr.decode(),
         )
 
 
