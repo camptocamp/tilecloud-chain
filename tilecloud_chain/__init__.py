@@ -12,7 +12,6 @@ import pathlib
 import pkgutil
 import re
 import sqlite3
-import subprocess  # nosec
 import sys
 import tempfile
 import time
@@ -1800,16 +1799,18 @@ class Process:
                     "y": tile.tilecoord.y,
                     "z": tile.tilecoord.z,
                 }
+                # TODO commands needs to be secured
                 _LOGGER.debug("[%s] process: %s", tile.tilecoord, command)
-                result = subprocess.run(  # pylint: disable=subprocess-run-check
+                result = await asyncio.create_subprocess_shell(  # pylint: disable=subprocess-run-check
                     command,
-                    shell=True,
-                    capture_output=True,  # nosec
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
                 )
+                stdout, stderr = await result.communicate()
                 if result.returncode != 0:
                     tile.error = (
                         f"Command '{command}' on tile {tile.tilecoord} "
-                        f"return error code {result.returncode}:\n{result.stderr!s}\n{result.stdout!s}"
+                        f"return error code {result.returncode}:\n{stderr.decode()}\n{stdout.decode()}"
                     )
                     tile.data = None
                     return tile
