@@ -12,7 +12,6 @@ import pathlib
 import pkgutil
 import re
 import sqlite3
-import subprocess  # nosec
 import sys
 import tempfile
 import time
@@ -1801,10 +1800,10 @@ class Process:
                     "z": tile.tilecoord.z,
                 }
                 _LOGGER.debug("[%s] process: %s", tile.tilecoord, command)
-                result = subprocess.run(  # pylint: disable=subprocess-run-check
+                result = await asyncio.create_subprocess_shell(  # pylint: disable=subprocess-run-check
                     command,
-                    shell=True,
-                    capture_output=True,  # nosec
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
                 )
                 if result.returncode != 0:
                     tile.error = (

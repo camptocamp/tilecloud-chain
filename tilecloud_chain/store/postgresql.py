@@ -1,6 +1,6 @@
 """PostgreSQL queue."""
 
-# Copyright (c) 2023-2024 by Camptocamp
+# Copyright (c) 2023-2025 by Camptocamp
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,13 +26,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import asyncio
 import gc
 import io
 import logging
 import multiprocessing
 import os
 import shlex
-import subprocess  # nosec
 import time
 from collections.abc import AsyncIterator
 from datetime import datetime, timedelta
@@ -254,10 +254,8 @@ async def _start_job(
 
     _LOGGER.info("Run the command `%s`", display_command)
 
-    completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check # noqa: S603
-        final_command,
-        capture_output=True,
-        env=env,
+    completed_process = await asyncio.create_subprocess_exec(
+        *final_command, env=env, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
 
     job.status = _STATUS_STARTED if completed_process.returncode == 0 else _STATUS_ERROR  # type: ignore[assignment]
