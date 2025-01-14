@@ -116,11 +116,11 @@ class RedisStore(TileStore):
     def _get_key(self, tile: Tile) -> str:
         keys = [
             self._prefix,
-            tile.metadata['config_file'],
-            tile.metadata['layer'],
+            tile.metadata["config_file"],
+            tile.metadata["layer"],
             tile.tilecoord.z,
             tile.tilecoord.x,
-            tile.tilecoord.y
+            tile.tilecoord.y,
         ] + [value for key, value in tile.metadata.items() if key.startswith("dimension_")]
         return "_".join([str(key) for key in keys])
 
