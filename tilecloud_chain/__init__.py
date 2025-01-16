@@ -11,6 +11,7 @@ import os
 import pathlib
 import pkgutil
 import re
+import shlex
 import sqlite3
 import sys
 import tempfile
@@ -73,6 +74,10 @@ _GEOMS_GET_SUMMARY = Summary("tilecloud_chain_geoms_get", "Geoms filter get", ["
 _HOST_CONTEXT: contextvars.ContextVar[str | None] = contextvars.ContextVar("host")
 _LAYER_CONTEXT: contextvars.ContextVar[str | None] = contextvars.ContextVar("layer")
 _META_TILE_COORD_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar("meta_tilecoord")
+
+_ALLOWED_COMMANDS = os.environ.get(
+    "TILEGENERATION_ALLOWED_PROCESS_COMMANDS", "optipng,jpegoptim,pngquant"
+).split(",")
 
 
 def formatted_metadata(tile: Tile) -> str:
@@ -1799,21 +1804,28 @@ class Process:
                     "y": tile.tilecoord.y,
                     "z": tile.tilecoord.z,
                 }
-                # TODO commands needs to be secured
-                _LOGGER.debug("[%s] process: %s", tile.tilecoord, command)
-                result = await asyncio.create_subprocess_shell(  # pylint: disable=subprocess-run-check
-                    command,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                )
-                stdout, stderr = await result.communicate()
-                if result.returncode != 0:
-                    tile.error = (
-                        f"Command '{command}' on tile {tile.tilecoord} "
-                        f"return error code {result.returncode}:\n{stderr.decode()}\n{stdout.decode()}"
+                commands = command.split(";")
+                for command in commands:
+                    command_split = shlex.split(command)
+                    if command_split[0] not in _ALLOWED_COMMANDS:
+                        _LOGGER.error("Command '%s' not allowed", command_split[0])
+                        tile.error = f"Command '{command}' not allowed"
+                        tile.data = None
+                        return tile
+                    _LOGGER.debug("[%s] process: %s", tile.tilecoord, command)
+                    result = await asyncio.create_subprocess_exec(  # pylint: disable=subprocess-run-check
+                        *command_split,
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.PIPE,
                     )
-                    tile.data = None
-                    return tile
+                    stdout, stderr = await result.communicate()
+                    if result.returncode != 0:
+                        tile.error = (
+                            f"Command '{command}' on tile {tile.tilecoord} "
+                            f"return error code {result.returncode}:\n{stderr.decode()}\n{stdout.decode()}"
+                        )
+                        tile.data = None
+                        return tile
 
                 if cmd.get("need_out", configuration.NEED_OUT_DEFAULT):
                     os.close(fd_in)
