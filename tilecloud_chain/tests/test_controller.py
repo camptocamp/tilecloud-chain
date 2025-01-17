@@ -23,11 +23,11 @@ class TestController(CompareCase):
         if os.path.exists("/tmp/tiles"):
             shutil.rmtree("/tmp/tiles")
 
-    def test_capabilities(self) -> None:
+    async def test_capabilities(self) -> None:
         gene = TileGeneration("tilegeneration/test-fix.yaml", configure_logging=False)
         config = gene.get_config("tilegeneration/test-fix.yaml")
         self.assert_result_equals(
-            controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -964,17 +964,17 @@ class TestController(CompareCase):
 </Capabilities>"""
     )
 
-    def test_multi_host_capabilities(self) -> None:
+    async def test_multi_host_capabilities(self) -> None:
         gene = TileGeneration("tilegeneration/test-fix.yaml", configure_logging=False)
         self.assert_result_equals(
-            controller.get_wmts_capabilities(gene, "multi_host"), self.MULTIHOST_CAPABILITIES, True
+            await controller.get_wmts_capabilities(gene, "multi_host"), self.MULTIHOST_CAPABILITIES, True
         )
 
-    def test_capabilities_slash(self) -> None:
+    async def test_capabilities_slash(self) -> None:
         gene = TileGeneration("tilegeneration/test-capabilities.yaml", configure_logging=False)
         config = gene.get_config("tilegeneration/test-capabilities.yaml")
         self.assert_result_equals(
-            controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -1104,10 +1104,10 @@ class TestController(CompareCase):
             True,
         )
 
-    def test_multi_url_capabilities(self) -> None:
+    async def test_multi_url_capabilities(self) -> None:
         gene = TileGeneration("tilegeneration/test-fix.yaml", configure_logging=False)
         self.assert_result_equals(
-            controller.get_wmts_capabilities(gene, "multi_url"), self.MULTIHOST_CAPABILITIES, True
+            await controller.get_wmts_capabilities(gene, "multi_url"), self.MULTIHOST_CAPABILITIES, True
         )
 
     CONFIG = """
@@ -1687,7 +1687,7 @@ sqs:
         im = Image.open("/tmp/tiles/1.0.0/all/default/legend2.png")
         self.assertEqual(im.size, (81, 78))
 
-    def test_legends(self) -> None:
+    async def test_legends(self) -> None:
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends.yaml --legends",
             main_func=controller.main,
@@ -1699,7 +1699,7 @@ sqs:
         gene = TileGeneration("tilegeneration/test-legends.yaml", configure_logging=False)
         config = gene.get_config("tilegeneration/test-legends.yaml")
         self.assert_result_equals(
-            controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"

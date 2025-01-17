@@ -1,6 +1,6 @@
 """Generate the contextual file like the legends."""
 
-import concurrent.futures
+import asyncio
 import logging
 import math
 import os
@@ -45,6 +45,11 @@ _GET_STATUS_SUMMARY = Summary("tilecloud_chain_get_status", "Number of get_stats
 
 def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
     """Generate the contextual file like the legends."""
+    asyncio.run(_async_main(args, out))
+
+
+async def _async_main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
+    """Generate the contextual file like the legends."""
     try:
         parser = ArgumentParser(
             description="Used to generate the contextual file like the capabilities, the legends, "
@@ -76,7 +81,7 @@ def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
         config = gene.get_config(gene.config_file)
 
         if options.status:
-            status(gene)
+            await status(gene)
             sys.exit(0)
 
         if options.cache is None:
@@ -147,7 +152,7 @@ def _send(data: bytes | str, path: str, mime_type: str, cache: tilecloud_chain.c
             f.write(data)
 
 
-def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes | None:
+async def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes | None:
     if cache["type"] == "s3":
         cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
         client = tilecloud.store.s3.get_client(cache_s3.get("host"))
@@ -168,7 +173,7 @@ def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes | None:
             blob = get_azure_container_client(container=cache_azure["container"]).get_blob_client(
                 blob=key_name
             )
-            return blob.download_blob().readall()
+            return await (await blob.download_blob()).readall()
         except ResourceNotFoundError:
             return None
     else:
@@ -193,7 +198,7 @@ def _validate_generate_wmts_capabilities(
     return True
 
 
-def get_wmts_capabilities(
+async def get_wmts_capabilities(
     gene: TileGeneration, cache_name: str, exit_: bool = False, config: DatedConfig | None = None
 ) -> str | None:
     """Get the WMTS capabilities for a configuration file."""
@@ -207,7 +212,7 @@ def get_wmts_capabilities(
         server = gene.get_main_config().config.get("server")
 
         base_urls = _get_base_urls(cache)
-        _fill_legend(gene, cache, server, base_urls, config=config)
+        await _fill_legend(gene, cache, server, base_urls, config=config)
 
         data = pkgutil.get_data("tilecloud_chain", "wmts_get_capabilities.jinja")
         assert data
@@ -261,13 +266,13 @@ def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:
     return base_urls
 
 
-def _legend_metadata(
+async def _legend_metadata(
     cache: tilecloud_chain.configuration.Cache,
     layer: tilecloud_chain.configuration.Layer,
     base_url: str,
     path: str,
 ) -> tilecloud_chain.Legend | None:
-    img = _get(path, cache)
+    img = await _get(path, cache)
     if img is not None:
         new_legend: tilecloud_chain.Legend = {
             "mime_type": layer["legend_mime"],
@@ -288,7 +293,7 @@ def _legend_metadata(
     return None
 
 
-def _fill_legend(
+async def _fill_legend(
     gene: TileGeneration,
     cache: tilecloud_chain.configuration.Cache,
     server: tilecloud_chain.configuration.Server | None,
@@ -300,46 +305,41 @@ def _fill_legend(
         config = gene.get_config(gene.config_file)
 
     start = time.perf_counter()
-    legend_image_future = {}
-    with concurrent.futures.ThreadPoolExecutor(
-        max_workers=int(os.environ.get("TILECLOUD_CHAIN_CONCURRENT_GET_LEGEND", "10"))
-    ) as executor:
-        for layer_name, layer in config.config.get("layers", {}).items():
-            if (
-                "legend_mime" in layer
-                and "legend_extension" in layer
-                and layer_name not in gene.layer_legends
-            ):
-                for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
-                    path = "/".join(
-                        [
-                            "1.0.0",
-                            layer_name,
-                            layer["wmts_style"],
-                            f"legend{zoom}.{layer['legend_extension']}",
-                        ]
-                    )
-                    legend_image_future[
-                        executor.submit(
-                            _legend_metadata,
+    legend_image_tasks = {}
+    for layer_name, layer in config.config.get("layers", {}).items():
+        if "legend_mime" in layer and "legend_extension" in layer and layer_name not in gene.layer_legends:
+            for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+                path = "/".join(
+                    [
+                        "1.0.0",
+                        layer_name,
+                        layer["wmts_style"],
+                        f"legend{zoom}.{layer['legend_extension']}",
+                    ]
+                )
+                legend_image_tasks[
+                    asyncio.create_task(
+                        _legend_metadata(
                             cache,
                             layer,
                             os.path.join(base_urls[0], server.get("static_path", "static") if server else ""),
                             path,
                         )
-                    ] = (layer_name, resolution)
+                    )
+                ] = (layer_name, resolution)
 
+    asyncio.gather(*legend_image_tasks.keys())
     legend_image_metadata: dict[str, dict[float, tilecloud_chain.Legend | None]] = {}
-    for future in concurrent.futures.as_completed(legend_image_future):
-        layer_name, resolution = legend_image_future[future]
+    for task, values in legend_image_tasks.items():
+        layer_name, resolution = values
         try:
-            legend_image_metadata.setdefault(layer_name, {})[resolution] = future.result()
+            legend_image_metadata.setdefault(layer_name, {})[resolution] = task.result()
         except Exception as exc:  # pylint: disable=broad-exception-caught
             _LOGGER.warning(
                 "Unable to get legend image for layer '%s', resolution '%s': %s", layer_name, resolution, exc
             )
 
-    _LOGGER.debug("Get %i legend images in %s", len(legend_image_future), time.perf_counter() - start)
+    _LOGGER.debug("Get %i legend images in %s", len(legend_image_tasks), time.perf_counter() - start)
 
     for layer_name, layer in config.config.get("layers", {}).items():
         previous_legend: tilecloud_chain.Legend | None = None
@@ -530,15 +530,15 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                     )
 
 
-def status(gene: TileGeneration) -> None:
+async def status(gene: TileGeneration) -> None:
     """Print th tilegeneration status."""
-    print("\n".join(get_status(gene)))
+    print("\n".join(await get_status(gene)))
 
 
-def get_status(gene: TileGeneration) -> list[str]:
+async def get_status(gene: TileGeneration) -> list[str]:
     """Get the tile generation status."""
     config = gene.get_main_config()
-    store = get_queue_store(config, False)
+    store = await get_queue_store(config, False)
     type_: Literal["redis"] | Literal["sqs"] = "redis" if "redis" in config.config else "sqs"
     conf = config.config[type_]
     with _GET_STATUS_SUMMARY.labels(type_, conf.get("queue", configuration.REDIS_QUEUE_DEFAULT)).time():

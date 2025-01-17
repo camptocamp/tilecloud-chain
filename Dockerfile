@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
         libmapnik3.1 mapnik-utils \
         libdb5.3 \
         fonts-dejavu \
-        optipng jpegoptim \
+        optipng jpegoptim pngquant \
         postgresql-client net-tools iputils-ping \
         python3-pip python3-venv \
     && python3 -m venv /venv
