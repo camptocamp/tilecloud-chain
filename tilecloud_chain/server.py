@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2023 by Stéphane Brunner
+# Copyright (c) 2013-2025 by Stéphane Brunner
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -225,7 +225,7 @@ class Server(Generic[Response]):
         if "min_resolution_seed" in layer:
             max_zoom_seed = -1
             for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
-                if resolution > layer["min_resolution_seed"]:
+                if resolution >= layer["min_resolution_seed"]:
                     max_zoom_seed = zoom
             return max_zoom_seed
         else:
