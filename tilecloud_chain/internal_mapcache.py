@@ -114,10 +114,15 @@ class RedisStore(TileStore):
         return tile
 
     def _get_key(self, tile: Tile) -> str:
-        return (
-            f"{self._prefix}_{tile.metadata['config_file']}_{tile.metadata['layer']}_"
-            f"{tile.tilecoord.z}_{tile.tilecoord.x}_{tile.tilecoord.y}"
-        )
+        keys = [
+            self._prefix,
+            tile.metadata["config_file"],
+            tile.metadata["layer"],
+            tile.tilecoord.z,
+            tile.tilecoord.x,
+            tile.tilecoord.y,
+        ] + [value for key, value in tile.metadata.items() if key.startswith("dimension_")]
+        return "_".join([str(key) for key in keys])
 
     @contextlib.contextmanager
     def lock(self, tile: Tile) -> Iterator[None]:
