@@ -124,7 +124,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libncursesw6: 6.4+20240113-1ubuntu2
   ubuntu_24_04/libnetcdf19t64: 1:4.9.2-5ubuntu4
   ubuntu_24_04/libnettle8t64: 3.9.1-2.2build1.1
-  ubuntu_24_04/libnghttp2-14: 1.59.0-1ubuntu0.1
+  ubuntu_24_04/libnghttp2-14: 1.59.0-1ubuntu0.2
   ubuntu_24_04/libnpth0t64: 1.6-3.1build1
   ubuntu_24_04/libnspr4: 2:4.35-1.1build1
   ubuntu_24_04/libnss3: 2:3.98-1build1
@@ -137,8 +137,8 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libpam-modules-bin: 1.5.3-5ubuntu5.1
   ubuntu_24_04/libpam-runtime: 1.5.3-5ubuntu5.1
   ubuntu_24_04/libpam0g: 1.5.3-5ubuntu5.1
-  ubuntu_24_04/libpcre2-8-0: 10.42-4ubuntu2
-  ubuntu_24_04/libperl5.38t64: 5.38.2-3.2build2
+  ubuntu_24_04/libpcre2-8-0: 10.42-4ubuntu2.1
+  ubuntu_24_04/libperl5.38t64: 5.38.2-3.2build2.1
   ubuntu_24_04/libpixman-1-0: 0.42.2-1build1
   ubuntu_24_04/libpng16-16t64: 1.6.43-5build1
   ubuntu_24_04/libpoppler134: 24.02.0-1ubuntu9.2
@@ -166,7 +166,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libsmartcols1: 2.39.3-9ubuntu6.2
   ubuntu_24_04/libsnappy1v5: 1.1.10-1build1
   ubuntu_24_04/libspatialite8t64: 5.1.0-3build1
-  ubuntu_24_04/libsqlite3-0: 3.45.1-1ubuntu2
+  ubuntu_24_04/libsqlite3-0: 3.45.1-1ubuntu2.1
   ubuntu_24_04/libss2: 1.47.0-2.4~exp1ubuntu4.1
   ubuntu_24_04/libssh-4: 0.10.6-2build2
   ubuntu_24_04/libssl3t64: 3.0.13-0ubuntu3.4
@@ -213,9 +213,9 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/openssl: 3.0.13-0ubuntu3.4
   ubuntu_24_04/optipng: 0.7.8+ds-1build2
   ubuntu_24_04/passwd: 1:4.13+dfsg1-4ubuntu3.2
-  ubuntu_24_04/perl: 5.38.2-3.2build2
-  ubuntu_24_04/perl-base: 5.38.2-3.2build2
-  ubuntu_24_04/perl-modules-5.38: 5.38.2-3.2build2
+  ubuntu_24_04/perl: 5.38.2-3.2build2.1
+  ubuntu_24_04/perl-base: 5.38.2-3.2build2.1
+  ubuntu_24_04/perl-modules-5.38: 5.38.2-3.2build2.1
   ubuntu_24_04/postgresql-client: 16+257build1.1
   ubuntu_24_04/postgresql-client-16: 16.6-0ubuntu0.24.04.1
   ubuntu_24_04/postgresql-client-common: 257build1.1
