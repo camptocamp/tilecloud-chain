@@ -106,13 +106,13 @@ repos:
           - github-workflows-require-timeout
       - id: check-renovate
         additional_dependencies:
-          - pyjson5==1.6.7 # pypi
+          - pyjson5==1.6.8 # pypi
   - repo: https://github.com/sirwart/ripsecrets
     rev: v0.1.8
     hooks:
       - id: ripsecrets
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.4
+    rev: v0.8.6
     hooks:
       - id: ruff-format
   - repo: https://github.com/PyCQA/prospector
@@ -128,9 +128,9 @@ repos:
             tilecloud_chain/tests/.*
           )$
         additional_dependencies:
-          - prospector-profile-duplicated==1.10.0 # pypi
+          - prospector-profile-duplicated==1.10.4 # pypi
           - prospector-profile-utils==1.14.1 # pypi
-          - ruff==0.8.4 # pypi
+          - ruff==0.8.6 # pypi
   - repo: https://github.com/sbrunner/jsonschema-validator
     rev: 1.0.0
     hooks:
