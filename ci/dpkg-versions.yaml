@@ -2,6 +2,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/apt: 2.7.14build2
   ubuntu_24_04/base-passwd: 3.6.3build1
   ubuntu_24_04/bash: 5.2.21-2ubuntu4
+  ubuntu_24_04/bash-completion: 1:2.11-8
   ubuntu_24_04/bsdutils: 1:2.39.3-9ubuntu6.1
   ubuntu_24_04/ca-certificates: '20240203'
   ubuntu_24_04/coreutils: 9.4-3ubuntu6
