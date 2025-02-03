@@ -523,8 +523,7 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                     previous_hash = new_hash
                     _send(
                         result,
-                        f"1.0.0/{layer_name}/{layer['wmts_style']}/"
-                        f"legend{zoom}.{layer['legend_extension']}",
+                        f"1.0.0/{layer_name}/{layer['wmts_style']}/legend{zoom}.{layer['legend_extension']}",
                         layer["legend_mime"],
                         cache,
                     )

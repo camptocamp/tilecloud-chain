@@ -200,8 +200,7 @@ async def _start_job(
         if arg.startswith("-") and arg not in allowed_arguments:
             job.status = _STATUS_ERROR  # type: ignore[assignment]
             job.error = (  # type: ignore[attr-defined]
-                f"The argument {arg} is not allowed, allowed arguments are: "
-                f"{', '.join(allowed_arguments)}"
+                f"The argument {arg} is not allowed, allowed arguments are: {', '.join(allowed_arguments)}"
             )
             return
 
