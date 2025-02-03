@@ -89,7 +89,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/libgpg-error0: 1.43-3
   ubuntu_22_04/libgraphite2-3: 1.3.14-1build2
   ubuntu_22_04/libgssapi-krb5-2: 1.19.2-2ubuntu0.4
-  ubuntu_22_04/libharfbuzz0b: 2.7.4-1ubuntu3.1
+  ubuntu_22_04/libharfbuzz0b: 2.7.4-1ubuntu3.2
   ubuntu_22_04/libhdf4-0-alt: 4.2.15-4
   ubuntu_22_04/libhdf5-103-1: 1.10.7+repack-4ubuntu2
   ubuntu_22_04/libhdf5-hl-100: 1.10.7+repack-4ubuntu2
