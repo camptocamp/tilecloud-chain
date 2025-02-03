@@ -59,13 +59,13 @@ main = "tilecloud_chain.server:main"
 [tool.poetry.dependencies]
 # Minimal version should also be set in the jsonschema-gentypes.yaml file
 python = ">=3.10,<3.13"
-c2cwsgiutils = { version = "6.1.5", extras = ["standard", "broadcast", "oauth2", "debug"] }
+c2cwsgiutils = { version = "6.1.7", extras = ["standard", "broadcast", "oauth2", "debug"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.9.0.post0"
 tilecloud = { version = "1.12.6", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.5"
 PyYAML = "6.0.2"
-Shapely = "2.0.6"
+Shapely = "2.0.7"
 jsonschema = "4.23.0"
 pyramid = "2.0.2"
 jsonschema-validator-new = "0.3.2"
@@ -75,16 +75,16 @@ certifi = "2025.1.31"
 Paste = "3.10.1"
 psutil = "6.1.1"
 pyproj = "3.7.0"
-psycopg = { version = "3.2.3", extras = ["binary"] }
+psycopg = { version = "3.2.4", extras = ["binary"] }
 aiohttp = "3.11.11"
-sqlalchemy = { version = "2.0.36", extras = ["asyncio"] }
-pytest-asyncio = "0.25.0"
+sqlalchemy = { version = "2.0.37", extras = ["asyncio"] }
+pytest-asyncio = "0.25.3"
 
 [tool.poetry.group.dev.dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.13.3" }
 prospector-profile-duplicated = "1.7.0"
 prospector-profile-utils = "1.11.1"
-c2cwsgiutils = { version = "6.1.5", extras = ["test_images"] }
+c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
 scikit-image = { version = "0.24.0" }
 pytest = "8.3.4"
 testfixtures = "8.3.0"
