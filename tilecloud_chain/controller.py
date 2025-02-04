@@ -518,7 +518,7 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                 string_io = BytesIO()
                 image.save(string_io, FORMAT_BY_CONTENT_TYPE[layer["legend_mime"]])
                 result = string_io.getvalue()
-                new_hash = sha1(result).hexdigest()  # nosec # noqa: S303
+                new_hash = sha1(result).hexdigest()  # nosec # noqa: S324
                 if new_hash != previous_hash:
                     previous_hash = new_hash
                     _send(
