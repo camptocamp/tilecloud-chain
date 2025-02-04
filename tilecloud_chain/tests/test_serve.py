@@ -941,8 +941,7 @@ class TestServe(CompareCase):
         os.environ["METATILE_NB_THREAD"] = "1"
 
         self.assert_tiles_generated(
-            cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-serve.yaml "
-            "-l point_hash --zoom 1",
+            cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-serve.yaml -l point_hash --zoom 1",
             main_func=generate.main,
             directory="/tmp/tiles/mbtiles/",
             tiles_pattern="1.0.0/%s",

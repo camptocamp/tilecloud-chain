@@ -217,8 +217,7 @@ S3 get: %(get)s [$/month]
 
     def test_cost_polygon_count(self) -> None:
         self.assert_cmd_equals(
-            cmd=".build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml "
-            "-l polygon --cost-algo count",
+            cmd=".build/venv/bin/generate_cost -c tilegeneration/test-fix.yaml -l polygon --cost-algo count",
             main_func=cost.main,
             expected="\n".join(
                 [

@@ -518,13 +518,12 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                 string_io = BytesIO()
                 image.save(string_io, FORMAT_BY_CONTENT_TYPE[layer["legend_mime"]])
                 result = string_io.getvalue()
-                new_hash = sha1(result).hexdigest()  # nosec # noqa: S303
+                new_hash = sha1(result).hexdigest()  # nosec # noqa: S324
                 if new_hash != previous_hash:
                     previous_hash = new_hash
                     _send(
                         result,
-                        f"1.0.0/{layer_name}/{layer['wmts_style']}/"
-                        f"legend{zoom}.{layer['legend_extension']}",
+                        f"1.0.0/{layer_name}/{layer['wmts_style']}/legend{zoom}.{layer['legend_extension']}",
                         layer["legend_mime"],
                         cache,
                     )

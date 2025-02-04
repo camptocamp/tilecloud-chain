@@ -410,9 +410,9 @@ def get_azure_container_client(container: str) -> ContainerClient:
     elif "AZURE_STORAGE_BLOB_CONTAINER_URL" in os.environ:
         container_client = ContainerClient.from_container_url(os.environ["AZURE_STORAGE_BLOB_CONTAINER_URL"])
         if os.environ.get("AZURE_STORAGE_BLOB_VALIDATE_CONTAINER_NAME", "true").lower() == "true":
-            assert (
-                container == container_client.container_name
-            ), f"Container name mismatch: {container} != {container_client.container_name}"
+            assert container == container_client.container_name, (
+                f"Container name mismatch: {container} != {container_client.container_name}"
+            )
         return container_client
     else:
         return BlobServiceClient(
@@ -1631,7 +1631,7 @@ class HashLogger:
             f"""Tile: {tile.tilecoord} {tile.formated_metadata}
     {self.block}:
         size: {len(tile.data)}
-        hash: {sha1(tile.data).hexdigest()}""",  # noqa: E501
+        hash: {sha1(tile.data).hexdigest()}""",  # noqa: S324
             file=self.out,
         )
         return tile
