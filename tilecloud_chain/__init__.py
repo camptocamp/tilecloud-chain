@@ -1631,7 +1631,7 @@ class HashLogger:
             f"""Tile: {tile.tilecoord} {tile.formated_metadata}
     {self.block}:
         size: {len(tile.data)}
-        hash: {sha1(tile.data).hexdigest()}""",  # noqa: E501
+        hash: {sha1(tile.data).hexdigest()}""",  # noqa: S324
             file=self.out,
         )
         return tile

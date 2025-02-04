@@ -44,6 +44,10 @@ repos:
       - id: prettier
         additional_dependencies:
           - prettier@2.8.4
+        ignore: |
+          (?x)^(
+            tilecloud_chain/HOST_LIMIT\.md
+          )$
   - repo: https://github.com/camptocamp/jsonschema-gentypes
     rev: 2.9.3
     hooks:
