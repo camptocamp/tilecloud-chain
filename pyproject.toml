@@ -74,6 +74,7 @@ waitress = "3.0.2"
 certifi = "2024.8.30"
 Paste = "3.10.1"
 psutil = "6.1.1"
+cryptography = "44.0.1"
 
 [tool.poetry.group.dev.dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.13.3" }
