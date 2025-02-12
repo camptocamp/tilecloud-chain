@@ -1,46 +1,51 @@
-Configure
----------
+Configuration
+-------------
 
-Configure grids
+This guide covers configuration options for tilecloud-chain, a tool for generating and serving map tiles.
+
+Configure Grids
+~~~~~~~~~~~~~~
+
+The ``grid`` configuration describes how map tiles are arranged in your tileset.
+
+For cloud storage backends like ``s3`` or ``azure``, carefully consider grid settings before generating tiles, as changing them later requires regenerating all tiles.
+
+Key grid settings:
+
+- ``resolutions``: Tile resolutions in pixels/meter. For raster layers, consider the maximum resolution of source files. OpenLayers client zoom can handle display at smaller resolutions.
+
+- ``bbox``: Bounding box that matches resolution extent. Warning: Do not use this to restrict tile generation area - use layer ``bbox`` instead.
+
+- ``srs``: Projection code (e.g. ``EPSG:3857``)
+
+- ``unit``: Unit used by projection (e.g. ``meters``)
+
+- ``tile_size``: Tile dimensions in pixels (default: ``256``)
+
+- ``matrix_identifier``: How z-index is built for tile storage:
+    - ``zoom`` (default): Uses zoom levels ``[0, 1, 2]`` for the resolutions ``[2, 1, 0.5]``
+    - ``resolution``: Uses resolution values ``[2, 1, 0_5]`` for the same resolutions
+    Resolution-based indexing allows adding resolutions without regenerating tiles, but is incompatible with MapCache.
+
+Configure Caches
 ~~~~~~~~~~~~~~~
 
-The ``grid`` describes how the tiles are arranged.
+Available tile cache backends:
 
-Especially on ``s3`` or ``azure`` be careful to choose every of the grid settings before generating the
-tiles. If you change one of them you must regenerate all the tiles.
+- Cloud storage: ``s3``, ``azure``
+- Local storage: ``bsddb``, ``mbtiles``, ``filesystem``
 
-The ``resolutions`` in [px/m] describes all the resolutions available for this layer. For a raster layer, have
-a look to the maximum resolution of the source files. It is not needed to generate tiles at smaller
-resolutions than the sources, it is preferable to use the OpenLayers client zoom. Note that you can add a
-resolution in the end without regenerating all the tiles.
+Cache configuration:
 
-The ``bbox`` should match the resolution of the extent. **CAREFUL: you will have big issue if you use this
-parameter to generate the tile on a restricted area**: use the ``bbox`` on the layer instead.
+``s3`` requires:
+- ``bucket``: S3 bucket name
+- ``folder``: Path prefix (default: '')
 
-The ``srs`` specifies the code of the projection.
+``azure`` requires:
+- ``container``: Azure container name
 
-The ``unit`` is the unit used by the projection.
-
-The ``tile_size`` is the tile size in [px], defaults to 256.
-
-The ``matrix_identifier`` is ``zoom`` by default and can also be set to ``resolution``. It specifies how the z
-index is build to store the tiles, for example, for the resolutions ``[2, 1, 0.5]`` the used values are
-``[0, 1, 2]`` based on the zoom and ``[2, 1, 0_5]`` based on the resolution. The second has the advantage of
-allowing to add a new resolution without regenerating all the tiles, but it does not work with MapCache.
-
-Configure caches
-~~~~~~~~~~~~~~~~
-
-The available tile caches are: ``s3``, ``azure``, ``bsddb``, ``mbtile`` and ``filesystem``.
-
-The best solution to store the tiles, ``s3``, ``azure``, ``mbtiles`` and ``bsddb``, have the advantage of using only one
-file per layer - style dimensions. To serve the ``mbtile`` and the ``bsddb`` see Distribute the tiles.
-
-``s3`` needs a ``bucket`` and a ``folder`` (defaults to '').
-
-``azure`` needs a ``container``.
-
-``mbtiles``, ``bsddb`` and ``filesystem`` just need a ``folder``.
+``mbtiles``, ``bsddb``, ``filesystem`` require:
+- ``folder``: Storage directory path
 
 On all the caches we can add some information to generate the URL where the tiles are available. This is
 needed to generate the capabilities. We can specify:
@@ -709,7 +714,7 @@ mode we don't catch exceptions, and we don't log time messages.
 Mutualized
 ----------
 
-The mutualized mode consist by having multiple project files with the projects related configurations
+The multi-tenant mode consist by having multiple project files with the projects related configurations
 (layers, cache, ...) and one main configuration file with the global configuration (number of process,
 log format, redis, ...).
 
@@ -730,33 +735,76 @@ Please use the ``--debug`` to report issue.
 Environment variables
 ---------------------
 
-- ``TILEGENERATION_CONFIGFILE``: Default to ``/etc/tilegeneration/config.yaml``, the all in one
-  configuration file to use.
-- ``TILEGENERATION_MAIN_CONFIGFILE``: Default to ``/etc/tilegeneration/config.yaml``, the main
-  configuration file to use.
-- ``TILEGENERATION_HOSTSFILE``: Default to ``/etc/tilegeneration/hosts.yaml``, the hosts to config file
-  mapping file to use.
-- ``TILEGENERATION_MAX_GENERATION_TIME``: Default to ``60``, the maximum time to generate the tiles (lock timeout) in second.
-- ``TILE_NB_THREAD``: Default is ``2``, the number of thread used to generate the tiles (If we use meta tiles)
-- ``METATILE_NB_THREAD``: Default is ``25``, the number of thread used to generate the meta tiles (If we use
-  meta tiles, also to generate the tiles)
-- ``SERVER_NB_THREAD``: Default to ``10``, the number of thread used to generate the meta tiles in the server.
-- ``TILE_QUEUE_SIZE``: Default to ``2``, the queue size just after the Redis queue
-- ``TILE_CHUNK_SIZE``: Default to ``1``, the chunk size to process the tiles after the meta tiles.
-- ``TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH``: Default to ``1000``, the maximum number of character of the
-  output to be display in the admin interface.
-- ``TILECLOUD_CHAIN_CONCURRENT_GET_LEGEND``: Default to ``10``, the number of concurrent request to get the
-  legend images during the generation of the capabilities.
-- ``LOG_TYPE``: Default to ``console``, can also be ``json`` to log in JSON for ``Logstash``.
-- ``TILECLOUD_CHAIN_LOG_LEVEL`` Default to ``INFO``,
-  ``TILECLOUD_LOG_LEVEL`` Default to ``INFO``,
-  ``C2CWSGI_LOG_LEVEL`` Default to ``WARN``,
-  ``OTHER_LOG_LEVEL`` Default to ``WARN``, the logging level of deferent components, can be ``DEBUG``,
-  ``INFO``, ``WARN``, ``ERROR`` or ``CRITICAL``.
-- ``TILE_SERVER_LOGLEVEL`` Default to ``quiet`` the log level used in the server part.
-- ``TILE_MAPCACHE_LOGLEVEL``Default to ``verbose`` the log level used in the internal mapcache.
-- ``DEVELOPMENT``: Default to ``0`` set it to ``1`` to have the Pyramid development options.
-- ``VISIBLE_ENTRY_POINT`` Default to ``/tiles/`` the entrypoint path.
+Environment Variables Reference
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Configuration can be customized through the following environment variables:
+
+- ``TILEGENERATION_CONFIGFILE``: Path to the main configuration file
+  (default: ``/etc/tilegeneration/config.yaml``)
+
+- ``TILEGENERATION_MAIN_CONFIGFILE``: Path to the main configuration file when using multi-tenant mode
+  (default: ``/etc/tilegeneration/config.yaml``)
+
+- ``TILEGENERATION_HOSTSFILE``: Path to hosts mapping configuration
+  (default: ``/etc/tilegeneration/hosts.yaml``)
+
+- ``TILEGENERATION_MAX_GENERATION_TIME``: Maximum tile generation time in seconds before timeout
+  (default: ``60``)
+
+- ``TILE_NB_THREAD``: Number of threads for tile generation when using metatiles
+  (default: ``2``)
+
+- ``METATILE_NB_THREAD``: Number of threads for metatile generation
+  (default: ``25``)
+
+- ``SERVER_NB_THREAD``: Number of server threads for metatile generation
+  (default: ``10``)
+
+- ``TILE_QUEUE_SIZE``: Size of post-Redis queue
+  (default: ``2``)
+
+- ``TILE_CHUNK_SIZE``: Number of tiles to process in one chunk after metatile generation
+  (default: ``1``)
+
+- ``TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH``: Maximum output length shown in admin interface
+  (default: ``1000``)
+
+- ``TILECLOUD_CHAIN_CONCURRENT_GET_LEGEND``: Number of concurrent legend image requests
+  (default: ``10``)
+
+- ``LOG_TYPE``: Logging output format, either ``console`` or ``json`` for Logstash
+  (default: ``console``)
+
+Logging Configuration:
+
+- ``TILECLOUD_CHAIN_LOG_LEVEL``: Log level for TileCloud Chain
+  (default: ``INFO``)
+
+- ``TILECLOUD_LOG_LEVEL``: Log level for TileCloud core
+  (default: ``INFO``)
+
+- ``C2CWSGI_LOG_LEVEL``: Log level for C2C WSGI
+  (default: ``WARN``)
+
+- ``OTHER_LOG_LEVEL``: Log level for other components
+  (default: ``WARN``)
+
+Valid log levels: ``DEBUG``, ``INFO``, ``WARN``, ``ERROR``, ``CRITICAL``
+
+Server Configuration:
+
+- ``TILE_SERVER_LOG_LEVEL``: Server component log verbosity
+  (default: ``quiet``)
+
+- ``TILE_MAPCACHE_LOG_LEVEL``: Internal MapCache log verbosity
+  (default: ``verbose``)
+
+- ``DEVELOPMENT``: Enable Pyramid development features if set to ``1``
+  (default: ``0``)
+
+- ``VISIBLE_ENTRY_POINT``: Base URL path for tile access
+  (default: ``/tiles/``)
 
 
 Admin and test pages

@@ -1,69 +1,71 @@
 # TileCloud-chain
 
-The goal of TileCloud Chain is to provide tools around tile generation on a chain like:
+TileCloud Chain is a comprehensive toolset for managing tile generation workflows. It supports various source and destination formats, making it a versatile solution for map tile management.
 
-Source: WMS, Mapnik.
+## Sources
 
-Optionally using an SQS queue, AWS host, SNS topic.
+- Web Map Service (WMS)
+- Mapnik rendering engine
 
-Destination in WMTS layout, on S3, on Berkeley DB (`bsddb`), on MBTiles, or on local filesystem.
+## Destination Formats and Storage
 
-Features:
+- Web Map Tile Service (WMTS) layout
+- Amazon S3 storage
+- Azure Blob storage
+- Local filesystem
 
-- Generate tiles.
-- Drop empty tiles.
-- Drop tiles outside a geometry or a bbox.
-- Use MetaTiles.
-- Generate the legend images.
-- Generate GetCapabilities.
-- Generate OpenLayers example page.
-- Obtain the hash of an empty tile.
-- In the future, measure tile generation speed.
-- Calculate cost and generation time.
-- In the future, manage the AWS hosts that generate tiles.
-- Delete empty tiles.
-- Copy files between caches.
-- Be able to use an SQS queue to dispatch the generation.
-- Post processing the generated tiles.
-- ...
+## Key Features
 
-Legacy features:
+- Tile generation with configurable parameters
+- Automatic removal of empty tiles
+- Geographic filtering (bbox and geometry-based)
+- MetaTile support for efficient generation
+- Legend image generation
+- GetCapabilities document
+- OpenLayers demo page
+- Empty tile detection via hashing
+- Cache synchronization
+- Post-processing capabilities
 
-- bsddb support
-- sqlite (mbtiles) support
-- mapnik support (should be updated for Python3)
+## Legacy Support
 
-## Screenshot
+Note: The following features are maintained for backward compatibility:
 
-Screenshot of the admin page with queue stored on PostgreSQL:
+- Berkeley DB integration
+- SQLite (MBTiles) support
+- Mapnik rendering (Python 3 update pending)
 
-![TileCloud Chain](./admin-screenshot.png)
+## Visual Preview
 
-## Get it
+The admin interface with PostgreSQL queue integration:
 
-Create the config file `tilegeneration/config.yaml` see as [example](https://github.com/camptocamp/tilecloud-chain/blob/master/example/tilegeneration/config.yaml).
+![TileCloud Chain Admin Interface](./admin-screenshot.png)
 
-### Support
+## Getting Started
 
-Only the latest release is supported and version &lt; 1.11 contains security issues.
+Create a configuration file at `tilegeneration/config.yaml`.
 
-## From sources
+Reference the [example configuration](https://github.com/camptocamp/tilecloud-chain/blob/master/example/tilegeneration/config.yaml).
 
-Build it:
+## Support Policy
+
+Only the latest release receives active support. Versions prior to 1.11 contain security vulnerabilities and should not be used.
+
+## Development
+
+### Building
 
 ```bash
 make build
 ```
 
-## Run prospector
+### Quality Assurance
 
 ```bash
 make prospector
 ```
 
-## Run the tests
-
-To run the tests:
+### Testing
 
 ```bash
 make tests
@@ -71,12 +73,12 @@ make tests
 
 ## Documentation
 
-As documentation you can read the [USAGE.rst](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst)
-and the [configuration reference](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/CONFIG.md).
+- [Usage Guide](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst)
+- [Configuration Reference](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/CONFIG.md)
 
 ## Contributing
 
-Install the pre-commit hooks:
+Set up pre-commit hooks:
 
 ```bash
 pip install pre-commit
