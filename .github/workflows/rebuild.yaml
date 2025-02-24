@@ -16,8 +16,6 @@ jobs:
         include:
           - branch: '1.17'
             python-version: '3.10'
-          - branch: '1.18'
-            python-version: '3.10'
 
     env:
       REDIS_URL: redis://localhost:6379
