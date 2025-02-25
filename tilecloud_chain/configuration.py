@@ -2,7 +2,6 @@
 Automatically generated file from a JSON schema.
 """
 
-
 from typing import Any, Literal, TypedDict, Union
 from typing_extensions import Required
 
@@ -245,7 +244,7 @@ class CacheAzureTyped(TypedDict, total=False):
 
     The root folder of the cache
 
-    default: 
+    default:
     """
 
     container: Required[str]
@@ -311,7 +310,7 @@ class CacheBsddbTyped(TypedDict, total=False):
 
     The root folder of the cache
 
-    default: 
+    default:
     """
 
 
@@ -361,7 +360,7 @@ class CacheFilesystemTyped(TypedDict, total=False):
 
     The root folder of the cache
 
-    default: 
+    default:
     """
 
 
@@ -372,7 +371,7 @@ Cache folder.
 
 The root folder of the cache
 
-default: 
+default:
 """
 
 
@@ -445,7 +444,7 @@ class CacheMbtilesTyped(TypedDict, total=False):
 
     The root folder of the cache
 
-    default: 
+    default:
     """
 
 
@@ -539,7 +538,7 @@ class CacheS3Typed(TypedDict, total=False):
 
     The root folder of the cache
 
-    default: 
+    default:
     """
 
 
