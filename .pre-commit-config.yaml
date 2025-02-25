@@ -80,7 +80,7 @@ repos:
       - id: copyright
       - id: poetry2-lock
         additional_dependencies:
-          - poetry==2.1.1 # pypi
+          - poetry==2.0.1 # pypi
       - id: canonicalize
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
@@ -123,30 +123,30 @@ repos:
           - --profile=.prospector.yaml
           - --die-on-tool-error
           - --output-format=pylint
-        exclude: |-
+          - --profile=.prospector.yaml
+          - --profile=utils:autofix
+        exclude: |
           (?x)^(
             tilecloud_chain/tests/.*
           )$
         additional_dependencies:
-          - prospector-profile-duplicated==1.10.5 # pypi
-          - prospector-profile-utils==1.22.3 # pypi
+          - prospector-profile-duplicated==1.10.4 # pypi
+          - prospector-profile-utils==1.17.0 # pypi
+          - ruff==0.9.4 # pypi
       - id: prospector
         args:
           - --die-on-tool-error
           - --output-format=pylint
           - --profile=utils:tests
-          - --profile=utils:pre-commit
+          - --profile=utils:autofix
         additional_dependencies:
-          - prospector-profile-utils==1.22.3 # pypi
+          - prospector-profile-utils==1.20.2  # pypi
+          - ruff==0.9.6 # pypi
   - repo: https://github.com/sbrunner/jsonschema-validator
     rev: 1.0.0
     hooks:
       - id: jsonschema-validator
-        files: |-
-          (?x)^(
-            ci/config\.yaml
-            |\.github/publish\.yaml
-          )$
+        files: ^\.github/publish\.yaml$
   - repo: https://github.com/renovatebot/pre-commit-hooks
     rev: 39.185.0
     hooks:
