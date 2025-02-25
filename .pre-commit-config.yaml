@@ -76,6 +76,7 @@ repos:
       - id: poetry-lock
         additional_dependencies:
           - poetry==2.0.1 # pypi
+      - id: canonicalize
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
@@ -104,9 +105,6 @@ repos:
         args:
           - --builtin-schema
           - github-workflows-require-timeout
-      - id: check-renovate
-        additional_dependencies:
-          - pyjson5==1.6.8 # pypi
   - repo: https://github.com/sirwart/ripsecrets
     rev: v0.1.8
     hooks:
@@ -123,6 +121,8 @@ repos:
           - --tool=ruff
           - --die-on-tool-error
           - --output-format=pylint
+          - --profile=.prospector.yaml
+          - --profile=utils:autofix
         exclude: |
           (?x)^(
             tilecloud_chain/tests/.*
@@ -131,11 +131,20 @@ repos:
           - prospector-profile-duplicated==1.10.4 # pypi
           - prospector-profile-utils==1.17.0 # pypi
           - ruff==0.9.4 # pypi
+      - id: prospector
+        args:
+          - --die-on-tool-error
+          - --output-format=pylint
+          - --profile=utils:tests
+          - --profile=utils:autofix
+        additional_dependencies:
+          - prospector-profile-utils==1.20.2  # pypi
+          - ruff==0.9.6 # pypi
   - repo: https://github.com/sbrunner/jsonschema-validator
     rev: 1.0.0
     hooks:
       - id: jsonschema-validator
-        files: ^ci/config\.yaml$
+        files: ^\.github/publish\.yaml$
   - repo: https://github.com/renovatebot/pre-commit-hooks
     rev: 39.157.0
     hooks:
