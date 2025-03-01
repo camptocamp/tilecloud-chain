@@ -74,10 +74,10 @@ waitress = "3.0.2"
 certifi = "2025.1.31"
 Paste = "3.10.1"
 psutil = "6.1.1"
-pyproj = "3.7.0"
-psycopg = { version = "3.2.4", extras = ["binary"] }
-aiohttp = "3.11.11"
-sqlalchemy = { version = "2.0.37", extras = ["asyncio"] }
+pyproj = "3.7.1"
+psycopg = { version = "3.2.5", extras = ["binary"] }
+aiohttp = "3.11.13"
+sqlalchemy = { version = "2.0.38", extras = ["asyncio"] }
 pytest-asyncio = "0.25.3"
 
 [tool.poetry.group.dev.dependencies]
@@ -88,9 +88,9 @@ c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
 scikit-image = { version = "0.24.0" }
 pytest = "8.3.4"
 testfixtures = "8.3.0"
-coverage = "7.6.10"
+coverage = "7.6.12"
 types-redis = "4.6.0.20241004"
-types-requests = "2.32.0.20241016"
+types-requests = "2.32.0.20250301"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version", "poetry-plugin-drop-python-upper-constraint"]
