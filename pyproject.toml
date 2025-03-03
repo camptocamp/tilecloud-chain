@@ -73,7 +73,7 @@ azure-storage-blob = "12.23.1"
 waitress = "3.0.2"
 certifi = "2025.1.31"
 Paste = "3.10.1"
-psutil = "6.1.1"
+psutil = "7.0.0"
 pyproj = "3.7.1"
 psycopg = { version = "3.2.5", extras = ["binary"] }
 aiohttp = "3.11.13"
