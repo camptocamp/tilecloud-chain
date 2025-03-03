@@ -1,6 +1,9 @@
-"""Automatically generated file from a JSON schema."""
+"""
+Automatically generated file from a JSON schema.
+"""
 
 from typing import TypedDict
+
 
 DEFAULT_CONCURRENT_LIMIT_DEFAULT = 1
 """ Default value of the field path 'Default values concurrent' """
