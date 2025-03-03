@@ -97,13 +97,15 @@ async def _async_main() -> None:
         #            gene.config['cost'].get("request_per_layers", configuration.REQUESTS_PER_LAYERS_DEFAULT) * tile_size)
     except SystemExit:
         raise
-    except:  # pylint: disable=bare-except # noqa: E722
+    except:  # pylint: disable=bare-except
         _LOGGER.exception("Exit with exception")
         sys.exit(1)
 
 
 async def _calculate_cost(
-    gene: TileGeneration, layer_name: str, options: Namespace
+    gene: TileGeneration,
+    layer_name: str,
+    options: Namespace,
 ) -> tuple[float, timedelta, float, int]:
     nb_metatiles = {}
     nb_tiles = {}

@@ -1655,15 +1655,15 @@ sqs:
     def test_quote(self) -> None:
         from tilecloud_chain import quote
 
-        self.assertEqual(quote("abc"), "abc")
-        self.assertEqual(quote("a b c"), "'a b c'")
-        self.assertEqual(quote("'a b c'"), "\"'a b c'\"")
-        self.assertEqual(quote('"a b c"'), "'\"a b c\"'")
-        self.assertEqual(quote("a\" b' c"), "'a\" b\\' c'")
-        self.assertEqual(quote("a'bc"), '"a\'bc"')
-        self.assertEqual(quote("a'b\"c"), "'a\\'b\"c'")
-        self.assertEqual(quote('ab"c'), "'ab\"c'")
-        self.assertEqual(quote(""), "''")
+        assert quote("abc") == "abc"
+        assert quote("a b c") == "'a b c'"
+        assert quote("'a b c'") == "\"'a b c'\""
+        assert quote('"a b c"') == "'\"a b c\"'"
+        assert quote("a\" b' c") == "'a\" b\\' c'"
+        assert quote("a'bc") == '"a\'bc"'
+        assert quote("a'b\"c") == "'a\\'b\"c'"
+        assert quote('ab"c') == "'ab\"c'"
+        assert quote("") == "''"
 
     def test_generate_legend_images(self) -> None:
         self.assert_tiles_generated(
@@ -1675,17 +1675,17 @@ sqs:
         )
 
         im = Image.open("/tmp/tiles/1.0.0/point/default/legend0.png")
-        self.assertEqual(im.size, (64, 20))
+        assert im.size == (64, 20)
         im = Image.open("/tmp/tiles/1.0.0/line/default/legend0.png")
-        self.assertEqual(im.size, (71, 35))
+        assert im.size == (71, 35)
         im = Image.open("/tmp/tiles/1.0.0/line/default/legend2.png")
-        self.assertEqual(im.size, (71, 35))
+        assert im.size == (71, 35)
         im = Image.open("/tmp/tiles/1.0.0/polygon/default/legend0.png")
-        self.assertEqual(im.size, (81, 23))
+        assert im.size == (81, 23)
         im = Image.open("/tmp/tiles/1.0.0/all/default/legend0.png")
-        self.assertEqual(im.size, (81, 78))
+        assert im.size == (81, 78)
         im = Image.open("/tmp/tiles/1.0.0/all/default/legend2.png")
-        self.assertEqual(im.size, (81, 78))
+        assert im.size == (81, 78)
 
     async def test_legends(self) -> None:
         self.assert_tiles_generated(

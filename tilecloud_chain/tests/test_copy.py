@@ -50,7 +50,7 @@ Size per tile: 10(.0)? o
                 empty_err=True,
             )
         with open("/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png") as f:
-            self.assertEqual(f.read(), "test image")
+            assert f.read() == "test image"
 
     def test_process(self) -> None:
         for d in ("-vd", "-q", "-v", ""):
@@ -65,7 +65,7 @@ image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
             statinfo = os.stat(
                 "/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png",
             )
-            self.assertEqual(statinfo.st_size, 755)
+            assert statinfo.st_size == 755
 
             self.assert_cmd_equals(
                 cmd=f".build/venv/bin/generate_process {d} -c "
@@ -91,4 +91,4 @@ Size per tile: 103(.0)? o
             statinfo = os.stat(
                 "/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png",
             )
-            self.assertEqual(statinfo.st_size, 103)
+            assert statinfo.st_size == 103

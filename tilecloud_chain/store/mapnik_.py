@@ -37,7 +37,7 @@ class MapnikTileStore(AsyncTileStore):
         drop_empty_utfgrid: bool = False,
         proj4_literal: str | None = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         """
         Construct a MapnikTileStore.
 
@@ -64,7 +64,7 @@ class MapnikTileStore(AsyncTileStore):
         self.drop_empty_utfgrid = drop_empty_utfgrid
 
         self.mapnik = mapnik.Map(tilegrid.tile_size, tilegrid.tile_size)
-        mapnik.load_map(self.mapnik, mapfile, True)
+        mapnik.load_map(self.mapnik, mapfile, True)  # noqa: FBT003
         self.mapnik.buffer_size = data_buffer
         if proj4_literal is not None:
             self.mapnik.srs = proj4_literal
@@ -83,7 +83,10 @@ class MapnikTileStore(AsyncTileStore):
             for number, layer in enumerate(self.mapnik.layers):
                 if layer.name in self.layers_fields:
                     mapnik.render_layer(
-                        self.mapnik, grid, layer=number, fields=self.layers_fields[layer.name]
+                        self.mapnik,
+                        grid,
+                        layer=number,
+                        fields=self.layers_fields[layer.name],
                     )
 
             encode = grid.encode("utf", resolution=self.resolution)
@@ -100,19 +103,19 @@ class MapnikTileStore(AsyncTileStore):
 
     async def put_one(self, tile: Tile) -> Tile:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def delete_one(self, tile: Tile) -> Tile:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def __contains__(self, tile: Tile) -> bool:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def list(self) -> AsyncGenerator[Tile]:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
         yield Tile(TileCoord(0, 0, 0))  # pylint: disable=unreachable
 
 
@@ -145,8 +148,8 @@ class MapnikDropActionTileStore(MapnikTileStore):
             _LOGGER.info("The tile %s %s is dropped", tile.tilecoord, tile.formated_metadata)
             if hasattr(tile, "metatile"):
                 metatile: Tile = tile.metatile
-                metatile.elapsed_togenerate -= 1  # type: ignore
-                if metatile.elapsed_togenerate == 0 and self.queue_store is not None:  # type: ignore
+                metatile.elapsed_togenerate -= 1  # type: ignore[m]
+                if metatile.elapsed_togenerate == 0 and self.queue_store is not None:  # type: ignore[m]
                     await self.queue_store.delete_one(metatile)
             elif self.queue_store is not None:
                 await self.queue_store.delete_one(tile)
@@ -157,17 +160,17 @@ class MapnikDropActionTileStore(MapnikTileStore):
 
     async def __contains__(self, tile: Tile) -> bool:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def put_one(self, tile: Tile) -> Tile:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def delete_one(self, tile: Tile) -> Tile:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def list(self) -> AsyncGenerator[Tile]:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
         yield Tile(TileCoord(0, 0, 0))  # pylint: disable=unreachable

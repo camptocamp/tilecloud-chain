@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/camptocamp/tag-publish/0.13.3/tag_publish/schema.json
+
+docker:
+  images:
+    - name: camptocamp/tilecloud-chain
+pypi:
+  packages:
+    - {}
+dispatch:
+  - {}

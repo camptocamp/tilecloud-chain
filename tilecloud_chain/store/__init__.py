@@ -49,6 +49,7 @@ class AsyncTileStore:
             tiles: AsyncIterator[Tile]
 
         """
+        del tiles
         raise NotImplementedError
         yield Tile(TileCoord(0, 0, 0))  # pylint: disable=unreachable
         # async for tile in tiles:
@@ -93,8 +94,7 @@ class TileStoreWrapper(AsyncTileStore):
     async def get(self, tiles: AsyncIterator[Tile]) -> AsyncIterator[Tile | None]:
         """See in superclass."""
         all_tiles = []
-        async for tile in tiles:
-            all_tiles.append(tile)
+        all_tiles = [tile async for tile in tiles]
         for new_tile in self.tile_store.get(all_tiles):
             yield new_tile
 
@@ -117,11 +117,11 @@ class NoneTileStore(AsyncTileStore):
 
     async def __contains__(self, tile: Tile) -> bool:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def delete_one(self, tile: Tile) -> Tile:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def get_one(self, tile: Tile) -> Tile | None:
         """See in superclass."""
@@ -129,7 +129,7 @@ class NoneTileStore(AsyncTileStore):
 
     async def list(self) -> AsyncIterator[Tile]:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
         yield Tile(TileCoord(0, 0, 0))  # pylint: disable=unreachable
 
     async def get(self, tiles: AsyncIterator[Tile]) -> AsyncIterator[Tile | None]:

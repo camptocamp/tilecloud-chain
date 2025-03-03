@@ -3,6 +3,7 @@
 import logging
 import sys
 from argparse import ArgumentParser
+from pathlib import Path
 
 import psycopg2.sql
 from shapely.geometry import MultiPolygon, Polygon
@@ -18,7 +19,8 @@ def main() -> None:
     """Import the osm2pgsql expire-tiles file to Postgres."""
     try:
         parser = ArgumentParser(
-            description="Used to import the osm2pgsql expire-tiles file to Postgres", prog=sys.argv[0]
+            description="Used to import the osm2pgsql expire-tiles file to Postgres",
+            prog=sys.argv[0],
         )
         parser.add_argument(
             "--buffer",
@@ -46,6 +48,7 @@ def main() -> None:
         )
         parser.add_argument(
             "file",
+            type=Path,
             metavar="FILE",
             help="The osm2pgsql expire-tiles file",
         )
@@ -94,8 +97,9 @@ def main() -> None:
             if cursor.fetchone()[0] == 0:
                 cursor.execute(
                     psycopg2.sql.SQL("CREATE TABLE IF NOT EXISTS {}.{} (id serial)").format(
-                        psycopg2.sql.Identifier(options.schema), psycopg2.sql.Identifier(options.table)
-                    )
+                        psycopg2.sql.Identifier(options.schema),
+                        psycopg2.sql.Identifier(options.table),
+                    ),
                 )
                 cursor.execute(
                     "SELECT AddGeometryColumn(%(schema)s, %(table)s, %(column)s, %(srid)s, 'MULTIPOLYGON', 2)",
@@ -114,7 +118,7 @@ def main() -> None:
         grid = QuadTileGrid(
             max_extent=(-20037508.34, -20037508.34, 20037508.34, 20037508.34),
         )
-        with open(options.file, encoding="utf-8") as f:
+        with options.file.open(encoding="utf-8") as f:
             for coord in f:
                 extent = grid.extent(parse_tilecoord(coord), options.buffer)
                 geoms.append(
@@ -124,8 +128,8 @@ def main() -> None:
                             (extent[0], extent[3]),
                             (extent[2], extent[3]),
                             (extent[2], extent[1]),
-                        )
-                    )
+                        ),
+                    ),
                 )
         if len(geoms) == 0:
             print("No coords found")
@@ -154,7 +158,7 @@ def main() -> None:
         elif options.srid != 3857:
             cursor.execute(
                 psycopg2.sql.SQL(
-                    "INSERT INTO {} ({}) VALUES (ST_Transform(ST_GeomFromText(%(geom)s, 3857), %(srid)s))"
+                    "INSERT INTO {} ({}) VALUES (ST_Transform(ST_GeomFromText(%(geom)s, 3857), %(srid)s))",
                 ).format(
                     psycopg2.sql.Identifier(options.table),
                     psycopg2.sql.Identifier(options.column),
@@ -182,6 +186,6 @@ def main() -> None:
         print("Import successful")
     except SystemExit:
         raise
-    except:  # pylint: disable=bare-except # noqa: E722
+    except:  # pylint: disable=bare-except
         logger.exception("Exit with exception")
         sys.exit(1)

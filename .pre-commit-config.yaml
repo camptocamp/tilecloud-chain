@@ -1,3 +1,8 @@
+exclude: |-
+  (?x)^(
+    tilecloud_chain/configuration\.py
+  )$
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -119,6 +124,7 @@ repos:
       - id: prospector
         args:
           - --profile=utils:pre-commit
+          - --profile=.prospector.yaml
           - --die-on-tool-error
           - --output-format=pylint
         exclude: |
@@ -127,8 +133,7 @@ repos:
           )$
         additional_dependencies:
           - prospector-profile-duplicated==1.10.4 # pypi
-          - prospector-profile-utils==1.21.9 # pypi
-          - ruff==0.9.9 # pypi
+          - prospector-profile-utils==1.22.2 # pypi
       - id: prospector
         args:
           - --die-on-tool-error
@@ -136,7 +141,7 @@ repos:
           - --profile=utils:tests
           - --profile=utils:pre-commit
         additional_dependencies:
-          - prospector-profile-utils==1.21.4 # pypi
+          - prospector-profile-utils==1.22.2 # pypi
   - repo: https://github.com/sbrunner/jsonschema-validator
     rev: 1.0.0
     hooks:

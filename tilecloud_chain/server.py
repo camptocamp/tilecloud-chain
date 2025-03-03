@@ -27,7 +27,6 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import asyncio
-import collections
 import datetime
 import json
 import logging
@@ -36,9 +35,11 @@ import os
 import resource
 import time
 from collections.abc import Generator
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, NamedTuple, TypeVar, cast
 from urllib.parse import parse_qs, urlencode
 
+import aiofiles
 import botocore.exceptions
 import c2cwsgiutils.prometheus
 import c2cwsgiutils.pyramid
@@ -87,13 +88,23 @@ def init_tilegeneration(config_file: str | None) -> None:
         if config_file is not None:
             _LOGGER.info("Use config file: '%s'", config_file)
         log_level = os.environ.get("TILE_SERVER_LOGLEVEL")
+
+        class Options(NamedTuple):
+            verbose: bool
+            debug: bool
+            quiet: bool
+            bbox: None
+            zoom: None
+            test: None
+            near: None
+            time: None
+            geom: bool
+            ignore_error: bool
+
         _TILEGENERATION = TileGeneration(
             config_file,
-            collections.namedtuple(  # type: ignore
-                "Options",
-                ["verbose", "debug", "quiet", "bbox", "zoom", "test", "near", "time", "geom", "ignore_error"],
-            )(
-                log_level == "verbose",  # type: ignore
+            Options(
+                log_level == "verbose",
                 log_level == "debug",
                 log_level == "quiet",
                 None,
@@ -101,8 +112,8 @@ def init_tilegeneration(config_file: str | None) -> None:
                 None,
                 None,
                 None,
-                True,
-                False,
+                geom=True,
+                ignore_error=False,
             ),
             configure_logging=False,
             multi_task=False,
@@ -167,14 +178,16 @@ class Server(Generic[Response]):
     def get_static_allow_extension(config: tilecloud_chain.DatedConfig) -> list[str]:
         """Get the allowed extensions in the static view."""
         return config.config["server"].get(
-            "static_allow_extension", ["jpeg", "png", "xml", "js", "html", "css"]
+            "static_allow_extension",
+            ["jpeg", "png", "xml", "js", "html", "css"],
         )
 
     @staticmethod
     def get_cache_name(config: tilecloud_chain.DatedConfig) -> str:
         """Get the cache name."""
         return config.config["server"].get(
-            "cache", config.config["generation"].get("default_cache", configuration.DEFAULT_CACHE_DEFAULT)
+            "cache",
+            config.config["generation"].get("default_cache", configuration.DEFAULT_CACHE_DEFAULT),
         )
 
     def get_s3_client(self, config: tilecloud_chain.DatedConfig) -> "botocore.client.S3":
@@ -186,10 +199,11 @@ class Server(Generic[Response]):
             try:
                 client = tilecloud.store.s3.get_client(cache_s3.get("host"))
                 self.s3_client_cache[cache_s3.get("host", "aws")] = client
-                return client
             except KeyError as e:
                 _LOGGER.warning("Error while getting the S3 client: %s", e, exc_info=True)
                 error = e
+            else:
+                return client
             time.sleep(n * 10)
         raise error
 
@@ -204,7 +218,9 @@ class Server(Generic[Response]):
         return config.config["server"].get("layers", layers)
 
     def get_filter(
-        self, config: tilecloud_chain.DatedConfig, layer_name: str
+        self,
+        config: tilecloud_chain.DatedConfig,
+        layer_name: str,
     ) -> tilecloud_chain.IntersectGeometryFilter | None:
         """Get the filter from the config."""
         dated_filter = self.filter_cache.get(config.file, {}).get(layer_name)
@@ -251,8 +267,7 @@ class Server(Generic[Response]):
                 if resolution >= layer["min_resolution_seed"]:
                     max_zoom_seed = zoom
             return max_zoom_seed
-        else:
-            return 999999
+        return 999999
 
     def _read(
         self,
@@ -275,8 +290,7 @@ class Server(Generic[Response]):
         except botocore.exceptions.ClientError as ex:
             if ex.response["Error"]["Code"] == "NoSuchKey":
                 return self.error(config, 404, key_name + " not found")
-            else:
-                raise
+            raise
 
     async def _get(
         self,
@@ -291,7 +305,7 @@ class Server(Generic[Response]):
 
         if cache["type"] == "s3":
             cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
-            key_name = os.path.join(cache_s3["folder"], path)
+            key_name = Path(cache_s3["folder"]) / path
             try:
                 with _GET_TILE.labels(storage="s3").time():
                     return self._read(key_name, headers, config, **kwargs)
@@ -301,11 +315,11 @@ class Server(Generic[Response]):
                     return self._read(key_name, headers, config, **kwargs)
         if cache["type"] == "azure":
             cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
-            key_name = os.path.join(cache_azure["folder"], path)
+            key_name = Path(cache_azure["folder"]) / path
             try:
                 with _GET_TILE.labels(storage="azure").time():
                     blob = get_azure_container_client(container=cache_azure["container"]).get_blob_client(
-                        blob=key_name
+                        blob=key_name,
                     )
                 properties = await blob.get_blob_properties()
                 data = await (await blob.download_blob()).readall()
@@ -319,17 +333,17 @@ class Server(Generic[Response]):
                     **kwargs,
                 )
             except ResourceNotFoundError:
-                return self.error(config, 404, path + " not found", **kwargs)
+                return self.error(config, 404, f"{path} not found", **kwargs)
         else:
             cache_filesystem = cast(tilecloud_chain.configuration.CacheFilesystem, cache)
-            folder = cache_filesystem["folder"] or ""
+            folder = Path(cache_filesystem["folder"] or "")
             if path.split(".")[-1] not in self.get_static_allow_extension(config):
                 return self.error(config, 403, "Extension not allowed", **kwargs)
-            p = os.path.join(folder, path)
-            if not os.path.isfile(p):
-                return self.error(config, 404, path + " not found", **kwargs)
-            with open(p, "rb") as file:
-                data = file.read()
+            p = folder / path
+            if not p.isfile():
+                return self.error(config, 404, f"{path} not found", **kwargs)
+            async with aiofiles.open(p, "rb") as file:
+                data = await file.read()
             content_type = mimetypes.guess_type(p)[0]
             if content_type:
                 headers["Content-Type"] = content_type
@@ -344,7 +358,7 @@ class Server(Generic[Response]):
     ) -> Response:
         """Build the response on request."""
         params = {}
-        for key, value in parse_qs(environ["QUERY_STRING"], True).items():
+        for key, value in parse_qs(environ["QUERY_STRING"], keep_blank_values=True).items():
             params[key.upper()] = value[0]
 
         path = None if len(params) > 0 else environ["PATH_INFO"][1:].split("/")
@@ -387,7 +401,7 @@ class Server(Generic[Response]):
                             "/".join(path[len(self.static_path) :]),
                             {
                                 "Expires": (
-                                    datetime.datetime.utcnow()
+                                    datetime.datetime.now(tz=datetime.timezone.utc)
                                     + datetime.timedelta(hours=self.get_expires_hours(config))
                                 ).isoformat(),
                                 "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
@@ -396,9 +410,9 @@ class Server(Generic[Response]):
                             },
                             config=config,
                             **kwargs,
-                        )
+                        ),
                     )
-                elif len(path) >= 1 and path[0] != self.wmts_path:
+                if len(path) >= 1 and path[0] != self.wmts_path:
                     return self.error(
                         config,
                         404,
@@ -458,9 +472,8 @@ class Server(Generic[Response]):
                         return self.error(config, 400, "Wrong path length", **kwargs)
 
                     params["FORMAT"] = layer["mime_type"]
-            else:
-                if "SERVICE" not in params or "REQUEST" not in params or "VERSION" not in params:
-                    return self.error(config, 400, "Not all required parameters are present", **kwargs)
+            elif "SERVICE" not in params or "REQUEST" not in params or "VERSION" not in params:
+                return self.error(config, 400, "Not all required parameters are present", **kwargs)
 
             if params["SERVICE"] != "WMTS":
                 return self.error(config, 400, f"Wrong Service '{params['SERVICE']}'", **kwargs)
@@ -471,7 +484,8 @@ class Server(Generic[Response]):
                 headers = {
                     "Content-Type": "application/xml",
                     "Expires": (
-                        datetime.datetime.utcnow() + datetime.timedelta(hours=self.get_expires_hours(config))
+                        datetime.datetime.now(tz=datetime.timezone.utc)
+                        + datetime.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat(),
                     "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
                     "Access-Control-Allow-Origin": "*",
@@ -481,17 +495,18 @@ class Server(Generic[Response]):
                 if "wmtscapabilities_file" in cache:
                     wmtscapabilities_file = cache["wmtscapabilities_file"]
                     return self._get_event_loop().run_until_complete(
-                        self._get(wmtscapabilities_file, headers, config=config, **kwargs)
+                        self._get(wmtscapabilities_file, headers, config=config, **kwargs),
                     )
-                else:
-                    body = self._get_event_loop().run_until_complete(
-                        controller.get_wmts_capabilities(
-                            _TILEGENERATION, self.get_cache_name(config), config=config
-                        )
-                    )
-                    assert body
-                    headers["Content-Type"] = "application/xml"
-                    return self.response(config, body.encode("utf-8"), headers=headers, **kwargs)
+                body = self._get_event_loop().run_until_complete(
+                    controller.get_wmts_capabilities(
+                        _TILEGENERATION,
+                        self.get_cache_name(config),
+                        config=config,
+                    ),
+                )
+                assert body
+                headers["Content-Type"] = "application/xml"
+                return self.response(config, body.encode("utf-8"), headers=headers, **kwargs)
 
             if (
                 "FORMAT" not in params
@@ -530,7 +545,7 @@ class Server(Generic[Response]):
             metadata["config_file"] = config.file
             tile = Tile(
                 TileCoord(
-                    # TODO fix for matrix_identifier = resolution
+                    # TODO: fix for matrix_identifier = resolution # noqa: TD003
                     int(params["TILEMATRIX"]),
                     int(params["TILECOL"]),
                     int(params["TILEROW"]),
@@ -557,26 +572,28 @@ class Server(Generic[Response]):
                                 "FORMAT": params["FORMAT"],
                                 "INFO_FORMAT": params["INFO_FORMAT"],
                                 "WIDTH": config.config["grids"][layer["grid"]].get(
-                                    "tile_size", configuration.TILE_SIZE_DEFAULT
+                                    "tile_size",
+                                    configuration.TILE_SIZE_DEFAULT,
                                 ),
                                 "HEIGHT": config.config["grids"][layer["grid"]].get(
-                                    "tile_size", configuration.TILE_SIZE_DEFAULT
+                                    "tile_size",
+                                    configuration.TILE_SIZE_DEFAULT,
                                 ),
                                 "SRS": config.config["grids"][layer["grid"]].get(
-                                    "srs", configuration.SRS_DEFAULT
+                                    "srs",
+                                    configuration.SRS_DEFAULT,
                                 ),
                                 "BBOX": _TILEGENERATION.get_grid(config, layer["grid"]).extent(
-                                    tile.tilecoord
+                                    tile.tilecoord,
                                 ),
                                 "X": params["I"],
                                 "Y": params["J"],
-                            }
+                            },
                         ),
                         no_cache=True,
                         **kwargs,
                     )
-                else:
-                    return self.error(config, 400, f"Layer '{params['LAYER']}' not queryable", **kwargs)
+                return self.error(config, 400, f"Layer '{params['LAYER']}' not queryable", **kwargs)
 
             if params["REQUEST"] != "GetTile":
                 return self.error(config, 400, f"Wrong Request '{params['REQUEST']}'", **kwargs)
@@ -585,7 +602,7 @@ class Server(Generic[Response]):
                 return self.error(config, 400, f"Wrong Format '{params['FORMAT']}'", **kwargs)
 
             return self._get_event_loop().run_until_complete(
-                self._get_tile(config, layer, tile, params, **kwargs)
+                self._get_tile(config, layer, tile, params, **kwargs),
             )
 
         except HTTPException:
@@ -610,7 +627,7 @@ class Server(Generic[Response]):
             meta_size = layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
             meta_tilecoord = (
                 TileCoord(
-                    # TODO fix for matrix_identifier = resolution
+                    # TODO: fix for matrix_identifier = resolution # noqa: TD003
                     tile.tilecoord.z,
                     round(tile.tilecoord.x / meta_size * meta_size),
                     round(tile.tilecoord.y / meta_size * meta_size),
@@ -620,7 +637,10 @@ class Server(Generic[Response]):
                 else tile.tilecoord
             )
             if not layer_filter.filter_tilecoord(
-                config, meta_tilecoord, params["LAYER"], host=self.get_host(**kwargs)
+                config,
+                meta_tilecoord,
+                params["LAYER"],
+                host=self.get_host(**kwargs),
             ):
                 return self._get_event_loop().run_until_complete(self._map_cache(config, layer, tile, kwargs))
 
@@ -648,7 +668,8 @@ class Server(Generic[Response]):
                 headers={
                     "Content-Type": tile2.content_type,
                     "Expires": (
-                        datetime.datetime.utcnow() + datetime.timedelta(hours=self.get_expires_hours(config))
+                        datetime.datetime.now(tz=datetime.timezone.utc)
+                        + datetime.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat(),
                     "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
                     "Access-Control-Allow-Origin": "*",
@@ -657,8 +678,7 @@ class Server(Generic[Response]):
                 },
                 **kwargs,
             )
-        else:
-            return self.error(config, 204, **kwargs)
+        return self.error(config, 204, **kwargs)
 
     async def _map_cache(
         self,
@@ -694,19 +714,18 @@ class Server(Generic[Response]):
                 response_headers["Pragma"] = "no-cache"
             else:
                 response_headers["Expires"] = (
-                    datetime.datetime.utcnow() + datetime.timedelta(hours=self.get_expires_hours(config))
+                    datetime.datetime.now(tz=datetime.timezone.utc)
+                    + datetime.timedelta(hours=self.get_expires_hours(config))
                 ).isoformat()
                 response_headers["Cache-Control"] = f"max-age={3600 * self.get_expires_hours(config)}"
                 response_headers["Access-Control-Allow-Origin"] = "*"
                 response_headers["Access-Control-Allow-Methods"] = "GET"
             return self.response(config, response.content, headers=response_headers, **kwargs)
-        else:
-            message = (
-                f"The URL '{url}' return '{response.status_code} {response.reason}', "
-                f"content:\n{response.text}"
-            )
-            _LOGGER.warning(message)
-            return self.error(config, 502, message=message, **kwargs)
+        message = (
+            f"The URL '{url}' return '{response.status_code} {response.reason}', content:\n{response.text}"
+        )
+        _LOGGER.warning(message)
+        return self.error(config, 502, message=message, **kwargs)
 
     def error(
         self,
@@ -743,7 +762,7 @@ else:
 class WsgiServer(WsgiServerBase):
     """Convert the error and response for the WSGI server."""
 
-    HTTP_MESSAGES = {
+    HTTP_MESSAGES: ClassVar[dict[int, str]] = {
         204: "204 No Content",
         400: "400 Bad Request",
         403: "403 Forbidden",
@@ -759,6 +778,7 @@ class WsgiServer(WsgiServerBase):
         **kwargs: Any,
     ) -> list[bytes]:
         """Build the error."""
+        del config  # Unused
         assert message is not None
         kwargs["start_response"](self.HTTP_MESSAGES[code], [])
         return [str(message).encode()]
@@ -771,6 +791,7 @@ class WsgiServer(WsgiServerBase):
         **kwargs: Any,
     ) -> list[bytes]:
         """Build the response."""
+        del config  # Unused
         if headers is None:
             headers = {}
         headers["Content-Length"] = str(len(data))
@@ -809,6 +830,7 @@ class PyramidServer(PyramidServerBase):
         **kwargs: Any,
     ) -> pyramid.response.Response:
         """Build the Pyramid response on error."""
+        del kwargs  # Unused
         headers = {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET",
@@ -817,10 +839,11 @@ class PyramidServer(PyramidServerBase):
             headers.update(
                 {
                     "Expires": (
-                        datetime.datetime.utcnow() + datetime.timedelta(hours=self.get_expires_hours(config))
+                        datetime.datetime.now(tz=datetime.timezone.utc)
+                        + datetime.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat(),
                     "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
-                }
+                },
             )
             return exception_response(code, detail=message, headers=headers)
 
@@ -834,6 +857,7 @@ class PyramidServer(PyramidServerBase):
         **kwargs: Any,
     ) -> pyramid.response.Response:
         """Build the Pyramid response."""
+        del config
         if headers is None:
             headers = {}
         request: pyramid.request.Request = kwargs["request"]
@@ -901,7 +925,7 @@ def forbidden(request: pyramid.request.Request) -> pyramid.response.Response:
         location=request.route_url(
             "c2c_github_login",
             _query={"came_from": request.current_route_url()},
-        )
+        ),
     )
 
 
@@ -963,8 +987,9 @@ def main(global_config: Any, **settings: Any) -> Router:
         pyramid.session.BaseCookieSessionFactory(json)
         if os.environ.get("TILECLOUD_CHAIN_DEBUG_SESSION", "false").lower() == "true"
         else pyramid.session.SignedCookieSessionFactory(
-            os.environ["TILECLOUD_CHAIN_SESSION_SECRET"], salt=os.environ["TILECLOUD_CHAIN_SESSION_SALT"]
-        )
+            os.environ["TILECLOUD_CHAIN_SESSION_SECRET"],
+            salt=os.environ["TILECLOUD_CHAIN_SESSION_SALT"],
+        ),
     )
 
     init_tilegeneration(settings.get("tilegeneration_configfile"))

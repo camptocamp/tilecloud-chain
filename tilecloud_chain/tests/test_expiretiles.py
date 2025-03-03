@@ -163,4 +163,4 @@ class TestExpireTiles(CompareCase):
             cursor = connection.cursor()
             cursor.execute("SELECT the_geom FROM expired")
             geoms = cursor.fetchall()
-            self.assertEqual(len(geoms), 0)
+            assert len(geoms) == 0

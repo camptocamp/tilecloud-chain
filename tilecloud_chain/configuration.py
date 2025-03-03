@@ -1,10 +1,8 @@
-"""
-Automatically generated file from a JSON schema.
-"""
+"""Automatically generated file from a JSON schema."""
 
 from typing import Any, Literal, TypedDict, Union
-from typing_extensions import Required
 
+from typing_extensions import Required
 
 ADMIN_PATH_DEFAULT = "admin"
 """ Default value of the field path 'Server admin_path' """

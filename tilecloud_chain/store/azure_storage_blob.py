@@ -22,17 +22,17 @@ class AzureStorageBlobTileStore(AsyncTileStore):
         dry_run: bool = False,
         cache_control: str | None = None,
         container_client: ContainerClient | None = None,
-    ):
+    ) -> None:
         """Initialize."""
         if container_client is None:
             if "AZURE_STORAGE_CONNECTION_STRING" in os.environ:
                 assert container is not None
                 self.container_client = BlobServiceClient.from_connection_string(
-                    os.environ["AZURE_STORAGE_CONNECTION_STRING"]
+                    os.environ["AZURE_STORAGE_CONNECTION_STRING"],
                 ).get_container_client(container=container)
             elif "AZURE_STORAGE_BLOB_CONTAINER_URL" in os.environ:
                 self.container_client = ContainerClient.from_container_url(
-                    os.environ["AZURE_STORAGE_BLOB_CONTAINER_URL"]
+                    os.environ["AZURE_STORAGE_BLOB_CONTAINER_URL"],
                 )
                 if os.environ.get("AZURE_STORAGE_BLOB_VALIDATE_CONTAINER_NAME", "false").lower() == "true":
                     assert container == self.container_client.container_name
@@ -65,7 +65,7 @@ class AzureStorageBlobTileStore(AsyncTileStore):
                 blob = self.container_client.get_blob_client(blob=key_name)
                 if blob.exists():
                     blob.delete_blob()
-        except Exception as exc:  # pylint: disable=broad-except
+        except Exception as exc:  # pylint: disable=broad-except # noqa: BLE001
             _LOGGER.warning("Failed to delete tile %s", tile.tilecoord, exc_info=exc)
             tile.error = exc
         return tile
@@ -83,7 +83,7 @@ class AzureStorageBlobTileStore(AsyncTileStore):
             properties = await blob.get_blob_properties()
             tile.content_encoding = properties.content_settings.content_encoding
             tile.content_type = properties.content_settings.content_type
-        except Exception as exc:  # pylint: disable=broad-except
+        except Exception as exc:  # pylint: disable=broad-except # noqa: BLE001
             _LOGGER.warning("Failed to get tile %s", tile.tilecoord, exc_info=exc)
             tile.error = exc
         return tile
@@ -122,7 +122,7 @@ class AzureStorageBlobTileStore(AsyncTileStore):
                         cache_control=self.cache_control,
                     ),
                 )
-            except Exception as exc:  # pylint: disable=broad-except
+            except Exception as exc:  # pylint: disable=broad-except # noqa: BLE001
                 _LOGGER.warning("Failed to put tile %s", tile.tilecoord, exc_info=exc)
                 tile.error = exc
 

@@ -15,7 +15,7 @@ class MaximumConsecutiveErrors:
         exceeded a :class:`TooManyErrors` exception is raised.
     """
 
-    def __init__(self, max_consecutive_errors: int):
+    def __init__(self, max_consecutive_errors: int) -> None:
         self.max_consecutive_errors = max_consecutive_errors
         self.consecutive_errors = 0
 
@@ -25,8 +25,8 @@ class MaximumConsecutiveErrors:
             self.consecutive_errors += 1
             if self.consecutive_errors > self.max_consecutive_errors:
                 if isinstance(tile.error, Exception):
-                    raise TooManyErrors(tile) from tile.error
-                raise TooManyErrors(tile)
+                    raise TooManyError(tile) from tile.error
+                raise TooManyError(tile)
         else:
             self.consecutive_errors = 0
         return tile
@@ -46,7 +46,7 @@ class MaximumErrorRate:
        exception can be raised. Defaults to 8.
     """
 
-    def __init__(self, max_error_rate: float, min_tiles: int = 8):
+    def __init__(self, max_error_rate: float, min_tiles: int = 8) -> None:
         self.max_error_rate = max_error_rate
         self.min_tiles = min_tiles
         self.tile_count = 0
@@ -62,16 +62,16 @@ class MaximumErrorRate:
                 and self.error_count >= self.max_error_rate * self.tile_count
             ):
                 if isinstance(tile.error, Exception):
-                    raise TooManyErrors(tile) from tile.error
-                raise TooManyErrors(tile)
+                    raise TooManyError(tile) from tile.error
+                raise TooManyError(tile)
         return tile
 
 
-class TooManyErrors(RuntimeError):
+class TooManyError(RuntimeError):
     """TooManyErrors exception class."""
 
-    def __init__(self, tile: Tile):
+    def __init__(self, tile: Tile) -> None:
         self.last_tile = tile
         super().__init__(
-            f"Too many errors, last tile in error {tile.tilecoord} {tile.formated_metadata}\n{tile.error}"
+            f"Too many errors, last tile in error {tile.tilecoord} {tile.formated_metadata}\n{tile.error}",
         )
