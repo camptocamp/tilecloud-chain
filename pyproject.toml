@@ -1,13 +1,3 @@
-[tool.black]
-line-length = 110
-target-version = ["py310"]
-
-[tool.isort]
-profile = "black"
-line_length = 110
-known_first_party = "tilecloud"
-known_third_party = "c2cwsgiutils"
-
 [tool.ruff]
 line-length = 110
 target-version = "py310"
@@ -92,17 +82,15 @@ coverage = "7.6.12"
 types-redis = "4.6.0.20241004"
 types-requests = "2.32.0.20250301"
 
-[build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version", "poetry-plugin-drop-python-upper-constraint"]
-build-backend = "poetry.core.masonry.api"
-
 [tool.poetry-dynamic-versioning]
 enable = true
 vcs = "git"
 pattern = "^(?P<base>\\d+(\\.\\d+)*)"
 format-jinja = """
-{%- if env.get("VERSION_TYPE") == "version_branch" -%}
-{{serialize_pep440(bump_version(base, 1 if env.get("IS_MASTER") == "TRUE" else 2), dev=distance)}}
+{%- if env.get("VERSION_TYPE") == "default_branch" -%}
+{{serialize_pep440(bump_version(base, 1), dev=distance)}}
+{%- elif env.get("VERSION_TYPE") == "stabilization_branch" -%}
+{{serialize_pep440(bump_version(base, 2), dev=distance)}}
 {%- elif distance == 0 -%}
 {{serialize_pep440(base)}}
 {%- else -%}
@@ -112,3 +100,7 @@ format-jinja = """
 
 [tool.poetry-plugin-tweak-dependencies-version]
 default = "present"
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version", "poetry-plugin-drop-python-upper-constraint"]
+build-backend = "poetry.core.masonry.api"
