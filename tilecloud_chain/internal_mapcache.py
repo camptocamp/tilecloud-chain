@@ -62,7 +62,7 @@ class RedisStore(TileStore):
             connection_kwargs["db"] = int(db)
         url = os.environ.get("TILECLOUD_CHAIN_REDIS_URL", config.get("url"))
         if url is not None:
-            self._master = redis.Redis.from_url(url, **connection_kwargs)  # type: ignore[m]
+            self._master = redis.Redis.from_url(url, **connection_kwargs)  # type: ignore[call-overload]
             self._slave = self._master
         else:
             sentinels: list[tuple[str, str | int]] = []
@@ -76,7 +76,7 @@ class RedisStore(TileStore):
                 sentinels = config["sentinels"]
 
             sentinels = [(host, int(port)) for host, port in sentinels]
-            sentinel = redis.sentinel.Sentinel(sentinels, **connection_kwargs)  # type: ignore[m]
+            sentinel = redis.sentinel.Sentinel(sentinels, **connection_kwargs)  # type: ignore[arg-type]
             service_name = os.environ.get(
                 "TILECLOUD_CHAIN_REDIS_SERVICE_NAME",
                 config.get("service_name", tilecloud_chain.configuration.SERVICE_NAME_DEFAULT),
@@ -152,22 +152,22 @@ class Generator:
             time: bool
             daemon: bool
             local_process_number: int | None
-            tiles: None | list | dict | str
+            tiles: None | list[Any] | dict[str, Any] | str
 
         options = Options(
-            log_level == "verbose",  # type: ignore[m]
+            log_level == "verbose",
             log_level == "debug",
             log_level == "quiet",
             "server",
-            rear=True,
+            near=True,
             time=False,
-            daemin=True,
+            daemon=True,
             local_process_number=None,
             tiles=None,
         )
 
         generator = Generate(
-            options,
+            options,  # type: ignore[arg-type]
             self._tilegeneration,
             out=sys.stdout,
         )
@@ -189,7 +189,7 @@ class Generator:
             _LOG.error("Tile %s %s in error: %s", tile.tilecoord, tile.formated_metadata, tile.error)
             return False
         success = True
-        for tile_ in tile.metadata["tiles"].values():  # type: ignore[m]
+        for tile_ in tile.metadata["tiles"].values():  # type: ignore[attr-defined]
             if tile_.error:
                 _LOG.error("Tile %s %s in error: %s", tile_.tilecoord, tile_.formated_metadata, tile_.error)
                 success = False
@@ -241,7 +241,7 @@ async def fetch(
     if fetched_tile is None:
         backend = "wms-wait"
 
-        tile.metadata.setdefault("tiles", {})  # type: ignore[m]
+        tile.metadata.setdefault("tiles", {})  # type: ignore[arg-type]
         meta_tile = tile
         if layer["meta"]:
             meta_tile = Tile(
@@ -283,7 +283,7 @@ async def fetch(
 
     response_headers = {
         "Expires": (
-            datetime.datetime.now(tz=datetime.timezone.utc)()
+            datetime.datetime.now(tz=datetime.timezone.utc)
             + datetime.timedelta(hours=server.get_expires_hours(config))
         ).isoformat(),
         "Cache-Control": f"max-age={3600 * server.get_expires_hours(config)}",

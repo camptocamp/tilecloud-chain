@@ -36,7 +36,7 @@ tests: build ## Run the unit tests
 
 	c2cciutils-docker-logs
 
-	docker compose exec -T test pytest -vv --color=yes
+	docker compose exec -T test pytest -vvv --color=yes
 
 	c2cciutils-docker-logs
 	docker compose down

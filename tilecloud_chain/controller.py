@@ -235,7 +235,7 @@ async def get_wmts_capabilities(
                 layers=config.config.get("layers", {}),
                 layer_legends=gene.layer_legends,
                 grids=config.config["grids"],
-                getcapabilities=urljoin(  # type: ignore[m]
+                getcapabilities=urljoin(  # type: ignore[type-var]
                     base_urls[0],
                     (
                         server.get("wmts_path", "wmts") + "/1.0.0/WMTSCapabilities.xml"
@@ -267,7 +267,7 @@ def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:
         if "hosts" in cache:
             cc = copy(cache)
             for host in cache["hosts"]:
-                cc["host"] = host  # type: ignore[m]
+                cc["host"] = host  # type: ignore[typeddict-unknown-key]
                 base_urls.append(cache["http_url"] % cc)
         else:
             base_urls = [cache["http_url"] % cache]

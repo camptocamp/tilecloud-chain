@@ -27,6 +27,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import asyncio
+import datetime
 import gc
 import io
 import logging
@@ -34,7 +35,7 @@ import multiprocessing
 import os
 import shlex
 from collections.abc import AsyncIterator
-from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any, cast
 
 import objgraph
@@ -318,7 +319,7 @@ class PostgresqlTileStore(AsyncTileStore):
 
         self.SessionMaker = async_sessionmaker(engine)  # pylint: disable=invalid-name
 
-    async def create_job(self, name: str, command: str, config_filename: str) -> None:
+    async def create_job(self, name: str, command: str, config_filename: Path) -> None:
         """Create a job."""
         assert self.SessionMaker is not None
         async with self.SessionMaker() as session:
@@ -326,7 +327,7 @@ class PostgresqlTileStore(AsyncTileStore):
             session.add(job)
             await session.commit()
 
-    async def retry(self, job_id: int, config_filename: str) -> None:
+    async def retry(self, job_id: int, config_filename: Path) -> None:
         """Retry a job."""
         assert self.SessionMaker is not None
         async with self.SessionMaker() as session:
@@ -335,7 +336,7 @@ class PostgresqlTileStore(AsyncTileStore):
                     and_(
                         Job.id == job_id,
                         Job.status == _STATUS_ERROR,
-                        Job.config_filename == config_filename,
+                        Job.config_filename == str(config_filename),
                     ),
                 ),
             )
@@ -350,7 +351,7 @@ class PostgresqlTileStore(AsyncTileStore):
             await session.execute(update(Job).where(Job.id == job_id).values(status=_STATUS_CREATED))
             await session.commit()
 
-    async def cancel(self, job_id: int, config_filename: str) -> None:
+    async def cancel(self, job_id: int, config_filename: Path) -> None:
         """Cancel a job."""
         assert self.SessionMaker is not None
         async with self.SessionMaker() as session:
@@ -359,7 +360,7 @@ class PostgresqlTileStore(AsyncTileStore):
                     and_(
                         Job.id == job_id,
                         Job.status == _STATUS_STARTED,
-                        Job.config_filename == config_filename,
+                        Job.config_filename == str(config_filename),
                     ),
                 ),
             )
@@ -373,7 +374,7 @@ class PostgresqlTileStore(AsyncTileStore):
             await session.execute(update(Job).where(Job.id == job_id).values(status=_STATUS_CANCELLED))
             await session.commit()
 
-    async def get_status(self, config_filename: str) -> list[tuple[Job, list[dict[str, int]], list[str]]]:
+    async def get_status(self, config_filename: Path) -> list[tuple[Job, list[dict[str, int]], list[str]]]:
         """
         Get the jobs.
 
@@ -450,14 +451,16 @@ class PostgresqlTileStore(AsyncTileStore):
             # Restart the too long pending jobs (queue generation)
             async with self.SessionMaker() as session:
                 await session.execute(
-                    update(Job).where(
+                    update(Job)
+                    .where(
                         and_(
                             Job.status == _STATUS_PENDING,
                             Job.started_at
-                            < datetime.now(tz=datetime.timezone.utc)
-                            - timedelta(minutes=self.max_pending_minutes),
-                        ).values(status=_STATUS_CREATED),
-                    ),
+                            < datetime.datetime.now(tz=datetime.timezone.utc)
+                            - datetime.timedelta(minutes=self.max_pending_minutes),
+                        ),
+                    )
+                    .values(status=_STATUS_CREATED),
                 )
                 await session.commit()
 
@@ -473,7 +476,7 @@ class PostgresqlTileStore(AsyncTileStore):
                 if job is not None:
                     job_id = job.id  # type: ignore[assignment]
                     job.status = _STATUS_PENDING  # type: ignore[assignment]
-                    job.started_at = datetime.now(tz=datetime.timezone.utc)  # type: ignore[assignment]
+                    job.started_at = datetime.datetime.now(tz=datetime.timezone.utc)  # type: ignore[assignment]
                     await session.commit()
             if job_id != -1:
                 proc = multiprocessing.Process(
@@ -528,8 +531,8 @@ class PostgresqlTileStore(AsyncTileStore):
                             and_(
                                 Queue.status == _STATUS_PENDING,
                                 Queue.started_at
-                                < datetime.now(tz=datetime.timezone.utc)
-                                - timedelta(minutes=self.max_pending_minutes),
+                                < datetime.datetime.now(tz=datetime.timezone.utc)
+                                - datetime.timedelta(minutes=self.max_pending_minutes),
                             ),
                         )
                         .values(status=_STATUS_CREATED),
@@ -587,7 +590,7 @@ class PostgresqlTileStore(AsyncTileStore):
                         if sqlalchemy_tile is None:
                             continue
                         sqlalchemy_tile.status = _STATUS_PENDING  # type: ignore[assignment]
-                        sqlalchemy_tile.started_at = datetime.now(tz=datetime.timezone.utc)  # type: ignore[assignment]
+                        sqlalchemy_tile.started_at = datetime.datetime.now(tz=datetime.timezone.utc)  # type: ignore[assignment]
                         meta_tile = _decode_message(
                             sqlalchemy_tile.meta_tile,  # type: ignore[arg-type]
                             postgresql_id=sqlalchemy_tile.id,

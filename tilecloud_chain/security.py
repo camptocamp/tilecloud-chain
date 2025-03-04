@@ -76,7 +76,7 @@ class SecurityPolicy:
                     request,
                 )
             request.user = user
-        return request.user  # type: ignore[m]
+        return request.user  # type: ignore[no-any-return]
 
     def authenticated_userid(self, request: pyramid.request.Request) -> str | None:
         """Return a string ID for the user."""
@@ -104,8 +104,8 @@ class SecurityPolicy:
             return Allowed("The User is admin.")
         if permission == "all":
             return Denied("Root access is required.")
-        if permission not in context.get("sources", {}):  # type: ignore[m]
+        if permission not in context.get("sources", {}):  # type: ignore[operator]
             return Denied(f"No such source '{permission}'.")
-        if identity.has_access(context["sources"][permission]):  # type: ignore[m]
+        if identity.has_access(context["sources"][permission]):  # type: ignore[typeddict-item]
             return Allowed(f"The User has access to source {permission}.")
         return Denied(f"The User has no access to source {permission}.")

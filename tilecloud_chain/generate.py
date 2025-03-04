@@ -1,6 +1,7 @@
 """Generate the tiles, generate the queue, ..."""
 
 import asyncio
+import datetime
 import gc
 import logging
 import os
@@ -9,8 +10,8 @@ import socket
 import sys
 from argparse import ArgumentParser, Namespace
 from collections.abc import Awaitable, Callable
-from datetime import datetime
 from getpass import getuser
+from pathlib import Path
 from typing import IO, cast
 
 import boto3
@@ -272,7 +273,7 @@ class Generate:
 
         async def add_elapsed_togenerate(metatile: Tile) -> Tile | None:
             if metatile is not None:
-                metatile.elapsed_togenerate = metatile.tilecoord.n**2  # type: ignore[m]
+                metatile.elapsed_togenerate = metatile.tilecoord.n**2  # type: ignore[attr-defined]
                 return metatile
             return None
 
@@ -317,8 +318,8 @@ class Generate:
                 assert self._queue_tilestore is not None
                 if hasattr(tile, "metatile"):
                     metatile: Tile = tile.metatile
-                    metatile.elapsed_togenerate -= 1  # type: ignore[m]
-                    if metatile.elapsed_togenerate == 0:  # type: ignore[m]
+                    metatile.elapsed_togenerate -= 1  # type: ignore[attr-defined]
+                    if metatile.elapsed_togenerate == 0:  # type: ignore[attr-defined]
                         await self._queue_tilestore.delete_one(metatile)
                 else:
                     await self._queue_tilestore.delete_one(tile)
@@ -350,9 +351,9 @@ class Generate:
                     self.n += 1
                     assert options.time
                     if self.n == options.time:
-                        self.t1 = datetime.now(tz=datetime.timezone.utc)()
+                        self.t1 = datetime.datetime.now(tz=datetime.timezone.utc)
                     elif self.n == 2 * options.time:
-                        t2 = datetime.now(tz=datetime.timezone.utc)()
+                        t2 = datetime.datetime.now(tz=datetime.timezone.utc)
                         assert self.t1
                         duration = (t2 - self.t1) / options.time
                         time = (
@@ -471,7 +472,7 @@ class TilestoreGetter:
     def __init__(self, gene: Generate) -> None:
         self.gene = gene
 
-    def __call__(self, config_file: str, layer_name: str) -> AsyncTileStore | None:
+    def __call__(self, config_file: Path, layer_name: str) -> AsyncTileStore | None:
         """Get the tilestore based on the layername config file any layer type."""
         config = self.gene._gene.get_config(config_file)  # noqa: SLF001
         if layer_name not in config.config.get("layers", {}):
@@ -629,6 +630,7 @@ async def _async_main(args: list[str] | None = None, out: IO[str] | None = None)
         )
         parser.add_argument(
             "--tiles",
+            type=Path,
             metavar="FILE",
             help="Generate the tiles from a tiles file, use the format z/x/y, or z/x/y:+n/+n for metatiles",
         )
@@ -646,8 +648,12 @@ async def _async_main(args: list[str] | None = None, out: IO[str] | None = None)
         if options.daemon and "C2C_PROMETHEUS_PORT" in os.environ:
             prometheus_client.start_http_server(int(os.environ["C2C_PROMETHEUS_PORT"]))
 
+        config = options.config
+        assert isinstance(config, Path) or config is None
         gene = TileGeneration(
-            config_file=options.config or os.environ.get("TILEGENERATION_CONFIGFILE"),
+            config_file=config or Path(os.environ["TILEGENERATION_CONFIGFILE"])
+            if "TILEGENERATION_CONFIGFILE" in os.environ
+            else None,
             options=options,
             multi_task=options.get_hash is None,
             out=out,
@@ -724,7 +730,7 @@ class HashDropperGetter:
         self.meta = meta
         self.count = count
 
-    def __call__(self, config_file: str, layer_name: str) -> Callable[[Tile], Awaitable[Tile | None]]:
+    def __call__(self, config_file: Path, layer_name: str) -> Callable[[Tile], Awaitable[Tile | None]]:
         """Call."""
 
         async def _no_op(tile: Tile) -> Tile:

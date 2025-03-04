@@ -23,12 +23,12 @@ class _DatedStore:
 class MultiTileStore(AsyncTileStore):
     """Redirect to the corresponding Tilestore for the layer and config file."""
 
-    def __init__(self, get_store: Callable[[str, str], AsyncTileStore | None]) -> None:
+    def __init__(self, get_store: Callable[[Path, str], AsyncTileStore | None]) -> None:
         """Initialize."""
         self.get_store = get_store
-        self.stores: dict[tuple[str, str], _DatedStore | None] = {}
+        self.stores: dict[tuple[Path, str], _DatedStore | None] = {}
 
-    def _get_store(self, config_file: str, layer: str) -> AsyncTileStore | None:
+    def _get_store(self, config_file: Path, layer: str) -> AsyncTileStore | None:
         config_path = Path(config_file)
         mtime = config_path.stat().st_mtime
         store = self.stores.get((config_file, layer))
@@ -44,7 +44,7 @@ class MultiTileStore(AsyncTileStore):
     def _get_store_tile(self, tile: Tile) -> AsyncTileStore | None:
         """Return the store corresponding to the tile."""
         layer = tile.metadata["layer"]
-        config_file = tile.metadata["config_file"]
+        config_file = Path(tile.metadata["config_file"])
         return self._get_store(config_file, layer)
 
     async def __contains__(self, tile: Tile) -> bool:

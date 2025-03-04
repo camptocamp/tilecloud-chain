@@ -81,7 +81,7 @@ _GET_TILE = Summary("tilecloud_chain_get_tile", "Time to get the tiles", ["stora
 _TILEGENERATION = None
 
 
-def init_tilegeneration(config_file: str | None) -> None:
+def init_tilegeneration(config_file: Path | None) -> None:
     """Initialize the tile generation."""
     global _TILEGENERATION  # pylint: disable=global-statement
     if _TILEGENERATION is None:
@@ -103,7 +103,7 @@ def init_tilegeneration(config_file: str | None) -> None:
 
         _TILEGENERATION = TileGeneration(
             config_file,
-            Options(
+            Options(  # type: ignore[arg-type]
                 log_level == "verbose",
                 log_level == "debug",
                 log_level == "quiet",
@@ -148,9 +148,9 @@ class Server(Generic[Response]):
     def __init__(self) -> None:
         """Initialize."""
         try:
-            self.filter_cache: dict[str, dict[str, DatedFilter]] = {}
-            self.s3_client_cache: dict[str, botocore.client.S3] = {}
-            self.store_cache: dict[str, dict[str, DatedStore]] = {}
+            self.filter_cache: dict[Path, dict[str, DatedFilter]] = {}
+            self.s3_client_cache: dict[str, botocore.client.S3] = {}  # pylint: disable=no-member
+            self.store_cache: dict[Path, dict[str, DatedStore]] = {}
 
             assert _TILEGENERATION
 
@@ -308,18 +308,18 @@ class Server(Generic[Response]):
             key_name = Path(cache_s3["folder"]) / path
             try:
                 with _GET_TILE.labels(storage="s3").time():
-                    return self._read(key_name, headers, config, **kwargs)
+                    return self._read(str(key_name), headers, config, **kwargs)
             except Exception:  # pylint: disable=broad-exception-caught
                 del self.s3_client_cache[cache_s3.get("host", "aws")]
                 with _GET_TILE.labels(storage="s3").time():
-                    return self._read(key_name, headers, config, **kwargs)
+                    return self._read(str(key_name), headers, config, **kwargs)
         if cache["type"] == "azure":
             cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
             key_name = Path(cache_azure["folder"]) / path
             try:
                 with _GET_TILE.labels(storage="azure").time():
                     blob = get_azure_container_client(container=cache_azure["container"]).get_blob_client(
-                        blob=key_name,
+                        blob=str(key_name),
                     )
                 properties = await blob.get_blob_properties()
                 data = await (await blob.download_blob()).readall()
@@ -340,7 +340,7 @@ class Server(Generic[Response]):
             if path.split(".")[-1] not in self.get_static_allow_extension(config):
                 return self.error(config, 403, "Extension not allowed", **kwargs)
             p = folder / path
-            if not p.isfile():
+            if not p.is_file():
                 return self.error(config, 404, f"{path} not found", **kwargs)
             async with aiofiles.open(p, "rb") as file:
                 data = await file.read()
@@ -542,7 +542,7 @@ class Server(Generic[Response]):
                 return self.error(config, 400, f"Wrong TileMatrixSet '{params['TILEMATRIXSET']}'", **kwargs)
 
             metadata["layer"] = params["LAYER"]
-            metadata["config_file"] = config.file
+            metadata["config_file"] = str(config.file)
             tile = Tile(
                 TileCoord(
                     # TODO: fix for matrix_identifier = resolution # noqa: TD003
@@ -808,7 +808,7 @@ def app_factory(
     del global_config
     del local_conf
 
-    init_tilegeneration(configfile)
+    init_tilegeneration(Path(configfile) if configfile is not None else None)
 
     return WsgiServer()
 
@@ -887,7 +887,7 @@ class PyramidView:
 
         global _PYRAMID_SERVER  # pylint: disable=global-statement
 
-        init_tilegeneration(request.registry.settings.get("tilegeneration_configfile"))
+        init_tilegeneration(Path(request.registry.settings.get("tilegeneration_configfile")))
 
         if _PYRAMID_SERVER is None:
             _PYRAMID_SERVER = PyramidServer()
@@ -992,7 +992,9 @@ def main(global_config: Any, **settings: Any) -> Router:
         ),
     )
 
-    init_tilegeneration(settings.get("tilegeneration_configfile"))
+    init_tilegeneration(
+        Path(settings["tilegeneration_configfile"]) if "tilegeneration_configfile" in settings else None,
+    )
     assert _TILEGENERATION
 
     config.include(c2cwsgiutils.pyramid.includeme)

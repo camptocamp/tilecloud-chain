@@ -2,6 +2,7 @@
 
 import asyncio
 import contextvars
+import datetime
 import json
 import logging
 import logging.config
@@ -17,7 +18,6 @@ import time
 from argparse import ArgumentParser, Namespace
 from collections.abc import AsyncIterator, Awaitable, Callable, Iterable
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 from fractions import Fraction
 from hashlib import sha1
 from io import BytesIO
@@ -109,6 +109,7 @@ def add_common_options(
     parser.add_argument(
         "-c",
         "--config",
+        type=Path,
         default=(
             os.environ.get("TILEGENERATION_CONFIGFILE", "tilegeneration/config.yaml")
             if default_config_file
@@ -258,14 +259,14 @@ class Run:
             return None
 
         if "tiles" in tile.metadata:
-            tile.metadata["tiles"][tile.tilecoord] = tile  # type: ignore[m]
+            tile.metadata["tiles"][tile.tilecoord] = tile  # type: ignore[index]
 
         tilecoord = tile.tilecoord
         _LOGGER.debug("[%s] Metadata: %s", tilecoord, tile.formated_metadata)
         for func in self.functions:
             try:
                 _LOGGER.debug("[%s] Run: %s", tilecoord, func)
-                n = datetime.now(tz=datetime.timezone.utc)
+                n = datetime.datetime.now(tz=datetime.timezone.utc)
                 if self.safe:
                     try:
                         tile = await func(tile)
@@ -278,8 +279,8 @@ class Run:
                 _LOGGER.debug(
                     "[%s] %s in %s",
                     tilecoord,
-                    func.time_message if getattr(func, "time_message", None) is not None else func,  # type: ignore[m]
-                    str(datetime.now(tz=datetime.timezone.utc) - n),
+                    func.time_message if getattr(func, "time_message", None) is not None else func,  # type: ignore[attr-defined]
+                    str(datetime.datetime.now(tz=datetime.timezone.utc) - n),
                 )
                 if tile is None:
                     _LOGGER.debug("[%s] Drop", tilecoord)
@@ -354,7 +355,7 @@ class Legend(TypedDict, total=False):
 class DatedConfig:
     """Loaded config with timestamps to be able to invalidate it on configuration file change."""
 
-    def __init__(self, config: tilecloud_chain.configuration.Configuration, mtime: float, file: str) -> None:
+    def __init__(self, config: tilecloud_chain.configuration.Configuration, mtime: float, file: Path) -> None:
         self.config = config
         self.mtime = mtime
         self.file = file
@@ -379,7 +380,7 @@ class DatedTileGrid:
 class DatedHosts:
     """Host with timestamps to be able to invalidate it on configuration change."""
 
-    def __init__(self, hosts: dict[str, str], mtime: float) -> None:
+    def __init__(self, hosts: dict[str, Path], mtime: float) -> None:
         self.hosts = hosts
         self.mtime = mtime
 
@@ -439,14 +440,14 @@ class TileGeneration:
     """Base class of all the tile generation."""
 
     tilestream: AsyncIterator[Tile] | None = None
-    duration: timedelta = timedelta()
+    duration = datetime.timedelta()
     error = 0
     queue_store: AsyncTileStore | None = None
     daemon = False
 
     def __init__(
         self,
-        config_file: str | None = None,
+        config_file: Path | None = None,
         options: Namespace | None = None,
         layer_name: str | None = None,
         base_config: tilecloud_chain.configuration.Configuration | None = None,
@@ -455,7 +456,7 @@ class TileGeneration:
         maxconsecutive_errors: bool = True,
         out: IO[str] | None = None,
     ) -> None:
-        self.geoms_cache: dict[str, dict[str, DatedGeoms]] = {}
+        self.geoms_cache: dict[Path, dict[str, DatedGeoms]] = {}
         self._close_actions: list[Close] = []
         self.error_lock = asyncio.Lock()
         self.error_files_: dict[str, TextIO] = {}
@@ -464,12 +465,12 @@ class TileGeneration:
         self.functions: list[Callable[[Tile], Awaitable[Tile | None]]] = self.functions_metatiles
         self.maxconsecutive_errors = maxconsecutive_errors
         self.out = out
-        self.grid_cache: dict[str, dict[str, DatedTileGrid]] = {}
+        self.grid_cache: dict[Path, dict[str, DatedTileGrid]] = {}
         self.layer_legends: dict[str, list[Legend]] = {}
         self.config_file = config_file
         self.base_config = base_config
         self.multi_task = multi_task
-        self.configs: dict[str, DatedConfig] = {}
+        self.configs: dict[Path, DatedConfig] = {}
         self.hosts_cache: DatedHosts | None = None
 
         class Options(NamedTuple):
@@ -484,7 +485,7 @@ class TileGeneration:
             geom: bool
             ignore_error: bool
 
-        self.options: Namespace = options or Options(
+        self.options: Namespace = options or Options(  # type: ignore[assignment]
             verbose=False,
             debug=False,
             quiet=False,
@@ -594,7 +595,7 @@ class TileGeneration:
             assert layer_name is not None
             self.create_log_tiles_error(layer_name)
 
-    def get_host_config_file(self, host: str | None) -> str | None:
+    def get_host_config_file(self, host: str | None) -> Path | None:
         """Get the configuration file name for the given host."""
         if self.config_file:
             return self.config_file
@@ -602,7 +603,12 @@ class TileGeneration:
         if host not in self.get_hosts():
             _LOGGER.error("Missing host '%s' in global config", host)
             return None
-        config_file = self.get_hosts().get(host, os.environ.get("TILEGENERATION_CONFIGFILE"))
+        config_file = self.get_hosts().get(
+            host,
+            Path(os.environ["TILEGENERATION_CONFIGFILE"])
+            if "TILEGENERATION_CONFIGFILE" in os.environ
+            else None,
+        )
         _LOGGER.debug("For the host %s, use config file: %s", host, config_file)
         return config_file
 
@@ -614,12 +620,12 @@ class TileGeneration:
         return (
             self.get_config(config_file)
             if config_file
-            else DatedConfig(cast(tilecloud_chain.configuration.Configuration, {}), 0, "")
+            else DatedConfig(cast(tilecloud_chain.configuration.Configuration, {}), 0, Path())
         )
 
     def get_tile_config(self, tile: Tile) -> DatedConfig:
         """Get the configuration for the given tile."""
-        return self.get_config(tile.metadata["config_file"])
+        return self.get_config(Path(tile.metadata["config_file"]))
 
     def get_config(
         self,
@@ -631,7 +637,7 @@ class TileGeneration:
         if not config_file.exists():
             _LOGGER.error("Missing config file %s", config_file)
             if ignore_error:
-                return DatedConfig(cast(tilecloud_chain.configuration.Configuration, {}), 0, "")
+                return DatedConfig(cast(tilecloud_chain.configuration.Configuration, {}), 0, Path())
             sys.exit(1)
 
         config: DatedConfig | None = self.configs.get(config_file)
@@ -641,7 +647,7 @@ class TileGeneration:
         config, success = self._get_config(config_file, ignore_error, base_config)
         if not success or config is None:
             if ignore_error:
-                config = DatedConfig(cast(tilecloud_chain.configuration.Configuration, {}), 0, "")
+                config = DatedConfig(cast(tilecloud_chain.configuration.Configuration, {}), 0, Path())
             else:
                 sys.exit(1)
         self.configs[config_file] = config
@@ -650,13 +656,22 @@ class TileGeneration:
     def get_main_config(self) -> DatedConfig:
         """Get the main configuration."""
         if os.environ.get("TILEGENERATION_MAIN_CONFIGFILE"):
-            return self.get_config(os.environ["TILEGENERATION_MAIN_CONFIGFILE"], ignore_error=False)
+            return self.get_config(Path(os.environ["TILEGENERATION_MAIN_CONFIGFILE"]), ignore_error=False)
         if self.config_file:
             return self.get_config(self.config_file, self.options.ignore_error, self.base_config)
         _LOGGER.error("No provided configuration file")
-        return DatedConfig({}, 0, "")
+        return DatedConfig({}, 0, Path())
 
-    def get_hosts(self, silent: bool = False) -> dict[str, str]:
+    def _fill_host(self, hosts: dict[str, Path], config=dict[str, Any]) -> None:  # type: ignore[no-untyped-def] # noqa: ANN001
+        for key, value in config.items():
+            if isinstance(value, dict):
+                self._fill_host(hosts, value)
+            elif isinstance(value, str):
+                hosts[key] = Path(value)
+            else:
+                _LOGGER.error("Invalid value for host: %s", value)
+
+    def get_hosts(self, silent: bool = False) -> dict[str, Path]:
         """Get the hosts from the hosts file."""
         file_path = Path(os.environ["TILEGENERATION_HOSTSFILE"])
         if not file_path.exists():
@@ -669,14 +684,10 @@ class TileGeneration:
 
         with file_path.open(encoding="utf-8") as hosts_file:
             ruamel = YAML(typ="safe")
-            hosts = {}
+            hosts: dict[str, Path] = {}
             hosts_raw = ruamel.load(hosts_file)
             if "sources" in hosts_raw:
-                for key, value in hosts_raw["sources"].items():
-                    if isinstance(value, str):
-                        hosts[key] = value
-                    else:
-                        hosts.update(value)
+                self._fill_host(hosts, hosts_raw["sources"])
             else:
                 hosts = hosts_raw
 
@@ -722,7 +733,7 @@ class TileGeneration:
         schema_data = pkgutil.get_data("tilecloud_chain", "schema.json")
         assert schema_data
         errors, _ = jsonschema_validator.validate(
-            config.file,
+            str(config.file),
             cast(dict[str, Any], config.config),
             json.loads(schema_data),
         )
@@ -957,7 +968,7 @@ class TileGeneration:
         """Get the tile store."""
         gene = self
 
-        def get_store(config_file: str, layer_name: str) -> AsyncTileStore | None:
+        def get_store(config_file: Path, layer_name: str) -> AsyncTileStore | None:
             config = gene.get_config(config_file)
             cache_name = cache or config.config["generation"].get(
                 "default_cache",
@@ -999,7 +1010,7 @@ class TileGeneration:
         if store is None:
             gene = self
 
-            def get_splitter(config_file: str, layer_name: str) -> AsyncTileStore | None:
+            def get_splitter(config_file: Path, layer_name: str) -> AsyncTileStore | None:
                 config = gene.get_config(config_file)
                 if layer_name not in config.config.get("layers", {}):
                     _LOGGER.warning("Layer %s not found in config %s", layer_name, config_file)
@@ -1050,9 +1061,9 @@ class TileGeneration:
     def create_log_tiles_error(self, layer: str) -> TextIO | None:
         """Create the error file for the given layer."""
         if "error_file" in self.get_main_config().config.get("generation", {}):
-            now = datetime.now(tz=datetime.timezone.utc)
+            now = datetime.datetime.now(tz=datetime.timezone.utc)
             time_ = now.strftime("%d-%m-%Y %H:%M:%S")
-            error_file = Path(  # pylint: disable=consider-using-with
+            error_file = Path(  # pylint: disable=consider-using-with # noqa: SIM115
                 self.get_main_config().config["generation"]["error_file"].format(layer=layer, datetime=now),
             ).open("a", encoding="utf-8")
             error_file.write(f"# [{time_}] Start the layer '{layer}' generation\n")
@@ -1077,7 +1088,7 @@ class TileGeneration:
         if "error_file" in config.config["generation"]:
             assert tile is not None
 
-            time_ = datetime.now(tz=datetime.timezone.utc).strftime("%d-%m-%Y %H:%M:%S")
+            time_ = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%d-%m-%Y %H:%M:%S")
             if self.get_log_tiles_error_file(tile.metadata["layer"]) is None:
                 message = "Missing error file"
                 raise MissingErrorFileError(message)
@@ -1329,7 +1340,7 @@ class TileGeneration:
             return
         layer = config.config["layers"][layer_name]
 
-        metadata = {"layer": layer_name, "config_file": config.file}
+        metadata = {"layer": layer_name, "config_file": str(config.file)}
         if hasattr(self.options, "job_id") and self.options.job_id:
             metadata["job_id"] = self.options.job_id
         if self.options.host is not None:
@@ -1356,7 +1367,7 @@ class TileGeneration:
         """Add a process to the tilestream."""
         gene = self
 
-        def get_process(config_file: str, layer_name: str) -> Process | None:
+        def get_process(config_file: Path, layer_name: str) -> Process | None:
             config = gene.get_config(config_file)
             if layer_name not in config.config.get("layers", {}):
                 _LOGGER.warning("Layer %s not found in config %s", layer_name, config_file)
@@ -1364,7 +1375,7 @@ class TileGeneration:
             layer = config.config["layers"][layer_name]
             name_ = name
             if name_ is None:
-                name_ = layer.get(key)  # type: ignore[m]
+                name_ = layer.get(key)  # type: ignore[assignment]
             if name_ is not None:
                 return Process(config.config["process"][name_], self.options)
             return None
@@ -1428,7 +1439,7 @@ class TileGeneration:
 
         test = self.options.test if test is None else test
 
-        start = datetime.now(tz=datetime.timezone.utc)
+        start = datetime.datetime.now(tz=datetime.timezone.utc)
 
         run = Run(self, self.functions_metatiles, out=self.out)
 
@@ -1469,7 +1480,7 @@ class TileGeneration:
                 await run(await anext(self.tilestream))
 
         self.error += run.error
-        self.duration = datetime.now(tz=datetime.timezone.utc) - start
+        self.duration = datetime.datetime.now(tz=datetime.timezone.utc) - start
         for ca in self._close_actions:
             ca()
 
@@ -1554,8 +1565,8 @@ class HashDropper:
         _LOGGER.info("The tile %s %s is dropped", tile.tilecoord, tile.formated_metadata)
         if hasattr(tile, "metatile"):
             metatile: Tile = tile.metatile
-            metatile.elapsed_togenerate -= 1  # type: ignore[m]
-            if metatile.elapsed_togenerate == 0 and self.queue_store is not None:  # type: ignore[m]
+            metatile.elapsed_togenerate -= 1  # type: ignore[attr-defined]
+            if metatile.elapsed_togenerate == 0 and self.queue_store is not None:  # type: ignore[attr-defined]
                 await self.queue_store.delete_one(metatile)
         elif self.queue_store is not None:
             await self.queue_store.delete_one(tile)
@@ -1583,10 +1594,10 @@ class MultiAction:
 
     def __init__(
         self,
-        get_action: Callable[[str, str], Callable[[Tile], Awaitable[Tile | None]] | None],
+        get_action: Callable[[Path, str], Callable[[Tile], Awaitable[Tile | None]] | None],
     ) -> None:
         self.get_action = get_action
-        self.actions: dict[tuple[str, str], _DatedAction] = {}
+        self.actions: dict[tuple[Path, str], _DatedAction] = {}
 
     def _get_action(self, config_file: Path, layer: str) -> Callable[[Tile], Awaitable[Tile | None]] | None:
         """Get the action based on the tile's layer name."""
@@ -1607,7 +1618,7 @@ class MultiAction:
     async def __call__(self, tile: Tile) -> Tile | None:
         """Run the action."""
         layer = tile.metadata["layer"]
-        config_file = tile.metadata["config_file"]
+        config_file = Path(tile.metadata["config_file"])
         action = self._get_action(config_file, layer)
         if action:
             _LOGGER.debug("[%s] Run action %s.", tile.tilecoord, action)
@@ -1717,7 +1728,7 @@ class IntersectGeometryFilter:
             else 0
         )
         geoms = self.gene.get_geoms(config, layer_name, host=host)
-        return self.bbox_polygon(  # type: ignore[m]
+        return self.bbox_polygon(  # type: ignore[no-any-return]
             tile_grid.extent(tilecoord, grid["resolutions"][tilecoord.z] * px_buffer),
         ).intersects(geoms[tilecoord.z])
 
@@ -1879,32 +1890,32 @@ class TilesFileStore(AsyncTileStore):
 
     def __init__(self, tiles_file: Path) -> None:
         super().__init__()
-
-        self.tiles_file = tiles_file.open(encoding="utf-8")  # pylint: disable=consider-using-with
+        self.tiles_file_path = tiles_file
 
     async def list(self) -> AsyncIterator[Tile]:
         """List the tiles."""
-        while True:
-            line = self.tiles_file.readline()
-            if not line:
-                return
-            line = line.split("#")[0].strip()
-            if line != "":
-                splitted_line = line.split(" ")
-                try:
-                    tilecoord = parse_tilecoord(splitted_line[0])
-                except ValueError as e:
-                    _LOGGER.exception(
-                        "A tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n\n%s",
-                        line,
-                        repr(e),  # noqa: TRY401
-                    )
-                    continue
+        with self.tiles_file_path.open(encoding="utf-8") as tiles_file:
+            while True:
+                line = tiles_file.readline()
+                if not line:
+                    return
+                line = line.split("#")[0].strip()
+                if line != "":
+                    splitted_line = line.split(" ")
+                    try:
+                        tilecoord = parse_tilecoord(splitted_line[0])
+                    except ValueError as e:
+                        _LOGGER.exception(
+                            "A tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n\n%s",
+                            line,
+                            repr(e),  # noqa: TRY401
+                        )
+                        continue
 
-                yield Tile(
-                    tilecoord,
-                    metadata=dict([cast(tuple[str, str], e.split("=")) for e in splitted_line[1:]]),
-                )
+                    yield Tile(
+                        tilecoord,
+                        metadata=dict([cast(tuple[str, str], e.split("=")) for e in splitted_line[1:]]),
+                    )
 
     async def get_one(self, tile: Tile) -> Tile | None:
         """Get the tile."""
