@@ -93,10 +93,6 @@ repos:
     rev: v0.10.0.1
     hooks:
       - id: shellcheck
-  - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 3.0.0
-    hooks:
-      - id: git-check
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.31.2
     hooks:
