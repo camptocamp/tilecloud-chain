@@ -181,20 +181,29 @@ class Generator:
         with _GET_TILE.labels("redis").time():
             return self._cache_store.get_one(tile)
 
-    async def compute_tile(self, tile: Tile) -> bool:
+    async def compute_tile(self, tile: Tile, try_: int = 5) -> bool:
         """Create the tile."""
         with _GET_TILE.labels("wms").time():
             assert self.run is not None
             await self.run(tile)
         if tile.error:
+            if try_ > 0:
+                _LOG.info("Retry tile %s %s", tile.tilecoord, tile.formated_metadata)
+                return await self.compute_tile(tile, try_ - 1)
             _LOG.error("Tile %s %s in error: %s", tile.tilecoord, tile.formated_metadata, tile.error)
             return False
         success = True
         for tile_ in tile.metadata["tiles"].values():  # type: ignore
             if tile_.error:
+                if try_ > 0:
+                    _LOG.info("Retry tile %s %s", tile_.tilecoord, tile_.formated_metadata)
+                    return await self.compute_tile(tile, try_ - 1)
                 _LOG.error("Tile %s %s in error: %s", tile_.tilecoord, tile_.formated_metadata, tile_.error)
                 success = False
             elif tile_.data is None:
+                if try_ > 0:
+                    _LOG.info("Retry tile %s %s", tile_.tilecoord, tile_.formated_metadata)
+                    return await self.compute_tile(tile, try_ - 1)
                 _LOG.error("Tile %s %s in error: no data", tile_.tilecoord, tile_.formated_metadata)
                 success = False
             else:
