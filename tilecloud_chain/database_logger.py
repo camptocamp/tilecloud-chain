@@ -1,8 +1,8 @@
 """Log the generated tiles in a database."""
 
+import asyncio
 import logging
 import sys
-import time
 
 import psycopg.sql
 from prometheus_client import Summary
@@ -18,7 +18,7 @@ _INSERT_SUMMARY = Summary("tilecloud_chain_database_logger", "Number of database
 class DatabaseLoggerCommon:
     """Log the generated tiles in a database."""
 
-    def __init__(self, config: tilecloud_chain.configuration.Logging, daemon: bool):
+    def __init__(self, config: tilecloud_chain.configuration.Logging, daemon: bool) -> None:
         self._db_params = config["database"]
         self._daemon = daemon
         self.connection: psycopg.AsyncConnection | None = None
@@ -39,7 +39,7 @@ class DatabaseLoggerCommon:
             except psycopg.OperationalError:
                 _LOGGER.warning("Failed connecting to the database. Will try again in 1s", exc_info=True)
                 if self._daemon:
-                    time.sleep(1)
+                    await asyncio.sleep(1)
                 else:
                     sys.exit(2)
         assert self.connection is not None
@@ -52,7 +52,8 @@ class DatabaseLoggerCommon:
 
         async with self.connection.cursor() as cursor:
             await cursor.execute(
-                "SELECT EXISTS(SELECT 1 FROM pg_tables WHERE schemaname=%s AND tablename=%s)", (schema, table)
+                "SELECT EXISTS(SELECT 1 FROM pg_tables WHERE schemaname=%s AND tablename=%s)",
+                (schema, table),
             )
             schema = psycopg.sql.quote(schema, self.connection)
             table = psycopg.sql.quote(table, self.connection)
@@ -69,8 +70,8 @@ class DatabaseLoggerCommon:
                             "  run INTEGER NOT NULL,"
                             "  action CHARACTER VARYING(7) NOT NULL,"
                             "  tile TEXT NOT NULL,"
-                            "  UNIQUE (layer, run, tile))"
-                        ).format(psycopg.sql.Identifier(schema), psycopg.sql.Identifier(table))
+                            "  UNIQUE (layer, run, tile))",
+                        ).format(psycopg.sql.Identifier(schema), psycopg.sql.Identifier(table)),
                     )
                     await self.connection.commit()
                 except psycopg.DatabaseError:
@@ -80,7 +81,7 @@ class DatabaseLoggerCommon:
                 try:
                     await cursor.execute(
                         psycopg.sql.SQL(
-                            "INSERT INTO {}.{}(layer, run, action, tile) VALUES (%s, %s, %s, %s)"
+                            "INSERT INTO {}.{}(layer, run, action, tile) VALUES (%s, %s, %s, %s)",
                         ).format(psycopg.sql.Identifier(schema), psycopg.sql.Identifier(table)),
                         ("test_layer", -1, "test", "-1x-1"),
                     )
@@ -111,8 +112,9 @@ class DatabaseLoggerInit(DatabaseLoggerCommon):
         async with self.connection.cursor() as cursor:
             await cursor.execute(
                 psycopg.sql.SQL("SELECT COALESCE(MAX(run), 0) + 1 FROM {}.{}").format(
-                    psycopg.sql.Identifier(self.schema), psycopg.sql.Identifier(self.table)
-                )
+                    psycopg.sql.Identifier(self.schema),
+                    psycopg.sql.Identifier(self.table),
+                ),
             )
             elem = await cursor.fetchone()
             assert elem is not None
@@ -158,7 +160,7 @@ class DatabaseLogger(DatabaseLoggerCommon):
                     await cursor.execute(
                         psycopg.sql.SQL(
                             "INSERT INTO {} (layer, run, action, tile) "
-                            "VALUES (%(layer)s, %(run)s, %(action)s::varchar(7), %(tile)s)"
+                            "VALUES (%(layer)s, %(run)s, %(action)s::varchar(7), %(tile)s)",
                         ).format(psycopg.sql.Identifier(self.schema), psycopg.sql.Identifier(self.table)),
                         {"layer": layer, "action": action, "tile": str(tile.tilecoord), "run": run},
                     )
@@ -167,7 +169,7 @@ class DatabaseLogger(DatabaseLoggerCommon):
                     await cursor.execute(
                         psycopg.sql.SQL(
                             "UPDATE {} SET action = %(action)s "
-                            "WHERE layer = %(layer)s AND run = %(run)s AND tile = %(tile)s"
+                            "WHERE layer = %(layer)s AND run = %(run)s AND tile = %(tile)s",
                         ).format(psycopg.sql.Identifier(self.schema), psycopg.sql.Identifier(self.table)),
                         {"layer": layer, "action": action, "tile": str(tile.tilecoord), "run": run},
                     )

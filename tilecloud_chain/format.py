@@ -14,8 +14,7 @@ def size_format(number: float) -> str:
         if number < 1024.0:
             if number < 10:
                 return f"{number:.1f} {unit}"
-            else:
-                return f"{number:.0f} {unit}"
+            return f"{number:.0f} {unit}"
         number /= 1024.0
     return f"{number:.0f} Tio"
 
@@ -26,5 +25,4 @@ def duration_format(duration: timedelta) -> str:
     minutes, seconds = divmod(remainder, 60)
     if duration.days > 0:
         return f"{duration.days} {hours}:{minutes:02d}:{seconds:02d}"
-    else:
-        return f"{hours}:{minutes:02d}:{seconds:02d}"
+    return f"{hours}:{minutes:02d}:{seconds:02d}"

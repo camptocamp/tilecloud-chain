@@ -27,15 +27,15 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import asyncio
+import datetime
 import gc
 import io
 import logging
 import multiprocessing
 import os
 import shlex
-import time
 from collections.abc import AsyncIterator
-from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any, cast
 
 import objgraph
@@ -54,13 +54,19 @@ from tilecloud_chain.store import AsyncTileStore
 _LOGGER = logging.getLogger(__name__)
 
 _NB_MESSAGE_COUNTER = Gauge(
-    "tilecloud_postgresql_nb_messages", "Number of messages in PostgreSQL", ["job_id", "config_filename"]
+    "tilecloud_postgresql_nb_messages",
+    "Number of messages in PostgreSQL",
+    ["job_id", "config_filename"],
 )
 _PENDING_COUNTER = Gauge(
-    "tilecloud_postgresql_pending", "Number of pending messages in PostgreSQL", ["job_id", "config_filename"]
+    "tilecloud_postgresql_pending",
+    "Number of pending messages in PostgreSQL",
+    ["job_id", "config_filename"],
 )
 _READ_ERROR_COUNTER = Counter(
-    "tilecloud_postgresql_read_error", "Number of read errors on PostgreSQL", ["job_id", "config_filename"]
+    "tilecloud_postgresql_read_error",
+    "Number of read errors on PostgreSQL",
+    ["job_id", "config_filename"],
 )
 _MAINTENANCE_SUMMARY = Summary("tilecloud_postgresql_maintenance", "Time spent in PostgreSQL maintenance")
 
@@ -99,10 +105,10 @@ def _encode_message(metatile: Tile) -> dict[str, Any]:
 
 
 def _decode_tilecoord(body: dict[str, Any]) -> TileCoord:
-    z = cast(int, body.get("z"))  # noqa
-    x = cast(int, body.get("x"))  # noqa
-    y = cast(int, body.get("y"))  # noqa
-    n = cast(int, body.get("n"))  # noqa
+    z = cast(int, body.get("z"))
+    x = cast(int, body.get("x"))
+    y = cast(int, body.get("y"))
+    n = cast(int, body.get("n"))
     return TileCoord(z, x, y, n)
 
 
@@ -112,7 +118,7 @@ def _decode_message(body: dict[str, Any], **kwargs: Any) -> Tile:
     return Tile(tilecoord, metadata=metadata, **kwargs)
 
 
-class PostgresqlTileStoreException(Exception):
+class PostgresqlTileStoreError(Exception):
     """PostgreSQL TileStore Exception."""
 
 
@@ -124,7 +130,7 @@ class Job(Base):
     """SQLAlchemy model for the jobs."""
 
     __tablename__ = "job"
-    __table_args__ = {"schema": _schema}
+    __table_args__ = {"schema": _schema}  # noqa: RUF012
 
     id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     name = Column(Unicode, nullable=False)
@@ -133,7 +139,10 @@ class Job(Base):
     status = Column(Unicode, nullable=False, default=_STATUS_CREATED, index=True)
     message = Column(Unicode)
     created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=sqlalchemy.sql.functions.now(), index=True
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=sqlalchemy.sql.functions.now(),
+        index=True,
     )
     started_at = Column(DateTime(timezone=True), index=True)
 
@@ -146,7 +155,7 @@ class Queue(Base):
     """SQLAlchemy model for the queue entries."""
 
     __tablename__ = "queue"
-    __table_args__ = {"schema": _schema}
+    __table_args__ = {"schema": _schema}  # noqa: RUF012
 
     id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
     job_id = Column(Integer, nullable=False, index=True)
@@ -170,7 +179,10 @@ class Queue(Base):
 
 
 async def _start_job(
-    job_id: int, sqlalchemy_url: str, allowed_commands: list[str], allowed_arguments: list[str]
+    job_id: int,
+    sqlalchemy_url: str,
+    allowed_commands: list[str],
+    allowed_arguments: list[str],
 ) -> None:
     engine = create_async_engine(sqlalchemy_url)
     SessionMaker = async_sessionmaker(engine)  # noqa
@@ -254,7 +266,10 @@ async def _start_job(
     _LOGGER.info("Run the command `%s`", display_command)
 
     completed_process = await asyncio.create_subprocess_exec(
-        *final_command, env=env, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        *final_command,
+        env=env,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
     )
     stdout, stderr = await completed_process.communicate()
 
@@ -282,7 +297,7 @@ class PostgresqlTileStore(AsyncTileStore):
         allowed_arguments: list[str],
         max_pending_minutes: int,
         sqlalchemy_url: str,
-    ):
+    ) -> None:
         self.sqlalchemy_url = sqlalchemy_url
 
         # Used to mix the generation for each the projects
@@ -304,7 +319,7 @@ class PostgresqlTileStore(AsyncTileStore):
 
         self.SessionMaker = async_sessionmaker(engine)  # pylint: disable=invalid-name
 
-    async def create_job(self, name: str, command: str, config_filename: str) -> None:
+    async def create_job(self, name: str, command: str, config_filename: Path) -> None:
         """Create a job."""
         assert self.SessionMaker is not None
         async with self.SessionMaker() as session:
@@ -312,7 +327,7 @@ class PostgresqlTileStore(AsyncTileStore):
             session.add(job)
             await session.commit()
 
-    async def retry(self, job_id: int, config_filename: str) -> None:
+    async def retry(self, job_id: int, config_filename: Path) -> None:
         """Retry a job."""
         assert self.SessionMaker is not None
         async with self.SessionMaker() as session:
@@ -321,23 +336,22 @@ class PostgresqlTileStore(AsyncTileStore):
                     and_(
                         Job.id == job_id,
                         Job.status == _STATUS_ERROR,
-                        Job.config_filename == config_filename,
-                    )
-                )
+                        Job.config_filename == str(config_filename),
+                    ),
+                ),
             )
             if nb_job == 0:
-                raise PostgresqlTileStoreException(
-                    f"Job {job_id} not found with the correct status, for the host"
-                )
+                message = f"Job {job_id} not found with the correct status, for the host"
+                raise PostgresqlTileStoreError(message)
             await session.execute(
                 update(Queue)
                 .where(and_(Queue.job_id == job_id, Queue.status == _STATUS_ERROR))
-                .values(status=_STATUS_CREATED, error="")
+                .values(status=_STATUS_CREATED, error=""),
             )
             await session.execute(update(Job).where(Job.id == job_id).values(status=_STATUS_CREATED))
             await session.commit()
 
-    async def cancel(self, job_id: int, config_filename: str) -> None:
+    async def cancel(self, job_id: int, config_filename: Path) -> None:
         """Cancel a job."""
         assert self.SessionMaker is not None
         async with self.SessionMaker() as session:
@@ -346,22 +360,21 @@ class PostgresqlTileStore(AsyncTileStore):
                     and_(
                         Job.id == job_id,
                         Job.status == _STATUS_STARTED,
-                        Job.config_filename == config_filename,
-                    )
-                )
+                        Job.config_filename == str(config_filename),
+                    ),
+                ),
             )
             job = result.scalar()
             if job is None:
-                raise PostgresqlTileStoreException(
-                    f"Job {job_id} not found, with the correct status, for the host"
-                )
+                message = f"Job {job_id} not found, with the correct status, for the host"
+                raise PostgresqlTileStoreError(message)
             await session.execute(
-                delete(Queue).where(and_(Queue.job_id == job_id, Queue.status == _STATUS_CREATED))
+                delete(Queue).where(and_(Queue.job_id == job_id, Queue.status == _STATUS_CREATED)),
             )
             await session.execute(update(Job).where(Job.id == job_id).values(status=_STATUS_CANCELLED))
             await session.commit()
 
-    async def get_status(self, config_filename: str) -> list[tuple[Job, list[dict[str, int]], list[str]]]:
+    async def get_status(self, config_filename: Path) -> list[tuple[Job, list[dict[str, int]], list[str]]]:
         """
         Get the jobs.
 
@@ -374,7 +387,7 @@ class PostgresqlTileStore(AsyncTileStore):
         result = []
         async with self.SessionMaker() as session:
             jobs_result = await session.execute(
-                select(Job).where(Job.config_filename == config_filename).order_by(Job.created_at.desc())
+                select(Job).where(Job.config_filename == config_filename).order_by(Job.created_at.desc()),
             )
             for job in jobs_result.scalars():
                 result_by_zoom_level: dict[int, dict[str, int]] = {}
@@ -382,7 +395,7 @@ class PostgresqlTileStore(AsyncTileStore):
                 nb_tiles_zoom_results = await session.scalar(
                     select(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
                     .where(and_(Queue.status == _STATUS_CREATED, Queue.job_id == job.id))
-                    .group_by(Queue.zoom)
+                    .group_by(Queue.zoom),
                 )
                 for nb_tiles, zoom in nb_tiles_zoom_results:
                     result_by_zoom_level.setdefault(zoom, {})["generate"] = nb_tiles
@@ -390,7 +403,7 @@ class PostgresqlTileStore(AsyncTileStore):
                 nb_tiles_zoom_results = await session.scalar(
                     select(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
                     .where(and_(Queue.status == _STATUS_PENDING, Queue.job_id == job.id))
-                    .group_by(Queue.zoom)
+                    .group_by(Queue.zoom),
                 )
                 for nb_tiles, zoom in nb_tiles_zoom_results:
                     result_by_zoom_level.setdefault(zoom, {})["pending"] = nb_tiles
@@ -398,7 +411,7 @@ class PostgresqlTileStore(AsyncTileStore):
                 nb_tiles_zoom_results = await session.scalar(
                     select(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
                     .where(and_(Queue.status == _STATUS_ERROR, Queue.job_id == job.id))
-                    .group_by(Queue.zoom)
+                    .group_by(Queue.zoom),
                 )
                 for nb_tiles, zoom in nb_tiles_zoom_results:
                     result_by_zoom_level.setdefault(zoom, {})["error"] = nb_tiles
@@ -410,7 +423,7 @@ class PostgresqlTileStore(AsyncTileStore):
                     select(Queue)
                     .where(and_(Queue.job_id == job.id, Queue.status == _STATUS_ERROR))
                     .order_by(Queue.started_at.desc())
-                    .limit(5)
+                    .limit(5),
                 )
                 result.append(
                     (
@@ -420,7 +433,7 @@ class PostgresqlTileStore(AsyncTileStore):
                             f"{_decode_tilecoord(sqlalchemy_tile.meta_tile)}: {sqlalchemy_tile.error}"  # type: ignore[arg-type]
                             for sqlalchemy_tile in queue_results.scalars()
                         ],
-                    )
+                    ),
                 )
         return result
 
@@ -438,12 +451,16 @@ class PostgresqlTileStore(AsyncTileStore):
             # Restart the too long pending jobs (queue generation)
             async with self.SessionMaker() as session:
                 await session.execute(
-                    update(Job).where(
+                    update(Job)
+                    .where(
                         and_(
                             Job.status == _STATUS_PENDING,
-                            Job.started_at < datetime.now() - timedelta(minutes=self.max_pending_minutes),
-                        ).values(status=_STATUS_CREATED)
+                            Job.started_at
+                            < datetime.datetime.now(tz=datetime.timezone.utc)
+                            - datetime.timedelta(minutes=self.max_pending_minutes),
+                        ),
                     )
+                    .values(status=_STATUS_CREATED),
                 )
                 await session.commit()
 
@@ -451,13 +468,15 @@ class PostgresqlTileStore(AsyncTileStore):
             job_id = -1
             async with self.SessionMaker() as session:
                 result = await session.execute(
-                    select(Job).with_for_update(of=Job, skip_locked=True).where(Job.status == _STATUS_CREATED)
+                    select(Job)
+                    .with_for_update(of=Job, skip_locked=True)
+                    .where(Job.status == _STATUS_CREATED),
                 )
                 job = result.scalar()
                 if job is not None:
                     job_id = job.id  # type: ignore[assignment]
                     job.status = _STATUS_PENDING  # type: ignore[assignment]
-                    job.started_at = datetime.now()  # type: ignore[assignment]
+                    job.started_at = datetime.datetime.now(tz=datetime.timezone.utc)  # type: ignore[assignment]
                     await session.commit()
             if job_id != -1:
                 proc = multiprocessing.Process(
@@ -469,20 +488,22 @@ class PostgresqlTileStore(AsyncTileStore):
             # Update the job status (error or done) on finish
             async with self.SessionMaker() as session:
                 result = await session.execute(
-                    select(Job).with_for_update(of=Job, skip_locked=True).where(Job.status == _STATUS_STARTED)
+                    select(Job)
+                    .with_for_update(of=Job, skip_locked=True)
+                    .where(Job.status == _STATUS_STARTED),
                 )
                 for job in result.scalars():
                     nb_messages = await session.scalar(
                         select(sqlalchemy.sql.functions.count(Queue.id)).where(
-                            and_(Queue.status == _STATUS_CREATED, Queue.job_id == job.id)
-                        )
+                            and_(Queue.status == _STATUS_CREATED, Queue.job_id == job.id),
+                        ),
                     )
                     assert nb_messages is not None
                     _NB_MESSAGE_COUNTER.labels(job.id, job.config_filename).set(1.0 * nb_messages)
                     nb_pending = await session.scalar(
                         select(sqlalchemy.sql.functions.count(Queue.id)).where(
-                            and_(Queue.status == _STATUS_PENDING, Queue.job_id == job.id)
-                        )
+                            and_(Queue.status == _STATUS_PENDING, Queue.job_id == job.id),
+                        ),
                     )
                     assert nb_pending is not None
                     _PENDING_COUNTER.labels(job.id, job.config_filename).set(1.0 * nb_pending)
@@ -492,8 +513,8 @@ class PostgresqlTileStore(AsyncTileStore):
                                 and_(
                                     Queue.status == _STATUS_ERROR,
                                     Queue.job_id == job.id,
-                                )
-                            )
+                                ),
+                            ),
                         )
                         if count_result != 0:
                             job.status = _STATUS_ERROR  # type: ignore[assignment]
@@ -510,10 +531,11 @@ class PostgresqlTileStore(AsyncTileStore):
                             and_(
                                 Queue.status == _STATUS_PENDING,
                                 Queue.started_at
-                                < datetime.now() - timedelta(minutes=self.max_pending_minutes),
-                            )
+                                < datetime.datetime.now(tz=datetime.timezone.utc)
+                                - datetime.timedelta(minutes=self.max_pending_minutes),
+                            ),
                         )
-                        .values(status=_STATUS_CREATED)
+                        .values(status=_STATUS_CREATED),
                     )
                     # Add the job as to be processed
                     if job.config_filename not in self.jobs:
@@ -521,7 +543,7 @@ class PostgresqlTileStore(AsyncTileStore):
                 await session.commit()
 
         if not self.jobs:
-            time.sleep(10)
+            await asyncio.sleep(10)
 
     async def list(self) -> AsyncIterator[Tile]:
         """List the meta tiles in the queue."""
@@ -551,7 +573,7 @@ class PostgresqlTileStore(AsyncTileStore):
                         values = [
                             f"{name}: {number} {diff}"
                             for name, number, diff in objgraph.growth(
-                                limit=int(os.environ.get("TILECLOUD_CHAIN_OBJGRAPH_LIMIT", "10"))
+                                limit=int(os.environ.get("TILECLOUD_CHAIN_OBJGRAPH_LIMIT", "10")),
                             )
                         ]
                         if values:
@@ -562,13 +584,13 @@ class PostgresqlTileStore(AsyncTileStore):
                             select(Queue)
                             .with_for_update(of=Queue, skip_locked=True)
                             .order_by(Queue.id.asc())
-                            .where(and_(Queue.status == _STATUS_CREATED, Queue.job_id == job_id))
+                            .where(and_(Queue.status == _STATUS_CREATED, Queue.job_id == job_id)),
                         )
                         sqlalchemy_tile = result.scalar()
                         if sqlalchemy_tile is None:
                             continue
                         sqlalchemy_tile.status = _STATUS_PENDING  # type: ignore[assignment]
-                        sqlalchemy_tile.started_at = datetime.now()  # type: ignore[assignment]
+                        sqlalchemy_tile.started_at = datetime.datetime.now(tz=datetime.timezone.utc)  # type: ignore[assignment]
                         meta_tile = _decode_message(
                             sqlalchemy_tile.meta_tile,  # type: ignore[arg-type]
                             postgresql_id=sqlalchemy_tile.id,
@@ -578,7 +600,7 @@ class PostgresqlTileStore(AsyncTileStore):
                 except Exception:  # pylint: disable=broad-except
                     _LOGGER.exception("Error while reading from Postgres")
                     _READ_ERROR_COUNTER.labels(job_id, config_filename).inc()
-                    time.sleep(1)
+                    await asyncio.sleep(1)
 
     async def put_one(self, tile: Tile) -> Tile:
         """Put the meta tile in the queue."""
@@ -589,7 +611,7 @@ class PostgresqlTileStore(AsyncTileStore):
                     job_id=tile.metadata["job_id"],
                     zoom=tile.tilecoord.z,
                     meta_tile=_encode_message(tile),
-                )
+                ),
             )
             await session.commit()
         return tile
@@ -617,7 +639,7 @@ class PostgresqlTileStore(AsyncTileStore):
                 result = await session.execute(
                     select(Queue)
                     .where(and_(Queue.status == _STATUS_PENDING, Queue.id == tile.postgresql_id))
-                    .with_for_update(of=Queue)
+                    .with_for_update(of=Queue),
                 )
                 sqlalchemy_tile = result.scalar()
                 if sqlalchemy_tile is not None:
@@ -634,14 +656,16 @@ class PostgresqlTileStore(AsyncTileStore):
                     return tile
 
                 await session.execute(
-                    delete(Queue).where(and_(Queue.status == _STATUS_PENDING, Queue.id == tile.postgresql_id))
+                    delete(Queue).where(
+                        and_(Queue.status == _STATUS_PENDING, Queue.id == tile.postgresql_id),
+                    ),
                 )
                 await session.commit()
         return tile
 
     async def get_one(self, tile: Tile) -> Tile:
         """Get the meta tile from the queue."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 async def get_postgresql_queue_store(config: DatedConfig) -> PostgresqlTileStore:
@@ -654,10 +678,12 @@ async def get_postgresql_queue_store(config: DatedConfig) -> PostgresqlTileStore
         max_pending_minutes=conf.get("max_pending_minutes", configuration.MAX_PENDING_MINUTES_DEFAULT),
         sqlalchemy_url=sqlalchemy_url,
         allowed_commands=config.config.get("server", {}).get(
-            "allowed_commands", configuration.ALLOWED_COMMANDS_DEFAULT
+            "allowed_commands",
+            configuration.ALLOWED_COMMANDS_DEFAULT,
         ),
         allowed_arguments=config.config.get("server", {}).get(
-            "allowed_arguments", configuration.ALLOWED_ARGUMENTS_DEFAULT
+            "allowed_arguments",
+            configuration.ALLOWED_ARGUMENTS_DEFAULT,
         ),
     )
     await tilestore.init()

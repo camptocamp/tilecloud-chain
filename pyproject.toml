@@ -1,19 +1,12 @@
-[tool.black]
-line-length = 110
-target-version = ["py310"]
-
-[tool.isort]
-profile = "black"
-line_length = 110
-known_first_party = "tilecloud"
-known_third_party = "c2cwsgiutils"
-
 [tool.ruff]
 line-length = 110
 target-version = "py310"
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 [tool.poetry]
 name = "tilecloud-chain"
@@ -79,11 +72,12 @@ psycopg = { version = "3.2.5", extras = ["binary"] }
 aiohttp = "3.11.13"
 sqlalchemy = { version = "2.0.38", extras = ["asyncio"] }
 pytest-asyncio = "0.25.3"
+aiofiles = "24.1.0"
 
 [tool.poetry.group.dev.dependencies]
-prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.13.3" }
-prospector-profile-duplicated = "1.7.0"
-prospector-profile-utils = "1.11.1"
+prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.15.2" }
+prospector-profile-duplicated = "1.10.5"
+prospector-profile-utils = "1.22.2"
 c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
 scikit-image = { version = "0.24.0" }
 pytest = "8.3.4"
@@ -91,18 +85,18 @@ testfixtures = "8.3.0"
 coverage = "7.6.12"
 types-redis = "4.6.0.20241004"
 types-requests = "2.32.0.20250301"
-
-[build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version", "poetry-plugin-drop-python-upper-constraint"]
-build-backend = "poetry.core.masonry.api"
+types-aiofiles = "24.1.0.20241221"
+pytest-asyncio = "0.25.3"
 
 [tool.poetry-dynamic-versioning]
 enable = true
 vcs = "git"
 pattern = "^(?P<base>\\d+(\\.\\d+)*)"
 format-jinja = """
-{%- if env.get("VERSION_TYPE") == "version_branch" -%}
-{{serialize_pep440(bump_version(base, 1 if env.get("IS_MASTER") == "TRUE" else 2), dev=distance)}}
+{%- if env.get("VERSION_TYPE") == "default_branch" -%}
+{{serialize_pep440(bump_version(base, 1), dev=distance)}}
+{%- elif env.get("VERSION_TYPE") == "stabilization_branch" -%}
+{{serialize_pep440(bump_version(base, 2), dev=distance)}}
 {%- elif distance == 0 -%}
 {{serialize_pep440(base)}}
 {%- else -%}
@@ -112,3 +106,7 @@ format-jinja = """
 
 [tool.poetry-plugin-tweak-dependencies-version]
 default = "present"
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version", "poetry-plugin-drop-python-upper-constraint"]
+build-backend = "poetry.core.masonry.api"

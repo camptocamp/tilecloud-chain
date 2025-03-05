@@ -12,6 +12,7 @@ from copy import copy
 from hashlib import sha1
 from io import BytesIO, StringIO
 from math import exp, log
+from pathlib import Path
 from typing import IO, Literal, cast
 from urllib.parse import urlencode, urljoin
 
@@ -58,7 +59,10 @@ async def _async_main(args: list[str] | None = None, out: IO[str] | None = None)
         )
         add_common_options(parser, tile_pyramid=False, no_geom=False, default_config_file=True)
         parser.add_argument(
-            "--status", default=False, action="store_true", help="Display the SQS queue status and exit"
+            "--status",
+            default=False,
+            action="store_true",
+            help="Display the SQS queue status and exit",
         )
         parser.add_argument(
             "--legends",
@@ -86,11 +90,16 @@ async def _async_main(args: list[str] | None = None, out: IO[str] | None = None)
 
         if options.cache is None:
             options.cache = config.config["generation"].get(
-                "default_cache", configuration.DEFAULT_CACHE_DEFAULT
+                "default_cache",
+                configuration.DEFAULT_CACHE_DEFAULT,
             )
 
         if options.dump_config:
-            _validate_generate_wmts_capabilities(config.config["caches"][options.cache], options.cache, True)
+            _validate_generate_wmts_capabilities(
+                config.config["caches"][options.cache],
+                options.cache,
+                exit_=True,
+            )
             yaml = ruamel.yaml.YAML()
             yaml_out = StringIO()
             yaml.dump(config.config, yaml_out)
@@ -102,7 +111,7 @@ async def _async_main(args: list[str] | None = None, out: IO[str] | None = None)
 
     except SystemExit:
         raise
-    except:  # pylint: disable=bare-except # noqa: E722
+    except:  # pylint: disable=bare-except
         _LOGGER.exception("Exit with exception")
         if os.environ.get("TESTS", "false").lower() == "true":
             raise
@@ -113,21 +122,21 @@ def _send(data: bytes | str, path: str, mime_type: str, cache: tilecloud_chain.c
     if cache["type"] == "s3":
         cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
         client = tilecloud.store.s3.get_client(cache_s3.get("host"))
-        key_name = os.path.join(f"{cache['folder']}", path)
+        key_name = Path(cache["folder"]) / path
         bucket = cache_s3["bucket"]
         client.put_object(
             ACL="public-read",
             Body=data,
-            Key=key_name,
+            Key=str(key_name),
             Bucket=bucket,
             ContentEncoding="utf-8",
             ContentType=mime_type,
         )
     if cache["type"] == "azure":
         cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
-        key_name = os.path.join(f"{cache['folder']}", path)
+        key_name = Path(cache["folder"]) / path
         container = get_azure_container_client(cache_azure["container"])
-        blob = container.get_blob_client(key_name)
+        blob = container.get_blob_client(str(key_name))
         blob.upload_blob(data, overwrite=True)
 
         blob.upload_blob(
@@ -143,12 +152,10 @@ def _send(data: bytes | str, path: str, mime_type: str, cache: tilecloud_chain.c
         if isinstance(data, str):
             data = data.encode("utf-8")
 
-        folder = cache["folder"] or ""
-        filename = os.path.join(folder, path)
-        directory = os.path.dirname(filename)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        with open(filename, "wb") as f:
+        folder = Path(cache["folder"] or "")
+        filename = folder / path
+        filename.parent.mkdir(parents=True, exist_ok=True)
+        with filename.open("wb") as f:
             f.write(data)
 
 
@@ -156,41 +163,42 @@ async def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes |
     if cache["type"] == "s3":
         cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
         client = tilecloud.store.s3.get_client(cache_s3.get("host"))
-        key_name = os.path.join(f"{cache['folder']}".format(), path)
+        key_name = Path(cache["folder"]) / path
         bucket = cache_s3["bucket"]
         try:
-            response = client.get_object(Bucket=bucket, Key=key_name)
+            response = client.get_object(Bucket=bucket, Key=str(key_name))
             return cast(bytes, response["Body"].read())
         except botocore.exceptions.ClientError as ex:
             if ex.response["Error"]["Code"] == "NoSuchKey":
                 return None
-            else:
-                raise
+            raise
     if cache["type"] == "azure":
         cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
-        key_name = os.path.join(f"{cache['folder']}", path)
+        key_name = Path(cache["folder"]) / path
         try:
             blob = get_azure_container_client(container=cache_azure["container"]).get_blob_client(
-                blob=key_name
+                blob=str(key_name),
             )
             return await (await blob.download_blob()).readall()
         except ResourceNotFoundError:
             return None
     else:
         cache_filesystem = cast(tilecloud_chain.configuration.CacheFilesystem, cache)
-        p = os.path.join(cache_filesystem["folder"], path)
-        if not os.path.isfile(p):
+        p = Path(cache_filesystem["folder"]) / path
+        if not p.is_file():
             return None
-        with open(p, "rb") as file:
-            return file.read()
+        return p.read_bytes()
 
 
 def _validate_generate_wmts_capabilities(
-    cache: tilecloud_chain.configuration.Cache, cache_name: str, exit_: bool
+    cache: tilecloud_chain.configuration.Cache,
+    cache_name: str,
+    exit_: bool,
 ) -> bool:
     if "http_url" not in cache and "http_urls" not in cache:
         _LOGGER.error(
-            "The attribute 'http_url' or 'http_urls' is required in the object cache[%s].", cache_name
+            "The attribute 'http_url' or 'http_urls' is required in the object cache[%s].",
+            cache_name,
         )
         if exit_:
             sys.exit(1)
@@ -199,7 +207,10 @@ def _validate_generate_wmts_capabilities(
 
 
 async def get_wmts_capabilities(
-    gene: TileGeneration, cache_name: str, exit_: bool = False, config: DatedConfig | None = None
+    gene: TileGeneration,
+    cache_name: str,
+    exit_: bool = False,
+    config: DatedConfig | None = None,
 ) -> str | None:
     """Get the WMTS capabilities for a configuration file."""
     start = time.perf_counter()
@@ -224,7 +235,7 @@ async def get_wmts_capabilities(
                 layers=config.config.get("layers", {}),
                 layer_legends=gene.layer_legends,
                 grids=config.config["grids"],
-                getcapabilities=urljoin(  # type: ignore
+                getcapabilities=urljoin(  # type: ignore[type-var]
                     base_urls[0],
                     (
                         server.get("wmts_path", "wmts") + "/1.0.0/WMTSCapabilities.xml"
@@ -256,14 +267,13 @@ def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:
         if "hosts" in cache:
             cc = copy(cache)
             for host in cache["hosts"]:
-                cc["host"] = host  # type: ignore
+                cc["host"] = host  # type: ignore[typeddict-unknown-key]
                 base_urls.append(cache["http_url"] % cc)
         else:
             base_urls = [cache["http_url"] % cache]
     if "http_urls" in cache:
         base_urls = [url % cache for url in cache["http_urls"]]
-    base_urls = [url + "/" if url[-1] != "/" else url for url in base_urls]
-    return base_urls
+    return [url + "/" if url[-1] != "/" else url for url in base_urls]
 
 
 async def _legend_metadata(
@@ -276,7 +286,7 @@ async def _legend_metadata(
     if img is not None:
         new_legend: tilecloud_chain.Legend = {
             "mime_type": layer["legend_mime"],
-            "href": os.path.join(base_url, path),
+            "href": str(Path(base_url) / path),
         }
         try:
             with Image.open(BytesIO(img)) as pil_img:
@@ -309,22 +319,20 @@ async def _fill_legend(
     for layer_name, layer in config.config.get("layers", {}).items():
         if "legend_mime" in layer and "legend_extension" in layer and layer_name not in gene.layer_legends:
             for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
-                path = "/".join(
-                    [
-                        "1.0.0",
-                        layer_name,
-                        layer["wmts_style"],
-                        f"legend{zoom}.{layer['legend_extension']}",
-                    ]
+                path = Path(
+                    "1.0.0",
+                    layer_name,
+                    layer["wmts_style"],
+                    f"legend{zoom}.{layer['legend_extension']}",
                 )
                 legend_image_tasks[
                     asyncio.create_task(
                         _legend_metadata(
                             cache,
                             layer,
-                            os.path.join(base_urls[0], server.get("static_path", "static") if server else ""),
-                            path,
-                        )
+                            str(Path(base_urls[0]) / (server.get("static_path", "static") if server else "")),
+                            str(path),
+                        ),
                     )
                 ] = (layer_name, resolution)
 
@@ -336,7 +344,10 @@ async def _fill_legend(
             legend_image_metadata.setdefault(layer_name, {})[resolution] = task.result()
         except Exception as exc:  # pylint: disable=broad-exception-caught
             _LOGGER.warning(
-                "Unable to get legend image for layer '%s', resolution '%s': %s", layer_name, resolution, exc
+                "Unable to get legend image for layer '%s', resolution '%s': %s",
+                layer_name,
+                resolution,
+                exc,
             )
 
     _LOGGER.debug("Get %i legend images in %s", len(legend_image_tasks), time.perf_counter() - start)
@@ -387,7 +398,7 @@ def _get_legend_image(
                         f"Unable to get legend image for layer '{layer_name}'-'{wms_layer}', resolution '{resolution}'",
                         url,
                         str(e),
-                    ]
+                    ],
                 ),
                 file=out,
             )
@@ -408,7 +419,7 @@ def _get_legend_image(
                         url,
                         f"status code: {response.status_code}: {response.reason}",
                         response.text,
-                    ]
+                    ],
                 ),
                 file=out,
             )
@@ -429,7 +440,7 @@ def _get_legend_image(
                         url,
                         f"Content-Type: {response.headers['Content-Type']}",
                         response.text,
-                    ]
+                    ],
                 ),
                 file=out,
             )
@@ -452,7 +463,7 @@ def _get_legend_image(
                         f"Unable to read legend image for layer '{layer_name}'-'{wms_layer}', resolution '{resolution}'",
                         url,
                         response.text,
-                    ]
+                    ],
                 ),
                 file=out,
             )
@@ -493,7 +504,7 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                                 "TRANSPARENT": "TRUE" if layer["legend_mime"] == "image/png" else "FALSE",
                                 "STYLE": layer["wmts_style"],
                                 "SCALE": resolution / 0.00028,
-                            }
+                            },
                         )
                     )
                     legend_image = _get_legend_image(
@@ -537,8 +548,8 @@ async def status(gene: TileGeneration) -> None:
 async def get_status(gene: TileGeneration) -> list[str]:
     """Get the tile generation status."""
     config = gene.get_main_config()
-    store = await get_queue_store(config, False)
-    type_: Literal["redis"] | Literal["sqs"] = "redis" if "redis" in config.config else "sqs"
+    store = await get_queue_store(config, daemon=False)
+    type_: Literal["redis", "sqs"] = "redis" if "redis" in config.config else "sqs"
     conf = config.config[type_]
     with _GET_STATUS_SUMMARY.labels(type_, conf.get("queue", configuration.REDIS_QUEUE_DEFAULT)).time():
         status_ = store.get_status()

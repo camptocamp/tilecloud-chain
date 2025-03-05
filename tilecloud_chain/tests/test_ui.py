@@ -13,7 +13,7 @@ def test_should_not_commit():
 
 
 @pytest.mark.parametrize(
-    "url,expected_file_name,height,width",
+    ("url", "expected_file_name", "height", "width"),
     [
         pytest.param("http://application:8080/admin/", "not-login", 250, 800, id="not-login"),
         pytest.param("http://application:8080/admin/test", "test", 800, 800, id="test-not-login"),

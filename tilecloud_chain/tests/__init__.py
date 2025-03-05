@@ -7,9 +7,10 @@ import traceback
 from collections.abc import Callable
 from io import StringIO
 from logging import config
-from typing import Any, Union
+from typing import Any
 from unittest import TestCase
 
+import pytest
 import yaml
 
 DIFF = 200
@@ -44,9 +45,9 @@ class CompareCase(TestCase):
             if test[0] != "PASS...":
                 try:
                     if regex:
-                        self.assertRegex(test[1].strip(), f"^{test[0].strip()}$")
+                        assert re.search(f"^{test[0].strip()}$", test[1].strip())
                     else:
-                        self.assertEqual(test[0].strip(), test[1].strip())
+                        assert test[0].strip() == test[1].strip()
                 except AssertionError as e:
                     for i in range(max(0, n - DIFF), min(len(result), n + DIFF + 1)):
                         if i == n:
@@ -56,7 +57,7 @@ class CompareCase(TestCase):
                             print(f"  {i} {result[i]}")
                             log.info(f"  {i} {result[i]}")
                     raise e
-        self.assertEqual(len(expected), len(result), repr(result))
+        assert len(expected) == len(result), repr(result)
 
     def run_cmd(self, cmd: list[str] | str, main_func: Callable, get_error: bool = False) -> tuple[str, str]:
         old_stdout = sys.stdout
@@ -83,17 +84,14 @@ class CompareCase(TestCase):
     ) -> None:
         out, err = self.run_cmd(cmd, main_func)
         if empty_err:
-            self.assertEqual(err, "")
+            assert err == ""
         out = out.decode("utf-8") if isinstance(out, bytes) else str(out)
         self.assert_result_equals(result=out, **kargs)
 
     def assert_cmd_exit_equals(self, cmd: str, main_func: Callable) -> None:
         sys.argv = re.sub(" +", " ", cmd).split(" ")
-        try:
+        with pytest.raises(SystemExit):
             main_func()
-            assert "exit() not called."
-        except SystemExit:
-            pass
 
     def assert_main_equals(
         self,
@@ -113,18 +111,18 @@ class CompareCase(TestCase):
             sys.argv = re.sub(" +", " ", cmd).split(" ")
         try:
             main_func()
-            assert get_error is False
+            assert not get_error
         except SystemExit as e:
             if get_error:
-                assert e.code not in (None, 0), str(e)
+                assert e.code not in (None, 0), str(e)  # noqa: PT017
             else:
-                assert e.code in (None, 0), str(e)
+                assert e.code in (None, 0), str(e)  # noqa: PT017
         except AssertionError:
             raise
         except Exception:
             if not get_error:
                 log.exception("Unexpected error")
-            assert get_error is True, traceback.format_exc()
+            assert get_error, traceback.format_exc()
 
         if expected:
             for expect in expected:
@@ -140,13 +138,13 @@ class CompareCase(TestCase):
             assert get_error is False
         except SystemExit as e:
             if get_error:
-                assert e.code not in (None, 0), str(e)
+                assert e.code not in (None, 0), str(e)  # noqa: PT017
             else:
-                assert e.code in (None, 0), str(e)
+                assert e.code in (None, 0), str(e)  # noqa: PT017
         except AssertionError:
             raise
-        except Exception:
-            raise AssertionError(traceback.format_exc())
+        except Exception as e:
+            raise AssertionError(traceback.format_exc()) from e
 
         if expected:
             for expect in expected:
@@ -184,11 +182,11 @@ class CompareCase(TestCase):
                 print((path, files))
                 count += len(files)
 
-        self.assertEqual(count, len(tiles))
+        assert count == len(tiles)
         for tile in tiles:
             log.info(directory + tiles_pattern % tile)
             print(directory + tiles_pattern % tile)
-            self.assertTrue(os.path.exists(directory + tiles_pattern % tile))
+            assert os.path.exists(directory + tiles_pattern % tile)
 
     def assert_files_generated(self, **kargs):
         self.assert_tiles_generated(tiles_pattern="%s", **kargs)
@@ -206,5 +204,5 @@ class MatchRegex:
     def match(self, other: str) -> re.Match:
         return self._regex.match(other)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self._regex.pattern

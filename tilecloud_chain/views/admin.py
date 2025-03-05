@@ -56,40 +56,40 @@ _LOG = logging.getLogger(__name__)
 class Admin:
     """The admin views."""
 
-    def __init__(self, request: pyramid.request.Request):
+    def __init__(self, request: pyramid.request.Request) -> None:
         """Initialize."""
         self.request = request
 
         tilecloud_chain.server.init_tilegeneration(
-            self.request.registry.settings["tilegeneration_configfile"]
+            self.request.registry.settings["tilegeneration_configfile"],
         )
-        self.gene = tilecloud_chain.server._TILEGENERATION
+        self.gene = tilecloud_chain.server._TILEGENERATION  # noqa: SLF001
         assert self.gene is not None
 
         main_config = self.gene.get_main_config()
         queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
         self.postgresql_queue_store = (
             asyncio.get_event_loop().run_until_complete(
-                tilecloud_chain.store.postgresql.get_postgresql_queue_store(main_config)
+                tilecloud_chain.store.postgresql.get_postgresql_queue_store(main_config),
             )
             if queue_store == "postgresql"
             else None
         )
 
-    def _check_access(self, rase_on_no_access: bool = True) -> tuple[bool, tilecloud_chain.DatedConfig]:
+    def _check_access(self, raise_on_no_access: bool = True) -> tuple[bool, tilecloud_chain.DatedConfig]:
         assert self.gene
         config = self.gene.get_host_config(self.request.host)
         has_access = self.request.has_permission("admin", config.config.get("authentication", {}))
-        if not has_access and rase_on_no_access:
-            raise pyramid.httpexceptions.HTTPForbidden()
+        if not has_access and raise_on_no_access:
+            raise pyramid.httpexceptions.HTTPForbidden
         return has_access, config
 
-    @view_config(route_name="admin", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore
-    @view_config(route_name="admin_slash", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore
+    @view_config(route_name="admin", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore[misc]
+    @view_config(route_name="admin_slash", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore[misc]
     def index(self) -> dict[str, Any]:
         """Get the admin index page."""
         assert self.gene
-        has_access, config = self._check_access(False)
+        has_access, config = self._check_access(raise_on_no_access=False)
         server_config = config.config.get("server", {})
         main_config = self.gene.get_main_config()
         main_server_config = main_config.config.get("server", {})
@@ -112,7 +112,7 @@ class Admin:
             "footer_classes": main_server_config.get("admin_footer_classes", ""),
         }
 
-    @view_config(route_name="admin_run", renderer="fast_json")  # type: ignore
+    @view_config(route_name="admin_run", renderer="fast_json")  # type: ignore[misc]
     def run(self) -> pyramid.response.Response:
         """Run the command given by the user."""
         assert self.gene
@@ -136,7 +136,7 @@ class Admin:
         if command not in allowed_commands:
             return {
                 "error": f"The given command '{command}' is not allowed, allowed command are: "
-                f"{', '.join(allowed_commands)}"
+                f"{', '.join(allowed_commands)}",
             }
         add_role = False
         arguments = {c.split("=")[0]: c.split("=")[1:] for c in commands[1:]}
@@ -155,7 +155,7 @@ class Admin:
                     "error": (
                         f"The argument {arg} is not allowed, allowed arguments are: "
                         f"{', '.join(allowed_arguments)}"
-                    )
+                    ),
                 }
 
         final_command = [
@@ -181,16 +181,18 @@ class Admin:
         if main is not None:
             return_dict: dict[str, Any] = {}
             proc = multiprocessing.Process(
-                target=_run_in_process, args=(final_command, env, main, return_dict)
+                target=_run_in_process,
+                args=(final_command, env, main, return_dict),
             )
             proc.start()
             proc.join()
             return return_dict
 
-        completed_process = subprocess.run(  # nosec # pylint: disable=subprocess-run-check # noqa: S603
+        completed_process = subprocess.run(  # pylint: disable=subprocess-run-check # noqa: S603
             final_command,
             capture_output=True,
             env=env,
+            check=False,
         )
 
         if completed_process.returncode != 0:
@@ -240,15 +242,16 @@ class Admin:
             config_filename = self.gene.get_host_config_file(self.request.host)
             assert config_filename is not None
             asyncio.get_event_loop().run_until_complete(
-                store.create_job(self.request.POST["name"], self.request.POST["command"], config_filename)
+                store.create_job(self.request.POST["name"], self.request.POST["command"], config_filename),
             )
-            return {
-                "success": True,
-            }
-        except tilecloud_chain.store.postgresql.PostgresqlTileStoreException as e:
+        except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
             _LOG.exception("Error while creating the job")
             self.request.response.status_code = 400
             return {"success": False, "error": str(e)}
+        else:
+            return {
+                "success": True,
+            }
 
     @view_config(route_name="admin_cancel_job", renderer="fast_json")  # type: ignore[misc]
     def cancel_job(self) -> dict[str, Any]:
@@ -270,15 +273,16 @@ class Admin:
             config_filename = self.gene.get_host_config_file(self.request.host)
             assert config_filename is not None
             asyncio.get_event_loop().run_until_complete(
-                store.cancel(self.request.POST["job_id"], config_filename)
+                store.cancel(self.request.POST["job_id"], config_filename),
             )
-            return {
-                "success": True,
-            }
-        except tilecloud_chain.store.postgresql.PostgresqlTileStoreException as e:
+        except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
             _LOG.exception("Exception while cancelling the job")
             self.request.response.status_code = 400
             return {"success": False, "error": str(e)}
+        else:
+            return {
+                "success": True,
+            }
 
     @view_config(route_name="admin_retry_job", renderer="fast_json")  # type: ignore[misc]
     def retry_job(self) -> dict[str, Any]:
@@ -300,17 +304,16 @@ class Admin:
             config_filename = self.gene.get_host_config_file(self.request.host)
             assert config_filename is not None
             asyncio.get_event_loop().run_until_complete(
-                store.retry(self.request.POST["job_id"], config_filename)
+                store.retry(self.request.POST["job_id"], config_filename),
             )
-            return {
-                "success": True,
-            }
-        except tilecloud_chain.store.postgresql.PostgresqlTileStoreException as e:
+        except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
             _LOG.exception("Exception while retrying the job")
             self.request.response.status_code = 400
             return {"success": False, "error": str(e)}
+        else:
+            return {"success": True}
 
-    @view_config(route_name="admin_test", renderer="tilecloud_chain:templates/openlayers.html")  # type: ignore
+    @view_config(route_name="admin_test", renderer="tilecloud_chain:templates/openlayers.html")  # type: ignore[misc]
     def admin_test(self) -> dict[str, Any]:
         """Test the admin view."""
         assert self.gene

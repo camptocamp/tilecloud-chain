@@ -1,6 +1,5 @@
 """Internal Mapcache."""
 
-import collections
 import contextlib
 import datetime
 import json
@@ -10,7 +9,7 @@ import struct
 import sys
 import threading
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import TYPE_CHECKING, Any, NamedTuple, TypeVar, cast
 
 import redis.sentinel
 from prometheus_client import Summary
@@ -44,14 +43,13 @@ def _encode_tile(tile: Tile) -> bytes:
     """Encode a tile."""
     other = {"content_encoding": tile.content_encoding, "content_type": tile.content_type}
     assert tile.data
-    data = struct.pack("q", len(tile.data)) + tile.data + json.dumps(other).encode("utf-8")
-    return data
+    return struct.pack("q", len(tile.data)) + tile.data + json.dumps(other).encode("utf-8")
 
 
 class RedisStore(TileStore):
     """A store based on Redis."""
 
-    def __init__(self, config: tilecloud_chain.configuration.Redis, **kwargs: Any):
+    def __init__(self, config: tilecloud_chain.configuration.Redis, **kwargs: Any) -> None:
         """Initialize."""
         super().__init__(**kwargs)
 
@@ -64,7 +62,7 @@ class RedisStore(TileStore):
             connection_kwargs["db"] = int(db)
         url = os.environ.get("TILECLOUD_CHAIN_REDIS_URL", config.get("url"))
         if url is not None:
-            self._master = redis.Redis.from_url(url, **connection_kwargs)  # type: ignore
+            self._master = redis.Redis.from_url(url, **connection_kwargs)  # type: ignore[call-overload]
             self._slave = self._master
         else:
             sentinels: list[tuple[str, str | int]] = []
@@ -78,7 +76,7 @@ class RedisStore(TileStore):
                 sentinels = config["sentinels"]
 
             sentinels = [(host, int(port)) for host, port in sentinels]
-            sentinel = redis.sentinel.Sentinel(sentinels, **connection_kwargs)  # type: ignore
+            sentinel = redis.sentinel.Sentinel(sentinels, **connection_kwargs)  # type: ignore[arg-type]
             service_name = os.environ.get(
                 "TILECLOUD_CHAIN_REDIS_SERVICE_NAME",
                 config.get("service_name", tilecloud_chain.configuration.SERVICE_NAME_DEFAULT),
@@ -144,31 +142,32 @@ class Generator:
     async def init(self) -> None:
         """Initialize the generator."""
         log_level = os.environ.get("TILE_MAPCACHE_LOGLEVEL")
+
+        class Options(NamedTuple):
+            verbose: bool
+            debug: bool
+            quiet: bool
+            role: str
+            near: bool
+            time: bool
+            daemon: bool
+            local_process_number: int | None
+            tiles: None | list[Any] | dict[str, Any] | str
+
+        options = Options(
+            log_level == "verbose",
+            log_level == "debug",
+            log_level == "quiet",
+            "server",
+            near=True,
+            time=False,
+            daemon=True,
+            local_process_number=None,
+            tiles=None,
+        )
+
         generator = Generate(
-            collections.namedtuple(  # type: ignore
-                "Options",
-                [
-                    "verbose",
-                    "debug",
-                    "quiet",
-                    "role",
-                    "near",
-                    "time",
-                    "daemon",
-                    "local_process_number",
-                    "tiles",
-                ],
-            )(
-                log_level == "verbose",  # type: ignore
-                log_level == "debug",
-                log_level == "quiet",
-                "server",
-                True,
-                False,
-                True,
-                None,
-                None,
-            ),
+            options,  # type: ignore[arg-type]
             self._tilegeneration,
             out=sys.stdout,
         )
@@ -193,7 +192,7 @@ class Generator:
             _LOG.error("Tile %s %s in error: %s", tile.tilecoord, tile.formated_metadata, tile.error)
             return False
         success = True
-        for tile_ in tile.metadata["tiles"].values():  # type: ignore
+        for tile_ in tile.metadata["tiles"].values():  # type: ignore[attr-defined]
             if tile_.error:
                 if try_ > 0:
                     _LOG.info("Retry tile %s %s", tile_.tilecoord, tile_.formated_metadata)
@@ -251,12 +250,12 @@ async def fetch(
     if fetched_tile is None:
         backend = "wms-wait"
 
-        tile.metadata.setdefault("tiles", {})  # type: ignore
+        tile.metadata.setdefault("tiles", {})  # type: ignore[arg-type]
         meta_tile = tile
         if layer["meta"]:
             meta_tile = Tile(
                 tilecoord=tile.tilecoord.metatilecoord(
-                    layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
+                    layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT),
                 ),
                 metadata=tile.metadata,
             )
@@ -293,7 +292,8 @@ async def fetch(
 
     response_headers = {
         "Expires": (
-            datetime.datetime.utcnow() + datetime.timedelta(hours=server.get_expires_hours(config))
+            datetime.datetime.now(tz=datetime.timezone.utc)
+            + datetime.timedelta(hours=server.get_expires_hours(config))
         ).isoformat(),
         "Cache-Control": f"max-age={3600 * server.get_expires_hours(config)}",
         "Access-Control-Allow-Origin": "*",

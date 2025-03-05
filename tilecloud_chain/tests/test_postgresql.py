@@ -1,6 +1,7 @@
 import asyncio
 import os
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import pytest
 from sqlalchemy import and_
@@ -31,8 +32,7 @@ def tilestore(event_loop: asyncio.AbstractEventLoop) -> PostgresqlTileStore:
 @pytest.fixture
 def SessionMaker() -> sessionmaker:
     engine = create_engine(os.environ["TILECLOUD_CHAIN_SQLALCHEMY_URL"])
-    SessionMaker = sessionmaker(engine)  # noqa
-    return SessionMaker
+    return sessionmaker(engine)  # noqa
 
 
 @pytest.fixture
@@ -103,11 +103,11 @@ async def test_retry(queue: tuple[int, int, int], SessionMaker: sessionmaker, ti
         job = session.query(Job).filter(Job.id == job_id).one()
         assert job.status == _STATUS_ERROR
 
-    tilestore.retry(job_id, "config.yaml")
+    await tilestore.retry(job_id, Path("config.yaml"))
 
     with SessionMaker() as session:
         job = session.query(Job).filter(Job.id == job_id).one()
-        assert job.status == _STATUS_STARTED
+        assert job.status == _STATUS_CREATED
         metatiles = session.query(Queue).filter(Queue.job_id == job_id).all()
         assert len(metatiles) == 1
         assert metatiles[0].status == _STATUS_CREATED
@@ -118,7 +118,7 @@ async def test_cancel(
 ):
     job_id, _, _ = queue
 
-    tile_1 = next(tilestore.list())
+    tile_1 = await anext(tilestore.list())
 
     await tilestore.delete_one(tile_1)
 
@@ -126,7 +126,7 @@ async def test_cancel(
         metatiles = session.query(Queue).filter(Queue.job_id == job_id).all()
         assert len(metatiles) == 1
 
-    tilestore.cancel(job_id, "config.yaml")
+    await tilestore.cancel(job_id, Path("config.yaml"))
 
     with SessionMaker() as session:
         metatiles = session.query(Queue).filter(Queue.job_id == job_id).all()
@@ -140,11 +140,11 @@ async def test_maintenance_status_done(
 ):
     job_id, _, _ = queue
 
-    tile_1 = next(tilestore.list())
-    tile_2 = next(tilestore.list())
+    tile_1 = await anext(tilestore.list())
+    tile_2 = await anext(tilestore.list())
 
-    tilestore.delete_one(tile_1)
-    tilestore.delete_one(tile_2)
+    await tilestore.delete_one(tile_1)
+    await tilestore.delete_one(tile_2)
 
     with SessionMaker() as session:
         metatiles = session.query(Queue).filter(Queue.job_id == job_id).all()

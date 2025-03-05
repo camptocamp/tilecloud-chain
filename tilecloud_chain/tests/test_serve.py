@@ -201,43 +201,51 @@ class TestServe(CompareCase):
             }
             serve = PyramidView(request)
             serve()
-            self.assertEqual(request.response.headers["Content-Type"], "image/png")
-            self.assertEqual(request.response.headers["Cache-Control"], "max-age=28800")
+            assert request.response.headers["Content-Type"] == "image/png"
+            assert request.response.headers["Cache-Control"] == "max-age=28800"
 
             request.params["TileRow"] = "12"
             assert isinstance(serve(), HTTPNoContent)
 
             request.params["TileRow"] = "11"
             request.params["Service"] = "test"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.params["Service"] = "WMTS"
             request.params["Request"] = "test"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.params["Request"] = "GetTile"
             request.params["Version"] = "0.9"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.params["Version"] = "1.0.0"
             request.params["Format"] = "image/jpeg"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.params["Format"] = "image/png"
             request.params["Layer"] = "test"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.params["Layer"] = "point_hash"
             request.params["Style"] = "test"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.params["Style"] = "default"
             request.params["TileMatrixSet"] = "test"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.params["TileMatrixSet"] = "swissgrid_5"
             del request.params["Service"]
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.params = {
                 "Service": "WMTS",
@@ -245,7 +253,7 @@ class TestServe(CompareCase):
                 "Request": "GetCapabilities",
             }
             PyramidView(request)()
-            self.assertEqual(request.response.headers["Content-Type"], "application/xml")
+            assert request.response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 request.response.body.decode("utf-8"),
                 regex=True,
@@ -715,8 +723,8 @@ class TestServe(CompareCase):
             }
             serve = PyramidView(request)
             serve()
-            self.assertEqual(request.response.headers["Content-Type"], "image/png")
-            self.assertEqual(request.response.headers["Cache-Control"], "max-age=28800")
+            assert request.response.headers["Content-Type"] == "image/png"
+            assert request.response.headers["Cache-Control"] == "max-age=28800"
 
             request.matchdict["path"][7] = "12"
             response = serve()
@@ -725,30 +733,36 @@ class TestServe(CompareCase):
 
             request.matchdict["path"][7] = "11"
             request.matchdict["path"][1] = "0.9"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.matchdict["path"][1] = "1.0.0"
             request.matchdict["path"][8] = "14.jpeg"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.matchdict["path"][8] = "14.png"
             request.matchdict["path"][2] = "test"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.matchdict["path"][2] = "point_hash"
             request.matchdict["path"][3] = "test"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.matchdict["path"][3] = "default"
             request.matchdict["path"][5] = "test"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.matchdict["path"] = ["wmts", "point_hash", "default", "swissgrid_5", "1", "14", "11.png"]
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.matchdict["path"] = ["wmts", "1.0.0", "WMTSCapabilities.xml"]
             PyramidView(request)()
-            self.assertEqual(request.response.headers["Content-Type"], "application/xml")
+            assert request.response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 request.response.body.decode("utf-8"),
                 CAPABILITIES,
@@ -797,38 +811,44 @@ class TestServe(CompareCase):
             }
             serve = PyramidView(request)
             serve()
-            self.assertEqual(request.response.headers["Content-Type"], "image/png")
-            self.assertEqual(request.response.headers["Cache-Control"], "max-age=28800")
+            assert request.response.headers["Content-Type"] == "image/png"
+            assert request.response.headers["Cache-Control"] == "max-age=28800"
 
             request.matchdict["path"][7] = "12"
             assert isinstance(serve(), HTTPNoContent)
 
             request.matchdict["path"][7] = "11"
             request.matchdict["path"][1] = "0.9"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.matchdict["path"][1] = "1.0.0"
             request.matchdict["path"][8] = "14.jpeg"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.matchdict["path"][8] = "14.png"
             request.matchdict["path"][2] = "test"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.matchdict["path"][2] = "point_hash"
             request.matchdict["path"][3] = "test"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.matchdict["path"][3] = "default"
             request.matchdict["path"][5] = "test"
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.matchdict["path"] = ["wmts", "point_hash", "default", "swissgrid_5", "1", "14", "11.png"]
-            self.assertRaises(HTTPBadRequest, serve)
+            with pytest.raises(HTTPBadRequest):
+                serve()
 
             request.matchdict["path"] = ["wmts", "1.0.0", "WMTSCapabilities.xml"]
             PyramidView(request)()
-            self.assertEqual(request.response.headers["Content-Type"], "application/xml")
+            assert request.response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 request.response.body.decode("utf-8"),
                 CAPABILITIES,
@@ -837,7 +857,7 @@ class TestServe(CompareCase):
 
             request.matchdict["path"] = ["static", "1.0.0", "WMTSCapabilities.xml"]
             PyramidView(request)()
-            self.assertEqual(request.response.headers["Content-Type"], "application/xml")
+            assert request.response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 request.response.body.decode("utf-8"),
                 CAPABILITIES,
@@ -1005,7 +1025,7 @@ Size per tile: 4[0-9][0-9] o
             },
             start_response,
         )
-        self.assertEqual(code, "200 OK")
+        assert code == "200 OK"
         self.assert_result_equals(
             result[0].decode("utf-8"),
             """<?xml version="1.0" encoding="UTF-8"?>
@@ -1045,7 +1065,7 @@ Size per tile: 4[0-9][0-9] o
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png"},
             start_response,
         )
-        self.assertEqual(code, "204 No Content")
+        assert code == "204 No Content"
 
         serve(
             server._TILEGENERATION.get_main_config(),
@@ -1053,8 +1073,8 @@ Size per tile: 4[0-9][0-9] o
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png"},
             start_response,
         )
-        self.assertEqual(code, "200 OK")
-        self.assertEqual(headers["Cache-Control"], "max-age=28800")
+        assert code == "200 OK"
+        assert headers["Cache-Control"] == "max-age=28800"
 
         result = serve(
             server._TILEGENERATION.get_main_config(),
@@ -1062,7 +1082,7 @@ Size per tile: 4[0-9][0-9] o
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/WMTSCapabilities.xml"},
             start_response,
         )
-        self.assertEqual(code, "200 OK")
+        assert code == "200 OK"
         self.assert_result_equals(
             result[0].decode("utf-8"),
             CAPABILITIES,
@@ -1082,7 +1102,7 @@ Size per tile: 4[0-9][0-9] o
             }
             request.matchdict["path"] = ["wmts", "1.0.0", "WMTSCapabilities.xml"]
             PyramidView(request)()
-            self.assertEqual(request.response.headers["Content-Type"], "application/xml")
+            assert request.response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 request.response.body.decode("utf-8"),
                 CAPABILITIES,

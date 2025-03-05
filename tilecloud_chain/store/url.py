@@ -5,6 +5,7 @@ import os
 import pkgutil
 import urllib.parse
 from collections.abc import AsyncGenerator, Iterable
+from pathlib import Path
 from typing import Any, cast
 
 import aiohttp
@@ -36,18 +37,21 @@ class URLTileStore(AsyncTileStore):
         self._hosts_limit: host_limit.HostLimit = {}
         if headers is not None:
             self._session.headers.update(headers)
-        host_limit_filename = os.environ.get(
-            "TILEGENERATION_HOSTS_LIMIT", "/etc/tilegeneration/hosts_limit.yaml"
+        host_limit_path = Path(
+            os.environ.get(
+                "TILEGENERATION_HOSTS_LIMIT",
+                "/etc/tilegeneration/hosts_limit.yaml",
+            ),
         )
-        if os.path.exists(host_limit_filename):
+        if host_limit_path.exists():
             yaml = YAML(typ="safe")
-            with open(host_limit_filename, encoding="utf-8") as f:
+            with host_limit_path.open(encoding="utf-8") as f:
                 self._hosts_limit = yaml.load(f)
 
                 schema_data = pkgutil.get_data("tilecloud_chain", "host-limit-schema.json")
                 assert schema_data
                 errors, _ = jsonschema_validator.validate(
-                    host_limit_filename,
+                    str(host_limit_path),
                     cast(dict[str, Any], self._hosts_limit),
                     json.loads(schema_data),
                 )
@@ -65,7 +69,7 @@ class URLTileStore(AsyncTileStore):
         tilelayout = self._tile_layouts[hash(tile.tilecoord) % len(self._tile_layouts)]
         try:
             url = tilelayout.filename(tile.tilecoord, tile.metadata)
-        except Exception as exception:  # pylint: disable=broad-except
+        except Exception as exception:  # pylint: disable=broad-except # noqa: BLE001
             _LOGGER.warning("Error while getting tile %s", tile, exc_info=True)
             tile.error = exception
             return tile
@@ -81,7 +85,8 @@ class URLTileStore(AsyncTileStore):
                 .get(
                     "concurrent",
                     self._hosts_limit.get("default", {}).get(
-                        "concurrent", host_limit.DEFAULT_CONCURRENT_LIMIT_DEFAULT
+                        "concurrent",
+                        host_limit.DEFAULT_CONCURRENT_LIMIT_DEFAULT,
                     ),
                 )
             )
@@ -107,11 +112,10 @@ class URLTileStore(AsyncTileStore):
                                 tile.data = await response.read()
                             else:
                                 tile.error = f"URL: {url}\n{await response.text()}"
+                        elif self._allows_no_contenttype:
+                            tile.data = await response.read()
                         else:
-                            if self._allows_no_contenttype:
-                                tile.data = await response.read()
-                            else:
-                                tile.error = f"URL: {url}\nThe Content-Type header is missing"
+                            tile.error = f"URL: {url}\nThe Content-Type header is missing"
 
                     else:
                         tile.error = f"URL: {url}\n{response.status}: {response.reason}\n{response.text}"
@@ -122,17 +126,17 @@ class URLTileStore(AsyncTileStore):
 
     async def __contains__(self, tile: Tile) -> bool:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def list(self) -> AsyncGenerator[Tile]:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
         yield Tile(TileCoord(0, 0, 0))  # pylint: disable=unreachable
 
     async def put_one(self, tile: Tile) -> Tile:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     async def delete_one(self, tile: Tile) -> Tile:
         """See in superclass."""
-        raise NotImplementedError()
+        raise NotImplementedError

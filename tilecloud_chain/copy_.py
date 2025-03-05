@@ -50,8 +50,11 @@ class Copy:
 
             gene.imap(
                 HashDropper(
-                    empty_tile["size"], empty_tile["hash"], store=dest_tilestore, count=count_tiles_dropped
-                )
+                    empty_tile["size"],
+                    empty_tile["hash"],
+                    store=dest_tilestore,
+                    count=count_tiles_dropped,
+                ),
             )
 
         if options.process:
@@ -71,7 +74,7 @@ Total time: {duration_format(gene.duration)}
 Total size: {size_format(self.count.size)}
 Time per tile: {(gene.duration / self.count.nb * 1000).seconds if self.count.nb != 0 else 0} ms
 Size per tile: {self.count.size / self.count.nb if self.count.nb != 0 else -1} o
-"""
+""",
             )
 
 
@@ -84,7 +87,8 @@ async def _async_main() -> None:
     """Copy the tiles from a cache to an other."""
     try:
         parser = ArgumentParser(
-            description="Used to copy the tiles from a cache to an other", prog=sys.argv[0]
+            description="Used to copy the tiles from a cache to an other",
+            prog=sys.argv[0],
         )
         add_common_options(parser, near=False, time=False, dimensions=True, cache=False)
         parser.add_argument("--process", dest="process", metavar="NAME", help="The process name to do")
@@ -111,7 +115,7 @@ async def _async_main() -> None:
                 await copy.copy(options, gene, layer, options.source, options.dest, "copy")
     except SystemExit:
         raise
-    except:  # pylint: disable=bare-except # noqa: E722
+    except:  # pylint: disable=bare-except
         logger.exception("Exit with exception")
         if os.environ.get("TESTS", "false").lower() == "true":
             raise
@@ -127,7 +131,8 @@ async def _async_process() -> None:
     """Copy the tiles from a cache to an other."""
     try:
         parser = ArgumentParser(
-            description="Used to copy the tiles from a cache to an other", prog=sys.argv[0]
+            description="Used to copy the tiles from a cache to an other",
+            prog=sys.argv[0],
         )
         add_common_options(parser, near=False, time=False, dimensions=True)
         parser.add_argument("process", metavar="PROCESS", help="The process name to do")
@@ -151,6 +156,6 @@ async def _async_process() -> None:
                 await copy.copy(options, gene, layer, options.cache, options.cache, "process")
     except SystemExit:
         raise
-    except:  # pylint: disable=bare-except # noqa: E722
+    except:  # pylint: disable=bare-except
         logger.exception("Exit with exception")
         sys.exit(1)

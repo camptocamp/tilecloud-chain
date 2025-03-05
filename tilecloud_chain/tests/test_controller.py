@@ -1,5 +1,6 @@
 import os
 import shutil
+from pathlib import Path
 
 from PIL import Image
 
@@ -24,8 +25,8 @@ class TestController(CompareCase):
             shutil.rmtree("/tmp/tiles")
 
     async def test_capabilities(self) -> None:
-        gene = TileGeneration("tilegeneration/test-fix.yaml", configure_logging=False)
-        config = gene.get_config("tilegeneration/test-fix.yaml")
+        gene = TileGeneration(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
+        config = gene.get_config(Path("tilegeneration/test-fix.yaml"))
         self.assert_result_equals(
             await controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
@@ -965,14 +966,14 @@ class TestController(CompareCase):
     )
 
     async def test_multi_host_capabilities(self) -> None:
-        gene = TileGeneration("tilegeneration/test-fix.yaml", configure_logging=False)
+        gene = TileGeneration(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         self.assert_result_equals(
             await controller.get_wmts_capabilities(gene, "multi_host"), self.MULTIHOST_CAPABILITIES, True
         )
 
     async def test_capabilities_slash(self) -> None:
-        gene = TileGeneration("tilegeneration/test-capabilities.yaml", configure_logging=False)
-        config = gene.get_config("tilegeneration/test-capabilities.yaml")
+        gene = TileGeneration(Path("tilegeneration/test-capabilities.yaml"), configure_logging=False)
+        config = gene.get_config(Path("tilegeneration/test-capabilities.yaml"))
         self.assert_result_equals(
             await controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
@@ -1105,7 +1106,7 @@ class TestController(CompareCase):
         )
 
     async def test_multi_url_capabilities(self) -> None:
-        gene = TileGeneration("tilegeneration/test-fix.yaml", configure_logging=False)
+        gene = TileGeneration(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         self.assert_result_equals(
             await controller.get_wmts_capabilities(gene, "multi_url"), self.MULTIHOST_CAPABILITIES, True
         )
@@ -1655,15 +1656,15 @@ sqs:
     def test_quote(self) -> None:
         from tilecloud_chain import quote
 
-        self.assertEqual(quote("abc"), "abc")
-        self.assertEqual(quote("a b c"), "'a b c'")
-        self.assertEqual(quote("'a b c'"), "\"'a b c'\"")
-        self.assertEqual(quote('"a b c"'), "'\"a b c\"'")
-        self.assertEqual(quote("a\" b' c"), "'a\" b\\' c'")
-        self.assertEqual(quote("a'bc"), '"a\'bc"')
-        self.assertEqual(quote("a'b\"c"), "'a\\'b\"c'")
-        self.assertEqual(quote('ab"c'), "'ab\"c'")
-        self.assertEqual(quote(""), "''")
+        assert quote("abc") == "abc"
+        assert quote("a b c") == "'a b c'"
+        assert quote("'a b c'") == "\"'a b c'\""
+        assert quote('"a b c"') == "'\"a b c\"'"
+        assert quote("a\" b' c") == "'a\" b\\' c'"
+        assert quote("a'bc") == '"a\'bc"'
+        assert quote("a'b\"c") == "'a\\'b\"c'"
+        assert quote('ab"c') == "'ab\"c'"
+        assert quote("") == "''"
 
     def test_generate_legend_images(self) -> None:
         self.assert_tiles_generated(
@@ -1675,17 +1676,17 @@ sqs:
         )
 
         im = Image.open("/tmp/tiles/1.0.0/point/default/legend0.png")
-        self.assertEqual(im.size, (64, 20))
+        assert im.size == (64, 20)
         im = Image.open("/tmp/tiles/1.0.0/line/default/legend0.png")
-        self.assertEqual(im.size, (71, 35))
+        assert im.size == (71, 35)
         im = Image.open("/tmp/tiles/1.0.0/line/default/legend2.png")
-        self.assertEqual(im.size, (71, 35))
+        assert im.size == (71, 35)
         im = Image.open("/tmp/tiles/1.0.0/polygon/default/legend0.png")
-        self.assertEqual(im.size, (81, 23))
+        assert im.size == (81, 23)
         im = Image.open("/tmp/tiles/1.0.0/all/default/legend0.png")
-        self.assertEqual(im.size, (81, 78))
+        assert im.size == (81, 78)
         im = Image.open("/tmp/tiles/1.0.0/all/default/legend2.png")
-        self.assertEqual(im.size, (81, 78))
+        assert im.size == (81, 78)
 
     async def test_legends(self) -> None:
         self.assert_tiles_generated(
@@ -1696,8 +1697,8 @@ sqs:
             tiles=[("point", 0), ("line", 0), ("line", 2), ("polygon", 0), ("all", 0), ("all", 2)],
         )
 
-        gene = TileGeneration("tilegeneration/test-legends.yaml", configure_logging=False)
-        config = gene.get_config("tilegeneration/test-legends.yaml")
+        gene = TileGeneration(Path("tilegeneration/test-legends.yaml"), configure_logging=False)
+        config = gene.get_config(Path("tilegeneration/test-legends.yaml"))
         self.assert_result_equals(
             await controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
