@@ -77,7 +77,7 @@ aiofiles = "24.1.0"
 [tool.poetry.group.dev.dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.15.2" }
 prospector-profile-duplicated = "1.10.5"
-prospector-profile-utils = "1.22.2"
+prospector-profile-utils = "1.22.3"
 c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
 scikit-image = { version = "0.24.0" }
 pytest = "8.3.4"
