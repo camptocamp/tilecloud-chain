@@ -129,7 +129,7 @@ repos:
           )$
         additional_dependencies:
           - prospector-profile-duplicated==1.10.5 # pypi
-          - prospector-profile-utils==1.22.2 # pypi
+          - prospector-profile-utils==1.22.3 # pypi
       - id: prospector
         args:
           - --die-on-tool-error
@@ -137,7 +137,7 @@ repos:
           - --profile=utils:tests
           - --profile=utils:pre-commit
         additional_dependencies:
-          - prospector-profile-utils==1.22.2 # pypi
+          - prospector-profile-utils==1.22.3 # pypi
   - repo: https://github.com/sbrunner/jsonschema-validator
     rev: 1.0.0
     hooks:
