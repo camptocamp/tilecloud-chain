@@ -70,7 +70,7 @@ waitress = "3.0.2"
 certifi = "2024.7.4"
 azure-identity = { version = "1.16.1", optional = true }
 cryptography = "44.0.2"
-gunicorn = { version = "22.0.0", optional = true }
+gunicorn = "23.0.0"
 idna = { version = "3.7", optional = true }
 pillow = { version = "10.3.0", optional = true }
 requests = { version = "2.32.3", optional = true }
