@@ -52,7 +52,7 @@ class URLTileStore(AsyncTileStore):
                 assert schema_data
                 errors, _ = jsonschema_validator.validate(
                     str(host_limit_path),
-                    cast(dict[str, Any], self._hosts_limit),
+                    cast("dict[str, Any]", self._hosts_limit),
                     json.loads(schema_data),
                 )
 

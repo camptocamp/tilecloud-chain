@@ -33,7 +33,7 @@ class Copy:
         config = gene.get_config(gene.config_file)
         layer = config.config["layers"][layer_name]
         # disable metatiles
-        cast(tilecloud_chain.configuration.LayerWms, layer)["meta"] = False
+        cast("tilecloud_chain.configuration.LayerWms", layer)["meta"] = False
         count_tiles_dropped = Count()
 
         gene.create_log_tiles_error(layer_name)

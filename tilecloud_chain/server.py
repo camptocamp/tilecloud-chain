@@ -192,7 +192,7 @@ class Server(Generic[Response]):
 
     def get_s3_client(self, config: tilecloud_chain.DatedConfig) -> "botocore.client.S3":
         """Get the AWS S3 client."""
-        cache_s3 = cast(tilecloud_chain.configuration.CacheS3, self.get_cache(config))
+        cache_s3 = cast("tilecloud_chain.configuration.CacheS3", self.get_cache(config))
         if cache_s3.get("host", "aws") in self.s3_client_cache:
             return self.s3_client_cache[cache_s3.get("host", "aws")]
         for n in range(10):
@@ -214,7 +214,7 @@ class Server(Generic[Response]):
     @staticmethod
     def get_layers(config: tilecloud_chain.DatedConfig) -> list[str]:
         """Get the layer from the config."""
-        layers: list[str] = cast(list[str], config.config.get("layers", {}).keys())
+        layers: list[str] = cast("list[str]", config.config.get("layers", {}).keys())
         return config.config["server"].get("layers", layers)
 
     def get_filter(
@@ -278,7 +278,7 @@ class Server(Generic[Response]):
     ) -> Response:
         cache = self.get_cache(config)
         try:
-            cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
+            cache_s3 = cast("tilecloud_chain.configuration.CacheS3", cache)
             bucket = cache_s3
             response = self.get_s3_client(config).get_object(Bucket=bucket, Key=key_name)
             body = response["Body"]
@@ -304,7 +304,7 @@ class Server(Generic[Response]):
         cache = self.get_cache(config)
 
         if cache["type"] == "s3":
-            cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
+            cache_s3 = cast("tilecloud_chain.configuration.CacheS3", cache)
             key_name = Path(cache_s3["folder"]) / path
             try:
                 with _GET_TILE.labels(storage="s3").time():
@@ -314,7 +314,7 @@ class Server(Generic[Response]):
                 with _GET_TILE.labels(storage="s3").time():
                     return self._read(str(key_name), headers, config, **kwargs)
         if cache["type"] == "azure":
-            cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
+            cache_azure = cast("tilecloud_chain.configuration.CacheAzure", cache)
             key_name = Path(cache_azure["folder"]) / path
             try:
                 with _GET_TILE.labels(storage="azure").time():
@@ -327,15 +327,15 @@ class Server(Generic[Response]):
                     config,
                     data,
                     {
-                        "Content-Encoding": cast(str, properties.content_settings.content_encoding),
-                        "Content-Type": cast(str, properties.content_settings.content_type),
+                        "Content-Encoding": cast("str", properties.content_settings.content_encoding),
+                        "Content-Type": cast("str", properties.content_settings.content_type),
                     },
                     **kwargs,
                 )
             except ResourceNotFoundError:
                 return self.error(config, 404, f"{path} not found", **kwargs)
         else:
-            cache_filesystem = cast(tilecloud_chain.configuration.CacheFilesystem, cache)
+            cache_filesystem = cast("tilecloud_chain.configuration.CacheFilesystem", cache)
             folder = Path(cache_filesystem["folder"] or "")
             if path.split(".")[-1] not in self.get_static_allow_extension(config):
                 return self.error(config, 403, "Extension not allowed", **kwargs)
@@ -438,7 +438,7 @@ class Server(Generic[Response]):
 
                     if params["LAYER"] in self.get_layers(config):
                         layer = cast(
-                            tilecloud_chain.configuration.LayerWms,
+                            "tilecloud_chain.configuration.LayerWms",
                             config.config["layers"][params["LAYER"]],
                         )
                     else:
@@ -521,7 +521,7 @@ class Server(Generic[Response]):
             if not path:
                 if params["LAYER"] in self.get_layers(config):
                     layer = cast(
-                        tilecloud_chain.configuration.LayerWms,
+                        "tilecloud_chain.configuration.LayerWms",
                         config.config["layers"][params["LAYER"]],
                     )
                 else:

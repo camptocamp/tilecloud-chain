@@ -278,7 +278,7 @@ async def fetch(
                     return server.error(config, 502, "Error while generate the tile, see logs for details")
 
                 # Don't fetch the just generated tile
-                tiles: dict[TileCoord, Tile] = cast(dict[TileCoord, Tile], meta_tile.metadata["tiles"])
+                tiles: dict[TileCoord, Tile] = cast("dict[TileCoord, Tile]", meta_tile.metadata["tiles"])
                 try:
                     fetched_tile = tiles[tile.tilecoord]
                 except KeyError:
