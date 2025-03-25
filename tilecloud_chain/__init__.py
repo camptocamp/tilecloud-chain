@@ -620,7 +620,7 @@ class TileGeneration:
         return (
             self.get_config(config_file)
             if config_file
-            else DatedConfig(cast(tilecloud_chain.configuration.Configuration, {}), 0, Path())
+            else DatedConfig(cast("tilecloud_chain.configuration.Configuration", {}), 0, Path())
         )
 
     def get_tile_config(self, tile: Tile) -> DatedConfig:
@@ -637,7 +637,7 @@ class TileGeneration:
         if not config_file.exists():
             _LOGGER.error("Missing config file %s", config_file)
             if ignore_error:
-                return DatedConfig(cast(tilecloud_chain.configuration.Configuration, {}), 0, Path())
+                return DatedConfig(cast("tilecloud_chain.configuration.Configuration", {}), 0, Path())
             sys.exit(1)
 
         config: DatedConfig | None = self.configs.get(config_file)
@@ -647,7 +647,7 @@ class TileGeneration:
         config, success = self._get_config(config_file, ignore_error, base_config)
         if not success or config is None:
             if ignore_error:
-                config = DatedConfig(cast(tilecloud_chain.configuration.Configuration, {}), 0, Path())
+                config = DatedConfig(cast("tilecloud_chain.configuration.Configuration", {}), 0, Path())
             else:
                 sys.exit(1)
         self.configs[config_file] = config
@@ -708,7 +708,7 @@ class TileGeneration:
             config.update(ruamel.load(f))
 
         dated_config = DatedConfig(
-            cast(tilecloud_chain.configuration.Configuration, config),
+            cast("tilecloud_chain.configuration.Configuration", config),
             Path(config_file).stat().st_mtime,
             config_file,
         )
@@ -734,7 +734,7 @@ class TileGeneration:
         assert schema_data
         errors, _ = jsonschema_validator.validate(
             str(config.file),
-            cast(dict[str, Any], config.config),
+            cast("dict[str, Any]", config.config),
             json.loads(schema_data),
         )
 
@@ -879,7 +879,7 @@ class TileGeneration:
         )
         # store
         if cache["type"] == "s3":
-            cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
+            cache_s3 = cast("tilecloud_chain.configuration.CacheS3", cache)
             # on s3
             cache_tilestore: AsyncTileStore = TileStoreWrapper(
                 S3TileStore(
@@ -890,7 +890,7 @@ class TileGeneration:
                 ),
             )
         elif cache["type"] == "azure":
-            cache_azure = cast(tilecloud_chain.configuration.CacheAzureTyped, cache)
+            cache_azure = cast("tilecloud_chain.configuration.CacheAzureTyped", cache)
             # on Azure
             cache_tilestore = AzureStorageBlobTileStore(
                 tilelayout=layout,
@@ -1111,9 +1111,9 @@ class TileGeneration:
         scale = grid["resolution_scale"]
 
         tilegrid = FreeTileGrid(
-            resolutions=cast(list[int], [r * scale for r in grid["resolutions"]]),
+            resolutions=cast("list[int]", [r * scale for r in grid["resolutions"]]),
             scale=scale,
-            max_extent=cast(tuple[int, int, int, int], grid["bbox"]),
+            max_extent=cast("tuple[int, int, int, int]", grid["bbox"]),
             tile_size=grid.get("tile_size", configuration.TILE_SIZE_DEFAULT),
         )
 
@@ -1914,7 +1914,7 @@ class TilesFileStore(AsyncTileStore):
 
                     yield Tile(
                         tilecoord,
-                        metadata=dict([cast(tuple[str, str], e.split("=")) for e in splitted_line[1:]]),
+                        metadata=dict([cast("tuple[str, str]", e.split("=")) for e in splitted_line[1:]]),
                     )
 
     async def get_one(self, tile: Tile) -> Tile | None:

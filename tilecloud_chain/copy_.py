@@ -5,13 +5,16 @@ import logging
 import os
 import sys
 from argparse import ArgumentParser, Namespace
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
-import tilecloud_chain.configuration
 from tilecloud_chain import Count, DropEmpty, HashDropper, TileGeneration, add_common_options
 from tilecloud_chain.format import duration_format, size_format
 
-logger = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    import tilecloud_chain.configuration
+
+
+_logger = logging.getLogger(__name__)
 
 
 class Copy:
@@ -33,7 +36,7 @@ class Copy:
         config = gene.get_config(gene.config_file)
         layer = config.config["layers"][layer_name]
         # disable metatiles
-        cast(tilecloud_chain.configuration.LayerWms, layer)["meta"] = False
+        cast("tilecloud_chain.configuration.LayerWms", layer)["meta"] = False
         count_tiles_dropped = Count()
 
         gene.create_log_tiles_error(layer_name)
@@ -116,7 +119,7 @@ async def _async_main() -> None:
     except SystemExit:
         raise
     except:  # pylint: disable=bare-except
-        logger.exception("Exit with exception")
+        _logger.exception("Exit with exception")
         if os.environ.get("TESTS", "false").lower() == "true":
             raise
         sys.exit(1)
@@ -157,5 +160,5 @@ async def _async_process() -> None:
     except SystemExit:
         raise
     except:  # pylint: disable=bare-except
-        logger.exception("Exit with exception")
+        _logger.exception("Exit with exception")
         sys.exit(1)

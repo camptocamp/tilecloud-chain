@@ -520,7 +520,7 @@ class TilestoreGetter:
                 return None
 
             grid = config.config["grids"][layer["grid"]]
-            if cast(str, layer.get("output_format", "png")) == "grid":
+            if cast("str", layer.get("output_format", "png")) == "grid":
                 assert self.gene._count_tiles  # noqa: SLF001
                 assert self.gene._count_tiles_dropped  # noqa: SLF001
                 return TimedTileStoreWrapper(
@@ -554,7 +554,7 @@ class TilestoreGetter:
                         else 0
                     ),
                     data_buffer=layer.get("data_buffer", 128),
-                    output_format=cast(str, layer.get("output_format", "png")),
+                    output_format=cast("str", layer.get("output_format", "png")),
                     proj4_literal=grid["proj4_literal"],
                 ),
                 "mapnik",

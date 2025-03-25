@@ -120,7 +120,7 @@ async def _async_main(args: list[str] | None = None, out: IO[str] | None = None)
 
 def _send(data: bytes | str, path: str, mime_type: str, cache: tilecloud_chain.configuration.Cache) -> None:
     if cache["type"] == "s3":
-        cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
+        cache_s3 = cast("tilecloud_chain.configuration.CacheS3", cache)
         client = tilecloud.store.s3.get_client(cache_s3.get("host"))
         key_name = Path(cache["folder"]) / path
         bucket = cache_s3["bucket"]
@@ -133,7 +133,7 @@ def _send(data: bytes | str, path: str, mime_type: str, cache: tilecloud_chain.c
             ContentType=mime_type,
         )
     if cache["type"] == "azure":
-        cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
+        cache_azure = cast("tilecloud_chain.configuration.CacheAzure", cache)
         key_name = Path(cache["folder"]) / path
         container = get_azure_container_client(cache_azure["container"])
         blob = container.get_blob_client(str(key_name))
@@ -161,19 +161,19 @@ def _send(data: bytes | str, path: str, mime_type: str, cache: tilecloud_chain.c
 
 async def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes | None:
     if cache["type"] == "s3":
-        cache_s3 = cast(tilecloud_chain.configuration.CacheS3, cache)
+        cache_s3 = cast("tilecloud_chain.configuration.CacheS3", cache)
         client = tilecloud.store.s3.get_client(cache_s3.get("host"))
         key_name = Path(cache["folder"]) / path
         bucket = cache_s3["bucket"]
         try:
             response = client.get_object(Bucket=bucket, Key=str(key_name))
-            return cast(bytes, response["Body"].read())
+            return cast("bytes", response["Body"].read())
         except botocore.exceptions.ClientError as ex:
             if ex.response["Error"]["Code"] == "NoSuchKey":
                 return None
             raise
     if cache["type"] == "azure":
-        cache_azure = cast(tilecloud_chain.configuration.CacheAzure, cache)
+        cache_azure = cast("tilecloud_chain.configuration.CacheAzure", cache)
         key_name = Path(cache["folder"]) / path
         try:
             blob = get_azure_container_client(container=cache_azure["container"]).get_blob_client(
@@ -183,7 +183,7 @@ async def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes |
         except ResourceNotFoundError:
             return None
     else:
-        cache_filesystem = cast(tilecloud_chain.configuration.CacheFilesystem, cache)
+        cache_filesystem = cast("tilecloud_chain.configuration.CacheFilesystem", cache)
         p = Path(cache_filesystem["folder"]) / path
         if not p.is_file():
             return None
@@ -229,7 +229,7 @@ async def get_wmts_capabilities(
         assert data
         _LOGGER.debug("Get WMTS capabilities in %s", time.perf_counter() - start)
         return cast(
-            str,
+            "str",
             jinja2_template(
                 data.decode("utf-8"),
                 layers=config.config.get("layers", {}),

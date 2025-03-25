@@ -93,8 +93,7 @@ _schema = os.environ.get("TILECLOUD_CHAIN_POSTGRESQL_SCHEMA", "tilecloud_chain")
 
 def _encode_message(metatile: Tile) -> dict[str, Any]:
     metadata = dict(metatile.metadata)
-    if "postgresql_id" in metadata:
-        del metadata["postgresql_id"]
+    metadata.pop("postgresql_id", None)
     return {
         "z": metatile.tilecoord.z,
         "x": metatile.tilecoord.x,
@@ -105,10 +104,10 @@ def _encode_message(metatile: Tile) -> dict[str, Any]:
 
 
 def _decode_tilecoord(body: dict[str, Any]) -> TileCoord:
-    z = cast(int, body.get("z"))
-    x = cast(int, body.get("x"))
-    y = cast(int, body.get("y"))
-    n = cast(int, body.get("n"))
+    z = cast("int", body.get("z"))
+    x = cast("int", body.get("x"))
+    y = cast("int", body.get("y"))
+    n = cast("int", body.get("n"))
     return TileCoord(z, x, y, n)
 
 
@@ -259,7 +258,7 @@ async def _start_job(
             result = await session.execute(select(Job).where(Job.id == job_id).with_for_update(of=Job))
             job = result.scalar()
             job.status = _STATUS_ERROR if error else _STATUS_STARTED  # type: ignore[union-attr]
-            job.message = out.getvalue()[: int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000))]  # type: ignore[union-attr]
+            job.message = out.getvalue()[: int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", "1000"))]  # type: ignore[union-attr]
             await session.commit()
         return
 

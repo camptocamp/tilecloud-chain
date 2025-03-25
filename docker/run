@@ -4,6 +4,7 @@ import os
 import stat
 import subprocess  # nosec
 import sys
+from pathlib import Path
 
 if "GROUP_ID" not in os.environ:
     sys.exit("The GROUP_ID environment variable is required")
@@ -17,9 +18,9 @@ if "USER_NAME" not in os.environ:
 if "UMASK" not in os.environ:
     sys.exit("The UMASK environment variable is required")
 
-subprocess.check_call(["groupadd", "-g", os.environ["GROUP_ID"], "geomapfish"])  # nosec
-subprocess.check_call(  # nosec
-    [
+subprocess.check_call(["groupadd", "-g", os.environ["GROUP_ID"], "geomapfish"])  # noqa: S603, S607
+subprocess.check_call(  # noqa: S603 # nosec
+    [  # noqa: S607
         "useradd",
         "--shell",
         "/bin/bash",
@@ -28,17 +29,17 @@ subprocess.check_call(  # nosec
         "--gid",
         os.environ["GROUP_ID"],
         os.environ["USER_NAME"],
-    ]
+    ],
 )
 
-run_file_name = "/tmp/run"  # nosec
-with open(run_file_name, "w") as run_file:
+run_file_name = Path("/tmp/run")  # noqa: S108
+with run_file_name.open("w", encoding="utf-8") as run_file:
     run_file.write("#!/usr/bin/python\n")
     run_file.write("import subprocess, os\n")
-    run_file.write("os.umask(0o{})\n".format(os.environ["UMASK"]))
-    run_file.write(f"subprocess.check_call({repr(sys.argv[1:])})\n")
+    run_file.write(f"os.umask(0o{os.environ['UMASK']})\n")
+    run_file.write(f"subprocess.check_call({sys.argv[1:]!r})\n")
 
-os.chmod(
-    run_file_name, stat.S_IRUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH
+run_file_name.chmod(
+    stat.S_IRUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH,
 )
-subprocess.check_call(["su", os.environ["USER_NAME"], "-c", run_file_name])  # nosec
+subprocess.check_call(["su", os.environ["USER_NAME"], "-c", run_file_name])  # noqa: S603, S607

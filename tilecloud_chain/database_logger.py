@@ -75,7 +75,7 @@ class DatabaseLoggerCommon:
                     )
                     await self.connection.commit()
                 except psycopg.DatabaseError:
-                    logging.exception("Unable to create table %s.%s", schema, table)
+                    _LOGGER.exception("Unable to create table %s.%s", schema, table)
                     sys.exit(1)
             else:
                 try:
@@ -86,7 +86,7 @@ class DatabaseLoggerCommon:
                         ("test_layer", -1, "test", "-1x-1"),
                     )
                 except psycopg.DatabaseError:
-                    logging.exception("Unable to insert logging data into %s.%s", schema, table)
+                    _LOGGER.exception("Unable to insert logging data into %s.%s", schema, table)
                     sys.exit(1)
                 finally:
                     await self.connection.rollback()
