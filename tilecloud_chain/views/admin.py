@@ -207,12 +207,12 @@ class Admin:
         stdout_parsed = _parse_stdout(completed_process.stdout.decode())
         out = _format_output(
             "<br />".join(stdout_parsed),
-            int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
+            int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", "1000")),
         )
         if completed_process.stderr:
             out += "<br />Error:<br />" + _format_output(
                 completed_process.stderr.decode().replace("\n", "<br />"),
-                int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
+                int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", "1000")),
             )
         return {
             "out": out,
@@ -418,6 +418,6 @@ def _run_in_process(
         error = True
     return_dict["out"] = _format_output(
         "<br />".join(_parse_stdout(out.getvalue())),
-        int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000)),
+        int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", "1000")),
     )
     return_dict["error"] = error

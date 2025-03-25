@@ -258,7 +258,7 @@ async def _start_job(
             result = await session.execute(select(Job).where(Job.id == job_id).with_for_update(of=Job))
             job = result.scalar()
             job.status = _STATUS_ERROR if error else _STATUS_STARTED  # type: ignore[union-attr]
-            job.message = out.getvalue()[: int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", 1000))]  # type: ignore[union-attr]
+            job.message = out.getvalue()[: int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", "1000"))]  # type: ignore[union-attr]
             await session.commit()
         return
 

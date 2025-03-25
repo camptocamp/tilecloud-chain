@@ -132,11 +132,11 @@ async def _calculate_cost(
                 size = tile_size * layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT) * resolution
                 meta_buffer = size * 0.7 + m_buffer
                 meta_geom = gene.get_geoms(config, layer_name)[zoom].buffer(meta_buffer, 1)
-                nb_metatiles[zoom] = int(round(meta_geom.area / size**2))
+                nb_metatiles[zoom] = round(meta_geom.area / size**2)
             size = tile_size * resolution
             tile_buffer = size * 0.7 + m_buffer
             geom = gene.get_geoms(config, layer_name)[zoom].buffer(tile_buffer, 1)
-            nb_tiles[zoom] = int(round(geom.area / size**2))
+            nb_tiles[zoom] = round(geom.area / size**2)
 
     elif options.cost_algo == "count":
         gene.init_tilecoords(config, layer_name)
