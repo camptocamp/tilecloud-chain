@@ -75,7 +75,7 @@ pytest-asyncio = "0.25.3"
 aiofiles = "24.1.0"
 
 [tool.poetry.group.dev.dependencies]
-prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.16.0" }
+prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.16.1" }
 prospector-profile-duplicated = "1.10.5"
 prospector-profile-utils = "1.22.3"
 c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
