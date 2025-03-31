@@ -82,11 +82,11 @@ prospector-profile-duplicated = "1.7.0"
 prospector-profile-utils = "1.11.1"
 c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
 scikit-image = { version = "0.24.0" }
-pytest = "8.3.4"
+pytest = "8.3.5"
 testfixtures = "8.3.0"
 coverage = "7.6.12"
 types-redis = "4.6.0.20241004"
-types-requests = "2.32.0.20241016"
+types-requests = "2.32.0.20250306"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version", "poetry-plugin-drop-python-upper-constraint"]
