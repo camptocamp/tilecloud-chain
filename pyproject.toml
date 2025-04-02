@@ -56,22 +56,22 @@ c2cwsgiutils = { version = "6.1.7", extras = ["standard", "broadcast", "oauth2",
 pyramid-mako = "1.1.0"
 python-dateutil = "2.9.0.post0"
 tilecloud = { version = "1.12.6", extras = ["azure", "aws", "redis", "wsgi"] }
-Jinja2 = "3.1.5"
+Jinja2 = "3.1.6"
 PyYAML = "6.0.2"
 Shapely = "2.0.7"
 jsonschema = "4.23.0"
 pyramid = "2.0.2"
 jsonschema-validator-new = "0.3.2"
-azure-storage-blob = "12.23.1"
+azure-storage-blob = "12.25.1"
 waitress = "3.0.2"
 certifi = "2025.1.31"
 Paste = "3.10.1"
 psutil = "7.0.0"
 pyproj = "3.7.1"
-psycopg = { version = "3.2.5", extras = ["binary"] }
-aiohttp = "3.11.13"
-sqlalchemy = { version = "2.0.38", extras = ["asyncio"] }
-pytest-asyncio = "0.25.3"
+psycopg = { version = "3.2.6", extras = ["binary"] }
+aiohttp = "3.11.16"
+sqlalchemy = { version = "2.0.40", extras = ["asyncio"] }
+pytest-asyncio = "0.26.0"
 aiofiles = "24.1.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -79,14 +79,14 @@ prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"]
 prospector-profile-duplicated = "1.10.5"
 prospector-profile-utils = "1.22.3"
 c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
-scikit-image = { version = "0.24.0" }
-pytest = "8.3.4"
+scikit-image = { version = "0.25.2" }
+pytest = "8.3.5"
 testfixtures = "8.3.0"
-coverage = "7.6.12"
+coverage = "7.8.0"
 types-redis = "4.6.0.20241004"
-types-requests = "2.32.0.20250301"
-types-aiofiles = "24.1.0.20241221"
-pytest-asyncio = "0.25.3"
+types-requests = "2.32.0.20250328"
+types-aiofiles = "24.1.0.20250326"
+pytest-asyncio = "0.26.0"
 
 [tool.poetry-dynamic-versioning]
 enable = true
