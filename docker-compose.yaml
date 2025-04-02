@@ -14,6 +14,7 @@ services:
       MS_DEBUGLEVEL: '5'
       MAPSERVER_CATCH_SEGV: '1'
       MS_MAPFILE: /etc/mapserver/mapserver.map
+      MS_MAP_PATTERN: ^/etc/mapserver/
     volumes:
       - ./docker/mapfile-docker:/etc/mapserver:ro
     links:
