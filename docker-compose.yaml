@@ -14,6 +14,7 @@ services:
       MS_DEBUGLEVEL: '5'
       MAPSERVER_CATCH_SEGV: '1'
       MS_MAPFILE: /etc/mapserver/mapserver.map
+      MS_MAP_PATTERN: ^/etc/mapserver/
     volumes:
       - ./docker/mapfile-docker:/etc/mapserver:ro
     links:
@@ -59,7 +60,6 @@ services:
       C2C_PROMETHEUS_PORT: '9110'
     links:
       - db
-      - mapserver
       - redis_sentinel
     volumes:
       - ./example/tilegeneration/config.yaml:/etc/tilegeneration/config.yaml:ro
@@ -111,7 +111,6 @@ services:
       - infinity
     links:
       - db
-      - mapserver
       - redis_sentinel
     volumes:
       - ./results:/results
