@@ -242,7 +242,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/sensible-utils: 0.0.22
   ubuntu_24_04/sysvinit-utils: 3.08-6ubuntu3
   ubuntu_24_04/tar: 1.35+dfsg-3build1
-  ubuntu_24_04/tzdata: 2025a-0ubuntu0.24.04
+  ubuntu_24_04/tzdata: 2025b-0ubuntu0.24.04
   ubuntu_24_04/ubuntu-keyring: 2023.11.28.1
   ubuntu_24_04/unixodbc-common: 2.3.12-1ubuntu0.24.04.1
   ubuntu_24_04/unminimize: 0.2.1
