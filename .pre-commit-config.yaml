@@ -146,6 +146,7 @@ repos:
           (?x)^(
             ci/config\.yaml
             |\.github/publish\.yaml
+            |jsonschema\-gentypes\.yaml
           )$
   - repo: https://github.com/renovatebot/pre-commit-hooks
     rev: 39.227.2
