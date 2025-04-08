@@ -62,7 +62,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libde265-0: 1.0.15-1build3
   ubuntu_24_04/libdebconfclient0: 0.271ubuntu3
   ubuntu_24_04/libdeflate0: 1.19-1build1.1
-  ubuntu_24_04/libexpat1: 2.6.1-2ubuntu0.2
+  ubuntu_24_04/libexpat1: 2.6.1-2ubuntu0.3
   ubuntu_24_04/libext2fs2t64: 1.47.0-2.4~exp1ubuntu4.1
   ubuntu_24_04/libffi8: 3.4.6-1build1
   ubuntu_24_04/libfontconfig1: 2.15.0-1.1ubuntu2
