@@ -139,7 +139,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libpam-runtime: 1.5.3-5ubuntu5.1
   ubuntu_24_04/libpam0g: 1.5.3-5ubuntu5.1
   ubuntu_24_04/libpcre2-8-0: 10.42-4ubuntu2.1
-  ubuntu_24_04/libperl5.38t64: 5.38.2-3.2build2.1
+  ubuntu_24_04/libperl5.38t64: 5.38.2-3.2ubuntu0.1
   ubuntu_24_04/libpixman-1-0: 0.42.2-1build1
   ubuntu_24_04/libpng16-16t64: 1.6.43-5build1
   ubuntu_24_04/libpoppler134: 24.02.0-1ubuntu9.3
@@ -214,9 +214,9 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/openssl: 3.0.13-0ubuntu3.5
   ubuntu_24_04/optipng: 0.7.8+ds-1build2
   ubuntu_24_04/passwd: 1:4.13+dfsg1-4ubuntu3.2
-  ubuntu_24_04/perl: 5.38.2-3.2build2.1
-  ubuntu_24_04/perl-base: 5.38.2-3.2build2.1
-  ubuntu_24_04/perl-modules-5.38: 5.38.2-3.2build2.1
+  ubuntu_24_04/perl: 5.38.2-3.2ubuntu0.1
+  ubuntu_24_04/perl-base: 5.38.2-3.2ubuntu0.1
+  ubuntu_24_04/perl-modules-5.38: 5.38.2-3.2ubuntu0.1
   ubuntu_24_04/postgresql-client: 16+257build1.1
   ubuntu_24_04/postgresql-client-16: 16.8-0ubuntu0.24.04.1
   ubuntu_24_04/postgresql-client-common: 257build1.1
