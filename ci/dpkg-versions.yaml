@@ -141,7 +141,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/libpam0g: 1.4.0-11ubuntu2.5
   ubuntu_22_04/libpcre2-8-0: 10.39-3ubuntu0.1
   ubuntu_22_04/libpcre3: 2:8.39-13ubuntu0.22.04.1
-  ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.3
+  ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.4
   ubuntu_22_04/libpixman-1-0: 0.40.0-1ubuntu0.22.04.1
   ubuntu_22_04/libpng16-16: 1.6.37-3build5
   ubuntu_22_04/libpoppler118: 22.02.0-2ubuntu0.7
@@ -220,9 +220,9 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/openssl: 3.0.2-0ubuntu1.19
   ubuntu_22_04/optipng: 0.7.7-2build1
   ubuntu_22_04/passwd: 1:4.8.1-2ubuntu2.2
-  ubuntu_22_04/perl: 5.34.0-3ubuntu1.3
-  ubuntu_22_04/perl-base: 5.34.0-3ubuntu1.3
-  ubuntu_22_04/perl-modules-5.34: 5.34.0-3ubuntu1.3
+  ubuntu_22_04/perl: 5.34.0-3ubuntu1.4
+  ubuntu_22_04/perl-base: 5.34.0-3ubuntu1.4
+  ubuntu_22_04/perl-modules-5.34: 5.34.0-3ubuntu1.4
   ubuntu_22_04/postgresql-client: 14+238
   ubuntu_22_04/postgresql-client-14: 14.17-0ubuntu0.22.04.1
   ubuntu_22_04/postgresql-client-common: '238'
