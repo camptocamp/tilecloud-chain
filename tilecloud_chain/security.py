@@ -43,7 +43,7 @@ class User:
         if self.is_admin:
             return True
         if "github_repository" in auth_config:
-            return c2cwsgiutils.auth.check_access_config(self.request, auth_config) or self.is_admin
+            return c2cwsgiutils.auth.check_access_config(self.request, auth_config)
 
         return False
 
@@ -104,8 +104,6 @@ class SecurityPolicy:
             return Allowed("The User is admin.")
         if permission == "all":
             return Denied("Root access is required.")
-        if permission not in context.get("sources", {}):  # type: ignore[operator]
-            return Denied(f"No such source '{permission}'.")
-        if identity.has_access(context["sources"][permission]):  # type: ignore[typeddict-item]
-            return Allowed(f"The User has access to source {permission}.")
+        if identity.has_access(context):
+            return Allowed("The User has access.")
         return Denied(f"The User has no access to source {permission}.")
