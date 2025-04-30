@@ -86,7 +86,7 @@ pytest = "8.3.5"
 testfixtures = "8.3.0"
 coverage = "7.6.12"
 types-redis = "4.6.0.20241004"
-types-requests = "2.32.0.20250306"
+types-requests = "2.32.0.20250328"
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version", "poetry-plugin-drop-python-upper-constraint"]
