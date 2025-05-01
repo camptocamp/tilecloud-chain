@@ -9,7 +9,7 @@ services:
       - ./docker/test-db:/docker-entrypoint-initdb.d:ro
 
   mapserver:
-    image: camptocamp/mapserver:8.0
+    image: camptocamp/mapserver:8.4
     environment:
       MS_DEBUGLEVEL: '5'
       MAPSERVER_CATCH_SEGV: '1'
@@ -22,13 +22,13 @@ services:
     user: www-data
 
   redis_master:
-    image: bitnami/redis:7.4.2
+    image: bitnami/redis:7.4.3
     environment:
       - REDIS_REPLICATION_MODE=master
       - ALLOW_EMPTY_PASSWORD=yes
 
   redis_slave:
-    image: bitnami/redis:7.4.2
+    image: bitnami/redis:7.4.3
     environment:
       - REDIS_REPLICATION_MODE=slave
       - REDIS_MASTER_HOST=redis_master
@@ -37,7 +37,7 @@ services:
       - redis_master
 
   redis_sentinel:
-    image: bitnami/redis-sentinel:7.4.2
+    image: bitnami/redis-sentinel:7.4.3
     environment:
       - REDIS_MASTER_HOST=redis_master
       - REDIS_MASTER_SET=mymaster
