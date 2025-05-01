@@ -52,10 +52,9 @@ from tilecloud.store.mbtiles import MBTilesTileStore
 from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.store.redis import RedisTileStore
 from tilecloud.store.s3 import S3TileStore
-from tilecloud.store.sqs import SQSTileStore, maybe_stop
+from tilecloud.store.sqs import SQSTileStore, _maybe_stop
 
 import tilecloud_chain.configuration
-import tilecloud_chain.security
 from tilecloud_chain import configuration
 from tilecloud_chain.filter.error import MaximumConsecutiveErrors, TooManyError
 from tilecloud_chain.multitilestore import MultiTileStore
@@ -2008,7 +2007,7 @@ async def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWr
         # Create a SQS queue
         return TimedTileStoreWrapper(
             TileStoreWrapper(
-                SQSTileStore(_get_sqs_queue(config), on_empty=_await_message if daemon else maybe_stop),
+                SQSTileStore(_get_sqs_queue(config), on_empty=_await_message if daemon else _maybe_stop),
             ),
             store_name="SQS",
         )
