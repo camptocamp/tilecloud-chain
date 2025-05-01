@@ -14,7 +14,7 @@ caches:
 
 layers:
   multi:
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     layers: point_multi
     grid: swissgrid
     type: wms

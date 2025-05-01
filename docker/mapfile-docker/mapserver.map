@@ -86,7 +86,7 @@ MAP
     CLASS
         NAME "Line 1"
         STYLE
-            COLOR 0 0 255
+            COLOR 0 255 0
             WIDTH 5
             MINSCALEDENOM 100000
         END

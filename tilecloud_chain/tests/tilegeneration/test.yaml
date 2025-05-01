@@ -88,7 +88,7 @@ defaults:
   mapserver_layer: &mapserver_layer
     <<: *base_layer
     type: wms
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
 
 layers:
   point:
@@ -187,7 +187,7 @@ layers:
     geoms:
       - sql: the_geom AS geom FROM tests.polygon
         connection: user=postgresql password=postgresql dbname=tests host=db
-    wms_url: http://mapserver:8080/mapserv
+    wms_url: http://mapserver:8080/
   mapnik_grid:
     <<: *base_layer
     type: mapnik

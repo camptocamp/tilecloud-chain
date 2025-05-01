@@ -1250,7 +1250,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     type: wms
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     wmts_style: default
   line:
     cost:
@@ -1288,7 +1288,7 @@ layers:
     params:
       PARAM: value
     type: wms
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     wmts_style: default
   mapnik:
     cost:
@@ -1420,7 +1420,7 @@ layers:
     mime_type: image/png
     min_resolution_seed: 10
     type: wms
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     wmts_style: default
   point_hash:
     cost:
@@ -1458,7 +1458,7 @@ layers:
     mime_type: image/png
     min_resolution_seed: 10
     type: wms
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     wmts_style: default
   point_hash_no_meta:
     cost:
@@ -1489,7 +1489,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     type: wms
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     wmts_style: default
   point_px_buffer:
     cost:
@@ -1527,7 +1527,7 @@ layers:
     mime_type: image/png
     px_buffer: 100
     type: wms
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     wmts_style: default
   polygon:
     cost:
@@ -1564,7 +1564,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     type: wms
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     wmts_style: default
   polygon2:
     cost:
@@ -1601,7 +1601,7 @@ layers:
     meta_size: 8
     mime_type: image/png
     type: wms
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     wmts_style: default
 metadata:
   abstract: Some abstract
