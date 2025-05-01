@@ -16,7 +16,7 @@ caches:
 
 layers:
   point:
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     layers: point
     min_resolution_seed: 10
     grid: swissgrid_5

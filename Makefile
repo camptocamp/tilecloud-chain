@@ -9,19 +9,19 @@ help: ## Display this help message
 	@grep --extended-regexp --no-filename '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | sort | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "	%-20s%s\n", $$1, $$2}'
 
-PHONY: build
+.PHONY: build
 build: ## Build all Docker images
 	docker build --tag=camptocamp/tilecloud-chain-tests --target=tests .
 	docker build --tag=camptocamp/tilecloud-chain --build-arg=VERSION=$(VERSION) .
 
-PHONY: checks
+.PHONY: checks
 checks: prospector ## Run the checks
 
-PHONY: prospector
+.PHONY: prospector
 prospector: ## Run Prospector
 	docker run --rm --volume=${PWD}:/app camptocamp/tilecloud-chain-tests prospector --output-format=pylint --die-on-tool-error
 
-PHONY: tests
+.PHONY: tests
 tests: build ## Run the unit tests
 	docker compose stop --timeout=0
 	docker compose down || true
@@ -43,7 +43,7 @@ tests: build ## Run the unit tests
 
 PYTEST_ARGS ?= --last-failed --full-trace
 
-PHONY: tests-fast
+.PHONY: tests-fast
 tests-fast:
 	docker compose up -d
 

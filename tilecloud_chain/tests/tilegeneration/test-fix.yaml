@@ -87,7 +87,7 @@ defaults:
 layers:
   point:
     <<: *layer
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     layers: point
     geoms:
       - sql: the_geom AS geom FROM tests.point
@@ -95,7 +95,7 @@ layers:
     min_resolution_seed: 10
   point_px_buffer:
     <<: *layer
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     layers: point
     px_buffer: 100
     geoms:
@@ -109,7 +109,7 @@ layers:
       hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
   point_hash:
     <<: *layer
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     layers: point
     geoms:
       - sql: the_geom AS geom FROM tests.point
@@ -123,7 +123,7 @@ layers:
       hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
   point_hash_no_meta:
     <<: *layer
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     layers: point
     meta: false
     empty_tile_detection:
@@ -131,7 +131,7 @@ layers:
       hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
   line:
     <<: *layer
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     layers: line
     headers:
       Cache-Control: no-cache
@@ -148,7 +148,7 @@ layers:
       hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
   polygon:
     <<: *layer
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     layers: polygon
     meta: false
     geoms:
@@ -162,7 +162,7 @@ layers:
       hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
   polygon2:
     <<: *layer
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     layers: polygon
     grid: swissgrid_01
     geoms:
@@ -176,7 +176,7 @@ layers:
       hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
   all:
     <<: *layer
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     layers: point,line,polygon
     meta: false
     bbox: [550000.0, 170000.0, 560000.0, 180000.0]

@@ -17,7 +17,7 @@ defaults:
   layer: &layer
     grid: swissgrid_5
     type: wms
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     headers:
       Host: example.com
       Cache-Control: no-cache, no-store

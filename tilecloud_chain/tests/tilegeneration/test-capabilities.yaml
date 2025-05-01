@@ -14,7 +14,7 @@ caches:
 
 defaults:
   layer: &layer
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     layers: point
     grid: swissgrid
     type: wms

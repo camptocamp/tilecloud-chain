@@ -55,7 +55,7 @@ Size per tile: 10(.0)? o
     def test_process(self) -> None:
         for d in ("-vd", "-q", "-v", ""):
             response = requests.get(
-                "http://mapserver:8080/mapserv?STYLES=default&SERVICE=WMS&FORMAT=\
+                "http://mapserver:8080/?STYLES=default&SERVICE=WMS&FORMAT=\
 image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
 %28560800.0%2C+158000.0%2C+573600.0%2C+170800.0%29&LAYERS=point&SRS=EPSG%3A21781"
             )

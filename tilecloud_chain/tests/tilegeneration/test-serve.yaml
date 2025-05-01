@@ -19,7 +19,7 @@ defaults:
   layer: &layer
     grid: swissgrid_5
     type: wms
-    url: http://mapserver:8080/mapserv
+    url: http://mapserver:8080/
     wmts_style: default
     mime_type: image/png
     extension: png
