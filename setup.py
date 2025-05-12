@@ -36,7 +36,6 @@ setup(
         "Environment :: Web Environment",
         "Framework :: Pyramid",
         "Intended Audience :: Other Audience",
-        "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
