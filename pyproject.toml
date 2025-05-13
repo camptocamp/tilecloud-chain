@@ -9,39 +9,7 @@ convention = "numpy"
 asyncio_mode = "auto"
 
 [tool.poetry]
-name = "tilecloud-chain"
 version = "0.0.0"
-description = "Tools to generate tiles from WMS or Mapnik, to S3, Berkeley DB, MBTiles, or local filesystem in WMTS layout using Amazon cloud services."
-readme = "README.md"
-authors = ["Camptocamp <info@camptocamp.com>"]
-repository = "https://github.com/camptocamp/tilecloud-chain"
-license = "BSD-2-Clause"
-keywords = ["gis", "tilecloud", "chain"]
-packages = [{ include = "tilecloud_chain" }]
-classifiers = [
-    'Development Status :: 5 - Production/Stable',
-    'Environment :: Web Environment',
-    'Framework :: Pyramid',
-    'Intended Audience :: Other Audience',
-    'License :: OSI Approved :: BSD License',
-    'Operating System :: OS Independent',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
-    'Programming Language :: Python :: 3.12',
-    'Topic :: Scientific/Engineering :: GIS',
-    'Typing :: Typed',
-]
-include = ["tilecloud_chain/py.typed", "tilecloud_chain/*.rst", "tilecloud_chain/*.md"]
-
-[tool.poetry.scripts]
-generate-tiles = "tilecloud_chain.generate:main"
-generate-controller = "tilecloud_chain.controller:main"
-generate-cost = "tilecloud_chain.cost:main"
-generate-copy = "tilecloud_chain.copy_:main"
-generate-process = "tilecloud_chain.copy_:process"
-import-expiretiles = "tilecloud_chain.expiretiles:main"
 
 [tool.poetry.plugins."pyramid.scaffold"]
 tilecloud_chain = "tilecloud_chain.scaffolds:Create"
@@ -107,6 +75,46 @@ format-jinja = """
 [tool.poetry-plugin-tweak-dependencies-version]
 default = "present"
 
+[project]
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Environment :: Web Environment',
+    'Framework :: Pyramid',
+    'Intended Audience :: Other Audience',
+    'License :: OSI Approved :: BSD License',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Topic :: Scientific/Engineering :: GIS',
+    'Typing :: Typed',
+]
+dynamic = ["dependencies", "version"]
+name = "tilecloud-chain"
+description = "Tools to generate tiles from WMS or Mapnik, to S3, Berkeley DB, MBTiles, or local filesystem in WMTS layout using Amazon cloud services."
+readme = "README.md"
+keywords = ["gis", "tilecloud", "chain"]
+license = "BSD-2-Clause"
+authors = [{name = "Camptocamp",email = "info@camptocamp.com"}]
+packages = [{ include = "tilecloud_chain" }]
+include = ["tilecloud_chain/py.typed", "tilecloud_chain/*.rst", "tilecloud_chain/*.md"]
+requires-python = ">=3.10"
+
+[project.urls]
+repository = "https://github.com/camptocamp/tilecloud-chain"
+"Bug Tracker" = "https://github.com/camptocamp/tilecloud-chain/issues"
+
+[project.scripts]
+generate-tiles = "tilecloud_chain.generate:main"
+generate-controller = "tilecloud_chain.controller:main"
+generate-cost = "tilecloud_chain.cost:main"
+generate-copy = "tilecloud_chain.copy_:main"
+generate-process = "tilecloud_chain.copy_:process"
+import-expiretiles = "tilecloud_chain.expiretiles:main"
+
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version", "poetry-plugin-drop-python-upper-constraint"]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tweak-dependencies-version"]
 build-backend = "poetry.core.masonry.api"
