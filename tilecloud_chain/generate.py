@@ -510,13 +510,12 @@ class TilestoreGetter:
             )
         if layer["type"] == "mapnik":
             try:
-                from tilecloud_chain.mapnik_ import (  # pylint: disable=import-outside-toplevel
+                from tilecloud_chain.store.mapnik_ import (  # pylint: disable=import-outside-toplevel
                     MapnikDropActionTileStore,
                     MapnikTileStore,
                 )
             except ImportError:
-                if os.environ.get("CI", "FALSE") == "FALSE":  # pragma nocover
-                    _LOGGER.exception("Mapnik is not available")
+                _LOGGER.exception("Mapnik is not available")
                 return None
 
             grid = config.config["grids"][layer["grid"]]
