@@ -1,5 +1,5 @@
 camptocamp/tilecloud-chain:latest:
-  ubuntu_24_04/apt: 2.7.14build2
+  ubuntu_24_04/apt: 2.8.3
   ubuntu_24_04/base-passwd: 3.6.3build1
   ubuntu_24_04/bash: 5.2.21-2ubuntu4
   ubuntu_24_04/bash-completion: 1:2.11-8
@@ -32,7 +32,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libacl1: 2.3.2-1build1.1
   ubuntu_24_04/libaec0: 1.1.2-1build1
   ubuntu_24_04/libaom3: 3.8.2-2ubuntu0.1
-  ubuntu_24_04/libapt-pkg6.0t64: 2.7.14build2
+  ubuntu_24_04/libapt-pkg6.0t64: 2.8.3
   ubuntu_24_04/libarmadillo12: 1:12.6.7+dfsg-1build2
   ubuntu_24_04/libarpack2t64: 3.9.1-1.1build2
   ubuntu_24_04/libassuan0: 2.5.6-1build1
@@ -209,7 +209,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/mysql-common: 5.8+1.1.0build1
   ubuntu_24_04/ncurses-base: 6.4+20240113-1ubuntu2
   ubuntu_24_04/ncurses-bin: 6.4+20240113-1ubuntu2
-  ubuntu_24_04/net-tools: 2.10-0.1ubuntu4.1
+  ubuntu_24_04/net-tools: 2.10-0.1ubuntu4.4
   ubuntu_24_04/netbase: '6.4'
   ubuntu_24_04/openssl: 3.0.13-0ubuntu3.5
   ubuntu_24_04/optipng: 0.7.8+ds-1build2
@@ -229,9 +229,9 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/python3-pil: 10.2.0-1ubuntu1
   ubuntu_24_04/python3-pip: 24.0+dfsg-1ubuntu1.1
   ubuntu_24_04/python3-pip-whl: 24.0+dfsg-1ubuntu1.1
-  ubuntu_24_04/python3-pkg-resources: 68.1.2-2ubuntu1.1
-  ubuntu_24_04/python3-setuptools: 68.1.2-2ubuntu1.1
-  ubuntu_24_04/python3-setuptools-whl: 68.1.2-2ubuntu1.1
+  ubuntu_24_04/python3-pkg-resources: 68.1.2-2ubuntu1.2
+  ubuntu_24_04/python3-setuptools: 68.1.2-2ubuntu1.2
+  ubuntu_24_04/python3-setuptools-whl: 68.1.2-2ubuntu1.2
   ubuntu_24_04/python3-venv: 3.12.3-0ubuntu2
   ubuntu_24_04/python3-wheel: 0.42.0-2
   ubuntu_24_04/python3.12: 3.12.3-1ubuntu0.5
