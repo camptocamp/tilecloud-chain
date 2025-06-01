@@ -26,8 +26,8 @@ python-dateutil = "2.9.0.post0"
 tilecloud = { version = "1.13.1", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.6"
 PyYAML = "6.0.2"
-Shapely = "2.1.0"
-jsonschema = "4.23.0"
+Shapely = "2.1.1"
+jsonschema = "4.24.0"
 pyramid = "2.0.2"
 jsonschema-validator-new = "0.3.2"
 azure-storage-blob = "12.25.1"
@@ -36,9 +36,9 @@ certifi = "2025.4.26"
 Paste = "3.10.1"
 psutil = "7.0.0"
 pyproj = "3.7.1"
-psycopg = { version = "3.2.7", extras = ["binary"] }
-aiohttp = "3.11.18"
-sqlalchemy = { version = "2.0.40", extras = ["asyncio"] }
+psycopg = { version = "3.2.9", extras = ["binary"] }
+aiohttp = "3.12.6"
+sqlalchemy = { version = "2.0.41", extras = ["asyncio"] }
 pytest-asyncio = "0.26.0"
 aiofiles = "24.1.0"
 
@@ -50,10 +50,10 @@ c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
 scikit-image = { version = "0.25.2" }
 pytest = "8.3.5"
 testfixtures = "8.3.0"
-coverage = "7.8.0"
+coverage = "7.8.2"
 types-redis = "4.6.0.20241004"
-types-requests = "2.32.0.20250328"
-types-aiofiles = "24.1.0.20250326"
+types-requests = "2.32.0.20250515"
+types-aiofiles = "24.1.0.20250516"
 pytest-asyncio = "0.26.0"
 
 [tool.poetry-dynamic-versioning]
