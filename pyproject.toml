@@ -102,6 +102,7 @@ authors = [{name = "Camptocamp",email = "info@camptocamp.com"}]
 packages = [{ include = "tilecloud_chain" }]
 include = ["tilecloud_chain/py.typed", "tilecloud_chain/*.rst", "tilecloud_chain/*.md"]
 requires-python = ">=3.10"
+dependencies = ["c2cwsgiutils[broadcast,debug,oauth2,standard]", "pyramid-mako", "python-dateutil", "tilecloud[aws,azure,redis,wsgi]", "Jinja2", "PyYAML", "Shapely", "jsonschema", "pyramid", "jsonschema-validator-new", "azure-storage-blob", "waitress", "certifi", "Paste", "psutil", "pyproj", "psycopg[binary]", "aiohttp", "sqlalchemy[asyncio]", "pytest-asyncio", "aiofiles"]
 
 [project.urls]
 repository = "https://github.com/camptocamp/tilecloud-chain"
