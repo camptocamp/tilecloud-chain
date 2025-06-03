@@ -5,15 +5,10 @@ from collections.abc import AsyncGenerator, Callable
 from json import dumps
 from typing import Any
 
+import mapnik  # pylint: disable=import-error
 from tilecloud import Tile, TileCoord, TileGrid
 
 from tilecloud_chain.store import AsyncTileStore
-
-try:
-    import mapnik2 as mapnik
-except ImportError:
-    import mapnik
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,7 +17,7 @@ class MapnikTileStore(AsyncTileStore):
     """
     Tile store that renders tiles with Mapnik.
 
-    requires mapnik2: http://pypi.python.org/pypi/mapnik2
+    requires mapnik: https://python-mapnik.readthedocs.io/
     """
 
     def __init__(
@@ -63,8 +58,8 @@ class MapnikTileStore(AsyncTileStore):
         self.layers_fields = layers_fields
         self.drop_empty_utfgrid = drop_empty_utfgrid
 
-        self.mapnik = mapnik.Map(tilegrid.tile_size, tilegrid.tile_size)
-        mapnik.load_map(self.mapnik, mapfile, True)  # noqa: FBT003
+        self.mapnik = mapnik.Map(tilegrid.tile_size, tilegrid.tile_size)  # pylint: disable=no-member
+        mapnik.load_map(self.mapnik, mapfile, True)  # noqa: FBT003 # pylint: disable=no-member
         self.mapnik.buffer_size = data_buffer
         if proj4_literal is not None:
             self.mapnik.srs = proj4_literal
@@ -72,17 +67,17 @@ class MapnikTileStore(AsyncTileStore):
     async def get_one(self, tile: Tile) -> Tile | None:
         """See in superclass."""
         bbox = self.tilegrid.extent(tile.tilecoord, self.buffer)
-        bbox2d = mapnik.Box2d(bbox[0], bbox[1], bbox[2], bbox[3])
+        bbox2d = mapnik.Box2d(bbox[0], bbox[1], bbox[2], bbox[3])  # pylint: disable=no-member
 
         size = tile.tilecoord.n * self.tilegrid.tile_size + 2 * self.buffer
         self.mapnik.resize(size, size)
         self.mapnik.zoom_to_box(bbox2d)
 
         if self.output_format == "grid":
-            grid = mapnik.Grid(self.tilegrid.tile_size, self.tilegrid.tile_size)
+            grid = mapnik.Grid(self.tilegrid.tile_size, self.tilegrid.tile_size)  # pylint: disable=no-member
             for number, layer in enumerate(self.mapnik.layers):
                 if layer.name in self.layers_fields:
-                    mapnik.render_layer(
+                    mapnik.render_layer(  # pylint: disable=no-member
                         self.mapnik,
                         grid,
                         layer=number,
@@ -95,8 +90,8 @@ class MapnikTileStore(AsyncTileStore):
             tile.data = dumps(encode).encode()
         else:
             # Render image with default Agg renderer
-            image = mapnik.Image(size, size)
-            mapnik.render(self.mapnik, image)
+            image = mapnik.Image(size, size)  # pylint: disable=no-member
+            mapnik.render(self.mapnik, image)  # pylint: disable=no-member
             tile.data = image.tostring(self.output_format)
 
         return tile
