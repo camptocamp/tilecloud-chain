@@ -19,7 +19,7 @@ layers:
     url: http://mapserver:8080/
     layers: point
     min_resolution_seed: 10
-    grid: swissgrid_5
+    grids: [swissgrid_5]
     type: wms
     wmts_style: default
     mime_type: image/png

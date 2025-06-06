@@ -10,7 +10,7 @@ from tilecloud_chain import generate, server
 from tilecloud_chain.server import PyramidView, app_factory
 from tilecloud_chain.tests import CompareCase
 
-CAPABILITIES = (
+_CAPABILITIES = (
     r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -156,8 +156,8 @@ class TestServe(CompareCase):
     def test_serve_kvp(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             self.assert_tiles_generated(
-                cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-nosns.yaml "
-                "-l point_hash --zoom 1",
+                cmd=".build/venv/bin/generate_tiles -d --config=tilegeneration/test-nosns.yaml "
+                "--layer=point_hash --zoom 1",
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/%s",
@@ -690,8 +690,8 @@ class TestServe(CompareCase):
             os.environ["METATILE_NB_THREAD"] = "1"
 
             self.assert_tiles_generated(
-                cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-serve.yaml"
-                " -l point_hash --zoom 1",
+                cmd=".build/venv/bin/generate_tiles -d --config=tilegeneration/test-serve.yaml"
+                " --layer=point_hash --zoom 1",
                 main_func=generate.main,
                 directory="/tmp/tiles/mbtiles/",
                 tiles_pattern="1.0.0/%s",
@@ -765,7 +765,7 @@ class TestServe(CompareCase):
             assert request.response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 request.response.body.decode("utf-8"),
-                CAPABILITIES,
+                _CAPABILITIES,
                 regex=True,
             )
 
@@ -778,8 +778,8 @@ class TestServe(CompareCase):
     def test_bsddb_rest(self):
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             self.assert_tiles_generated(
-                cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-bsddb.yaml"
-                " -l point_hash --zoom 1",
+                cmd=".build/venv/bin/generate_tiles -d --config=tilegeneration/test-bsddb.yaml"
+                " --layer=point_hash --zoom=1",
                 main_func=generate.main,
                 directory="/tmp/tiles/bsddb/",
                 tiles_pattern="1.0.0/%s",
@@ -851,7 +851,7 @@ class TestServe(CompareCase):
             assert request.response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 request.response.body.decode("utf-8"),
-                CAPABILITIES,
+                _CAPABILITIES,
                 regex=True,
             )
 
@@ -860,7 +860,7 @@ class TestServe(CompareCase):
             assert request.response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 request.response.body.decode("utf-8"),
-                CAPABILITIES,
+                _CAPABILITIES,
                 regex=True,
             )
 
@@ -961,7 +961,7 @@ class TestServe(CompareCase):
         os.environ["METATILE_NB_THREAD"] = "1"
 
         self.assert_tiles_generated(
-            cmd=".build/venv/bin/generate_tiles -d -c tilegeneration/test-serve.yaml -l point_hash --zoom 1",
+            cmd=".build/venv/bin/generate_tiles -d --config=tilegeneration/test-serve.yaml --layer=point_hash --zoom 1",
             main_func=generate.main,
             directory="/tmp/tiles/mbtiles/",
             tiles_pattern="1.0.0/%s",
@@ -1085,7 +1085,7 @@ Size per tile: 4[0-9][0-9] o
         assert code == "200 OK"
         self.assert_result_equals(
             result[0].decode("utf-8"),
-            CAPABILITIES,
+            _CAPABILITIES,
             regex=True,
         )
 
@@ -1105,7 +1105,7 @@ Size per tile: 4[0-9][0-9] o
             assert request.response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 request.response.body.decode("utf-8"),
-                CAPABILITIES,
+                _CAPABILITIES,
                 regex=True,
             )
             log_capture.check()

@@ -23,29 +23,30 @@ class _DatedStore:
 class MultiTileStore(AsyncTileStore):
     """Redirect to the corresponding Tilestore for the layer and config file."""
 
-    def __init__(self, get_store: Callable[[Path, str], AsyncTileStore | None]) -> None:
+    def __init__(self, get_store: Callable[[Path, str, str | None], AsyncTileStore | None]) -> None:
         """Initialize."""
         self.get_store = get_store
-        self.stores: dict[tuple[Path, str], _DatedStore | None] = {}
+        self.stores: dict[tuple[Path, str, str], _DatedStore | None] = {}
 
-    def _get_store(self, config_file: Path, layer: str) -> AsyncTileStore | None:
+    def _get_store(self, config_file: Path, layer: str, grid_name: str) -> AsyncTileStore | None:
         config_path = Path(config_file)
         mtime = config_path.stat().st_mtime
-        store = self.stores.get((config_file, layer))
+        store = self.stores.get((config_file, layer, grid_name))
         if store is not None and store.mtime != mtime:
             store = None
         if store is None:
-            tile_store = self.get_store(config_file, layer)
+            tile_store = self.get_store(config_file, layer, grid_name)
             if tile_store is not None:
                 store = _DatedStore(mtime, tile_store)
-                self.stores[(config_file, layer)] = store
+                self.stores[(config_file, layer, grid_name)] = store
         return store.store if store is not None else None
 
     def _get_store_tile(self, tile: Tile) -> AsyncTileStore | None:
         """Return the store corresponding to the tile."""
         layer = tile.metadata["layer"]
+        grid = tile.metadata["grid"]
         config_file = Path(tile.metadata["config_file"])
-        return self._get_store(config_file, layer)
+        return self._get_store(config_file, layer, grid)
 
     async def __contains__(self, tile: Tile) -> bool:
         """
@@ -114,13 +115,13 @@ class MultiTileStore(AsyncTileStore):
     def __str__(self) -> str:
         """Return a string representation of the object."""
         stores = {str(store) for store in self.stores.values()}
-        keys = {f"{config_file}:{layer}" for config_file, layer in self.stores}
+        keys = {f"{config_file}:{layer}:{grid}" for config_file, layer, grid in self.stores}
         return f"{self.__class__.__name__}({', '.join(stores)} - {', '.join(keys)})"
 
     def __repr__(self) -> str:
         """Return a string representation of the object."""
         stores = {repr(store) for store in self.stores.values()}
-        keys = {f"{config_file}:{layer}" for config_file, layer in self.stores}
+        keys = {f"{config_file}:{layer}:{grid}" for config_file, layer, grid in self.stores}
         return f"{self.__class__.__name__}({', '.join(stores)} - {', '.join(keys)})"
 
     @staticmethod

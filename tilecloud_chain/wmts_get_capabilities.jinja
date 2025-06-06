@@ -129,13 +129,13 @@
   </ows:OperationsMetadata>
   <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
-    {% for layername, layer in sorted(layers.items()) %}
+    {% for layer_name, layer in sorted(layers.items()) %}
     <Layer>
-      <ows:Title>{{layer.get('title', layername)}}</ows:Title>
-      <ows:Identifier>{{layername}}</ows:Identifier>
+      <ows:Title>{{layer.get('title', layer_name)}}</ows:Title>
+      <ows:Identifier>{{layer_name}}</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>{{layer['wmts_style']}}</ows:Identifier>{%
-        for legend in layer_legends[layername] %}
+        for legend in layer_legends[layer_name] %}
         <LegendURL format="{{legend['mime_type']}}" xlink:href="{{legend['href']}}" {%
         if 'width' in legend %}width="{{legend['width']}}" {% endif %}{%
         if 'height' in legend %}height="{{legend['height']}}" {% endif %}{%
@@ -164,15 +164,17 @@
       endfor %}{%
       for base_url in base_urls %}
       <ResourceURL format="{{layer['mime_type']}}" resourceType="tile"
-                   template="{{base_url}}{{base_url_postfix}}1.0.0/{{layername}}/{{layer['wmts_style']}}{%
+                   template="{{base_url}}{{base_url_postfix}}1.0.0/{{layer_name}}/{{layer['wmts_style']}}{%
                         for dimension in layer['dimensions']
                             %}/{{('{' + dimension['name'] + '}')}}{%
                         endfor
                    %}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.{{layer['extension']}}" />{%
-      endfor %}
+      endfor %}{%
+        for grid_name in get_grid_names(config, layer_name) %}
       <TileMatrixSetLink>
-        <TileMatrixSet>{{layer["grid"]}}</TileMatrixSet>
-      </TileMatrixSetLink>
+        <TileMatrixSet>{{grid_name}}</TileMatrixSet>
+      </TileMatrixSetLink>{%
+        endfor %}
     </Layer>
     {% endfor %}
 

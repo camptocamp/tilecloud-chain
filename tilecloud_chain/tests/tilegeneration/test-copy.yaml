@@ -15,7 +15,7 @@ caches:
 
 defaults:
   layer: &layer
-    grid: '21781'
+    grids: ['21781']
     type: wms
     url: http://mapserver:8080/
     wmts_style: default

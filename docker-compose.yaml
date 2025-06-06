@@ -20,6 +20,8 @@ services:
     links:
       - db:db
     user: www-data
+    ports:
+      - 8080:8080
 
   redis_master:
     image: bitnami/redis:8.0.2
@@ -72,11 +74,15 @@ services:
 
   app_postgresql:
     <<: *app
-    environment:
+    environment: &app-pg-env
       <<: *app-env
       TEST_USER: Test
       SQL_LOG_LEVEL: DEBUG
-      TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+pyscopg://postgresql:postgresql@db:5432/tests
+      TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+asyncpg://postgresql:postgresql@db:5432/tests
+      PGHOST: db
+      PGUSER: postgresql
+      PGPASSWORD: postgresql
+      PGDATABASE: tests
     volumes:
       - ./example/tilegeneration/config-postgresql.yaml:/etc/tilegeneration/config.yaml:ro
     ports:
@@ -89,8 +95,10 @@ services:
       - '--role=slave'
       - '--daemon'
     environment:
-      <<: *app-env
+      <<: *app-pg-env
       TILECLOUD_CHAIN_SLAVE: 'TRUE'
+    volumes:
+      - ./example/tilegeneration/config-postgresql.yaml:/etc/tilegeneration/config.yaml:ro
 
   test:
     image: camptocamp/tilecloud-chain-tests

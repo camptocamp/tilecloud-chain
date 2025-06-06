@@ -253,8 +253,16 @@
     },
     "layer_grid": {
       "title": "Layer grid",
-      "description": "The used grid name",
+      "description": "The grid name, deprecated, use `grids` instead",
       "type": "string"
+    },
+    "layer_grids": {
+      "title": "Layer grids",
+      "description": "All the used grids name used in the capabilities, by default only the `grid` is used, if `grid` is not defined, all the grids are used",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "layer_bbox": {
       "title": "Layer bounding box",
@@ -418,12 +426,14 @@
     "layer_legend_mime": {
       "title": "Layer legend MIME",
       "description": "The mime type used to store the generated legend",
+      "default": "image/png",
       "type": "string",
       "pattern": "^[a-zA-Z0-9!#$%^&\\*_\\-\\+{}\\|'.`~]+/[a-zA-Z0-9!#$%^&\\*_\\-\\+{}\\|'.`~]+$"
     },
     "layer_legend_extension": {
       "title": "Layer legend extension",
       "description": "The extension used to store the generated legend",
+      "default": "png",
       "type": "string",
       "pattern": "^[a-zA-Z0-9]+$"
     },
@@ -551,6 +561,9 @@
         "grid": {
           "$ref": "#/definitions/layer_grid"
         },
+        "grids": {
+          "$ref": "#/definitions/layer_grids"
+        },
         "bbox": {
           "$ref": "#/definitions/layer_bbox"
         },
@@ -656,7 +669,7 @@
           "default": "1.1.1"
         }
       },
-      "required": ["layers", "url", "grid", "wmts_style", "mime_type", "extension"]
+      "required": ["layers", "url", "wmts_style", "mime_type", "extension"]
     },
     "layer_mapnik": {
       "title": "Layer Mapnik",
@@ -669,6 +682,9 @@
         },
         "grid": {
           "$ref": "#/definitions/layer_grid"
+        },
+        "grids": {
+          "$ref": "#/definitions/layer_grids"
         },
         "bbox": {
           "$ref": "#/definitions/layer_bbox"
@@ -781,7 +797,7 @@
           "default": false
         }
       },
-      "required": ["grid", "wmts_style", "mime_type", "extension"]
+      "required": ["wmts_style", "mime_type", "extension"]
     },
     "layer": {
       "title": "Layer",

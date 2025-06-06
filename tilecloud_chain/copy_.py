@@ -42,7 +42,7 @@ class Copy:
         gene.create_log_tiles_error(layer_name)
         source_tilestore = gene.get_tilesstore(source)
         dest_tilestore = gene.get_tilesstore(destination)
-        gene.init_tilecoords(config, layer_name)
+        gene.init_tilecoords(config, layer_name, options.grid)
         gene.add_geom_filter()
         gene.add_logger()
         gene.get(source_tilestore, "Get the tiles")
@@ -93,7 +93,7 @@ async def _async_main() -> None:
             description="Used to copy the tiles from a cache to an other",
             prog=sys.argv[0],
         )
-        add_common_options(parser, near=False, time=False, dimensions=True, cache=False)
+        add_common_options(parser, near=False, time=False, dimensions=True, cache=False, grid=True)
         parser.add_argument("--process", dest="process", metavar="NAME", help="The process name to do")
         parser.add_argument("source", metavar="SOURCE", help="The source cache")
         parser.add_argument("dest", metavar="DEST", help="The destination cache")
