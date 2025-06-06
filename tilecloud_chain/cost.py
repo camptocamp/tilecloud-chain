@@ -9,6 +9,7 @@ from datetime import timedelta
 
 from tilecloud import Tile, TileStore
 
+import tilecloud_chain
 from tilecloud_chain import Run, TileGeneration, add_common_options, configuration
 from tilecloud_chain.format import duration_format
 from tilecloud_chain.store import TileStoreWrapper
@@ -114,8 +115,9 @@ async def _calculate_cost(
 
     meta = layer["meta"]
     if options.cost_algo == "area":
-        tile_size = config.config["grids"][layer["grid"]].get("tile_size", configuration.TILE_SIZE_DEFAULT)
-        for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+        grid = tilecloud_chain.get_grid_config(config, layer_name, options.grid)
+        tile_size = grid.get("tile_size", configuration.TILE_SIZE_DEFAULT)
+        for zoom, resolution in enumerate(grid["resolutions"]):
             if "min_resolution_seed" in layer and resolution < layer["min_resolution_seed"]:
                 continue
 
@@ -131,11 +133,11 @@ async def _calculate_cost(
             if meta:
                 size = tile_size * layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT) * resolution
                 meta_buffer = size * 0.7 + m_buffer
-                meta_geom = gene.get_geoms(config, layer_name)[zoom].buffer(meta_buffer, 1)
+                meta_geom = gene.get_geoms(config, layer_name, options.grid)[zoom].buffer(meta_buffer, 1)
                 nb_metatiles[zoom] = round(meta_geom.area / size**2)
             size = tile_size * resolution
             tile_buffer = size * 0.7 + m_buffer
-            geom = gene.get_geoms(config, layer_name)[zoom].buffer(tile_buffer, 1)
+            geom = gene.get_geoms(config, layer_name, options.grid)[zoom].buffer(tile_buffer, 1)
             nb_tiles[zoom] = round(geom.area / size**2)
 
     elif options.cost_algo == "count":

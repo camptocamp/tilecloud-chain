@@ -22,6 +22,7 @@ from tilecloud import Tile, TileCoord
 from tilecloud.filter.logger import Logger
 from tilecloud.layout.wms import WMSTileLayout
 
+import tilecloud_chain
 from tilecloud_chain import (
     Count,
     CountSize,
@@ -116,7 +117,7 @@ class Generate:
             self._gene.create_log_tiles_error(layer_name)
 
         if self._options.role != "slave" or self._options.tiles:
-            self._generate_queue(layer_name)
+            self._generate_queue(layer_name, self._options.grid)
 
         if os.environ.get("TILECLOUD_CHAIN_OBJGRAPH_GENE", "0").lower() in ("1", "true", "on"):
             self._gene.imap(_objgraph)
@@ -171,7 +172,7 @@ class Generate:
             ),
         )
 
-    def _generate_queue(self, layer_name: str | None) -> None:
+    def _generate_queue(self, layer_name: str | None, grid_name: str | None) -> None:
         if self._options.tiles:
             self._gene.set_store(TilesFileStore(self._options.tiles))
             return
@@ -191,7 +192,8 @@ class Generate:
         if self._options.get_bbox:
             try:
                 tilecoord = parse_tilecoord(self._options.get_bbox)
-                bounds = default_int(self._gene.get_grid(config, layer["grid"]).extent(tilecoord))
+                grid_name = tilecloud_chain.get_grid_name(config, layer_name, grid_name)
+                bounds = default_int(self._gene.get_grid(config, grid_name).extent(tilecoord))
                 print(f"Tile bounds: [{','.join([str(b) for b in bounds])}]", file=self.out)
                 sys.exit()
             except ValueError:
@@ -480,6 +482,8 @@ class TilestoreGetter:
             _LOGGER.warning("Layer '%s' not found in the configuration file '%s'", layer_name, config_file)
             return None
         layer = config.config["layers"][layer_name]
+        grid_name = tilecloud_chain.get_grid_name(config, layer_name, grid_name)
+        grid = tilecloud_chain.get_grid_config(config, layer_name, grid_name)
         if layer["type"] == "wms":
             params = layer.get("params", {}).copy()
             if "STYLES" not in params:
@@ -504,7 +508,7 @@ class TilestoreGetter:
                                 if layer["meta"]
                                 else 0
                             ),
-                            tilegrid=self.gene._gene.get_grid(config, layer["grid"]),  # noqa: SLF001
+                            tilegrid=self.gene._gene.get_grid(config, grid_name),  # noqa: SLF001
                             params=params,
                         ),
                     ),
@@ -523,13 +527,12 @@ class TilestoreGetter:
                     _LOGGER.exception("Mapnik is not available")
                 return None
 
-            grid = config.config["grids"][layer["grid"]]
             if cast("str", layer.get("output_format", "png")) == "grid":
                 assert self.gene._count_tiles  # noqa: SLF001
                 assert self.gene._count_tiles_dropped  # noqa: SLF001
                 return TimedTileStoreWrapper(
                     MapnikDropActionTileStore(
-                        tilegrid=self.gene._gene.get_grid(config, layer["grid"]),  # noqa: SLF001
+                        tilegrid=self.gene._gene.get_grid(config, grid_name),  # noqa: SLF001
                         mapfile=layer["mapfile"],
                         image_buffer=(
                             layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
@@ -550,7 +553,7 @@ class TilestoreGetter:
                 )
             return TimedTileStoreWrapper(
                 MapnikTileStore(
-                    tilegrid=self.gene._gene.get_grid(config, layer["grid"]),  # noqa: SLF001
+                    tilegrid=self.gene._gene.get_grid(config, grid_name),  # noqa: SLF001
                     mapfile=layer["mapfile"],
                     image_buffer=(
                         layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)

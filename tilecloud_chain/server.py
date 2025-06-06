@@ -265,15 +265,16 @@ class Server(Generic[Response]):
         return store
 
     @staticmethod
-    def get_max_zoom_seed(config: tilecloud_chain.DatedConfig, layer_name: str) -> int:
+    def get_max_zoom_seed(config: tilecloud_chain.DatedConfig, layer_name: str, grid_name: str | None) -> int:
         """Get the max zoom to be bet in the stored cache."""
         if layer_name not in config.config.get("layers", {}):
             _LOGGER.warning("Layer '%s' not found in the configuration file '%s'", layer_name, config.file)
             return 999999
         layer = config.config["layers"][layer_name]
         if "min_resolution_seed" in layer:
+            grid = tilecloud_chain.get_grid_config(config, layer_name, grid_name)
             max_zoom_seed = -1
-            for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+            for zoom, resolution in enumerate(grid["resolutions"]):
                 if resolution >= layer["min_resolution_seed"]:
                     max_zoom_seed = zoom
             return max_zoom_seed
@@ -557,6 +558,7 @@ class Server(Generic[Response]):
                     f"Wrong TileMatrixSet '{params['TILEMATRIXSET']}' should be in {grids_string}",
                     **kwargs,
                 )
+            grid = config.config["grids"][params["TILEMATRIXSET"]]
 
             metadata["layer"] = params["LAYER"]
             metadata["config_file"] = str(config.file)
@@ -588,19 +590,19 @@ class Server(Generic[Response]):
                                 "STYLES": params["STYLE"],
                                 "FORMAT": params["FORMAT"],
                                 "INFO_FORMAT": params["INFO_FORMAT"],
-                                "WIDTH": config.config["grids"][layer["grid"]].get(
+                                "WIDTH": grid.get(
                                     "tile_size",
                                     configuration.TILE_SIZE_DEFAULT,
                                 ),
-                                "HEIGHT": config.config["grids"][layer["grid"]].get(
+                                "HEIGHT": grid.get(
                                     "tile_size",
                                     configuration.TILE_SIZE_DEFAULT,
                                 ),
-                                "SRS": config.config["grids"][layer["grid"]].get(
+                                "SRS": grid.get(
                                     "srs",
                                     configuration.SRS_DEFAULT,
                                 ),
-                                "BBOX": _TILEGENERATION.get_grid(config, layer["grid"]).extent(
+                                "BBOX": _TILEGENERATION.get_grid(config, params["TILEMATRIXSET"]).extent(
                                     tile.tilecoord,
                                 ),
                                 "X": params["I"],
@@ -636,7 +638,7 @@ class Server(Generic[Response]):
         params: dict[str, str],
         **kwargs: Any,
     ) -> Response:
-        if tile.tilecoord.z > self.get_max_zoom_seed(config, params["LAYER"]):
+        if tile.tilecoord.z > self.get_max_zoom_seed(config, params["LAYER"], params["TILEMATRIXSET"]):
             return await self._map_cache(config, layer, tile, kwargs)
 
         layer_filter = self.get_filter(config, params["LAYER"])
