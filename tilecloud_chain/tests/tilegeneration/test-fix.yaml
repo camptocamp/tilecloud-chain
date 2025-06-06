@@ -61,7 +61,7 @@ caches:
 
 defaults:
   layer: &layer
-    grid: swissgrid_5
+    grids: [swissgrid_5]
     type: wms
     wmts_style: default
     mime_type: image/png
@@ -164,7 +164,7 @@ layers:
     <<: *layer
     url: http://mapserver:8080/
     layers: polygon
-    grid: swissgrid_01
+    grids: [swissgrid_01]
     geoms:
       - sql: the_geom AS geom FROM tests.polygon
         connection: user=postgresql password=postgresql dbname=tests host=db

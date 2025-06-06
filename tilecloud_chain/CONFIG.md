@@ -113,7 +113,9 @@
     - <a id="definitions/cache/anyOf/3"></a>: Refer to _[#/definitions/cache_mbtiles](#definitions/cache_mbtiles)_.
     - <a id="definitions/cache/anyOf/4"></a>: Refer to _[#/definitions/cache_bsddb](#definitions/cache_bsddb)_.
 - <a id="definitions/layer_title"></a>**`layer_title`** _(string)_: The title, use to generate the capabilities.
-- <a id="definitions/layer_grid"></a>**`layer_grid`** _(string)_: The used grid name.
+- <a id="definitions/layer_grid"></a>**`layer_grid`** _(string)_: The grid name, deprecated, use `grids` instead.
+- <a id="definitions/layer_grids"></a>**`layer_grids`** _(array)_: All the used grids name used in the capabilities, by default only the `grid` is used, if `grid` is not defined, all the grids are used.
+  - <a id="definitions/layer_grids/items"></a>**Items** _(string)_
 - <a id="definitions/layer_bbox"></a>**`layer_bbox`** _(array)_: The bounding box where we will generate the tiles. Length must be equal to 4.
   - <a id="definitions/layer_bbox/items"></a>**Items** _(number)_
 - <a id="definitions/layer_min_resolution_seed"></a>**`layer_min_resolution_seed`** _(number)_: The minimum resolutions to pre-generate.
@@ -144,8 +146,8 @@
     - <a id="definitions/layer_legends/items/properties/max_scale"></a>**`max_scale`** _(string)_: The max scale of the legend image.
     - <a id="definitions/layer_legends/items/properties/min_resolution"></a>**`min_resolution`** _(string)_: The max resolution of the legend image.
     - <a id="definitions/layer_legends/items/properties/max_resolution"></a>**`max_resolution`** _(string)_: The max resolution of the legend image.
-- <a id="definitions/layer_legend_mime"></a>**`layer_legend_mime`** _(string)_: The mime type used to store the generated legend. Must match pattern: `^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$` ([Test](https://regexr.com/?expression=%5E%5Ba-zA-Z0-9%21%23%24%25%5E%26%5C%2A_%5C-%5C%2B%7B%7D%5C%7C%27.%60~%5D%2B/%5Ba-zA-Z0-9%21%23%24%25%5E%26%5C%2A_%5C-%5C%2B%7B%7D%5C%7C%27.%60~%5D%2B%24)).
-- <a id="definitions/layer_legend_extension"></a>**`layer_legend_extension`** _(string)_: The extension used to store the generated legend. Must match pattern: `^[a-zA-Z0-9]+$` ([Test](https://regexr.com/?expression=%5E%5Ba-zA-Z0-9%5D%2B%24)).
+- <a id="definitions/layer_legend_mime"></a>**`layer_legend_mime`** _(string)_: The mime type used to store the generated legend. Must match pattern: `^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$`([Test](https://regexr.com/?expression=%5E%5Ba-zA-Z0-9%21%23%24%25%5E%26%5C%2A_%5C-%5C%2B%7B%7D%5C%7C%27.%60~%5D%2B/%5Ba-zA-Z0-9%21%23%24%25%5E%26%5C%2A_%5C-%5C%2B%7B%7D%5C%7C%27.%60~%5D%2B%24)). Default:`"image/png"`.
+- <a id="definitions/layer_legend_extension"></a>**`layer_legend_extension`** _(string)_: The extension used to store the generated legend. Must match pattern: `^[a-zA-Z0-9]+$` ([Test](https://regexr.com/?expression=%5E%5Ba-zA-Z0-9%5D%2B%24)). Default: `"png"`.
 - <a id="definitions/layer_pre_hash_post_process"></a>**`layer_pre_hash_post_process`** _(string)_: Do an image post process before the empty hash check.
 - <a id="definitions/layer_post_process"></a>**`layer_post_process`** _(string)_: Do an image post process after the empty hash check.
 - <a id="definitions/layer_geoms"></a>**`layer_geoms`** _(array)_: The geometries used to determine where we should create the tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-geomsql.
@@ -169,6 +171,7 @@
   - <a id="definitions/layer_wms/properties/type"></a>**`type`**: Must be: `"wms"`.
   - <a id="definitions/layer_wms/properties/title"></a>**`title`**: Refer to _[#/definitions/layer_title](#definitions/layer_title)_.
   - <a id="definitions/layer_wms/properties/grid"></a>**`grid`**: Refer to _[#/definitions/layer_grid](#definitions/layer_grid)_.
+  - <a id="definitions/layer_wms/properties/grids"></a>**`grids`**: Refer to _[#/definitions/layer_grids](#definitions/layer_grids)_.
   - <a id="definitions/layer_wms/properties/bbox"></a>**`bbox`**: Refer to _[#/definitions/layer_bbox](#definitions/layer_bbox)_.
   - <a id="definitions/layer_wms/properties/min_resolution_seed"></a>**`min_resolution_seed`**: Refer to _[#/definitions/layer_min_resolution_seed](#definitions/layer_min_resolution_seed)_.
   - <a id="definitions/layer_wms/properties/px_buffer"></a>**`px_buffer`**: Refer to _[#/definitions/layer_px_buffer](#definitions/layer_px_buffer)_.
@@ -202,6 +205,7 @@
   - <a id="definitions/layer_mapnik/properties/type"></a>**`type`**: Must be: `"mapnik"`.
   - <a id="definitions/layer_mapnik/properties/title"></a>**`title`**: Refer to _[#/definitions/layer_title](#definitions/layer_title)_.
   - <a id="definitions/layer_mapnik/properties/grid"></a>**`grid`**: Refer to _[#/definitions/layer_grid](#definitions/layer_grid)_.
+  - <a id="definitions/layer_mapnik/properties/grids"></a>**`grids`**: Refer to _[#/definitions/layer_grids](#definitions/layer_grids)_.
   - <a id="definitions/layer_mapnik/properties/bbox"></a>**`bbox`**: Refer to _[#/definitions/layer_bbox](#definitions/layer_bbox)_.
   - <a id="definitions/layer_mapnik/properties/min_resolution_seed"></a>**`min_resolution_seed`**: Refer to _[#/definitions/layer_min_resolution_seed](#definitions/layer_min_resolution_seed)_.
   - <a id="definitions/layer_mapnik/properties/px_buffer"></a>**`px_buffer`**: Refer to _[#/definitions/layer_px_buffer](#definitions/layer_px_buffer)_.

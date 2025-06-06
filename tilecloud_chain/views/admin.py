@@ -53,6 +53,22 @@ from tilecloud_chain.controller import get_status
 _LOG = logging.getLogger(__name__)
 
 
+def _get_event_loop() -> asyncio.AbstractEventLoop:
+    """Get the current event loop."""
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError as e:
+        if "There is no current event loop in thread" in str(e):
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        else:
+            raise
+    return loop
+
+
+_LOOP = _get_event_loop()
+
+
 class Admin:
     """The admin views."""
 
@@ -69,7 +85,7 @@ class Admin:
         main_config = self.gene.get_main_config()
         queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
         self.postgresql_queue_store = (
-            asyncio.get_event_loop().run_until_complete(
+            _LOOP.run_until_complete(
                 tilecloud_chain.store.postgresql.get_postgresql_queue_store(main_config),
             )
             if queue_store == "postgresql"
@@ -99,12 +115,14 @@ class Admin:
             assert self.postgresql_queue_store is not None
             config_filename = self.gene.get_host_config_file(self.request.host)
             assert config_filename is not None
-            jobs_status = self.postgresql_queue_store.get_status(config_filename)
+            jobs_status = _LOOP.run_until_complete(self.postgresql_queue_store.get_status(config_filename))
         return {
             "auth_type": auth_type(self.request.registry.settings),
             "has_access": has_access,
             "commands": server_config.get("predefined_commands", []),
-            "status": get_status(self.gene) if queue_store != "postgresql" else None,
+            "status": _LOOP.run_until_complete(get_status(self.gene))
+            if queue_store != "postgresql"
+            else None,
             "admin_path": main_server_config.get("admin_path", "admin"),
             "AuthenticationType": AuthenticationType,
             "jobs_status": jobs_status,
@@ -241,7 +259,7 @@ class Admin:
             assert self.gene is not None
             config_filename = self.gene.get_host_config_file(self.request.host)
             assert config_filename is not None
-            asyncio.get_event_loop().run_until_complete(
+            _LOOP.run_until_complete(
                 store.create_job(self.request.POST["name"], self.request.POST["command"], config_filename),
             )
         except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
@@ -272,7 +290,7 @@ class Admin:
         try:
             config_filename = self.gene.get_host_config_file(self.request.host)
             assert config_filename is not None
-            asyncio.get_event_loop().run_until_complete(
+            _LOOP.run_until_complete(
                 store.cancel(self.request.POST["job_id"], config_filename),
             )
         except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
@@ -303,7 +321,7 @@ class Admin:
         try:
             config_filename = self.gene.get_host_config_file(self.request.host)
             assert config_filename is not None
-            asyncio.get_event_loop().run_until_complete(
+            _LOOP.run_until_complete(
                 store.retry(self.request.POST["job_id"], config_filename),
             )
         except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:

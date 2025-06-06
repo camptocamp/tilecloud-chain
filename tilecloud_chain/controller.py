@@ -20,8 +20,8 @@ import botocore.exceptions
 import PIL.ImageFile
 import requests
 import ruamel.yaml
-import tilecloud.store.redis
 import tilecloud.store.s3
+import yaml
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import ContentSettings
 from bottle import jinja2_template
@@ -46,10 +46,10 @@ _GET_STATUS_SUMMARY = Summary("tilecloud_chain_get_status", "Number of get_stats
 
 def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
     """Generate the contextual file like the legends."""
-    asyncio.run(_async_main(args, out))
+    asyncio.run(async_main(args, out))
 
 
-async def _async_main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
+async def async_main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
     """Generate the contextual file like the legends."""
     try:
         parser = ArgumentParser(
@@ -100,9 +100,9 @@ async def _async_main(args: list[str] | None = None, out: IO[str] | None = None)
                 options.cache,
                 exit_=True,
             )
-            yaml = ruamel.yaml.YAML()
+            ru_yaml = ruamel.yaml.YAML()
             yaml_out = StringIO()
-            yaml.dump(config.config, yaml_out)
+            ru_yaml.dump(config.config, yaml_out)
             print(yaml_out.getvalue())
             sys.exit(0)
 
@@ -223,7 +223,7 @@ async def get_wmts_capabilities(
         server = gene.get_main_config().config.get("server")
 
         base_urls = _get_base_urls(cache)
-        await _fill_legend(gene, cache, server, base_urls, config=config)
+        await _fill_legend(gene, cache, base_urls[0], config=config)
 
         data = pkgutil.get_data("tilecloud_chain", "wmts_get_capabilities.jinja")
         assert data
@@ -232,6 +232,7 @@ async def get_wmts_capabilities(
             "str",
             jinja2_template(
                 data.decode("utf-8"),
+                config=config,
                 layers=config.config.get("layers", {}),
                 layer_legends=gene.layer_legends,
                 grids=config.config["grids"],
@@ -251,6 +252,7 @@ async def get_wmts_capabilities(
                 metadata=config.config.get("metadata"),
                 has_provider="provider" in config.config,
                 provider=config.config.get("provider"),
+                get_grid_names=tilecloud_chain.get_grid_names,
                 enumerate=enumerate,
                 ceil=math.ceil,
                 int=int,
@@ -276,100 +278,44 @@ def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:
     return [url + "/" if url[-1] != "/" else url for url in base_urls]
 
 
-async def _legend_metadata(
-    cache: tilecloud_chain.configuration.Cache,
-    layer: tilecloud_chain.configuration.Layer,
-    base_url: str,
-    path: str,
-) -> tilecloud_chain.Legend | None:
-    img = await _get(path, cache)
-    if img is not None:
-        new_legend: tilecloud_chain.Legend = {
-            "mime_type": layer["legend_mime"],
-            "href": str(Path(base_url) / path),
-        }
-        try:
-            with Image.open(BytesIO(img)) as pil_img:
-                new_legend["width"] = pil_img.size[0]
-                new_legend["height"] = pil_img.size[1]
-        except Exception:  # pylint: disable=broad-exception-caught
-            _LOGGER.warning(
-                "Unable to read legend image '%s', with '%s'",
-                path,
-                repr(img),
-                exc_info=True,
-            )
-        return new_legend
-    return None
-
-
 async def _fill_legend(
     gene: TileGeneration,
     cache: tilecloud_chain.configuration.Cache,
-    server: tilecloud_chain.configuration.Server | None,
-    base_urls: list[str],
+    base_url: str,
     config: DatedConfig | None = None,
 ) -> None:
     if config is None:
         assert gene.config_file
         config = gene.get_config(gene.config_file)
 
-    start = time.perf_counter()
-    legend_image_tasks = {}
     for layer_name, layer in config.config.get("layers", {}).items():
-        if "legend_mime" in layer and "legend_extension" in layer and layer_name not in gene.layer_legends:
-            for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
-                path = Path(
-                    "1.0.0",
-                    layer_name,
-                    layer["wmts_style"],
-                    f"legend{zoom}.{layer['legend_extension']}",
-                )
-                legend_image_tasks[
-                    asyncio.create_task(
-                        _legend_metadata(
-                            cache,
-                            layer,
-                            str(Path(base_urls[0]) / (server.get("static_path", "static") if server else "")),
-                            str(path),
-                        ),
-                    )
-                ] = (layer_name, resolution)
-
-    asyncio.gather(*legend_image_tasks.keys())
-    legend_image_metadata: dict[str, dict[float, tilecloud_chain.Legend | None]] = {}
-    for task, values in legend_image_tasks.items():
-        layer_name, resolution = values
-        try:
-            legend_image_metadata.setdefault(layer_name, {})[resolution] = task.result()
-        except Exception as exc:  # pylint: disable=broad-exception-caught
-            _LOGGER.warning(
-                "Unable to get legend image for layer '%s', resolution '%s': %s",
-                layer_name,
-                resolution,
-                exc,
+        if layer_name not in gene.layer_legends:
+            legend_config_str = await _get(
+                f"1.0.0/{layer_name}/{layer['wmts_style']}/legend.yaml",
+                cache,
             )
-
-    _LOGGER.debug("Get %i legend images in %s", len(legend_image_tasks), time.perf_counter() - start)
-
-    for layer_name, layer in config.config.get("layers", {}).items():
-        previous_legend: tilecloud_chain.Legend | None = None
-        previous_resolution = None
-        if "legend_mime" in layer and "legend_extension" in layer and layer_name not in gene.layer_legends:
-            gene.layer_legends[layer_name] = []
-            legends = gene.layer_legends[layer_name]
-            for _, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
-                new_legend = legend_image_metadata.get(layer_name, {}).get(resolution)
-
-                if new_legend is not None:
-                    legends.append(new_legend)
-                    if previous_legend is not None:
-                        assert previous_resolution is not None
-                        middle_res = exp((log(previous_resolution) + log(resolution)) / 2)
-                        previous_legend["min_resolution"] = middle_res
-                        new_legend["max_resolution"] = middle_res
-                    previous_legend = new_legend
-                previous_resolution = resolution
+            if legend_config_str is not None:
+                legends: list[tilecloud_chain.Legend] = []
+                legend_config_io = BytesIO(legend_config_str)
+                legend_config = yaml.load(legend_config_io, Loader=yaml.SafeLoader)
+                legends = [
+                    tilecloud_chain.Legend(
+                        mime_type=legend_metadata["mime_type"],
+                        href=str(
+                            Path(base_url)
+                            / "1.0.0"
+                            / layer_name
+                            / layer["wmts_style"]
+                            / f"legend-{legend_metadata['resolution']}.{layer.get('legend_extension', configuration.LAYER_LEGEND_EXTENSION_DEFAULT)}",
+                        ),
+                        min_resolution=legend_metadata.get("min_resolution"),
+                        max_resolution=legend_metadata.get("max_resolution"),
+                        width=legend_metadata["width"],
+                        height=legend_metadata["height"],
+                    )
+                    for legend_metadata in legend_config["metadata"]
+                ]
+                gene.layer_legends[layer_name] = legends
 
 
 def _get_legend_image(
@@ -484,11 +430,19 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
     cache = config.config["caches"][gene.options.cache]
 
     for layer_name, layer in config.config.get("layers", {}).items():
-        if "legend_mime" in layer and "legend_extension" in layer and layer["type"] == "wms":
+        grids = tilecloud_chain.get_grid_names(config, layer_name)
+        all_resolutions = set()
+        if layer["type"] == "wms":
+            for grid_name in grids:
+                grid = tilecloud_chain.get_grid_config(config, layer_name, grid_name)
+                all_resolutions.update(grid["resolutions"])
             session = requests.session()
             session.headers.update(layer["headers"])
             previous_hash = None
-            for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+            metadata = []
+            previous_resolution = None
+            previous_resolution_metadata = None
+            for resolution in sorted(all_resolutions):
                 legends = []
                 for wms_layer in layer.get("layers", "").split(","):
                     url = (
@@ -500,8 +454,11 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                                 "VERSION": layer.get("version", "1.0.0"),
                                 "REQUEST": "GetLegendGraphic",
                                 "LAYER": wms_layer,
-                                "FORMAT": layer["legend_mime"],
-                                "TRANSPARENT": "TRUE" if layer["legend_mime"] == "image/png" else "FALSE",
+                                "FORMAT": layer.get("legend_mime", configuration.LAYER_LEGEND_MIME_DEFAULT),
+                                "TRANSPARENT": "TRUE"
+                                if layer.get("legend_mime", configuration.LAYER_LEGEND_MIME_DEFAULT)
+                                == "image/png"
+                                else "FALSE",
                                 "STYLE": layer["wmts_style"],
                                 "SCALE": resolution / 0.00028,
                             },
@@ -513,7 +470,7 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                         resolution,
                         url,
                         session,
-                        layer["legend_mime"].split("/")[0],
+                        layer.get("legend_mime", configuration.LAYER_LEGEND_MIME_DEFAULT).split("/")[0],
                         out,
                     )
                     if legend_image is not None:
@@ -527,17 +484,50 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                     image.paste(i, (0, y))
                     y += i.size[1]
                 string_io = BytesIO()
-                image.save(string_io, FORMAT_BY_CONTENT_TYPE[layer["legend_mime"]])
+                image.save(
+                    string_io,
+                    FORMAT_BY_CONTENT_TYPE[layer.get("legend_mime", configuration.LAYER_LEGEND_MIME_DEFAULT)],
+                )
                 result = string_io.getvalue()
                 new_hash = sha1(result).hexdigest()  # nosec # noqa: S324
                 if new_hash != previous_hash:
                     previous_hash = new_hash
+                    resolution_metadata = {
+                        "mime_type": layer.get("legend_mime", configuration.LAYER_LEGEND_MIME_DEFAULT),
+                        "path": f"1.0.0/{layer_name}/{layer['wmts_style']}/legend-{resolution}.{layer.get('legend_extension', configuration.LAYER_LEGEND_EXTENSION_DEFAULT)}",
+                        "width": width,
+                        "height": height,
+                    }
+                    if previous_resolution_metadata is not None:
+                        assert previous_resolution is not None
+                        middle_res = exp((log(previous_resolution) + log(resolution)) / 2)
+                        previous_resolution_metadata["min_resolution"] = middle_res
+                        resolution_metadata["max_resolution"] = middle_res
+                    metadata.append(resolution_metadata)
+                    previous_resolution_metadata = resolution_metadata
+                    previous_resolution = resolution
+
                     _send(
                         result,
-                        f"1.0.0/{layer_name}/{layer['wmts_style']}/legend{zoom}.{layer['legend_extension']}",
-                        layer["legend_mime"],
+                        f"1.0.0/{layer_name}/{layer['wmts_style']}/legend-{resolution}.{layer.get('legend_extension', configuration.LAYER_LEGEND_EXTENSION_DEFAULT)}",
+                        layer.get("legend_mime", configuration.LAYER_LEGEND_MIME_DEFAULT),
                         cache,
                     )
+                metadata_str = StringIO()
+                yaml.dump(
+                    {
+                        "metadata": metadata,
+                    },
+                    metadata_str,
+                    Dumper=yaml.SafeDumper,
+                )
+
+                _send(
+                    metadata_str.getvalue(),
+                    f"1.0.0/{layer_name}/{layer['wmts_style']}/legend.yaml",
+                    "application/x-yaml",
+                    cache,
+                )
 
 
 async def status(gene: TileGeneration) -> None:

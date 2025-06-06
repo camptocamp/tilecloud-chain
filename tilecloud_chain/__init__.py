@@ -102,6 +102,7 @@ def add_common_options(
     dimensions: bool = False,
     cache: bool = True,
     default_config_file: bool = False,
+    grid: bool = False,
 ) -> None:
     """Get the options used by some commands."""
     c2cwsgiutils.setup_process.fill_arguments(parser)
@@ -128,6 +129,12 @@ def add_common_options(
         help="continue if there is an error in the configuration",
     )
     parser.add_argument("-l", "--layer", metavar="NAME", help="the layer to generate")
+    if tile_pyramid or grid:
+        parser.add_argument(
+            "-g",
+            "--grid",
+            help="the grid to use, if not specified, the default grid for the layer in the config file is used",
+        )
     if tile_pyramid:
         parser.add_argument(
             "-b",
@@ -435,6 +442,81 @@ def get_azure_container_client(container: str) -> ContainerClient:
     ).get_container_client(container=container)
 
 
+def get_grid_name(
+    config: DatedConfig,
+    layer_name: str,
+    grid_name: str | None,
+) -> str:
+    """Get the grid name."""
+    layer = config.config["layers"][layer_name]
+    if "grid" in layer:
+        _LOGGER.warning(
+            "The layer %s has a 'grid' key, it is deprecated, use 'grids' instead.",
+            layer_name,
+        )
+    if grid_name is None and "grid" in layer:
+        grid_name = layer["grid"]
+    if grid_name is None:
+        grid_names = get_grid_names(config, layer_name)
+        if len(grid_names) == 1:
+            return grid_names[0]
+
+        grid_names_str = "'" + "', '".join(grid_names) + "'"
+        message = (
+            f"There is more the one grid for the layer '{layer_name}' specify one grid with the --grid option from {grid_names_str}."
+            if grid_names
+            else f"There is no grid for le layer '{layer_name}'!"
+        )
+        raise ValueError(message)
+    return grid_name
+
+
+def get_grid_config(
+    config: DatedConfig,
+    layer_name: str,
+    grid_name: str | None,
+) -> tilecloud_chain.configuration.Grid:
+    """Get the grid configuration."""
+    return config.config["grids"][get_grid_name(config, layer_name, grid_name)]
+
+
+def get_grid_names(
+    config: DatedConfig,
+    layer_name: str,
+    grid_name: str | None = None,
+) -> list[str]:
+    """Get the grid names for a layer."""
+    if layer_name not in config.config.get("layers", {}):
+        layers_str = "'" + "', '".join(config.config.get("layers", {}).keys()) + "'"
+        message = (
+            f"Layer '{layer_name}' not found in the configuration available layers: {layers_str}."
+            " Please check the configuration file or the layer name."
+        )
+        raise ValueError(message)
+    layer = config.config["layers"][layer_name]
+    if "grid" in layer:
+        _LOGGER.warning(
+            "The layer %s has a 'grid' key, it is deprecated, use 'grids' instead.",
+            layer_name,
+        )
+
+    grid_names = []
+    if "grids" in layer:
+        grid_names = layer["grids"]
+    elif "grid" in layer:
+        grid_names = [layer["grid"]]
+    else:
+        grid_names = list(config.config["grids"].keys())
+
+    if grid_name is not None:
+        if grid_name not in grid_names:
+            grid_names_str = "'" + "', '".join(grid_names) + "'"
+            message = f"The grid name '{grid_name}' is invalid, he should be in {grid_names_str}"
+            raise ValueError(message)
+        return [grid_name]
+    return grid_names
+
+
 class TileGeneration:
     """Base class of all the tile generation."""
 
@@ -455,7 +537,7 @@ class TileGeneration:
         maxconsecutive_errors: bool = True,
         out: IO[str] | None = None,
     ) -> None:
-        self.geoms_cache: dict[Path, dict[str, DatedGeoms]] = {}
+        self.geoms_cache: dict[Path, dict[str, dict[str, DatedGeoms]]] = {}
         self._close_actions: list[Close] = []
         self.error_lock = asyncio.Lock()
         self.error_files_: dict[str, TextIO] = {}
@@ -858,6 +940,7 @@ class TileGeneration:
         config: DatedConfig,
         cache: tilecloud_chain.configuration.Cache,
         layer_name: str,
+        grid_name: str | None,
         read_only: bool = False,
     ) -> AsyncTileStore | None:
         """Get the tile store."""
@@ -865,14 +948,14 @@ class TileGeneration:
             _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
             return None
         layer = config.config["layers"][layer_name]
-        grid = config.config["grids"][layer["grid"]]
+        grid = get_grid_config(config, layer_name, grid_name)
         layout = WMTSTileLayout(
             layer=layer_name,
             url=cache["folder"],
             style=layer["wmts_style"],
             format_pattern="." + layer["extension"],
             dimensions_name=[dimension["name"] for dimension in layer.get("dimensions", [])],
-            tile_matrix_set=layer["grid"],
+            tile_matrix_set=get_grid_name(config, layer_name, grid_name),
             tile_matrix=lambda z: get_tile_matrix_identifier(grid, zoom=z),
             request_encoding="REST",
         )
@@ -951,30 +1034,18 @@ class TileGeneration:
 
         return cache_tilestore
 
-    @staticmethod
-    def get_grid_name(
-        config: DatedConfig,
-        layer: tilecloud_chain.configuration.Layer,
-        name: Any | None = None,
-    ) -> tilecloud_chain.configuration.Grid:
-        """Get the grid name."""
-        if name is None:
-            name = layer["grid"]
-
-        return config.config["grids"][name]
-
     def get_tilesstore(self, cache: str | None = None) -> TimedTileStoreWrapper:
         """Get the tile store."""
         gene = self
 
-        def get_store(config_file: Path, layer_name: str) -> AsyncTileStore | None:
+        def get_store(config_file: Path, layer_name: str, grid_name: str | None) -> AsyncTileStore | None:
             config = gene.get_config(config_file)
             cache_name = cache or config.config["generation"].get(
                 "default_cache",
                 configuration.DEFAULT_CACHE_DEFAULT,
             )
             cache_obj = config.config["caches"][cache_name]
-            return self.get_store(config, cache_obj, layer_name)
+            return self.get_store(config, cache_obj, layer_name, grid_name)
 
         return TimedTileStoreWrapper(
             MultiTileStore(get_store),
@@ -1009,7 +1080,11 @@ class TileGeneration:
         if store is None:
             gene = self
 
-            def get_splitter(config_file: Path, layer_name: str) -> AsyncTileStore | None:
+            def get_splitter(
+                config_file: Path,
+                layer_name: str,
+                grid_name: str | None,
+            ) -> AsyncTileStore | None:
                 config = gene.get_config(config_file)
                 if layer_name not in config.config.get("layers", {}):
                     _LOGGER.warning("Layer %s not found in config %s", layer_name, config_file)
@@ -1019,7 +1094,7 @@ class TileGeneration:
                     return TileStoreWrapper(
                         MetaTileSplitterTileStore(
                             layer["mime_type"],
-                            config.config["grids"][layer["grid"]].get(
+                            get_grid_config(config, layer_name, grid_name).get(
                                 "tile_size",
                                 configuration.TILE_SIZE_DEFAULT,
                             ),
@@ -1123,10 +1198,11 @@ class TileGeneration:
         self,
         config: DatedConfig,
         layer_name: str,
+        grid_name: str,
         host: str | None = None,
     ) -> dict[str | int, BaseGeometry]:
         """Get the geometries for the given layer."""
-        dated_geoms = self.geoms_cache.get(config.file, {}).get(layer_name)
+        dated_geoms = self.geoms_cache.get(config.file, {}).get(layer_name, {}).get(grid_name)
         if dated_geoms is not None and config.mtime == dated_geoms.mtime:
             return dated_geoms.geoms
 
@@ -1135,6 +1211,7 @@ class TileGeneration:
             return {}
         layer = config.config["layers"][layer_name]
 
+        grid = get_grid_config(config, layer_name, grid_name)
         if self.options.near is not None or (
             self.options.time is not None and "bbox" in layer and self.options.zoom is not None
         ):
@@ -1147,12 +1224,12 @@ class TileGeneration:
                 if self.options.near is not None
                 else [(layer["bbox"][0] + layer["bbox"][2]) / 2, (layer["bbox"][1] + layer["bbox"][3]) / 2]
             )
-            bbox = config.config["grids"][layer["grid"]]["bbox"]
+            bbox = grid["bbox"]
             diff = [position[0] - bbox[0], position[1] - bbox[1]]
-            resolution = config.config["grids"][layer["grid"]]["resolutions"][self.options.zoom[0]]
+            resolution = grid["resolutions"][self.options.zoom[0]]
             mt_to_m = (
                 layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
-                * config.config["grids"][layer["grid"]].get("tile_size", configuration.TILE_SIZE_DEFAULT)
+                * grid.get("tile_size", configuration.TILE_SIZE_DEFAULT)
                 * resolution
             )
             mt = [float(d) / mt_to_m for d in diff]
@@ -1173,7 +1250,7 @@ class TileGeneration:
         elif "bbox" in layer:
             extent = layer["bbox"]
         else:
-            extent = config.config["grids"][layer["grid"]]["bbox"]
+            extent = grid["bbox"]
 
         geoms: dict[str | int, BaseGeometry] = {}
         if extent:
@@ -1185,7 +1262,7 @@ class TileGeneration:
                     (extent[2], extent[1]),
                 ),
             )
-            for z, _ in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+            for z, _ in enumerate(grid["resolutions"]):
                 geoms[z] = geom
 
         if self.options.near is None and self.options.geom:
@@ -1209,7 +1286,7 @@ class TileGeneration:
                                 ),
                             ),
                         )
-                    for z, r in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+                    for z, r in enumerate(grid["resolutions"]):
                         if ("min_resolution" not in g or g["min_resolution"] <= r) and (
                             "max_resolution" not in g or g["max_resolution"] >= r
                         ):
@@ -1217,123 +1294,140 @@ class TileGeneration:
                     cursor.close()
                     connection.close()
 
-        self.geoms_cache.setdefault(config.file, {})[layer_name] = DatedGeoms(geoms, config.mtime)
+        self.geoms_cache.setdefault(config.file, {}).setdefault(layer_name, {})[grid_name] = DatedGeoms(
+            geoms,
+            config.mtime,
+        )
         return geoms
 
-    def init_tilecoords(self, config: DatedConfig, layer_name: str) -> None:
+    def init_tilecoords(self, config: DatedConfig, layer_name: str, used_grid_name: str | None) -> None:
         """Initialize the tilestream for the given layer."""
         if layer_name not in config.config.get("layers", {}):
             _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
             return
         layer = config.config["layers"][layer_name]
-        resolutions = config.config["grids"][layer["grid"]]["resolutions"]
+        grid_names = get_grid_names(config, layer_name, used_grid_name)
+        _LOGGER.debug(
+            "Initialize tilecoords for layer %s with grids %s (%s)",
+            layer_name,
+            ", ".join(grid_names),
+            used_grid_name if used_grid_name else "-",
+        )
+        grid_tilecoords: dict[str, Iterable[TileCoord]] = {}
+        for grid_name in grid_names:
+            grid = get_grid_config(config, layer_name, grid_name)
+            resolutions = grid["resolutions"]
 
-        if self.options.time is not None and self.options.zoom is None:
-            if "min_resolution_seed" in layer:
-                self.options.zoom = [resolutions.index(layer["min_resolution_seed"])]
-            else:
-                self.options.zoom = [len(resolutions) - 1]
+            if self.options.time is not None and self.options.zoom is None:
+                if "min_resolution_seed" in layer:
+                    self.options.zoom = [resolutions.index(layer["min_resolution_seed"])]
+                else:
+                    self.options.zoom = [len(resolutions) - 1]
 
-        if self.options.zoom is not None:
-            zoom_max = len(resolutions) - 1
-            for zoom in self.options.zoom:
-                if zoom > zoom_max:
-                    _LOGGER.warning(
-                        "zoom %i is greater than the maximum zoom %i of grid %s of layer %s, ignored.",
-                        zoom,
-                        zoom_max,
-                        layer["grid"],
-                        layer_name,
-                    )
-            self.options.zoom = [z for z in self.options.zoom if z <= zoom_max]
-
-        if "min_resolution_seed" in layer:
-            if self.options.zoom is None:
-                self.options.zoom = []
-                for z, resolution in enumerate(resolutions):
-                    if resolution >= layer["min_resolution_seed"]:
-                        self.options.zoom.append(z)
-            else:
+            if self.options.zoom is not None:
+                zoom_max = len(resolutions) - 1
                 for zoom in self.options.zoom:
-                    resolution = resolutions[zoom]
-                    if resolution < layer["min_resolution_seed"]:
+                    if zoom > zoom_max:
                         _LOGGER.warning(
-                            "zoom %i corresponds to resolution %s is smaller"
-                            " than the 'min_resolution_seed' %s of layer %s, ignored.",
+                            "zoom %i is greater than the maximum zoom %i of grid %s of layer %s, ignored.",
                             zoom,
-                            resolution,
-                            layer["min_resolution_seed"],
+                            zoom_max,
+                            grid_name,
                             layer_name,
                         )
-                self.options.zoom = [
-                    z for z in self.options.zoom if resolutions[z] >= layer["min_resolution_seed"]
-                ]
+                self.options.zoom = [z for z in self.options.zoom if z <= zoom_max]
 
-        if self.options.zoom is None:
-            self.options.zoom = [z for z, r in enumerate(resolutions)]
-
-        # Fill the bounding pyramid
-        tilegrid = self.get_grid(config, layer["grid"])
-        bounding_pyramid = BoundingPyramid(tilegrid=tilegrid)
-        geoms = self.get_geoms(config, layer_name)
-        for zoom in self.options.zoom:
-            if zoom in geoms:
-                extent = geoms[zoom].bounds
-
-                if len([e for e in extent if not math.isnan(e)]) == 0:
-                    _LOGGER.warning("bounds empty for zoom %s", zoom)
+            if "min_resolution_seed" in layer:
+                if self.options.zoom is None:
+                    self.options.zoom = []
+                    for z, resolution in enumerate(resolutions):
+                        if resolution >= layer["min_resolution_seed"]:
+                            self.options.zoom.append(z)
                 else:
-                    minx, miny, maxx, maxy = extent
-                    px_buffer = layer.get("px_buffer", configuration.LAYER_PIXEL_BUFFER_DEFAULT)
-                    m_buffer = px_buffer * resolutions[zoom]
-                    minx -= m_buffer
-                    miny -= m_buffer
-                    maxx += m_buffer
-                    maxy += m_buffer
-                    bounding_pyramid.add(
-                        tilegrid.tilecoord(
-                            zoom,
-                            max(minx, tilegrid.max_extent[0]),
-                            max(miny, tilegrid.max_extent[1]),
-                        ),
-                    )
-                    bounding_pyramid.add(
-                        tilegrid.tilecoord(
-                            zoom,
-                            min(maxx, tilegrid.max_extent[2]),
-                            min(maxy, tilegrid.max_extent[3]),
-                        ),
-                    )
+                    for zoom in self.options.zoom:
+                        resolution = resolutions[zoom]
+                        if resolution < layer["min_resolution_seed"]:
+                            _LOGGER.warning(
+                                "zoom %i corresponds to resolution %s is smaller"
+                                " than the 'min_resolution_seed' %s of layer %s, ignored.",
+                                zoom,
+                                resolution,
+                                layer["min_resolution_seed"],
+                                layer_name,
+                            )
+                    self.options.zoom = [
+                        z for z in self.options.zoom if resolutions[z] >= layer["min_resolution_seed"]
+                    ]
 
-        if layer["meta"]:
-            self.set_tilecoords(
-                config,
-                bounding_pyramid.metatilecoords(
+            if self.options.zoom is None:
+                self.options.zoom = [z for z, r in enumerate(resolutions)]
+
+            # Fill the bounding pyramid
+            tilegrid = self.get_grid(config, get_grid_name(config, layer_name, grid_name))
+            bounding_pyramid = BoundingPyramid(tilegrid=tilegrid)
+            geoms = self.get_geoms(config, layer_name, grid_name)
+            for zoom in self.options.zoom:
+                if zoom in geoms:
+                    extent = geoms[zoom].bounds
+
+                    if len([e for e in extent if not math.isnan(e)]) == 0:
+                        _LOGGER.warning("bounds empty for zoom %s", zoom)
+                    else:
+                        minx, miny, maxx, maxy = extent
+                        px_buffer = layer.get("px_buffer", configuration.LAYER_PIXEL_BUFFER_DEFAULT)
+                        m_buffer = px_buffer * resolutions[zoom]
+                        minx -= m_buffer
+                        miny -= m_buffer
+                        maxx += m_buffer
+                        maxy += m_buffer
+                        bounding_pyramid.add(
+                            tilegrid.tilecoord(
+                                zoom,
+                                max(minx, tilegrid.max_extent[0]),
+                                max(miny, tilegrid.max_extent[1]),
+                            ),
+                        )
+                        bounding_pyramid.add(
+                            tilegrid.tilecoord(
+                                zoom,
+                                min(maxx, tilegrid.max_extent[2]),
+                                min(maxy, tilegrid.max_extent[3]),
+                            ),
+                        )
+            if layer["meta"]:
+                grid_tilecoords[grid_name] = bounding_pyramid.metatilecoords(
                     layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT),
-                ),
-                layer_name,
-            )
-        else:
-            self.set_tilecoords(config, bounding_pyramid, layer_name)
+                )
+            else:
+                grid_tilecoords[grid_name] = bounding_pyramid
+        self.set_tilecoords(config, grid_tilecoords, layer_name)
 
     @staticmethod
     async def _tilestream(
-        tilecoords: Iterable[TileCoord],
+        grid_tilecoords: dict[str, Iterable[TileCoord]],
         default_metadata: dict[str, str],
         all_dimensions: list[dict[str, str]],
     ) -> AsyncIterator[Tile]:
-        for tilecoord in tilecoords:
-            for dimensions in all_dimensions:
-                metadata = {}
-                if default_metadata is not None:
-                    metadata.update(default_metadata)
-                for k, v in dimensions.items():
-                    metadata["dimension_" + k] = v
-                yield Tile(tilecoord, metadata=metadata)
+        for grid_name, tilecoords in grid_tilecoords.items():
+            for tilecoord in tilecoords:
+                for dimensions in all_dimensions:
+                    assert "grid" not in default_metadata, "grid should not be in default_metadata"
+                    metadata = {
+                        "grid": grid_name,
+                    }
+                    if default_metadata is not None:
+                        metadata.update(default_metadata)
+                    for k, v in dimensions.items():
+                        metadata["dimension_" + k] = v
+                    yield Tile(tilecoord, metadata=metadata)
 
-    def set_tilecoords(self, config: DatedConfig, tilecoords: Iterable[TileCoord], layer_name: str) -> None:
+    def set_tilecoords(
+        self,
+        config: DatedConfig,
+        grid_tilecoords: dict[str, Iterable[TileCoord]],
+        layer_name: str,
+    ) -> None:
         """Set the tilestream for the given tilecoords."""
-        assert tilecoords is not None
         if layer_name not in config.config.get("layers", {}):
             _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
             return
@@ -1344,7 +1438,7 @@ class TileGeneration:
             metadata["job_id"] = self.options.job_id
         if self.options.host is not None:
             metadata["host"] = self.options.host
-        self.tilestream = self._tilestream(tilecoords, metadata, self.get_all_dimensions(layer))
+        self.tilestream = self._tilestream(grid_tilecoords, metadata, self.get_all_dimensions(layer))
 
     def set_store(self, store: AsyncTileStore) -> None:
         """Set the store for the tilestream."""
@@ -1710,6 +1804,7 @@ class IntersectGeometryFilter:
         config: DatedConfig,
         tilecoord: TileCoord,
         layer_name: str,
+        grid_name: str,
         host: str | None = None,
     ) -> bool:
         """Filter the tilecoord."""
@@ -1717,7 +1812,6 @@ class IntersectGeometryFilter:
             _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
             return True
         layer = config.config["layers"][layer_name]
-        grid_name = layer["grid"]
         grid = config.config["grids"][grid_name]
         tile_grid = self.gene.get_grid(config, grid_name)
         px_buffer = (
@@ -1726,7 +1820,7 @@ class IntersectGeometryFilter:
             if layer["meta"]
             else 0
         )
-        geoms = self.gene.get_geoms(config, layer_name, host=host)
+        geoms = self.gene.get_geoms(config, layer_name, grid_name, host=host)
         return self.bbox_polygon(  # type: ignore[no-any-return]
             tile_grid.extent(tilecoord, grid["resolutions"][tilecoord.z] * px_buffer),
         ).intersects(geoms[tilecoord.z])
@@ -1735,7 +1829,12 @@ class IntersectGeometryFilter:
         """Filter the tile on a geometry."""
         return (
             tile
-            if self.filter_tilecoord(self.gene.get_tile_config(tile), tile.tilecoord, tile.metadata["layer"])
+            if self.filter_tilecoord(
+                self.gene.get_tile_config(tile),
+                tile.tilecoord,
+                tile.metadata["layer"],
+                tile.metadata["grid"],
+            )
             else None
         )
 

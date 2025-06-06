@@ -2,6 +2,9 @@ import os
 import shutil
 from pathlib import Path
 
+import pytest
+import pytest_check
+import yaml
 from PIL import Image
 
 from tilecloud_chain import TileGeneration, controller
@@ -24,6 +27,7 @@ class TestController(CompareCase):
         if os.path.exists("/tmp/tiles"):
             shutil.rmtree("/tmp/tiles")
 
+    @pytest.mark.asyncio
     async def test_capabilities(self) -> None:
         gene = TileGeneration(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         config = gene.get_config(Path("tilegeneration/test-fix.yaml"))
@@ -965,12 +969,14 @@ class TestController(CompareCase):
 </Capabilities>"""
     )
 
+    @pytest.mark.asyncio
     async def test_multi_host_capabilities(self) -> None:
         gene = TileGeneration(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         self.assert_result_equals(
             await controller.get_wmts_capabilities(gene, "multi_host"), self.MULTIHOST_CAPABILITIES, True
         )
 
+    @pytest.mark.asyncio
     async def test_capabilities_slash(self) -> None:
         gene = TileGeneration(Path("tilegeneration/test-capabilities.yaml"), configure_logging=False)
         config = gene.get_config(Path("tilegeneration/test-capabilities.yaml"))
@@ -1105,6 +1111,7 @@ class TestController(CompareCase):
             True,
         )
 
+    @pytest.mark.asyncio
     async def test_multi_url_capabilities(self) -> None:
         gene = TileGeneration(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         self.assert_result_equals(
@@ -1240,7 +1247,7 @@ layers:
       - '2010'
       - '2012'
     extension: png
-    grid: swissgrid_5
+    grids: [swissgrid_5]
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache
@@ -1277,7 +1284,7 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.line
-    grid: swissgrid_5
+    grids: [swissgrid_5]
     headers:
       Cache-Control: no-cache
     layers: line
@@ -1310,7 +1317,7 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
-    grid: swissgrid_5
+    grids: [swissgrid_5]
     mapfile: mapfile/test.mapnik
     meta: false
     meta_buffer: 128
@@ -1339,7 +1346,7 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
-    grid: swissgrid_5
+    grids: [swissgrid_5]
     layers_fields:
       line:
       - name
@@ -1377,7 +1384,7 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
-    grid: swissgrid_5
+    grids: [swissgrid_5]
     layers_fields:
       point:
       - name
@@ -1409,7 +1416,7 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.point
-    grid: swissgrid_5
+    grids: [swissgrid_5]
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache
@@ -1447,7 +1454,7 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.point
-    grid: swissgrid_5
+    grids: [swissgrid_5]
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache
@@ -1479,7 +1486,7 @@ layers:
       hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
       size: 334
     extension: png
-    grid: swissgrid_5
+    grids: [swissgrid_5]
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache
@@ -1516,7 +1523,7 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.point
-    grid: swissgrid_5
+    grids: [swissgrid_5]
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache
@@ -1554,7 +1561,7 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
-    grid: swissgrid_5
+    grids: [swissgrid_5]
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache
@@ -1591,7 +1598,7 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
-    grid: swissgrid_01
+    grids: [swissgrid_01]
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache
@@ -1671,23 +1678,112 @@ sqs:
             cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends.yaml --generate-legend-images",
             main_func=controller.main,
             directory="/tmp/tiles/1.0.0/",
-            tiles_pattern="%s/default/legend%i.png",
-            tiles=[("point", 0), ("line", 0), ("line", 2), ("polygon", 0), ("all", 0), ("all", 2)],
+            tiles_pattern="%s/default/%s",
+            tiles=[
+                ("point", "legend.yaml"),
+                ("point", "legend-5.png"),
+                ("line", "legend.yaml"),
+                ("line", "legend-5.png"),
+                ("line", "legend-50.png"),
+                ("polygon", "legend.yaml"),
+                ("polygon", "legend-5.png"),
+                ("all", "legend.yaml"),
+                ("all", "legend-5.png"),
+                ("all", "legend-50.png"),
+            ],
         )
 
-        im = Image.open("/tmp/tiles/1.0.0/point/default/legend0.png")
+        im = Image.open("/tmp/tiles/1.0.0/point/default/legend-5.png")
         assert im.size == (64, 20)
-        im = Image.open("/tmp/tiles/1.0.0/line/default/legend0.png")
+        im = Image.open("/tmp/tiles/1.0.0/line/default/legend-5.png")
         assert im.size == (71, 35)
-        im = Image.open("/tmp/tiles/1.0.0/line/default/legend2.png")
+        im = Image.open("/tmp/tiles/1.0.0/line/default/legend-50.png")
         assert im.size == (71, 35)
-        im = Image.open("/tmp/tiles/1.0.0/polygon/default/legend0.png")
+        im = Image.open("/tmp/tiles/1.0.0/polygon/default/legend-5.png")
         assert im.size == (81, 23)
-        im = Image.open("/tmp/tiles/1.0.0/all/default/legend0.png")
+        im = Image.open("/tmp/tiles/1.0.0/all/default/legend-5.png")
         assert im.size == (81, 78)
-        im = Image.open("/tmp/tiles/1.0.0/all/default/legend2.png")
+        im = Image.open("/tmp/tiles/1.0.0/all/default/legend-50.png")
         assert im.size == (81, 78)
 
+        for layer, result in (
+            (
+                "point",
+                {
+                    "metadata": [
+                        {
+                            "height": 20,
+                            "mime_type": "image/png",
+                            "path": "1.0.0/point/default/legend-5.png",
+                            "width": 64,
+                        },
+                    ]
+                },
+            ),
+            (
+                "line",
+                {
+                    "metadata": [
+                        {
+                            "height": 35,
+                            "mime_type": "image/png",
+                            "min_resolution": 15.811388300841893,
+                            "path": "1.0.0/line/default/legend-5.png",
+                            "width": 71,
+                        },
+                        {
+                            "height": 35,
+                            "max_resolution": 15.811388300841893,
+                            "mime_type": "image/png",
+                            "path": "1.0.0/line/default/legend-50.png",
+                            "width": 71,
+                        },
+                    ]
+                },
+            ),
+            (
+                "polygon",
+                {
+                    "metadata": [
+                        {
+                            "height": 23,
+                            "mime_type": "image/png",
+                            "path": "1.0.0/polygon/default/legend-5.png",
+                            "width": 81,
+                        },
+                    ]
+                },
+            ),
+            (
+                "all",
+                {
+                    "metadata": [
+                        {
+                            "height": 78,
+                            "mime_type": "image/png",
+                            "min_resolution": 15.811388300841893,
+                            "path": "1.0.0/all/default/legend-5.png",
+                            "width": 81,
+                        },
+                        {
+                            "height": 78,
+                            "max_resolution": 15.811388300841893,
+                            "mime_type": "image/png",
+                            "path": "1.0.0/all/default/legend-50.png",
+                            "width": 81,
+                        },
+                    ]
+                },
+            ),
+        ):
+            with pytest_check.check:
+                # Check that legend files were created
+                assert os.path.exists(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml")
+                with open(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml", encoding="utf-8") as legend_file:
+                    legend_metadata = yaml.safe_load(legend_file)
+                    assert legend_metadata == result
+
+    @pytest.mark.asyncio
     async def test_legends(self) -> None:
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends.yaml --legends",

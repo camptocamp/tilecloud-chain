@@ -14,7 +14,7 @@ caches:
 
 defaults:
   layer: &layer
-    grid: swissgrid
+    grids: [swissgrid]
     type: wms
     legend_mime: image/png
     legend_extension: png
