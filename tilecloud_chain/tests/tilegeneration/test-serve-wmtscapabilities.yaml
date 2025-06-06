@@ -23,6 +23,7 @@ defaults:
     wmts_style: default
     mime_type: image/png
     extension: png
+    default_grid: swissgrid_5
     dimensions:
       - name: DATE
         default: '2012'

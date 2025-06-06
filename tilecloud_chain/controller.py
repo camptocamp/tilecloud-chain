@@ -231,6 +231,7 @@ async def get_wmts_capabilities(
             "str",
             jinja2_template(
                 data.decode("utf-8"),
+                config=config.config,
                 layers=config.config.get("layers", {}),
                 layer_legends=gene.layer_legends,
                 grids=config.config["grids"],

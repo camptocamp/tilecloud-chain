@@ -170,7 +170,7 @@
                         endfor
                    %}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.{{layer['extension']}}" />{%
       endfor %}{%
-        for grid_name in _get_grid_names(config, layer_name) %}
+        for grid_name in get_grid_names(config, layer_name) %}
       <TileMatrixSetLink>
         <TileMatrixSet>{{grid_name}}</TileMatrixSet>
       </TileMatrixSetLink>{%
