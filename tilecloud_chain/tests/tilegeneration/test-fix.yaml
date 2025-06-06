@@ -61,7 +61,7 @@ caches:
 
 defaults:
   layer: &layer
-    grid: swissgrid_5
+    default_grid: swissgrid_5
     type: wms
     wmts_style: default
     mime_type: image/png

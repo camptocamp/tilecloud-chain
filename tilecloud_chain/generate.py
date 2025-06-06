@@ -33,6 +33,7 @@ from tilecloud_chain import (
     TilesFileStore,
     add_common_options,
     configuration,
+    get_grid_config,
     get_queue_store,
     parse_tilecoord,
     quote,
@@ -71,7 +72,7 @@ class Generate:
         gene: TileGeneration,
         out: IO[str] | None,
     ) -> None:
-        self._count_metatiles: Count | None = None
+        self._count_meta_tiles: Count | None = None
         self._count_metatiles_dropped: Count | None = None
         self._count_tiles: Count | None = None
         self._count_tiles_dropped: Count | None = None
@@ -104,8 +105,8 @@ class Generate:
         if self._count_tiles_stored is not None:
             self._count_tiles_stored.nb = 0
             self._count_tiles_stored.size = 0
-        if self._count_metatiles is not None:
-            self._count_metatiles.nb = 0
+        if self._count_meta_tiles is not None:
+            self._count_meta_tiles.nb = 0
         if self._count_metatiles_dropped is not None:
             self._count_metatiles_dropped.nb = 0
         self._gene.error = 0
@@ -202,7 +203,7 @@ class Generate:
 
         if self._options.role in ("local", "master"):
             # Generate a stream of metatiles
-            self._gene.init_tilecoords(config, layer_name)
+            self._gene.init_tilecoords(config, layer_name, self._options.grid)
 
         elif self._options.role == "hash":
             if layer_name not in config.config.get("layers", {}):
@@ -230,7 +231,7 @@ class Generate:
     async def _generate_tiles(self) -> None:
         if self._options.role in ("slave") and not self._options.tiles:
             assert self._queue_tilestore is not None
-            # Get the metatiles from the SQS/Redis queue
+            # Get the meta tiles from the SQS/Redis queue
             self._gene.set_store(self._queue_tilestore)
 
             async def _layer_filter(tile: Tile) -> Tile | None:
@@ -241,7 +242,7 @@ class Generate:
             self._gene.imap(_layer_filter)
 
         if self._options.role != "server":
-            self._count_metatiles = self._gene.counter()
+            self._count_meta_tiles = self._gene.counter()
 
         self._gene.get(MultiTileStore(TilestoreGetter(self)), "Get tile")
 
@@ -399,10 +400,10 @@ class Generate:
                 assert self._count_tiles
                 message.append(f"Nb of generated jobs: {self._count_tiles.nb}")
             elif layer.get("meta") if layer is not None else self._options.role == "slave":
-                assert self._count_metatiles is not None
+                assert self._count_meta_tiles is not None
                 assert self._count_metatiles_dropped is not None
                 message += [
-                    f"Nb generated metatiles: {self._count_metatiles.nb}",
+                    f"Nb generated metatiles: {self._count_meta_tiles.nb}",
                     f"Nb metatiles dropped: {self._count_metatiles_dropped.nb}",
                 ]
 
@@ -472,7 +473,7 @@ class TilestoreGetter:
     def __init__(self, gene: Generate) -> None:
         self.gene = gene
 
-    def __call__(self, config_file: Path, layer_name: str) -> AsyncTileStore | None:
+    def __call__(self, config_file: Path, layer_name: str, grid_name: str | None) -> AsyncTileStore | None:
         """Get the tilestore based on the layername config file any layer type."""
         config = self.gene._gene.get_config(config_file)  # noqa: SLF001
         if layer_name not in config.config.get("layers", {}):
@@ -493,7 +494,10 @@ class TilestoreGetter:
                         WMSTileLayout(
                             url=layer["url"],
                             layers=layer.get("layers", ""),
-                            srs=config.config["grids"][layer["grid"]].get("srs", configuration.SRS_DEFAULT),
+                            srs=get_grid_config(config, layer_name, grid_name).get(
+                                "srs",
+                                configuration.SRS_DEFAULT,
+                            ),
                             format_pattern=layer["mime_type"],
                             border=(
                                 layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)

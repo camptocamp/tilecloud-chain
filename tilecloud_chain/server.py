@@ -45,8 +45,6 @@ import c2cwsgiutils.prometheus
 import c2cwsgiutils.pyramid
 import prometheus_client
 import prometheus_client.core
-import prometheus_client.metrics_core
-import prometheus_client.multiprocess
 import prometheus_client.registry
 import psutil
 import pyramid.response
@@ -63,6 +61,7 @@ from pyramid.router import Router
 from pyramid_mako import add_mako_renderer
 from tilecloud import Tile, TileCoord
 
+import tilecloud_chain
 import tilecloud_chain.configuration
 import tilecloud_chain.security
 from tilecloud_chain import (
@@ -239,7 +238,12 @@ class Server(Generic[Response]):
         self.filter_cache.setdefault(config.file, {})[layer_name] = DatedFilter(layer_filter, config.mtime)
         return layer_filter
 
-    def get_store(self, config: tilecloud_chain.DatedConfig, layer_name: str) -> AsyncTileStore | None:
+    def get_store(
+        self,
+        config: tilecloud_chain.DatedConfig,
+        layer_name: str,
+        grid_name: str,
+    ) -> AsyncTileStore | None:
         """Get the store from the config."""
         dated_store = self.store_cache.get(config.file, {}).get(layer_name)
 
@@ -248,7 +252,13 @@ class Server(Generic[Response]):
 
         assert _TILEGENERATION
 
-        store = _TILEGENERATION.get_store(config, self.get_cache(config), layer_name, read_only=True)
+        store = _TILEGENERATION.get_store(
+            config,
+            self.get_cache(config),
+            layer_name,
+            grid_name,
+            read_only=True,
+        )
         if store is None:
             return None
         self.store_cache.setdefault(config.file, {})[layer_name] = DatedStore(store, config.mtime)
@@ -538,8 +548,15 @@ class Server(Generic[Response]):
 
             if params["STYLE"] != layer["wmts_style"]:
                 return self.error(config, 400, f"Wrong Style '{params['STYLE']}'", **kwargs)
-            if params["TILEMATRIXSET"] != layer["grid"]:
-                return self.error(config, 400, f"Wrong TileMatrixSet '{params['TILEMATRIXSET']}'", **kwargs)
+            grids = tilecloud_chain.get_grid_names(config.config, params["LAYER"])
+            if params["TILEMATRIXSET"] not in grids:
+                grids_string = "'" + "', '".join(grids) + "'"
+                return self.error(
+                    config,
+                    400,
+                    f"Wrong TileMatrixSet '{params['TILEMATRIXSET']}' should be in {grids_string}",
+                    **kwargs,
+                )
 
             metadata["layer"] = params["LAYER"]
             metadata["config_file"] = str(config.file)
@@ -640,11 +657,12 @@ class Server(Generic[Response]):
                 config,
                 meta_tilecoord,
                 params["LAYER"],
+                params["TILEMATRIXSET"],
                 host=self.get_host(**kwargs),
             ):
                 return self._get_event_loop().run_until_complete(self._map_cache(config, layer, tile, kwargs))
 
-        store = self.get_store(config, params["LAYER"])
+        store = self.get_store(config, params["LAYER"], params["TILEMATRIXSET"])
         if store is None:
             return self.error(
                 config,

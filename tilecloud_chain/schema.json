@@ -253,8 +253,16 @@
     },
     "layer_grid": {
       "title": "Layer grid",
-      "description": "The used grid name",
+      "description": "The default grid name",
       "type": "string"
+    },
+    "layer_grids": {
+      "title": "Layer grids",
+      "description": "All the used grids name used in the capabilities, by default only the `default_grid` is used, if `default_grid` is not defined, all the grids are used",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "layer_bbox": {
       "title": "Layer bounding box",
@@ -551,6 +559,12 @@
         "grid": {
           "$ref": "#/definitions/layer_grid"
         },
+        "default_grid": {
+          "$ref": "#/definitions/layer_grid"
+        },
+        "grids": {
+          "$ref": "#/definitions/layer_grids"
+        },
         "bbox": {
           "$ref": "#/definitions/layer_bbox"
         },
@@ -656,7 +670,7 @@
           "default": "1.1.1"
         }
       },
-      "required": ["layers", "url", "grid", "wmts_style", "mime_type", "extension"]
+      "required": ["layers", "url", "wmts_style", "mime_type", "extension"]
     },
     "layer_mapnik": {
       "title": "Layer Mapnik",
@@ -669,6 +683,12 @@
         },
         "grid": {
           "$ref": "#/definitions/layer_grid"
+        },
+        "default_grid": {
+          "$ref": "#/definitions/layer_grid"
+        },
+        "grids": {
+          "$ref": "#/definitions/layer_grids"
         },
         "bbox": {
           "$ref": "#/definitions/layer_bbox"
@@ -781,7 +801,7 @@
           "default": false
         }
       },
-      "required": ["grid", "wmts_style", "mime_type", "extension"]
+      "required": ["wmts_style", "mime_type", "extension"]
     },
     "layer": {
       "title": "Layer",

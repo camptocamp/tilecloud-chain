@@ -16,7 +16,7 @@ defaults:
   layer: &layer
     url: http://mapserver:8080/
     layers: point
-    grid: swissgrid
+    default_grid: swissgrid
     type: wms
     wmts_style: default
     mime_type: image/png

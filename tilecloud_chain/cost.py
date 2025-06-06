@@ -25,7 +25,7 @@ async def _async_main() -> None:
     """Calculate the cost, main function."""
     try:
         parser = ArgumentParser(description="Used to calculate the generation cost", prog=sys.argv[0])
-        add_common_options(parser, tile_pyramid=False, dimensions=True)
+        add_common_options(parser, tile_pyramid=False, dimensions=True, grid=True)
         parser.add_argument(
             "--cost-algo",
             "--calculate-cost-algorithm",
@@ -139,7 +139,7 @@ async def _calculate_cost(
             nb_tiles[zoom] = round(geom.area / size**2)
 
     elif options.cost_algo == "count":
-        gene.init_tilecoords(config, layer_name)
+        gene.init_tilecoords(config, layer_name, options.grid)
         gene.add_geom_filter()
 
         if meta:

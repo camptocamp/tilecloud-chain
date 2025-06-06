@@ -20,7 +20,6 @@ import botocore.exceptions
 import PIL.ImageFile
 import requests
 import ruamel.yaml
-import tilecloud.store.redis
 import tilecloud.store.s3
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import ContentSettings
@@ -251,6 +250,7 @@ async def get_wmts_capabilities(
                 metadata=config.config.get("metadata"),
                 has_provider="provider" in config.config,
                 provider=config.config.get("provider"),
+                get_grid_names=tilecloud_chain.get_grid_names,
                 enumerate=enumerate,
                 ceil=math.ceil,
                 int=int,
