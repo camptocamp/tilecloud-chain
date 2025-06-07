@@ -135,6 +135,180 @@ CAPABILITIES = (
   </Contents>
 </Capabilities>"""
 )
+CAPABILITIES_SWISSGRID_2056 = (
+    r"""<\?xml version="1.0" encoding="UTF-8"\?>
+<Capabilities version="1.0.0"
+    xmlns="http://www.opengis.net/wmts/1.0"
+    xmlns:ows="http://www.opengis.net/ows/1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gml="http://www.opengis.net/gml"
+    xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
+  <ows:OperationsMetadata>
+    <ows:Operation name="GetCapabilities">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="http://wmts1/tiles/wmts/1.0.0/WMTSCapabilities.xml">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>REST</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+          <ows:Get xlink:href="http://wmts1/tiles/wmts/">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>KVP</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="GetTile">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="http://wmts1/tiles/wmts/">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>REST</ows:Value>
+                <ows:Value>KVP</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+  </ows:OperationsMetadata>
+  <!-- <ServiceMetadataURL xlink:href="" /> -->
+  <Contents>
+
+    <Layer>
+      <ows:Title>point_hash</ows:Title>
+      <ows:Identifier>point_hash</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <InfoFormat></InfoFormat>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/wmts/1.0.0/point_hash/default/{DATE}/"""
+    r"""{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid_5</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+
+
+    <TileMatrixSet>
+      <ows:Identifier>swissgrid_2056</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::2056</ows:SupportedCRS>
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>357142.85714285716</ScaleDenominator>
+        <TopLeftCorner>2420000 1350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>19</MatrixWidth>
+        <MatrixHeight>13</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>1</ows:Identifier>
+        <ScaleDenominator>178571.42857142858</ScaleDenominator>
+        <TopLeftCorner>2420000 1350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>38</MatrixWidth>
+        <MatrixHeight>25</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>2</ows:Identifier>
+        <ScaleDenominator>71428.57142857143</ScaleDenominator>
+        <TopLeftCorner>2420000 1350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>94</MatrixWidth>
+        <MatrixHeight>63</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>3</ows:Identifier>
+        <ScaleDenominator>35714.28571428572</ScaleDenominator>
+        <TopLeftCorner>2420000 1350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>188</MatrixWidth>
+        <MatrixHeight>125</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>4</ows:Identifier>
+        <ScaleDenominator>17857.14285714286</ScaleDenominator>
+        <TopLeftCorner>2420000 1350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>375</MatrixWidth>
+        <MatrixHeight>250</MatrixHeight>
+      </TileMatrix>
+    </TileMatrixSet>
+    <TileMatrixSet>
+      <ows:Identifier>swissgrid_5</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>19</MatrixWidth>
+        <MatrixHeight>13</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>1</ows:Identifier>
+        <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>38</MatrixWidth>
+        <MatrixHeight>25</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>2</ows:Identifier>
+        <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>94</MatrixWidth>
+        <MatrixHeight>63</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>3</ows:Identifier>
+        <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>188</MatrixWidth>
+        <MatrixHeight>125</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>4</ows:Identifier>
+        <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>375</MatrixWidth>
+        <MatrixHeight>250</MatrixHeight>
+      </TileMatrix>
+    </TileMatrixSet>
+  </Contents>
+</Capabilities>"""
+)
 
 
 class TestServe(CompareCase):
@@ -1105,7 +1279,7 @@ Size per tile: 4[0-9][0-9] o
             assert request.response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 request.response.body.decode("utf-8"),
-                CAPABILITIES,
+                CAPABILITIES_SWISSGRID_2056,
                 regex=True,
             )
             log_capture.check()

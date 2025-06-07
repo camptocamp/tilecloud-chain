@@ -102,6 +102,7 @@ def add_common_options(
     dimensions: bool = False,
     cache: bool = True,
     default_config_file: bool = False,
+    grid: bool = False,
 ) -> None:
     """Get the options used by some commands."""
     c2cwsgiutils.setup_process.fill_arguments(parser)
@@ -128,6 +129,12 @@ def add_common_options(
         help="continue if there is an error in the configuration",
     )
     parser.add_argument("-l", "--layer", metavar="NAME", help="the layer to generate")
+    if tile_pyramid or grid:
+        parser.add_argument(
+            "-g",
+            "--grid",
+            help="the grid to use, if not specified, the default grid for the layer in the config file is used",
+        )
     if tile_pyramid:
         parser.add_argument(
             "-b",
@@ -433,6 +440,66 @@ def get_azure_container_client(container: str) -> ContainerClient:
         account_url=os.environ["AZURE_STORAGE_ACCOUNT_URL"],
         credential=DefaultAzureCredential(),  # type: ignore[arg-type]
     ).get_container_client(container=container)
+
+
+def get_grid_name(
+    config: DatedConfig,
+    layer_name: str,
+    grid_name: str | None,
+) -> str:
+    """Get the grid name."""
+    layer = config.config["layers"][layer_name]
+    if "grid" in layer:
+        _LOGGER.warning(
+            "The layer %s has a 'grid' key, it is deprecated, use 'default_grid' instead.",
+            layer_name,
+        )
+    if grid_name is None and "grid" in layer:
+        grid_name = layer["grid"]
+    if grid_name is None and "default_grid" in layer:
+        grid_name = layer["default_grid"]
+    assert grid_name is not None, (
+        f"Grid name is not specified for layer '{layer_name}', "
+        "you must specify it in the configuration file or with the --grid option."
+    )
+    return grid_name
+
+
+def get_grid_config(
+    config: DatedConfig,
+    layer_name: str,
+    grid_name: str | None,
+) -> tilecloud_chain.configuration.Grid:
+    """Get the grid configuration."""
+    return config.config["grids"][get_grid_name(config, layer_name, grid_name)]
+
+
+def get_grid_names(
+    config: tilecloud_chain.configuration.Configuration,
+    layer_name: str,
+) -> list[str]:
+    """Get the grid names for a layer."""
+    if layer_name not in config.get("layers", {}):
+        layers_str = "'" + "', '".join(config.get("layers", {}).keys()) + "'"
+        message = (
+            f"Layer '{layer_name}' not found in the configuration available layers: {layers_str}."
+            " Please check the configuration file or the layer name."
+        )
+        raise ValueError(message)
+    layer = config["layers"][layer_name]
+    if "grid" in layer:
+        _LOGGER.warning(
+            "The layer %s has a 'grid' key, it is deprecated, use 'default_grid' instead.",
+            layer_name,
+        )
+
+    if "grids" in layer:
+        return layer["grids"]
+    if "default_grid" in layer:
+        return [layer["default_grid"]]
+    if "grid" in layer:
+        return [layer["grid"]]
+    return list(config["grids"].keys())
 
 
 class TileGeneration:
@@ -858,6 +925,7 @@ class TileGeneration:
         config: DatedConfig,
         cache: tilecloud_chain.configuration.Cache,
         layer_name: str,
+        grid_name: str | None,
         read_only: bool = False,
     ) -> AsyncTileStore | None:
         """Get the tile store."""
@@ -865,14 +933,14 @@ class TileGeneration:
             _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
             return None
         layer = config.config["layers"][layer_name]
-        grid = config.config["grids"][layer["grid"]]
+        grid = get_grid_config(config, layer_name, grid_name)
         layout = WMTSTileLayout(
             layer=layer_name,
             url=cache["folder"],
             style=layer["wmts_style"],
             format_pattern="." + layer["extension"],
             dimensions_name=[dimension["name"] for dimension in layer.get("dimensions", [])],
-            tile_matrix_set=layer["grid"],
+            tile_matrix_set=get_grid_name(config, layer_name, grid_name),
             tile_matrix=lambda z: get_tile_matrix_identifier(grid, zoom=z),
             request_encoding="REST",
         )
@@ -951,30 +1019,18 @@ class TileGeneration:
 
         return cache_tilestore
 
-    @staticmethod
-    def get_grid_name(
-        config: DatedConfig,
-        layer: tilecloud_chain.configuration.Layer,
-        name: Any | None = None,
-    ) -> tilecloud_chain.configuration.Grid:
-        """Get the grid name."""
-        if name is None:
-            name = layer["grid"]
-
-        return config.config["grids"][name]
-
     def get_tilesstore(self, cache: str | None = None) -> TimedTileStoreWrapper:
         """Get the tile store."""
         gene = self
 
-        def get_store(config_file: Path, layer_name: str) -> AsyncTileStore | None:
+        def get_store(config_file: Path, layer_name: str, grid_name: str | None) -> AsyncTileStore | None:
             config = gene.get_config(config_file)
             cache_name = cache or config.config["generation"].get(
                 "default_cache",
                 configuration.DEFAULT_CACHE_DEFAULT,
             )
             cache_obj = config.config["caches"][cache_name]
-            return self.get_store(config, cache_obj, layer_name)
+            return self.get_store(config, cache_obj, layer_name, grid_name)
 
         return TimedTileStoreWrapper(
             MultiTileStore(get_store),
@@ -1009,7 +1065,11 @@ class TileGeneration:
         if store is None:
             gene = self
 
-            def get_splitter(config_file: Path, layer_name: str) -> AsyncTileStore | None:
+            def get_splitter(
+                config_file: Path,
+                layer_name: str,
+                grid_name: str | None,
+            ) -> AsyncTileStore | None:
                 config = gene.get_config(config_file)
                 if layer_name not in config.config.get("layers", {}):
                     _LOGGER.warning("Layer %s not found in config %s", layer_name, config_file)
@@ -1019,7 +1079,7 @@ class TileGeneration:
                     return TileStoreWrapper(
                         MetaTileSplitterTileStore(
                             layer["mime_type"],
-                            config.config["grids"][layer["grid"]].get(
+                            get_grid_config(config, layer_name, grid_name).get(
                                 "tile_size",
                                 configuration.TILE_SIZE_DEFAULT,
                             ),
@@ -1123,6 +1183,7 @@ class TileGeneration:
         self,
         config: DatedConfig,
         layer_name: str,
+        grid_name: str,
         host: str | None = None,
     ) -> dict[str | int, BaseGeometry]:
         """Get the geometries for the given layer."""
@@ -1135,6 +1196,7 @@ class TileGeneration:
             return {}
         layer = config.config["layers"][layer_name]
 
+        grid = get_grid_config(config, layer_name, grid_name)
         if self.options.near is not None or (
             self.options.time is not None and "bbox" in layer and self.options.zoom is not None
         ):
@@ -1147,12 +1209,12 @@ class TileGeneration:
                 if self.options.near is not None
                 else [(layer["bbox"][0] + layer["bbox"][2]) / 2, (layer["bbox"][1] + layer["bbox"][3]) / 2]
             )
-            bbox = config.config["grids"][layer["grid"]]["bbox"]
+            bbox = grid["bbox"]
             diff = [position[0] - bbox[0], position[1] - bbox[1]]
-            resolution = config.config["grids"][layer["grid"]]["resolutions"][self.options.zoom[0]]
+            resolution = grid["resolutions"][self.options.zoom[0]]
             mt_to_m = (
                 layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
-                * config.config["grids"][layer["grid"]].get("tile_size", configuration.TILE_SIZE_DEFAULT)
+                * grid.get("tile_size", configuration.TILE_SIZE_DEFAULT)
                 * resolution
             )
             mt = [float(d) / mt_to_m for d in diff]
@@ -1173,7 +1235,7 @@ class TileGeneration:
         elif "bbox" in layer:
             extent = layer["bbox"]
         else:
-            extent = config.config["grids"][layer["grid"]]["bbox"]
+            extent = grid["bbox"]
 
         geoms: dict[str | int, BaseGeometry] = {}
         if extent:
@@ -1185,7 +1247,7 @@ class TileGeneration:
                     (extent[2], extent[1]),
                 ),
             )
-            for z, _ in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+            for z, _ in enumerate(grid["resolutions"]):
                 geoms[z] = geom
 
         if self.options.near is None and self.options.geom:
@@ -1209,7 +1271,7 @@ class TileGeneration:
                                 ),
                             ),
                         )
-                    for z, r in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
+                    for z, r in enumerate(grid["resolutions"]):
                         if ("min_resolution" not in g or g["min_resolution"] <= r) and (
                             "max_resolution" not in g or g["max_resolution"] >= r
                         ):
@@ -1220,13 +1282,15 @@ class TileGeneration:
         self.geoms_cache.setdefault(config.file, {})[layer_name] = DatedGeoms(geoms, config.mtime)
         return geoms
 
-    def init_tilecoords(self, config: DatedConfig, layer_name: str) -> None:
+    def init_tilecoords(self, config: DatedConfig, layer_name: str, grid_name: str | None) -> None:
         """Initialize the tilestream for the given layer."""
         if layer_name not in config.config.get("layers", {}):
             _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
             return
         layer = config.config["layers"][layer_name]
-        resolutions = config.config["grids"][layer["grid"]]["resolutions"]
+        grid_name = get_grid_name(config, layer_name, grid_name)
+        grid = get_grid_config(config, layer_name, grid_name)
+        resolutions = grid["resolutions"]
 
         if self.options.time is not None and self.options.zoom is None:
             if "min_resolution_seed" in layer:
@@ -1242,7 +1306,7 @@ class TileGeneration:
                         "zoom %i is greater than the maximum zoom %i of grid %s of layer %s, ignored.",
                         zoom,
                         zoom_max,
-                        layer["grid"],
+                        grid_name,
                         layer_name,
                     )
             self.options.zoom = [z for z in self.options.zoom if z <= zoom_max]
@@ -1273,9 +1337,9 @@ class TileGeneration:
             self.options.zoom = [z for z, r in enumerate(resolutions)]
 
         # Fill the bounding pyramid
-        tilegrid = self.get_grid(config, layer["grid"])
+        tilegrid = self.get_grid(config, get_grid_name(config, layer_name, self.options.grid))
         bounding_pyramid = BoundingPyramid(tilegrid=tilegrid)
-        geoms = self.get_geoms(config, layer_name)
+        geoms = self.get_geoms(config, layer_name, self.options.grid)
         for zoom in self.options.zoom:
             if zoom in geoms:
                 extent = geoms[zoom].bounds
@@ -1339,7 +1403,14 @@ class TileGeneration:
             return
         layer = config.config["layers"][layer_name]
 
-        metadata = {"layer": layer_name, "config_file": str(config.file)}
+        if "grid" in layer:
+            _LOGGER.warning(
+                "The layer %s has a 'grid' key, it is deprecated, use 'default_grid' instead.",
+                layer_name,
+            )
+        grid_name = get_grid_name(config, layer_name, self.options.grid)
+
+        metadata = {"layer": layer_name, "grid": grid_name, "config_file": str(config.file)}
         if hasattr(self.options, "job_id") and self.options.job_id:
             metadata["job_id"] = self.options.job_id
         if self.options.host is not None:
@@ -1710,6 +1781,7 @@ class IntersectGeometryFilter:
         config: DatedConfig,
         tilecoord: TileCoord,
         layer_name: str,
+        grid_name: str,
         host: str | None = None,
     ) -> bool:
         """Filter the tilecoord."""
@@ -1717,7 +1789,6 @@ class IntersectGeometryFilter:
             _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
             return True
         layer = config.config["layers"][layer_name]
-        grid_name = layer["grid"]
         grid = config.config["grids"][grid_name]
         tile_grid = self.gene.get_grid(config, grid_name)
         px_buffer = (
@@ -1726,7 +1797,7 @@ class IntersectGeometryFilter:
             if layer["meta"]
             else 0
         )
-        geoms = self.gene.get_geoms(config, layer_name, host=host)
+        geoms = self.gene.get_geoms(config, layer_name, grid_name, host=host)
         return self.bbox_polygon(  # type: ignore[no-any-return]
             tile_grid.extent(tilecoord, grid["resolutions"][tilecoord.z] * px_buffer),
         ).intersects(geoms[tilecoord.z])
@@ -1735,7 +1806,12 @@ class IntersectGeometryFilter:
         """Filter the tile on a geometry."""
         return (
             tile
-            if self.filter_tilecoord(self.gene.get_tile_config(tile), tile.tilecoord, tile.metadata["layer"])
+            if self.filter_tilecoord(
+                self.gene.get_tile_config(tile),
+                tile.tilecoord,
+                tile.metadata["layer"],
+                tile.metadata["grid"],
+            )
             else None
         )
 

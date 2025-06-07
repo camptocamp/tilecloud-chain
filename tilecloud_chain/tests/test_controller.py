@@ -1230,6 +1230,7 @@ layers:
       tile_generation_time: 30
       tile_size: 20
       tileonly_generation_time: 60
+    default_grid: swissgrid_5
     dimensions:
     - default: '2012'
       generate:
@@ -1240,7 +1241,6 @@ layers:
       - '2010'
       - '2012'
     extension: png
-    grid: swissgrid_5
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache
@@ -1258,6 +1258,7 @@ layers:
       tile_generation_time: 30
       tile_size: 20
       tileonly_generation_time: 60
+    default_grid: swissgrid_5
     dimensions:
     - default: '2012'
       generate:
@@ -1277,7 +1278,6 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.line
-    grid: swissgrid_5
     headers:
       Cache-Control: no-cache
     layers: line
@@ -1297,6 +1297,7 @@ layers:
       tile_size: 20
       tileonly_generation_time: 60
     data_buffer: 128
+    default_grid: swissgrid_5
     dimensions:
     - default: '2012'
       generate:
@@ -1310,7 +1311,6 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
-    grid: swissgrid_5
     mapfile: mapfile/test.mapnik
     meta: false
     meta_buffer: 128
@@ -1326,6 +1326,7 @@ layers:
       tile_size: 20
       tileonly_generation_time: 60
     data_buffer: 128
+    default_grid: swissgrid_5
     dimensions:
     - default: '2012'
       generate:
@@ -1339,7 +1340,6 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
-    grid: swissgrid_5
     layers_fields:
       line:
       - name
@@ -1363,6 +1363,7 @@ layers:
       tile_size: 20
       tileonly_generation_time: 60
     data_buffer: 128
+    default_grid: swissgrid_5
     dimensions:
     - default: '2012'
       generate:
@@ -1377,7 +1378,6 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
-    grid: swissgrid_5
     layers_fields:
       point:
       - name
@@ -1396,6 +1396,7 @@ layers:
       tile_generation_time: 30
       tile_size: 20
       tileonly_generation_time: 60
+    default_grid: swissgrid_5
     dimensions:
     - default: '2012'
       generate:
@@ -1409,7 +1410,6 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.point
-    grid: swissgrid_5
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache
@@ -1428,6 +1428,7 @@ layers:
       tile_generation_time: 30
       tile_size: 20
       tileonly_generation_time: 60
+    default_grid: swissgrid_5
     dimensions:
     - default: '2012'
       generate:
@@ -1447,7 +1448,6 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.point
-    grid: swissgrid_5
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache
@@ -1466,6 +1466,7 @@ layers:
       tile_generation_time: 30
       tile_size: 20
       tileonly_generation_time: 60
+    default_grid: swissgrid_5
     dimensions:
     - default: '2012'
       generate:
@@ -1479,7 +1480,6 @@ layers:
       hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
       size: 334
     extension: png
-    grid: swissgrid_5
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache
@@ -1497,6 +1497,7 @@ layers:
       tile_generation_time: 30
       tile_size: 20
       tileonly_generation_time: 60
+    default_grid: swissgrid_5
     dimensions:
     - default: '2012'
       generate:
@@ -1516,7 +1517,6 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.point
-    grid: swissgrid_5
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache
@@ -1535,6 +1535,7 @@ layers:
       tile_generation_time: 30
       tile_size: 20
       tileonly_generation_time: 60
+    default_grid: swissgrid_5
     dimensions:
     - default: '2012'
       generate:
@@ -1554,7 +1555,6 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
-    grid: swissgrid_5
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache
@@ -1572,6 +1572,7 @@ layers:
       tile_generation_time: 30
       tile_size: 20
       tileonly_generation_time: 60
+    default_grid: swissgrid_01
     dimensions:
     - default: '2012'
       generate:
@@ -1591,7 +1592,6 @@ layers:
     geoms:
     - connection: user=postgresql password=postgresql dbname=tests host=db
       sql: the_geom AS geom FROM tests.polygon
-    grid: swissgrid_01
     headers:
       Cache-Control: no-cache, no-store
       Pragma: no-cache

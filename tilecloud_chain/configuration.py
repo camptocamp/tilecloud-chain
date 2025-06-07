@@ -1263,7 +1263,16 @@ LayerGrid = str
 """
 Layer grid.
 
-The used grid name
+The default grid name
+"""
+
+
+
+LayerGrids = list[str]
+"""
+Layer grids.
+
+All the used grids name used in the capabilities, by default only the `default_grid` is used, if `default_grid` is not defined, all the grids are used
 """
 
 
@@ -1319,13 +1328,25 @@ class LayerMapnik(TypedDict, total=False):
     The title, use to generate the capabilities
     """
 
-    grid: Required["LayerGrid"]
+    grid: "LayerGrid"
     """
     Layer grid.
 
-    The used grid name
+    The default grid name
+    """
 
-    Required property
+    default_grid: "LayerGrid"
+    """
+    Layer grid.
+
+    The default grid name
+    """
+
+    grids: "LayerGrids"
+    """
+    Layer grids.
+
+    All the used grids name used in the capabilities, by default only the `default_grid` is used, if `default_grid` is not defined, all the grids are used
     """
 
     bbox: "LayerBoundingBox"
@@ -1654,13 +1675,25 @@ class LayerWms(TypedDict, total=False):
     The title, use to generate the capabilities
     """
 
-    grid: Required["LayerGrid"]
+    grid: "LayerGrid"
     """
     Layer grid.
 
-    The used grid name
+    The default grid name
+    """
 
-    Required property
+    default_grid: "LayerGrid"
+    """
+    Layer grid.
+
+    The default grid name
+    """
+
+    grids: "LayerGrids"
+    """
+    Layer grids.
+
+    All the used grids name used in the capabilities, by default only the `default_grid` is used, if `default_grid` is not defined, all the grids are used
     """
 
     bbox: "LayerBoundingBox"
