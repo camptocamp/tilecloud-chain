@@ -73,7 +73,7 @@ cryptography = "45.0.3"
 gunicorn = "23.0.0"
 idna = { version = "3.7", optional = true }
 pillow = { version = "10.3.0", optional = true }
-requests = { version = "2.32.3", optional = true }
+requests = "2.32.4"
 urllib3 = { version = "1.26.20", optional = true }
 sentry-sdk = "2.8.0"
 webob = "1.8.9"
