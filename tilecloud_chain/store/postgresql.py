@@ -31,7 +31,6 @@ import datetime
 import gc
 import io
 import logging
-import multiprocessing
 import os
 import shlex
 from collections.abc import AsyncIterator
@@ -209,10 +208,14 @@ async def _start_job(
 
     for arg in arguments:
         if arg.startswith("-") and arg not in allowed_arguments:
-            job.status = _STATUS_ERROR  # type: ignore[assignment]
-            job.error = (  # type: ignore[attr-defined]
-                f"The argument {arg} is not allowed, allowed arguments are: {', '.join(allowed_arguments)}"
-            )
+            async with SessionMaker() as session:
+                result = await session.execute(select(Job).where(Job.id == job_id))
+                job = result.scalar()
+                assert job is not None
+                job.status = _STATUS_ERROR  # type: ignore[assignment]
+                job.error = (  # type: ignore[attr-defined]
+                    f"The argument {arg} is not allowed, allowed arguments are: {', '.join(allowed_arguments)}"
+                )
             return
 
     final_command = [
@@ -228,9 +231,9 @@ async def _start_job(
 
     main = None
     if final_command[0] in ["generate-tiles", "generate_tiles"]:
-        main = generate.main
+        main = generate.async_main
     elif final_command[0] in ["generate-controller", "generate_controller"]:
-        main = controller.main
+        main = controller.async_main
     if main is not None:
         # Delete potentially already existing queue entries
         async with SessionMaker() as session:
@@ -244,7 +247,7 @@ async def _start_job(
             for key, value in env.items():
                 os.environ[key] = value
             _LOGGER.info("Running the command `%s` using the function directly", display_command)
-            main(final_command, out)
+            await main(final_command, out)
             _LOGGER.info("Successfully ran the command `%s` using the function directly", display_command)
         except SystemExit as exception:
             if exception.code is not None and exception.code != 0:
@@ -272,10 +275,14 @@ async def _start_job(
     )
     stdout, stderr = await completed_process.communicate()
 
-    job.status = _STATUS_STARTED if completed_process.returncode == 0 else _STATUS_ERROR  # type: ignore[assignment]
-    job.message = stdout.decode()  # type: ignore[assignment]
-    if stderr:
-        job.message += "\nError:\n" + stderr.decode()  # type: ignore[assignment]
+    async with SessionMaker() as session:
+        result = await session.execute(select(Job).where(Job.id == job_id).with_for_update(of=Job))
+        job = result.scalar()
+        assert job is not None
+        job.status = _STATUS_DONE if completed_process.returncode == 0 else _STATUS_ERROR  # type: ignore[assignment]
+        job.message = stdout.decode()  # type: ignore[assignment]
+        if stderr:
+            job.message += "\nError:\n" + stderr.decode()  # type: ignore[assignment]
 
     if completed_process.returncode != 0:
         _LOGGER.warning(
@@ -322,7 +329,7 @@ class PostgresqlTileStore(AsyncTileStore):
         """Create a job."""
         assert self.SessionMaker is not None
         async with self.SessionMaker() as session:
-            job = Job(name=name, command=command, config_filename=config_filename)
+            job = Job(name=name, command=command, config_filename=config_filename.as_posix())
             session.add(job)
             await session.commit()
 
@@ -335,7 +342,7 @@ class PostgresqlTileStore(AsyncTileStore):
                     and_(
                         Job.id == job_id,
                         Job.status == _STATUS_ERROR,
-                        Job.config_filename == str(config_filename),
+                        Job.config_filename == config_filename.as_posix(),
                     ),
                 ),
             )
@@ -359,7 +366,7 @@ class PostgresqlTileStore(AsyncTileStore):
                     and_(
                         Job.id == job_id,
                         Job.status == _STATUS_STARTED,
-                        Job.config_filename == str(config_filename),
+                        Job.config_filename == config_filename.as_posix(),
                     ),
                 ),
             )
@@ -386,7 +393,9 @@ class PostgresqlTileStore(AsyncTileStore):
         result = []
         async with self.SessionMaker() as session:
             jobs_result = await session.execute(
-                select(Job).where(Job.config_filename == config_filename).order_by(Job.created_at.desc()),
+                select(Job)
+                .where(Job.config_filename == config_filename.as_posix())
+                .order_by(Job.created_at.desc()),
             )
             for job in jobs_result.scalars():
                 result_by_zoom_level: dict[int, dict[str, int]] = {}
@@ -396,7 +405,7 @@ class PostgresqlTileStore(AsyncTileStore):
                     .where(and_(Queue.status == _STATUS_CREATED, Queue.job_id == job.id))
                     .group_by(Queue.zoom),
                 )
-                for nb_tiles, zoom in nb_tiles_zoom_results:
+                for nb_tiles, zoom in nb_tiles_zoom_results or []:
                     result_by_zoom_level.setdefault(zoom, {})["generate"] = nb_tiles
 
                 nb_tiles_zoom_results = await session.scalar(
@@ -404,7 +413,7 @@ class PostgresqlTileStore(AsyncTileStore):
                     .where(and_(Queue.status == _STATUS_PENDING, Queue.job_id == job.id))
                     .group_by(Queue.zoom),
                 )
-                for nb_tiles, zoom in nb_tiles_zoom_results:
+                for nb_tiles, zoom in nb_tiles_zoom_results or []:
                     result_by_zoom_level.setdefault(zoom, {})["pending"] = nb_tiles
 
                 nb_tiles_zoom_results = await session.scalar(
@@ -412,7 +421,7 @@ class PostgresqlTileStore(AsyncTileStore):
                     .where(and_(Queue.status == _STATUS_ERROR, Queue.job_id == job.id))
                     .group_by(Queue.zoom),
                 )
-                for nb_tiles, zoom in nb_tiles_zoom_results:
+                for nb_tiles, zoom in nb_tiles_zoom_results or []:
                     result_by_zoom_level.setdefault(zoom, {})["error"] = nb_tiles
 
                 status = [{"zoom": zoom, **data} for zoom, data in result_by_zoom_level.items()]
@@ -478,11 +487,12 @@ class PostgresqlTileStore(AsyncTileStore):
                     job.started_at = datetime.datetime.now(tz=datetime.timezone.utc)  # type: ignore[assignment]
                     await session.commit()
             if job_id != -1:
-                proc = multiprocessing.Process(
-                    target=_start_job,
-                    args=(job_id, self.sqlalchemy_url, self.allowed_commands, self.allowed_arguments),
+                await _start_job(
+                    job_id,
+                    self.sqlalchemy_url,
+                    self.allowed_commands,
+                    self.allowed_arguments,
                 )
-                proc.start()
 
             # Update the job status (error or done) on finish
             async with self.SessionMaker() as session:

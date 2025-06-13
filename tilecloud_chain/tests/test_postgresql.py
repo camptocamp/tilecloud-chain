@@ -41,7 +41,7 @@ async def queue(SessionMaker: sessionmaker, tilestore: PostgresqlTileStore) -> t
         for job in session.query(Job).filter(Job.name == "test").all():
             session.delete(job)
         session.commit()
-    await tilestore.create_job("test", "generate-tiles", "config.yaml")
+    await tilestore.create_job("test", "generate-tiles", Path("config.yaml"))
     with SessionMaker() as session:
         job = session.query(Job).filter(Job.name == "test").one()
         job.status = _STATUS_STARTED

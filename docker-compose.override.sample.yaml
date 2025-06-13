@@ -17,11 +17,15 @@ services:
     ports:
       - '9051:8080'
 
+  app_postgresql:
+    volumes:
+      - ./tilecloud_chain:/app/tilecloud_chain:ro
+
   slave:
     volumes:
       - ./tilecloud_chain:/app/tilecloud_chain:ro
 
   # test:
   #   volumes:
-  #     - ./tilecloud_chain:/app/tilecloud_chain:ro
+  #     - ./tilecloud_chain:/app/tilecloud_chain:rw
   #     - ../tilecloud/tilecloud:/usr/local/lib/python3.10/dist-packages/tilecloud:ro

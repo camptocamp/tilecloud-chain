@@ -22,6 +22,7 @@ from tilecloud import Tile, TileCoord
 from tilecloud.filter.logger import Logger
 from tilecloud.layout.wms import WMSTileLayout
 
+import tilecloud_chain
 from tilecloud_chain import (
     Count,
     CountSize,
@@ -33,6 +34,7 @@ from tilecloud_chain import (
     TilesFileStore,
     add_common_options,
     configuration,
+    get_grid_config,
     get_queue_store,
     parse_tilecoord,
     quote,
@@ -71,7 +73,7 @@ class Generate:
         gene: TileGeneration,
         out: IO[str] | None,
     ) -> None:
-        self._count_metatiles: Count | None = None
+        self._count_meta_tiles: Count | None = None
         self._count_metatiles_dropped: Count | None = None
         self._count_tiles: Count | None = None
         self._count_tiles_dropped: Count | None = None
@@ -104,8 +106,8 @@ class Generate:
         if self._count_tiles_stored is not None:
             self._count_tiles_stored.nb = 0
             self._count_tiles_stored.size = 0
-        if self._count_metatiles is not None:
-            self._count_metatiles.nb = 0
+        if self._count_meta_tiles is not None:
+            self._count_meta_tiles.nb = 0
         if self._count_metatiles_dropped is not None:
             self._count_metatiles_dropped.nb = 0
         self._gene.error = 0
@@ -190,7 +192,8 @@ class Generate:
         if self._options.get_bbox:
             try:
                 tilecoord = parse_tilecoord(self._options.get_bbox)
-                bounds = default_int(self._gene.get_grid(config, layer["grid"]).extent(tilecoord))
+                grid_name = tilecloud_chain.get_grid_name(config, layer_name, self._options.grid)
+                bounds = default_int(self._gene.get_grid(config, grid_name).extent(tilecoord))
                 print(f"Tile bounds: [{','.join([str(b) for b in bounds])}]", file=self.out)
                 sys.exit()
             except ValueError:
@@ -202,7 +205,7 @@ class Generate:
 
         if self._options.role in ("local", "master"):
             # Generate a stream of metatiles
-            self._gene.init_tilecoords(config, layer_name)
+            self._gene.init_tilecoords(config, layer_name, self._options.grid)
 
         elif self._options.role == "hash":
             if layer_name not in config.config.get("layers", {}):
@@ -216,13 +219,24 @@ class Generate:
             try:
                 z, x, y = (int(v) for v in self._options.get_hash.split("/"))
                 if layer.get("meta"):
+                    grid_name = tilecloud_chain.get_grid_name(config, layer_name, self._options.grid)
                     self._gene.set_tilecoords(
                         config,
-                        [TileCoord(z, x, y, layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT))],
+                        {
+                            grid_name: [
+                                TileCoord(
+                                    z,
+                                    x,
+                                    y,
+                                    layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT),
+                                ),
+                            ],
+                        },
                         layer_name,
                     )
                 else:
-                    self._gene.set_tilecoords(config, [TileCoord(z, x, y)], layer_name)
+                    grid_name = tilecloud_chain.get_grid_name(config, layer_name, self._options.grid)
+                    self._gene.set_tilecoords(config, {grid_name: [TileCoord(z, x, y)]}, layer_name)
             except ValueError:
                 _LOGGER.exception("Tile '%s' is not in the format 'z/x/y'", self._options.get_hash)
                 sys.exit(1)
@@ -230,7 +244,7 @@ class Generate:
     async def _generate_tiles(self) -> None:
         if self._options.role in ("slave") and not self._options.tiles:
             assert self._queue_tilestore is not None
-            # Get the metatiles from the SQS/Redis queue
+            # Get the meta tiles from the SQS/Redis queue
             self._gene.set_store(self._queue_tilestore)
 
             async def _layer_filter(tile: Tile) -> Tile | None:
@@ -241,7 +255,7 @@ class Generate:
             self._gene.imap(_layer_filter)
 
         if self._options.role != "server":
-            self._count_metatiles = self._gene.counter()
+            self._count_meta_tiles = self._gene.counter()
 
         self._gene.get(MultiTileStore(TilestoreGetter(self)), "Get tile")
 
@@ -399,10 +413,10 @@ class Generate:
                 assert self._count_tiles
                 message.append(f"Nb of generated jobs: {self._count_tiles.nb}")
             elif layer.get("meta") if layer is not None else self._options.role == "slave":
-                assert self._count_metatiles is not None
+                assert self._count_meta_tiles is not None
                 assert self._count_metatiles_dropped is not None
                 message += [
-                    f"Nb generated metatiles: {self._count_metatiles.nb}",
+                    f"Nb generated metatiles: {self._count_meta_tiles.nb}",
                     f"Nb metatiles dropped: {self._count_metatiles_dropped.nb}",
                 ]
 
@@ -472,13 +486,15 @@ class TilestoreGetter:
     def __init__(self, gene: Generate) -> None:
         self.gene = gene
 
-    def __call__(self, config_file: Path, layer_name: str) -> AsyncTileStore | None:
+    def __call__(self, config_file: Path, layer_name: str, grid_name: str | None) -> AsyncTileStore | None:
         """Get the tilestore based on the layername config file any layer type."""
         config = self.gene._gene.get_config(config_file)  # noqa: SLF001
         if layer_name not in config.config.get("layers", {}):
             _LOGGER.warning("Layer '%s' not found in the configuration file '%s'", layer_name, config_file)
             return None
         layer = config.config["layers"][layer_name]
+        grid_name = tilecloud_chain.get_grid_name(config, layer_name, grid_name)
+        grid = tilecloud_chain.get_grid_config(config, layer_name, grid_name)
         if layer["type"] == "wms":
             params = layer.get("params", {}).copy()
             if "STYLES" not in params:
@@ -493,14 +509,17 @@ class TilestoreGetter:
                         WMSTileLayout(
                             url=layer["url"],
                             layers=layer.get("layers", ""),
-                            srs=config.config["grids"][layer["grid"]].get("srs", configuration.SRS_DEFAULT),
+                            srs=get_grid_config(config, layer_name, grid_name).get(
+                                "srs",
+                                configuration.SRS_DEFAULT,
+                            ),
                             format_pattern=layer["mime_type"],
                             border=(
                                 layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
                                 if layer["meta"]
                                 else 0
                             ),
-                            tilegrid=self.gene._gene.get_grid(config, layer["grid"]),  # noqa: SLF001
+                            tilegrid=self.gene._gene.get_grid(config, grid_name),  # noqa: SLF001
                             params=params,
                         ),
                     ),
@@ -519,13 +538,12 @@ class TilestoreGetter:
                     _LOGGER.exception("Mapnik is not available")
                 return None
 
-            grid = config.config["grids"][layer["grid"]]
             if cast("str", layer.get("output_format", "png")) == "grid":
                 assert self.gene._count_tiles  # noqa: SLF001
                 assert self.gene._count_tiles_dropped  # noqa: SLF001
                 return TimedTileStoreWrapper(
                     MapnikDropActionTileStore(
-                        tilegrid=self.gene._gene.get_grid(config, layer["grid"]),  # noqa: SLF001
+                        tilegrid=self.gene._gene.get_grid(config, grid_name),  # noqa: SLF001
                         mapfile=layer["mapfile"],
                         image_buffer=(
                             layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
@@ -546,7 +564,7 @@ class TilestoreGetter:
                 )
             return TimedTileStoreWrapper(
                 MapnikTileStore(
-                    tilegrid=self.gene._gene.get_grid(config, layer["grid"]),  # noqa: SLF001
+                    tilegrid=self.gene._gene.get_grid(config, grid_name),  # noqa: SLF001
                     mapfile=layer["mapfile"],
                     image_buffer=(
                         layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
@@ -584,10 +602,10 @@ def detach() -> None:
 
 def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
     """Run the tiles generation."""
-    asyncio.run(_async_main(args, out))
+    asyncio.run(async_main(args, out))
 
 
-async def _async_main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
+async def async_main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
     """Run the tiles generation."""
     try:
         parser = ArgumentParser(

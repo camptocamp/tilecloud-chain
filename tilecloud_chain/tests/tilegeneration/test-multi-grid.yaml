@@ -1,15 +1,20 @@
 grids:
-  swissgrid_5:
-    resolutions: [100, 50, 20, 10, 5]
+  swissgrid_21781:
+    resolutions: [1000, 500, 200, 100, 50, 20, 10, 5]
     bbox: [420000, 30000, 900000, 350000]
     tile_size: 256
     srs: EPSG:21781
+  swissgrid_2056:
+    resolutions: [1000, 500, 200, 100, 50, 20, 10, 5]
+    bbox: [2420000, 1030000, 2900000, 1350000]
+    tile_size: 256
+    srs: EPSG:2056
 
 caches:
   local:
     type: filesystem
     http_url: http://wmts1/tiles/
-    folder: /tmp/tiles-ondemend
+    folder: /tmp/tiles
 
 defaults:
   layer: &layer
@@ -24,27 +29,19 @@ defaults:
         generate: ['2012']
         values: ['2005', '2010', '2012']
     meta: true
-    meta_size: 8
+    meta_size: 2
     meta_buffer: 128
 
 layers:
-  point_hash:
+  all:
     <<: *layer
     layers: point
-    query_layers: point
-    geoms:
-      - sql: the_geom AS geom FROM tests.point
-        connection: user=postgresql password=postgresql dbname=tests host=db
-    min_resolution_seed: 10
-    empty_metatile_detection:
-      size: 20743
-      hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
-    empty_tile_detection:
-      size: 334
-      hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+  one:
+    <<: *layer
+    layers: point
+    grids:
+      - swissgrid_2056
+
 generation:
   default_cache: local
   maxconsecutive_errors: 2
-
-server:
-  geoms_redirect: true

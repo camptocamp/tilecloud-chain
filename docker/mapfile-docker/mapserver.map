@@ -10,6 +10,7 @@ MAP
         "ows_title" "Tests"
         "ows_encoding" "UTF-8"
         "wms_enable_request" "*"
+        "wms_srs" "EPSG:21781 EPSG:2056 EPSG:3857"
     END
   END
 

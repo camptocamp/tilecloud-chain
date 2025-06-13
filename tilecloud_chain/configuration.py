@@ -1079,6 +1079,16 @@ class Info(TypedDict, total=False):
 
 
 
+LAYER_LEGEND_EXTENSION_DEFAULT = 'png'
+""" Default value of the field path 'layer_legend_extension' """
+
+
+
+LAYER_LEGEND_MIME_DEFAULT = 'image/png'
+""" Default value of the field path 'layer_legend_mime' """
+
+
+
 LAYER_META_BUFFER_DEFAULT = 128
 """ Default value of the field path 'layer_meta_buffer' """
 
@@ -1263,7 +1273,16 @@ LayerGrid = str
 """
 Layer grid.
 
-The used grid name
+The grid name, deprecated, use `grids` instead
+"""
+
+
+
+LayerGrids = list[str]
+"""
+Layer grids.
+
+All the used grids name used in the capabilities, by default only the `grid` is used, if `grid` is not defined, all the grids are used
 """
 
 
@@ -1283,6 +1302,7 @@ Layer legend extension.
 
 The extension used to store the generated legend
 
+default: png
 pattern: ^[a-zA-Z0-9]+$
 """
 
@@ -1294,6 +1314,7 @@ Layer legend MIME.
 
 The mime type used to store the generated legend
 
+default: image/png
 pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
 """
 
@@ -1319,13 +1340,18 @@ class LayerMapnik(TypedDict, total=False):
     The title, use to generate the capabilities
     """
 
-    grid: Required["LayerGrid"]
+    grid: "LayerGrid"
     """
     Layer grid.
 
-    The used grid name
+    The grid name, deprecated, use `grids` instead
+    """
 
-    Required property
+    grids: "LayerGrids"
+    """
+    Layer grids.
+
+    All the used grids name used in the capabilities, by default only the `grid` is used, if `grid` is not defined, all the grids are used
     """
 
     bbox: "LayerBoundingBox"
@@ -1439,6 +1465,7 @@ class LayerMapnik(TypedDict, total=False):
 
     The mime type used to store the generated legend
 
+    default: image/png
     pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
     """
 
@@ -1448,6 +1475,7 @@ class LayerMapnik(TypedDict, total=False):
 
     The extension used to store the generated legend
 
+    default: png
     pattern: ^[a-zA-Z0-9]+$
     """
 
@@ -1654,13 +1682,18 @@ class LayerWms(TypedDict, total=False):
     The title, use to generate the capabilities
     """
 
-    grid: Required["LayerGrid"]
+    grid: "LayerGrid"
     """
     Layer grid.
 
-    The used grid name
+    The grid name, deprecated, use `grids` instead
+    """
 
-    Required property
+    grids: "LayerGrids"
+    """
+    Layer grids.
+
+    All the used grids name used in the capabilities, by default only the `grid` is used, if `grid` is not defined, all the grids are used
     """
 
     bbox: "LayerBoundingBox"
@@ -1776,6 +1809,7 @@ class LayerWms(TypedDict, total=False):
 
     The mime type used to store the generated legend
 
+    default: image/png
     pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
     """
 
@@ -1785,6 +1819,7 @@ class LayerWms(TypedDict, total=False):
 
     The extension used to store the generated legend
 
+    default: png
     pattern: ^[a-zA-Z0-9]+$
     """
 
