@@ -16,7 +16,7 @@ layers:
   multi:
     url: http://mapserver:8080/
     layers: point_multi
-    grid: swissgrid
+    grids: [swissgrid]
     type: wms
     wmts_style: default
     mime_type: image/png

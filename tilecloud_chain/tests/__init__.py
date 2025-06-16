@@ -14,7 +14,7 @@ import pytest
 import yaml
 
 DIFF = 200
-log = logging.getLogger("tests")
+_LOGGER = logging.getLogger("tests")
 
 config.dictConfig(
     {
@@ -52,10 +52,10 @@ class CompareCase(TestCase):
                     for i in range(max(0, n - DIFF), min(len(result), n + DIFF + 1)):
                         if i == n:
                             print(f"> {i} {result[i]}")
-                            log.info(f"> {i} {result[i]}")
+                            _LOGGER.info(f"> {i} {result[i]}")
                         else:
                             print(f"  {i} {result[i]}")
-                            log.info(f"  {i} {result[i]}")
+                            _LOGGER.info(f"  {i} {result[i]}")
                     raise e
         assert len(expected) == len(result), repr(result)
 
@@ -75,8 +75,8 @@ class CompareCase(TestCase):
         finally:
             sys.stdout = old_stdout
             sys.stderr = old_stderr
-        log.info(mystdout.getvalue())
-        log.info(mystderr.getvalue())
+        _LOGGER.info(mystdout.getvalue())
+        _LOGGER.info(mystderr.getvalue())
         return mystdout.getvalue(), mystderr.getvalue()
 
     def assert_cmd_equals(
@@ -113,6 +113,7 @@ class CompareCase(TestCase):
             main_func()
             assert not get_error
         except SystemExit as e:
+            _LOGGER.exception("SystemExit raised")
             if get_error:
                 assert e.code not in (None, 0), str(e)  # noqa: PT017
             else:
@@ -121,7 +122,7 @@ class CompareCase(TestCase):
             raise
         except Exception:
             if not get_error:
-                log.exception("Unexpected error")
+                _LOGGER.exception("Unexpected error")
             assert get_error, traceback.format_exc()
 
         if expected:
@@ -178,13 +179,13 @@ class CompareCase(TestCase):
         count = 0
         for path, _dirs, files in os.walk(directory):
             if len(files) != 0:
-                log.info((path, files))
+                _LOGGER.info((path, files))
                 print((path, files))
                 count += len(files)
 
         assert count == len(tiles)
         for tile in tiles:
-            log.info(directory + tiles_pattern % tile)
+            _LOGGER.info(directory + tiles_pattern % tile)
             print(directory + tiles_pattern % tile)
             assert os.path.exists(directory + tiles_pattern % tile)
 

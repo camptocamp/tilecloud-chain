@@ -17,7 +17,7 @@ caches:
 
 defaults:
   layer: &layer
-    grid: swissgrid_5
+    grids: [swissgrid_5]
     type: wms
     url: http://mapserver:8080/
     wmts_style: default

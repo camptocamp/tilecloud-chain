@@ -1,3 +1,5 @@
+queue_store: postgresql
+
 grids:
   # grid name, I just recommends to add the min resolution because it's common to not generate all the layers at the same resolution.
   swissgrid_05:
@@ -7,6 +9,14 @@ grids:
     bbox: [420000, 30000, 900000, 350000]
     # srs [required]
     srs: EPSG:21781
+  # grid name, I just recommends to add the min resolution because it's common to not generate all the layers at the same resolution.
+  swissgrid_2056_05:
+    # resolutions [required]
+    resolutions: [1000, 500, 250, 100, 50, 20, 10, 5, 2, 1, 0.5]
+    # bbox [required]
+    bbox: [2420000, 1030000, 2900000, 1350000]
+    # srs [required]
+    srs: EPSG:2056
 
 caches:
   local:
@@ -15,11 +25,7 @@ caches:
     # for GetCapabilities
     http_url: https://%(host)s/tiles/
     hosts:
-      - wmts0.example.com
-      - wmts1.example.com
-      - wmts2.example.com
-      - wmts3.example.com
-      - wmts4.example.com
+      - localhost:9052
   s3:
     type: s3
     bucket: tiles
@@ -34,11 +40,10 @@ caches:
 defaults:
   layer: &layer
     type: wms
-    grid: swissgrid_05
     # The minimum resolution to seed, useful to use with mapcache, optional.
     # min_resolution_seed: 1
     # the URL of the WMS server to used
-    url: http://mapserver/
+    url: http://mapserver:8080/
     # Set the headers to get the right virtual host, and don't get any cached result
     headers:
       Cache-Control: no-cache, no-store
@@ -82,10 +87,10 @@ defaults:
 layers:
   plan:
     <<: *layer
-    layers: plan
+    layers: line
   ortho:
     <<: *layer
-    layers: ortho
+    layers: point
     extension: jpeg
     mime_type: image/jpeg
     # no buffer needed on rater sources
@@ -174,7 +179,9 @@ server:
     - name: Generate the legend images
       command: generate-controller --generate-legend-images
     - name: Get the hash of plan
-      command: generate-tiles --layer plan --get-hash 10/0/0
+      command: generate-tiles --layer=plan --get-hash=10/0/0
+    - name: Get bbox
+      command: generate-tiles --layer=plan --get-bbox=10/0/0
 
   admin_footer: The old jobs will be automatically removed
   admin_footer_classes: alert alert-dark

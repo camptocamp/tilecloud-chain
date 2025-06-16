@@ -33,11 +33,11 @@ class TestGenerate(CompareCase):
                     cmd=f".build/venv/bin/generate_tiles {d} --get-hash 4/0/0 "
                     "-c tilegeneration/test.yaml -l point",
                     main_func=generate.main,
-                    expected="""Tile: 4/0/0:+8/+8 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=point
+                    expected="""Tile: 4/0/0:+8/+8 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissgrid_5 host=localhost layer=point
             empty_metatile_detection:
                 size: 20743
                 hash: 01062bb3b25dcead792d7824f9a7045f0dd92992
-        Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=point
+        Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissgrid_5 host=localhost layer=point
             empty_tile_detection:
                 size: 334
                 hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
@@ -111,11 +111,11 @@ class TestGenerate(CompareCase):
                     cmd=f".build/venv/bin/generate_tiles {d} "
                     "--get-hash 4/0/0 -c tilegeneration/test.yaml -l all",
                     main_func=generate.main,
-                    expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=all
+                    expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissgrid_5 host=localhost layer=all
     empty_metatile_detection:
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
-    Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=all
+    Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissgrid_5 host=localhost layer=all
     empty_tile_detection:
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
@@ -938,21 +938,21 @@ Size per tile: 4[0-9][0-9] o
                             r"# \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] "
                             r"Start the layer 'point_error' generation",
                             r"0/0/0:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 "
-                            r"host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
+                            r"grid=swissgrid_5 host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
                             r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: URL: http:[^ ]+"
                             r"msWMSLoadGetMapParams\(\): "
                             r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
                             r"A layer might be disabled for this request\. Check wms/ows_enable_request "
                             r"settings\.'",
                             r"0/0/8:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 "
-                            r"host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
+                            r"grid=swissgrid_5 host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
                             r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: URL: http:[^ ]+"
                             r"msWMSLoadGetMapParams\(\): "
                             r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
                             r"A layer might be disabled for this request\. Check wms/ows_enable_request "
                             r"settings\.'",
                             r"0/8/0:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 "
-                            r"host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
+                            r"grid=swissgrid_5 host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
                             r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: URL: http:[^ ]+"
                             r"msWMSLoadGetMapParams\(\): "
                             r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
@@ -982,10 +982,10 @@ Size per tile: 4[0-9][0-9] o
             with open("error.list", "w") as error_file:
                 error_file.write(
                     "# comment\n"
-                    "0/0/0:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash "
+                    "0/0/0:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash grid=swissgrid_5 "
                     "# comment\n"
-                    "0/0/8:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash\n"
-                    "0/8/0:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash\n"
+                    "0/0/8:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash grid=swissgrid_5\n"
+                    "0/8/0:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash grid=swissgrid_5\n"
                 )
 
             self.assert_tiles_generated(
