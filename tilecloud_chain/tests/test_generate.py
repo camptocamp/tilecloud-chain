@@ -30,7 +30,7 @@ class TestGenerate(CompareCase):
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             for d in ("-d", ""):
                 self.assert_cmd_equals(
-                    cmd=f".build/venv/bin/generate_tiles {d} --get-hash 4/0/0 "
+                    cmd=f".build/venv/bin/generate-tiles {d} --get-hash 4/0/0 "
                     "-c tilegeneration/test.yaml -l point",
                     main_func=generate.main,
                     expected="""Tile: 4/0/0:+8/+8 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissgrid_5 host=localhost layer=point
@@ -50,7 +50,7 @@ class TestGenerate(CompareCase):
         for d in ("-d", "-q"):
             with LogCapture("tilecloud_chain") as log_capture:
                 self.assert_cmd_exit_equals(
-                    cmd=f".build/venv/bin/generate_tiles {d} --get-hash 0/7/5 "
+                    cmd=f".build/venv/bin/generate-tiles {d} --get-hash 0/7/5 "
                     "-c tilegeneration/test.yaml -l all",
                     main_func=generate.main,
                 )
@@ -66,21 +66,21 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test.yaml --get-bbox 4/4/4 -l point",
                     main_func=generate.main,
                     expected="""Tile bounds: [425120,343600,426400,344880]
 """,
                 )
                 self.assert_cmd_equals(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test.yaml --get-bbox 4/4/4:+1/+1 -l point",
                     main_func=generate.main,
                     expected="""Tile bounds: [425120,343600,426400,344880]
     """,
                 )
                 self.assert_cmd_equals(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test.yaml --get-bbox 4/4/4:+2/+2 -l point",
                     main_func=generate.main,
                     expected="""Tile bounds: [425120,342320,427680,344880]
@@ -92,7 +92,7 @@ class TestGenerate(CompareCase):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "--get-hash 4/0/0 -c tilegeneration/test.yaml -l mapnik",
                     main_func=generate.main,
                     expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=mapnik
@@ -111,7 +111,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "--get-hash 4/0/0 -c tilegeneration/test.yaml -l all",
                     main_func=generate.main,
                     expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissgrid_5 host=localhost layer=all
@@ -130,7 +130,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml -t 1",
+                    cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml -t 1",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png",
@@ -174,7 +174,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml -t 1 "
+                    cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml -t 1 "
                     "--dimensions DATE=2013",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -218,7 +218,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
     def test_multigeom(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             self.assert_tiles_generated(
-                cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-multigeom.yaml",
+                cmd=".build/venv/bin/generate-tiles -c tilegeneration/test-multigeom.yaml",
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/pp/default/2012/swissgrid_5/%i/%i/%i.png",
@@ -303,7 +303,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
             y3 = [e[1] for e in xy3]
             for d in ("-d", ""):
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -325,7 +325,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
     """,
                 )
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 1",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -349,7 +349,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
     """,
                 )
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 2",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -378,7 +378,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml "
+                    cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml "
                     "-l point_hash --bbox 700000 250000 800000 300000",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -408,7 +408,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l point_hash --zoom 1",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -435,7 +435,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l point_hash --zoom 1-3",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -470,7 +470,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
                     cmd=(
-                        f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml -l point_hash"
+                        f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml -l point_hash"
                     ),
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -506,7 +506,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml "
+                    cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml "
                     "-l point_px_buffer --zoom 0-2",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -534,7 +534,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
                     cmd=(
-                        f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml "
+                        f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml "
                         "-l point_hash --zoom 0,2,3"
                     ),
                     main_func=generate.main,
@@ -569,7 +569,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l polygon -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -590,7 +590,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
                 )
 
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l polygon -z 0"
                     " -b 550000 170000 560000 180000",
                     main_func=generate.main,
@@ -612,7 +612,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
                 )
 
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l polygon -z 0"
                     " -b 550000.0 170000.0 560000.0 180000.0",
                     main_func=generate.main,
@@ -634,7 +634,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
                 )
 
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml -l all -z 0",
+                    cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml -l all -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/all/default/2012/swissgrid_5/0/%i/%i.png",
@@ -658,7 +658,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l point_hash -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -685,7 +685,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l mapnik -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -710,7 +710,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l mapnik_grid -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -781,7 +781,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_tiles_generated(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l mapnik_grid_drop -z 0",
                     main_func=generate.main,
                     directory="/tmp/tiles/",
@@ -806,7 +806,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", "-q"):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_exit_equals(
-                    cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-authorised.yaml",
+                    cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-authorised.yaml",
                     main_func=generate.main,
                 )
                 log_capture.check(
@@ -821,7 +821,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.run_cmd(
-                    cmd=f".build/venv/bin/generate_tiles {d} "
+                    cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -t 2 -v -l polygon",
                     main_func=generate.main,
                 )
@@ -831,7 +831,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
-                    cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test.yaml --time 2 -l polygon",
+                    cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test.yaml --time 2 -l polygon",
                     main_func=generate.main,
                     expected=r"""size: 770
     size: 862
@@ -850,7 +850,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
                 self.assert_cmd_equals(
-                    cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test.yaml --time 2 -l all",
+                    cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test.yaml --time 2 -l all",
                     main_func=generate.main,
                     expected=r"""size: 1010
     size: 1010
@@ -868,7 +868,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
     # def test_daemonize(self):
     #     with LogCapture("tilecloud_chain", level=30) as log_capture:
     #         self.assert_cmd_equals(
-    #             cmd='.build/venv/bin/generate_tiles %s -c tilegeneration/test.yaml -t 1 --daemonize' % d,
+    #             cmd='.build/venv/bin/generate-tiles %s -c tilegeneration/test.yaml -t 1 --daemonize' % d,
     #             main_func=generate.main,
     #             expected=r"""Daemonize with pid [0-9]*.""",
     #             regex=True)
@@ -893,7 +893,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localh
             )
             self.assert_tiles_generated_deleted(
                 cmd=(
-                    f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml "
+                    f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml "
                     "-l point_hash_no_meta -z 0"
                 ),
                 main_func=generate.main,
@@ -924,7 +924,7 @@ Size per tile: 4[0-9][0-9] o
             )
             self.assert_tiles_generated_deleted(
                 cmd=(
-                    f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-nosns.yaml "
+                    f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml "
                     "-l point_hash_no_meta -z 0"
                 ),
                 main_func=generate.main,
@@ -954,7 +954,7 @@ Size per tile: 4[0-9][0-9] o
         if os.path.exists("error.list"):
             os.remove("error.list")
         self.assert_main_except_equals(
-            cmd=".build/venv/bin/generate_tiles -q -c tilegeneration/test-nosns.yaml -l point_error",
+            cmd=".build/venv/bin/generate-tiles -q -c tilegeneration/test-nosns.yaml -l point_error",
             main_func=generate.main,
             regex=True,
             get_error=True,
@@ -1017,7 +1017,7 @@ Size per tile: 4[0-9][0-9] o
                 )
 
             self.assert_tiles_generated(
-                cmd=".build/venv/bin/generate_tiles -d --tiles error.list",
+                cmd=".build/venv/bin/generate-tiles -d --tiles error.list",
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/point_hash/default/2012/swissgrid_5/%i/%i/%i.png",
@@ -1045,7 +1045,7 @@ Size per tile: 4[0-9][0-9] o
     def test_multy(self) -> None:
         for d in ("-v", ""):
             self.assert_tiles_generated(
-                cmd=f".build/venv/bin/generate_tiles {d} -c tilegeneration/test-multidim.yaml",
+                cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-multidim.yaml",
                 main_func=generate.main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/multi/default/%s/swissgrid/%i/%i/%i.png",
@@ -1076,7 +1076,7 @@ Size per tile: 498 o
     def test_redis(self) -> None:
         RedisTileStore(sentinels=[["redis_sentinel", 26379]]).delete_all()
         self.assert_cmd_equals(
-            cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-redis.yaml --role master -l point",
+            cmd=".build/venv/bin/generate-tiles -c tilegeneration/test-redis.yaml --role master -l point",
             main_func=generate.main,
             regex=False,
             expected="""The tile generation of layer 'point (DATE=2012)' is finish
@@ -1086,7 +1086,7 @@ Nb of generated jobs: 10
         )
 
         self.assert_cmd_equals(
-            cmd=".build/venv/bin/generate_controller -c tilegeneration/test-redis.yaml --status",
+            cmd=".build/venv/bin/generate-controller -c tilegeneration/test-redis.yaml --status",
             main_func=controller.main,
             regex=False,
             expected="""Approximate number of tiles to generate: 10
@@ -1096,7 +1096,7 @@ Tiles in error:
         )
 
         self.assert_cmd_equals(
-            cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-redis.yaml --role slave",
+            cmd=".build/venv/bin/generate-tiles -c tilegeneration/test-redis.yaml --role slave",
             main_func=generate.main,
             regex=True,
             expected=r"""The tile generation is finish
@@ -1115,7 +1115,7 @@ Size per tile: \d+ o
         )
 
         self.assert_cmd_equals(
-            cmd=".build/venv/bin/generate_controller -c tilegeneration/test-redis.yaml --status",
+            cmd=".build/venv/bin/generate-controller -c tilegeneration/test-redis.yaml --status",
             main_func=controller.main,
             regex=False,
             expected="""Approximate number of tiles to generate: 0
@@ -1131,7 +1131,7 @@ Tiles in error:
         try:
             RedisTileStore(sentinels=[["redis_sentinel", 26379]]).delete_all()
             self.assert_cmd_equals(
-                cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-redis-project.yaml --role master -l point",
+                cmd=".build/venv/bin/generate-tiles -c tilegeneration/test-redis-project.yaml --role master -l point",
                 main_func=generate.main,
                 regex=False,
                 expected="""The tile generation of layer 'point (DATE=2012)' is finish
@@ -1141,7 +1141,7 @@ Tiles in error:
             )
 
             self.assert_cmd_equals(
-                cmd=".build/venv/bin/generate_controller -c tilegeneration/test-redis-project.yaml --status",
+                cmd=".build/venv/bin/generate-controller -c tilegeneration/test-redis-project.yaml --status",
                 main_func=controller.main,
                 regex=False,
                 expected="""Approximate number of tiles to generate: 10
@@ -1151,7 +1151,7 @@ Tiles in error:
             )
 
             self.assert_cmd_equals(
-                cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-redis-project.yaml --role slave",
+                cmd=".build/venv/bin/generate-tiles -c tilegeneration/test-redis-project.yaml --role slave",
                 main_func=generate.main,
                 regex=True,
                 expected=r"""The tile generation is finish
@@ -1170,7 +1170,7 @@ Tiles in error:
             )
 
             self.assert_cmd_equals(
-                cmd=".build/venv/bin/generate_controller -c tilegeneration/test-redis-project.yaml --status",
+                cmd=".build/venv/bin/generate-controller -c tilegeneration/test-redis-project.yaml --status",
                 main_func=controller.main,
                 regex=False,
                 expected="""Approximate number of tiles to generate: 0

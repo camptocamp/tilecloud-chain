@@ -156,7 +156,7 @@ class TestServe(CompareCase):
     def test_serve_kvp(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             self.assert_tiles_generated(
-                cmd=".build/venv/bin/generate_tiles -d --config=tilegeneration/test-nosns.yaml "
+                cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-nosns.yaml "
                 "--layer=point_hash --zoom 1",
                 main_func=generate.main,
                 directory="/tmp/tiles/",
@@ -690,7 +690,7 @@ class TestServe(CompareCase):
             os.environ["METATILE_NB_THREAD"] = "1"
 
             self.assert_tiles_generated(
-                cmd=".build/venv/bin/generate_tiles -d --config=tilegeneration/test-serve.yaml"
+                cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-serve.yaml"
                 " --layer=point_hash --zoom 1",
                 main_func=generate.main,
                 directory="/tmp/tiles/mbtiles/",
@@ -778,7 +778,7 @@ class TestServe(CompareCase):
     def test_bsddb_rest(self):
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             self.assert_tiles_generated(
-                cmd=".build/venv/bin/generate_tiles -d --config=tilegeneration/test-bsddb.yaml"
+                cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-bsddb.yaml"
                 " --layer=point_hash --zoom=1",
                 main_func=generate.main,
                 directory="/tmp/tiles/bsddb/",
@@ -961,7 +961,7 @@ class TestServe(CompareCase):
         os.environ["METATILE_NB_THREAD"] = "1"
 
         self.assert_tiles_generated(
-            cmd=".build/venv/bin/generate_tiles -d --config=tilegeneration/test-serve.yaml --layer=point_hash --zoom 1",
+            cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-serve.yaml --layer=point_hash --zoom 1",
             main_func=generate.main,
             directory="/tmp/tiles/mbtiles/",
             tiles_pattern="1.0.0/%s",

@@ -21,7 +21,7 @@ class TestConfig(CompareCase):
     def test_int_grid(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
-                cmd=".build/venv/bin/generate_controller -c tilegeneration/test-int-grid.yaml --dump-config",
+                cmd=".build/venv/bin/generate-controller -c tilegeneration/test-int-grid.yaml --dump-config",
                 main_func=controller.main,
             )
             log_capture.check()
