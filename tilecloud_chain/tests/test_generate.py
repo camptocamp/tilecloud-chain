@@ -95,11 +95,11 @@ class TestGenerate(CompareCase):
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "--get-hash 4/0/0 -c tilegeneration/test.yaml -l mapnik",
                     main_func=generate.main,
-                    expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=mapnik
+                    expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissgrid_5 host=localhost layer=mapnik
     empty_metatile_detection:
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
-Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=mapnik
+Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissgrid_5 host=localhost layer=mapnik
     empty_tile_detection:
         size: 334
         hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
