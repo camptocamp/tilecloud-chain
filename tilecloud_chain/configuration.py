@@ -1354,6 +1354,22 @@ class LayerMapnik(TypedDict, total=False):
     All the used grids name used in the capabilities, by default only the `grid` is used, if `grid` is not defined, all the grids are used
     """
 
+    srs: "LayerSrs"
+    """
+    Layer SRS.
+
+    The projection reference, used for the bbox, the geoms, and the --bbox argument.
+
+    pattern: ^EPSG:[0-9]+$
+    """
+
+    proj4_literal: "LayerProj4Literal"
+    """
+    Layer Proj4 literal.
+
+    The Proj4 definition, used for the bbox, the geoms, and the --bbox argument.
+    """
+
     bbox: "LayerBoundingBox"
     """
     Layer bounding box.
@@ -1662,6 +1678,26 @@ Do an image post process before the empty hash check
 
 
 
+LayerProj4Literal = str
+"""
+Layer Proj4 literal.
+
+The Proj4 definition, used for the bbox, the geoms, and the --bbox argument.
+"""
+
+
+
+LayerSrs = str
+"""
+Layer SRS.
+
+The projection reference, used for the bbox, the geoms, and the --bbox argument.
+
+pattern: ^EPSG:[0-9]+$
+"""
+
+
+
 LayerTitle = str
 """
 Layer title.
@@ -1694,6 +1730,22 @@ class LayerWms(TypedDict, total=False):
     Layer grids.
 
     All the used grids name used in the capabilities, by default only the `grid` is used, if `grid` is not defined, all the grids are used
+    """
+
+    srs: "LayerSrs"
+    """
+    Layer SRS.
+
+    The projection reference, used for the bbox, the geoms, and the --bbox argument.
+
+    pattern: ^EPSG:[0-9]+$
+    """
+
+    proj4_literal: "LayerProj4Literal"
+    """
+    Layer Proj4 literal.
+
+    The Proj4 definition, used for the bbox, the geoms, and the --bbox argument.
     """
 
     bbox: "LayerBoundingBox"
