@@ -60,8 +60,8 @@
     Add a `SALT` random argument (if the above don't work). More information in the **Proxy/cache issue**
     chapter.
 6.  Improve the dimensions usage by adding it ti the WMS requests, And add a `--dimensions` argument of
-    `generate_tiles` to change the dimensions values.
-7.  Extract generate_cost and generate_amazon from generate_controler.
+    `generate-tiles` to change the dimensions values.
+7.  Extract `generate_cost` and `generate_amazon` from `generate_controler`.
 8.  Now we can creates legends, see the **Legends** chapter.
 9.  Now the tiles generation display generation statistics at the ends.
 10. The EC2 configuration is moved in a separate structure, see README for more information.
@@ -69,7 +69,7 @@
 ## Release 0.6
 
 1.  Now the apache configuration can be generated with
-    `.build/venv/bin/generate_controller --generate-apache-config`, it support `filesystem` `cache` and
+    `.build/venv/bin/generate-controller --generate-apache-config`, it support `filesystem` `cache` and
     `MapCache`.
 2.  Windows fixes.
 3.  Use console rewrite (r) to log generated tiles coordinates.

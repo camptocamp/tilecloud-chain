@@ -21,7 +21,7 @@ class TestError(CompareCase):
     def test_resolution(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
-                cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_resolutions.yaml",
+                cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_resolutions.yaml",
                 main_func=controller.main,
                 get_error=True,
             )
@@ -32,7 +32,7 @@ class TestError(CompareCase):
     def test_mapnik_grid_meta(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
-                cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_mapnik_grid_meta.yaml",
+                cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_mapnik_grid_meta.yaml",
                 main_func=controller.main,
                 get_error=True,
             )
@@ -47,7 +47,7 @@ class TestError(CompareCase):
     def test_type(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
-                cmd=".build/venv/bin/generate_controller -v -c tilegeneration/wrong_type.yaml",
+                cmd=".build/venv/bin/generate-controller -v -c tilegeneration/wrong_type.yaml",
                 main_func=controller.main,
                 get_error=True,
             )
@@ -109,7 +109,7 @@ class TestError(CompareCase):
     def test_zoom_errors(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
-                cmd=".build/venv/bin/generate_tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10",
+                cmd=".build/venv/bin/generate-tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10",
                 main_func=generate.main,
             )
             log_capture.check_present(
@@ -129,7 +129,7 @@ class TestError(CompareCase):
     def test_wrong_srs_auth(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
-                cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs_auth.yaml",
+                cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_srs_auth.yaml",
                 main_func=controller.main,
                 get_error=True,
             )
@@ -145,7 +145,7 @@ class TestError(CompareCase):
     def test_wrong_srs_id(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
-                cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs_id.yaml",
+                cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_srs_id.yaml",
                 main_func=controller.main,
                 get_error=True,
             )
@@ -161,7 +161,7 @@ class TestError(CompareCase):
     def test_wrong_srs(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
-                cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_srs.yaml",
+                cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_srs.yaml",
                 main_func=controller.main,
                 get_error=True,
             )
@@ -177,7 +177,7 @@ class TestError(CompareCase):
     def test_wrong_map(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
-                cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_map.yaml",
+                cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_map.yaml",
                 main_func=controller.main,
                 get_error=True,
             )
@@ -202,7 +202,7 @@ class TestError(CompareCase):
     def test_wrong_sequence(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
             self.run_cmd(
-                cmd=".build/venv/bin/generate_controller -c tilegeneration/wrong_sequence.yaml",
+                cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_sequence.yaml",
                 main_func=controller.main,
                 get_error=True,
             )

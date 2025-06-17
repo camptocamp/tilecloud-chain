@@ -1648,14 +1648,14 @@ sqs:
 
     def test_config(self) -> None:
         self.assert_cmd_yaml_equals(
-            cmd=".build/venv/bin/generate_controller --dump-config -c tilegeneration/test-fix.yaml",
+            cmd=".build/venv/bin/generate-controller --dump-config -c tilegeneration/test-fix.yaml",
             main_func=controller.main,
             expected=self.CONFIG,
         )
 
     def test_config_line(self) -> None:
         self.assert_cmd_yaml_equals(
-            cmd=".build/venv/bin/generate_controller -l line --dump-config -c tilegeneration/test-fix.yaml",
+            cmd=".build/venv/bin/generate-controller -l line --dump-config -c tilegeneration/test-fix.yaml",
             main_func=controller.main,
             expected=self.CONFIG,
         )
@@ -1675,7 +1675,7 @@ sqs:
 
     def test_generate_legend_images(self) -> None:
         self.assert_tiles_generated(
-            cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends.yaml --generate-legend-images",
+            cmd=".build/venv/bin/generate-controler -c tilegeneration/test-legends.yaml --generate-legend-images",
             main_func=controller.main,
             directory="/tmp/tiles/1.0.0/",
             tiles_pattern="%s/default/%s",
@@ -1786,7 +1786,7 @@ sqs:
     @pytest.mark.asyncio
     async def test_legends(self) -> None:
         self.assert_tiles_generated(
-            cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends.yaml --legends",
+            cmd=".build/venv/bin/generate-controler -c tilegeneration/test-legends.yaml --legends",
             main_func=controller.main,
             directory="/tmp/tiles/1.0.0/",
             tiles_pattern="%s/default/legend%i.png",

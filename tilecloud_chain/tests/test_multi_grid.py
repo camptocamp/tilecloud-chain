@@ -184,7 +184,7 @@ Size per tile: [0-9]{3} o
         """Test generating legend images for layer 'all'."""
         self.assert_tiles_generated(
             cmd=[
-                ".build/venv/bin/generate_controller",
+                ".build/venv/bin/generate-controller",
                 "-d",
                 "--legends",
                 "--config=tilegeneration/test-multi-grid.yaml",
