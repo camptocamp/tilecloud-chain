@@ -17,17 +17,17 @@
   customManagers: [
     /** Manage unpkg */
     {
-      fileMatch: ['.*\\.html$'],
       matchStrings: ['unpkg\\.com/(?<depName>[^@]+)@(?<currentValue>[^/]+)'],
       datasourceTemplate: 'npm',
       customType: 'regex',
+      managerFilePatterns: ['/.*\\.html$/'],
     },
     /** Manage jsdelivr */
     {
-      fileMatch: ['.*\\.html$'],
       matchStrings: ['cdn\\.jsdelivr\\.net/npm/(?<depName>[^@]+)@(?<currentValue>[^/]+)'],
       datasourceTemplate: 'npm',
       customType: 'regex',
+      managerFilePatterns: ['/.*\\.html$/'],
     },
   ],
   packageRules: [
