@@ -74,7 +74,7 @@ waitress = "3.0.2"
 certifi = "2024.8.30"
 Paste = "3.10.1"
 psutil = "6.1.1"
-cryptography = "45.0.3"
+cryptography = "45.0.4"
 requests = "2.32.4"
 
 [tool.poetry.group.dev.dependencies]
