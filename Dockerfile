@@ -12,13 +12,13 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     apt-get update \
     && apt-get upgrade --assume-yes \
     && apt-get install --assume-yes --no-install-recommends \
-        libmapnik3.1 mapnik-utils \
+        python3-mapnik \
         libdb5.3 \
         fonts-dejavu \
         optipng jpegoptim pngquant \
         postgresql-client net-tools iputils-ping \
         python3-pip python3-venv \
-    && python3 -m venv /venv
+    && python3 -m venv --system-site-packages /venv
 
 ENV PATH=/venv/bin:$PATH
 
@@ -46,7 +46,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/poetry \
-    DEV_PACKAGES="python3-dev build-essential libgeos-dev libmapnik-dev libpq-dev build-essential" \
+    DEV_PACKAGES="python3-dev build-essential libgeos-dev libpq-dev" \
     && apt-get update \
     && apt-get install --assume-yes --no-install-recommends ${DEV_PACKAGES} \
     && python3 -m pip install --disable-pip-version-check --no-deps --requirement=/poetry/requirements.txt \

@@ -1,8 +1,8 @@
+import json
 import os
 import shutil
 from itertools import product, repeat
 
-import pytest
 from testfixtures import LogCapture
 from tilecloud.store.redis import RedisTileStore
 
@@ -88,7 +88,6 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    @pytest.mark.skip(reason="Don't test mapnik")
     def test_hash_mapnik(self):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
@@ -96,11 +95,15 @@ class TestGenerate(CompareCase):
                     cmd=f".build/venv/bin/generate_tiles {d} "
                     "--get-hash 4/0/0 -c tilegeneration/test.yaml -l mapnik",
                     main_func=generate.main,
-                    expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml
-            empty_tile_detection:
-                size: 334
-                hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
-    """,
+                    expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=mapnik
+    empty_metatile_detection:
+        size: 334
+        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 host=localhost layer=mapnik
+    empty_tile_detection:
+        size: 334
+        hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+""",
                 )
                 log_capture.check()
 
@@ -678,7 +681,6 @@ class TestGenerate(CompareCase):
                 )
                 log_capture.check()
 
-    @pytest.mark.skip(reason="Don't test mapnik")
     def test_mapnik(self):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
@@ -698,13 +700,12 @@ class TestGenerate(CompareCase):
     Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
     Total size: 9.7 Kio
     Time per tile: [0-9]+ ms
-    Size per tile: 823 o
+    Size per tile: 824 o
 
     """,
                 )
                 log_capture.check()
 
-    @pytest.mark.skip(reason="Don't test mapnik")
     def test_mapnik_grid(self):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
@@ -729,26 +730,53 @@ class TestGenerate(CompareCase):
     """,
                 )
                 with open("/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/5/5.json") as f:
-                    self.assert_result_equals(
-                        f.read(),
-                        '{"keys": ["", "1"], "data": {"1": {"name": "polygon1"}}, "grid": ["                "'
-                        ', "                ", "                ", "                ", "                "'
-                        ', "                ", "                ", "                ", "                "'
-                        ', "                ", "                ", "                ", "                "'
-                        ', "                ", "!!!!!!!!!!!!!!!!", "!!!!!!!!!!!!!!!!"]}',
-                    )
+                    assert json.loads(f.read()) == {
+                        "grid": [
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "!!!!!!!!!!!!!!!!",
+                            "!!!!!!!!!!!!!!!!",
+                        ],
+                        "keys": ["", "1"],
+                        "data": {"1": {"name": "polygon1"}},
+                    }
                 with open("/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/6/5.json") as f:
-                    self.assert_result_equals(
-                        f.read(),
-                        '{"keys": ["1"], "data": {"1": {"name": "polygon1"}}, "grid": ["                "'
-                        ', "                ", "                ", "                ", "                "'
-                        ', "                ", "                ", "                ", "                "'
-                        ', "                ", "                ", "                ", "                "'
-                        ', "                ", "                ", "                "]}',
-                    )
+                    assert json.loads(f.read()) == {
+                        "grid": [
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                            "                ",
+                        ],
+                        "keys": ["1"],
+                        "data": {"1": {"name": "polygon1"}},
+                    }
                 log_capture.check()
 
-    @pytest.mark.skip(reason="Don't test mapnik")
     def test_mapnik_grid_drop(self):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
@@ -761,8 +789,8 @@ class TestGenerate(CompareCase):
                     tiles=((5, 7), (7, 4)),
                     regex=True,
                     expected=r"""The tile generation of layer 'mapnik_grid_drop' is finish
-    Nb generated tiles: 12
-    Nb tiles dropped: 10
+    Nb generated tiles: 2
+    Nb tiles dropped: 0
     Nb tiles stored: 2
     Nb tiles in error: 0
     Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
