@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 
 import pytest
-import pytest_check
 import yaml
 
 from tilecloud_chain import TileGeneration, controller, generate
@@ -101,27 +100,26 @@ Size per tile: [0-9]{3} o
     def test_generate_all_with_grid(self) -> None:
         """Test generating tiles for layer 'all' with --grid parameter."""
         for grid in ("swissgrid_2056", "swissgrid_21781"):
-            with pytest_check.check:
-                self.assert_tiles_generated(
-                    cmd=[
-                        ".build/venv/bin/generate-tiles",
-                        "-d",
-                        "--config=tilegeneration/test-multi-grid.yaml",
-                        "--layer=all",
-                        f"--grid={grid}",
-                        "--zoom=0",
-                    ],
-                    main_func=generate.main,
-                    directory="/tmp/tiles/",
-                    tiles_pattern=f"1.0.0/all/default/2012/{grid}/%i/%i/%i.png",
-                    tiles=[
-                        (0, 0, 0),
-                        (0, 1, 0),
-                        (0, 0, 1),
-                        (0, 1, 1),
-                    ],
-                    regex=True,
-                    expected="""The tile generation of layer 'all \(DATE=2012\)' is finish
+            self.assert_tiles_generated(
+                cmd=[
+                    ".build/venv/bin/generate-tiles",
+                    "-d",
+                    "--config=tilegeneration/test-multi-grid.yaml",
+                    "--layer=all",
+                    f"--grid={grid}",
+                    "--zoom=0",
+                ],
+                main_func=generate.main,
+                directory="/tmp/tiles/",
+                tiles_pattern=f"1.0.0/all/default/2012/{grid}/%i/%i/%i.png",
+                tiles=[
+                    (0, 0, 0),
+                    (0, 1, 0),
+                    (0, 0, 1),
+                    (0, 1, 1),
+                ],
+                regex=True,
+                expected="""The tile generation of layer 'all \(DATE=2012\)' is finish
         Nb generated metatiles: 1
         Nb metatiles dropped: 0
         Nb generated tiles: 4
@@ -134,7 +132,7 @@ Size per tile: [0-9]{3} o
         Size per tile: [0-9]{3} o
 
         """,
-                )
+            )
 
     def test_get_hash(self) -> None:
         """Test getting hash on layer 'all'."""
@@ -165,20 +163,19 @@ Size per tile: [0-9]{3} o
             ("swissgrid_2056", "2420000,1094000,2676000,1350000"),
             ("swissgrid_21781", "420000,94000,676000,350000"),
         ):
-            with pytest_check.check:
-                self.assert_cmd_equals(
-                    cmd=[
-                        ".build/venv/bin/generate-tiles",
-                        "-d",
-                        "--get-bbox=0/0/0",
-                        "--config=tilegeneration/test-multi-grid.yaml",
-                        "--layer=all",
-                        f"--grid={grid}",
-                    ],
-                    main_func=generate.main,
-                    expected=f"""Tile bounds: [{expected}]
+            self.assert_cmd_equals(
+                cmd=[
+                    ".build/venv/bin/generate-tiles",
+                    "-d",
+                    "--get-bbox=0/0/0",
+                    "--config=tilegeneration/test-multi-grid.yaml",
+                    "--layer=all",
+                    f"--grid={grid}",
+                ],
+                main_func=generate.main,
+                expected=f"""Tile bounds: [{expected}]
         """,
-                )
+            )
 
     def test_generate_legend_all(self) -> None:
         """Test generating legend images for layer 'all'."""
@@ -229,12 +226,11 @@ Size per tile: [0-9]{3} o
                 },
             ),
         ):
-            with pytest_check.check:
-                # Check that legend files were created
-                assert os.path.exists(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml")
-                with open(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml", encoding="utf-8") as legend_file:
-                    legend_metadata = yaml.safe_load(legend_file)
-                    assert legend_metadata == result
+            # Check that legend files were created
+            assert os.path.exists(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml")
+            with open(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml", encoding="utf-8") as legend_file:
+                legend_metadata = yaml.safe_load(legend_file)
+                assert legend_metadata == result
 
     @pytest.mark.asyncio
     async def test_capabilities(self) -> None:

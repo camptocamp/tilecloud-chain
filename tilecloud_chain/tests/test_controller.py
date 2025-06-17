@@ -3,7 +3,6 @@ import shutil
 from pathlib import Path
 
 import pytest
-import pytest_check
 import yaml
 from PIL import Image
 
@@ -1776,12 +1775,11 @@ sqs:
                 },
             ),
         ):
-            with pytest_check.check:
-                # Check that legend files were created
-                assert os.path.exists(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml")
-                with open(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml", encoding="utf-8") as legend_file:
-                    legend_metadata = yaml.safe_load(legend_file)
-                    assert legend_metadata == result
+            # Check that legend files were created
+            assert os.path.exists(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml")
+            with open(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml", encoding="utf-8") as legend_file:
+                legend_metadata = yaml.safe_load(legend_file)
+                assert legend_metadata == result
 
     @pytest.mark.asyncio
     async def test_legends(self) -> None:

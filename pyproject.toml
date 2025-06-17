@@ -55,7 +55,6 @@ types-redis = "4.6.0.20241004"
 types-requests = "2.32.0.20250515"
 types-aiofiles = "24.1.0.20250516"
 pytest-asyncio = "1.0.0"
-pytest-check = "2.5.3"
 types-pyyaml = "6.0.12.20250516"
 
 [tool.poetry-dynamic-versioning]
