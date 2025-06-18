@@ -97,11 +97,6 @@
       matchDepNames: ['ghcr.io/osgeo/gdal'],
       groupName: 'Gdal',
     },
-    /** In file `.python-version`, use the `<major>.<minor>` version */
-    {
-      matchFileNames: ['.python-version'],
-      versioning: 'regex:^(?<major>\\d+)\\.(?<minor>\\d+)$',
-    },
   ],
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
 }
