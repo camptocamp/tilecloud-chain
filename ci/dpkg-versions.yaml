@@ -135,10 +135,10 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/libogdi4.1: 4.1.0+ds-5
   ubuntu_22_04/libopenjp2-7: 2.4.0-6ubuntu0.3
   ubuntu_22_04/libp11-kit0: 0.24.0-6build1
-  ubuntu_22_04/libpam-modules: 1.4.0-11ubuntu2.5
-  ubuntu_22_04/libpam-modules-bin: 1.4.0-11ubuntu2.5
-  ubuntu_22_04/libpam-runtime: 1.4.0-11ubuntu2.5
-  ubuntu_22_04/libpam0g: 1.4.0-11ubuntu2.5
+  ubuntu_22_04/libpam-modules: 1.4.0-11ubuntu2.6
+  ubuntu_22_04/libpam-modules-bin: 1.4.0-11ubuntu2.6
+  ubuntu_22_04/libpam-runtime: 1.4.0-11ubuntu2.6
+  ubuntu_22_04/libpam0g: 1.4.0-11ubuntu2.6
   ubuntu_22_04/libpcre2-8-0: 10.39-3ubuntu0.1
   ubuntu_22_04/libpcre3: 2:8.39-13ubuntu0.22.04.1
   ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.4
