@@ -32,6 +32,8 @@ import c2cwsgiutils.pyramid_logging
 import c2cwsgiutils.setup_process
 import jsonschema_validator
 import psycopg2
+import pyproj
+import shapely.ops
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob.aio import BlobServiceClient, ContainerClient
 from c2cwsgiutils import sentry
@@ -58,7 +60,12 @@ import tilecloud_chain.configuration
 from tilecloud_chain import configuration
 from tilecloud_chain.filter.error import MaximumConsecutiveErrors, TooManyError
 from tilecloud_chain.multitilestore import MultiTileStore
-from tilecloud_chain.store import AsyncTileStore, CallWrapper, NoneTileStore, TileStoreWrapper
+from tilecloud_chain.store import (
+    AsyncTileStore,
+    CallWrapper,
+    NoneTileStore,
+    TileStoreWrapper,
+)
 from tilecloud_chain.store.azure_storage_blob import AzureStorageBlobTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
@@ -195,7 +202,13 @@ def add_common_options(
     if cache:
         parser.add_argument("--cache", dest="cache", metavar="NAME", help="The cache name to use")
     parser.add_argument("-q", "--quiet", default=False, action="store_true", help="Display only errors.")
-    parser.add_argument("-v", "--verbose", default=False, action="store_true", help="Display info message.")
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        default=False,
+        action="store_true",
+        help="Display info message.",
+    )
     parser.add_argument(
         "-d",
         "--debug",
@@ -246,7 +259,10 @@ class Run:
             MaximumConsecutiveErrors(
                 gene.get_main_config()
                 .config["generation"]
-                .get("maxconsecutive_errors", configuration.MAX_CONSECUTIVE_ERRORS_DEFAULT),
+                .get(
+                    "maxconsecutive_errors",
+                    configuration.MAX_CONSECUTIVE_ERRORS_DEFAULT,
+                ),
             )
             if not daemon and gene.maxconsecutive_errors
             else None
@@ -361,7 +377,12 @@ class Legend(TypedDict, total=False):
 class DatedConfig:
     """Loaded config with timestamps to be able to invalidate it on configuration file change."""
 
-    def __init__(self, config: tilecloud_chain.configuration.Configuration, mtime: float, file: Path) -> None:
+    def __init__(
+        self,
+        config: tilecloud_chain.configuration.Configuration,
+        mtime: float,
+        file: Path,
+    ) -> None:
         self.config = config
         self.mtime = mtime
         self.file = file
@@ -515,6 +536,53 @@ def get_grid_names(
             raise ValueError(message)
         return [grid_name]
     return grid_names
+
+
+def get_proj4_literal(srs: int) -> str:
+    """Get the proj4 literal for a given SRS."""
+    # Map known SRS values to their proj4 literals
+    proj4_literals = {
+        3857: (
+            "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 "
+            "+x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over"
+        ),
+        21781: (
+            "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 "
+            "+x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 "
+            "+units=m +no_defs"
+        ),
+        2056: (
+            "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 "
+            "+x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 "
+            "+units=m +no_defs"
+        ),
+    }
+
+    # Return the proj4 literal for the given SRS, or a default format if not found
+    return proj4_literals.get(srs, f"+init=EPSG:{srs}")
+
+
+def transform_bbox(proj4_literals_src: str, proj4_literals_dst: str, bbox: list[float]) -> list[float]:
+    """
+    Transform a bounding box from source projection to destination projection.
+
+    Args:
+        proj4_literals_src: Source projection as proj4 literal string
+        proj4_literals_dst: Destination projection as proj4 literal string
+        bbox: Bounding box in source projection as [xmin, ymin, xmax, ymax]
+
+    Returns
+    -------
+        Transformed bounding box as [xmin, ymin, xmax, ymax]
+    """
+    source_projection = pyproj.CRS.from_proj4(proj4_literals_src)
+    dest_projection = pyproj.CRS.from_proj4(proj4_literals_dst)
+    transformer = pyproj.Transformer.from_crs(source_projection, dest_projection)
+
+    point_1 = transformer.transform(bbox[0], bbox[1])
+    point_2 = transformer.transform(bbox[2], bbox[3])
+
+    return [point_1[0], point_1[1], point_2[0], point_2[1]]
 
 
 class TileGeneration:
@@ -686,9 +754,11 @@ class TileGeneration:
             return None
         config_file = self.get_hosts().get(
             host,
-            Path(os.environ["TILEGENERATION_CONFIGFILE"])
-            if "TILEGENERATION_CONFIGFILE" in os.environ
-            else None,
+            (
+                Path(os.environ["TILEGENERATION_CONFIGFILE"])
+                if "TILEGENERATION_CONFIGFILE" in os.environ
+                else None
+            ),
         )
         _LOGGER.debug("For the host %s, use config file: %s", host, config_file)
         return config_file
@@ -845,35 +915,23 @@ class TileGeneration:
 
             srs = int(grid.get("srs", configuration.SRS_DEFAULT).split(":")[1])
             if "proj4_literal" not in grid:
-                if srs == 3857:
-                    grid["proj4_literal"] = (
-                        "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 "
-                        "+x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over"
-                    )
-                elif srs == 21781:
-                    grid["proj4_literal"] = (
-                        "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 "
-                        "+x_0=600000 +y_0=200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 "
-                        "+units=m +no_defs"
-                    )
-                elif srs == 2056:
-                    grid["proj4_literal"] = (
-                        "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 "
-                        "+x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 "
-                        "+units=m +no_defs"
-                    )
-                else:
-                    grid["proj4_literal"] = f"+init={grid.get('srs', configuration.SRS_DEFAULT)}"
+                grid["proj4_literal"] = get_proj4_literal(srs)
 
         layers = config.config.get("layers", {})
         for lname, layer in sorted(layers.items()):
+            if "srs" in layer and "proj4_literal" not in layer:
+                srs = int(layer["srs"].split(":")[1])
+                layer["proj4_literal"] = get_proj4_literal(srs)
             if "headers" not in layer and layer["type"] == "wms":
                 layer["headers"] = {
                     "Cache-Control": "no-cache, no-store",
                     "Pragma": "no-cache",
                 }
             if layer["type"] == "mapnik" and layer.get("output_format", "png") == "grid" and layer["meta"]:
-                _LOGGER.error("The layer '%s' is of type Mapnik/Grid, that can't support matatiles.", lname)
+                _LOGGER.error(
+                    "The layer '%s' is of type Mapnik/Grid, that can't support matatiles.",
+                    lname,
+                )
                 error = True
 
         if error and not (
@@ -1000,7 +1058,9 @@ class TileGeneration:
             for dimension in layer["dimensions"]:
                 metadata["dimension_" + dimension["name"]] = dimension["default"]
             import bsddb3 as bsddb  # pylint: disable=import-outside-toplevel,import-error
-            from tilecloud.store.bsddb import BSDDBTileStore  # pylint: disable=import-outside-toplevel
+            from tilecloud.store.bsddb import (  # pylint: disable=import-outside-toplevel
+                BSDDBTileStore,
+            )
 
             # on bsddb file
             filename = Path(
@@ -1212,8 +1272,19 @@ class TileGeneration:
         layer = config.config["layers"][layer_name]
 
         grid = get_grid_config(config, layer_name, grid_name)
+
+        layer_bbox: list[int | float] | None = layer.get("bbox")
+        # Repoject the layer bbox
+        if (
+            layer_bbox
+            and "proj4_literal" in layer
+            and "proj4_literal" in grid
+            and layer["proj4_literal"] != grid["proj4_literal"]
+        ):
+            layer_bbox = transform_bbox(layer["proj4_literal"], grid["proj4_literal"], layer_bbox)
+
         if self.options.near is not None or (
-            self.options.time is not None and "bbox" in layer and self.options.zoom is not None
+            self.options.time is not None and layer_bbox is not None and self.options.zoom is not None
         ):
             if self.options.zoom is None or len(self.options.zoom) != 1:
                 sys.exit("Option --near needs the option --zoom with one value.")
@@ -1221,11 +1292,14 @@ class TileGeneration:
                 sys.exit("Option --near needs the option --time or --test.")
             position = (
                 self.options.near
-                if self.options.near is not None
-                else [(layer["bbox"][0] + layer["bbox"][2]) / 2, (layer["bbox"][1] + layer["bbox"][3]) / 2]
+                if self.options.near is not None or layer_bbox is None
+                else [
+                    (layer_bbox[0] + layer_bbox[2]) / 2,
+                    (layer_bbox[1] + layer_bbox[3]) / 2,
+                ]
             )
-            bbox = grid["bbox"]
-            diff = [position[0] - bbox[0], position[1] - bbox[1]]
+            grid_bbox = grid["bbox"]
+            diff = [position[0] - grid_bbox[0], position[1] - grid_bbox[1]]
             resolution = grid["resolutions"][self.options.zoom[0]]
             mt_to_m = (
                 layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
@@ -1240,15 +1314,22 @@ class TileGeneration:
 
             mt_origin = [round(m - nb_sqrt_mt / 2) for m in mt]
             extent = [
-                bbox[0] + mt_origin[0] * mt_to_m,
-                bbox[1] + mt_origin[1] * mt_to_m,
-                bbox[0] + (mt_origin[0] + nb_sqrt_mt) * mt_to_m,
-                bbox[1] + (mt_origin[1] + nb_sqrt_mt) * mt_to_m,
+                grid_bbox[0] + mt_origin[0] * mt_to_m,
+                grid_bbox[1] + mt_origin[1] * mt_to_m,
+                grid_bbox[0] + (mt_origin[0] + nb_sqrt_mt) * mt_to_m,
+                grid_bbox[1] + (mt_origin[1] + nb_sqrt_mt) * mt_to_m,
             ]
         elif self.options.bbox is not None:
-            extent = self.options.bbox
-        elif "bbox" in layer:
-            extent = layer["bbox"]
+            if (
+                "proj4_literal" in layer
+                and "proj4_literal" in grid
+                and (layer["proj4_literal"] != grid["proj4_literal"])
+            ):
+                extent = transform_bbox(layer["proj4_literal"], grid["proj4_literal"], self.options.bbox)
+            else:
+                extent = self.options.bbox
+        elif layer_bbox is not None:
+            extent = layer_bbox
         else:
             extent = grid["bbox"]
 
@@ -1275,6 +1356,20 @@ class TileGeneration:
                     cursor.execute(sql)
                     geom_list = [loads_wkb(bytes(r[0])) for r in cursor.fetchall()]
                     geom = unary_union(geom_list)
+
+                    # Reproject the geometry if needed
+                    if (
+                        "proj4_literal" in layer
+                        and "proj4_literal" in grid
+                        and layer["proj4_literal"] != grid["proj4_literal"]
+                    ):
+                        # Create transformer from layer to grid projection
+                        source_projection = pyproj.CRS.from_proj4(layer["proj4_literal"])
+                        dest_projection = pyproj.CRS.from_proj4(grid["proj4_literal"])
+                        transformer = pyproj.Transformer.from_crs(source_projection, dest_projection)
+                        # Transform the geometry
+                        geom = shapely.ops.transform(transformer.transform, geom)
+
                     if extent:
                         geom = geom.intersection(
                             Polygon(
@@ -1500,7 +1595,11 @@ class TileGeneration:
 
         self.imap(delete_internal, time_message)
 
-    def imap(self, func: Callable[[Tile], Awaitable[Tile | None]], time_message: str | None = None) -> None:
+    def imap(
+        self,
+        func: Callable[[Tile], Awaitable[Tile | None]],
+        time_message: str | None = None,
+    ) -> None:
         """Add a function to the tilestream."""
         assert func is not None
 
@@ -1841,7 +1940,14 @@ class IntersectGeometryFilter:
     @staticmethod
     def bbox_polygon(bbox: tuple[float, float, float, float]) -> Polygon:
         """Create a polygon from a bbox."""
-        return Polygon(((bbox[0], bbox[1]), (bbox[0], bbox[3]), (bbox[2], bbox[3]), (bbox[2], bbox[1])))
+        return Polygon(
+            (
+                (bbox[0], bbox[1]),
+                (bbox[0], bbox[3]),
+                (bbox[2], bbox[3]),
+                (bbox[2], bbox[1]),
+            ),
+        )
 
 
 class DropEmpty:
@@ -2106,7 +2212,10 @@ async def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWr
         # Create a SQS queue
         return TimedTileStoreWrapper(
             TileStoreWrapper(
-                SQSTileStore(_get_sqs_queue(config), on_empty=_await_message if daemon else _maybe_stop),
+                SQSTileStore(
+                    _get_sqs_queue(config),
+                    on_empty=_await_message if daemon else _maybe_stop,
+                ),
             ),
             store_name="SQS",
         )
