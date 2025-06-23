@@ -43,7 +43,7 @@ aiofiles = "24.1.0"
 asyncpg = "0.30.0"
 
 [tool.poetry.group.dev.dependencies]
-prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.17.1" }
+prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.17.2" }
 prospector-profile-duplicated = "1.10.5"
 prospector-profile-utils = "1.23.0"
 c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
