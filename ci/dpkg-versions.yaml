@@ -227,8 +227,8 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/python3-minimal: 3.12.3-0ubuntu2
   ubuntu_24_04/python3-numpy: 1:1.26.4+ds-6ubuntu1
   ubuntu_24_04/python3-pil: 10.2.0-1ubuntu1
-  ubuntu_24_04/python3-pip: 24.0+dfsg-1ubuntu1.1
-  ubuntu_24_04/python3-pip-whl: 24.0+dfsg-1ubuntu1.1
+  ubuntu_24_04/python3-pip: 24.0+dfsg-1ubuntu1.2
+  ubuntu_24_04/python3-pip-whl: 24.0+dfsg-1ubuntu1.2
   ubuntu_24_04/python3-pkg-resources: 68.1.2-2ubuntu1.2
   ubuntu_24_04/python3-setuptools: 68.1.2-2ubuntu1.2
   ubuntu_24_04/python3-setuptools-whl: 68.1.2-2ubuntu1.2
