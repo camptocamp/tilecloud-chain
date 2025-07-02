@@ -74,7 +74,7 @@ waitress = "3.0.2"
 certifi = "2025.6.15"
 Paste = "3.10.1"
 psutil = "6.1.1"
-cryptography = "45.0.4"
+cryptography = "45.0.5"
 requests = "2.32.4"
 urllib3 = "2.5.0"
 
