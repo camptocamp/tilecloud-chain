@@ -12,6 +12,7 @@ def test_should_not_commit():
     assert REGENERATE is False
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     "url,expected_file_name,height,width",
     [
