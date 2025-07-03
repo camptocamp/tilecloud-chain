@@ -124,9 +124,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
-    apt-get install --assume-yes --no-install-recommends git curl gnupg \
-    libglib2.0-0 libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 \
-    libxdamage1 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2
+    apt-get install --assume-yes --no-install-recommends git curl gnupg
 
 COPY .nvmrc /tmp
 RUN --mount=type=cache,target=/var/lib/apt/lists \
@@ -138,7 +136,8 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     && apt-get install --assume-yes --no-install-recommends "nodejs=${NODE_MAJOR}.*"
 
 COPY package.json package-lock.json ./
-RUN npm install --dev
+RUN --mount=type=cache,target=/root/.npm \
+    npm install --dev --ignore-scripts
 
 RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/poetry \
