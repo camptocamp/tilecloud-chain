@@ -141,7 +141,8 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     && apt-get update \
     && apt-get install --assume-yes --no-install-recommends "nodejs=${NODE_MAJOR}.*"
 COPY package.json package-lock.json ./
-RUN npm install --dev --ignore-scripts
+RUN --mount=type=cache,target=/root/.npm \
+    npm install --include=dev --ignore-scripts
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 RUN --mount=type=cache,target=/root/.cache \
