@@ -116,6 +116,8 @@
 - <a id="definitions/layer_grid"></a>**`layer_grid`** _(string)_: The grid name, deprecated, use `grids` instead.
 - <a id="definitions/layer_grids"></a>**`layer_grids`** _(array)_: All the used grids name used in the capabilities, by default only the `grid` is used, if `grid` is not defined, all the grids are used.
   - <a id="definitions/layer_grids/items"></a>**Items** _(string)_
+- <a id="definitions/layer_srs"></a>**`layer_srs`** _(string)_: The projection reference, used for the bbox, the geoms, and the --bbox argument. Must match pattern: `^EPSG:[0-9]+$` ([Test](https://regexr.com/?expression=%5EEPSG%3A%5B0-9%5D%2B%24)).
+- <a id="definitions/layer_proj4_literal"></a>**`layer_proj4_literal`** _(string)_: The Proj4 definition, used for the bbox, the geoms, and the --bbox argument.
 - <a id="definitions/layer_bbox"></a>**`layer_bbox`** _(array)_: The bounding box where we will generate the tiles. Length must be equal to 4.
   - <a id="definitions/layer_bbox/items"></a>**Items** _(number)_
 - <a id="definitions/layer_min_resolution_seed"></a>**`layer_min_resolution_seed`** _(number)_: The minimum resolutions to pre-generate.
@@ -172,6 +174,8 @@
   - <a id="definitions/layer_wms/properties/title"></a>**`title`**: Refer to _[#/definitions/layer_title](#definitions/layer_title)_.
   - <a id="definitions/layer_wms/properties/grid"></a>**`grid`**: Refer to _[#/definitions/layer_grid](#definitions/layer_grid)_.
   - <a id="definitions/layer_wms/properties/grids"></a>**`grids`**: Refer to _[#/definitions/layer_grids](#definitions/layer_grids)_.
+  - <a id="definitions/layer_wms/properties/srs"></a>**`srs`**: Refer to _[#/definitions/layer_srs](#definitions/layer_srs)_.
+  - <a id="definitions/layer_wms/properties/proj4_literal"></a>**`proj4_literal`**: Refer to _[#/definitions/layer_proj4_literal](#definitions/layer_proj4_literal)_.
   - <a id="definitions/layer_wms/properties/bbox"></a>**`bbox`**: Refer to _[#/definitions/layer_bbox](#definitions/layer_bbox)_.
   - <a id="definitions/layer_wms/properties/min_resolution_seed"></a>**`min_resolution_seed`**: Refer to _[#/definitions/layer_min_resolution_seed](#definitions/layer_min_resolution_seed)_.
   - <a id="definitions/layer_wms/properties/px_buffer"></a>**`px_buffer`**: Refer to _[#/definitions/layer_px_buffer](#definitions/layer_px_buffer)_.
@@ -206,6 +210,8 @@
   - <a id="definitions/layer_mapnik/properties/title"></a>**`title`**: Refer to _[#/definitions/layer_title](#definitions/layer_title)_.
   - <a id="definitions/layer_mapnik/properties/grid"></a>**`grid`**: Refer to _[#/definitions/layer_grid](#definitions/layer_grid)_.
   - <a id="definitions/layer_mapnik/properties/grids"></a>**`grids`**: Refer to _[#/definitions/layer_grids](#definitions/layer_grids)_.
+  - <a id="definitions/layer_mapnik/properties/srs"></a>**`srs`**: Refer to _[#/definitions/layer_srs](#definitions/layer_srs)_.
+  - <a id="definitions/layer_mapnik/properties/proj4_literal"></a>**`proj4_literal`**: Refer to _[#/definitions/layer_proj4_literal](#definitions/layer_proj4_literal)_.
   - <a id="definitions/layer_mapnik/properties/bbox"></a>**`bbox`**: Refer to _[#/definitions/layer_bbox](#definitions/layer_bbox)_.
   - <a id="definitions/layer_mapnik/properties/min_resolution_seed"></a>**`min_resolution_seed`**: Refer to _[#/definitions/layer_min_resolution_seed](#definitions/layer_min_resolution_seed)_.
   - <a id="definitions/layer_mapnik/properties/px_buffer"></a>**`px_buffer`**: Refer to _[#/definitions/layer_px_buffer](#definitions/layer_px_buffer)_.

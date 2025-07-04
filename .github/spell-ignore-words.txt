@@ -11,3 +11,5 @@ Redis
 CloudFront
 OpenLayers
 pyproj
+geoms
+bbox

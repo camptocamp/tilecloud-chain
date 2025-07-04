@@ -264,6 +264,17 @@
         "type": "string"
       }
     },
+    "layer_srs": {
+      "title": "Layer SRS",
+      "description": "The projection reference, used for the bbox, the geoms, and the --bbox argument.",
+      "type": "string",
+      "pattern": "^EPSG:[0-9]+$"
+    },
+    "layer_proj4_literal": {
+      "title": "Layer Proj4 literal",
+      "description": "The Proj4 definition, used for the bbox, the geoms, and the --bbox argument.",
+      "type": "string"
+    },
     "layer_bbox": {
       "title": "Layer bounding box",
       "description": "The bounding box where we will generate the tiles",
@@ -564,6 +575,12 @@
         "grids": {
           "$ref": "#/definitions/layer_grids"
         },
+        "srs": {
+          "$ref": "#/definitions/layer_srs"
+        },
+        "proj4_literal": {
+          "$ref": "#/definitions/layer_proj4_literal"
+        },
         "bbox": {
           "$ref": "#/definitions/layer_bbox"
         },
@@ -685,6 +702,12 @@
         },
         "grids": {
           "$ref": "#/definitions/layer_grids"
+        },
+        "srs": {
+          "$ref": "#/definitions/layer_srs"
+        },
+        "proj4_literal": {
+          "$ref": "#/definitions/layer_proj4_literal"
         },
         "bbox": {
           "$ref": "#/definitions/layer_bbox"
