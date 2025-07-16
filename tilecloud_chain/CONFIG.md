@@ -18,7 +18,7 @@
 - <a id="properties/sns"></a>**`sns`** _(object)_: The Simple Notification Service configuration, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sns. Cannot contain additional properties.
   - <a id="properties/sns/properties/topic"></a>**`topic`** _(string, required)_: The topic.
   - <a id="properties/sns/properties/region"></a>**`region`**: Refer to _[#/definitions/aws_region](#definitions/aws_region)_.
-- <a id="properties/queue_store"></a>**`queue_store`** _(string)_: The used queue store. Must be one of: `["redis", "sqs", "postgresql"]`. Default: `"redis"`.
+- <a id="properties/queue_store"></a>**`queue_store`** _(string)_: The used queue store. Must be one of: "redis", "sqs", or "postgresql". Default: `"redis"`.
 - <a id="properties/redis"></a>**`redis`**: Refer to _[#/definitions/redis](#definitions/redis)_.
 - <a id="properties/postgresql"></a>**`postgresql`**: Refer to _[#/definitions/postgresql](#definitions/postgresql)_.
 - <a id="properties/openlayers"></a>**`openlayers`** _(object)_: Configuration used to generate the OpenLayers example page. Cannot contain additional properties.
@@ -34,7 +34,7 @@
 - <a id="properties/logging"></a>**`logging`**: Refer to _[#/definitions/logging](#definitions/logging)_.
 - <a id="properties/authentication"></a>**`authentication`** _(object)_: The authentication configuration. Cannot contain additional properties.
   - <a id="properties/authentication/properties/github_repository"></a>**`github_repository`** _(string)_: The GitHub repository name, on witch one we will check the access rights.
-  - <a id="properties/authentication/properties/github_access_type"></a>**`github_access_type`** _(string)_: The kind of rights the user should have on the repository. Must be one of: `["push", "pull", "admin"]`. Default: `"pull"`.
+  - <a id="properties/authentication/properties/github_access_type"></a>**`github_access_type`** _(string)_: The kind of rights the user should have on the repository. Must be one of: "push", "pull", or "admin". Default: `"pull"`.
 
 ## Definitions
 
@@ -50,7 +50,7 @@
   - <a id="definitions/grid/properties/proj4_literal"></a>**`proj4_literal`** _(string)_: The Proj4 definition.
   - <a id="definitions/grid/properties/unit"></a>**`unit`** _(string)_: The projection unit. Default: `"m"`.
   - <a id="definitions/grid/properties/tile_size"></a>**`tile_size`** _(integer)_: The tile size in pixel. Default: `256`.
-  - <a id="definitions/grid/properties/matrix_identifier"></a>**`matrix_identifier`** _(string)_: The identifier to use in the tiles URL, recommend to be resolution (default). Must be one of: `["zoom", "resolution"]`. Default: `"zoom"`.
+  - <a id="definitions/grid/properties/matrix_identifier"></a>**`matrix_identifier`** _(string)_: The identifier to use in the tiles URL, recommend to be resolution (default). Must be one of: "zoom" or "resolution". Default: `"zoom"`.
 - <a id="definitions/cache_wmtscapabilities_file"></a>**`cache_wmtscapabilities_file`** _(string)_: The generated WMTS capabilities file name. Default: `"1.0.0/WMTSCapabilities.xml"`.
 - <a id="definitions/cache_http_url"></a>**`cache_http_url`** _(string)_: The HTTP URL %host will be replaces by one of the hosts.
 - <a id="definitions/cache_hosts"></a>**`cache_hosts`** _(array)_: The host used to build the HTTP URLs.
@@ -132,7 +132,7 @@
 - <a id="definitions/layer_dimension_name"></a>**`layer_dimension_name`** _(string)_: The dimension name. Must match pattern: `(?i)^(?!(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\-~\.]+$` ([Test](https://regexr.com/?expression=%28%3Fi%29%5E%28%3F%21%28SERVICE%7CVERSION%7CREQUEST%7CLAYERS%7CSTYLES%7CSRS%7CCRS%7CBBOX%7CWIDTH%7CHEIGHT%7CFORMAT%7CBGCOLOR%7CTRANSPARENT%7CSLD%7CEXCEPTIONS%7CSALT%29%29%5Ba-z0-9_%5C-~%5C.%5D%2B%24)).
 - <a id="definitions/layer_dimensions"></a>**`layer_dimensions`** _(array)_: The WMTS dimensions.
   - <a id="definitions/layer_dimensions/items"></a>**Items** _(object)_: Cannot contain additional properties.
-    - <a id="definitions/layer_dimensions/items/properties/name"></a>**`name`**: Refer to _[#/definitions/layer_dimension_name](#definitions/layer_dimension_name)_.
+    - <a id="definitions/layer_dimensions/items/properties/name"></a>**`name`** _(required)_: Refer to _[#/definitions/layer_dimension_name](#definitions/layer_dimension_name)_.
     - <a id="definitions/layer_dimensions/items/properties/generate"></a>**`generate`** _(array, required)_: The values that should be generate.
       - <a id="definitions/layer_dimensions/items/properties/generate/items"></a>**Items** _(string)_: Must match pattern: `^[a-zA-Z0-9_\-\+~\.]+$` ([Test](https://regexr.com/?expression=%5E%5Ba-zA-Z0-9_%5C-%5C%2B~%5C.%5D%2B%24)).
     - <a id="definitions/layer_dimensions/items/properties/values"></a>**`values`** _(array, required)_: The values present in the capabilities.
@@ -182,10 +182,10 @@
   - <a id="definitions/layer_wms/properties/meta"></a>**`meta`**: Refer to _[#/definitions/layer_meta](#definitions/layer_meta)_.
   - <a id="definitions/layer_wms/properties/meta_size"></a>**`meta_size`**: Refer to _[#/definitions/layer_meta_size](#definitions/layer_meta_size)_. Default: `5`.
   - <a id="definitions/layer_wms/properties/meta_buffer"></a>**`meta_buffer`**: Refer to _[#/definitions/layer_meta_buffer](#definitions/layer_meta_buffer)_. Default: `128`.
-  - <a id="definitions/layer_wms/properties/layers"></a>**`layers`**: Refer to _[#/definitions/layer_layers](#definitions/layer_layers)_.
-  - <a id="definitions/layer_wms/properties/wmts_style"></a>**`wmts_style`**: Refer to _[#/definitions/layer_wmts_style](#definitions/layer_wmts_style)_.
-  - <a id="definitions/layer_wms/properties/mime_type"></a>**`mime_type`**: Refer to _[#/definitions/layer_mime_type](#definitions/layer_mime_type)_.
-  - <a id="definitions/layer_wms/properties/extension"></a>**`extension`**: Refer to _[#/definitions/layer_extension](#definitions/layer_extension)_.
+  - <a id="definitions/layer_wms/properties/layers"></a>**`layers`** _(required)_: Refer to _[#/definitions/layer_layers](#definitions/layer_layers)_.
+  - <a id="definitions/layer_wms/properties/wmts_style"></a>**`wmts_style`** _(required)_: Refer to _[#/definitions/layer_wmts_style](#definitions/layer_wmts_style)_.
+  - <a id="definitions/layer_wms/properties/mime_type"></a>**`mime_type`** _(required)_: Refer to _[#/definitions/layer_mime_type](#definitions/layer_mime_type)_.
+  - <a id="definitions/layer_wms/properties/extension"></a>**`extension`** _(required)_: Refer to _[#/definitions/layer_extension](#definitions/layer_extension)_.
   - <a id="definitions/layer_wms/properties/dimensions"></a>**`dimensions`**: Refer to _[#/definitions/layer_dimensions](#definitions/layer_dimensions)_.
   - <a id="definitions/layer_wms/properties/legends"></a>**`legends`**: Refer to _[#/definitions/layer_legends](#definitions/layer_legends)_.
   - <a id="definitions/layer_wms/properties/legend_mime"></a>**`legend_mime`**: Refer to _[#/definitions/layer_legend_mime](#definitions/layer_legend_mime)_.
@@ -219,9 +219,9 @@
   - <a id="definitions/layer_mapnik/properties/meta_size"></a>**`meta_size`**: Refer to _[#/definitions/layer_meta_size](#definitions/layer_meta_size)_. Default: `1`.
   - <a id="definitions/layer_mapnik/properties/meta_buffer"></a>**`meta_buffer`**: Refer to _[#/definitions/layer_meta_buffer](#definitions/layer_meta_buffer)_. Default: `0`.
   - <a id="definitions/layer_mapnik/properties/layers"></a>**`layers`**: Refer to _[#/definitions/layer_layers](#definitions/layer_layers)_. Default: `"__all__"`.
-  - <a id="definitions/layer_mapnik/properties/wmts_style"></a>**`wmts_style`**: Refer to _[#/definitions/layer_wmts_style](#definitions/layer_wmts_style)_.
-  - <a id="definitions/layer_mapnik/properties/mime_type"></a>**`mime_type`**: Refer to _[#/definitions/layer_mime_type](#definitions/layer_mime_type)_.
-  - <a id="definitions/layer_mapnik/properties/extension"></a>**`extension`**: Refer to _[#/definitions/layer_extension](#definitions/layer_extension)_.
+  - <a id="definitions/layer_mapnik/properties/wmts_style"></a>**`wmts_style`** _(required)_: Refer to _[#/definitions/layer_wmts_style](#definitions/layer_wmts_style)_.
+  - <a id="definitions/layer_mapnik/properties/mime_type"></a>**`mime_type`** _(required)_: Refer to _[#/definitions/layer_mime_type](#definitions/layer_mime_type)_.
+  - <a id="definitions/layer_mapnik/properties/extension"></a>**`extension`** _(required)_: Refer to _[#/definitions/layer_extension](#definitions/layer_extension)_.
   - <a id="definitions/layer_mapnik/properties/dimensions"></a>**`dimensions`**: Refer to _[#/definitions/layer_dimensions](#definitions/layer_dimensions)_.
   - <a id="definitions/layer_mapnik/properties/legends"></a>**`legends`**: Refer to _[#/definitions/layer_legends](#definitions/layer_legends)_.
   - <a id="definitions/layer_mapnik/properties/legend_mime"></a>**`legend_mime`**: Refer to _[#/definitions/layer_legend_mime](#definitions/layer_legend_mime)_.
@@ -234,7 +234,7 @@
   - <a id="definitions/layer_mapnik/properties/cost"></a>**`cost`**: Refer to _[#/definitions/layer_cost](#definitions/layer_cost)_.
   - <a id="definitions/layer_mapnik/properties/mapfile"></a>**`mapfile`** _(string)_: The Mapnik map file.
   - <a id="definitions/layer_mapnik/properties/data_buffer"></a>**`data_buffer`** _(integer)_: The data buffer. Default: `128`.
-  - <a id="definitions/layer_mapnik/properties/output_format"></a>**`output_format`** _(string)_: The Mapnik output format. Must be one of: `["png", "png256", "jpeg", "grid"]`. Default: `"png"`.
+  - <a id="definitions/layer_mapnik/properties/output_format"></a>**`output_format`** _(string)_: The Mapnik output format. Must be one of: "png", "png256", "jpeg", or "grid". Default: `"png"`.
   - <a id="definitions/layer_mapnik/properties/wms_url"></a>**`wms_url`** _(string)_: A WMS fallback URL (deprecated).
   - <a id="definitions/layer_mapnik/properties/resolution"></a>**`resolution`** _(integer)_: The resolution. Default: `4`.
   - <a id="definitions/layer_mapnik/properties/layers_fields"></a>**`layers_fields`** _(object)_: The Mapnik layers fields. Can contain additional properties.
