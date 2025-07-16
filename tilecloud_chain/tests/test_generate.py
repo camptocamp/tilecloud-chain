@@ -946,11 +946,6 @@ Size per tile: 4[0-9][0-9] o
             )
 
     def test_error_file_create(self) -> None:
-        tile_mbt = os.environ["TILE_NB_THREAD"]
-        metatile_mbt = os.environ["METATILE_NB_THREAD"]
-        os.environ["TILE_NB_THREAD"] = "1"
-        os.environ["METATILE_NB_THREAD"] = "1"
-
         if os.path.exists("error.list"):
             os.remove("error.list")
         self.assert_main_except_equals(
@@ -992,15 +987,8 @@ Size per tile: 4[0-9][0-9] o
             ],
         )
 
-        os.environ["TILE_NB_THREAD"] = tile_mbt
-        os.environ["METATILE_NB_THREAD"] = metatile_mbt
-
     def test_error_file_use(self) -> None:
-        tile_mbt = os.environ["TILE_NB_THREAD"]
-        metatile_mbt = os.environ["METATILE_NB_THREAD"]
         main_congifile = os.environ["TILEGENERATION_MAIN_CONFIGFILE"]
-        os.environ["TILE_NB_THREAD"] = "1"
-        os.environ["METATILE_NB_THREAD"] = "1"
         os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = "tilegeneration/test-nosns.yaml"
 
         try:
@@ -1038,8 +1026,6 @@ Size per tile: 4[0-9][0-9] o
     """,
             )
         finally:
-            os.environ["TILE_NB_THREAD"] = tile_mbt
-            os.environ["METATILE_NB_THREAD"] = metatile_mbt
             os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = main_congifile
 
     def test_multy(self) -> None:

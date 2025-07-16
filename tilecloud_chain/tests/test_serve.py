@@ -684,11 +684,6 @@ class TestServe(CompareCase):
 
     def test_mbtiles_rest(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
-            tile_mbt = os.environ["TILE_NB_THREAD"]
-            metatile_mbt = os.environ["METATILE_NB_THREAD"]
-            os.environ["TILE_NB_THREAD"] = "1"
-            os.environ["METATILE_NB_THREAD"] = "1"
-
             self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-serve.yaml"
                 " --layer=point_hash --zoom 1",
@@ -768,9 +763,6 @@ class TestServe(CompareCase):
                 _CAPABILITIES,
                 regex=True,
             )
-
-            os.environ["TILE_NB_THREAD"] = tile_mbt
-            os.environ["METATILE_NB_THREAD"] = metatile_mbt
 
             log_capture.check()
 
@@ -955,11 +947,6 @@ class TestServe(CompareCase):
         )
 
     def test_wsgi(self) -> None:
-        tile_mbt = os.environ["TILE_NB_THREAD"]
-        metatile_mbt = os.environ["METATILE_NB_THREAD"]
-        os.environ["TILE_NB_THREAD"] = "1"
-        os.environ["METATILE_NB_THREAD"] = "1"
-
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-serve.yaml --layer=point_hash --zoom 1",
             main_func=generate.main,
@@ -1088,9 +1075,6 @@ Size per tile: 4[0-9][0-9] o
             _CAPABILITIES,
             regex=True,
         )
-
-        os.environ["TILE_NB_THREAD"] = tile_mbt
-        os.environ["METATILE_NB_THREAD"] = metatile_mbt
 
     def test_ondemend_wmtscapabilities(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
