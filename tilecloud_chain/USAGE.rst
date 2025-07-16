@@ -752,31 +752,13 @@ Configuration can be customized through the following environment variables:
 - ``TILEGENERATION_MAX_GENERATION_TIME``: Maximum tile generation time in seconds before timeout
   (default: ``60``)
 
-- ``TILE_NB_THREAD``: Number of threads for tile generation when using metatiles
-  (default: ``2``)
-
-- ``METATILE_NB_THREAD``: Number of threads for metatile generation
-  (default: ``25``)
-
-- ``SERVER_NB_THREAD``: Number of server threads for metatile generation
-  (default: ``10``)
-
-- ``TILE_QUEUE_SIZE``: Size of post-Redis queue
-  (default: ``2``)
-
-- ``TILE_CHUNK_SIZE``: Number of tiles to process in one chunk after metatile generation
-  (default: ``1``)
-
 - ``TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH``: Maximum output length shown in admin interface
   (default: ``1000``)
 
-- ``TILECLOUD_CHAIN_CONCURRENT_GET_LEGEND``: Number of concurrent legend image requests
-  (default: ``10``)
+Logging Configuration:
 
 - ``LOG_TYPE``: Logging output format, either ``console`` or ``json`` for Logstash
   (default: ``console``)
-
-Logging Configuration:
 
 - ``TILECLOUD_CHAIN_LOG_LEVEL``: Log level for TileCloud Chain
   (default: ``INFO``)
@@ -806,6 +788,13 @@ Server Configuration:
 - ``VISIBLE_ENTRY_POINT``: Base URL path for tile access
   (default: ``/tiles/``)
 
+-  ``TILEGENERATION_HOSTS_LIMIT``: File that contains the maximum request per host
+   (default: ``/etc/tilegeneration/hosts_limit.yaml``)
+
+Worker Configuration:
+
+- ``TILECLOUD_CHAIN_NB_TASKS``: Number of concurrent tasks to run in parallel
+  (default: ``1``)
 
 Admin and test pages
 --------------------
