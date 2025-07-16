@@ -450,6 +450,7 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                         + "?"
                         + urlencode(
                             {
+                                **layer.get("params", {}),
                                 "SERVICE": "WMS",
                                 "VERSION": layer.get("version", "1.0.0"),
                                 "REQUEST": "GetLegendGraphic",
