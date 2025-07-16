@@ -437,9 +437,9 @@ class TileFilter(logging.Filter):
 
     def filter(self, record: Any) -> bool:
         """Add the request information to the log record."""
-        record.tcc_host = _HOST_CONTEXT.get()
-        record.tcc_layer = _LAYER_CONTEXT.get()
-        record.tcc_meta_tilecoord = _META_TILE_COORD_CONTEXT.get()
+        record.tcc_host = _HOST_CONTEXT.get(None)
+        record.tcc_layer = _LAYER_CONTEXT.get(None)
+        record.tcc_meta_tilecoord = _META_TILE_COORD_CONTEXT.get(None)
 
         return True
 
