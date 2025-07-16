@@ -107,9 +107,6 @@ services:
       CI: 'true'
       TESTS: 'true'
       PGPASSWORD: postgresql
-      TILE_NB_THREAD: 2
-      METATILE_NB_THREAD: 2
-      SERVER_NB_THREAD: 2
       TILECLOUD_LOG_LEVEL: DEBUG
       TILECLOUD_CHAIN_LOG_LEVEL: DEBUG
       TILECLOUD_CHAIN_SESSION_SALT: a-long-secret-a-long-secret
