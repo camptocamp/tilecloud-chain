@@ -49,7 +49,7 @@ prospector-profile-utils = "1.25.0"
 c2cwsgiutils = { version = "6.1.7", extras = ["test_images"] }
 scikit-image = { version = "0.25.2" }
 pytest = "8.4.1"
-testfixtures = "8.3.0"
+testfixtures = "9.1.0"
 coverage = "7.9.2"
 types-redis = "4.6.0.20241004"
 types-requests = "2.32.4.20250611"
