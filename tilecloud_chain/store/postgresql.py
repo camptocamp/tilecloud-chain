@@ -160,7 +160,7 @@ class Queue(Base):
     zoom = Column(Integer, nullable=False, index=True)
     status = Column(Unicode, nullable=False, default=_STATUS_CREATED, index=True)
     error = Column(Unicode)
-    started_at = Column(DateTime, index=True)
+    started_at = Column(DateTime(timezone=True), index=True)
     # Like this:
     # {
     #     "x": 0,
