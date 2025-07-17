@@ -43,6 +43,7 @@ import aiofiles
 import botocore.exceptions
 import c2cwsgiutils.prometheus
 import c2cwsgiutils.pyramid
+import nest_asyncio
 import prometheus_client
 import prometheus_client.core
 import prometheus_client.registry
@@ -72,6 +73,9 @@ from tilecloud_chain import (
     internal_mapcache,
 )
 from tilecloud_chain.store import AsyncTileStore
+
+# Apply nest_asyncio patch to allow nested event loops
+nest_asyncio.apply()
 
 _LOGGER = logging.getLogger(__name__)
 
