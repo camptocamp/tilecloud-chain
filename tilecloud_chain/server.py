@@ -828,7 +828,7 @@ def app_factory(
     del global_config
     del local_conf
 
-    init_tilegeneration(Path(configfile) if configfile is not None else None)
+    init_tilegeneration(Path(configfile) if configfile else None)
 
     return WsgiServer()
 
