@@ -78,7 +78,7 @@ class AzureStorageBlobTileStore(AsyncTileStore):
             if not blob.exists():
                 return None
             data = (await blob.download_blob()).readall()
-            assert isinstance(data, bytes) or data is None
+            assert isinstance(data, bytes) or data is None, type(data)
             tile.data = data
             properties = await blob.get_blob_properties()
             tile.content_encoding = properties.content_settings.content_encoding
