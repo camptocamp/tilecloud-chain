@@ -907,7 +907,8 @@ class PyramidView:
 
         global _PYRAMID_SERVER  # pylint: disable=global-statement
 
-        init_tilegeneration(Path(request.registry.settings.get("tilegeneration_configfile")))
+        config_file_name = request.registry.settings.get("tilegeneration_configfile")
+        init_tilegeneration(Path(config_file_name) if config_file_name else None)
 
         if _PYRAMID_SERVER is None:
             _PYRAMID_SERVER = PyramidServer()
@@ -1012,9 +1013,8 @@ def main(global_config: Any, **settings: Any) -> Router:
         ),
     )
 
-    init_tilegeneration(
-        Path(settings["tilegeneration_configfile"]) if "tilegeneration_configfile" in settings else None,
-    )
+    config_file_name = settings.get("tilegeneration_configfile")
+    init_tilegeneration(Path(config_file_name) if config_file_name else None)
     assert _TILEGENERATION
 
     config.include(c2cwsgiutils.pyramid.includeme)
