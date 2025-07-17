@@ -79,7 +79,7 @@
     ></script>
 
     <script>
-      proj4.defs("${srs}","${proj4js_def}");
+      proj4.defs("${srs}",`${proj4js_def}`);
       ol.proj.proj4.register(proj4);
       var parser = new ol.format.WMTSCapabilities();
 
