@@ -35,6 +35,7 @@ import os
 import shlex
 import subprocess  # nosec
 from collections.abc import Callable
+from pathlib import Path
 from typing import IO, Any
 from urllib.parse import urljoin
 
@@ -76,9 +77,8 @@ class Admin:
         """Initialize."""
         self.request = request
 
-        tilecloud_chain.server.init_tilegeneration(
-            self.request.registry.settings["tilegeneration_configfile"],
-        )
+        config_file_name = request.registry.settings.get("tilegeneration_configfile")
+        tilecloud_chain.server.init_tilegeneration(Path(config_file_name) if config_file_name else None)
         self.gene = tilecloud_chain.server._TILEGENERATION  # noqa: SLF001
         assert self.gene is not None
 
