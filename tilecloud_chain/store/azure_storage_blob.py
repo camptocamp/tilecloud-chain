@@ -75,7 +75,7 @@ class AzureStorageBlobTileStore(AsyncTileStore):
         key_name = self.tilelayout.filename(tile.tilecoord, tile.metadata)
         try:
             blob = self.container_client.get_blob_client(blob=key_name)
-            if not blob.exists():
+            if not await blob.exists():
                 return None
             download_result = await blob.download_blob()
             data = await download_result.readall()
