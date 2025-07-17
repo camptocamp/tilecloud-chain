@@ -77,7 +77,9 @@ _LOGGER = logging.getLogger(__name__)
 
 _GET_TILE = Summary("tilecloud_chain_get_tile", "Time to get the tiles", ["storage"])
 
-_TILEGENERATION = None
+_TILEGENERATION: TileGeneration | None = None
+
+_EVENT_LOOP: asyncio.AbstractEventLoop | None = None
 
 
 def init_tilegeneration(config_file: Path | None) -> None:
@@ -377,12 +379,17 @@ class Server(Generic[Response]):
         return self.serve(path, params, config=config, config_file=config_file, start_response=start_response)
 
     def _get_event_loop(self) -> asyncio.AbstractEventLoop:
+        global _EVENT_LOOP  # pylint: disable=global-statement
+        if _EVENT_LOOP is not None:
+            return _EVENT_LOOP
         try:
-            return asyncio.get_event_loop()
+            _EVENT_LOOP = asyncio.get_event_loop()
         except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            return loop
+            _EVENT_LOOP = asyncio.new_event_loop()
+            asyncio.set_event_loop(_EVENT_LOOP)
+            return _EVENT_LOOP
+        else:
+            return _EVENT_LOOP
 
     def serve(
         self,
