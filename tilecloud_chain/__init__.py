@@ -608,6 +608,7 @@ class TileGeneration:
         self.geoms_cache: dict[Path, dict[str, dict[str, DatedGeoms]]] = {}
         self._close_actions: list[Close] = []
         self.error_lock = asyncio.Lock()
+        self.tilestream_lock = asyncio.Lock()  # Add a lock for tilestream access
         self.error_files_: dict[str, TextIO] = {}
         self.functions_tiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
         self.functions_metatiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
@@ -1642,26 +1643,31 @@ class TileGeneration:
                 _LOGGER.debug("Start run")
                 end = False
                 while not end:
-                    try:
-                        assert self.tilestream is not None
-                        tile = await anext(self.tilestream)
-
-                        host_token = _HOST_CONTEXT.set(tile.metadata.get("host"))
-                        layer_token = _LAYER_CONTEXT.set(tile.metadata.get("layer"))
-                        meta_tilecoord_token = _META_TILE_COORD_CONTEXT.set(str(tile.tilecoord))
-
+                    assert self.tilestream is not None
+                    # Get the next tile with lock protection
+                    async with self.tilestream_lock:
                         try:
-                            await run(tile)
-                        except TooManyError:
-                            _LOGGER.exception("Too many errors")
-                            end = True
-                        finally:
-                            _HOST_CONTEXT.reset(host_token)
-                            _LAYER_CONTEXT.reset(layer_token)
-                            _META_TILE_COORD_CONTEXT.reset(meta_tilecoord_token)
-                    except StopAsyncIteration:
-                        if not self.daemon:
-                            end = True
+                            tile = await anext(self.tilestream)
+                        except StopAsyncIteration:
+                            if not self.daemon:
+                                end = True
+                                break
+                            # If we're in daemon mode, we should wait and try again
+                            continue
+
+                    host_token = _HOST_CONTEXT.set(tile.metadata.get("host"))
+                    layer_token = _LAYER_CONTEXT.set(tile.metadata.get("layer"))
+                    meta_tilecoord_token = _META_TILE_COORD_CONTEXT.set(str(tile.tilecoord))
+
+                    try:
+                        await run(tile)
+                    except TooManyError:
+                        _LOGGER.exception("Too many errors")
+                        end = True
+                    finally:
+                        _HOST_CONTEXT.reset(host_token)
+                        _LAYER_CONTEXT.reset(layer_token)
+                        _META_TILE_COORD_CONTEXT.reset(meta_tilecoord_token)
                 _LOGGER.debug("End run")
 
             tasks = [asyncio.create_task(target(), name=f"Run {i}") for i in range(nb_tasks)]
