@@ -667,10 +667,9 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
 
         config = options.config
         assert isinstance(config, Path) or config is None
+        config_file_name = os.environ.get("TILEGENERATION_CONFIGFILE")
         gene = TileGeneration(
-            config_file=config or Path(os.environ["TILEGENERATION_CONFIGFILE"])
-            if "TILEGENERATION_CONFIGFILE" in os.environ
-            else None,
+            config_file=config or Path(config_file_name) if config_file_name else None,
             options=options,
             multi_task=options.get_hash is None,
             out=out,
