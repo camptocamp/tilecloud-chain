@@ -391,6 +391,7 @@ class PostgresqlTileStore(AsyncTileStore):
         """
         assert self.SessionMaker is not None
         result = []
+        # TODO: Consolidate the query https://github.com/camptocamp/tilecloud-chain/issues/3030
         async with self.SessionMaker() as session:
             jobs_result = await session.execute(
                 select(Job)
@@ -400,28 +401,28 @@ class PostgresqlTileStore(AsyncTileStore):
             for job in jobs_result.scalars():
                 result_by_zoom_level: dict[int, dict[str, int]] = {}
 
-                nb_tiles_zoom_results = await session.scalar(
+                nb_tiles_zoom_results = await session.execute(
                     select(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
                     .where(and_(Queue.status == _STATUS_CREATED, Queue.job_id == job.id))
                     .group_by(Queue.zoom),
                 )
-                for nb_tiles, zoom in nb_tiles_zoom_results or []:
+                for nb_tiles, zoom in nb_tiles_zoom_results:
                     result_by_zoom_level.setdefault(zoom, {})["generate"] = nb_tiles
 
-                nb_tiles_zoom_results = await session.scalar(
+                nb_tiles_zoom_results = await session.execute(
                     select(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
                     .where(and_(Queue.status == _STATUS_PENDING, Queue.job_id == job.id))
                     .group_by(Queue.zoom),
                 )
-                for nb_tiles, zoom in nb_tiles_zoom_results or []:
+                for nb_tiles, zoom in nb_tiles_zoom_results:
                     result_by_zoom_level.setdefault(zoom, {})["pending"] = nb_tiles
 
-                nb_tiles_zoom_results = await session.scalar(
+                nb_tiles_zoom_results = await session.execute(
                     select(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
                     .where(and_(Queue.status == _STATUS_ERROR, Queue.job_id == job.id))
                     .group_by(Queue.zoom),
                 )
-                for nb_tiles, zoom in nb_tiles_zoom_results or []:
+                for nb_tiles, zoom in nb_tiles_zoom_results:
                     result_by_zoom_level.setdefault(zoom, {})["error"] = nb_tiles
 
                 status = [{"zoom": zoom, **data} for zoom, data in result_by_zoom_level.items()]
