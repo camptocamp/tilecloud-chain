@@ -753,13 +753,10 @@ class TileGeneration:
         if host not in self.get_hosts():
             _LOGGER.error("Missing host '%s' in global config", host)
             return None
+        default_config_file = os.environ.get("TILEGENERATION_CONFIGFILE")
         config_file = self.get_hosts().get(
             host,
-            (
-                Path(os.environ["TILEGENERATION_CONFIGFILE"])
-                if "TILEGENERATION_CONFIGFILE" in os.environ
-                else None
-            ),
+            Path(default_config_file) if default_config_file else None,
         )
         _LOGGER.debug("For the host %s, use config file: %s", host, config_file)
         return config_file
