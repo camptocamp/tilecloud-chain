@@ -291,7 +291,7 @@ class Admin:
             config_filename = self.gene.get_host_config_file(self.request.host)
             assert config_filename is not None
             _LOOP.run_until_complete(
-                store.cancel(self.request.POST["job_id"], config_filename),
+                store.cancel(int(self.request.POST["job_id"]), config_filename),
             )
         except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
             _LOG.exception("Exception while cancelling the job")
