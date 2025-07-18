@@ -39,7 +39,7 @@ class Copy:
         cast("tilecloud_chain.configuration.LayerWms", layer)["meta"] = False
         count_tiles_dropped = Count()
 
-        gene.create_log_tiles_error(layer_name)
+        await gene.create_log_tiles_error(layer_name)
         source_tilestore = gene.get_tilesstore(source)
         dest_tilestore = gene.get_tilesstore(destination)
         gene.init_tilecoords(config, layer_name, options.grid)
@@ -100,7 +100,8 @@ async def _async_main() -> None:
 
         options = parser.parse_args()
 
-        gene = TileGeneration(options.config, options)
+        gene = TileGeneration(options.config, options, multi_task=False)
+        await gene.ainit()
         assert gene.config_file
         config = gene.get_config(gene.config_file)
 
@@ -143,6 +144,7 @@ async def _async_process() -> None:
         options = parser.parse_args()
 
         gene = TileGeneration(options.config, options, multi_task=False)
+        await gene.ainit()
 
         copy = Copy()
         if options.layer:

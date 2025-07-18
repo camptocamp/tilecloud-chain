@@ -985,7 +985,7 @@ Size per tile: 4[0-9][0-9] o
                 headers[key] = value
 
         result = serve(
-            server._TILEGENERATION.get_main_config(),
+            await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {
                 "QUERY_STRING": "&".join(
@@ -1026,7 +1026,7 @@ Size per tile: 4[0-9][0-9] o
         )
 
         result = serve(
-            server._TILEGENERATION.get_main_config(),
+            await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {
                 "QUERY_STRING": "",
@@ -1047,7 +1047,7 @@ Size per tile: 4[0-9][0-9] o
         )
 
         serve(
-            server._TILEGENERATION.get_main_config(),
+            await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png"},
             start_response,
@@ -1055,7 +1055,7 @@ Size per tile: 4[0-9][0-9] o
         assert code == "204 No Content"
 
         serve(
-            server._TILEGENERATION.get_main_config(),
+            await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png"},
             start_response,
@@ -1064,7 +1064,7 @@ Size per tile: 4[0-9][0-9] o
         assert headers["Cache-Control"] == "max-age=28800"
 
         result = serve(
-            server._TILEGENERATION.get_main_config(),
+            await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/WMTSCapabilities.xml"},
             start_response,

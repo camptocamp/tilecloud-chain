@@ -8,6 +8,7 @@ from collections.abc import AsyncGenerator, Iterable
 from pathlib import Path
 from typing import Any, cast
 
+import aiofiles
 import aiohttp
 import jsonschema_validator
 from ruamel.yaml import YAML
@@ -37,6 +38,9 @@ class URLTileStore(AsyncTileStore):
         self._hosts_limit: host_limit.HostLimit = {}
         if headers is not None:
             self._session.headers.update(headers)
+
+    async def init(self) -> None:
+        """Initialize the store."""
         host_limit_path = Path(
             os.environ.get(
                 "TILEGENERATION_HOSTS_LIMIT",
@@ -45,8 +49,9 @@ class URLTileStore(AsyncTileStore):
         )
         if host_limit_path.exists():
             yaml = YAML(typ="safe")
-            with host_limit_path.open(encoding="utf-8") as f:
-                self._hosts_limit = yaml.load(f)
+            async with aiofiles.open(host_limit_path, encoding="utf-8") as f:
+                content = await f.read()
+                self._hosts_limit = yaml.load(content)
 
                 schema_data = pkgutil.get_data("tilecloud_chain", "host-limit-schema.json")
                 assert schema_data
