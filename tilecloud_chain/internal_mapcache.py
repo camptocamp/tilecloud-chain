@@ -264,7 +264,7 @@ async def fetch(
             fetched_tile = generator.read_from_cache(tile)
             if fetched_tile is None:
                 backend = "wms-generate"
-                success = generator.compute_tile(meta_tile)
+                success = await generator.compute_tile(meta_tile)
                 if not success:
                     return server.error(config, 500, "Error while generate the tile, see logs for details")
 
