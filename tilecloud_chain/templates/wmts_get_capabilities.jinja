@@ -89,7 +89,7 @@
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="{{getcapabilities}}">
+          <ows:Get xlink:href="{{ base_urls[0] }}{{ base_url_postfix }}1.0.0/WMTSCapabilities.xml">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -97,7 +97,7 @@
             </ows:Constraint>
           </ows:Get>{%
           if server %}
-          <ows:Get xlink:href="{{base_urls[0]}}{{base_url_postfix}}">
+          <ows:Get xlink:href="{{ base_urls[0] }}{{ base_url_postfix }}">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>KVP</ows:Value>
@@ -112,7 +112,7 @@
       <ows:DCP>
         <ows:HTTP>{%
           for base_url in base_urls %}
-          <ows:Get xlink:href="{{base_url}}{{base_url_postfix}}">
+          <ows:Get xlink:href="{{ base_url }}{{ base_url_postfix }}">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>{%
@@ -131,48 +131,48 @@
   <Contents>
     {% for layer_name, layer in sorted(layers.items()) %}
     <Layer>
-      <ows:Title>{{layer.get('title', layer_name)}}</ows:Title>
-      <ows:Identifier>{{layer_name}}</ows:Identifier>
+      <ows:Title>{{ layer.get('title', layer_name) }}</ows:Title>
+      <ows:Identifier>{{ layer_name }}</ows:Identifier>
       <Style isDefault="true">
-        <ows:Identifier>{{layer['wmts_style']}}</ows:Identifier>{%
+        <ows:Identifier>{{ layer['wmts_style'] }}</ows:Identifier>{%
         for legend in layer_legends[layer_name] %}
-        <LegendURL format="{{legend['mime_type']}}" xlink:href="{{legend['href']}}" {%
-        if 'width' in legend %}width="{{legend['width']}}" {% endif %}{%
-        if 'height' in legend %}height="{{legend['height']}}" {% endif %}{%
-        if 'max_scale' in legend %}maxScaleDenominator="{{legend['max_scale']}}" {% else %}{%
-        if 'max_resolution' in legend %}maxScaleDenominator="{{legend['max_resolution'] / 0.00028}}" {%
+        <LegendURL format="{{ legend['mime_type'] }}" xlink:href="{{ legend['href'] }}" {%
+        if 'width' in legend %}width="{{ legend['width'] }}" {% endif %}{%
+        if 'height' in legend %}height="{{ legend['height'] }}" {% endif %}{%
+        if 'max_scale' in legend %}maxScaleDenominator="{{ legend['max_scale'] }}" {% else %}{%
+        if 'max_resolution' in legend %}maxScaleDenominator="{{ legend['max_resolution'] / 0.00028 }}" {%
         endif %}{% endif %}{%
-        if 'min_scale' in legend %}minScaleDenominator="{{legend['min_scale']}}" {% else %}{%
-        if 'min_resolution' in legend %}minScaleDenominator="{{legend['min_resolution'] / 0.00028}}" {%
+        if 'min_scale' in legend %}minScaleDenominator="{{ legend['min_scale'] }}" {% else %}{%
+        if 'min_resolution' in legend %}minScaleDenominator="{{ legend['min_resolution'] / 0.00028 }}" {%
         endif %}{% endif %}/>{%
         endfor %}
       </Style>
-      <Format>{{layer['mime_type']}}</Format>{%
+      <Format>{{ layer['mime_type'] }}</Format>{%
       if 'query_layers' in layer %}{%
       for info_format in layer.get('info_formats', ['application/vnd.ogc.gml']) %}
-      <InfoFormat>{{infoformat}}</InfoFormat>{%
+      <InfoFormat>{{ infoformat }}</InfoFormat>{%
       endfor %}{%
       endif %}{%
       for dimension in layer['dimensions'] %}
       <Dimension>
-        <ows:Identifier>{{dimension['name']}}</ows:Identifier>
-        <Default>{{dimension['default']}}</Default>{%
+        <ows:Identifier>{{ dimension['name'] }}</ows:Identifier>
+        <Default>{{ dimension['default'] }}</Default>{%
             for value in dimension['values'] %}
-        <Value>{{value}}</Value>{%
+        <Value>{{ value }}</Value>{%
             endfor %}
       </Dimension>{%
       endfor %}{%
       for base_url in base_urls %}
-      <ResourceURL format="{{layer['mime_type']}}" resourceType="tile"
-                   template="{{base_url}}{{base_url_postfix}}1.0.0/{{layer_name}}/{{layer['wmts_style']}}{%
+      <ResourceURL format="{{ layer['mime_type'] }}" resourceType="tile"
+                   template="{{ base_url }}{{ base_url_postfix }}1.0.0/{{ layer_name }}/{{ layer['wmts_style'] }}{%
                         for dimension in layer['dimensions']
-                            %}/{{('{' + dimension['name'] + '}')}}{%
+                            %}/{{ ('{' + dimension['name'] + '}') }}{%
                         endfor
-                   %}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.{{layer['extension']}}" />{%
+                   %}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.{{ layer['extension'] }}" />{%
       endfor %}{%
         for grid_name in get_grid_names(config, layer_name) %}
       <TileMatrixSetLink>
-        <TileMatrixSet>{{grid_name}}</TileMatrixSet>
+        <TileMatrixSet>{{ grid_name }}</TileMatrixSet>
       </TileMatrixSetLink>{%
         endfor %}
     </Layer>
@@ -180,7 +180,7 @@
 
     {% for gridname, grid in sorted(grids.items()) %}
     <TileMatrixSet>
-      <ows:Identifier>{{gridname}}</ows:Identifier>
+      <ows:Identifier>{{ gridname }}</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:{{
             grid.get("srs", configuration.SRS_DEFAULT).replace(':', '::')
       }}</ows:SupportedCRS>{%
@@ -195,12 +195,12 @@
         set top = grid['bbox'][3] %}
       <TileMatrix>
         <ows:Identifier>{{ get_tile_matrix_identifier(grid, resolution=resolution, zoom=i) }}</ows:Identifier>
-        <ScaleDenominator>{{resolution / 0.00028}}</ScaleDenominator>
-        <TopLeftCorner>{{left}} {{top}}</TopLeftCorner>
-        <TileWidth>{{grid.get("tile_size", configuration.TILE_SIZE_DEFAULT)}}</TileWidth>
-        <TileHeight>{{grid.get("tile_size", configuration.TILE_SIZE_DEFAULT)}}</TileHeight>
-        <MatrixWidth>{{width}}</MatrixWidth>
-        <MatrixHeight>{{height}}</MatrixHeight>
+        <ScaleDenominator>{{ resolution / 0.00028 }}</ScaleDenominator>
+        <TopLeftCorner>{{ left }} {{ top }}</TopLeftCorner>
+        <TileWidth>{{ grid.get("tile_size", configuration.TILE_SIZE_DEFAULT) }}</TileWidth>
+        <TileHeight>{{ grid.get("tile_size", configuration.TILE_SIZE_DEFAULT) }}</TileHeight>
+        <MatrixWidth>{{ width }}</MatrixWidth>
+        <MatrixHeight>{{ height }}</MatrixHeight>
       </TileMatrix>{%
       endfor %}
     </TileMatrixSet>{%

@@ -62,22 +62,6 @@ ENV LOG_TYPE=console \
     DEVELOPMENT=0 \
     PKG_CONFIG_ALLOW_SYSTEM_LIBS=OHYESPLEASE
 
-ENV C2C_SECRET= \
-    C2C_BASE_PATH=/c2c \
-    C2C_REDIS_URL= \
-    C2C_REDIS_SENTINELS= \
-    C2C_REDIS_TIMEOUT=3 \
-    C2C_REDIS_SERVICENAME=mymaster \
-    C2C_REDIS_DB=0 \
-    C2C_BROADCAST_PREFIX=broadcast_api_ \
-    C2C_REQUEST_ID_HEADER= \
-    C2C_REQUESTS_DEFAULT_TIMEOUT= \
-    C2C_SQL_PROFILER_ENABLED=0 \
-    C2C_PROFILER_PATH= \
-    C2C_PROFILER_MODULES= \
-    C2C_DEBUG_VIEW_ENABLED=0 \
-    C2C_ENABLE_EXCEPTION_HANDLING=0
-
 # End from c2cwsgiutils
 
 ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
@@ -111,6 +95,10 @@ RUN --mount=type=cache,target=/root/.cache \
     POETRY_DYNAMIC_VERSIONING_BYPASS=${VERSION} python3 -m pip install --disable-pip-version-check --no-deps --editable=. \
     && mv docker/run /usr/bin/ \
     && python3 -m compileall -q /app/tilecloud_chain
+
+CMD ["uvicorn", "tilecloud_chain.main:app", "--host=0.0.0.0", "--port=8080", "--log-config=/app/logging.yaml"]
+
+EXPOSE 8080
 
 # Do the lint, used by the tests
 FROM base AS tests

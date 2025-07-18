@@ -560,32 +560,7 @@ The minimal configuration is to enable it:
     server: {}
 
 You should also configure the ``http_url`` of the used cache, to something like
-``https://%(host)s/${instanceid}/tiles`` or like ``https://%(host)s/${instanceid}/wsgi/tiles`` if you use the
-Pyramid view.
-
-Pyramid view
-~~~~~~~~~~~~
-
-To use the pyramid view use the following configuration:
-
-.. code:: python
-
-    config.get_settings().update({
-        'tilegeneration_configfile': '<the configuration file>',
-    })
-    config.add_route('tiles', '/tiles/\*path')
-    config.add_view('tilecloud_chain.server:PyramidView', route_name='tiles')
-
-Internal WSGI server
-~~~~~~~~~~~~~~~~~~~~
-
-in ``application.ini``:
-
-.. code::
-
-    [app:tiles]
-    use = egg:tilecloud_chain#server
-    configfile = %(here)s/tilegeneration/config.yaml
+``https://%(host)s/${instanceid}/tiles``.
 
 Commands
 --------

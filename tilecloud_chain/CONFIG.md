@@ -298,9 +298,7 @@
   - <a id="definitions/server/properties/geoms_redirect"></a>**`geoms_redirect`** _(boolean)_: Take care on the geometries. Default: `false`.
   - <a id="definitions/server/properties/static_allow_extension"></a>**`static_allow_extension`** _(array)_: The allowed extension of static files. Default: `["jpeg", "png", "xml", "js", "html", "css"]`.
     - <a id="definitions/server/properties/static_allow_extension/items"></a>**Items** _(string)_
-  - <a id="definitions/server/properties/wmts_path"></a>**`wmts_path`** _(string)_: The sub-path for the WMTS (main configuration). Default: `"wmts"`.
-  - <a id="definitions/server/properties/static_path"></a>**`static_path`** _(string)_: The sub-path for the static files (main configuration). Default: `"static"`.
-  - <a id="definitions/server/properties/admin_path"></a>**`admin_path`** _(string)_: The sub-path for the admin (main configuration). Default: `"admin"`.
+  - <a id="definitions/server/properties/wmts_path"></a>**`wmts_path`** _(string)_: The sub-path for the WMTS (main configuration). Default: `""`.
   - <a id="definitions/server/properties/expires"></a>**`expires`** _(integer)_: The browser cache expiration in hours. Default: `8`.
   - <a id="definitions/server/properties/predefined_commands"></a>**`predefined_commands`** _(array)_: The predefined commands used to generate the tiles.
     - <a id="definitions/server/properties/predefined_commands/items"></a>**Items** _(object)_: Cannot contain additional properties.

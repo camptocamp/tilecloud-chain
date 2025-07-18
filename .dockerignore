@@ -7,7 +7,7 @@
 !MANIFEST.in
 !tilecloud_chain/*
 !docker/run
-!application.ini
+!logging.yaml
 !package*.json
 !.nvmrc
 !screenshot.js
