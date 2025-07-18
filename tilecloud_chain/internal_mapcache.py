@@ -12,6 +12,7 @@ from collections.abc import Iterator
 from typing import TYPE_CHECKING, Any, NamedTuple, TypeVar, cast
 
 import redis.sentinel
+import yaml
 from prometheus_client import Summary
 from tilecloud import Tile, TileCoord, TileStore
 
@@ -53,16 +54,27 @@ class RedisStore(TileStore):
         """Initialize."""
         super().__init__(**kwargs)
 
-        connection_kwargs = {}
-        socket_timeout = os.environ.get("TILECLOUD_CHAIN_REDIS_SOCKET_TIMEOUT", config.get("socket_timeout"))
+        redis_options = os.environ.get(
+            "TILECLOUD_CHAIN_REDIS_OPTIONS",
+            cast("str", config.get("redis_options", "")),
+        )
+        connection_kwargs = {
+            key: yaml.load(value, Loader=yaml.SafeLoader)
+            for key, value in [e.split("=", 1) for e in redis_options.split(",") if "=" in e]
+        }
+
+        socket_timeout = os.environ.get(
+            "TILECLOUD_CHAIN_REDIS_SOCKET_TIMEOUT",
+            cast("str", config.get("socket_timeout")),
+        )
         if socket_timeout is not None:
             connection_kwargs["socket_timeout"] = int(socket_timeout)
-        db = os.environ.get("TILECLOUD_CHAIN_REDIS_DB", config.get("db"))
+        db = os.environ.get("TILECLOUD_CHAIN_REDIS_DB", cast("str", config.get("db")))
         if db is not None:
             connection_kwargs["db"] = int(db)
-        url = os.environ.get("TILECLOUD_CHAIN_REDIS_URL", config.get("url"))
+        url = os.environ.get("TILECLOUD_CHAIN_REDIS_URL", cast("str", config.get("url")))
         if url is not None:
-            self._master = redis.Redis.from_url(url, **connection_kwargs)  # type: ignore[call-overload]
+            self._master = redis.Redis.from_url(url, **connection_kwargs)
             self._slave = self._master
         else:
             sentinels: list[tuple[str, str | int]] = []
@@ -76,7 +88,7 @@ class RedisStore(TileStore):
                 sentinels = config["sentinels"]
 
             sentinels = [(host, int(port)) for host, port in sentinels]
-            sentinel = redis.sentinel.Sentinel(sentinels, **connection_kwargs)  # type: ignore[arg-type]
+            sentinel = redis.sentinel.Sentinel(sentinels, **connection_kwargs)
             service_name = os.environ.get(
                 "TILECLOUD_CHAIN_REDIS_SERVICE_NAME",
                 config.get("service_name", tilecloud_chain.configuration.SERVICE_NAME_DEFAULT),
