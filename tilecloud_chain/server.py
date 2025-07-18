@@ -573,6 +573,7 @@ class Server(Generic[Response]):
 
             metadata["layer"] = params["LAYER"]
             metadata["config_file"] = str(config.file)
+            metadata["grid"] = params["TILEMATRIXSET"]
             tile = Tile(
                 TileCoord(
                     # TODO: fix for matrix_identifier = resolution # noqa: TD003
