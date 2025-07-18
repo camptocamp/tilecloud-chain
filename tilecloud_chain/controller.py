@@ -80,7 +80,8 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         )
 
         options = parser.parse_args(args[1:] if args else sys.argv[1:])
-        gene = TileGeneration(options.config, options, layer_name=options.layer, out=out)
+        gene = TileGeneration(options.config, options, out=out)
+        await gene.ainit(layer_name=options.layer)
         assert gene.config_file
         config = gene.get_config(gene.config_file)
 
@@ -107,7 +108,7 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
             sys.exit(0)
 
         if options.legends:
-            _generate_legend_images(gene, out)
+            await _generate_legend_images(gene, out)
 
     except SystemExit:
         raise
@@ -118,7 +119,12 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         sys.exit(1)
 
 
-def _send(data: bytes | str, path: str, mime_type: str, cache: tilecloud_chain.configuration.Cache) -> None:
+async def _send(
+    data: bytes | str,
+    path: str,
+    mime_type: str,
+    cache: tilecloud_chain.configuration.Cache,
+) -> None:
     if cache["type"] == "s3":
         cache_s3 = cast("tilecloud_chain.configuration.CacheS3", cache)
         client = tilecloud.store.s3.get_client(cache_s3.get("host"))
@@ -137,9 +143,7 @@ def _send(data: bytes | str, path: str, mime_type: str, cache: tilecloud_chain.c
         key_name = Path(cache["folder"]) / path
         container = get_azure_container_client(cache_azure["container"])
         blob = container.get_blob_client(str(key_name))
-        blob.upload_blob(data, overwrite=True)
-
-        blob.upload_blob(
+        await blob.upload_blob(
             data,
             overwrite=True,
             content_settings=ContentSettings(
@@ -220,7 +224,7 @@ async def get_wmts_capabilities(
 
     cache = config.config["caches"][cache_name]
     if _validate_generate_wmts_capabilities(cache, cache_name, exit_):
-        server = gene.get_main_config().config.get("server")
+        server = (await gene.get_main_config()).config.get("server")
 
         base_urls = _get_base_urls(cache)
         await _fill_legend(gene, cache, base_urls[0], config=config)
@@ -424,7 +428,7 @@ def _get_legend_image(
         return None
 
 
-def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) -> None:
+async def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) -> None:
     assert gene.config_file
     config = gene.get_config(gene.config_file)
     cache = config.config["caches"][gene.options.cache]
@@ -508,7 +512,7 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                     previous_resolution_metadata = resolution_metadata
                     previous_resolution = resolution
 
-                    _send(
+                    await _send(
                         result,
                         f"1.0.0/{layer_name}/{layer['wmts_style']}/legend-{resolution}.{layer.get('legend_extension', configuration.LAYER_LEGEND_EXTENSION_DEFAULT)}",
                         layer.get("legend_mime", configuration.LAYER_LEGEND_MIME_DEFAULT),
@@ -523,7 +527,7 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                     Dumper=yaml.SafeDumper,
                 )
 
-                _send(
+                await _send(
                     metadata_str.getvalue(),
                     f"1.0.0/{layer_name}/{layer['wmts_style']}/legend.yaml",
                     "application/x-yaml",
@@ -538,7 +542,7 @@ async def status(gene: TileGeneration) -> None:
 
 async def get_status(gene: TileGeneration) -> list[str]:
     """Get the tile generation status."""
-    config = gene.get_main_config()
+    config = await gene.get_main_config()
     store = await get_queue_store(config, daemon=False)
     type_: Literal["redis", "sqs"] = "redis" if "redis" in config.config else "sqs"
     conf = config.config[type_]

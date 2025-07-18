@@ -29,7 +29,8 @@ class TestController(CompareCase):
 
     @pytest.mark.asyncio
     async def test_capabilities(self) -> None:
-        gene = TileGeneration(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
+        gene = TileGeneration()
+        await gene.ainit(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         config = gene.get_config(Path("tilegeneration/test-fix.yaml"))
         self.assert_result_equals(
             await controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
@@ -971,14 +972,16 @@ class TestController(CompareCase):
 
     @pytest.mark.asyncio
     async def test_multi_host_capabilities(self) -> None:
-        gene = TileGeneration(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
+        gene = TileGeneration()
+        await gene.ainit(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         self.assert_result_equals(
             await controller.get_wmts_capabilities(gene, "multi_host"), self.MULTIHOST_CAPABILITIES, True
         )
 
     @pytest.mark.asyncio
     async def test_capabilities_slash(self) -> None:
-        gene = TileGeneration(Path("tilegeneration/test-capabilities.yaml"), configure_logging=False)
+        gene = TileGeneration()
+        await gene.ainit(Path("tilegeneration/test-capabilities.yaml"), configure_logging=False)
         config = gene.get_config(Path("tilegeneration/test-capabilities.yaml"))
         self.assert_result_equals(
             await controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
@@ -1113,7 +1116,8 @@ class TestController(CompareCase):
 
     @pytest.mark.asyncio
     async def test_multi_url_capabilities(self) -> None:
-        gene = TileGeneration(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
+        gene = TileGeneration()
+        await gene.ainit(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         self.assert_result_equals(
             await controller.get_wmts_capabilities(gene, "multi_url"), self.MULTIHOST_CAPABILITIES, True
         )
@@ -1793,7 +1797,8 @@ sqs:
             tiles=[("point", 0), ("line", 0), ("line", 2), ("polygon", 0), ("all", 0), ("all", 2)],
         )
 
-        gene = TileGeneration(Path("tilegeneration/test-legends.yaml"), configure_logging=False)
+        gene = TileGeneration()
+        await gene.ainit(Path("tilegeneration/test-legends.yaml"), configure_logging=False)
         config = gene.get_config(Path("tilegeneration/test-legends.yaml"))
         self.assert_result_equals(
             await controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),

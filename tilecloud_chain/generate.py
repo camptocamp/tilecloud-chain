@@ -114,7 +114,7 @@ class Generate:
 
         if self._options.role != "slave" and not self._options.get_hash and not self._options.get_bbox:
             assert layer_name
-            self._gene.create_log_tiles_error(layer_name)
+            await self._gene.create_log_tiles_error(layer_name)
 
         if self._options.role != "slave" or self._options.tiles:
             self._generate_queue(layer_name)
@@ -132,21 +132,23 @@ class Generate:
             self._count_tiles_dropped = Count()
 
         if self._options.role in ("master", "slave") and not self._options.tiles:
-            self._queue_tilestore = await get_queue_store(self._gene.get_main_config(), self._options.daemon)
+            main_config = await self._gene.get_main_config()
+            self._queue_tilestore = await get_queue_store(main_config, self._options.daemon)
 
         if self._options.role in ("local", "master"):
             self._gene.add_geom_filter()
 
-        if self._options.role in ("local", "master") and "logging" in self._gene.get_main_config().config:
+        main_config = await self._gene.get_main_config()
+        if self._options.role in ("local", "master") and "logging" in main_config.config:
             self._gene.imap(
                 DatabaseLoggerInit(
-                    self._gene.get_main_config().config["logging"],
+                    main_config.config["logging"],
                     self._options is not None and self._options.daemon,
                 ),
             )
 
         if self._options.local_process_number is not None:
-            self.add_local_process_filter()
+            await self.add_local_process_filter()
 
         # At this stage, the tilestream contains metatiles that intersect geometry
         self._gene.add_logger()
@@ -161,13 +163,12 @@ class Generate:
             self._cache_tilestore = self._gene.get_tilesstore(self._options.cache)
             assert self._cache_tilestore is not None
 
-    def add_local_process_filter(self) -> None:
+    async def add_local_process_filter(self) -> None:
         """Add the local process filter to the gene."""
+        main_config = await self._gene.get_main_config()
         self._gene.imap(
             LocalProcessFilter(
-                self._gene.get_main_config()
-                .config["generation"]
-                .get("number_process", configuration.NUMBER_PROCESS_DEFAULT),
+                main_config.config["generation"].get("number_process", configuration.NUMBER_PROCESS_DEFAULT),
                 self._options.local_process_number,
             ),
         )
@@ -242,6 +243,9 @@ class Generate:
                 sys.exit(1)
 
     async def _generate_tiles(self) -> None:
+        # Get main config once and reuse it
+        main_config = await self._gene.get_main_config()
+
         if self._options.role in ("slave") and not self._options.tiles:
             assert self._queue_tilestore is not None
             # Get the meta tiles from the SQS/Redis queue
@@ -259,19 +263,16 @@ class Generate:
 
         self._gene.get(MultiTileStore(TilestoreGetter(self)), "Get tile")
 
-        if self._options.role in ("local", "slave") and "logging" in self._gene.get_main_config().config:
+        main_config = await self._gene.get_main_config()
+        if self._options.role in ("local", "slave") and "logging" in main_config.config:
             self._gene.imap(
                 DatabaseLogger(
-                    self._gene.get_main_config().config["logging"],
+                    main_config.config["logging"],
                     self._options is not None and self._options.daemon,
                 ),
             )
             self._gene.init(
-                (
-                    self._queue_tilestore
-                    if "error_file" in self._gene.get_main_config().config["generation"]
-                    else None
-                ),
+                (self._queue_tilestore if "error_file" in main_config.config["generation"] else None),
                 self._options.daemon,
             )
         else:
@@ -341,10 +342,10 @@ class Generate:
 
             self._gene.imap(delete_from_store)
 
-        if self._options.role in ("local", "slave") and "logging" in self._gene.get_main_config().config:
+        if self._options.role in ("local", "slave") and "logging" in main_config.config:
             self._gene.imap(
                 DatabaseLogger(
-                    self._gene.get_main_config().config["logging"],
+                    main_config.config["logging"],
                     self._options is not None and self._options.daemon,
                 ),
             )
@@ -486,7 +487,12 @@ class TilestoreGetter:
     def __init__(self, gene: Generate) -> None:
         self.gene = gene
 
-    def __call__(self, config_file: Path, layer_name: str, grid_name: str | None) -> AsyncTileStore | None:
+    async def __call__(
+        self,
+        config_file: Path,
+        layer_name: str,
+        grid_name: str | None,
+    ) -> AsyncTileStore | None:
         """Get the tilestore based on the layername config file any layer type."""
         config = self.gene._gene.get_config(config_file)  # noqa: SLF001
         if layer_name not in config.config.get("layers", {}):
@@ -503,30 +509,29 @@ class TilestoreGetter:
                 params["SALT"] = str(random.randint(0, 999999))  # nosec # noqa: S311
 
             # Get the metatile image from the WMS server
-            return TimedTileStoreWrapper(
-                URLTileStore(
-                    tile_layouts=(
-                        WMSTileLayout(
-                            url=layer["url"],
-                            layers=layer.get("layers", ""),
-                            srs=get_grid_config(config, layer_name, grid_name).get(
-                                "srs",
-                                configuration.SRS_DEFAULT,
-                            ),
-                            format_pattern=layer["mime_type"],
-                            border=(
-                                layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
-                                if layer["meta"]
-                                else 0
-                            ),
-                            tilegrid=self.gene._gene.get_grid(config, grid_name),  # noqa: SLF001
-                            params=params,
+            url_tile_store = URLTileStore(
+                tile_layouts=(
+                    WMSTileLayout(
+                        url=layer["url"],
+                        layers=layer.get("layers", ""),
+                        srs=get_grid_config(config, layer_name, grid_name).get(
+                            "srs",
+                            configuration.SRS_DEFAULT,
                         ),
+                        format_pattern=layer["mime_type"],
+                        border=(
+                            layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
+                            if layer["meta"]
+                            else 0
+                        ),
+                        tilegrid=self.gene._gene.get_grid(config, grid_name),  # noqa: SLF001
+                        params=params,
                     ),
-                    headers=layer["headers"],
                 ),
-                "wms",
+                headers=layer["headers"],
             )
+            await url_tile_store.init()
+            return TimedTileStoreWrapper(url_tile_store, "wms")
         if layer["type"] == "mapnik":
             try:
                 from tilecloud_chain.store.mapnik_ import (  # pylint: disable=import-outside-toplevel
@@ -674,18 +679,19 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
             multi_task=options.get_hash is None,
             out=out,
         )
+        await gene.ainit()
 
         if (
             options.get_hash is None
             and options.get_bbox is None
             and options.config is not None
-            and "authorised_user" in gene.get_main_config().config.get("generation", {})
-            and gene.get_main_config().config["generation"]["authorised_user"] != getuser()
+            and "authorised_user" in await gene.get_main_config_sync().config.get("generation", {})
+            and await gene.get_main_config_sync().config["generation"]["authorised_user"] != getuser()
             and os.environ.get("TILECLOUD_CHAIN_SLAVE", "false").lower() != "true"
         ):
             _LOGGER.error(
                 "not authorized, authorized user is: %s.",
-                gene.get_main_config().config["generation"]["authorised_user"],
+                await gene.get_main_config_sync().config["generation"]["authorised_user"],
             )
             sys.exit(1)
 

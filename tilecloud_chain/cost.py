@@ -41,10 +41,10 @@ async def _async_main() -> None:
         gene = TileGeneration(
             options.config,
             options=options,
-            layer_name=options.layer,
             base_config={"cost": {}},
             multi_task=False,
         )
+        await gene.ainit(layer_name=options.layer)
         config = gene.get_config(options.config)
 
         all_size: float = 0
@@ -61,7 +61,7 @@ async def _async_main() -> None:
                 print()
                 print(f"===== {layer_name} =====")
                 layer = config.config["layers"][layer_name]
-                gene.create_log_tiles_error(layer_name)
+                await gene.create_log_tiles_error(layer_name)
                 (size, time, price, tiles) = await _calculate_cost(gene, layer_name, options)
                 tile_size += layer["cost"].get("tile_size", configuration.TILE_SIZE_DEFAULT) / (1024.0 * 1024)
                 all_time += time
@@ -77,15 +77,19 @@ async def _async_main() -> None:
         print()
         s3_cost = (
             all_size
-            * gene.get_main_config().config["cost"]["s3"].get("storage", configuration.S3_STORAGE_DEFAULT)
+            * await gene.get_main_config()
+            .config["cost"]["s3"]
+            .get("storage", configuration.S3_STORAGE_DEFAULT)
             / (1024.0 * 1024 * 1024)
         )
         print(f"S3 Storage: {s3_cost:0.2f} [$/month]")
         s3_get_cost = (
-            gene.get_main_config().config["cost"]["s3"].get("get", configuration.S3_GET_DEFAULT)
+            await gene.get_main_config().config["cost"]["s3"].get("get", configuration.S3_GET_DEFAULT)
             * config.config["cost"].get("request_per_layers", configuration.REQUEST_PER_LAYERS_DEFAULT)
             / 10000.0
-            + gene.get_main_config().config["cost"]["s3"].get("download", configuration.S3_DOWNLOAD_DEFAULT)
+            + await gene.get_main_config()
+            .config["cost"]["s3"]
+            .get("download", configuration.S3_DOWNLOAD_DEFAULT)
             * config.config["cost"].get("request_per_layers", configuration.REQUEST_PER_LAYERS_DEFAULT)
             * tile_size
         )
@@ -192,6 +196,7 @@ async def _calculate_cost(
         gene.imap(count_tile)
 
         run = Run(gene, gene.functions_metatiles)
+        await run.init()
         assert gene.tilestream
         async for tile in gene.tilestream:
             tile.metadata["layer"] = layer_name
@@ -229,18 +234,20 @@ async def _calculate_cost(
         td = timedelta(milliseconds=time)
         print(f"Time to generate: {duration_format(td)} [d h:mm:ss]")
         c = (
-            gene.get_main_config().config["cost"]["s3"].get("put", configuration.S3_PUT_DEFAULT)
+            await gene.get_main_config().config["cost"]["s3"].get("put", configuration.S3_PUT_DEFAULT)
             * nb_tile
             / 1000.0
         )
         price += c
         print(f"S3 PUT: {c:0.2f} [$]")
 
-        if "sqs" in gene.get_main_config().config:
+        if "sqs" in await gene.get_main_config().config:
             nb_sqs = nb_metatiles[z] * 3 if meta else nb_tile * 3
             c = (
                 nb_sqs
-                * gene.get_main_config().config["cost"]["sqs"].get("request", configuration.REQUEST_DEFAULT)
+                * await gene.get_main_config()
+                .config["cost"]["sqs"]
+                .get("request", configuration.REQUEST_DEFAULT)
                 / 1000000.0
             )
             price += c
