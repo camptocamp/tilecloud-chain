@@ -67,9 +67,8 @@ def _get_tilegeneration() -> TileGeneration:
     return tilecloud_chain.server._TILEGENERATION  # pylint: disable=protected-access
 
 
-async def startup(main_app: FastAPI) -> None:
+async def startup(_main_app: FastAPI) -> None:
     """Create and configure the FastAPI admin application."""
-    del main_app  # Unused parameter
 
     main_config = await _get_tilegeneration().get_main_config()
     queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
