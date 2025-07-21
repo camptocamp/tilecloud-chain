@@ -71,8 +71,7 @@ async def _lifespan(main_app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 # Core Application Instance
-app = FastAPI(title="fastapi_app API", lifespan=_lifespan)
-
+app = FastAPI(title="TileCloud-chain WMTS API", lifespan=_lifespan)
 
 # Add TrustedHostMiddleware (should be first)
 app.add_middleware(
@@ -80,8 +79,9 @@ app.add_middleware(
     allowed_hosts=["*"],  # Configure with specific hosts in production
 )
 
+http = os.environ.get("HTTP", "False").lower() in ["true", "1"]
 # Add HTTPSRedirectMiddleware
-if os.environ.get("HTTP", "False").lower() not in ["true", "1"]:
+if not http:
     app.add_middleware(HTTPSRedirectMiddleware)
 
 # Add GZipMiddleware
@@ -96,7 +96,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(headers.ArmorHeaderMiddleware)
+app.add_middleware(
+    headers.ArmorHeaderMiddleware,
+    headers_config={"http": {"headers": {"Strict-Transport-Security": None}}} if not http else {},
+)
 
 
 class RootResponse(BaseModel):
@@ -108,20 +111,11 @@ class RootResponse(BaseModel):
 # Add Health Checks
 health_checks.FACTORY.add(health_checks.Redis(tags=["redis", "all"]))
 
-
-@app.get("/")
-async def root() -> RootResponse:
-    """
-    Return a hello message.
-    """
-    return RootResponse(message="Hello World")
-
-
 # Add Routers
 # Mount the most specific routes first to ensure correct routing precedence.
-app.mount("/admin", admin.app)  # Admin routes
 app.mount("/c2c", c2casgiutils.app)  # C2C utility routes
-app.mount("/", server.app)  # Generic server routes (should be mounted last)
+app.mount("/admin", admin.app)  # Admin routes
+app.include_router(server.router, tags=["wmts"])  # WMTS routes
 
 # Get Prometheus HTTP server port from environment variable 9000 by default
 start_http_server(config.settings.prometheus.port)

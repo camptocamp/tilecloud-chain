@@ -655,7 +655,7 @@ class Server:
 
 
 server = Server()
-app = FastAPI(title="TileCloud-chain WMTS API")
+router = fastapi.APIRouter()
 
 
 async def startup(_main_app: FastAPI) -> None:
@@ -713,7 +713,7 @@ async def get_host_config(
     return config
 
 
-@app.get("/{version}/wmtscapabilities.xml")
+@router.get("/{version}/wmtscapabilities.xml", summary="Get the WMTS capabilities.")
 async def get_wmts_capabilities(
     version: Annotated[str, fastapi.Path(..., description="WMTS version")],
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
@@ -731,14 +731,15 @@ async def get_wmts_capabilities(
     return await server.serve(params, config, host)
 
 
-@app.get(
-    "/{version}/{layer}/{style}/{dimensions_params:path}){tilematrixset}/{tilematrix}/{tilerow}/{tilecol}.{extension}",
+@router.get(
+    "/{version}/{layer}/{style}/{dimensions_parameters:path}/{tilematrixset}/{tilematrix}/{tilerow}/{tilecol}.{extension}",
+    summary="Get the WMTS tile.",
 )
 async def get_wmts_tile(
     version: Annotated[str, fastapi.Path(..., description="WMTS version")],
     layer: Annotated[str, fastapi.Path(..., description="Layer name")],
     style: Annotated[str, fastapi.Path(..., description="Style name")],
-    dimensions_params: Annotated[str, fastapi.Path(..., description="Dimensions parameters")],
+    dimensions_parameters: Annotated[str, fastapi.Path(..., description="Dimensions parameters")],
     tilematrixset: Annotated[str, fastapi.Path(..., description="Tile matrix set")],
     tilematrix: Annotated[str, fastapi.Path(..., description="Tile matrix")],
     tilerow: Annotated[str, fastapi.Path(..., description="Tile row")],
@@ -747,7 +748,15 @@ async def get_wmts_tile(
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
     host: Annotated[str, fastapi.Depends(get_host_name)],
 ) -> Response:
-    """Get the WMTS."""
+    """
+    Get the WMTS tile.
+
+    For low zoom levels, the tile is served from the static cache (filesystem or object storage like S3 or Azure).
+
+    For high zoom levels, the tile is generated dynamically:
+    - From dynamic cache (Redis).
+    - Generate from WMS if it does not exist in the cache.
+    """
 
     del extension  # Needed for FastAPI documentation
 
@@ -772,21 +781,22 @@ async def get_wmts_tile(
     }
 
     for index, dimension in enumerate(layer_obj.get("dimensions", {})):
-        params[dimension["name"].upper()] = dimensions_params[index]
+        params[dimension["name"].upper()] = dimensions_parameters[index]
 
     params["FORMAT"] = layer_obj["mime_type"]
 
     return await server.serve(params, config, host)
 
 
-@app.get(
-    "/{version}/{layer}/{style}/{dimensions_params:path}){tilematrixset}/{tilematrix}/{tilerow}/{tilecol}/{i}/{j}",
+@router.get(
+    "/{version}/{layer}/{style}/{dimensions_parameters:path}/{tilematrixset}/{tilematrix}/{tilerow}/{tilecol}/{i}/{j}",
+    summary="Get the WMTS Feature Info.",
 )
 async def get_wmts_feature_info(
     version: Annotated[str, fastapi.Path(..., description="WMTS version")],
     layer: Annotated[str, fastapi.Path(..., description="Layer name")],
     style: Annotated[str, fastapi.Path(..., description="Style name")],
-    dimensions_params: Annotated[str, fastapi.Path(..., description="Dimensions parameters")],
+    dimensions_parameters: Annotated[str, fastapi.Path(..., description="Dimensions parameters")],
     tilematrixset: Annotated[str, fastapi.Path(..., description="Tile matrix set")],
     tilematrix: Annotated[str, fastapi.Path(..., description="Tile matrix")],
     tilerow: Annotated[str, fastapi.Path(..., description="Tile row")],
@@ -796,7 +806,11 @@ async def get_wmts_feature_info(
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
     host: Annotated[str, fastapi.Depends(get_host_name)],
 ) -> Response:
-    """Get the WMTS Feature Info."""
+    """
+    Get the WMTS Feature Info.
+
+    This is a proxy to a WMS GetFeatureInfo.
+    """
 
     if layer in server.get_layers(config):
         layer_obj = cast(
@@ -822,12 +836,12 @@ async def get_wmts_feature_info(
     }
 
     for index, dimension in enumerate(layer_obj.get("dimensions", {})):
-        params[dimension["name"].upper()] = dimensions_params[index]
+        params[dimension["name"].upper()] = dimensions_parameters[index]
 
     return await server.serve(params, config, host)
 
 
-@app.get("/")
+@router.get("/", summary="KVP interface.")
 async def get_kvp(
     fastapi_request: Request,
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
@@ -845,7 +859,7 @@ async def get_kvp(
     i: Annotated[str | None, Query(..., description="Pixel I coordinate")] = None,
     j: Annotated[str | None, Query(..., description="Pixel J coordinate")] = None,
 ) -> Response:
-    """Get the KVP."""
+    """Get the tiles using the KVP (Key-Value Parameters) interface."""
 
     del (
         layer,

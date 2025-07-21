@@ -149,8 +149,7 @@ class JobResponse(BaseModel):
     error: str = ""
 
 
-@app.get("/admin", response_class=HTMLResponse)
-@app.get("/admin/", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse)
 async def admin_index(
     request: Request,
     config: Annotated[tilecloud_chain.DatedConfig, Depends(server.get_host_config)],
@@ -183,7 +182,7 @@ async def admin_index(
     return _templates.TemplateResponse("admin_index.html", context)
 
 
-@app.post("/admin/run")
+@app.post("/run")
 async def admin_run(
     request: Request,
     command: Annotated[str, Form(...)],
@@ -290,7 +289,7 @@ async def admin_run(
     return CommandResponse(out=out, error=process.returncode != 0)
 
 
-@app.post("/admin/create_job")
+@app.post("/create_job")
 async def admin_create_job(
     request: Request,
     name: Annotated[str, Form(...)],
@@ -316,7 +315,7 @@ async def admin_create_job(
         raise HTTPException(status_code=400, detail=str(e))  # noqa: B904 # pylint: disable=raise-missing-from
 
 
-@app.post("/admin/cancel_job")
+@app.post("/cancel_job")
 async def admin_cancel_job(
     request: Request,
     job_id: Annotated[int, Form(...)],
@@ -341,7 +340,7 @@ async def admin_cancel_job(
         raise HTTPException(status_code=400, detail=str(e))  # noqa: B904 # pylint: disable=raise-missing-from
 
 
-@app.post("/admin/retry_job")
+@app.post("/retry_job")
 async def admin_retry_job(
     request: Request,
     job_id: Annotated[int, Form(...)],
@@ -366,7 +365,7 @@ async def admin_retry_job(
         raise HTTPException(status_code=400, detail=str(e))  # noqa: B904 # pylint: disable=raise-missing-from
 
 
-@app.get("/admin/test", response_class=HTMLResponse)
+@app.get("/test", response_class=HTMLResponse)
 async def admin_test(
     request: Request,
     gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
