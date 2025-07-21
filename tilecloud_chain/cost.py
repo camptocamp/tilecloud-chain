@@ -84,13 +84,17 @@ async def _async_main() -> None:
         )
         print(f"S3 Storage: {s3_cost:0.2f} [$/month]")
         s3_get_cost = (await gene.get_main_config()).config["cost"]["s3"].get(
-            "get", configuration.S3_GET_DEFAULT,
+            "get",
+            configuration.S3_GET_DEFAULT,
         ) * config.config["cost"].get(
-            "request_per_layers", configuration.REQUEST_PER_LAYERS_DEFAULT,
+            "request_per_layers",
+            configuration.REQUEST_PER_LAYERS_DEFAULT,
         ) / 10000.0 + await gene.get_main_config().config["cost"]["s3"].get(
-            "download", configuration.S3_DOWNLOAD_DEFAULT,
+            "download",
+            configuration.S3_DOWNLOAD_DEFAULT,
         ) * config.config["cost"].get(
-            "request_per_layers", configuration.REQUEST_PER_LAYERS_DEFAULT,
+            "request_per_layers",
+            configuration.REQUEST_PER_LAYERS_DEFAULT,
         ) * tile_size
         print(f"S3 get: {s3_get_cost:0.2f} [$/month]")
         #    if 'cloudfront' in gene.config['cost']:
