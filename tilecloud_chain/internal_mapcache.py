@@ -286,7 +286,7 @@ async def fetch(
                 metadata=tile.metadata,
             )
 
-        async with await generator.lock(meta_tile):
+        async with generator.lock(meta_tile):
             fetched_tile = await generator.read_from_cache(tile)
             if fetched_tile is None:
                 backend = "wms-generate"
