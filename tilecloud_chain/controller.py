@@ -83,7 +83,7 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         gene = TileGeneration(options.config, options, out=out)
         await gene.ainit(layer_name=options.layer)
         assert gene.config_file
-        config = gene.get_config(gene.config_file)
+        config = await gene.get_config(gene.config_file)
 
         if options.status:
             await status(gene)
@@ -220,7 +220,7 @@ async def get_wmts_capabilities(
     start = time.perf_counter()
     if config is None:
         assert gene.config_file
-        config = gene.get_config(gene.config_file)
+        config = await gene.get_config(gene.config_file)
 
     cache = config.config["caches"][cache_name]
     if _validate_generate_wmts_capabilities(cache, cache_name, exit_):
@@ -290,7 +290,7 @@ async def _fill_legend(
 ) -> None:
     if config is None:
         assert gene.config_file
-        config = gene.get_config(gene.config_file)
+        config = await gene.get_config(gene.config_file)
 
     for layer_name, layer in config.config.get("layers", {}).items():
         if layer_name not in gene.layer_legends:
@@ -430,7 +430,7 @@ def _get_legend_image(
 
 async def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) -> None:
     assert gene.config_file
-    config = gene.get_config(gene.config_file)
+    config = await gene.get_config(gene.config_file)
     cache = config.config["caches"][gene.options.cache]
 
     for layer_name, layer in config.config.get("layers", {}).items():

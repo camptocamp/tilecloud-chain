@@ -117,13 +117,13 @@ class Generate:
             await self._gene.create_log_tiles_error(layer_name)
 
         if self._options.role != "slave" or self._options.tiles:
-            self._generate_queue(layer_name)
+            await self._generate_queue(layer_name)
 
         if os.environ.get("TILECLOUD_CHAIN_OBJGRAPH_GENE", "0").lower() in ("1", "true", "on"):
             self._gene.imap(_objgraph)
 
         await self.generate_consume()
-        self.generate_resume(layer_name)
+        await self.generate_resume(layer_name)
 
     async def _generate_init(self) -> None:
         if self._options.role != "server":
@@ -173,14 +173,14 @@ class Generate:
             ),
         )
 
-    def _generate_queue(self, layer_name: str | None) -> None:
+    async def _generate_queue(self, layer_name: str | None) -> None:
         if self._options.tiles:
             self._gene.set_store(TilesFileStore(self._options.tiles))
             return
 
         assert layer_name is not None
         assert self._gene.config_file is not None
-        config = self._gene.get_config(self._gene.config_file)
+        config = await self._gene.get_config(self._gene.config_file)
         if layer_name not in config.config.get("layers", {}):
             _LOGGER.warning(
                 "Layer '%s' not found in the configuration file '%s'",
@@ -301,7 +301,7 @@ class Generate:
         if self._count_tiles is not None:
             self._gene.imap(self._count_tiles)
 
-        self._gene.process(key="pre_hash_post_process")
+        await self._gene.process(key="pre_hash_post_process")
 
         if self._options.role == "hash":
             self._gene.imap(HashLogger("empty_tile_detection", self.out))
@@ -310,7 +310,7 @@ class Generate:
             self._gene.imap(MultiAction(HashDropperGetter(self, meta=False, count=self._count_tiles_dropped)))
 
         if self._options.role != "server":
-            self._gene.process()
+            await self._gene.process()
 
         if self._options.role in ("local", "slave"):
             self._count_tiles_stored = self._gene.counter_size()
@@ -383,9 +383,13 @@ class Generate:
         else:
             await self._gene.consume()
 
-    def generate_resume(self, layer_name: str | None) -> None:
+    async def generate_resume(self, layer_name: str | None) -> None:
         """Generate the resume message and close the tilestore connection."""
-        config = self._gene.get_config(self._gene.config_file) if self._gene.config_file is not None else None
+        config = (
+            await self._gene.get_config(self._gene.config_file)
+            if self._gene.config_file is not None
+            else None
+        )
         if self._options.time is None:
             layer = None
             if layer_name is not None:
@@ -494,7 +498,7 @@ class TilestoreGetter:
         grid_name: str | None,
     ) -> AsyncTileStore | None:
         """Get the tilestore based on the layername config file any layer type."""
-        config = self.gene._gene.get_config(config_file)  # noqa: SLF001
+        config = await self.gene._gene.get_config(config_file)  # noqa: SLF001
         if layer_name not in config.config.get("layers", {}):
             _LOGGER.warning("Layer '%s' not found in the configuration file '%s'", layer_name, config_file)
             return None
@@ -530,7 +534,6 @@ class TilestoreGetter:
                 ),
                 headers=layer["headers"],
             )
-            await url_tile_store.init()
             return TimedTileStoreWrapper(url_tile_store, "wms")
         if layer["type"] == "mapnik":
             try:
@@ -696,7 +699,7 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
             sys.exit(1)
 
         if options.config:
-            config = gene.get_config(options.config)
+            config = await gene.get_config(options.config)
 
             if options.cache is None and options.config:
                 options.cache = config.config["generation"].get(
@@ -752,13 +755,13 @@ class HashDropperGetter:
         self.meta = meta
         self.count = count
 
-    def __call__(self, config_file: Path, layer_name: str) -> Callable[[Tile], Awaitable[Tile | None]]:
+    async def __call__(self, config_file: Path, layer_name: str) -> Callable[[Tile], Awaitable[Tile | None]]:
         """Call."""
 
         async def _no_op(tile: Tile) -> Tile:
             return tile
 
-        config = self.gene._gene.get_config(config_file)  # noqa: SLF001
+        config = await self.gene._gene.get_config(config_file)  # noqa: SLF001
         if layer_name not in config.config.get("layers", {}):
             _LOGGER.warning("Layer '%s' not found in the configuration file '%s'", layer_name, config_file)
             return _no_op

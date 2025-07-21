@@ -33,7 +33,7 @@ import mimetypes
 import os
 import time
 from pathlib import Path
-from typing import Annotated, Any, ClassVar, NamedTuple, cast
+from typing import Annotated, Any, NamedTuple, cast
 from urllib.parse import urlencode
 
 import aiofiles
@@ -44,7 +44,7 @@ import html_sanitizer
 import tilecloud.store.s3
 from azure.core.exceptions import ResourceNotFoundError
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import Response as FastAPIResponse
+from fastapi.responses import Response
 from prometheus_client import Summary
 from tilecloud import Tile, TileCoord
 
@@ -137,17 +137,17 @@ class DatedFilter:
         self.mtime = mtime
 
 
-class FastAPIServer:
+class Server:
     """The FastAPI implementation of the WMTS server."""
 
     wmts_path: str = ""
-    static_path: ClassVar[list[str]] = []
 
     def __init__(self) -> None:
         """Initialize."""
         self.filter_cache: dict[Path, dict[str, DatedFilter]] = {}
         self.s3_client_cache: dict[str, botocore.client.S3] = {}  # pylint: disable=no-member
         self.store_cache: dict[Path, dict[str, DatedStore]] = {}
+        self.static_path: list[str] = []
 
     async def init(self) -> None:
         """Initialize the server."""
@@ -155,12 +155,12 @@ class FastAPIServer:
             assert _TILEGENERATION
 
             self.wmts_path = (
-                await _TILEGENERATION.get_main_config()
+                (await _TILEGENERATION.get_main_config())
                 .config["server"]
                 .get("wmts_path", configuration.WMTS_PATH_DEFAULT)
             )
             self.static_path = (
-                await _TILEGENERATION.get_main_config()
+                (await _TILEGENERATION.get_main_config())
                 .config["server"]
                 .get("static_path", configuration.STATIC_PATH_DEFAULT)
                 .split("/")
@@ -286,7 +286,7 @@ class FastAPIServer:
         key_name: str,
         headers: dict[str, str],
         config: tilecloud_chain.DatedConfig,
-    ) -> FastAPIResponse:
+    ) -> Response:
         cache = self.get_cache(config)
         try:
             cache_s3 = cast("tilecloud_chain.configuration.CacheS3", cache)
@@ -295,7 +295,7 @@ class FastAPIServer:
             body = response["Body"]
             try:
                 headers["Content-Type"] = response.get("ContentType")
-                return FastAPIResponse(content=body.read(), headers=headers)
+                return Response(content=body.read(), headers=headers)
             finally:
                 body.close()
         except botocore.exceptions.ClientError as ex:
@@ -309,7 +309,7 @@ class FastAPIServer:
         headers: dict[str, str],
         config: tilecloud_chain.DatedConfig,
         **kwargs: Any,
-    ) -> FastAPIResponse:
+    ) -> Response:
         """Get capabilities or other static files."""
         assert _TILEGENERATION
         cache = self.get_cache(config)
@@ -334,7 +334,7 @@ class FastAPIServer:
                     )
                 properties = await blob.get_blob_properties()
                 data = await (await blob.download_blob()).readall()
-                return FastAPIResponse(
+                return Response(
                     content=data,
                     headers={
                         "Content-Encoding": cast("str", properties.content_settings.content_encoding),
@@ -356,9 +356,9 @@ class FastAPIServer:
             content_type = mimetypes.guess_type(p)[0]
             if content_type:
                 headers["Content-Type"] = content_type
-            return FastAPIResponse(content=data, headers=headers)
+            return Response(content=data, headers=headers)
 
-    async def serve(self, params: dict[str, str], config: tilecloud_chain.DatedConfig) -> FastAPIResponse:
+    async def serve(self, params: dict[str, str], config: tilecloud_chain.DatedConfig, host: str) -> Response:
         """Async serve method for FastAPI."""
         if not config or not config.config:
             raise HTTPException(
@@ -398,7 +398,7 @@ class FastAPIServer:
                 )
                 assert body
                 headers["Content-Type"] = "application/xml"
-                return FastAPIResponse(content=body.encode("utf-8"), headers=headers)
+                return Response(content=body.encode("utf-8"), headers=headers)
 
             if (
                 "FORMAT" not in params
@@ -498,7 +498,7 @@ class FastAPIServer:
             if params["FORMAT"] != layer["mime_type"]:
                 raise HTTPException(status_code=400, detail=f"Wrong Format '{params['FORMAT']}'")  # noqa: TRY301
 
-            return await self._get_tile(config, layer, tile, params)
+            return await self._get_tile(config, layer, tile, params, host)
 
         except HTTPException:
             raise
@@ -512,10 +512,10 @@ class FastAPIServer:
         layer: tilecloud_chain.configuration.Layer,
         tile: Tile,
         params: dict[str, str],
-        **kwargs: Any,
-    ) -> FastAPIResponse:
+        host: str,
+    ) -> Response:
         if tile.tilecoord.z > self.get_max_zoom_seed(config, params["LAYER"], params["TILEMATRIXSET"]):
-            return await self._map_cache(config, layer, tile, kwargs)
+            return await self._map_cache(config, layer, tile)
 
         layer_filter = self.get_filter(config, params["LAYER"])
         if layer_filter:
@@ -536,9 +536,9 @@ class FastAPIServer:
                 meta_tilecoord,
                 params["LAYER"],
                 params["TILEMATRIXSET"],
-                host=self.get_host(**kwargs),
+                host=host,
             ):
-                return await self._map_cache(config, layer, tile, kwargs)
+                return await self._map_cache(config, layer, tile)
 
         store = self.get_store(config, params["LAYER"], params["TILEMATRIXSET"])
         if store is None:
@@ -546,7 +546,6 @@ class FastAPIServer:
                 config,
                 400,
                 f"No store found for layer '{params['LAYER']}'",
-                **kwargs,
             )
 
         cache = self.get_cache(config)
@@ -555,10 +554,10 @@ class FastAPIServer:
 
         if tile2 and tile2.data is not None:
             if tile2.error:
-                return self.error(config, 500, tile2.error, **kwargs)
+                return self.error(config, 500, tile2.error)
 
             assert tile2.content_type
-            return FastAPIResponse(
+            return Response(
                 content=tile2.data,
                 headers={
                     "Content-Type": tile2.content_type,
@@ -572,18 +571,17 @@ class FastAPIServer:
                     "Tile-Backend": "Cache",
                 },
             )
-        return self.error(config, 204, **kwargs)
+        return self.error(config, 204)
 
     async def _map_cache(
         self,
         config: tilecloud_chain.DatedConfig,
         layer: tilecloud_chain.configuration.Layer,
         tile: Tile,
-        kwargs: dict[str, Any],
-    ) -> FastAPIResponse:
+    ) -> Response:
         """Get the tile on a cache of tile."""
         assert _TILEGENERATION
-        return await internal_mapcache.fetch(config, self, _TILEGENERATION, layer, tile, kwargs)
+        return await internal_mapcache.fetch(config, self, _TILEGENERATION, layer, tile)
 
     async def forward(
         self,
@@ -592,7 +590,7 @@ class FastAPIServer:
         headers: Any | None = None,
         no_cache: bool = False,
         **kwargs: Any,
-    ) -> FastAPIResponse:
+    ) -> Response:
         """Forward the request on a fallback WMS server."""
         if headers is None:
             headers = {}
@@ -615,8 +613,12 @@ class FastAPIServer:
                     response_headers["Access-Control-Allow-Origin"] = "*"
                     response_headers["Access-Control-Allow-Methods"] = "GET"
                 content = await response.read()
-                return FastAPIResponse(content=content, headers=response_headers)
-            safe_reason = html.escape(response.reason).replace("\n", " ").replace("\r", " ")[:100]
+                return Response(content=content, headers=response_headers)
+            safe_reason = (
+                html.escape(response.reason).replace("\n", " ").replace("\r", " ")[:100]
+                if response.reason
+                else ""
+            )
             safe_content = (
                 html.escape(_SANITIZER.sanitize(await response.text()))
                 .replace("\n", " ")
@@ -633,7 +635,7 @@ class FastAPIServer:
         config: tilecloud_chain.DatedConfig,
         code: int,
         message: Exception | str | None = "",
-    ) -> FastAPIResponse:
+    ) -> Response:
         """Build the FastAPI error response."""
         headers = {
             "Access-Control-Allow-Origin": "*",
@@ -652,7 +654,7 @@ class FastAPIServer:
         raise HTTPException(status_code=code, detail=str(message) if message else "", headers=headers)
 
 
-server = FastAPIServer()
+server = Server()
 app = FastAPI(title="TileCloud-chain WMTS API")
 
 
@@ -671,18 +673,51 @@ async def get_host_config(fastapi_request: Request) -> tilecloud_chain.DatedConf
         raise HTTPException(status_code=500, detail="TileGeneration not initialized")
 
     host = fastapi_request.client.host if fastapi_request.client else "localhost"
-    config = _TILEGENERATION.get_host_config(host)
+    config = await _TILEGENERATION.get_host_config(host)
     if not config:
         raise HTTPException(status_code=404, detail=f"No configuration found for host '{host}'")
 
     return config
 
 
+def get_host_name(request: Request) -> str:
+    """Get the host name from the request."""
+    # Get the Host header
+    host = request.headers.get("Host")
+
+    # Get the X-Forwarded-Host header
+    x_forwarded_host = request.headers.get("X-Forwarded-Host")
+
+    # Get the Forwarded header
+    forwarded = request.headers.get("Forwarded")
+
+    # Determine the host name
+    if forwarded:
+        # Parse the Forwarded header to get the host
+        # The Forwarded header can have multiple pieces of information
+        # Example: Forwarded: host=example.com;proto=https
+        forwarded_parts = forwarded.split(";")
+        for part in forwarded_parts:
+            if part.strip().startswith("host="):
+                host_name: str | None = part.strip().split("=")[1]
+                break
+    elif x_forwarded_host:
+        host_name = x_forwarded_host.split(",")[0]  # In case of multiple values
+    else:
+        host_name = host
+
+    if not host_name:
+        raise HTTPException(status_code=400, detail="Host name not found in request headers")
+
+    return host_name
+
+
 @app.get("/{version}/wmtscapabilities.xml")
 async def get_wmts_capabilities(
     version: Annotated[str, fastapi.Path(..., description="WMTS version")],
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
-) -> FastAPIResponse:
+    host: Annotated[str, fastapi.Depends(get_host_name)],
+) -> Response:
     """Get the WMTS capabilities."""
     assert _TILEGENERATION
 
@@ -692,7 +727,7 @@ async def get_wmts_capabilities(
         "REQUEST": "GetCapabilities",
     }
 
-    return await server.serve(params, config)
+    return await server.serve(params, config, host)
 
 
 @app.get(
@@ -709,13 +744,14 @@ async def get_wmts_tile(
     tilecol: Annotated[str, fastapi.Path(..., description="Tile column")],
     extension: Annotated[str, fastapi.Path(..., description="File extension")],
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
-) -> FastAPIResponse:
+    host: Annotated[str, fastapi.Depends(get_host_name)],
+) -> Response:
     """Get the WMTS."""
 
     del extension  # Needed for FastAPI documentation
 
     if layer in server.get_layers(config):
-        layer = cast(
+        layer_obj = cast(
             "tilecloud_chain.configuration.LayerWms",
             config.config["layers"][layer],
         )
@@ -734,12 +770,12 @@ async def get_wmts_tile(
         "TILECOL": tilecol,
     }
 
-    for index, dimension in enumerate(layer.get("dimensions", {})):
+    for index, dimension in enumerate(layer_obj.get("dimensions", {})):
         params[dimension["name"].upper()] = dimensions_params[index]
 
-    params["FORMAT"] = layer["mime_type"]
+    params["FORMAT"] = layer_obj["mime_type"]
 
-    return await server.serve(params, config)
+    return await server.serve(params, config, host)
 
 
 @app.get(
@@ -757,11 +793,12 @@ async def get_wmts_feature_info(
     i: Annotated[str, fastapi.Path(..., description="Pixel I coordinate")],
     j: Annotated[str, fastapi.Path(..., description="Pixel J coordinate")],
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
-) -> FastAPIResponse:
+    host: Annotated[str, fastapi.Depends(get_host_name)],
+) -> Response:
     """Get the WMTS Feature Info."""
 
     if layer in server.get_layers(config):
-        layer = cast(
+        layer_obj = cast(
             "tilecloud_chain.configuration.LayerWms",
             config.config["layers"][layer],
         )
@@ -780,19 +817,20 @@ async def get_wmts_feature_info(
         "TILECOL": tilecol,
         "I": i,
         "J": j,
-        "INFO_FORMAT": layer.get("info_formats", ["application/vnd.ogc.gml"])[0],
+        "INFO_FORMAT": layer_obj.get("info_formats", ["application/vnd.ogc.gml"])[0],
     }
 
-    for index, dimension in enumerate(layer.get("dimensions", {})):
+    for index, dimension in enumerate(layer_obj.get("dimensions", {})):
         params[dimension["name"].upper()] = dimensions_params[index]
 
-    return await server.serve(params, config)
+    return await server.serve(params, config, host)
 
 
 @app.get("/")
 async def get_kvp(
     fastapi_request: Request,
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
+    host: Annotated[str, fastapi.Depends(get_host_name)],
     service: Annotated[str, Query(..., description="Service name")],
     version: Annotated[str, Query(..., description="WMTS version")],
     request: Annotated[str, Query(..., description="Request type")],
@@ -805,7 +843,7 @@ async def get_kvp(
     tilecol: Annotated[str | None, Query(..., description="Tile column")] = None,
     i: Annotated[str | None, Query(..., description="Pixel I coordinate")] = None,
     j: Annotated[str | None, Query(..., description="Pixel J coordinate")] = None,
-) -> FastAPIResponse:
+) -> Response:
     """Get the KVP."""
 
     del (
@@ -823,4 +861,4 @@ async def get_kvp(
     if not service or not version or not request:
         raise HTTPException(status_code=400, detail="Not all required parameters are present")
 
-    return await server.serve(fastapi_request.params, config)
+    return await server.serve(dict(fastapi_request.query_params), config, host)

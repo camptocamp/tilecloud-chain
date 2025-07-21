@@ -45,7 +45,7 @@ async def _async_main() -> None:
             multi_task=False,
         )
         await gene.ainit(layer_name=options.layer)
-        config = gene.get_config(options.config)
+        config = await gene.get_config(options.config)
 
         all_size: float = 0
         tile_size: float = 0
@@ -57,7 +57,7 @@ async def _async_main() -> None:
         else:
             all_time = timedelta()
             all_price = 0
-            for layer_name in gene.get_config(options.config).config["generation"]["default_layers"]:
+            for layer_name in (await gene.get_config(options.config)).config["generation"]["default_layers"]:
                 print()
                 print(f"===== {layer_name} =====")
                 layer = config.config["layers"][layer_name]
@@ -77,7 +77,7 @@ async def _async_main() -> None:
         print()
         s3_cost = (
             all_size
-            * await gene.get_main_config()
+            * (await gene.get_main_config())
             .config["cost"]["s3"]
             .get("storage", configuration.S3_STORAGE_DEFAULT)
             / (1024.0 * 1024 * 1024)
@@ -89,7 +89,7 @@ async def _async_main() -> None:
         ) * config.config["cost"].get(
             "request_per_layers",
             configuration.REQUEST_PER_LAYERS_DEFAULT,
-        ) / 10000.0 + await gene.get_main_config().config["cost"]["s3"].get(
+        ) / 10000.0 + (await gene.get_main_config()).config["cost"]["s3"].get(
             "download",
             configuration.S3_DOWNLOAD_DEFAULT,
         ) * config.config["cost"].get(
@@ -117,7 +117,7 @@ async def _calculate_cost(
 ) -> tuple[float, timedelta, float, int]:
     nb_metatiles = {}
     nb_tiles = {}
-    config = gene.get_config(options.config)
+    config = await gene.get_config(options.config)
     layer = config.config["layers"][layer_name]
 
     meta = layer["meta"]
@@ -237,18 +237,18 @@ async def _calculate_cost(
         td = timedelta(milliseconds=time)
         print(f"Time to generate: {duration_format(td)} [d h:mm:ss]")
         c = (
-            await gene.get_main_config().config["cost"]["s3"].get("put", configuration.S3_PUT_DEFAULT)
+            (await gene.get_main_config()).config["cost"]["s3"].get("put", configuration.S3_PUT_DEFAULT)
             * nb_tile
             / 1000.0
         )
         price += c
         print(f"S3 PUT: {c:0.2f} [$]")
 
-        if "sqs" in await gene.get_main_config().config:
+        if "sqs" in (await gene.get_main_config()).config:
             nb_sqs = nb_metatiles[z] * 3 if meta else nb_tile * 3
             c = (
                 nb_sqs
-                * await gene.get_main_config()
+                * (await gene.get_main_config())
                 .config["cost"]["sqs"]
                 .get("request", configuration.REQUEST_DEFAULT)
                 / 1000000.0

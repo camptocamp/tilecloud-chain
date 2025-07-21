@@ -26,7 +26,7 @@ from math import ceil, sqrt
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, TextIO, TypedDict, cast
 
-import aiofiles.base
+import aiofiles.threadpool.text
 import boto3
 import c2cwsgiutils.pyramid_logging
 import c2cwsgiutils.setup_process
@@ -268,7 +268,7 @@ class Run:
         daemon = self.gene.options is not None and getattr(self.gene.options, "daemon", False)
         self.max_consecutive_errors = (
             MaximumConsecutiveErrors(
-                await self.gene.get_main_config()
+                (await self.gene.get_main_config())
                 .config["generation"]
                 .get(
                     "maxconsecutive_errors",
@@ -614,7 +614,7 @@ class TileGeneration:
         self._close_actions: list[Close] = []
         self.error_lock = asyncio.Lock()
         self.tilestream_lock = asyncio.Lock()
-        self.error_files_: dict[str, aiofiles.base.AiofilesContextManager] = {}
+        self.error_files_: dict[str, aiofiles.threadpool.text.AsyncTextIOWrapper] = {}
         self.functions_tiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
         self.functions_metatiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
         self.functions: list[Callable[[Tile], Awaitable[Tile | None]]] = self.functions_metatiles
@@ -717,7 +717,7 @@ class TileGeneration:
         layer_name: str | None = None,
     ) -> None:
         """Initialize the tile generation."""
-        assert "generation" in await self.get_main_config().config, await self.get_main_config().config
+        assert "generation" in (await self.get_main_config()).config, (await self.get_main_config()).config
 
         error = False
         if self.options is not None and self.options.zoom is not None:
@@ -1211,7 +1211,7 @@ class TileGeneration:
         self.imap(meta_get)
         self.functions = self.functions_tiles
 
-    async def create_log_tiles_error(self, layer: str) -> aiofiles.base.AiofilesContextManager | None:
+    async def create_log_tiles_error(self, layer: str) -> aiofiles.threadpool.text.AsyncTextIOWrapper | None:
         """Create the error file for the given layer."""
         main_config = await self.get_main_config()
         if "error_file" in main_config.config.get("generation", {}):
@@ -1234,7 +1234,10 @@ class TileGeneration:
         for file_ in self.error_files_.values():
             await file_.close()
 
-    async def get_log_tiles_error_file(self, layer: str) -> aiofiles.base.AiofilesContextManager | None:
+    async def get_log_tiles_error_file(
+        self,
+        layer: str,
+    ) -> aiofiles.threadpool.text.AsyncTextIOWrapper | None:
         """Get the error file for the given layer."""
         return (
             self.error_files_[layer]
@@ -1579,7 +1582,7 @@ class TileGeneration:
         self.imap(count)
         return count
 
-    def process(self, name: str | None = None, key: str = "post_process") -> None:
+    async def process(self, name: str | None = None, key: str = "post_process") -> None:
         """Add a process to the tilestream."""
         gene = self
 
@@ -1820,12 +1823,16 @@ class MultiAction:
 
     def __init__(
         self,
-        get_action: Callable[[Path, str], Callable[[Tile], Awaitable[Tile | None]] | None],
+        get_action: Callable[[Path, str], Awaitable[Callable[[Tile], Awaitable[Tile | None]] | None]],
     ) -> None:
         self.get_action = get_action
         self.actions: dict[tuple[Path, str], _DatedAction] = {}
 
-    def _get_action(self, config_file: Path, layer: str) -> Callable[[Tile], Awaitable[Tile | None]] | None:
+    async def _get_action(
+        self,
+        config_file: Path,
+        layer: str,
+    ) -> Callable[[Tile], Awaitable[Tile | None]] | None:
         """Get the action based on the tile's layer name."""
         if not config_file.exists():
             _LOGGER.warning("Config file %s does not exist", config_file)
@@ -1835,7 +1842,7 @@ class MultiAction:
         if action is not None and action.mtime != mtime:
             action = None
         if action is None:
-            action_item = self.get_action(config_file, layer)
+            action_item = await self.get_action(config_file, layer)
             if action_item is not None:
                 action = _DatedAction(mtime, action_item)
                 self.actions[(config_file, layer)] = action
@@ -1845,7 +1852,7 @@ class MultiAction:
         """Run the action."""
         layer = tile.metadata["layer"]
         config_file = Path(tile.metadata["config_file"])
-        action = self._get_action(config_file, layer)
+        action = await self._get_action(config_file, layer)
         if action:
             _LOGGER.debug("[%s] Run action %s.", tile.tilecoord, action)
             return await action(tile)
@@ -1963,7 +1970,7 @@ class IntersectGeometryFilter:
         return (
             tile
             if self.filter_tilecoord(
-                self.gene.get_tile_config(tile),
+                await self.gene.get_tile_config(tile),
                 tile.tilecoord,
                 tile.metadata["layer"],
                 tile.metadata["grid"],

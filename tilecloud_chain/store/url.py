@@ -25,7 +25,7 @@ class _DatedConfig:
 
     def __init__(self) -> None:
         self.config: host_limit.HostLimit = {}
-        self.mtime = 0
+        self.mtime = 0.0
 
 
 class URLTileStore(AsyncTileStore):

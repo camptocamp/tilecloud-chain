@@ -9,10 +9,11 @@ import struct
 import sys
 import threading
 from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING, Any, NamedTuple, TypeVar, cast
+from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
 import redis.asyncio as aioredis
 import yaml
+from fastapi import Response
 from prometheus_client import Summary
 from tilecloud import Tile, TileCoord
 
@@ -75,7 +76,7 @@ class RedisStore(AsyncTileStore):
             connection_kwargs["db"] = int(db)
         url = os.environ.get("TILECLOUD_CHAIN_REDIS_URL", cast("str", config.get("url")))
         if url is not None:
-            self._master = aioredis.Redis.from_url(url, **connection_kwargs)  # type: ignore[call-overload]
+            self._master = aioredis.Redis.from_url(url, **connection_kwargs)
             self._slave = self._master
         else:
             sentinels: list[tuple[str, str | int]] = []
@@ -89,7 +90,7 @@ class RedisStore(AsyncTileStore):
                 sentinels = config["sentinels"]
 
             sentinels = [(host, int(port)) for host, port in sentinels]
-            sentinel = aioredis.Sentinel(sentinels, **connection_kwargs)  # type: ignore[arg-type]
+            sentinel = aioredis.Sentinel(sentinels, **connection_kwargs)
             service_name = os.environ.get(
                 "TILECLOUD_CHAIN_REDIS_SERVICE_NAME",
                 config.get("service_name", tilecloud_chain.configuration.SERVICE_NAME_DEFAULT),
@@ -163,7 +164,7 @@ class Generator:
 
     async def init(self) -> None:
         """Initialize the generator."""
-        redis_config = await self._tilegeneration.get_main_config().config.get("redis", {})
+        redis_config = (await self._tilegeneration.get_main_config()).config.get("redis", {})
         self._cache_store = RedisStore(redis_config)
 
         log_level = os.environ.get("TILE_MAPCACHE_LOGLEVEL")
@@ -203,6 +204,7 @@ class Generator:
 
     async def read_from_cache(self, tile: Tile) -> Tile | None:
         """Get the tile from the cache (Redis)."""
+        assert self._cache_store is not None
         with _GET_TILE.labels("redis").time():
             return await self._cache_store.get_one(tile)
 
@@ -233,12 +235,14 @@ class Generator:
                 success = False
             else:
                 _LOG.debug("Tile %s %s generated", tile_.tilecoord, tile_.formated_metadata)
+                assert self._cache_store is not None
                 await self._cache_store.put_one(tile_)
         return success
 
     @contextlib.asynccontextmanager
     async def lock(self, tile: Tile) -> AsyncIterator[None]:
         """Lock the tile."""
+        assert self._cache_store is not None
         async with self._cache_store.lock(tile):
             yield
 
@@ -258,16 +262,12 @@ async def _init_generator(tilegeneration: tilecloud_chain.TileGeneration) -> Gen
         return _GENERATOR
 
 
-Response = TypeVar("Response")
-
-
 async def fetch(
     config: tilecloud_chain.DatedConfig,
-    server: "Server[Response]",
+    server: "Server",
     tilegeneration: tilecloud_chain.TileGeneration,
     layer: tilecloud_chain.configuration.Layer,
     tile: Tile,
-    kwargs: dict[str, Any],
 ) -> Response:
     """Fetch a time in the cache (redis) or get it on the WMS server."""
     generator = await _get_generator(tilegeneration)
@@ -331,4 +331,8 @@ async def fetch(
     if fetched_tile.content_type:
         response_headers["Content-Type"] = fetched_tile.content_type
     assert fetched_tile.data is not None
-    return server.response(config, fetched_tile.data, headers=response_headers, **kwargs)
+    return Response(
+        content=fetched_tile.data,
+        media_type=fetched_tile.content_type,
+        headers=response_headers,
+    )

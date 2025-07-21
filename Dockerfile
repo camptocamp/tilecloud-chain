@@ -112,6 +112,10 @@ RUN --mount=type=cache,target=/root/.cache \
     && mv docker/run /usr/bin/ \
     && python3 -m compileall -q /app/tilecloud_chain
 
+CMD ["uvicorn", "tilecloud_chain.main:app", "--host=0.0.0.0", "--port=8080", "--log-config=/app/logging.yaml"]
+
+EXPOSE 8080
+
 # Do the lint, used by the tests
 FROM base AS tests
 
