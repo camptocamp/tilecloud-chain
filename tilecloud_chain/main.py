@@ -29,6 +29,7 @@ import os
 import resource
 from collections.abc import AsyncGenerator, Generator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import c2casgiutils
 import c2cwsgiutils.prometheus
@@ -43,6 +44,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.staticfiles import StaticFiles
 from prometheus_client import start_http_server
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
@@ -115,6 +117,7 @@ health_checks.FACTORY.add(health_checks.Redis(tags=["redis", "all"]))
 # Mount the most specific routes first to ensure correct routing precedence.
 app.mount("/c2c", c2casgiutils.app)  # C2C utility routes
 app.mount("/admin", admin.app)  # Admin routes
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 app.include_router(server.router, tags=["wmts"])  # WMTS routes
 
 # Get Prometheus HTTP server port from environment variable 9000 by default

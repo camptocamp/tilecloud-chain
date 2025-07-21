@@ -39,8 +39,7 @@ from urllib.parse import urljoin
 
 import pyproj
 from c2casgiutils import auth
-from c2cwsgiutils.auth import AuthenticationType
-from fastapi import Depends, FastAPI, Form, HTTPException, Request
+from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -154,7 +153,10 @@ async def admin_index(
     request: Request,
     config: Annotated[tilecloud_chain.DatedConfig, Depends(server.get_host_config)],
     gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
+    auth_info: Annotated[auth.AuthInfo, Depends(auth.get_auth)],
     has_access: Annotated[bool, Depends(_get_access)],
+    auth_type: Annotated[auth.AuthenticationType, Depends(auth.auth_type)],
+    secret: Annotated[str | None, Query(..., description="Secret key for authentication")] = None,
 ) -> HTMLResponse:
     """Get the admin index page."""
     server_config = config.config.get("server", {})
@@ -163,18 +165,21 @@ async def admin_index(
     jobs_status = None
     queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
 
-    if queue_store == "postgresql" and has_access and _postgresql_store:
-        config_filename = await gene.get_host_config_file(request.headers.get("host", "localhost"))
-        if config_filename:
-            jobs_status = await _postgresql_store.get_status(config_filename)
+    if queue_store == "postgresql" and has_access and _postgresql_store and config.file:
+        jobs_status = await _postgresql_store.get_status(config.file)
 
+    assert auth_info, auth_info
     context = {
         "request": request,
         "has_access": has_access,
+        "auth_info": auth_info,
+        "auth_type": auth_type,
+        "secret": secret,
+        "current_url": str(request.url),
         "commands": server_config.get("predefined_commands", []),
         "status": await get_status(gene) if queue_store != "postgresql" else None,
         "admin_path": main_server_config.get("admin_path", "admin"),
-        "AuthenticationType": AuthenticationType,
+        "AuthenticationType": auth.AuthenticationType,
         "jobs_status": jobs_status,
         "footer": main_server_config.get("admin_footer") if has_access else None,
         "footer_classes": main_server_config.get("admin_footer_classes", ""),
