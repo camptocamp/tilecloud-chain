@@ -95,12 +95,12 @@ class URLTileStore(AsyncTileStore):
             semaphore = self._hosts_semaphore[url_split.hostname]
         else:
             limit = (
-                self._get_hosts_limit()
+                (await self._get_hosts_limit())
                 .get("hosts", {})
                 .get(url_split.hostname, {})
                 .get(
                     "concurrent",
-                    self._get_hosts_limit()
+                    (await self._get_hosts_limit())
                     .get("default", {})
                     .get(
                         "concurrent",
