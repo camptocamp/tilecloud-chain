@@ -656,9 +656,8 @@ server = FastAPIServer()
 app = FastAPI(title="TileCloud-chain WMTS API")
 
 
-async def startup(main_app: FastAPI) -> None:
+async def startup(_main_app: FastAPI) -> None:
     """Initialize the FastAPI app."""
-    del main_app  # Unused parameter
     config_file_path = os.environ.get("TILEGENERATION_CONFIGFILE")
     config_file = Path(config_file_path) if config_file_path else None
     await init_tilegeneration(config_file)
