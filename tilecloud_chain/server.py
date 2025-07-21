@@ -618,7 +618,9 @@ class FastAPIServer:
                 return FastAPIResponse(content=content, headers=response_headers)
             safe_reason = html.escape(response.reason).replace("\n", " ").replace("\r", " ")[:100]
             safe_content = (
-                html.escape(_SANITIZER.sanitize(await response.text())).replace("\n", " ").replace("\r", " ")[:1000]
+                html.escape(_SANITIZER.sanitize(await response.text()))
+                .replace("\n", " ")
+                .replace("\r", " ")[:1000]
                 if response.content_type == "text/html"
                 else html.escape(await response.text()).replace("\n", "<br>").replace("\r", "<br>")[:1000]
             )
