@@ -186,6 +186,7 @@ class TestServe(CompareCase):
                 config = DatedConfig(
                     config=yaml.safe_load(f),
                     mtime=os.path.getmtime("tilegeneration/test-nosns.yaml"),
+                    filename="tilegeneration/test-nosns.yaml",
                 )
             params = {
                 "Service": "WMTS",
@@ -721,6 +722,7 @@ class TestServe(CompareCase):
                 config = DatedConfig(
                     config=yaml.safe_load(f),
                     mtime=os.path.getmtime("tilegeneration/test-serve.yaml"),
+                    filename="tilegeneration/test-serve.yaml",
                 )
             params = {
                 "Service": "WMTS",
@@ -841,6 +843,7 @@ class TestServe(CompareCase):
                 config = DatedConfig(
                     config=yaml.safe_load(f),
                     mtime=os.path.getmtime("tilegeneration/test-bsddb.yaml"),
+                    filename="tilegeneration/test-bsddb.yaml",
                 )
             params = {
                 "Service": "WMTS",
@@ -947,6 +950,7 @@ class TestServe(CompareCase):
             config = DatedConfig(
                 config=yaml.safe_load(f),
                 mtime=os.path.getmtime("tilegeneration/test-serve.yaml"),
+                filename="tilegeneration/test-serve.yaml",
             )
         params = {
             "Service": "WMTS",
@@ -984,6 +988,7 @@ class TestServe(CompareCase):
             config = DatedConfig(
                 config=yaml.safe_load(f),
                 mtime=os.path.getmtime("tilegeneration/test-serve.yaml"),
+                filename="tilegeneration/test-serve.yaml",
             )
         params = {
             "Service": "WMTS",
@@ -1154,6 +1159,7 @@ Size per tile: 4[0-9][0-9] o
                 config = DatedConfig(
                     config=yaml.safe_load(f),
                     mtime=os.path.getmtime("tilegeneration/test-serve-wmtscapabilities.yaml"),
+                    filename="tilegeneration/test-serve-wmtscapabilities.yaml",
                 )
             params = {
                 "Service": "WMTS",
