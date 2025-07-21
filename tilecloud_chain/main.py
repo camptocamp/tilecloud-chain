@@ -117,9 +117,10 @@ async def root() -> RootResponse:
 
 
 # Add Routers
-app.mount("/admin", admin.app)
-app.mount("/c2c", c2casgiutils.app)
-app.mount("/", server.app)
+# Mount the most specific routes first to ensure correct routing precedence.
+app.mount("/admin", admin.app)  # Admin routes
+app.mount("/c2c", c2casgiutils.app)  # C2C utility routes
+app.mount("/", server.app)  # Generic server routes (should be mounted last)
 
 # Get Prometheus HTTP server port from environment variable 9000 by default
 start_http_server(config.settings.prometheus.port)
