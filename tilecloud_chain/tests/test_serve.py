@@ -7,7 +7,6 @@ from fastapi import HTTPException
 from testfixtures import LogCapture
 
 from tilecloud_chain import DatedConfig, generate, server
-from tilecloud_chain.server import app_factory
 from tilecloud_chain.tests import CompareCase
 
 _CAPABILITIES = (
@@ -1042,7 +1041,6 @@ Size per tile: 4[0-9][0-9] o
 
         server._PYRAMID_SERVER = None
         server._TILEGENERATION = None
-        serve = app_factory({}, configfile="tilegeneration/test-serve.yaml")
 
         global code, headers
         code = None
@@ -1055,7 +1053,7 @@ Size per tile: 4[0-9][0-9] o
             for key, value in p_headers:
                 headers[key] = value
 
-        result = serve(
+        result = server.serve(
             await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {
@@ -1096,7 +1094,7 @@ Size per tile: 4[0-9][0-9] o
 """,
         )
 
-        result = serve(
+        result = server.serve(
             await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {
@@ -1117,7 +1115,7 @@ Size per tile: 4[0-9][0-9] o
 """,
         )
 
-        serve(
+        server.serve(
             await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png"},
@@ -1125,7 +1123,7 @@ Size per tile: 4[0-9][0-9] o
         )
         assert code == "204 No Content"
 
-        serve(
+        server.serve(
             await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png"},
@@ -1134,7 +1132,7 @@ Size per tile: 4[0-9][0-9] o
         assert code == "200 OK"
         assert headers["Cache-Control"] == "max-age=28800"
 
-        result = serve(
+        result = server.serve(
             await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/WMTSCapabilities.xml"},
