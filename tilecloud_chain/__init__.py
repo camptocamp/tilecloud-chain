@@ -26,7 +26,7 @@ from math import ceil, sqrt
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, TextIO, TypedDict, cast
 
-import aiofiles
+import aiofiles.base
 import boto3
 import c2cwsgiutils.pyramid_logging
 import c2cwsgiutils.setup_process
@@ -614,7 +614,7 @@ class TileGeneration:
         self._close_actions: list[Close] = []
         self.error_lock = asyncio.Lock()
         self.tilestream_lock = asyncio.Lock()
-        self.error_files_: dict[str, TextIO] = {}
+        self.error_files_: dict[str, aiofiles.base.AiofilesContextManager] = {}
         self.functions_tiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
         self.functions_metatiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
         self.functions: list[Callable[[Tile], Awaitable[Tile | None]]] = self.functions_metatiles
@@ -1211,7 +1211,7 @@ class TileGeneration:
         self.imap(meta_get)
         self.functions = self.functions_tiles
 
-    async def create_log_tiles_error(self, layer: str) -> TextIO | None:
+    async def create_log_tiles_error(self, layer: str) -> aiofiles.base.AiofilesContextManager | None:
         """Create the error file for the given layer."""
         main_config = await self.get_main_config()
         if "error_file" in main_config.config.get("generation", {}):
@@ -1222,19 +1222,19 @@ class TileGeneration:
             )
             # Create parent directories if they don't exist
             error_file_path.parent.mkdir(parents=True, exist_ok=True)
-            # Use sync open since we need TextIO for compatibility with existing sync code
-            error_file = error_file_path.open("a", encoding="utf-8")  # pylint: disable=consider-using-with # noqa: ASYNC230
-            error_file.write(f"# [{time_}] Start the layer '{layer}' generation\n")
+            # Use async open for better async compatibility
+            error_file = await aiofiles.open(error_file_path, "a", encoding="utf-8")
+            await error_file.write(f"# [{time_}] Start the layer '{layer}' generation\n")
             self.error_files_[layer] = error_file
             return error_file
         return None
 
-    def close(self) -> None:
+    async def close(self) -> None:
         """Close the tile generation."""
         for file_ in self.error_files_.values():
-            file_.close()
+            await file_.close()
 
-    async def get_log_tiles_error_file(self, layer: str) -> TextIO | None:
+    async def get_log_tiles_error_file(self, layer: str) -> aiofiles.base.AiofilesContextManager | None:
         """Get the error file for the given layer."""
         return (
             self.error_files_[layer]
@@ -1261,7 +1261,7 @@ class TileGeneration:
             io = await self.get_log_tiles_error_file(tile.metadata["layer"])
             assert io is not None
             out_message = message.replace("\n", " ")
-            io.write(f"{tilecoord}# [{time_}]{out_message}\n")
+            await io.write(f"{tilecoord}# [{time_}]{out_message}\n")
 
     def get_grid(self, config: DatedConfig, grid_name: str) -> TileGrid:
         """Get the grid for the given name."""

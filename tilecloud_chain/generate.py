@@ -731,7 +731,7 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
             _LOGGER.exception("Too many errors")
             sys.exit(1)
         finally:
-            gene.close()
+            await gene.close()
     except SystemExit:
         raise
     except:  # pylint: disable=bare-except

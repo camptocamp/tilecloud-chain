@@ -20,6 +20,14 @@ from tilecloud_chain.store import AsyncTileStore
 _LOGGER = logging.getLogger(__name__)
 
 
+class _DatedConfig:
+    """Loaded config with timestamps to be able to invalidate it on configuration file change."""
+
+    def __init__(self) -> None:
+        self.config: host_limit.HostLimit = {}
+        self.mtime = 0
+
+
 class URLTileStore(AsyncTileStore):
     """A tile store that reads and writes tiles from a formatted URL."""
 
@@ -35,11 +43,11 @@ class URLTileStore(AsyncTileStore):
         self._bounding_pyramid = bounding_pyramid
         self._session = aiohttp.ClientSession()
         self._hosts_semaphore: dict[str, asyncio.Semaphore] = {}
-        self._hosts_limit: host_limit.HostLimit = {}
+        self._hosts_limit = _DatedConfig()
         if headers is not None:
             self._session.headers.update(headers)
 
-    async def init(self) -> None:
+    async def _get_hosts_limit(self) -> host_limit.HostLimit:
         """Initialize the store."""
         host_limit_path = Path(
             os.environ.get(
@@ -47,11 +55,12 @@ class URLTileStore(AsyncTileStore):
                 "/etc/tilegeneration/hosts_limit.yaml",
             ),
         )
-        if host_limit_path.exists():
+        if host_limit_path.exists() and self._hosts_limit.mtime != host_limit_path.stat().st_mtime:
             yaml = YAML(typ="safe")
             async with aiofiles.open(host_limit_path, encoding="utf-8") as f:
                 content = await f.read()
-                self._hosts_limit = yaml.load(content)
+                self._hosts_limit.config = yaml.load(content)
+                self._hosts_limit.mtime = host_limit_path.stat().st_mtime
 
                 schema_data = pkgutil.get_data("tilecloud_chain", "host-limit-schema.json")
                 assert schema_data
@@ -63,7 +72,8 @@ class URLTileStore(AsyncTileStore):
 
                 if errors:
                     _LOGGER.error("The host limit file is invalid, ignoring:\n%s", "\n".join(errors))
-                    self._hosts_limit = {}
+                    self._hosts_limit.config = {}
+        return self._hosts_limit.config
 
     async def get_one(self, tile: Tile) -> Tile | None:
         """See in superclass."""
@@ -85,11 +95,14 @@ class URLTileStore(AsyncTileStore):
             semaphore = self._hosts_semaphore[url_split.hostname]
         else:
             limit = (
-                self._hosts_limit.get("hosts", {})
+                self._get_hosts_limit()
+                .get("hosts", {})
                 .get(url_split.hostname, {})
                 .get(
                     "concurrent",
-                    self._hosts_limit.get("default", {}).get(
+                    self._get_hosts_limit()
+                    .get("default", {})
+                    .get(
                         "concurrent",
                         host_limit.DEFAULT_CONCURRENT_LIMIT_DEFAULT,
                     ),
