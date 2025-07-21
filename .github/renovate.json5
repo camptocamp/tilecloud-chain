@@ -21,14 +21,14 @@
       matchStrings: ['unpkg\\.com/(?<depName>[^@]+)@(?<currentValue>[^/]+)'],
       datasourceTemplate: 'npm',
       customType: 'regex',
-      managerFilePatterns: ['/.*\\.html$/'],
+      managerFilePatterns: ['/.*\\.html$/', '/.*\\.py$/'],
     },
     /** Manage jsdelivr */
     {
       matchStrings: ['cdn\\.jsdelivr\\.net/npm/(?<depName>[^@]+)@(?<currentValue>[^/]+)'],
       datasourceTemplate: 'npm',
       customType: 'regex',
-      managerFilePatterns: ['/.*\\.html$/'],
+      managerFilePatterns: ['/.*\\.html$/', '/.*\\.py$/'],
     },
   ],
   packageRules: [

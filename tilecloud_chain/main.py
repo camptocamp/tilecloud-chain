@@ -100,7 +100,54 @@ app.add_middleware(
 
 app.add_middleware(
     headers.ArmorHeaderMiddleware,
-    headers_config={"http": {"headers": {"Strict-Transport-Security": None}}} if not http else {},
+    headers_config={
+        "http": {"headers": {"Strict-Transport-Security": None} if not http else {}},
+        "admin": {
+            "path_match": r"^admin/?$",
+            "headers": {
+                "Content-Security-Policy": {
+                    "default-src": ["'self'"],
+                    "script-src-elem": [
+                        "'self'",
+                        "'unsafe-inline'",  # TODO: remove this: https://github.com/camptocamp/tilecloud-chain/issues/3053
+                        "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/",
+                        "https://cdnjs.cloudflare.com/ajax/libs/jquery/",
+                        "https://cdnjs.cloudflare.com/ajax/libs/popper.js/",
+                    ],
+                    "style-src-elem": [
+                        "'self'",
+                        "'unsafe-inline'",  # TODO: remove this: https://github.com/camptocamp/tilecloud-chain/issues/3053
+                        "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/",
+                    ],
+                    "style-src-attr": [
+                        "'self'",
+                        "'unsafe-inline'",  # TODO: remove this: https://github.com/camptocamp/tilecloud-chain/issues/3053
+                    ],
+                },
+            },
+        },
+        "admin-test": {
+            "path_match": r"^admin/test/?$",
+            "headers": {
+                "Content-Security-Policy": {
+                    "default-src": ["'self'"],
+                    "script-src-elem": [
+                        "'self'",
+                        "'unsafe-inline'",  # TODO: remove this: https://github.com/camptocamp/tilecloud-chain/issues/3053
+                        "https://cdn.jsdelivr.net/npm/ol@10.6.1/",
+                        "https://unpkg.com/ol-layerswitcher@4.1.2/",
+                        "https://cdnjs.cloudflare.com/ajax/libs/proj4js/",
+                    ],
+                    "style-src-elem": [
+                        "'self'",
+                        "'unsafe-inline'",  # TODO: remove this: https://github.com/camptocamp/tilecloud-chain/issues/3053
+                        "https://cdn.jsdelivr.net/npm/ol@10.6.1/",
+                        "https://unpkg.com/ol-layerswitcher@4.1.2/",
+                    ],
+                },
+            },
+        },
+    },
 )
 
 
