@@ -192,6 +192,12 @@ async def admin_run(
 ) -> CommandResponse:
     """Run the command given by the user."""
     commands = shlex.split(command)
+    for part in commands:
+        if ";" in part or "&&" in part or "|" in part or "\n" in part or "\r" in part:
+            raise HTTPException(
+                status_code=400,
+                detail="The command contains malicious characters",
+            )
     command_name = commands[0].replace("_", "-")
 
     main_config = await gene.get_main_config()
