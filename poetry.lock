@@ -5191,22 +5191,6 @@ docs = ["Sphinx (>=4.3.2)", "pylons-sphinx-themes", "repoze.sphinx.autointerface
 testing = ["coverage", "pytest", "pytest-cov"]
 
 [[package]]
-name = "waitress"
-version = "3.0.2"
-description = "Waitress WSGI server"
-optional = false
-python-versions = ">=3.9.0"
-groups = ["main"]
-files = [
-    {file = "waitress-3.0.2-py3-none-any.whl", hash = "sha256:c56d67fd6e87c2ee598b76abdd4e96cfad1f24cacdea5078d382b1f9d7b5ed2e"},
-    {file = "waitress-3.0.2.tar.gz", hash = "sha256:682aaaf2af0c44ada4abfb70ded36393f0e307f4ab9456a215ce0020baefc31f"},
-]
-
-[package.extras]
-docs = ["Sphinx (>=1.8.1)", "docutils", "pylons-sphinx-themes (>=1.0.9)"]
-testing = ["coverage (>=7.6.0)", "pytest", "pytest-cov"]
-
-[[package]]
 name = "watchfiles"
 version = "1.1.0"
 description = "Simple, modern and high performance file watching and code reload in python."
@@ -5641,4 +5625,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.14"
-content-hash = "449af78f309bd3a93d06a09c121586981e805046a161f6b35b01a59dd33c3ab2"
+content-hash = "78dc2d370ebf168bc2c8585ade9e10c2f73343423756514e43ce45792fb790e6"
