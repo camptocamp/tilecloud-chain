@@ -322,7 +322,7 @@ async def admin_create_job(
 @app.post("/admin/cancel_job")
 async def admin_cancel_job(
     request: Request,
-    job_id: Annotated[str, Form(...)],
+    job_id: Annotated[int, Form(...)],
     gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
     postgresql_store: Annotated[
         tilecloud_chain.store.postgresql.PostgresqlTileStore,
@@ -347,7 +347,7 @@ async def admin_cancel_job(
 @app.post("/admin/retry_job")
 async def admin_retry_job(
     request: Request,
-    job_id: Annotated[str, Form(...)],
+    job_id: Annotated[int, Form(...)],
     gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
     postgresql_store: Annotated[
         tilecloud_chain.store.postgresql.PostgresqlTileStore,

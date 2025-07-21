@@ -685,13 +685,13 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
             options.get_hash is None
             and options.get_bbox is None
             and options.config is not None
-            and "authorised_user" in await gene.get_main_config_sync().config.get("generation", {})
-            and await gene.get_main_config_sync().config["generation"]["authorised_user"] != getuser()
+            and "authorised_user" in (await gene.get_main_config()).config.get("generation", {})
+            and (await gene.get_main_config()).config["generation"]["authorised_user"] != getuser()
             and os.environ.get("TILECLOUD_CHAIN_SLAVE", "false").lower() != "true"
         ):
             _LOGGER.error(
                 "not authorized, authorized user is: %s.",
-                await gene.get_main_config_sync().config["generation"]["authorised_user"],
+                (await gene.get_main_config()).config["generation"]["authorised_user"],
             )
             sys.exit(1)
 
