@@ -47,7 +47,8 @@ from prometheus_client import start_http_server
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
 
-from tilecloud_chain import admin, server
+from tilecloud_chain import server
+from tilecloud_chain.views import admin
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import asyncio
 import io
 import json
 import logging
@@ -108,7 +109,7 @@ async def _get_access(
 
 def _check_access(
     has_access: Annotated[dict[str, Any], Depends(_get_access)],
-) -> tuple[bool, Any]:
+) -> None:
     """Check if the user has access to admin functions."""
 
     if not has_access:
@@ -258,9 +259,6 @@ async def admin_run(
         proc.start()
         proc.join()
         return CommandResponse(out=return_dict.get("out", ""), error=return_dict.get("error", False))
-
-    # Use asyncio.create_subprocess_exec for async process execution
-    import asyncio
 
     process = await asyncio.create_subprocess_exec(
         *final_command,
