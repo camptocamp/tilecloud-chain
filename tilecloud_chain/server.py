@@ -666,20 +666,6 @@ async def startup(_main_app: FastAPI) -> None:
     await server.init()
 
 
-async def get_host_config(fastapi_request: Request) -> tilecloud_chain.DatedConfig:
-    """Get the host configuration based on the request."""
-    global _TILEGENERATION  # pylint: disable=global-statement,global-variable-not-assigned
-    if _TILEGENERATION is None:
-        raise HTTPException(status_code=500, detail="TileGeneration not initialized")
-
-    host = fastapi_request.client.host if fastapi_request.client else "localhost"
-    config = await _TILEGENERATION.get_host_config(host)
-    if not config:
-        raise HTTPException(status_code=404, detail=f"No configuration found for host '{host}'")
-
-    return config
-
-
 def get_host_name(request: Request) -> str:
     """Get the host name from the request."""
     # Get the Host header
@@ -710,6 +696,21 @@ def get_host_name(request: Request) -> str:
         raise HTTPException(status_code=400, detail="Host name not found in request headers")
 
     return host_name
+
+
+async def get_host_config(
+    host: Annotated[str, fastapi.Depends(get_host_name)],
+) -> tilecloud_chain.DatedConfig:
+    """Get the host configuration based on the request."""
+    global _TILEGENERATION  # pylint: disable=global-statement,global-variable-not-assigned
+    if _TILEGENERATION is None:
+        raise HTTPException(status_code=500, detail="TileGeneration not initialized")
+
+    config = await _TILEGENERATION.get_host_config(host)
+    if not config:
+        raise HTTPException(status_code=404, detail=f"No configuration found for host '{host}'")
+
+    return config
 
 
 @app.get("/{version}/wmtscapabilities.xml")

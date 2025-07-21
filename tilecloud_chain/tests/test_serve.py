@@ -2,12 +2,12 @@ import os
 import shutil
 
 import pytest
-from pyramid.httpexceptions import HTTPBadRequest, HTTPNoContent
-from pyramid.testing import DummyRequest
+import yaml
+from fastapi import HTTPException
 from testfixtures import LogCapture
 
-from tilecloud_chain import generate, server
-from tilecloud_chain.server import PyramidView, app_factory
+from tilecloud_chain import DatedConfig, generate, server
+from tilecloud_chain.server import app_factory
 from tilecloud_chain.tests import CompareCase
 
 _CAPABILITIES = (
@@ -183,11 +183,12 @@ class TestServe(CompareCase):
 
             server._PYRAMID_SERVER = None
             server._TILEGENERATION = None
-            request = DummyRequest()
-            request.registry.settings = {
-                "tilegeneration_configfile": "tilegeneration/test-nosns.yaml",
-            }
-            request.params = {
+            with open("tilegeneration/test-nosns.yaml") as f:
+                config = DatedConfig(
+                    config=yaml.safe_load(f),
+                    mtime=os.path.getmtime("tilegeneration/test-nosns.yaml"),
+                )
+            params = {
                 "Service": "WMTS",
                 "Version": "1.0.0",
                 "Request": "GetTile",
@@ -199,63 +200,71 @@ class TestServe(CompareCase):
                 "TileRow": "11",
                 "TileCol": "14",
             }
-            serve = PyramidView(request)
-            serve()
-            assert request.response.headers["Content-Type"] == "image/png"
-            assert request.response.headers["Cache-Control"] == "max-age=28800"
+            response = server.serve(params, config, "localhost")
+            assert response.headers["Content-Type"] == "image/png"
+            assert response.headers["Cache-Control"] == "max-age=28800"
 
-            request.params["TileRow"] = "12"
-            assert isinstance(serve(), HTTPNoContent)
+            params["TileRow"] = "12"
+            response = server.serve(params, config, "localhost")
+            assert response.status_code == 204
 
-            request.params["TileRow"] = "11"
-            request.params["Service"] = "test"
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["TileRow"] = "11"
+            params["Service"] = "test"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.params["Service"] = "WMTS"
-            request.params["Request"] = "test"
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["Service"] = "WMTS"
+            params["Request"] = "test"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.params["Request"] = "GetTile"
-            request.params["Version"] = "0.9"
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["Request"] = "GetTile"
+            params["Version"] = "0.9"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.params["Version"] = "1.0.0"
-            request.params["Format"] = "image/jpeg"
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["Version"] = "1.0.0"
+            params["Format"] = "image/jpeg"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.params["Format"] = "image/png"
-            request.params["Layer"] = "test"
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["Format"] = "image/png"
+            params["Layer"] = "test"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.params["Layer"] = "point_hash"
-            request.params["Style"] = "test"
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["Layer"] = "point_hash"
+            params["Style"] = "test"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.params["Style"] = "default"
-            request.params["TileMatrixSet"] = "test"
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["Style"] = "default"
+            params["TileMatrixSet"] = "test"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.params["TileMatrixSet"] = "swissgrid_5"
-            del request.params["Service"]
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["TileMatrixSet"] = "swissgrid_5"
+            del params["Service"]
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.params = {
+            params = {
                 "Service": "WMTS",
                 "Version": "1.0.0",
                 "Request": "GetCapabilities",
             }
-            PyramidView(request)()
-            assert request.response.headers["Content-Type"] == "application/xml"
+            response = server.serve(params, config, "localhost")
+            assert response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
-                request.response.body.decode("utf-8"),
+                response.body.decode("utf-8"),
                 regex=True,
                 expected=r"""<\?xml version="1.0" encoding="UTF-8"\?>
   <Capabilities version="1.0.0"
@@ -709,57 +718,91 @@ class TestServe(CompareCase):
 
             server._PYRAMID_SERVER = None
             server._TILEGENERATION = None
-            request = DummyRequest()
-            request.registry.settings = {
-                "tilegeneration_configfile": "tilegeneration/test-serve.yaml",
+            with open("tilegeneration/test-serve.yaml") as f:
+                config = DatedConfig(
+                    config=yaml.safe_load(f),
+                    mtime=os.path.getmtime("tilegeneration/test-serve.yaml"),
+                )
+            params = {
+                "Service": "WMTS",
+                "Version": "1.0.0",
+                "Request": "GetTile",
+                "Format": "image/png",
+                "Layer": "point_hash",
+                "Style": "default",
+                "TileMatrixSet": "swissgrid_5",
+                "TileMatrix": "1",
+                "TileRow": "11",
+                "TileCol": "14",
+                "Date": "2012",
             }
-            request.matchdict = {
-                "path": ["wmts", "1.0.0", "point_hash", "default", "2012", "swissgrid_5", "1", "11", "14.png"]
-            }
-            serve = PyramidView(request)
-            serve()
-            assert request.response.headers["Content-Type"] == "image/png"
-            assert request.response.headers["Cache-Control"] == "max-age=28800"
 
-            request.matchdict["path"][7] = "12"
-            response = serve()
-            assert isinstance(response, HTTPNoContent)
+            response = server.serve(params, config, "localhost")
+            assert response.headers["Content-Type"] == "image/png"
             assert response.headers["Cache-Control"] == "max-age=28800"
 
-            request.matchdict["path"][7] = "11"
-            request.matchdict["path"][1] = "0.9"
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["TileRow"] = "12"
+            response = server.serve(params, config, "localhost")
+            assert response.status_code == 204
+            assert response.headers["Cache-Control"] == "max-age=28800"
 
-            request.matchdict["path"][1] = "1.0.0"
-            request.matchdict["path"][8] = "14.jpeg"
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["TileRow"] = "11"
+            params["Version"] = "0.9"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.matchdict["path"][8] = "14.png"
-            request.matchdict["path"][2] = "test"
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["Version"] = "1.0.0"
+            params["Format"] = "image/jpeg"
+            params["TileCol"] = "14"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.matchdict["path"][2] = "point_hash"
-            request.matchdict["path"][3] = "test"
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["Format"] = "image/png"
+            params["TileCol"] = "14"
+            params["Layer"] = "test"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.matchdict["path"][3] = "default"
-            request.matchdict["path"][5] = "test"
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["Layer"] = "point_hash"
+            params["Style"] = "test"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.matchdict["path"] = ["wmts", "point_hash", "default", "swissgrid_5", "1", "14", "11.png"]
-            with pytest.raises(HTTPBadRequest):
-                serve()
+            params["Style"] = "default"
+            params["TileMatrixSet"] = "test"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.matchdict["path"] = ["wmts", "1.0.0", "WMTSCapabilities.xml"]
-            PyramidView(request)()
-            assert request.response.headers["Content-Type"] == "application/xml"
+            params = {
+                "Service": "WMTS",
+                "Version": "1.0.0",
+                "Request": "GetTile",
+                "Format": "image/png",
+                "Layer": "point_hash",
+                "Style": "default",
+                "TileMatrixSet": "swissgrid_5",
+                "TileMatrix": "1",
+                "TileRow": "11",
+                "TileCol": "14",
+            }
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
+
+            params = {
+                "Service": "WMTS",
+                "Version": "1.0.0",
+                "Request": "GetCapabilities",
+            }
+            response = server.serve(params, config, "localhost")
+            assert response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
-                request.response.body.decode("utf-8"),
+                response.body.decode("utf-8"),
                 _CAPABILITIES,
                 regex=True,
             )
@@ -794,64 +837,103 @@ class TestServe(CompareCase):
 
             server._PYRAMID_SERVER = None
             server._TILEGENERATION = None
-            request = DummyRequest()
-            request.registry.settings = {
-                "tilegeneration_configfile": "tilegeneration/test-bsddb.yaml",
+
+            with open("tilegeneration/test-bsddb.yaml") as f:
+                config = DatedConfig(
+                    config=yaml.safe_load(f),
+                    mtime=os.path.getmtime("tilegeneration/test-bsddb.yaml"),
+                )
+            params = {
+                "Service": "WMTS",
+                "Version": "1.0.0",
+                "Request": "GetTile",
+                "Format": "image/png",
+                "Layer": "point_hash",
+                "Style": "default",
+                "Date": "2012",
+                "TileMatrixSet": "swissgrid_5",
+                "TileMatrix": "1",
+                "TileRow": "11",
+                "TileCol": "14",
             }
-            request.matchdict = {
-                "path": ["wmts", "1.0.0", "point_hash", "default", "2012", "swissgrid_5", "1", "11", "14.png"]
+            response = server.serve(params, config, "localhost")
+            assert response.headers["Content-Type"] == "image/png"
+            assert response.headers["Cache-Control"] == "max-age=28800"
+
+            params["TileRow"] = "12"
+            response = server.serve(params, config, "localhost")
+            assert response.status_code == 204
+
+            params["TileRow"] = "11"
+            params["Version"] = "0.9"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
+
+            params["Version"] = "1.0.0"
+            params["Format"] = "image/jpeg"
+            params["TileCol"] = "14"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
+
+            params["Format"] = "image/png"
+            params["TileCol"] = "14"
+            params["Layer"] = "test"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
+
+            params["Layer"] = "point_hash"
+            params["Style"] = "test"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
+
+            params["Style"] = "default"
+            params["TileMatrixSet"] = "test"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
+
+            params = {
+                "Service": "WMTS",
+                "Version": "1.0.0",
+                "Request": "GetTile",
+                "Format": "image/png",
+                "Layer": "point_hash",
+                "Style": "default",
+                "TileMatrixSet": "swissgrid_5",
+                "TileMatrix": "1",
+                "TileRow": "11",
+                "TileCol": "14",
             }
-            serve = PyramidView(request)
-            serve()
-            assert request.response.headers["Content-Type"] == "image/png"
-            assert request.response.headers["Cache-Control"] == "max-age=28800"
+            with pytest.raises(HTTPException) as response:
+                server.serve(params, config, "localhost")
+            assert response.status_code == 400
 
-            request.matchdict["path"][7] = "12"
-            assert isinstance(serve(), HTTPNoContent)
-
-            request.matchdict["path"][7] = "11"
-            request.matchdict["path"][1] = "0.9"
-            with pytest.raises(HTTPBadRequest):
-                serve()
-
-            request.matchdict["path"][1] = "1.0.0"
-            request.matchdict["path"][8] = "14.jpeg"
-            with pytest.raises(HTTPBadRequest):
-                serve()
-
-            request.matchdict["path"][8] = "14.png"
-            request.matchdict["path"][2] = "test"
-            with pytest.raises(HTTPBadRequest):
-                serve()
-
-            request.matchdict["path"][2] = "point_hash"
-            request.matchdict["path"][3] = "test"
-            with pytest.raises(HTTPBadRequest):
-                serve()
-
-            request.matchdict["path"][3] = "default"
-            request.matchdict["path"][5] = "test"
-            with pytest.raises(HTTPBadRequest):
-                serve()
-
-            request.matchdict["path"] = ["wmts", "point_hash", "default", "swissgrid_5", "1", "14", "11.png"]
-            with pytest.raises(HTTPBadRequest):
-                serve()
-
-            request.matchdict["path"] = ["wmts", "1.0.0", "WMTSCapabilities.xml"]
-            PyramidView(request)()
-            assert request.response.headers["Content-Type"] == "application/xml"
+            params = {
+                "Service": "WMTS",
+                "Version": "1.0.0",
+                "Request": "GetCapabilities",
+            }
+            response = server.serve(params, config, "localhost")
+            assert response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
-                request.response.body.decode("utf-8"),
+                response.body.decode("utf-8"),
                 _CAPABILITIES,
                 regex=True,
             )
 
-            request.matchdict["path"] = ["static", "1.0.0", "WMTSCapabilities.xml"]
-            PyramidView(request)()
-            assert request.response.headers["Content-Type"] == "application/xml"
+            params = {
+                "Service": "WMTS",
+                "Version": "1.0.0",
+                "Request": "GetCapabilities",
+            }
+            response = server.serve(params, config, "localhost")
+            assert response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
-                request.response.body.decode("utf-8"),
+                response.body.decode("utf-8"),
                 _CAPABILITIES,
                 regex=True,
             )
@@ -861,11 +943,13 @@ class TestServe(CompareCase):
     def test_serve_gfi(self) -> None:
         server._PYRAMID_SERVER = None
         server._TILEGENERATION = None
-        request = DummyRequest()
-        request.registry.settings = {
-            "tilegeneration_configfile": "tilegeneration/test-serve.yaml",
-        }
-        request.params = {
+
+        with open("tilegeneration/test-serve.yaml") as f:
+            config = DatedConfig(
+                config=yaml.safe_load(f),
+                mtime=os.path.getmtime("tilegeneration/test-serve.yaml"),
+            )
+        params = {
             "Service": "WMTS",
             "Version": "1.0.0",
             "Request": "GetFeatureInfo",
@@ -881,10 +965,9 @@ class TestServe(CompareCase):
             "I": "114",
             "J": "111",
         }
-        serve = PyramidView(request)
-        serve()
+        response = server.serve(params, config, "localhost")
         self.assert_result_equals(
-            request.response.body.decode("utf-8"),
+            response.body.decode("utf-8"),
             """<?xml version="1.0" encoding="UTF-8"?>
 
 <msGMLOutput
@@ -897,26 +980,13 @@ class TestServe(CompareCase):
 
         server._PYRAMID_SERVER = None
         server._TILEGENERATION = None
-        request = DummyRequest()
-        request.registry.settings = {
-            "tilegeneration_configfile": "tilegeneration/test-serve.yaml",
-        }
-        request.matchdict = {
-            "path": [
-                "wmts",
-                "1.0.0",
-                "point_hash",
-                "default",
-                "2012",
-                "swissgrid_5",
-                "1",
-                "11",
-                "14",
-                "114",
-                "111.xml",
-            ]
-        }
-        request.params = {
+
+        with open("tilegeneration/test-serve.yaml") as f:
+            config = DatedConfig(
+                config=yaml.safe_load(f),
+                mtime=os.path.getmtime("tilegeneration/test-serve.yaml"),
+            )
+        params = {
             "Service": "WMTS",
             "Version": "1.0.0",
             "Request": "GetFeatureInfo",
@@ -925,6 +995,7 @@ class TestServe(CompareCase):
             "Layer": "point_hash",
             "Query_Layer": "point_hash",
             "Style": "default",
+            "Date": "2012",
             "TileMatrixSet": "swissgrid_5",
             "TileMatrix": "1",
             "TileRow": "14",
@@ -932,10 +1003,9 @@ class TestServe(CompareCase):
             "I": "114",
             "J": "111",
         }
-        serve = PyramidView(request)
-        serve()
+        response = server.serve(params, config, "localhost")
         self.assert_result_equals(
-            request.response.body.decode("utf-8"),
+            response.body.decode("utf-8"),
             """<?xml version="1.0" encoding="UTF-8"?>
 
 <msGMLOutput
@@ -1081,15 +1151,21 @@ Size per tile: 4[0-9][0-9] o
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             server._PYRAMID_SERVER = None
             server._TILEGENERATION = None
-            request = DummyRequest()
-            request.registry.settings = {
-                "tilegeneration_configfile": "tilegeneration/test-serve-wmtscapabilities.yaml",
+
+            with open("tilegeneration/test-serve-wmtscapabilities.yaml") as f:
+                config = DatedConfig(
+                    config=yaml.safe_load(f),
+                    mtime=os.path.getmtime("tilegeneration/test-serve-wmtscapabilities.yaml"),
+                )
+            params = {
+                "Service": "WMTS",
+                "Version": "1.0.0",
+                "Request": "GetCapabilities",
             }
-            request.matchdict["path"] = ["wmts", "1.0.0", "WMTSCapabilities.xml"]
-            PyramidView(request)()
-            assert request.response.headers["Content-Type"] == "application/xml"
+            response = server.serve(params, config, "localhost")
+            assert response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
-                request.response.body.decode("utf-8"),
+                response.body.decode("utf-8"),
                 _CAPABILITIES,
                 regex=True,
             )
