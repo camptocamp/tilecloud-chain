@@ -9,11 +9,12 @@ import sys
 import time
 from argparse import ArgumentParser
 from copy import copy
+from dataclasses import dataclass
 from hashlib import sha1
 from io import BytesIO, StringIO
 from math import exp, log
 from pathlib import Path
-from typing import IO, Literal, cast
+from typing import IO, Any, Literal, cast
 from urllib.parse import urlencode, urljoin
 
 import botocore.exceptions
@@ -42,6 +43,22 @@ from tilecloud_chain import (
 
 _LOGGER = logging.getLogger(__name__)
 _GET_STATUS_SUMMARY = Summary("tilecloud_chain_get_status", "Number of get_stats", ["type", "queue"])
+
+# Constants
+_ONE_DAY_IN_SECONDS = 86400
+
+
+# Memory cache for legend configurations (expiration set to _ONE_DAY_IN_SECONDS)
+@dataclass
+class LegendLayerCache:
+    """Cache for legend layer configurations."""
+
+    data: dict[str, Any]
+    timestamp: float
+
+
+_LEGEND_CONFIG_CACHE: dict[str, LegendLayerCache] = {}
+_LEGEND_CONFIG_CACHE_LOCK: asyncio.Lock | None = None
 
 
 def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
@@ -287,17 +304,48 @@ async def _fill_legend(
     if config is None:
         assert gene.config_file
         config = gene.get_config(gene.config_file)
+    current_time = time.time()
+
+    global _LEGEND_CONFIG_CACHE_LOCK  # pylint: disable=global-statement
+    if _LEGEND_CONFIG_CACHE_LOCK is None:
+        _LEGEND_CONFIG_CACHE_LOCK = asyncio.Lock()
+
+    # clean up old entries in the cache
+    async with _LEGEND_CONFIG_CACHE_LOCK:
+        for key, cache_entry in list(_LEGEND_CONFIG_CACHE.items()):
+            if cache_entry.timestamp < current_time - _ONE_DAY_IN_SECONDS:
+                del _LEGEND_CONFIG_CACHE[key]
 
     for layer_name, layer in config.config.get("layers", {}).items():
         if layer_name not in gene.layer_legends:
-            legend_config_str = await _get(
-                f"1.0.0/{layer_name}/{layer['wmts_style']}/legend.yaml",
-                cache,
-            )
-            if legend_config_str is not None:
-                legends: list[tilecloud_chain.Legend] = []
-                legend_config_io = BytesIO(legend_config_str)
-                legend_config = yaml.load(legend_config_io, Loader=yaml.SafeLoader)
+            cache_key = f"{config.file}:{layer_name}"
+            legend_config = None
+
+            # If not in memory cache or expired, fetch from storage
+            async with _LEGEND_CONFIG_CACHE_LOCK:
+                if cache_key in _LEGEND_CONFIG_CACHE:
+                    cache_entry = _LEGEND_CONFIG_CACHE[cache_key]
+                    cache_timestamp = cache_entry.timestamp
+                    # Check if cache is less than one day old
+                    if current_time - cache_timestamp < _ONE_DAY_IN_SECONDS:
+                        legend_config = cache_entry.data
+
+            if legend_config is None:
+                legend_config_str = await _get(
+                    f"1.0.0/{layer_name}/{layer['wmts_style']}/legend.yaml",
+                    cache,
+                )
+                if legend_config_str is not None:
+                    legends: list[tilecloud_chain.Legend] = []
+                    legend_config_io = BytesIO(legend_config_str)
+                    legend_config = yaml.load(legend_config_io, Loader=yaml.SafeLoader)
+                    async with _LEGEND_CONFIG_CACHE_LOCK:
+                        _LEGEND_CONFIG_CACHE[cache_key] = LegendLayerCache(
+                            data=legend_config or {},
+                            timestamp=current_time,
+                        )
+
+            if legend_config:
                 legends = [
                     tilecloud_chain.Legend(
                         mime_type=legend_metadata["mime_type"],
