@@ -973,6 +973,7 @@ async def _fill_legend(
     base_url: str,
     config: DatedConfig | None = None,
 ) -> None:
+    assert _TILEGENERATION
     if config is None:
         assert _TILEGENERATION.config_file
         config = await _TILEGENERATION.get_config(_TILEGENERATION.config_file)

@@ -200,60 +200,60 @@ class TestServe(CompareCase):
                 "TileRow": "11",
                 "TileCol": "14",
             }
-            response = server.serve(params, config, "localhost")
+            response = server.server.serve(params, config, "localhost")
             assert response.headers["Content-Type"] == "image/png"
             assert response.headers["Cache-Control"] == "max-age=28800"
 
             params["TileRow"] = "12"
-            response = server.serve(params, config, "localhost")
+            response = server.server.serve(params, config, "localhost")
             assert response.status_code == 204
 
             params["TileRow"] = "11"
             params["Service"] = "test"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Service"] = "WMTS"
             params["Request"] = "test"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Request"] = "GetTile"
             params["Version"] = "0.9"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Version"] = "1.0.0"
             params["Format"] = "image/jpeg"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Format"] = "image/png"
             params["Layer"] = "test"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Layer"] = "point_hash"
             params["Style"] = "test"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Style"] = "default"
             params["TileMatrixSet"] = "test"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["TileMatrixSet"] = "swissgrid_5"
             del params["Service"]
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params = {
@@ -261,7 +261,7 @@ class TestServe(CompareCase):
                 "Version": "1.0.0",
                 "Request": "GetCapabilities",
             }
-            response = server.serve(params, config, "localhost")
+            response = server.server.serve(params, config, "localhost")
             assert response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 response.body.decode("utf-8"),
@@ -738,45 +738,45 @@ class TestServe(CompareCase):
                 "Date": "2012",
             }
 
-            response = server.serve(params, config, "localhost")
+            response = server.server.serve(params, config, "localhost")
             assert response.headers["Content-Type"] == "image/png"
             assert response.headers["Cache-Control"] == "max-age=28800"
 
             params["TileRow"] = "12"
-            response = server.serve(params, config, "localhost")
+            response = server.server.serve(params, config, "localhost")
             assert response.status_code == 204
             assert response.headers["Cache-Control"] == "max-age=28800"
 
             params["TileRow"] = "11"
             params["Version"] = "0.9"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Version"] = "1.0.0"
             params["Format"] = "image/jpeg"
             params["TileCol"] = "14"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Format"] = "image/png"
             params["TileCol"] = "14"
             params["Layer"] = "test"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Layer"] = "point_hash"
             params["Style"] = "test"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Style"] = "default"
             params["TileMatrixSet"] = "test"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params = {
@@ -792,7 +792,7 @@ class TestServe(CompareCase):
                 "TileCol": "14",
             }
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params = {
@@ -800,7 +800,7 @@ class TestServe(CompareCase):
                 "Version": "1.0.0",
                 "Request": "GetCapabilities",
             }
-            response = server.serve(params, config, "localhost")
+            response = server.server.serve(params, config, "localhost")
             assert response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 response.body.decode("utf-8"),
@@ -858,44 +858,44 @@ class TestServe(CompareCase):
                 "TileRow": "11",
                 "TileCol": "14",
             }
-            response = server.serve(params, config, "localhost")
+            response = server.server.serve(params, config, "localhost")
             assert response.headers["Content-Type"] == "image/png"
             assert response.headers["Cache-Control"] == "max-age=28800"
 
             params["TileRow"] = "12"
-            response = server.serve(params, config, "localhost")
+            response = server.server.serve(params, config, "localhost")
             assert response.status_code == 204
 
             params["TileRow"] = "11"
             params["Version"] = "0.9"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Version"] = "1.0.0"
             params["Format"] = "image/jpeg"
             params["TileCol"] = "14"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Format"] = "image/png"
             params["TileCol"] = "14"
             params["Layer"] = "test"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Layer"] = "point_hash"
             params["Style"] = "test"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params["Style"] = "default"
             params["TileMatrixSet"] = "test"
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params = {
@@ -911,7 +911,7 @@ class TestServe(CompareCase):
                 "TileCol": "14",
             }
             with pytest.raises(HTTPException) as response:
-                server.serve(params, config, "localhost")
+                server.server.serve(params, config, "localhost")
             assert response.status_code == 400
 
             params = {
@@ -919,7 +919,7 @@ class TestServe(CompareCase):
                 "Version": "1.0.0",
                 "Request": "GetCapabilities",
             }
-            response = server.serve(params, config, "localhost")
+            response = server.server.serve(params, config, "localhost")
             assert response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 response.body.decode("utf-8"),
@@ -932,7 +932,7 @@ class TestServe(CompareCase):
                 "Version": "1.0.0",
                 "Request": "GetCapabilities",
             }
-            response = server.serve(params, config, "localhost")
+            response = server.server.serve(params, config, "localhost")
             assert response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 response.body.decode("utf-8"),
@@ -968,7 +968,7 @@ class TestServe(CompareCase):
             "I": "114",
             "J": "111",
         }
-        response = server.serve(params, config, "localhost")
+        response = server.server.serve(params, config, "localhost")
         self.assert_result_equals(
             response.body.decode("utf-8"),
             """<?xml version="1.0" encoding="UTF-8"?>
@@ -1007,7 +1007,7 @@ class TestServe(CompareCase):
             "I": "114",
             "J": "111",
         }
-        response = server.serve(params, config, "localhost")
+        response = server.server.serve(params, config, "localhost")
         self.assert_result_equals(
             response.body.decode("utf-8"),
             """<?xml version="1.0" encoding="UTF-8"?>
@@ -1058,7 +1058,7 @@ Size per tile: 4[0-9][0-9] o
             for key, value in p_headers:
                 headers[key] = value
 
-        result = server.serve(
+        result = server.server.serve(
             await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {
@@ -1099,7 +1099,7 @@ Size per tile: 4[0-9][0-9] o
 """,
         )
 
-        result = server.serve(
+        result = server.server.serve(
             await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {
@@ -1120,7 +1120,7 @@ Size per tile: 4[0-9][0-9] o
 """,
         )
 
-        server.serve(
+        server.server.serve(
             await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png"},
@@ -1128,7 +1128,7 @@ Size per tile: 4[0-9][0-9] o
         )
         assert code == "204 No Content"
 
-        server.serve(
+        server.server.serve(
             await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png"},
@@ -1137,7 +1137,7 @@ Size per tile: 4[0-9][0-9] o
         assert code == "200 OK"
         assert headers["Cache-Control"] == "max-age=28800"
 
-        result = server.serve(
+        result = server.server.serve(
             await server._TILEGENERATION.get_main_config(),
             "tilegeneration/test-serve.yaml",
             {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/WMTSCapabilities.xml"},
@@ -1166,7 +1166,7 @@ Size per tile: 4[0-9][0-9] o
                 "Version": "1.0.0",
                 "Request": "GetCapabilities",
             }
-            response = server.serve(params, config, "localhost")
+            response = server.server.serve(params, config, "localhost")
             assert response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 response.body.decode("utf-8"),
