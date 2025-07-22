@@ -23,7 +23,7 @@ caches:
     type: filesystem
     folder: /var/sig/tiles
     # for GetCapabilities
-    http_url: https://%(host)s/tiles/
+    http_url: http://%(host)s/tiles/
     hosts:
       - localhost:9052
   s3:

@@ -29,9 +29,12 @@
 import datetime
 import html
 import logging
+import math
 import mimetypes
 import os
 import time
+from copy import copy
+from io import BytesIO
 from pathlib import Path
 from typing import Annotated, Any, NamedTuple, cast
 from urllib.parse import urlencode
@@ -42,21 +45,25 @@ import botocore.exceptions
 import fastapi
 import html_sanitizer
 import tilecloud.store.s3
+import yaml
 from azure.core.exceptions import ResourceNotFoundError
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import Response
+from fastapi.templating import Jinja2Templates
 from prometheus_client import Summary
 from tilecloud import Tile, TileCoord
 
 import tilecloud_chain
 import tilecloud_chain.configuration
 from tilecloud_chain import (
+    DatedConfig,
     TileGeneration,
     configuration,
-    controller,
     get_azure_container_client,
+    get_tile_matrix_identifier,
     internal_mapcache,
 )
+from tilecloud_chain.controller import validate_generate_wmts_capabilities
 from tilecloud_chain.store import AsyncTileStore
 
 _LOGGER = logging.getLogger(__name__)
@@ -76,6 +83,7 @@ _SANITIZER = html_sanitizer.Sanitizer(
         "keep_typographic_whitespace": True,
     },
 )
+_templates = Jinja2Templates(directory="tilecloud_chain/templates")
 
 
 async def init_tilegeneration(config_file: Path | None) -> None:
@@ -335,7 +343,13 @@ class Server:
                 headers["Content-Type"] = content_type
             return Response(content=data, headers=headers)
 
-    async def serve(self, params: dict[str, str], config: tilecloud_chain.DatedConfig, host: str) -> Response:
+    async def serve(
+        self,
+        params: dict[str, str],
+        config: tilecloud_chain.DatedConfig,
+        host: str,
+        request: Request,
+    ) -> Response:
         """Async serve method for FastAPI."""
         if not config or not config.config:
             raise HTTPException(
@@ -368,14 +382,64 @@ class Server:
                 if "wmtscapabilities_file" in cache:
                     wmtscapabilities_file = cache["wmtscapabilities_file"]
                     return await self._get(wmtscapabilities_file, headers, config=config)
-                body = await controller.get_wmts_capabilities(
-                    _TILEGENERATION,
-                    self.get_cache_name(config),
-                    config=config,
+
+                cache_name: str = self.get_cache_name(config)
+                if config is None:
+                    assert _TILEGENERATION.config_file
+                    config = await _TILEGENERATION.get_config(_TILEGENERATION.config_file)
+
+                cache = config.config["caches"][cache_name]
+                if not validate_generate_wmts_capabilities(cache, cache_name, exit_=False):
+                    raise HTTPException(  # noqa: TRY301
+                        status_code=500,
+                        detail="Failed to generate WMTS capabilities, invalid configuration",
+                    )
+                server_config = (await _TILEGENERATION.get_main_config()).config.get("server")
+
+                base_urls = _get_base_urls(cache)
+
+                def ending_slash(url: str) -> str:
+                    """Ensure the URL ends with a slash."""
+                    return url if url.endswith("/") else url + "/"
+
+                base_urls = [ending_slash(url) for url in base_urls]
+
+                await _fill_legend(cache, base_urls[0], config=config)
+
+                wmts_path = ""
+                if server_config is not None:
+                    wmts_path = server_config.get(
+                        "wmts_path",
+                        tilecloud_chain.configuration.WMTS_PATH_DEFAULT,
+                    )
+                    if wmts_path and not wmts_path.endswith("/"):
+                        wmts_path += "/"
+
+                return _templates.TemplateResponse(
+                    "wmts_get_capabilities.jinja",
+                    {
+                        "request": request,
+                        "config": config,
+                        "layers": config.config.get("layers", {}),
+                        "layer_legends": _TILEGENERATION.layer_legends,
+                        "grids": config.config["grids"],
+                        "base_urls": base_urls,
+                        "base_url_postfix": wmts_path,
+                        "get_tile_matrix_identifier": get_tile_matrix_identifier,
+                        "server": server_config is not None,
+                        "has_metadata": "metadata" in config.config,
+                        "metadata": config.config.get("metadata"),
+                        "has_provider": "provider" in config.config,
+                        "provider": config.config.get("provider"),
+                        "get_grid_names": tilecloud_chain.get_grid_names,
+                        "enumerate": enumerate,
+                        "ceil": math.ceil,
+                        "int": int,
+                        "sorted": sorted,
+                        "configuration": configuration,
+                    },
+                    headers=headers,
                 )
-                assert body
-                headers["Content-Type"] = "application/xml"
-                return Response(content=body.encode("utf-8"), headers=headers)
 
             if (
                 "FORMAT" not in params
@@ -691,6 +755,7 @@ async def get_host_config(
 
 @router.get("/{version}/WMTSCapabilities.xml", summary="Get the WMTS capabilities.")
 async def wmts_capabilities(
+    request: Request,
     version: Annotated[str, fastapi.Path(..., description="WMTS version")],
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
     host: Annotated[str, fastapi.Depends(get_host_name)],
@@ -704,7 +769,7 @@ async def wmts_capabilities(
         "REQUEST": "GetCapabilities",
     }
 
-    return await server.serve(params, config, host)
+    return await server.serve(params, config, host, request)
 
 
 @router.get(
@@ -721,6 +786,7 @@ async def wmts_tile(
     tilerow: Annotated[str, fastapi.Path(..., description="Tile row")],
     tilecol: Annotated[str, fastapi.Path(..., description="Tile column")],
     extension: Annotated[str, fastapi.Path(..., description="File extension")],
+    request: Request,
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
     host: Annotated[str, fastapi.Depends(get_host_name)],
 ) -> Response:
@@ -761,7 +827,7 @@ async def wmts_tile(
 
     params["FORMAT"] = layer_obj["mime_type"]
 
-    return await server.serve(params, config, host)
+    return await server.serve(params, config, host, request)
 
 
 @router.get(
@@ -779,6 +845,7 @@ async def wmts_feature_info(
     tilecol: Annotated[str, fastapi.Path(..., description="Tile column")],
     i: Annotated[str, fastapi.Path(..., description="Pixel I coordinate")],
     j: Annotated[str, fastapi.Path(..., description="Pixel J coordinate")],
+    request: Request,
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
     host: Annotated[str, fastapi.Depends(get_host_name)],
 ) -> Response:
@@ -814,7 +881,7 @@ async def wmts_feature_info(
     for index, dimension in enumerate(layer_obj.get("dimensions", {})):
         params[dimension["name"].upper()] = dimensions_parameters[index]
 
-    return await server.serve(params, config, host)
+    return await server.serve(params, config, host, request)
 
 
 @router.get("/", summary="KVP interface.")
@@ -852,4 +919,89 @@ async def wmts_kvp(
     if not service or not version or not request:
         raise HTTPException(status_code=400, detail="Not all required parameters are present")
 
-    return await server.serve(dict(fastapi_request.query_params), config, host)
+    return await server.serve(dict(fastapi_request.query_params), config, host, fastapi_request)
+
+
+def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:
+    base_urls = []
+    if "http_url" in cache:
+        if "hosts" in cache:
+            cc = copy(cache)
+            for host in cache["hosts"]:
+                cc["host"] = host  # type: ignore[typeddict-unknown-key]
+                base_urls.append(cache["http_url"] % cc)
+        else:
+            base_urls = [cache["http_url"] % cache]
+    if "http_urls" in cache:
+        base_urls = [url % cache for url in cache["http_urls"]]
+    return [url + "/" if url[-1] != "/" else url for url in base_urls]
+
+
+async def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes | None:
+    if cache["type"] == "s3":
+        cache_s3 = cast("tilecloud_chain.configuration.CacheS3", cache)
+        client = tilecloud.store.s3.get_client(cache_s3.get("host"))
+        key_name = Path(cache["folder"]) / path
+        bucket = cache_s3["bucket"]
+        try:
+            response = client.get_object(Bucket=bucket, Key=str(key_name))
+            return cast("bytes", response["Body"].read())
+        except botocore.exceptions.ClientError as ex:
+            if ex.response["Error"]["Code"] == "NoSuchKey":
+                return None
+            raise
+    if cache["type"] == "azure":
+        cache_azure = cast("tilecloud_chain.configuration.CacheAzure", cache)
+        key_name = Path(cache["folder"]) / path
+        try:
+            blob = get_azure_container_client(container=cache_azure["container"]).get_blob_client(
+                blob=str(key_name),
+            )
+            return await (await blob.download_blob()).readall()
+        except ResourceNotFoundError:
+            return None
+    else:
+        cache_filesystem = cast("tilecloud_chain.configuration.CacheFilesystem", cache)
+        p = Path(cache_filesystem["folder"]) / path
+        if not p.is_file():
+            return None
+        return p.read_bytes()
+
+
+async def _fill_legend(
+    cache: tilecloud_chain.configuration.Cache,
+    base_url: str,
+    config: DatedConfig | None = None,
+) -> None:
+    if config is None:
+        assert _TILEGENERATION.config_file
+        config = await _TILEGENERATION.get_config(_TILEGENERATION.config_file)
+
+    for layer_name, layer in config.config.get("layers", {}).items():
+        if layer_name not in _TILEGENERATION.layer_legends:
+            legend_config_str = await _get(
+                f"1.0.0/{layer_name}/{layer['wmts_style']}/legend.yaml",
+                cache,
+            )
+            if legend_config_str is not None:
+                legends: list[tilecloud_chain.Legend] = []
+                legend_config_io = BytesIO(legend_config_str)
+                legend_config = yaml.load(legend_config_io, Loader=yaml.SafeLoader)
+                legends = [
+                    tilecloud_chain.Legend(
+                        mime_type=legend_metadata["mime_type"],
+                        href=str(
+                            Path(base_url)
+                            / "1.0.0"
+                            / layer_name
+                            / layer["wmts_style"]
+                            / f"legend-{legend_metadata['resolution']}.{layer.get('legend_extension', configuration.LAYER_LEGEND_EXTENSION_DEFAULT)}",
+                        ),
+                        min_resolution=legend_metadata.get("min_resolution"),
+                        max_resolution=legend_metadata.get("max_resolution"),
+                        width=legend_metadata["width"],
+                        height=legend_metadata["height"],
+                    )
+                    for legend_metadata in legend_config["metadata"]
+                ]
+                _TILEGENERATION.layer_legends[layer_name] = legends

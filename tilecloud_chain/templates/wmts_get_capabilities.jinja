@@ -89,7 +89,7 @@
     <ows:Operation name="GetCapabilities">
       <ows:DCP>
         <ows:HTTP>
-          <ows:Get xlink:href="{{ base_urls[0] }}{{ url_from("wmts_capabilities") }}">
+          <ows:Get xlink:href="{{ base_urls[0] }}{{ base_url_postfix }}1.0.0/WMTSCapabilities.xml">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>
@@ -97,7 +97,7 @@
             </ows:Constraint>
           </ows:Get>{%
           if server %}
-          <ows:Get xlink:href="{{ base_urls[0] }}{{ url_from("wmts_kvp") }}">
+          <ows:Get xlink:href="{{ base_urls[0] }}{{ base_url_postfix }}">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>KVP</ows:Value>
@@ -112,7 +112,7 @@
       <ows:DCP>
         <ows:HTTP>{%
           for base_url in base_urls %}
-          <ows:Get xlink:href="{{ base_url }}{{ url_from("wmts_kvp") }}">
+          <ows:Get xlink:href="{{ base_url }}{{ base_url_postfix }}">
             <ows:Constraint name="GetEncoding">
               <ows:AllowedValues>
                 <ows:Value>REST</ows:Value>{%
@@ -164,7 +164,7 @@
       endfor %}{%
       for base_url in base_urls %}
       <ResourceURL format="{{ layer['mime_type'] }}" resourceType="tile"
-                   template="{{ base_url }}{{ url_from('wmts_kvp') }}1.0.0/{{ layer_name }}/{{ layer['wmts_style'] }}{%
+                   template="{{ base_url }}{{ base_url_postfix }}1.0.0/{{ layer_name }}/{{ layer['wmts_style'] }}{%
                         for dimension in layer['dimensions']
                             %}/{{ ('{' + dimension['name'] + '}') }}{%
                         endfor

@@ -162,10 +162,10 @@ health_checks.FACTORY.add(health_checks.Redis(tags=["redis", "all"]))
 
 # Add Routers
 # Mount the most specific routes first to ensure correct routing precedence.
-app.mount("/c2c", c2casgiutils.app)  # C2C utility routes
-app.mount("/admin", admin.app)  # Admin routes
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 app.include_router(server.router, tags=["wmts"])  # WMTS routes
+app.mount("/c2c", c2casgiutils.app)  # C2C utility routes
+app.mount("/admin", admin.app)  # Admin routes
 
 # Get Prometheus HTTP server port from environment variable 9000 by default
 start_http_server(config.settings.prometheus.port)

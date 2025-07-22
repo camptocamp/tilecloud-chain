@@ -2644,6 +2644,15 @@ class Server(TypedDict, total=False):
       - css
     """
 
+    wmts_path: str
+    """
+    WMTS path.
+
+    The sub-path for the WMTS (main configuration)
+
+    default: 
+    """
+
     expires: int
     """
     Expires.
@@ -2816,6 +2825,11 @@ UNIT_DEFAULT = 'm'
 
 VERSION_DEFAULT = '1.1.1'
 """ Default value of the field path 'Layer WMS version' """
+
+
+
+WMTS_PATH_DEFAULT = ''
+""" Default value of the field path 'Server wmts_path' """
 
 
 
