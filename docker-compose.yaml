@@ -77,7 +77,7 @@ services:
     <<: *app
     environment: &app-pg-env
       <<: *app-env
-      TEST_USER: Test
+      C2C__AUTH__TEST__USERNAME: Test
       SQL_LOG_LEVEL: DEBUG
       TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+asyncpg://postgresql:postgresql@db:5432/tests
       PGHOST: db

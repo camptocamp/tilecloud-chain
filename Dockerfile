@@ -62,15 +62,6 @@ ENV LOG_TYPE=console \
     DEVELOPMENT=0 \
     PKG_CONFIG_ALLOW_SYSTEM_LIBS=OHYESPLEASE
 
-ENV C2C__AUTH__SECRET= \
-    C2C__REDIS__URL= \
-    C2C__REDIS__SENTINELS= \
-    C2C__REDIS__TIMEOUT=3 \
-    C2C__REDIS__SERVICENAME=mymaster \
-    C2C__REDIS__DB=0 \
-    C2C__BROADCAST__PREFIX=broadcast_api_
-
-
 # End from c2cwsgiutils
 
 ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
