@@ -83,7 +83,7 @@
       ol.proj.proj4.register(proj4);
       var parser = new ol.format.WMTSCapabilities();
 
-      fetch('{{ http_url }}1.0.0/WMTSCapabilities.xml')
+      fetch('{{ for_url('wmts_capabilities') }}')
         .then(function (response) {
           return response.text();
         })

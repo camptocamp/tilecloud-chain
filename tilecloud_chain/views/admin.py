@@ -35,7 +35,6 @@ import os
 import shlex
 from collections.abc import Callable
 from typing import IO, Annotated, Any
-from urllib.parse import urljoin
 
 import pyproj
 from c2casgiutils import auth
@@ -379,7 +378,6 @@ async def admin_test(
     """Test the admin view."""
     host = request.headers.get("host", "localhost")
     config = await gene.get_host_config(host)
-    main_config = await gene.get_main_config()
     srs = config.config["openlayers"].get("srs", configuration.SRS_DEFAULT)
     proj4js_def = config.config["openlayers"].get("proj4js_def")
     if proj4js_def is None:
@@ -392,14 +390,6 @@ async def admin_test(
         "center_x": config.config["openlayers"].get("center_x", configuration.CENTER_X_DEFAULT),
         "center_y": config.config["openlayers"].get("center_y", configuration.CENTER_Y_DEFAULT),
         "zoom": config.config["openlayers"].get("zoom", configuration.MAP_INITIAL_ZOOM_DEFAULT),
-        "http_url": urljoin(
-            str(request.url),
-            (
-                "/" + main_config.config["server"].get("wmts_path", "wmts") + "/"
-                if "server" in config.config
-                else "/"
-            ),
-        ),
     }
     return _templates.TemplateResponse("openlayers.html", context)
 

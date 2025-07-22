@@ -713,8 +713,8 @@ async def get_host_config(
     return config
 
 
-@router.get("/{version}/wmtscapabilities.xml", summary="Get the WMTS capabilities.")
-async def get_wmts_capabilities(
+@router.get("/{version}/WMTSCapabilities.xml", summary="Get the WMTS capabilities.")
+async def wmts_capabilities(
     version: Annotated[str, fastapi.Path(..., description="WMTS version")],
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
     host: Annotated[str, fastapi.Depends(get_host_name)],
