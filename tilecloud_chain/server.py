@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import asyncio
 import datetime
 import html
 import logging
@@ -34,6 +35,7 @@ import mimetypes
 import os
 import time
 from copy import copy
+from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 from typing import Annotated, Any, NamedTuple, cast
@@ -83,7 +85,23 @@ _SANITIZER = html_sanitizer.Sanitizer(
         "keep_typographic_whitespace": True,
     },
 )
-_templates = Jinja2Templates(directory="tilecloud_chain/templates")
+_TEMPLATES = Jinja2Templates(directory="tilecloud_chain/templates")
+
+# Constants
+_ONE_DAY_IN_SECONDS = 86400
+
+
+# Memory cache for legend configurations (expiration set to _ONE_DAY_IN_SECONDS)
+@dataclass
+class LegendLayerCache:
+    """Cache for legend layer configurations."""
+
+    data: dict[str, Any]
+    timestamp: float
+
+
+_LEGEND_CONFIG_CACHE: dict[str, LegendLayerCache] = {}
+_LEGEND_CONFIG_CACHE_LOCK: asyncio.Lock | None = None
 
 
 async def init_tilegeneration(config_file: Path | None) -> None:
@@ -415,7 +433,7 @@ class Server:
                     if wmts_path and not wmts_path.endswith("/"):
                         wmts_path += "/"
 
-                return _templates.TemplateResponse(
+                return _TEMPLATES.TemplateResponse(
                     "wmts_get_capabilities.jinja",
                     {
                         "request": request,
@@ -978,16 +996,47 @@ async def _fill_legend(
         assert _TILEGENERATION.config_file
         config = await _TILEGENERATION.get_config(_TILEGENERATION.config_file)
 
+    current_time = time.time()
+
+    global _LEGEND_CONFIG_CACHE_LOCK  # pylint: disable=global-statement
+    if _LEGEND_CONFIG_CACHE_LOCK is None:
+        _LEGEND_CONFIG_CACHE_LOCK = asyncio.Lock()
+
+    # clean up old entries in the cache
+    async with _LEGEND_CONFIG_CACHE_LOCK:
+        for key, cache_entry in list(_LEGEND_CONFIG_CACHE.items()):
+            if cache_entry.timestamp < current_time - _ONE_DAY_IN_SECONDS:
+                del _LEGEND_CONFIG_CACHE[key]
+
     for layer_name, layer in config.config.get("layers", {}).items():
         if layer_name not in _TILEGENERATION.layer_legends:
-            legend_config_str = await _get(
-                f"1.0.0/{layer_name}/{layer['wmts_style']}/legend.yaml",
-                cache,
-            )
-            if legend_config_str is not None:
-                legends: list[tilecloud_chain.Legend] = []
-                legend_config_io = BytesIO(legend_config_str)
-                legend_config = yaml.load(legend_config_io, Loader=yaml.SafeLoader)
+            cache_key = f"{config.file}:{layer_name}"
+            legend_config = None
+
+            # If not in memory cache or expired, fetch from storage
+            async with _LEGEND_CONFIG_CACHE_LOCK:
+                if cache_key in _LEGEND_CONFIG_CACHE:
+                    cache_entry = _LEGEND_CONFIG_CACHE[cache_key]
+                    cache_timestamp = cache_entry.timestamp
+                    # Check if cache is less than one day old
+                    if current_time - cache_timestamp < _ONE_DAY_IN_SECONDS:
+                        legend_config = cache_entry.data
+
+            if legend_config is None:
+                legend_config_str = await _get(
+                    f"1.0.0/{layer_name}/{layer['wmts_style']}/legend.yaml",
+                    cache,
+                )
+                if legend_config_str is not None:
+                    legends: list[tilecloud_chain.Legend] = []
+                    legend_config_io = BytesIO(legend_config_str)
+                    legend_config = yaml.load(legend_config_io, Loader=yaml.SafeLoader)
+                    async with _LEGEND_CONFIG_CACHE_LOCK:
+                        _LEGEND_CONFIG_CACHE[cache_key] = LegendLayerCache(
+                            data=legend_config or {},
+                            timestamp=current_time,
+                        )
+
                 legends = [
                     tilecloud_chain.Legend(
                         mime_type=legend_metadata["mime_type"],

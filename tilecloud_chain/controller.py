@@ -5,11 +5,12 @@ import logging
 import os
 import sys
 from argparse import ArgumentParser
+from dataclasses import dataclass
 from hashlib import sha1
 from io import BytesIO, StringIO
 from math import exp, log
 from pathlib import Path
-from typing import IO, Literal, cast
+from typing import IO, Any, Literal, cast
 from urllib.parse import urlencode
 
 import PIL.ImageFile
@@ -33,6 +34,22 @@ from tilecloud_chain import (
 
 _LOGGER = logging.getLogger(__name__)
 _GET_STATUS_SUMMARY = Summary("tilecloud_chain_get_status", "Number of get_stats", ["type", "queue"])
+
+# Constants
+_ONE_DAY_IN_SECONDS = 86400
+
+
+# Memory cache for legend configurations (expiration set to _ONE_DAY_IN_SECONDS)
+@dataclass
+class LegendLayerCache:
+    """Cache for legend layer configurations."""
+
+    data: dict[str, Any]
+    timestamp: float
+
+
+_LEGEND_CONFIG_CACHE: dict[str, LegendLayerCache] = {}
+_LEGEND_CONFIG_CACHE_LOCK: asyncio.Lock | None = None
 
 
 def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
