@@ -17,7 +17,7 @@ known_third_party = "c2cwsgiutils"
 
 [tool.poetry]
 name = "tilecloud-chain"
-version = "0.0.0"
+version = "0.0.1.dev1"
 description = "Tools to generate tiles from WMS or Mapnik, to S3, Berkeley DB, MBTiles, or local filesystem in WMTS layout using Amazon cloud services."
 readme = "README.md"
 authors = ["Camptocamp <info@camptocamp.com>"]
@@ -96,7 +96,7 @@ requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning", "poetry-plugin-tw
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry-dynamic-versioning]
-enable = true
+enable = false
 vcs = "git"
 pattern = "^(?P<base>\\d+(\\.\\d+)*)"
 format-jinja = """
