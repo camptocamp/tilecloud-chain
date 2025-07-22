@@ -670,8 +670,8 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         if options.detach:
             detach()
 
-        if options.daemon and "C2C_PROMETHEUS_PORT" in os.environ:
-            prometheus_client.start_http_server(int(os.environ["C2C_PROMETHEUS_PORT"]))
+        if options.daemon and "C2C__PROMETHEUS__PORT" in os.environ:
+            prometheus_client.start_http_server(int(os.environ["C2C__PROMETHEUS__PORT"]))
 
         config = options.config
         assert isinstance(config, Path) or config is None
