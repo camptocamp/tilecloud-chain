@@ -722,7 +722,7 @@ class TestServe(CompareCase):
                 config = DatedConfig(
                     config=yaml.safe_load(f),
                     mtime=os.path.getmtime("tilegeneration/test-serve.yaml"),
-                    filename="tilegeneration/test-serve.yaml",
+                    file="tilegeneration/test-serve.yaml",
                 )
             params = {
                 "Service": "WMTS",
