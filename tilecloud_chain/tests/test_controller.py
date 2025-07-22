@@ -33,7 +33,7 @@ class TestController(CompareCase):
         await gene.ainit(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         config = gene.get_config(Path("tilegeneration/test-fix.yaml"))
         self.assert_result_equals(
-            await controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await controller.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -975,7 +975,7 @@ class TestController(CompareCase):
         gene = TileGeneration()
         await gene.ainit(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         self.assert_result_equals(
-            await controller.get_wmts_capabilities(gene, "multi_host"), self.MULTIHOST_CAPABILITIES, True
+            await controller.wmts_capabilities(gene, "multi_host"), self.MULTIHOST_CAPABILITIES, True
         )
 
     @pytest.mark.asyncio
@@ -984,7 +984,7 @@ class TestController(CompareCase):
         await gene.ainit(Path("tilegeneration/test-capabilities.yaml"), configure_logging=False)
         config = gene.get_config(Path("tilegeneration/test-capabilities.yaml"))
         self.assert_result_equals(
-            await controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await controller.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -1119,7 +1119,7 @@ class TestController(CompareCase):
         gene = TileGeneration()
         await gene.ainit(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         self.assert_result_equals(
-            await controller.get_wmts_capabilities(gene, "multi_url"), self.MULTIHOST_CAPABILITIES, True
+            await controller.wmts_capabilities(gene, "multi_url"), self.MULTIHOST_CAPABILITIES, True
         )
 
     CONFIG = """
@@ -1801,7 +1801,7 @@ sqs:
         await gene.ainit(Path("tilegeneration/test-legends.yaml"), configure_logging=False)
         config = gene.get_config(Path("tilegeneration/test-legends.yaml"))
         self.assert_result_equals(
-            await controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await controller.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"

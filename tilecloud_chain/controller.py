@@ -14,7 +14,7 @@ from io import BytesIO, StringIO
 from math import exp, log
 from pathlib import Path
 from typing import IO, Literal, cast
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urlencode
 
 import botocore.exceptions
 import PIL.ImageFile
@@ -240,16 +240,7 @@ async def get_wmts_capabilities(
                 layers=config.config.get("layers", {}),
                 layer_legends=gene.layer_legends,
                 grids=config.config["grids"],
-                getcapabilities=urljoin(  # type: ignore[type-var]
-                    base_urls[0],
-                    (
-                        server.get("wmts_path", "wmts") + "/1.0.0/WMTSCapabilities.xml"
-                        if server is not None
-                        else cache.get("wmtscapabilities_file", "1.0.0/WMTSCapabilities.xml")
-                    ),
-                ),
                 base_urls=base_urls,
-                base_url_postfix=(server.get("wmts_path", "wmts") + "/") if server is not None else "",
                 get_tile_matrix_identifier=get_tile_matrix_identifier,
                 server=server is not None,
                 has_metadata="metadata" in config.config,

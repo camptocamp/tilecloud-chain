@@ -140,34 +140,11 @@ class DatedFilter:
 class Server:
     """The FastAPI implementation of the WMTS server."""
 
-    wmts_path: str = ""
-
     def __init__(self) -> None:
         """Initialize."""
         self.filter_cache: dict[Path, dict[str, DatedFilter]] = {}
         self.s3_client_cache: dict[str, botocore.client.S3] = {}  # pylint: disable=no-member
         self.store_cache: dict[Path, dict[str, DatedStore]] = {}
-        self.static_path: list[str] = []
-
-    async def init(self) -> None:
-        """Initialize the server."""
-        try:
-            assert _TILEGENERATION
-
-            self.wmts_path = (
-                (await _TILEGENERATION.get_main_config())
-                .config["server"]
-                .get("wmts_path", configuration.WMTS_PATH_DEFAULT)
-            )
-            self.static_path = (
-                (await _TILEGENERATION.get_main_config())
-                .config["server"]
-                .get("static_path", configuration.STATIC_PATH_DEFAULT)
-                .split("/")
-            )
-        except Exception:
-            _LOGGER.exception("Initialization error")
-            raise
 
     @staticmethod
     def get_expires_hours(config: tilecloud_chain.DatedConfig) -> float:
@@ -663,7 +640,6 @@ async def startup(_main_app: FastAPI) -> None:
     config_file_path = os.environ.get("TILEGENERATION_CONFIGFILE")
     config_file = Path(config_file_path) if config_file_path else None
     await init_tilegeneration(config_file)
-    await server.init()
 
 
 def get_host_name(request: Request) -> str:
@@ -735,7 +711,7 @@ async def wmts_capabilities(
     "/{version}/{layer}/{style}/{dimensions_parameters:path}/{tilematrixset}/{tilematrix}/{tilerow}/{tilecol}.{extension}",
     summary="Get the WMTS tile.",
 )
-async def get_wmts_tile(
+async def wmts_tile(
     version: Annotated[str, fastapi.Path(..., description="WMTS version")],
     layer: Annotated[str, fastapi.Path(..., description="Layer name")],
     style: Annotated[str, fastapi.Path(..., description="Style name")],
@@ -792,7 +768,7 @@ async def get_wmts_tile(
     "/{version}/{layer}/{style}/{dimensions_parameters:path}/{tilematrixset}/{tilematrix}/{tilerow}/{tilecol}/{i}/{j}",
     summary="Get the WMTS Feature Info.",
 )
-async def get_wmts_feature_info(
+async def wmts_feature_info(
     version: Annotated[str, fastapi.Path(..., description="WMTS version")],
     layer: Annotated[str, fastapi.Path(..., description="Layer name")],
     style: Annotated[str, fastapi.Path(..., description="Style name")],
@@ -842,7 +818,7 @@ async def get_wmts_feature_info(
 
 
 @router.get("/", summary="KVP interface.")
-async def get_kvp(
+async def wmts_kvp(
     fastapi_request: Request,
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
     host: Annotated[str, fastapi.Depends(get_host_name)],
