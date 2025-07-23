@@ -51,9 +51,13 @@
         href="{{ url_for('c2c_github_login') }}?{{ urlencode({'came_from': request.url}) }}"
         >Login with GitHub</a
       >
-      {% elif auth_type in (AuthenticationType.GITHUB,AuthenticationType.TEST) %}
+      {% elif auth_type == AuthenticationType.SECRET %}
+      <p>Authenticated with a secret</p>
+      {% elif auth_type == AuthenticationType.TEST %}
+      <p>Logged as: {{ auth_info.user.display_name }}</p>
+      {% elif auth_type == AuthenticationType.GITHUB %}
       <p>
-        Logged as: <a href="{{ auth_info.url }}">{{ auth_info.name }}</a>
+        Logged as: <a href="{{ auth_info.user.url }}">{{ auth_info.user.display_name }}</a>
         <a
           class="btn btn-outline-primary"
           style="vertical-align: baseline; margin-left: 0.5rem"
