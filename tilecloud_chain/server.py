@@ -988,7 +988,7 @@ async def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes |
 
 async def _get_layer_legend(
     layer_name: str,
-    layer: dict,
+    layer: tilecloud_chain.configuration.Layer,
     cache: tilecloud_chain.configuration.Cache,
     base_url: str,
     config: DatedConfig,
@@ -997,6 +997,8 @@ async def _get_layer_legend(
     """Get legend configuration for a layer."""
     cache_key = f"{config.file}:{layer_name}"
     legend_config = None
+
+    assert _LEGEND_CONFIG_CACHE_LOCK
 
     # If not in memory cache or expired, fetch from storage
     async with _LEGEND_CONFIG_CACHE_LOCK:
@@ -1078,7 +1080,7 @@ async def _fill_legend(
 
         # Process results
         for layer_name, result in zip(layer_names, results, strict=True):
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
                 _LOGGER.warning("Failed to get legend for layer '%s': %s", layer_name, result)
             elif result is not None:
                 _TILEGENERATION.layer_legends[layer_name] = result
