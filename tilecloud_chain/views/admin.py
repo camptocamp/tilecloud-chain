@@ -33,6 +33,7 @@ import logging
 import multiprocessing
 import os
 import shlex
+import urllib.parse
 from collections.abc import Callable
 from typing import IO, Annotated, Any
 
@@ -182,6 +183,7 @@ async def admin_index(
         "jobs_status": jobs_status,
         "footer": main_server_config.get("admin_footer") if has_access else None,
         "footer_classes": main_server_config.get("admin_footer_classes", ""),
+        "urlencode": urllib.parse.urlencode,
     }
     return _templates.TemplateResponse("admin_index.html", context)
 

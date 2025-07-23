@@ -46,7 +46,9 @@
         <input type="submit" value="OK" />
       </form>
       {% elif not auth_info.is_logged_in and auth_type == AuthenticationType.GITHUB %}
-      <a class="btn btn-primary" href="{{ url_for('c2c_github_login', came_from=request.url) }}"
+      <a
+        class="btn btn-primary"
+        href="{{ url_for('c2c_github_login') }}?{{ urlencode({'came_from': request.url}) }}"
         >Login with GitHub</a
       >
       {% elif auth_type == AuthenticationType.GITHUB %}
@@ -55,7 +57,7 @@
         <a
           class="btn btn-outline-primary"
           style="vertical-align: baseline; margin-left: 0.5rem"
-          href="{{ url_for('c2c_github_logout', came_from=request.url) }}"
+          href="{{ url_for('c2c_github_logout') }}?{{ urlencode({'came_from': request.url}) }}"
           >Logout</a
         >
       </p>
