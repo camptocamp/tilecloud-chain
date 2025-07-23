@@ -295,6 +295,91 @@ def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:
     return [url + "/" if url[-1] != "/" else url for url in base_urls]
 
 
+async def _get_layer_legend(
+    layer_name: str,
+    layer: tilecloud_chain.configuration.LayerWms | tilecloud_chain.configuration.LayerMapnik,
+    cache: tilecloud_chain.configuration.Cache,
+    base_url: str,
+    config: DatedConfig,
+    current_time: float,
+) -> list[tilecloud_chain.Legend] | None:
+    """
+    Get legend configuration for a layer.
+
+    This function retrieves the legend configuration for a given layer. It first checks a memory cache
+    (`_LEGEND_CONFIG_CACHE`) to see if the configuration is available and not expired. If the cache is
+    empty or expired, it fetches the configuration from storage and updates the cache.
+
+    Parameters
+    ----------
+        layer_name: The name of the layer for which the legend configuration is being retrieved.
+        layer: The layer object containing configuration details.
+        cache: The cache configuration used for fetching data.
+        base_url: The base URL for constructing legend URLs.
+        config: The configuration object containing file and other metadata.
+        current_time: The current timestamp, used for cache expiration checks.
+
+    Returns
+    -------
+        A list of Legend objects if the configuration is found,
+        or None if no configuration is available.
+
+    Caching Behavior:
+        - The function uses `_LEGEND_CONFIG_CACHE` to store legend configurations in memory.
+        - Each cache entry includes the configuration data and a timestamp.
+        - Cache entries are considered valid for up to one day (`_ONE_DAY_IN_SECONDS`).
+        - If the cache is expired or missing, the configuration is fetched from storage and the cache
+          is updated with the new data.
+    """
+    cache_key = f"{config.file}:{layer_name}"
+    legend_config = None
+
+    assert _LEGEND_CONFIG_CACHE_LOCK
+
+    # If not in memory cache or expired, fetch from storage
+    async with _LEGEND_CONFIG_CACHE_LOCK:
+        if cache_key in _LEGEND_CONFIG_CACHE:
+            cache_entry = _LEGEND_CONFIG_CACHE[cache_key]
+            cache_timestamp = cache_entry.timestamp
+            # Check if cache is less than one day old
+            if current_time - cache_timestamp < _ONE_DAY_IN_SECONDS:
+                legend_config = cache_entry.data
+
+    if legend_config is None:
+        legend_config_str = await _get(
+            f"1.0.0/{layer_name}/{layer['wmts_style']}/legend.yaml",
+            cache,
+        )
+        if legend_config_str is not None:
+            legend_config_io = BytesIO(legend_config_str)
+            legend_config = yaml.load(legend_config_io, Loader=yaml.SafeLoader)
+            async with _LEGEND_CONFIG_CACHE_LOCK:
+                _LEGEND_CONFIG_CACHE[cache_key] = LegendLayerCache(
+                    data=legend_config or {},
+                    timestamp=current_time,
+                )
+
+    if legend_config:
+        return [
+            tilecloud_chain.Legend(
+                mime_type=legend_metadata["mime_type"],
+                href=str(
+                    Path(base_url)
+                    / "1.0.0"
+                    / layer_name
+                    / layer["wmts_style"]
+                    / f"legend-{legend_metadata['resolution']}.{layer.get('legend_extension', configuration.LAYER_LEGEND_EXTENSION_DEFAULT)}",
+                ),
+                min_resolution=legend_metadata.get("min_resolution"),
+                max_resolution=legend_metadata.get("max_resolution"),
+                width=legend_metadata["width"],
+                height=legend_metadata["height"],
+            )
+            for legend_metadata in legend_config["metadata"]
+        ]
+    return None
+
+
 async def _fill_legend(
     gene: TileGeneration,
     cache: tilecloud_chain.configuration.Cache,
@@ -316,54 +401,24 @@ async def _fill_legend(
             if cache_entry.timestamp < current_time - _ONE_DAY_IN_SECONDS:
                 del _LEGEND_CONFIG_CACHE[key]
 
+    # Collect tasks for layers that need legend retrieval
+    tasks = []
+    layer_names = []
     for layer_name, layer in config.config.get("layers", {}).items():
         if layer_name not in gene.layer_legends:
-            cache_key = f"{config.file}:{layer_name}"
-            legend_config = None
+            tasks.append(_get_layer_legend(layer_name, layer, cache, base_url, config, current_time))
+            layer_names.append(layer_name)
 
-            # If not in memory cache or expired, fetch from storage
-            async with _LEGEND_CONFIG_CACHE_LOCK:
-                if cache_key in _LEGEND_CONFIG_CACHE:
-                    cache_entry = _LEGEND_CONFIG_CACHE[cache_key]
-                    cache_timestamp = cache_entry.timestamp
-                    # Check if cache is less than one day old
-                    if current_time - cache_timestamp < _ONE_DAY_IN_SECONDS:
-                        legend_config = cache_entry.data
+    # Run all legend retrievals concurrently
+    if tasks:
+        results = await asyncio.gather(*tasks, return_exceptions=True)
 
-            if legend_config is None:
-                legend_config_str = await _get(
-                    f"1.0.0/{layer_name}/{layer['wmts_style']}/legend.yaml",
-                    cache,
-                )
-                if legend_config_str is not None:
-                    legends: list[tilecloud_chain.Legend] = []
-                    legend_config_io = BytesIO(legend_config_str)
-                    legend_config = yaml.load(legend_config_io, Loader=yaml.SafeLoader)
-                    async with _LEGEND_CONFIG_CACHE_LOCK:
-                        _LEGEND_CONFIG_CACHE[cache_key] = LegendLayerCache(
-                            data=legend_config or {},
-                            timestamp=current_time,
-                        )
-
-            if legend_config:
-                legends = [
-                    tilecloud_chain.Legend(
-                        mime_type=legend_metadata["mime_type"],
-                        href=str(
-                            Path(base_url)
-                            / "1.0.0"
-                            / layer_name
-                            / layer["wmts_style"]
-                            / f"legend-{legend_metadata['resolution']}.{layer.get('legend_extension', configuration.LAYER_LEGEND_EXTENSION_DEFAULT)}",
-                        ),
-                        min_resolution=legend_metadata.get("min_resolution"),
-                        max_resolution=legend_metadata.get("max_resolution"),
-                        width=legend_metadata["width"],
-                        height=legend_metadata["height"],
-                    )
-                    for legend_metadata in legend_config["metadata"]
-                ]
-                gene.layer_legends[layer_name] = legends
+        # Process results
+        for layer_name, result in zip(layer_names, results, strict=True):
+            if isinstance(result, BaseException):
+                _LOGGER.warning("Failed to get legend for layer '%s': %s", layer_name, result)
+            elif result is not None:
+                gene.layer_legends[layer_name] = result
 
 
 def _get_legend_image(
