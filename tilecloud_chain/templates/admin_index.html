@@ -51,7 +51,7 @@
         href="{{ url_for('c2c_github_login') }}?{{ urlencode({'came_from': request.url}) }}"
         >Login with GitHub</a
       >
-      {% elif auth_type == AuthenticationType.GITHUB %}
+      {% elif auth_type in (AuthenticationType.GITHUB,AuthenticationType.TEST) %}
       <p>
         Logged as: <a href="{{ auth_info.url }}">{{ auth_info.name }}</a>
         <a

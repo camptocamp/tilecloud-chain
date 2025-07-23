@@ -71,6 +71,8 @@ services:
     environment:
       <<: *app-env
       C2C__AUTH__TEST__USERNAME: Test
+    ports:
+      - '9051:8080'
 
   app_postgresql:
     <<: *app

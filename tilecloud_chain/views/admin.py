@@ -39,6 +39,7 @@ from typing import IO, Annotated, Any
 
 import pyproj
 from c2casgiutils import auth
+from c2casgiutils import config as c2c_config
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -89,7 +90,7 @@ async def _get_access(
 ) -> bool:
     """Check if the user has access to admin functions."""
 
-    if "TEST_USER" in os.environ:
+    if c2c_config.settings.auth.test.username:
         return True
 
     if await auth.check_admin_access(auth_info):
