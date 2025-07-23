@@ -9,9 +9,11 @@ import sys
 import time
 from argparse import ArgumentParser
 from copy import copy
+from dataclasses import dataclass
 from hashlib import sha1
 from io import BytesIO, StringIO
 from math import exp, log
+from threading import Lock
 from typing import IO, Literal, cast
 from urllib.parse import urlencode, urljoin
 
@@ -41,6 +43,22 @@ from tilecloud_chain import (
 
 _LOGGER = logging.getLogger(__name__)
 _GET_STATUS_SUMMARY = Summary("tilecloud_chain_get_status", "Number of get_stats", ["type", "queue"])
+
+# Constants
+_ONE_DAY_IN_SECONDS = 86400
+
+
+# Memory cache for legend configurations (expiration set to _ONE_DAY_IN_SECONDS)
+@dataclass
+class LegendLayerCache:
+    """Cache for legend layer configurations."""
+
+    data: tilecloud_chain.Legend
+    timestamp: float
+
+
+_LEGEND_CONFIG_CACHE: dict[str, LegendLayerCache] = {}
+_LEGEND_CONFIG_CACHE_LOCK: Lock = Lock()  # Lock for thread-safe access to the legend cache
 
 
 def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
@@ -298,9 +316,17 @@ def _fill_legend(
     if config is None:
         assert gene.config_file
         config = gene.get_config(gene.config_file)
+    current_time = time.time()
+
+    # clean up old entries in the cache
+    with _LEGEND_CONFIG_CACHE_LOCK:
+        for key, cache_entry in list(_LEGEND_CONFIG_CACHE.items()):
+            if cache_entry.timestamp < current_time - _ONE_DAY_IN_SECONDS:
+                del _LEGEND_CONFIG_CACHE[key]
 
     start = time.perf_counter()
     legend_image_future = {}
+    legend_image_metadata: dict[str, dict[float, tilecloud_chain.Legend | None]] = {}
     with concurrent.futures.ThreadPoolExecutor(
         max_workers=int(os.environ.get("TILECLOUD_CHAIN_CONCURRENT_GET_LEGEND", "10"))
     ) as executor:
@@ -311,29 +337,55 @@ def _fill_legend(
                 and layer_name not in gene.layer_legends
             ):
                 for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
-                    path = "/".join(
-                        [
-                            "1.0.0",
-                            layer_name,
-                            layer["wmts_style"],
-                            f"legend{zoom}.{layer['legend_extension']}",
-                        ]
-                    )
-                    legend_image_future[
-                        executor.submit(
-                            _legend_metadata,
-                            cache,
-                            layer,
-                            os.path.join(base_urls[0], server.get("static_path", "static") if server else ""),
-                            path,
-                        )
-                    ] = (layer_name, resolution)
+                    cache_key = f"{config.file}:{layer_name}:{resolution}"
+                    in_cache = False
+                    with _LEGEND_CONFIG_CACHE_LOCK:
+                        if cache_key in _LEGEND_CONFIG_CACHE:
+                            cache_entry = _LEGEND_CONFIG_CACHE[cache_key]
+                            cache_timestamp = cache_entry.timestamp
+                            # Check if cache is less than one day old
+                            if current_time - cache_timestamp < _ONE_DAY_IN_SECONDS:
+                                in_cache = True
+                                legend_image_metadata.setdefault(layer_name, {})[resolution] = (
+                                    cache_entry.data
+                                )
 
-    legend_image_metadata: dict[str, dict[float, tilecloud_chain.Legend | None]] = {}
+                    if not in_cache:
+                        path = "/".join(
+                            [
+                                "1.0.0",
+                                layer_name,
+                                layer["wmts_style"],
+                                f"legend{zoom}.{layer['legend_extension']}",
+                            ]
+                        )
+                        legend_image_future[
+                            executor.submit(
+                                _legend_metadata,
+                                cache,
+                                layer,
+                                os.path.join(
+                                    base_urls[0], server.get("static_path", "static") if server else ""
+                                ),
+                                path,
+                            )
+                        ] = (layer_name, resolution)
+
     for future in concurrent.futures.as_completed(legend_image_future):
         layer_name, resolution = legend_image_future[future]
         try:
-            legend_image_metadata.setdefault(layer_name, {})[resolution] = future.result()
+            result = future.result()
+            if result is None:
+                _LOGGER.warning(
+                    "Legend for layer '%s', resolution '%s' is None",
+                    layer_name,
+                    resolution,
+                )
+                continue
+            legend_image_metadata.setdefault(layer_name, {})[resolution] = result
+            cache_key = f"{config.file}:{layer_name}:{resolution}"
+            with _LEGEND_CONFIG_CACHE_LOCK:
+                _LEGEND_CONFIG_CACHE[cache_key] = LegendLayerCache(timestamp=current_time, data=result)
         except Exception as exc:  # pylint: disable=broad-exception-caught
             _LOGGER.warning(
                 "Unable to get legend image for layer '%s', resolution '%s': %s", layer_name, resolution, exc
