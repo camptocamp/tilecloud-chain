@@ -60,6 +60,8 @@ services:
       C2C__AUTH__GITHUB__CLIENT_SECRET: '1234'
       C2C__PROMETHEUS__PORT: '9110'
       HTTP: TRUE
+    ports:
+      - '9050:8080'
     links:
       - db
       - redis_sentinel

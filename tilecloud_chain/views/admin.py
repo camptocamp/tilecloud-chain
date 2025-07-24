@@ -376,7 +376,6 @@ async def admin_retry_job(
 async def admin_test(
     request: Request,
     gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
-    _: Annotated[None, Depends(_check_access)],
 ) -> HTMLResponse:
     """Test the admin view."""
     host = request.headers.get("host", "localhost")
