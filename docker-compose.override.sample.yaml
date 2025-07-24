@@ -1,7 +1,5 @@
 services:
   application: &app
-    ports:
-      - '9050:8080'
     command:
       - uvicorn
       - tilecloud_chain.main:app
@@ -23,8 +21,6 @@ services:
 
   app_test_user:
     <<: *app
-    ports:
-      - '9051:8080'
 
   app_postgresql:
     volumes:

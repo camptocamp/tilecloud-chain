@@ -103,6 +103,7 @@ services:
       TILECLOUD_CHAIN_SLAVE: 'TRUE'
     volumes:
       - ./example/tilegeneration/config-postgresql.yaml:/etc/tilegeneration/config.yaml:ro
+    ports: []
 
   test:
     image: camptocamp/tilecloud-chain-tests
