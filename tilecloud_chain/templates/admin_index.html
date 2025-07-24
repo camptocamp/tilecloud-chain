@@ -6,14 +6,14 @@
       rel="icon"
       type="image/png"
       sizes="32x32"
-      href="${request.static_url('/app/tilecloud_chain/static/favicon-32x32.png')}"
+      href="{{ url_for('c2c_static', path='/favicon-32x32.png') }}"
       referrerpolicy="no-referrer"
     />
     <link
       rel="icon"
       type="image/png"
       sizes="16x16"
-      href="${request.static_url('/app/tilecloud_chain/static/favicon-16x16.png')}"
+      href="{{ url_for('c2c_static', path='/favicon-16x16.png') }}"
       referrerpolicy="no-referrer"
     />
     <link
@@ -40,38 +40,42 @@
       }
     </script>
     <div style="position: absolute; right: 3rem; top: 2rem">
-      %if not request.identity.is_auth and auth_type == AuthenticationType.SECRET:
+      {% if not auth_info.is_logged_in and auth_type == AuthenticationType.SECRET %}
       <form>
         Secret: <input type="password" name="secret" />
         <input type="submit" value="OK" />
       </form>
-      %elif not request.identity.is_auth and auth_type == AuthenticationType.GITHUB:
+      {% elif not auth_info.is_logged_in and auth_type == AuthenticationType.GITHUB %}
       <a
         class="btn btn-primary"
-        href="${request.route_url('c2c_github_login', _query={'came_from': request.current_route_url()})}"
+        href="{{ url_for('c2c_github_login') }}?{{ urlencode({'came_from': request.url}) }}"
         >Login with GitHub</a
       >
-      %elif auth_type == AuthenticationType.GITHUB:
+      {% elif auth_type == AuthenticationType.SECRET %}
+      <p>Authenticated with a secret</p>
+      {% elif auth_type == AuthenticationType.TEST %}
+      <p>Logged as: {{ auth_info.user.display_name }}</p>
+      {% elif auth_type == AuthenticationType.GITHUB %}
       <p>
-        Logged as: <a href="${request.identity.url}">${request.identity.name}</a>
+        Logged as: <a href="{{ auth_info.user.url }}">{{ auth_info.user.display_name }}</a>
         <a
           class="btn btn-outline-primary"
           style="vertical-align: baseline; margin-left: 0.5rem"
-          href="${request.route_url('c2c_github_logout', _query={'came_from': request.current_route_url()})}"
+          href="{{ url_for('c2c_github_logout') }}?{{ urlencode({'came_from': request.url}) }}"
           >Logout</a
         >
       </p>
-      %endif
+      {% endif %}
     </div>
     <h1 class="bd-title">Tile generation</h1>
     <hr />
     <span></span>
-    %if has_access:
+    {% if has_access %}
     <!---->
-    %if job_status is None:
+    {% if job_status is none %}
     <h2>Status</h2>
-    <p>${'<br />'.join(status)|n}</p>
-    %endif
+    <p>{{ '<br />'.join(status) | safe }}</p>
+    {% endif %}
     <h2>Launch generation</h2>
     <div class="dropdown">
       <button
@@ -83,23 +87,23 @@
         Predefined commands
       </button>
       <ul class="dropdown-menu">
-        %for command in commands:
+        {% for command in commands %}
         <li>
           <button
             class="btn btn-outline-primary command dropdown-item"
-            data-role="${command.get('command', '')}"
-            data-name="${command.get('name', 'Unnamed')}"
+            data-role="{{ command.get('command', '') }}"
+            data-name="{{ command.get('name', 'Unnamed') }}"
           >
-            ${command.get('name', 'Unnamed')}
+            {{ command.get('name', 'Unnamed') }}
           </button>
         </li>
-        %endfor
+        {% endfor %}
       </ul>
     </div>
     <p></p>
-    <form id="command-${'form' if jobs_status is None else 'postgresql'}" class="form-inline">
+    <form id="command-{{ 'form' if jobs_status is none else 'postgresql' }}" class="form-inline">
       <div class="input-group">
-        %if jobs_status is not None:
+        {% if jobs_status is not none %}
         <div class="form-floating mb-3">
           <input
             id="name"
@@ -113,7 +117,7 @@
           <label for="floatingName">Name</label>
         </div>
 
-        %endif
+        {% endif %}
         <div class="form-floating mb-3">
           <input
             id="command"
@@ -128,130 +132,130 @@
         </div>
         <button class="btn btn-primary mb-3" type="submit" id="button-run">Start</button>
       </div>
-      %if secret is not None:
-      <input type="hidden" name="secret" value="${request.params.get('secret')}" />
-      %endif
+      {% if secret is not none %}
+      <input type="hidden" name="secret" value="{{ secret }}" />
+      {% endif %}
     </form>
-    %endif
+    {% endif %}
     <!---->
-    %if jobs_status is None:
+    {% if jobs_status is none %}
     <span id="result"></span>
-    %endif
+    {% endif %}
 
     <h2>Test</h2>
-    <p>See the result in <a href="/${admin_path}/test">the test page</a>.</p>
+    <p>See the result in <a href="/{{ admin_path }}/test">the test page</a>.</p>
 
-    %if jobs_status:
+    {% if jobs_status %}
     <h2>Jobs</h2>
     <div class="accordion" id="accordionJobs">
-      %for nb, (job, status, errors) in enumerate(jobs_status):
+      {% for nb, (job, status, errors) in jobs_status | enumerate %}
       <div class="accordion-item">
         <h2 class="accordion-header">
           <button
             class="accordion-button collapsed"
             type="button"
             data-bs-toggle="collapse"
-            data-bs-target="#collapse${nb}"
-            aria-controls="collapse${nb}"
+            data-bs-target="#collapse{{ nb }}"
+            aria-controls="collapse{{ nb }}"
           >
-            ${job.name} (
+            {{ job.name }} (
             <script>
-              window.document.write(new Date('${ job.created_at.isoformat() }').toLocaleString());
+              window.document.write(new Date('{{ job.created_at.isoformat() }}').toLocaleString());
             </script>
-            , ${job.status})
-            <!-- ${job.id} -->
+            , {{ job.status }})
+            <!-- {{ job.id }} -->
           </button>
         </h2>
-        <div id="collapse${nb}" class="accordion-collapse collapse">
+        <div id="collapse{{ nb }}" class="accordion-collapse collapse">
           <div class="accordion-body">
             <p>
-              <code>${job.command}</code>
+              <code>{{ job.command }}</code>
             </p>
-            %if job.message:
-            <pre>${job.message.strip() | n,h}</pre>
-            %endif
+            {% if job.message %}
+            <pre>{{ job.message.strip() | safe | escape }}</pre>
+            {% endif %}
             <!---->
-            %if job.status == 'started':
+            {% if job.status == 'started' %}
             <p>
-              <button type="button" class="btn btn-outline-primary cancel" data-job-id="${job.id}">
+              <button type="button" class="btn btn-outline-primary cancel" data-job-id="{{ job.id }}">
                 Cancel the tiles generation
               </button>
             </p>
-            %elif job.status == 'error' and errors:
+            {% elif job.status == 'error' and errors %}
             <p>
-              <button type="button" class="btn btn-outline-primary retry" data-job-id="${job.id}">
+              <button type="button" class="btn btn-outline-primary retry" data-job-id="{{ job.id }}">
                 Retry to generate the tiles in error
               </button>
             </p>
-            %endif
+            {% endif %}
             <!---->
-            %if status:
+            {% if status %}
             <h4>Status</h4>
             <p>
-              %for s in status:
+              {% for s in status %}
               <!---->
-              Zoom level ${s['zoom']}:
+              Zoom level {{ s['zoom'] }}:
               <!---->
-              <% comma = False %>
+              {% set comma = false %}
               <!---->
-              %if 'generate' in s:
+              {% if 'generate' in s %}
               <!---->
-              <% comma = True %>
+              {% set comma = true %}
               <span style="color: var(--bs-success-text-emphasis)"
-                >${s['generate']} meta tiles to generate</span
+                >{{ s['generate'] }} meta tiles to generate</span
               >
-              %endif
+              {% endif %}
               <!---->
-              %if 'pending' in s:
+              {% if 'pending' in s %}
               <!---->
-              %if comma:
+              {% if comma %}
               <!---->
               ,
               <!---->
-              %endif
+              {% endif %}
               <!---->
-              <% comma = True %>
+              {% set comma = true %}
               <span style="color: var(--bs-primary-text-emphasis)"
-                >${s['pending']} meta tiles being generated</span
+                >{{ s['pending'] }} meta tiles being generated</span
               >
-              %endif
+              {% endif %}
               <!---->
-              %if 'error' in s:
+              {% if 'error' in s %}
               <!---->
-              %if comma:
+              {% if comma %}
               <!---->
               ,
               <!---->
-              %endif
-              <span style="color: var(--bs-danger-text-emphasis)">${s['error']} meta tiles in error</span>
-              %endif
+              {% endif %}
+              <span style="color: var(--bs-danger-text-emphasis)">{{ s['error'] }} meta tiles in error</span>
+              {% endif %}
               <br />
-              %endfor
+              {% endfor %}
             </p>
-            %endif
+            {% endif %}
             <!---->
-            %if errors:
+            {% if errors %}
             <h4>Errors occur during the generation (max 5)</h4>
-            %for e in errors:
+            {% for e in errors %}
             <!---->
-            <pre>${e | n,h}</pre>
-            %endfor
+            <pre>{{ e | safe | escape }}</pre>
+            {% endfor %}
             <!---->
-            %endif
+            {% endif %}
           </div>
         </div>
       </div>
-      %endfor
+      {% endfor %}
     </div>
-    %endif
+    {% endif %}
     <!---->
-    %if footer is not None:
+    {% if footer is not none %}
     <br />
-    <div class="${ footer_classes }">${ footer }</div>
-    %endif
+    <div class="{{ footer_classes }}">{{ footer }}</div>
+    {% endif %}
 
     <!---->
-    %if has_access:
+    {% if has_access %}
     <h3>Command help</h3>
     <h4>Examples</h4>
 
@@ -304,7 +308,7 @@
     </ul>
     <h4><code>generate-controller --generate-legend-images</code></h4>
     <p>Generate the legend images.</p>
-    %endif
+    {% endif %}
 
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
@@ -334,7 +338,7 @@
           $('#result').html('');
           event.preventDefault();
 
-          fetch('${request.route_url("admin_run")}', {
+          fetch('{{ url_for("admin_run") }}', {
             body: new FormData(document.getElementById('command-form')),
             method: 'POST',
           })
@@ -343,10 +347,10 @@
             })
             .then((data) => {
               if (data.error) {
-                $('#result').html(`<p class="alert alert-danger" role="alert">${'$'}{data.out}</p>`);
+                $('#result').html(`<p class="alert alert-danger" role="alert">${data.out}</p>`);
               } else {
                 if (data['out']) {
-                  $('#result').html(`<p class="alert alert-success" role="alert">${'$'}{data.out}</p>`);
+                  $('#result').html(`<p class="alert alert-success" role="alert">${data.out}</p>`);
                 } else {
                   $('#result').html(`<p class="alert alert-success" role="alert">Success</p>`);
                 }
@@ -354,13 +358,13 @@
             })
             .catch((error) => {
               console.error(error);
-              $('#result').html(`<div class="alert alert-danger" role="alert">${'$'}{error}</div>`);
+              $('#result').html(`<div class="alert alert-danger" role="alert">${error}</div>`);
             });
         });
         $('#command-postgresql').submit((event) => {
           event.preventDefault();
 
-          fetch('${request.route_url("admin_create_job")}', {
+          fetch('{{ url_for("admin_create_job") }}', {
             body: new FormData(document.getElementById('command-postgresql')),
             method: 'POST',
           })
@@ -369,7 +373,7 @@
             })
             .catch((error) => {
               console.error(error);
-              $('#result').html(`<div class="alert alert-danger" role="alert">${'$'}{error}</div>`);
+              $('#result').html(`<div class="alert alert-danger" role="alert">${error}</div>`);
             });
         });
         $('.cancel').click((event) => {
@@ -377,7 +381,7 @@
 
           let body = new FormData();
           body.append('job_id', event.target.dataset.jobId);
-          fetch('${request.route_url("admin_cancel_job")}', {
+          fetch('{{ url_for("admin_cancel_job") }}', {
             method: 'POST',
             body: body,
           })
@@ -393,7 +397,7 @@
 
           let body = new FormData();
           body.append('job_id', event.target.dataset.jobId);
-          fetch('${request.route_url("admin_retry_job")}', {
+          fetch('{{ url_for("admin_retry_job") }}', {
             method: 'POST',
             body: body,
           })

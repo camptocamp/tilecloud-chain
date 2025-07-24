@@ -33,13 +33,13 @@ class Copy:
     ) -> None:
         """Copy the tiles from a cache to an other."""
         assert gene.config_file
-        config = gene.get_config(gene.config_file)
+        config = await gene.get_config(gene.config_file)
         layer = config.config["layers"][layer_name]
         # disable metatiles
         cast("tilecloud_chain.configuration.LayerWms", layer)["meta"] = False
         count_tiles_dropped = Count()
 
-        gene.create_log_tiles_error(layer_name)
+        await gene.create_log_tiles_error(layer_name)
         source_tilestore = gene.get_tilesstore(source)
         dest_tilestore = gene.get_tilesstore(destination)
         gene.init_tilecoords(config, layer_name, options.grid)
@@ -61,7 +61,7 @@ class Copy:
             )
 
         if options.process:
-            gene.process(options.process)
+            await gene.process(options.process)
 
         gene.imap(DropEmpty(gene))
         self.count = gene.counter_size()
@@ -100,14 +100,16 @@ async def _async_main() -> None:
 
         options = parser.parse_args()
 
-        gene = TileGeneration(options.config, options)
+        gene = TileGeneration(options.config, options, multi_task=False)
+        await gene.ainit()
         assert gene.config_file
-        config = gene.get_config(gene.config_file)
+        config = await gene.get_config(gene.config_file)
 
         if options.layer:
             copy = Copy()
             await copy.copy(options, gene, options.layer, options.source, options.dest, "copy")
         else:
+            config = await gene.get_config(gene.config_file)
             layers = (
                 config.config["generation"]["default_layers"]
                 if "default_layers" in config.config["generation"]
@@ -143,13 +145,14 @@ async def _async_process() -> None:
         options = parser.parse_args()
 
         gene = TileGeneration(options.config, options, multi_task=False)
+        await gene.ainit()
 
         copy = Copy()
         if options.layer:
             await copy.copy(options, gene, options.layer, options.cache, options.cache, "process")
         else:
             assert gene.config_file
-            config = gene.get_config(gene.config_file)
+            config = await gene.get_config(gene.config_file)
             layers_name = (
                 config.config["generation"]["default_layers"]
                 if "default_layers" in config.config.get("generation", {})

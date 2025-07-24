@@ -26,7 +26,7 @@ from math import ceil, sqrt
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, TextIO, TypedDict, cast
 
-import aiofiles
+import aiofiles.threadpool.text
 import boto3
 import c2cwsgiutils.pyramid_logging
 import c2cwsgiutils.setup_process
@@ -243,6 +243,7 @@ class Run:
     """
 
     _re_rm_xml_tag = re.compile("(<[^>]*>|\n)")
+    max_consecutive_errors: MaximumConsecutiveErrors | None
 
     def __init__(
         self,
@@ -254,25 +255,28 @@ class Run:
         self.functions = functions
         self.out = out
         self.safe = gene.options is None or not gene.options.debug
-        daemon = gene.options is not None and getattr(gene.options, "daemon", False)
-        self.max_consecutive_errors = (
-            MaximumConsecutiveErrors(
-                gene.get_main_config()
-                .config["generation"]
-                .get(
-                    "maxconsecutive_errors",
-                    configuration.MAX_CONSECUTIVE_ERRORS_DEFAULT,
-                ),
-            )
-            if not daemon and gene.maxconsecutive_errors
-            else None
-        )
         self.error = 0
         self.error_lock = asyncio.Lock()
         self.error_logger = LogErrors(
             _LOGGER,
             logging.ERROR,
             "Error in tile: %(tilecoord)s, %(formated_metadata)s, %(error)r",
+        )
+
+    async def init(self) -> None:
+        """Initialize the Run."""
+        daemon = self.gene.options is not None and getattr(self.gene.options, "daemon", False)
+        self.max_consecutive_errors = (
+            MaximumConsecutiveErrors(
+                (await self.gene.get_main_config())
+                .config["generation"]
+                .get(
+                    "maxconsecutive_errors",
+                    configuration.MAX_CONSECUTIVE_ERRORS_DEFAULT,
+                ),
+            )
+            if not daemon and self.gene.maxconsecutive_errors
+            else None
         )
 
     async def __call__(self, tile: Tile | None) -> Tile | None:
@@ -331,8 +335,9 @@ class Run:
                         tile.metadata.get("host", "none"),
                     ).inc()
 
-                    if "error_file" in self.gene.get_main_config().config["generation"]:
-                        self.gene.log_tiles_error(tile=tile, message=repr(tile.error))
+                    main_config = await self.gene.get_main_config()
+                    if "error_file" in main_config.config["generation"]:
+                        await self.gene.log_tiles_error(tile=tile, message=repr(tile.error))
 
                     if self.max_consecutive_errors is not None:
                         self.max_consecutive_errors(tile)
@@ -598,18 +603,18 @@ class TileGeneration:
         self,
         config_file: Path | None = None,
         options: Namespace | None = None,
-        layer_name: str | None = None,
         base_config: tilecloud_chain.configuration.Configuration | None = None,
         configure_logging: bool = True,
         multi_task: bool = True,
         maxconsecutive_errors: bool = True,
         out: IO[str] | None = None,
     ) -> None:
+        """Initialize the tile generation."""
         self.geoms_cache: dict[Path, dict[str, dict[str, DatedGeoms]]] = {}
         self._close_actions: list[Close] = []
         self.error_lock = asyncio.Lock()
-        self.tilestream_lock = asyncio.Lock()  # Add a lock for tilestream access
-        self.error_files_: dict[str, TextIO] = {}
+        self.tilestream_lock = asyncio.Lock()
+        self.error_files_: dict[str, aiofiles.threadpool.text.AsyncTextIOWrapper] = {}
         self.functions_tiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
         self.functions_metatiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
         self.functions: list[Callable[[Tile], Awaitable[Tile | None]]] = self.functions_metatiles
@@ -707,7 +712,12 @@ class TileGeneration:
             )
             sentry.includeme()
 
-        assert "generation" in self.get_main_config().config, self.get_main_config().config
+    async def ainit(
+        self,
+        layer_name: str | None = None,
+    ) -> None:
+        """Initialize the tile generation."""
+        assert "generation" in (await self.get_main_config()).config, (await self.get_main_config()).config
 
         error = False
         if self.options is not None and self.options.zoom is not None:
@@ -743,40 +753,41 @@ class TileGeneration:
 
         if layer_name and self.config_file:
             assert layer_name is not None
-            self.create_log_tiles_error(layer_name)
+            await self.create_log_tiles_error(layer_name)
 
-    def get_host_config_file(self, host: str | None) -> Path | None:
+    async def get_host_config_file(self, host: str | None) -> Path | None:
         """Get the configuration file name for the given host."""
         if self.config_file:
             return self.config_file
         assert host
-        if host not in self.get_hosts():
+        hosts = await self.get_hosts()
+        if host not in hosts:
             _LOGGER.error("Missing host '%s' in global config", host)
             return None
         default_config_file = os.environ.get("TILEGENERATION_CONFIGFILE")
-        config_file = self.get_hosts().get(
+        config_file = hosts.get(
             host,
             Path(default_config_file) if default_config_file else None,
         )
         _LOGGER.debug("For the host %s, use config file: %s", host, config_file)
         return config_file
 
-    def get_host_config(self, host: str | None) -> DatedConfig:
+    async def get_host_config(self, host: str | None) -> DatedConfig:
         """Get the configuration for the given host."""
-        config_file = self.get_host_config_file(host)
+        config_file = await self.get_host_config_file(host)
         if not config_file:
             _LOGGER.error("No config file for host %s", host)
         return (
-            self.get_config(config_file)
+            await self.get_config(config_file)
             if config_file
             else DatedConfig(cast("tilecloud_chain.configuration.Configuration", {}), 0, Path())
         )
 
-    def get_tile_config(self, tile: Tile) -> DatedConfig:
+    async def get_tile_config(self, tile: Tile) -> DatedConfig:
         """Get the configuration for the given tile."""
-        return self.get_config(Path(tile.metadata["config_file"]))
+        return await self.get_config(Path(tile.metadata["config_file"]))
 
-    def get_config(
+    async def get_config(
         self,
         config_file: Path,
         ignore_error: bool = True,
@@ -793,7 +804,7 @@ class TileGeneration:
         if config is not None and config.mtime == config_file.stat().st_mtime:
             return config
 
-        config, success = self._get_config(config_file, ignore_error, base_config)
+        config, success = await self._get_config(config_file, ignore_error, base_config)
         if not success or config is None:
             if ignore_error:
                 config = DatedConfig(cast("tilecloud_chain.configuration.Configuration", {}), 0, Path())
@@ -802,12 +813,15 @@ class TileGeneration:
         self.configs[config_file] = config
         return config
 
-    def get_main_config(self) -> DatedConfig:
+    async def get_main_config(self) -> DatedConfig:
         """Get the main configuration."""
         if os.environ.get("TILEGENERATION_MAIN_CONFIGFILE"):
-            return self.get_config(Path(os.environ["TILEGENERATION_MAIN_CONFIGFILE"]), ignore_error=False)
+            return await self.get_config(
+                Path(os.environ["TILEGENERATION_MAIN_CONFIGFILE"]),
+                ignore_error=False,
+            )
         if self.config_file:
-            return self.get_config(self.config_file, self.options.ignore_error, self.base_config)
+            return await self.get_config(self.config_file, self.options.ignore_error, self.base_config)
         _LOGGER.error("No provided configuration file")
         return DatedConfig({}, 0, Path())
 
@@ -820,7 +834,7 @@ class TileGeneration:
             else:
                 _LOGGER.error("Invalid value for host: %s", value)
 
-    def get_hosts(self, silent: bool = False) -> dict[str, Path]:
+    async def get_hosts(self, silent: bool = False) -> dict[str, Path]:
         """Get the hosts from the hosts file."""
         file_path = Path(os.environ["TILEGENERATION_HOSTSFILE"])
         if not file_path.exists():
@@ -831,10 +845,11 @@ class TileGeneration:
         if self.hosts_cache is not None and self.hosts_cache.mtime == file_path.stat().st_mtime:
             return self.hosts_cache.hosts
 
-        with file_path.open(encoding="utf-8") as hosts_file:
+        async with aiofiles.open(file_path, encoding="utf-8") as hosts_file:
+            content = await hosts_file.read()
             ruamel = YAML(typ="safe")
             hosts: dict[str, Path] = {}
-            hosts_raw = ruamel.load(hosts_file)
+            hosts_raw = ruamel.load(content)
             if "sources" in hosts_raw:
                 self._fill_host(hosts, hosts_raw["sources"])
             else:
@@ -843,18 +858,19 @@ class TileGeneration:
         self.hosts_cache = DatedHosts(hosts, file_path.stat().st_mtime)
         return hosts
 
-    def _get_config(
+    async def _get_config(
         self,
         config_file: Path,
         ignore_error: bool,
         base_config: tilecloud_chain.configuration.Configuration | None = None,
     ) -> tuple[DatedConfig, bool]:
         """Get the validated configuration for the file name."""
-        with config_file.open(encoding="utf-8") as f:
+        async with aiofiles.open(config_file, encoding="utf-8") as f:
+            content = await f.read()
             config: dict[str, Any] = {}
             config.update({} if base_config is None else base_config)
             ruamel = YAML()
-            config.update(ruamel.load(f))
+            config.update(ruamel.load(content))
 
         dated_config = DatedConfig(
             cast("tilecloud_chain.configuration.Configuration", config),
@@ -1096,8 +1112,12 @@ class TileGeneration:
         """Get the tile store."""
         gene = self
 
-        def get_store(config_file: Path, layer_name: str, grid_name: str | None) -> AsyncTileStore | None:
-            config = gene.get_config(config_file)
+        async def get_store(
+            config_file: Path,
+            layer_name: str,
+            grid_name: str | None,
+        ) -> AsyncTileStore | None:
+            config = await gene.get_config(config_file)
             cache_name = cache or config.config["generation"].get(
                 "default_cache",
                 configuration.DEFAULT_CACHE_DEFAULT,
@@ -1138,12 +1158,12 @@ class TileGeneration:
         if store is None:
             gene = self
 
-            def get_splitter(
+            async def get_splitter(
                 config_file: Path,
                 layer_name: str,
                 grid_name: str | None,
             ) -> AsyncTileStore | None:
-                config = gene.get_config(config_file)
+                config = await gene.get_config(config_file)
                 if layer_name not in config.config.get("layers", {}):
                     _LOGGER.warning("Layer %s not found in config %s", layer_name, config_file)
                     return None
@@ -1164,6 +1184,7 @@ class TileGeneration:
             store = TimedTileStoreWrapper(MultiTileStore(get_splitter), store_name="splitter")
 
         run = Run(self, self.functions_tiles, out=self.out)
+        await run.init()
 
         async def meta_get(metatile: Tile) -> Tile:
             assert store is not None
@@ -1190,48 +1211,60 @@ class TileGeneration:
         self.imap(meta_get)
         self.functions = self.functions_tiles
 
-    def create_log_tiles_error(self, layer: str) -> TextIO | None:
+    async def create_log_tiles_error(self, layer: str) -> aiofiles.threadpool.text.AsyncTextIOWrapper | None:
         """Create the error file for the given layer."""
-        if "error_file" in self.get_main_config().config.get("generation", {}):
+        main_config = await self.get_main_config()
+        if "error_file" in main_config.config.get("generation", {}):
             now = datetime.datetime.now(tz=datetime.timezone.utc)
             time_ = now.strftime("%d-%m-%Y %H:%M:%S")
-            error_file = Path(  # pylint: disable=consider-using-with # noqa: SIM115
-                self.get_main_config().config["generation"]["error_file"].format(layer=layer, datetime=now),
-            ).open("a", encoding="utf-8")
-            error_file.write(f"# [{time_}] Start the layer '{layer}' generation\n")
+            error_file_path = Path(
+                main_config.config["generation"]["error_file"].format(layer=layer, datetime=now),
+            )
+            # Create parent directories if they don't exist
+            error_file_path.parent.mkdir(parents=True, exist_ok=True)
+            # Use async open for better async compatibility
+            error_file = await aiofiles.open(error_file_path, "a", encoding="utf-8")
+            await error_file.write(f"# [{time_}] Start the layer '{layer}' generation\n")
             self.error_files_[layer] = error_file
             return error_file
         return None
 
-    def close(self) -> None:
+    async def close(self) -> None:
         """Close the tile generation."""
         for file_ in self.error_files_.values():
-            file_.close()
+            await file_.close()
 
-    def get_log_tiles_error_file(self, layer: str) -> TextIO | None:
+    async def get_log_tiles_error_file(
+        self,
+        layer: str,
+    ) -> aiofiles.threadpool.text.AsyncTextIOWrapper | None:
         """Get the error file for the given layer."""
-        return self.error_files_[layer] if layer in self.error_files_ else self.create_log_tiles_error(layer)
+        return (
+            self.error_files_[layer]
+            if layer in self.error_files_
+            else await self.create_log_tiles_error(layer)
+        )
 
-    def log_tiles_error(self, tile: Tile | None = None, message: str | None = None) -> None:
+    async def log_tiles_error(self, tile: Tile | None = None, message: str | None = None) -> None:
         """Log the error message for the given tile."""
         if tile is None:
             return
-        config = self.get_tile_config(tile)
+        config = await self.get_tile_config(tile)
         if "error_file" in config.config["generation"]:
             assert tile is not None
 
             time_ = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%d-%m-%Y %H:%M:%S")
-            if self.get_log_tiles_error_file(tile.metadata["layer"]) is None:
+            if await self.get_log_tiles_error_file(tile.metadata["layer"]) is None:
                 message = "Missing error file"
                 raise MissingErrorFileError(message)
 
             tilecoord = "" if tile.tilecoord is None else f"{tile.tilecoord} {tile.formated_metadata} "
             message = "" if message is None else f" {message}"
 
-            io = self.get_log_tiles_error_file(tile.metadata["layer"])
+            io = await self.get_log_tiles_error_file(tile.metadata["layer"])
             assert io is not None
             out_message = message.replace("\n", " ")
-            io.write(f"{tilecoord}# [{time_}]{out_message}\n")
+            await io.write(f"{tilecoord}# [{time_}]{out_message}\n")
 
     def get_grid(self, config: DatedConfig, grid_name: str) -> TileGrid:
         """Get the grid for the given name."""
@@ -1549,12 +1582,12 @@ class TileGeneration:
         self.imap(count)
         return count
 
-    def process(self, name: str | None = None, key: str = "post_process") -> None:
+    async def process(self, name: str | None = None, key: str = "post_process") -> None:
         """Add a process to the tilestream."""
         gene = self
 
-        def get_process(config_file: Path, layer_name: str) -> Process | None:
-            config = gene.get_config(config_file)
+        async def get_process(config_file: Path, layer_name: str) -> Process | None:
+            config = await gene.get_config(config_file)
             if layer_name not in config.config.get("layers", {}):
                 _LOGGER.warning("Layer %s not found in config %s", layer_name, config_file)
                 return None
@@ -1632,6 +1665,7 @@ class TileGeneration:
         start = datetime.datetime.now(tz=datetime.timezone.utc)
 
         run = Run(self, self.functions_metatiles, out=self.out)
+        await run.init()
 
         if test is None:
             nb_tasks = int(os.environ.get("TILECLOUD_CHAIN_NB_TASKS", "1")) if self.multi_task else 1
@@ -1789,12 +1823,16 @@ class MultiAction:
 
     def __init__(
         self,
-        get_action: Callable[[Path, str], Callable[[Tile], Awaitable[Tile | None]] | None],
+        get_action: Callable[[Path, str], Awaitable[Callable[[Tile], Awaitable[Tile | None]] | None]],
     ) -> None:
         self.get_action = get_action
         self.actions: dict[tuple[Path, str], _DatedAction] = {}
 
-    def _get_action(self, config_file: Path, layer: str) -> Callable[[Tile], Awaitable[Tile | None]] | None:
+    async def _get_action(
+        self,
+        config_file: Path,
+        layer: str,
+    ) -> Callable[[Tile], Awaitable[Tile | None]] | None:
         """Get the action based on the tile's layer name."""
         if not config_file.exists():
             _LOGGER.warning("Config file %s does not exist", config_file)
@@ -1804,7 +1842,7 @@ class MultiAction:
         if action is not None and action.mtime != mtime:
             action = None
         if action is None:
-            action_item = self.get_action(config_file, layer)
+            action_item = await self.get_action(config_file, layer)
             if action_item is not None:
                 action = _DatedAction(mtime, action_item)
                 self.actions[(config_file, layer)] = action
@@ -1814,7 +1852,7 @@ class MultiAction:
         """Run the action."""
         layer = tile.metadata["layer"]
         config_file = Path(tile.metadata["config_file"])
-        action = self._get_action(config_file, layer)
+        action = await self._get_action(config_file, layer)
         if action:
             _LOGGER.debug("[%s] Run action %s.", tile.tilecoord, action)
             return await action(tile)
@@ -1932,7 +1970,7 @@ class IntersectGeometryFilter:
         return (
             tile
             if self.filter_tilecoord(
-                self.gene.get_tile_config(tile),
+                await self.gene.get_tile_config(tile),
                 tile.tilecoord,
                 tile.metadata["layer"],
                 tile.metadata["grid"],
@@ -1961,7 +1999,7 @@ class DropEmpty:
 
     async def __call__(self, tile: Tile) -> Tile | None:
         """Filter the enpty tile."""
-        config = self.gene.get_tile_config(tile)
+        config = await self.gene.get_tile_config(tile)
         if not tile or not tile.data:
             _LOGGER.error(
                 "The tile: %s%s is empty",
@@ -1969,7 +2007,7 @@ class DropEmpty:
                 " " + tile.formated_metadata if tile else "",
             )
             if "error_file" in config.config["generation"] and tile:
-                self.gene.log_tiles_error(tile=tile, message="The tile is empty")
+                await self.gene.log_tiles_error(tile=tile, message="The tile is empty")
             return None
         return tile
 

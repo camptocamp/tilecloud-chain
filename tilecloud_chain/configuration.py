@@ -7,11 +7,6 @@ from typing import Any, Literal, TypedDict, Union
 from typing_extensions import Required
 
 
-ADMIN_PATH_DEFAULT = 'admin'
-""" Default value of the field path 'Server admin_path' """
-
-
-
 ALLOWED_ARGUMENTS_DEFAULT = ['--layer', '--get-hash', '--generate-legend-images', '--get-bbox', '--ignore-error', '--bbox', '--zoom', '--test', '--near', '--time', '--measure-generation-time', '--no-geom', '--dimensions']
 """ Default value of the field path 'Server allowed_arguments' """
 
@@ -2584,11 +2579,6 @@ STATIC_ALLOW_EXTENSION_DEFAULT = ['jpeg', 'png', 'xml', 'js', 'html', 'css']
 
 
 
-STATIC_PATH_DEFAULT = 'static'
-""" Default value of the field path 'Server static_path' """
-
-
-
 SentinelHost = str
 """
 Sentinel host.
@@ -2660,25 +2650,7 @@ class Server(TypedDict, total=False):
 
     The sub-path for the WMTS (main configuration)
 
-    default: wmts
-    """
-
-    static_path: str
-    """
-    Static path.
-
-    The sub-path for the static files (main configuration)
-
-    default: static
-    """
-
-    admin_path: str
-    """
-    Admin path.
-
-    The sub-path for the admin (main configuration)
-
-    default: admin
+    default: 
     """
 
     expires: int
@@ -2856,7 +2828,7 @@ VERSION_DEFAULT = '1.1.1'
 
 
 
-WMTS_PATH_DEFAULT = 'wmts'
+WMTS_PATH_DEFAULT = ''
 """ Default value of the field path 'Server wmts_path' """
 
 

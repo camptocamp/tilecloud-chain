@@ -239,11 +239,12 @@ Size per tile: [0-9]{3} o
     @pytest.mark.asyncio
     async def test_capabilities(self) -> None:
         """Test capabilities generation for the multi-grid config."""
-        gene = TileGeneration(Path("tilegeneration/test-multi-grid.yaml"), configure_logging=False)
+        gene = TileGeneration()
+        await gene.ainit(Path("tilegeneration/test-multi-grid.yaml"), configure_logging=False)
         config = gene.get_config(Path("tilegeneration/test-multi-grid.yaml"))
 
-        capabilities = await controller.get_wmts_capabilities(
-            gene, config.config["generation"]["default_cache"]
-        )
+        from tilecloud_chain.server import get_wmts_capabilities
+
+        capabilities = await get_wmts_capabilities(gene, config.config["generation"]["default_cache"])
 
         assert capabilities == "gggg"

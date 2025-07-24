@@ -11,37 +11,28 @@ asyncio_mode = "auto"
 [tool.poetry]
 version = "0.0.0"
 
-[tool.poetry.plugins."pyramid.scaffold"]
-tilecloud_chain = "tilecloud_chain.scaffolds:Create"
-
-[tool.poetry.plugins."paste.app_factory"]
-main = "tilecloud_chain.server:main"
-
 [tool.poetry.dependencies]
 # Minimal version should also be set in the jsonschema-gentypes.yaml file
 python = ">=3.11,<3.14"
-c2cwsgiutils = { version = "6.1.7", extras = ["standard", "broadcast", "oauth2", "debug"] }
-pyramid-mako = "1.1.0"
+c2casgiutils = { version = "0.5.0", extras = ["all"] }
+fastapi = {extras = ["standard"], version = "0.115.14"}
 python-dateutil = "2.9.0.post0"
 tilecloud = { version = "1.13.2", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.6"
 PyYAML = "6.0.2"
 Shapely = "2.1.1"
 jsonschema = "4.24.0"
-pyramid = "2.0.2"
 jsonschema-validator-new = "0.3.2"
 azure-storage-blob = "12.25.1"
-waitress = "3.0.2"
 certifi = "2025.7.14"
 Paste = "3.10.1"
 psutil = "7.0.0"
 pyproj = "3.7.1"
-psycopg = { version = "3.2.9", extras = ["binary"] }
 aiohttp = "3.12.14"
 sqlalchemy = { version = "2.0.41", extras = ["asyncio"] }
 aiofiles = "24.1.0"
 asyncpg = "0.30.0"
-nest-asyncio = "1.6.0"
+html-sanitizer = "2.6.0"
 
 [tool.poetry.group.dev.dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.17.2" }
@@ -105,7 +96,7 @@ authors = [{name = "Camptocamp",email = "info@camptocamp.com"}]
 packages = [{ include = "tilecloud_chain" }]
 include = ["tilecloud_chain/py.typed", "tilecloud_chain/*.rst", "tilecloud_chain/*.md"]
 requires-python = ">=3.10"
-dependencies = ["c2cwsgiutils[broadcast,debug,oauth2,standard]", "pyramid-mako", "python-dateutil", "tilecloud[aws,azure,redis,wsgi]", "Jinja2", "PyYAML", "Shapely", "jsonschema", "pyramid", "jsonschema-validator-new", "azure-storage-blob", "waitress", "certifi", "Paste", "psutil", "pyproj", "psycopg[binary]", "aiohttp", "sqlalchemy[asyncio]", "pytest-asyncio", "aiofiles", "asyncpg", "nest-asyncio"]
+dependencies = ["c2cwsgiutils[broadcast,debug,oauth2,standard]", "python-dateutil", "tilecloud[aws,azure,redis,wsgi]", "Jinja2", "PyYAML", "Shapely", "jsonschema", "jsonschema-validator-new", "azure-storage-blob", "certifi", "Paste", "psutil", "pyproj", "psycopg[binary]", "aiohttp", "sqlalchemy[asyncio]", "pytest-asyncio", "aiofiles", "asyncpg", "nest-asyncio", "c2casgiutils[all]", "fastapi[standard]", "html-sanitizer"]
 
 [project.urls]
 repository = "https://github.com/camptocamp/tilecloud-chain"

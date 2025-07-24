@@ -1,25 +1,31 @@
 services:
   application: &app
-    ports:
-      - '9050:8080'
     command:
-      - /venv/bin/pserve
+      - uvicorn
+      - tilecloud_chain.main:app
+      - --host=0.0.0.0
+      - --port=8080
+      - --log-config=logging.yaml
       - --reload
-      - c2c:///app/application.ini
+      - --reload-dir=/app/
+      - --reload-include=tilecloud_chain/**/*.py
+      - --reload-dir=/venv/lib/python3.12/site-packages/
+      - --reload-include=tilecloud/**/*.py
+      - --reload-include=c2casgiutils/**/*.py
     environment:
       - DEVELOPMENT=TRUE
     volumes:
       - ./tilecloud_chain:/app/tilecloud_chain:ro
       # - ../tilecloud/tilecloud:/usr/local/lib/python3.10/dist-packages/tilecloud:ro
+      - ../c2casgiutils/c2casgiutils:/usr/local/lib/python3.10/dist-packages/c2casgiutils:ro
 
   app_test_user:
     <<: *app
-    ports:
-      - '9051:8080'
 
   app_postgresql:
     volumes:
       - ./tilecloud_chain:/app/tilecloud_chain:ro
+      - ../c2casgiutils/c2casgiutils:/usr/local/lib/python3.10/dist-packages/c2casgiutils:ro
 
   slave:
     volumes:

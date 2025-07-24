@@ -33,329 +33,367 @@ import logging
 import multiprocessing
 import os
 import shlex
-import subprocess  # nosec
+import urllib.parse
 from collections.abc import Callable
-from pathlib import Path
-from typing import IO, Any
-from urllib.parse import urljoin
+from typing import IO, Annotated, Any
 
 import pyproj
-import pyramid.httpexceptions
-import pyramid.request
-import pyramid.response
-from c2cwsgiutils.auth import AuthenticationType, auth_type, auth_view
-from pyramid.view import view_config
+from c2casgiutils import auth
+from c2casgiutils import config as c2c_config
+from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 
 import tilecloud_chain.server
 import tilecloud_chain.store.postgresql
-from tilecloud_chain import configuration, controller, generate
+from tilecloud_chain import TileGeneration, configuration, controller, generate, server
 from tilecloud_chain.controller import get_status
 
 _LOG = logging.getLogger(__name__)
+# Initialize templates
+_templates = Jinja2Templates(directory="tilecloud_chain/templates")
+_postgresql_store: tilecloud_chain.store.postgresql.PostgresqlTileStore | None = None
+app = FastAPI(title="TileCloud-chain admin API")
 
 
-def _get_event_loop() -> asyncio.AbstractEventLoop:
-    """Get the current event loop."""
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError as e:
-        if "There is no current event loop in thread" in str(e):
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        else:
-            raise
-    return loop
+def _get_tilegeneration() -> TileGeneration:
+    """Get the tilegeneration instance."""
+    if (
+        not hasattr(tilecloud_chain.server, "_TILEGENERATION")
+        or tilecloud_chain.server._TILEGENERATION is None  # pylint: disable=protected-access
+    ):
+        raise HTTPException(status_code=500, detail="Tilegeneration not initialized")
+    return tilecloud_chain.server._TILEGENERATION  # pylint: disable=protected-access
 
 
-_LOOP = _get_event_loop()
+async def startup(_main_app: FastAPI) -> None:
+    """Create and configure the FastAPI admin application."""
+
+    main_config = await _get_tilegeneration().get_main_config()
+    queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
+    if queue_store == "postgresql":
+        global _postgresql_store  # pylint: disable=global-statement
+        _postgresql_store = await tilecloud_chain.store.postgresql.get_postgresql_queue_store(main_config)
 
 
-class Admin:
-    """The admin views."""
+def _get_postgresql_store() -> tilecloud_chain.store.postgresql.PostgresqlTileStore:
+    """Get the PostgreSQL store."""
+    if not _postgresql_store:
+        raise HTTPException(status_code=400, detail="PostgreSQL queue store not configured")
+    return _postgresql_store
 
-    def __init__(self, request: pyramid.request.Request) -> None:
-        """Initialize."""
-        self.request = request
 
-        config_file_name = request.registry.settings.get("tilegeneration_configfile")
-        tilecloud_chain.server.init_tilegeneration(Path(config_file_name) if config_file_name else None)
-        self.gene = tilecloud_chain.server._TILEGENERATION  # noqa: SLF001
-        assert self.gene is not None
+async def _get_access(
+    config: Annotated[tilecloud_chain.DatedConfig, Depends(server.get_host_config)],
+    auth_info: Annotated[auth.AuthInfo, Depends(auth.get_auth)],
+) -> bool:
+    """Check if the user has access to admin functions."""
 
-        main_config = self.gene.get_main_config()
-        queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
-        self.postgresql_queue_store = (
-            _LOOP.run_until_complete(
-                tilecloud_chain.store.postgresql.get_postgresql_queue_store(main_config),
+    if c2c_config.settings.auth.test.username:
+        return True
+
+    if await auth.check_admin_access(auth_info):
+        return True
+
+    auth_config = config.config.get("authentication", {})
+    return await auth.check_access_config(
+        auth_info,
+        auth.AuthConfig(
+            github_repository=auth_config.get("github_repository", ""),
+            github_access_type=auth_config.get("github_access_type", ""),
+        ),
+    )
+
+
+def _check_access(
+    has_access: Annotated[dict[str, Any], Depends(_get_access)],
+) -> None:
+    """Check if the user has access to admin functions."""
+
+    if not has_access:
+        raise HTTPException(status_code=403, detail="Access forbidden")
+
+
+# Pydantic models for request/response
+class CommandRequest(BaseModel):
+    """Model for command execution requests."""
+
+    command: str
+
+
+class JobRequest(BaseModel):
+    """Model for job creation requests."""
+
+    name: str
+    command: str
+
+
+class JobActionRequest(BaseModel):
+    """Model for job action requests (cancel, retry)."""
+
+    job_id: str
+
+
+class CommandResponse(BaseModel):
+    """Model for command execution responses."""
+
+    out: str
+    error: bool
+
+
+class JobResponse(BaseModel):
+    """Model for job operation responses."""
+
+    success: bool
+    error: str = ""
+
+
+@app.get("/", response_class=HTMLResponse)
+async def admin_index(
+    request: Request,
+    config: Annotated[tilecloud_chain.DatedConfig, Depends(server.get_host_config)],
+    gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
+    auth_info: Annotated[auth.AuthInfo, Depends(auth.get_auth)],
+    has_access: Annotated[bool, Depends(_get_access)],
+    auth_type: Annotated[auth.AuthenticationType, Depends(auth.auth_type)],
+    secret: Annotated[str | None, Query(..., description="Secret key for authentication")] = None,
+) -> HTMLResponse:
+    """Get the admin index page."""
+    server_config = config.config.get("server", {})
+    main_config = await gene.get_main_config()
+    main_server_config = main_config.config.get("server", {})
+    jobs_status = None
+    queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
+
+    if queue_store == "postgresql" and has_access and _postgresql_store and config.file:
+        jobs_status = await _postgresql_store.get_status(config.file)
+
+    assert auth_info, auth_info
+    context = {
+        "request": request,
+        "has_access": has_access,
+        "auth_info": auth_info,
+        "auth_type": auth_type,
+        "secret": secret,
+        "current_url": str(request.url),
+        "commands": server_config.get("predefined_commands", []),
+        "status": await get_status(gene) if queue_store != "postgresql" else None,
+        "admin_path": main_server_config.get("admin_path", "admin"),
+        "AuthenticationType": auth.AuthenticationType,
+        "jobs_status": jobs_status,
+        "footer": main_server_config.get("admin_footer") if has_access else None,
+        "footer_classes": main_server_config.get("admin_footer_classes", ""),
+        "urlencode": urllib.parse.urlencode,
+    }
+    return _templates.TemplateResponse("admin_index.html", context)
+
+
+@app.post("/run")
+async def admin_run(
+    request: Request,
+    command: Annotated[str, Form(...)],
+    gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
+    _: Annotated[None, Depends(_check_access)],
+) -> CommandResponse:
+    """Run the command given by the user."""
+    commands = shlex.split(command)
+    for part in commands:
+        if ";" in part or "&&" in part or "|" in part or "\n" in part or "\r" in part:
+            raise HTTPException(
+                status_code=400,
+                detail="The command contains malicious characters",
             )
-            if queue_store == "postgresql"
-            else None
+    command_name = commands[0].replace("_", "-")
+
+    main_config = await gene.get_main_config()
+    allowed_commands = main_config.config.get("server", {}).get(
+        "allowed_commands",
+        configuration.ALLOWED_COMMANDS_DEFAULT,
+    )
+    if command_name not in allowed_commands:
+        raise HTTPException(
+            status_code=400,
+            detail=f"The given command '{command_name}' is not allowed, allowed command are: {', '.join(allowed_commands)}",
         )
 
-    def _check_access(self, raise_on_no_access: bool = True) -> tuple[bool, tilecloud_chain.DatedConfig]:
-        assert self.gene
-        config = self.gene.get_host_config(self.request.host)
-        has_access = self.request.has_permission("admin", config.config.get("authentication", {}))
-        if not has_access and raise_on_no_access:
-            raise pyramid.httpexceptions.HTTPForbidden
-        return has_access, config
+    add_role = False
+    arguments = {c.split("=")[0]: c.split("=")[1:] for c in commands[1:]}
+    if command_name == "generate-tiles":
+        add_role = "--get-hash" not in arguments and "--get-bbox" not in arguments
 
-    @view_config(route_name="admin", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore[misc]
-    @view_config(route_name="admin_slash", renderer="tilecloud_chain:templates/admin_index.html")  # type: ignore[misc]
-    def index(self) -> dict[str, Any]:
-        """Get the admin index page."""
-        assert self.gene
-        has_access, config = self._check_access(raise_on_no_access=False)
-        server_config = config.config.get("server", {})
-        main_config = self.gene.get_main_config()
-        main_server_config = main_config.config.get("server", {})
-        jobs_status = None
-        queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
-        if queue_store == "postgresql" and has_access:
-            assert self.postgresql_queue_store is not None
-            config_filename = self.gene.get_host_config_file(self.request.host)
-            assert config_filename is not None
-            jobs_status = _LOOP.run_until_complete(self.postgresql_queue_store.get_status(config_filename))
-        return {
-            "auth_type": auth_type(self.request.registry.settings),
-            "has_access": has_access,
-            "commands": server_config.get("predefined_commands", []),
-            "status": _LOOP.run_until_complete(get_status(self.gene))
-            if queue_store != "postgresql"
-            else None,
-            "admin_path": main_server_config.get("admin_path", "admin"),
-            "AuthenticationType": AuthenticationType,
-            "jobs_status": jobs_status,
-            "footer": main_server_config.get("admin_footer") if has_access else None,
-            "footer_classes": main_server_config.get("admin_footer_classes", ""),
-        }
-
-    @view_config(route_name="admin_run", renderer="fast_json")  # type: ignore[misc]
-    def run(self) -> pyramid.response.Response:
-        """Run the command given by the user."""
-        assert self.gene
-
-        if "TEST_USER" not in os.environ:
-            auth_view(self.request)
-            self._check_access()
-
-        if "command" not in self.request.POST:
-            self.request.response.status_code = 400
-            return {"error": "The POST argument 'command' is required"}
-
-        commands = shlex.split(self.request.POST["command"])
-        command = commands[0].replace("_", "-")
-
-        allowed_commands = (
-            self.gene.get_main_config()
-            .config.get("server", {})
-            .get("allowed_commands", configuration.ALLOWED_COMMANDS_DEFAULT)
-        )
-        if command not in allowed_commands:
-            return {
-                "error": f"The given command '{command}' is not allowed, allowed command are: "
-                f"{', '.join(allowed_commands)}",
-            }
-        add_role = False
-        arguments = {c.split("=")[0]: c.split("=")[1:] for c in commands[1:]}
-        if command == "generate-tiles":
-            add_role = "--get-hash" not in arguments and "--get-bbox" not in arguments
-
-        allowed_arguments = (
-            self.gene.get_main_config()
-            .config.get("server", {})
-            .get("allowed_arguments", configuration.ALLOWED_ARGUMENTS_DEFAULT)
-        )
-        for arg in arguments:
-            if arg.startswith("-") and arg not in allowed_arguments:
-                self.request.response.status_code = 400
-                return {
-                    "error": (
-                        f"The argument {arg} is not allowed, allowed arguments are: "
-                        f"{', '.join(allowed_arguments)}"
-                    ),
-                }
-
-        final_command = [
-            command,
-            f"--host={self.request.host}",
-            f"--config={self.gene.get_host_config_file(self.request.host)}",
-        ]
-        if add_role:
-            final_command += ["--role=master"]
-        final_command += commands[1:]
-
-        display_command = shlex.join(final_command)
-        _LOG.info("Run the command `%s`", display_command)
-        env: dict[str, str] = {}
-        env.update(os.environ)
-        env["FRONTEND"] = "noninteractive"
-
-        main = None
-        if final_command[0] in ["generate-tiles", "generate_tiles"]:
-            main = generate.main
-        elif final_command[0] in ["generate-controller", "generate_controller"]:
-            main = controller.main
-        if main is not None:
-            return_dict: dict[str, Any] = {}
-            proc = multiprocessing.Process(
-                target=_run_in_process,
-                args=(final_command, env, main, return_dict),
-            )
-            proc.start()
-            proc.join()
-            return return_dict
-
-        completed_process = subprocess.run(  # pylint: disable=subprocess-run-check # noqa: S603
-            final_command,
-            capture_output=True,
-            env=env,
-            check=False,
-        )
-
-        if completed_process.returncode != 0:
-            _LOG.warning(
-                "The command `%s` exited with an error code: %s\nstdout:\n%s\nstderr:\n%s",
-                display_command,
-                completed_process.returncode,
-                completed_process.stdout.decode(),
-                completed_process.stderr.decode(),
+    allowed_arguments = main_config.config.get("server", {}).get(
+        "allowed_arguments",
+        configuration.ALLOWED_ARGUMENTS_DEFAULT,
+    )
+    for arg in arguments:
+        if arg.startswith("-") and arg not in allowed_arguments:
+            raise HTTPException(
+                status_code=400,
+                detail=f"The argument {arg} is not allowed, allowed arguments are: {', '.join(allowed_arguments)}",
             )
 
-        stdout_parsed = _parse_stdout(completed_process.stdout.decode())
-        out = _format_output(
-            "<br />".join(stdout_parsed),
+    host = request.headers.get("host", "localhost")
+    final_command = [
+        command_name,
+        f"--host={host}",
+        f"--config={await gene.get_host_config_file(host)}",
+    ]
+    if add_role:
+        final_command += ["--role=master"]
+    final_command += commands[1:]
+
+    display_command = shlex.join(final_command).replace("\n", " ").replace("\r", " ")
+    _LOG.info("Run the command `%s`", display_command)
+    env: dict[str, str] = {}
+    env.update(os.environ)
+    env["FRONTEND"] = "noninteractive"
+
+    main = None
+    if final_command[0] in ["generate-tiles", "generate_tiles"]:
+        main = generate.main
+    elif final_command[0] in ["generate-controller", "generate_controller"]:
+        main = controller.main
+
+    if main is not None:
+        return_dict: dict[str, Any] = {}
+        proc = multiprocessing.Process(
+            target=_run_in_process,
+            args=(final_command, env, main, return_dict),
+        )
+        proc.start()
+        proc.join()
+        return CommandResponse(out=return_dict.get("out", ""), error=return_dict.get("error", False))
+
+    process = await asyncio.create_subprocess_exec(
+        *final_command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+        env=env,
+    )
+    stdout, stderr = await process.communicate()
+
+    if process.returncode != 0:
+        _LOG.warning(
+            "The command `%s` exited with an error code: %s\nstdout:\n%s\nstderr:\n%s",
+            display_command,
+            process.returncode,
+            stdout.decode(),
+            stderr.decode(),
+        )
+
+    stdout_parsed = _parse_stdout(stdout.decode())
+    out = _format_output(
+        "<br />".join(stdout_parsed),
+        int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", "1000")),
+    )
+    if stderr:
+        out += "<br />Error:<br />" + _format_output(
+            stderr.decode().replace("\n", "<br />"),
             int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", "1000")),
         )
-        if completed_process.stderr:
-            out += "<br />Error:<br />" + _format_output(
-                completed_process.stderr.decode().replace("\n", "<br />"),
-                int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", "1000")),
-            )
-        return {
-            "out": out,
-            "error": completed_process.returncode != 0,
-        }
 
-    @view_config(route_name="admin_create_job", renderer="fast_json")  # type: ignore[misc]
-    def create_job(self) -> dict[str, Any]:
-        """Create a job."""
-        if "TEST_USER" not in os.environ:
-            auth_view(self.request)
-            self._check_access()
+    return CommandResponse(out=out, error=process.returncode != 0)
 
-        store = self.postgresql_queue_store
-        assert store is not None
 
-        if "command" not in self.request.POST:
-            self.request.response.status_code = 400
-            return {"success": False, "error": "The POST argument 'command' is required"}
+@app.post("/create_job")
+async def admin_create_job(
+    request: Request,
+    name: Annotated[str, Form(...)],
+    command: Annotated[str, Form(...)],
+    gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
+    postgresql_store: Annotated[
+        tilecloud_chain.store.postgresql.PostgresqlTileStore,
+        Depends(_get_postgresql_store),
+    ],
+    _: Annotated[None, Depends(_check_access)],
+) -> JobResponse:
+    """Create a job."""
+    try:
+        host = request.headers.get("host", "localhost")
+        config_filename = await gene.get_host_config_file(host)
+        if not config_filename:
+            raise HTTPException(status_code=400, detail="Config filename not found")
 
-        if "name" not in self.request.POST:
-            self.request.response.status_code = 400
-            return {"success": False, "error": "The POST argument 'name' is required"}
+        await postgresql_store.create_job(name, command, config_filename)
+        return JobResponse(success=True)
+    except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
+        _LOG.exception("Error while creating the job")
+        raise HTTPException(status_code=400, detail=str(e))  # noqa: B904 # pylint: disable=raise-missing-from
 
-        try:
-            assert self.gene is not None
-            config_filename = self.gene.get_host_config_file(self.request.host)
-            assert config_filename is not None
-            _LOOP.run_until_complete(
-                store.create_job(self.request.POST["name"], self.request.POST["command"], config_filename),
-            )
-        except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
-            _LOG.exception("Error while creating the job")
-            self.request.response.status_code = 400
-            return {"success": False, "error": str(e)}
-        else:
-            return {
-                "success": True,
-            }
 
-    @view_config(route_name="admin_cancel_job", renderer="fast_json")  # type: ignore[misc]
-    def cancel_job(self) -> dict[str, Any]:
-        """Cancel a job."""
-        if "TEST_USER" not in os.environ:
-            auth_view(self.request)
-            self._check_access()
+@app.post("/cancel_job")
+async def admin_cancel_job(
+    request: Request,
+    job_id: Annotated[int, Form(...)],
+    gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
+    postgresql_store: Annotated[
+        tilecloud_chain.store.postgresql.PostgresqlTileStore,
+        Depends(_get_postgresql_store),
+    ],
+    _: Annotated[None, Depends(_check_access)],
+) -> JobResponse:
+    """Cancel a job."""
+    try:
+        host = request.headers.get("host", "localhost")
+        config_filename = await gene.get_host_config_file(host)
+        if not config_filename:
+            raise HTTPException(status_code=400, detail="Config filename not found")
 
-        store = self.postgresql_queue_store
-        assert store is not None
+        await postgresql_store.cancel(job_id, config_filename)
+        return JobResponse(success=True)
+    except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
+        _LOG.exception("Exception while cancelling the job")
+        raise HTTPException(status_code=400, detail=str(e))  # noqa: B904 # pylint: disable=raise-missing-from
 
-        if "job_id" not in self.request.POST:
-            self.request.response.status_code = 400
-            return {"success": False, "error": "The POST argument 'job_id' is required"}
 
-        assert self.gene is not None
+@app.post("/retry_job")
+async def admin_retry_job(
+    request: Request,
+    job_id: Annotated[int, Form(...)],
+    gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
+    postgresql_store: Annotated[
+        tilecloud_chain.store.postgresql.PostgresqlTileStore,
+        Depends(_get_postgresql_store),
+    ],
+    _: Annotated[None, Depends(_check_access)],
+) -> JobResponse:
+    """Retry a job."""
+    try:
+        host = request.headers.get("host", "localhost")
+        config_filename = await gene.get_host_config_file(host)
+        if not config_filename:
+            raise HTTPException(status_code=400, detail="Config filename not found")
 
-        try:
-            config_filename = self.gene.get_host_config_file(self.request.host)
-            assert config_filename is not None
-            _LOOP.run_until_complete(
-                store.cancel(int(self.request.POST["job_id"]), config_filename),
-            )
-        except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
-            _LOG.exception("Exception while cancelling the job")
-            self.request.response.status_code = 400
-            return {"success": False, "error": str(e)}
-        else:
-            return {
-                "success": True,
-            }
+        await postgresql_store.retry(job_id, config_filename)
+        return JobResponse(success=True)
+    except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
+        _LOG.exception("Exception while retrying the job")
+        raise HTTPException(status_code=400, detail=str(e))  # noqa: B904 # pylint: disable=raise-missing-from
 
-    @view_config(route_name="admin_retry_job", renderer="fast_json")  # type: ignore[misc]
-    def retry_job(self) -> dict[str, Any]:
-        """Retry a job."""
-        if "TEST_USER" not in os.environ:
-            auth_view(self.request)
-            self._check_access()
 
-        store = self.postgresql_queue_store
-        assert store is not None
+@app.get("/test", response_class=HTMLResponse)
+async def admin_test(
+    request: Request,
+    gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
+) -> HTMLResponse:
+    """Test the admin view."""
+    host = request.headers.get("host", "localhost")
+    config = await gene.get_host_config(host)
+    srs = config.config["openlayers"].get("srs", configuration.SRS_DEFAULT)
+    proj4js_def = config.config["openlayers"].get("proj4js_def")
+    if proj4js_def is None:
+        proj4js_def = pyproj.CRS.from_string(srs).to_proj4()
 
-        if "job_id" not in self.request.POST:
-            self.request.response.status_code = 400
-            return {"success": False, "error": "The POST argument 'job_id' is required"}
-
-        assert self.gene is not None
-
-        try:
-            config_filename = self.gene.get_host_config_file(self.request.host)
-            assert config_filename is not None
-            _LOOP.run_until_complete(
-                store.retry(self.request.POST["job_id"], config_filename),
-            )
-        except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
-            _LOG.exception("Exception while retrying the job")
-            self.request.response.status_code = 400
-            return {"success": False, "error": str(e)}
-        else:
-            return {"success": True}
-
-    @view_config(route_name="admin_test", renderer="tilecloud_chain:templates/openlayers.html")  # type: ignore[misc]
-    def admin_test(self) -> dict[str, Any]:
-        """Test the admin view."""
-        assert self.gene
-        config = self.gene.get_host_config(self.request.host)
-        main_config = self.gene.get_main_config()
-        srs = config.config["openlayers"].get("srs", configuration.SRS_DEFAULT)
-        proj4js_def = config.config["openlayers"].get("proj4js_def")
-        if proj4js_def is None:
-            proj4js_def = pyproj.CRS.from_string(srs).to_proj4()
-        return {
-            "proj4js_def": proj4js_def,
-            "srs": srs,
-            "center_x": config.config["openlayers"].get("center_x", configuration.CENTER_X_DEFAULT),
-            "center_y": config.config["openlayers"].get("center_y", configuration.CENTER_Y_DEFAULT),
-            "zoom": config.config["openlayers"].get("zoom", configuration.MAP_INITIAL_ZOOM_DEFAULT),
-            "http_url": urljoin(
-                self.request.current_route_url(),
-                (
-                    "/" + main_config.config["server"].get("wmts_path", "wmts") + "/"
-                    if "server" in config.config
-                    else "/"
-                ),
-            ),
-        }
+    context = {
+        "request": request,
+        "proj4js_def": proj4js_def,
+        "srs": srs,
+        "center_x": config.config["openlayers"].get("center_x", configuration.CENTER_X_DEFAULT),
+        "center_y": config.config["openlayers"].get("center_y", configuration.CENTER_Y_DEFAULT),
+        "zoom": config.config["openlayers"].get("zoom", configuration.MAP_INITIAL_ZOOM_DEFAULT),
+    }
+    return _templates.TemplateResponse("openlayers.html", context)
 
 
 def _parse_stdout(stdout: str) -> list[str]:

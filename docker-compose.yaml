@@ -55,11 +55,13 @@ services:
       TILECLOUD_CHAIN_LOG_LEVEL: INFO
       TILECLOUD_CHAIN_SESSION_SECRET: '1234'
       TILECLOUD_CHAIN_SESSION_SALT: '1234'
-      C2C_AUTH_GITHUB_REPOSITORY: camptocamp/tilecloud-chain
-      C2C_AUTH_GITHUB_SECRET: '1234567890123456789'
-      C2C_AUTH_GITHUB_CLIENT_ID: '1234'
-      C2C_AUTH_GITHUB_CLIENT_SECRET: '1234'
-      C2C_PROMETHEUS_PORT: '9110'
+      C2C__AUTH__GITHUB__REPOSITORY: camptocamp/tilecloud-chain
+      C2C__AUTH__GITHUB__CLIENT_ID: '1234'
+      C2C__AUTH__GITHUB__CLIENT_SECRET: '1234'
+      C2C__PROMETHEUS__PORT: '9110'
+      HTTP: TRUE
+    ports:
+      - '9050:8080'
     links:
       - db
       - redis_sentinel
@@ -70,13 +72,15 @@ services:
     <<: *app
     environment:
       <<: *app-env
-      TEST_USER: Test
+      C2C__AUTH__TEST__USERNAME: Test
+    ports:
+      - '9051:8080'
 
   app_postgresql:
     <<: *app
     environment: &app-pg-env
       <<: *app-env
-      TEST_USER: Test
+      C2C__AUTH__TEST__USERNAME: Test
       SQL_LOG_LEVEL: DEBUG
       TILECLOUD_CHAIN_SQLALCHEMY_URL: postgresql+asyncpg://postgresql:postgresql@db:5432/tests
       PGHOST: db
@@ -99,6 +103,7 @@ services:
       TILECLOUD_CHAIN_SLAVE: 'TRUE'
     volumes:
       - ./example/tilegeneration/config-postgresql.yaml:/etc/tilegeneration/config.yaml:ro
+    ports: []
 
   test:
     image: camptocamp/tilecloud-chain-tests

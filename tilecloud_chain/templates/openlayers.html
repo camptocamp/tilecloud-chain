@@ -12,14 +12,14 @@
       rel="icon"
       type="image/png"
       sizes="32x32"
-      href="${request.static_url('/app/tilecloud_chain/static/favicon-32x32.png')}"
+      href="{{ url_for('c2c_static', path='/favicon-32x32.png') }}"
       referrerpolicy="no-referrer"
     />
     <link
       rel="icon"
       type="image/png"
       sizes="16x16"
-      href="${request.static_url('/app/tilecloud_chain/static/favicon-16x16.png')}"
+      href="{{ url_for('c2c_static', path='/favicon-16x16.png') }}"
       referrerpolicy="no-referrer"
     />
 
@@ -79,11 +79,11 @@
     ></script>
 
     <script>
-      proj4.defs("${srs}",`${proj4js_def}`);
+      proj4.defs("{{ srs }}",`{{ proj4js_def }}`);
       ol.proj.proj4.register(proj4);
       var parser = new ol.format.WMTSCapabilities();
 
-      fetch('${http_url}1.0.0/WMTSCapabilities.xml')
+      fetch('{{ url_for("wmts_capabilities", version="1.0.0") }}')
         .then(function (response) {
           return response.text();
         })
@@ -96,11 +96,11 @@
           let visible = true;
           for (wmtsLayer of result.Contents.Layer) {
             const options = ol.source.WMTS.optionsFromCapabilities(result, {
-              projection: "${srs}",
+              projection: "{{ srs }}",
               layer: wmtsLayer.Identifier,
             });
             tileGridOptions = {
-              projection: "${srs}",
+              projection: "{{ srs }}",
               tileGrid: options.tileGrid,
             };
             resolutions =  options.tileGrid.getResolutions()
@@ -126,9 +126,9 @@
             layers: layers,
             target: 'map',
             view: new ol.View({
-              projection: "${srs}",
-              center: [${center_x}, ${center_y}],
-              zoom: ${zoom},
+              projection: "{{ srs }}",
+              center: [{{ center_x }}, {{ center_y }}],
+              zoom: {{ zoom }},
               resolutions: resolutions,
               constrainResolution: true
             }),
