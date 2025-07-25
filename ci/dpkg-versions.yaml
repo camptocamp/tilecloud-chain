@@ -26,7 +26,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/gzip: 1.10-4ubuntu4.1
   ubuntu_22_04/hostname: 3.23ubuntu2
   ubuntu_22_04/init-system-helpers: '1.62'
-  ubuntu_22_04/iputils-ping: 3:20211215-1
+  ubuntu_22_04/iputils-ping: 3:20211215-1ubuntu0.1
   ubuntu_22_04/jpegoptim: 1.4.6-1
   ubuntu_22_04/libacl1: 2.3.1-1
   ubuntu_22_04/libaec0: 1.0.6-1
