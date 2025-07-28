@@ -1,7 +1,7 @@
 """Redirect to the corresponding Tilestore for the layer and config file."""
 
 import logging
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -23,30 +23,33 @@ class _DatedStore:
 class MultiTileStore(AsyncTileStore):
     """Redirect to the corresponding Tilestore for the layer and config file."""
 
-    def __init__(self, get_store: Callable[[Path, str, str | None], AsyncTileStore | None]) -> None:
+    def __init__(
+        self,
+        get_store: Callable[[Path, str, str | None], Awaitable[AsyncTileStore | None]],
+    ) -> None:
         """Initialize."""
         self.get_store = get_store
         self.stores: dict[tuple[Path, str, str], _DatedStore | None] = {}
 
-    def _get_store(self, config_file: Path, layer: str, grid_name: str) -> AsyncTileStore | None:
+    async def _get_store(self, config_file: Path, layer: str, grid_name: str) -> AsyncTileStore | None:
         config_path = Path(config_file)
         mtime = config_path.stat().st_mtime
         store = self.stores.get((config_file, layer, grid_name))
         if store is not None and store.mtime != mtime:
             store = None
         if store is None:
-            tile_store = self.get_store(config_file, layer, grid_name)
+            tile_store = await self.get_store(config_file, layer, grid_name)
             if tile_store is not None:
                 store = _DatedStore(mtime, tile_store)
                 self.stores[(config_file, layer, grid_name)] = store
         return store.store if store is not None else None
 
-    def _get_store_tile(self, tile: Tile) -> AsyncTileStore | None:
+    async def _get_store_tile(self, tile: Tile) -> AsyncTileStore | None:
         """Return the store corresponding to the tile."""
         layer = tile.metadata["layer"]
         grid = tile.metadata["grid"]
         config_file = Path(tile.metadata["config_file"])
-        return self._get_store(config_file, layer, grid)
+        return await self._get_store(config_file, layer, grid)
 
     async def __contains__(self, tile: Tile) -> bool:
         """
@@ -55,7 +58,7 @@ class MultiTileStore(AsyncTileStore):
         Arguments:
             tile: Tile
         """
-        store = self._get_store_tile(tile)
+        store = await self._get_store_tile(tile)
         assert store is not None
         return tile in store
 
@@ -66,7 +69,7 @@ class MultiTileStore(AsyncTileStore):
         Arguments:
             tile: Tile
         """
-        store = self._get_store_tile(tile)
+        store = await self._get_store_tile(tile)
         assert store is not None
         return await store.delete_one(tile)
 
@@ -83,7 +86,7 @@ class MultiTileStore(AsyncTileStore):
         Arguments:
             tile: Tile
         """
-        store = self._get_store_tile(tile)
+        store = await self._get_store_tile(tile)
         assert store is not None
         return await store.put_one(tile)
 
@@ -94,7 +97,7 @@ class MultiTileStore(AsyncTileStore):
         Arguments:
             tile: Tile
         """
-        store = self._get_store_tile(tile)
+        store = await self._get_store_tile(tile)
         assert store is not None
         return await store.get_one(tile)
 
@@ -106,7 +109,7 @@ class MultiTileStore(AsyncTileStore):
             tiles: AsyncIterator[Tile]
         """
         async for tile in tiles:
-            store = self._get_store_tile(tile)
+            store = await self._get_store_tile(tile)
             assert store is not None, f"No store found for tile {tile.tilecoord} {tile.formated_metadata}"
 
             async for new_tile in store.get(AsyncTilesIterator([tile])()):

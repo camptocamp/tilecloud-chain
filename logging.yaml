@@ -1,0 +1,45 @@
+###
+# Logging configuration
+# http://docs.pylonsproject.org/projects/pyramid/en/latest/narr/logging.html
+###
+
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  generic:
+    class: logging.Formatter
+    format: '%(levelname)-5.5s %(name)s %(message)s'
+    datefmt: '[%Y-%m-%d %H:%M:%S %z]'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: generic
+
+loggers:
+  uvicorn.error:
+    level: INFO
+
+  uvicorn.access:
+    level: INFO
+
+  sqlalchemy.engine:
+    # "level = INFO" logs SQL queries.
+    # "level = DEBUG" logs SQL queries and results.
+    # "level = WARNING" logs neither.  (Recommended for production systems.)
+    level: INFO
+
+  c2casgiutils:
+    level: INFO
+
+  tilecloud:
+    level: INFO
+
+  tilecloud_chain:
+    level: INFO
+
+root:
+  level: WARNING
+  handlers:
+    - console

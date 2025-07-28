@@ -1113,19 +1113,7 @@
           "title": "WMTS path",
           "description": "The sub-path for the WMTS (main configuration)",
           "type": "string",
-          "default": "wmts"
-        },
-        "static_path": {
-          "title": "Static path",
-          "description": "The sub-path for the static files (main configuration)",
-          "type": "string",
-          "default": "static"
-        },
-        "admin_path": {
-          "title": "Admin path",
-          "description": "The sub-path for the admin (main configuration)",
-          "type": "string",
-          "default": "admin"
+          "default": ""
         },
         "expires": {
           "title": "Expires",
