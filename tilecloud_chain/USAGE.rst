@@ -4,7 +4,7 @@ Configuration
 This guide covers configuration options for tilecloud-chain, a tool for generating and serving map tiles.
 
 Configure Grids
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 The ``grid`` configuration describes how map tiles are arranged in your tileset.
 
@@ -23,12 +23,13 @@ Key grid settings:
 - ``tile_size``: Tile dimensions in pixels (default: ``256``)
 
 - ``matrix_identifier``: How z-index is built for tile storage:
-    - ``zoom`` (default): Uses zoom levels ``[0, 1, 2]`` for the resolutions ``[2, 1, 0.5]``
-    - ``resolution``: Uses resolution values ``[2, 1, 0_5]`` for the same resolutions
+
+  - ``zoom`` (default): Uses zoom levels ``[0, 1, 2]`` for the resolutions ``[2, 1, 0.5]``
+  - ``resolution``: Uses resolution values ``[2, 1, 0_5]`` for the same resolutions
     Resolution-based indexing allows adding resolutions without regenerating tiles, but is incompatible with MapCache.
 
 Configure Caches
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 Available tile cache backends:
 
@@ -711,7 +712,7 @@ Environment variables
 ---------------------
 
 Environment Variables Reference
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Configuration can be customized through the following environment variables:
 
