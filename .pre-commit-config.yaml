@@ -75,7 +75,7 @@ repos:
           - tilecloud_chain/host-limit-schema.json
           - tilecloud_chain/HOST_LIMIT.md
   - repo: https://github.com/sbrunner/hooks
-    rev: 1.5.0
+    rev: 1.6.0
     hooks:
       - id: copyright
       - id: poetry2-lock
@@ -129,7 +129,7 @@ repos:
           )$
         additional_dependencies:
           - prospector-profile-duplicated==1.10.5 # pypi
-          - prospector-profile-utils==1.25.0 # pypi
+          - prospector-profile-utils==1.26.0 # pypi
           - pylint[spelling]==3.3.7 # pypi
           - ruff==0.12.7 # pypi
       - id: prospector
@@ -139,7 +139,7 @@ repos:
           - --profile=utils:tests
           - --profile=utils:pre-commit
         additional_dependencies:
-          - prospector-profile-utils==1.25.0 # pypi
+          - prospector-profile-utils==1.26.0 # pypi
   - repo: https://github.com/sbrunner/jsonschema-validator
     rev: 1.0.0
     hooks:
