@@ -81,8 +81,8 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/libgeotiff5: 1.7.0-2build1
   ubuntu_22_04/libgfortran5: 12.3.0-1ubuntu1~22.04.2
   ubuntu_22_04/libgif7: 5.1.9-2ubuntu0.1
-  ubuntu_22_04/libglib2.0-0: 2.72.4-0ubuntu2.5
-  ubuntu_22_04/libglib2.0-data: 2.72.4-0ubuntu2.5
+  ubuntu_22_04/libglib2.0-0: 2.72.4-0ubuntu2.6
+  ubuntu_22_04/libglib2.0-data: 2.72.4-0ubuntu2.6
   ubuntu_22_04/libgmp10: 2:6.2.1+dfsg-3ubuntu1
   ubuntu_22_04/libgnutls30: 3.7.3-4ubuntu1.7
   ubuntu_22_04/libgomp1: 12.3.0-1ubuntu1~22.04.2
@@ -144,7 +144,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/libperl5.34: 5.34.0-3ubuntu1.5
   ubuntu_22_04/libpixman-1-0: 0.40.0-1ubuntu0.22.04.1
   ubuntu_22_04/libpng16-16: 1.6.37-3build5
-  ubuntu_22_04/libpoppler118: 22.02.0-2ubuntu0.9
+  ubuntu_22_04/libpoppler118: 22.02.0-2ubuntu0.10
   ubuntu_22_04/libpq5: 14.18-0ubuntu0.22.04.1
   ubuntu_22_04/libprocps8: 2:3.3.17-6ubuntu2.1
   ubuntu_22_04/libproj22: 8.2.1-1
