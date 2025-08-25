@@ -17,14 +17,14 @@ class TestController(CompareCase):
 
     @classmethod
     def setUpClass(cls):  # noqa
-        os.chdir(os.path.dirname(__file__))
-        if os.path.exists("/tmp/tiles"):
+        os.chdir(Path(__file__).parent)
+        if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     @classmethod
     def tearDownClass(cls):  # noqa
-        os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-        if os.path.exists("/tmp/tiles"):
+        os.chdir(Path(__file__).parent.parent.parent)
+        if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     @pytest.mark.asyncio
@@ -975,7 +975,9 @@ class TestController(CompareCase):
         gene = TileGeneration()
         await gene.ainit(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, "multi_host"), self.MULTIHOST_CAPABILITIES, True
+            await controller.wmts_capabilities(gene, "multi_host"),
+            self.MULTIHOST_CAPABILITIES,
+            True,
         )
 
     @pytest.mark.asyncio
@@ -1119,7 +1121,9 @@ class TestController(CompareCase):
         gene = TileGeneration()
         await gene.ainit(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, "multi_url"), self.MULTIHOST_CAPABILITIES, True
+            await controller.wmts_capabilities(gene, "multi_url"),
+            self.MULTIHOST_CAPABILITIES,
+            True,
         )
 
     CONFIG = """
@@ -1721,7 +1725,7 @@ sqs:
                             "path": "1.0.0/point/default/legend-5.png",
                             "width": 64,
                         },
-                    ]
+                    ],
                 },
             ),
             (
@@ -1742,7 +1746,7 @@ sqs:
                             "path": "1.0.0/line/default/legend-50.png",
                             "width": 71,
                         },
-                    ]
+                    ],
                 },
             ),
             (
@@ -1755,7 +1759,7 @@ sqs:
                             "path": "1.0.0/polygon/default/legend-5.png",
                             "width": 81,
                         },
-                    ]
+                    ],
                 },
             ),
             (
@@ -1776,14 +1780,15 @@ sqs:
                             "path": "1.0.0/all/default/legend-50.png",
                             "width": 81,
                         },
-                    ]
+                    ],
                 },
             ),
         ):
             with pytest_check.check:
                 # Check that legend files were created
-                assert os.path.exists(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml")
-                with open(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml", encoding="utf-8") as legend_file:
+                path = Path(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml")
+                assert path.exists()
+                with path.open(encoding="utf-8") as legend_file:
                     legend_metadata = yaml.safe_load(legend_file)
                     assert legend_metadata == result
 

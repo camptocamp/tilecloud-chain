@@ -1,5 +1,5 @@
-import os
 import subprocess
+from pathlib import Path
 
 import pytest
 import skimage.io
@@ -36,6 +36,6 @@ def test_ui(url, expected_file_name, height, width):
     check_image(
         "/results",
         skimage.io.imread(f"/tmp/{expected_file_name}.png")[:, :, :3],
-        os.path.join(os.path.dirname(__file__), f"{expected_file_name}.expected.png"),
+        Path(__file__).parent / f"{expected_file_name}.expected.png",
         generate_expected_image=REGENERATE,
     )

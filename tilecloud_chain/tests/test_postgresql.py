@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -54,7 +54,7 @@ async def queue(SessionMaker: sessionmaker, tilestore: PostgresqlTileStore) -> t
             metadata={
                 "job_id": job_id,
             },
-        )
+        ),
     )
     await tilestore.put_one(
         Tile(
@@ -62,7 +62,7 @@ async def queue(SessionMaker: sessionmaker, tilestore: PostgresqlTileStore) -> t
             metadata={
                 "job_id": job_id,
             },
-        )
+        ),
     )
 
     with SessionMaker() as session:
@@ -112,7 +112,9 @@ async def test_retry(queue: tuple[int, int, int], SessionMaker: sessionmaker, ti
 
 @pytest.mark.asyncio
 async def test_cancel(
-    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
 ):
     job_id, _, _ = queue
 
@@ -135,7 +137,9 @@ async def test_cancel(
 
 @pytest.mark.asyncio
 async def test_maintenance_status_done(
-    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
 ):
     job_id, _, _ = queue
 
@@ -158,17 +162,19 @@ async def test_maintenance_status_done(
 
 @pytest.mark.asyncio
 async def test_maintenance_pending_tile(
-    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
 ):
     job_id, metatile_0_id, metatile_1_id = queue
 
     with SessionMaker() as session:
         metatile_0 = session.query(Queue).filter(Queue.id == metatile_0_id).one()
         metatile_0.status = _STATUS_PENDING
-        metatile_0.started_at = datetime.now() - timedelta(hours=1)
+        metatile_0.started_at = datetime.now(tz=timezone.utc) - timedelta(hours=1)
         metatile_1 = session.query(Queue).filter(Queue.id == metatile_1_id).one()
         metatile_1.status = _STATUS_PENDING
-        metatile_1.started_at = datetime.now() - timedelta(hours=1)
+        metatile_1.started_at = datetime.now(tz=timezone.utc) - timedelta(hours=1)
         session.commit()
 
     await tilestore._maintenance()
@@ -181,13 +187,15 @@ async def test_maintenance_pending_tile(
 
 @pytest.mark.asyncio
 async def test_maintenance_pending_job(
-    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
 ):
     job_id, metatile_0_id, metatile_1_id = queue
     with SessionMaker() as session:
         job = session.query(Job).filter(Job.id == job_id).one()
         job.status = _STATUS_PENDING
-        job.started_at = datetime.now() - timedelta(hours=1)
+        job.started_at = datetime.now(tz=timezone.utc) - timedelta(hours=1)
 
     await tilestore._maintenance()
 

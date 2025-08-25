@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from tilecloud_chain import cost
 from tilecloud_chain.tests import CompareCase
@@ -10,11 +11,11 @@ class TestCost(CompareCase):
 
     @classmethod
     def setUpClass(cls):  # noqa
-        os.chdir(os.path.dirname(__file__))
+        os.chdir(Path(__file__).parent)
 
     @classmethod
     def tearDownClass(cls):  # noqa
-        os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+        os.chdir(Path(__file__).parent.parent.parent)
 
     ZOOM_SUMMARY = """
 %(tiles)s tiles in zoom %(zoom)s.
@@ -68,7 +69,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -102,7 +103,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -140,7 +141,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -178,7 +179,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -211,7 +212,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -244,7 +245,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -304,7 +305,7 @@ S3 get: %(get)s [$/month]
                         "get": "55.78",
                         # 'cloudfront': '54.78',
                     },
-                ]
+                ],
             ),
         )
 
@@ -335,7 +336,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -368,7 +369,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -401,7 +402,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -435,7 +436,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -463,6 +464,6 @@ S3 get: %(get)s [$/month]
                     "SQS usage: 0.00 [$]",
                     self.LAYER_SUMMARY % {"tiles": "125886", "time": "2:05:53", "cost": "1.26"},
                     self.FINAL_SUMMARY % {"storage": "0.00", "get": "32.89"},
-                ]
+                ],
             ),
         )

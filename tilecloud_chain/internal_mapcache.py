@@ -255,7 +255,7 @@ async def _get_generator(tilegeneration: tilecloud_chain.TileGeneration) -> Gene
 
 async def _init_generator(tilegeneration: tilecloud_chain.TileGeneration) -> Generator:
     with _lock:
-        global _GENERATOR  # pylint: disable=global-statement
+        global _GENERATOR  # noqa: PLW0603
         if _GENERATOR is None:
             _GENERATOR = Generator(tilegeneration)
             await _GENERATOR.init()

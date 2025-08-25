@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os
 from pathlib import Path
 
@@ -48,7 +46,7 @@ class TestMultiGrid(CompareCase):
                 ("swissgrid_21781", 0, 1, 1),
             ],
             regex=True,
-            expected="""The tile generation of layer 'all \(DATE=2012\)' is finish
+            expected=r"""The tile generation of layer 'all \(DATE=2012\)' is finish
 Nb generated metatiles: 2
 Nb metatiles dropped: 0
 Nb generated tiles: 8
@@ -83,7 +81,7 @@ Size per tile: [0-9]{3} o
                 ("swissgrid_2056", 0, 1, 1),
             ],
             regex=True,
-            expected="""The tile generation of layer 'one \(DATE=2012\)' is finish
+            expected=r"""The tile generation of layer 'one \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 4
@@ -121,7 +119,7 @@ Size per tile: [0-9]{3} o
                         (0, 1, 1),
                     ],
                     regex=True,
-                    expected="""The tile generation of layer 'all \(DATE=2012\)' is finish
+                    expected=r"""The tile generation of layer 'all \(DATE=2012\)' is finish
         Nb generated metatiles: 1
         Nb metatiles dropped: 0
         Nb generated tiles: 4
@@ -211,8 +209,8 @@ Size per tile: [0-9]{3} o
                             "mime_type": "image/png",
                             "height": 20,
                             "width": 64,
-                        }
-                    ]
+                        },
+                    ],
                 },
             ),
             (
@@ -224,15 +222,16 @@ Size per tile: [0-9]{3} o
                             "mime_type": "image/png",
                             "height": 20,
                             "width": 64,
-                        }
-                    ]
+                        },
+                    ],
                 },
             ),
         ):
             with pytest_check.check:
                 # Check that legend files were created
-                assert os.path.exists(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml")
-                with open(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml", encoding="utf-8") as legend_file:
+                legend_yaml_path = Path(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml")
+                assert legend_yaml_path.exists()
+                with legend_yaml_path.open(encoding="utf-8") as legend_file:
                     legend_metadata = yaml.safe_load(legend_file)
                     assert legend_metadata == result
 
