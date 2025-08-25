@@ -112,7 +112,9 @@ async def test_retry(queue: tuple[int, int, int], SessionMaker: sessionmaker, ti
 
 @pytest.mark.asyncio
 async def test_cancel(
-    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore,
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
 ):
     job_id, _, _ = queue
 
@@ -135,7 +137,9 @@ async def test_cancel(
 
 @pytest.mark.asyncio
 async def test_maintenance_status_done(
-    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore,
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
 ):
     job_id, _, _ = queue
 
@@ -158,7 +162,9 @@ async def test_maintenance_status_done(
 
 @pytest.mark.asyncio
 async def test_maintenance_pending_tile(
-    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore,
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
 ):
     job_id, metatile_0_id, metatile_1_id = queue
 
@@ -181,7 +187,9 @@ async def test_maintenance_pending_tile(
 
 @pytest.mark.asyncio
 async def test_maintenance_pending_job(
-    queue: tuple[int, int, int], SessionMaker: sessionmaker, tilestore: PostgresqlTileStore,
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
 ):
     job_id, metatile_0_id, metatile_1_id = queue
     with SessionMaker() as session:
