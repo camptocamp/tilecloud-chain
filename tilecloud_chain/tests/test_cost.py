@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from tilecloud_chain import cost
 from tilecloud_chain.tests import CompareCase
@@ -10,11 +11,11 @@ class TestCost(CompareCase):
 
     @classmethod
     def setUpClass(cls):  # noqa
-        os.chdir(os.path.dirname(__file__))
+        os.chdir(Path(__file__).parent)
 
     @classmethod
     def tearDownClass(cls):  # noqa
-        os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+        os.chdir(Path(__file__).parent.parent.parent)
 
     ZOOM_SUMMARY = """
 %(tiles)s tiles in zoom %(zoom)s.

@@ -17,14 +17,14 @@ class TestController(CompareCase):
 
     @classmethod
     def setUpClass(cls):  # noqa
-        os.chdir(os.path.dirname(__file__))
-        if os.path.exists("/tmp/tiles"):
+        os.chdir(Path(__file__).parent)
+        if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     @classmethod
     def tearDownClass(cls):  # noqa
-        os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-        if os.path.exists("/tmp/tiles"):
+        os.chdir(Path(__file__).parent.parent.parent)
+        if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     @pytest.mark.asyncio
@@ -1786,8 +1786,9 @@ sqs:
         ):
             with pytest_check.check:
                 # Check that legend files were created
-                assert os.path.exists(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml")
-                with open(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml", encoding="utf-8") as legend_file:
+                path = Path(f"/tmp/tiles/1.0.0/{layer}/default/legend.yaml")
+                assert path.exists()
+                with path.open(encoding="utf-8") as legend_file:
                     legend_metadata = yaml.safe_load(legend_file)
                     assert legend_metadata == result
 

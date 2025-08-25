@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -171,10 +171,10 @@ async def test_maintenance_pending_tile(
     with SessionMaker() as session:
         metatile_0 = session.query(Queue).filter(Queue.id == metatile_0_id).one()
         metatile_0.status = _STATUS_PENDING
-        metatile_0.started_at = datetime.now() - timedelta(hours=1)
+        metatile_0.started_at = datetime.now(tz=timezone.utc) - timedelta(hours=1)
         metatile_1 = session.query(Queue).filter(Queue.id == metatile_1_id).one()
         metatile_1.status = _STATUS_PENDING
-        metatile_1.started_at = datetime.now() - timedelta(hours=1)
+        metatile_1.started_at = datetime.now(tz=timezone.utc) - timedelta(hours=1)
         session.commit()
 
     await tilestore._maintenance()
@@ -195,7 +195,7 @@ async def test_maintenance_pending_job(
     with SessionMaker() as session:
         job = session.query(Job).filter(Job.id == job_id).one()
         job.status = _STATUS_PENDING
-        job.started_at = datetime.now() - timedelta(hours=1)
+        job.started_at = datetime.now(tz=timezone.utc) - timedelta(hours=1)
 
     await tilestore._maintenance()
 

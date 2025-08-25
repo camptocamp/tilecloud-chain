@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import psycopg2
 import pytest
@@ -9,12 +9,12 @@ from tilecloud_chain.tests import CompareCase, MatchRegex
 
 
 class TestExpireTiles(CompareCase):
-    def setUp(self) -> None:  # noqa
+    def setUp(self) -> None:
         self.maxDiff = None
 
     @classmethod
-    def setUpClass(cls):  # noqa
-        with open("/tmp/expired", "w") as f:
+    def setUpClass(cls):
+        with Path("/tmp/expired").open("w") as f:
             f.write("18/135900/92720\n")
             f.write("18/135900/92721\n")
             f.write("18/135900/92722\n")
@@ -22,13 +22,13 @@ class TestExpireTiles(CompareCase):
             f.write("18/135901/92722\n")
             f.write("18/135902/92722\n")
 
-        with open("/tmp/expired-empty", "w"):
+        with Path("/tmp/expired-empty").open("w"):
             pass
 
     @classmethod
-    def tearDownClass(cls):  # noqa
-        os.remove("/tmp/expired")
-        os.remove("/tmp/expired-empty")
+    def tearDownClass(cls):
+        Path("/tmp/expired").unlink()
+        Path("/tmp/expired-empty").unlink()
 
     def test_expire_tiles(
         self,

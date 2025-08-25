@@ -106,7 +106,7 @@ _LEGEND_CONFIG_CACHE_LOCK: asyncio.Lock | None = None
 
 async def init_tilegeneration(config_file: Path | None) -> None:
     """Initialize the tile generation."""
-    global _TILEGENERATION  # pylint: disable=global-statement
+    global _TILEGENERATION  # noqa: PLW0603
     if _TILEGENERATION is None:
         if config_file is not None:
             _LOGGER.info("Use config file: '%s'", config_file)
@@ -323,7 +323,7 @@ class Server:
             try:
                 with _GET_TILE.labels(storage="s3").time():
                     return self._s3_read(str(key_name), headers, config, **kwargs)
-            except Exception:  # pylint: disable=broad-exception-caught
+            except Exception:  # noqa: BLE001
                 del self.s3_client_cache[cache_s3.get("host", "aws")]
                 with _GET_TILE.labels(storage="s3").time():
                     return self._s3_read(str(key_name), headers, config, **kwargs)
@@ -760,7 +760,7 @@ async def get_host_config(
     host: Annotated[str, fastapi.Depends(get_host_name)],
 ) -> tilecloud_chain.DatedConfig:
     """Get the host configuration based on the request."""
-    global _TILEGENERATION  # pylint: disable=global-statement,global-variable-not-assigned
+    global _TILEGENERATION  # noqa: PLW0602
     if _TILEGENERATION is None:
         raise HTTPException(status_code=500, detail="TileGeneration not initialized")
 
@@ -1056,7 +1056,7 @@ async def _fill_legend(
 
     current_time = time.time()
 
-    global _LEGEND_CONFIG_CACHE_LOCK  # pylint: disable=global-statement
+    global _LEGEND_CONFIG_CACHE_LOCK  # noqa: PLW0603
     if _LEGEND_CONFIG_CACHE_LOCK is None:
         _LEGEND_CONFIG_CACHE_LOCK = asyncio.Lock()
 

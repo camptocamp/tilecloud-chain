@@ -1,5 +1,6 @@
 import os
 import shutil
+from pathlib import Path
 
 import pytest
 import yaml
@@ -137,19 +138,19 @@ _CAPABILITIES = (
 
 
 class TestServe(CompareCase):
-    def setUp(self) -> None:  # noqa
+    def setUp(self) -> None:
         self.maxDiff = None
 
     @classmethod
-    def setUpClass(cls):  # noqa
-        os.chdir(os.path.dirname(__file__))
-        if os.path.exists("/tmp/tiles"):
+    def setUpClass(cls):
+        os.chdir(Path(__file__).parent)
+        if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     @classmethod
-    def tearDownClass(cls):  # noqa
-        os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-        if os.path.exists("/tmp/tiles"):
+    def tearDownClass(cls):
+        os.chdir(Path(__file__).parent.parent.parent)
+        if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     @pytest.mark.asyncio
@@ -183,10 +184,10 @@ class TestServe(CompareCase):
 
             server._PYRAMID_SERVER = None
             server._TILEGENERATION = None
-            with open("tilegeneration/test-nosns.yaml") as f:
+            with Path("tilegeneration/test-nosns.yaml").open() as f:
                 config = DatedConfig(
                     config=yaml.safe_load(f),
-                    mtime=os.path.getmtime("tilegeneration/test-nosns.yaml"),
+                    mtime=Path("tilegeneration/test-nosns.yaml").stat().st_mtime,
                     filename="tilegeneration/test-nosns.yaml",
                 )
             params = {
@@ -720,10 +721,10 @@ class TestServe(CompareCase):
 
             server._PYRAMID_SERVER = None
             server._TILEGENERATION = None
-            with open("tilegeneration/test-serve.yaml") as f:
+            with Path("tilegeneration/test-serve.yaml").open() as f:
                 config = DatedConfig(
                     config=yaml.safe_load(f),
-                    mtime=os.path.getmtime("tilegeneration/test-serve.yaml"),
+                    mtime=Path("tilegeneration/test-serve.yaml").stat().st_mtime,
                     file="tilegeneration/test-serve.yaml",
                 )
             params = {
@@ -842,10 +843,10 @@ class TestServe(CompareCase):
             server._PYRAMID_SERVER = None
             server._TILEGENERATION = None
 
-            with open("tilegeneration/test-bsddb.yaml") as f:
+            with Path("tilegeneration/test-bsddb.yaml").open() as f:
                 config = DatedConfig(
                     config=yaml.safe_load(f),
-                    mtime=os.path.getmtime("tilegeneration/test-bsddb.yaml"),
+                    mtime=Path("tilegeneration/test-bsddb.yaml").stat().st_mtime,
                     filename="tilegeneration/test-bsddb.yaml",
                 )
             params = {
@@ -950,10 +951,10 @@ class TestServe(CompareCase):
         server._PYRAMID_SERVER = None
         server._TILEGENERATION = None
 
-        with open("tilegeneration/test-serve.yaml") as f:
+        with Path("tilegeneration/test-serve.yaml").open() as f:
             config = DatedConfig(
                 config=yaml.safe_load(f),
-                mtime=os.path.getmtime("tilegeneration/test-serve.yaml"),
+                mtime=Path("tilegeneration/test-serve.yaml").stat().st_mtime,
                 filename="tilegeneration/test-serve.yaml",
             )
         params = {
@@ -988,10 +989,10 @@ class TestServe(CompareCase):
         server._PYRAMID_SERVER = None
         server._TILEGENERATION = None
 
-        with open("tilegeneration/test-serve.yaml") as f:
+        with Path("tilegeneration/test-serve.yaml").open() as f:
             config = DatedConfig(
                 config=yaml.safe_load(f),
-                mtime=os.path.getmtime("tilegeneration/test-serve.yaml"),
+                mtime=Path("tilegeneration/test-serve.yaml").stat().st_mtime,
                 filename="tilegeneration/test-serve.yaml",
             )
         params = {
@@ -1051,12 +1052,12 @@ Size per tile: 4[0-9][0-9] o
         server._PYRAMID_SERVER = None
         server._TILEGENERATION = None
 
-        global code, headers
+        global code, headers  # noqa: PLW0603
         code = None
         headers = None
 
         def start_response(p_code, p_headers):
-            global code, headers
+            global code, headers  # noqa: PLW0603
             code = p_code
             headers = {}
             for key, value in p_headers:
@@ -1160,10 +1161,10 @@ Size per tile: 4[0-9][0-9] o
             server._PYRAMID_SERVER = None
             server._TILEGENERATION = None
 
-            with open("tilegeneration/test-serve-wmtscapabilities.yaml") as f:
+            with Path("tilegeneration/test-serve-wmtscapabilities.yaml").open() as f:
                 config = DatedConfig(
                     config=yaml.safe_load(f),
-                    mtime=os.path.getmtime("tilegeneration/test-serve-wmtscapabilities.yaml"),
+                    mtime=Path("tilegeneration/test-serve-wmtscapabilities.yaml").stat().st_mtime,
                     filename="tilegeneration/test-serve-wmtscapabilities.yaml",
                 )
             params = {

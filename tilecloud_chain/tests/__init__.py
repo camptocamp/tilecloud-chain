@@ -7,6 +7,7 @@ import traceback
 from collections.abc import Callable
 from io import StringIO
 from logging import config
+from pathlib import Path
 from typing import Any
 from unittest import TestCase
 
@@ -48,15 +49,15 @@ class CompareCase(TestCase):
                         assert re.search(f"^{test[0].strip()}$", test[1].strip())
                     else:
                         assert test[0].strip() == test[1].strip()
-                except AssertionError as e:
+                except AssertionError:
                     for i in range(max(0, n - DIFF), min(len(result), n + DIFF + 1)):
                         if i == n:
                             print(f"> {i} {result[i]}")
-                            _LOGGER.info(f"> {i} {result[i]}")
+                            _LOGGER.info("> %s %s", i, result[i])
                         else:
                             print(f"  {i} {result[i]}")
-                            _LOGGER.info(f"  {i} {result[i]}")
-                    raise e
+                            _LOGGER.info("  %s %s", i, result[i])
+                    raise
         assert len(expected) == len(result), repr(result)
 
     def run_cmd(self, cmd: list[str] | str, main_func: Callable, get_error: bool = False) -> tuple[str, str]:
@@ -101,14 +102,14 @@ class CompareCase(TestCase):
         self,
         cmd: list[str] | str,
         main_func: Callable,
-        expected: list[list[str]] = None,
+        expected: list[list[str]] | None = None,
         get_error: bool = False,
         **kargs: Any,
     ) -> None:
         if expected:
             for expect in expected:
-                if os.path.exists(expect[0]):
-                    os.remove(expect[0])
+                if Path(expect[0]).exists():
+                    Path(expect[0]).unlink()
         if type(cmd) is list:
             sys.argv = cmd
         else:
@@ -131,7 +132,7 @@ class CompareCase(TestCase):
 
         if expected:
             for expect in expected:
-                with open(expect[0]) as f:
+                with Path(expect[0]).open() as f:
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
     def assert_main_except_equals(
@@ -158,7 +159,7 @@ class CompareCase(TestCase):
 
         if expected:
             for expect in expected:
-                with open(expect[0]) as f:
+                with Path(expect[0]).open() as f:
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
     def assert_yaml_equals(self, result: str, expected: str) -> None:
@@ -179,7 +180,7 @@ class CompareCase(TestCase):
         self.assert_yaml_equals(result=mystdout.getvalue(), **kargs)
 
     def assert_tiles_generated(self, directory: str, **kargs: Any) -> None:
-        if os.path.exists(directory):
+        if Path(directory).exists():
             shutil.rmtree(directory, ignore_errors=True)
 
         self.assert_tiles_generated_deleted(directory=directory, **kargs)
@@ -196,15 +197,16 @@ class CompareCase(TestCase):
         count = 0
         for path, _dirs, files in os.walk(directory):
             if len(files) != 0:
-                _LOGGER.info((path, files))
+                _LOGGER.info("%s %s", path, files)
                 print((path, files))
                 count += len(files)
 
         assert count == len(tiles)
         for tile in tiles:
-            _LOGGER.info(directory + tiles_pattern % tile)
-            print(directory + tiles_pattern % tile)
-            assert os.path.exists(directory + tiles_pattern % tile)
+            tile_path = Path(directory + tiles_pattern % tile)
+            _LOGGER.info("%s", tile_path)
+            print(tile_path)
+            assert tile_path.exists()
 
     def assert_files_generated(self, **kargs):
         self.assert_tiles_generated(tiles_pattern="%s", **kargs)
@@ -224,3 +226,6 @@ class MatchRegex:
 
     def __repr__(self) -> str:
         return self._regex.pattern
+
+    def __hash__(self) -> int:
+        return hash(self._regex.pattern)

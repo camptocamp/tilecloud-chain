@@ -73,7 +73,7 @@ async def startup(_main_app: FastAPI) -> None:
     main_config = await _get_tilegeneration().get_main_config()
     queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
     if queue_store == "postgresql":
-        global _postgresql_store  # pylint: disable=global-statement
+        global _postgresql_store  # noqa: PLW0603
         _postgresql_store = await tilecloud_chain.store.postgresql.get_postgresql_queue_store(main_config)
 
 
@@ -469,7 +469,7 @@ def _run_in_process(
             os.environ[key] = value
         _LOG.debug("Running the command `%s` using the function directly", display_command)
         main(final_command, out)
-    except Exception:  # pylint: disable=broad-exception-caught
+    except Exception:  # noqa: BLE001
         _LOG.exception("Error while running the command `%s`", display_command)
         error = True
     return_dict["out"] = _format_output(

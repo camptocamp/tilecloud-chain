@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 from itertools import product, repeat
+from pathlib import Path
 
 from testfixtures import LogCapture
 from tilecloud.store.redis import RedisTileStore
@@ -11,19 +12,19 @@ from tilecloud_chain.tests import CompareCase
 
 
 class TestGenerate(CompareCase):
-    def setUp(self) -> None:  # noqa
+    def setUp(self) -> None:
         self.maxDiff = None
 
     @classmethod
-    def setUpClass(cls):  # noqa
-        os.chdir(os.path.dirname(__file__))
-        if os.path.exists("/tmp/tiles"):
+    def setUpClass(cls):
+        os.chdir(Path(__file__).parent)
+        if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     @classmethod
-    def tearDownClass(cls):  # noqa
-        os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-        if os.path.exists("/tmp/tiles"):
+    def tearDownClass(cls):
+        os.chdir(Path(__file__).parent.parent.parent)
+        if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     def test_get_hash(self) -> None:
@@ -729,7 +730,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
 
     """,
                 )
-                with open("/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/5/5.json") as f:
+                with Path("/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/5/5.json").open() as f:
                     assert json.loads(f.read()) == {
                         "grid": [
                             "                ",
@@ -752,7 +753,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                         "keys": ["", "1"],
                         "data": {"1": {"name": "polygon1"}},
                     }
-                with open("/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/6/5.json") as f:
+                with Path("/tmp/tiles/1.0.0/mapnik_grid/default/2012/swissgrid_5/0/6/5.json").open() as f:
                     assert json.loads(f.read()) == {
                         "grid": [
                             "                ",
@@ -876,16 +877,16 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
 
     def _touch(self, tiles_pattern: str, tiles: list[tuple[int, int]]) -> None:
         for tile in tiles:
-            path = tiles_pattern % tile
-            directory = os.path.dirname(path)
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            with open(path, "w"):
+            path = Path(tiles_pattern % tile)
+            directory = path.parent
+            if not directory.exists():
+                directory.mkdir(parents=True)
+            with path.open("w"):
                 pass
 
     def test_delete_meta(self) -> None:
         for d in ("-d", ""):
-            if os.path.exists("/tmp/tiles/"):
+            if Path("/tmp/tiles/").exists():
                 shutil.rmtree("/tmp/tiles/")
             self._touch(
                 tiles_pattern="/tmp/tiles/1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png",
@@ -916,7 +917,7 @@ Size per tile: 4[0-9][0-9] o
 
     def test_delete_no_meta(self) -> None:
         for d in ("-d", ""):
-            if os.path.exists("/tmp/tiles/"):
+            if Path("/tmp/tiles/").exists():
                 shutil.rmtree("/tmp/tiles/")
             self._touch(
                 tiles_pattern="/tmp/tiles/1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png",
@@ -946,8 +947,9 @@ Size per tile: 4[0-9][0-9] o
             )
 
     def test_error_file_create(self) -> None:
-        if os.path.exists("error.list"):
-            os.remove("error.list")
+        error_list_path = Path("error.list")
+        if error_list_path.exists():
+            error_list_path.unlink()
         self.assert_main_except_equals(
             cmd=".build/venv/bin/generate-tiles -q -c tilegeneration/test-nosns.yaml -l point_error",
             main_func=generate.main,
@@ -956,7 +958,7 @@ Size per tile: 4[0-9][0-9] o
             expected=[
                 [
                     "error.list",
-                    "\n".join(
+                    "\n".join(  # noqa: FLY002
                         [
                             r"# \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] "
                             r"Start the layer 'point_error' generation",
@@ -992,10 +994,11 @@ Size per tile: 4[0-9][0-9] o
         os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = "tilegeneration/test-nosns.yaml"
 
         try:
-            if os.path.exists("error.list"):
-                os.remove("error.list")
+            error_list_path = Path("error.list")
+            if error_list_path.exists():
+                error_list_path.unlink()
 
-            with open("error.list", "w") as error_file:
+            with error_list_path.open("w") as error_file:
                 error_file.write(
                     "# comment\n"
                     "0/0/0:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash grid=swissgrid_5 "

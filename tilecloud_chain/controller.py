@@ -189,7 +189,7 @@ def _get_legend_image(
     )
     try:
         response = session.get(url)
-    except Exception as e:  # pylint: disable=broad-exception-caught
+    except Exception as e:  # noqa: BLE001
         if out is not None:
             print(
                 "\n".join(
@@ -254,7 +254,7 @@ def _get_legend_image(
         return None
     try:
         return Image.open(BytesIO(response.content))
-    except Exception:  # pylint: disable=broad-exception-caught
+    except Exception:  # noqa: BLE001
         if out is not None:
             print(
                 "\n".join(

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from testfixtures import LogCapture
 
@@ -12,11 +13,11 @@ class TestError(CompareCase):
 
     @classmethod
     def setUpClass(cls):  # noqa
-        os.chdir(os.path.dirname(__file__))
+        os.chdir(Path(__file__).parent)
 
     @classmethod
     def tearDownClass(cls):  # noqa
-        os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+        os.chdir(Path(__file__).parent.parent.parent)
 
     def test_resolution(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:

@@ -1,5 +1,6 @@
 import os
 import shutil
+from pathlib import Path
 
 import requests
 
@@ -8,24 +9,24 @@ from tilecloud_chain.tests import CompareCase
 
 
 class TestGenerate(CompareCase):
-    def setUp(self) -> None:  # noqa
+    def setUp(self) -> None:
         self.maxDiff = None
 
     @classmethod
-    def setUpClass(cls):  # noqa
-        os.chdir(os.path.dirname(__file__))
-        if os.path.exists("/tmp/tiles"):
+    def setUpClass(cls):
+        os.chdir(Path(__file__).parent)
+        if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
-        os.makedirs("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/")
+        Path("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/").mkdir(parents=True)
 
     @classmethod
-    def tearDownClass(cls):  # noqa
-        os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-        if os.path.exists("/tmp/tiles"):
+    def tearDownClass(cls):
+        os.chdir(Path(__file__).parent.parent.parent)
+        if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     def test_copy(self) -> None:
-        with open("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png", "w") as f:
+        with Path("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png").open("w") as f:
             f.write("test image")
 
         for d in ("-d", "-q", "-v"):
@@ -49,7 +50,7 @@ Size per tile: 10(.0)? o
                 ),
                 empty_err=True,
             )
-        with open("/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png") as f:
+        with Path("/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png").open() as f:
             assert f.read() == "test image"
 
     def test_process(self) -> None:
@@ -60,11 +61,11 @@ image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
 %28560800.0%2C+158000.0%2C+573600.0%2C+170800.0%29&LAYERS=point&SRS=EPSG%3A21781",
             )
             response.raise_for_status()
-            with open("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png", "wb") as out:
+            with Path("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png").open("wb") as out:
                 out.write(response.content)
-            statinfo = os.stat(
+            statinfo = Path(
                 "/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png",
-            )
+            ).stat()
             assert statinfo.st_size == 755
 
             self.assert_cmd_equals(
@@ -88,7 +89,7 @@ Size per tile: 103(.0)? o
                 ),
                 empty_err=True,
             )
-            statinfo = os.stat(
+            statinfo = Path(
                 "/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png",
-            )
+            ).stat()
             assert statinfo.st_size == 103
