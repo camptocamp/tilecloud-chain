@@ -41,7 +41,7 @@ class TestError(CompareCase):
                     "tilecloud_chain",
                     "ERROR",
                     "The layer 'b' is of type Mapnik/Grid, that can't support matatiles.",
-                )
+                ),
             )
 
     def test_type(self) -> None:
@@ -103,7 +103,7 @@ class TestError(CompareCase):
 -- tilegeneration/wrong_type.yaml:5:11 grids.swissgrid_1.bbox.1: 'b' is not of type 'number' (rule: properties.grids.additionalProperties.properties.bbox.items.type)
 -- tilegeneration/wrong_type.yaml:5:11 grids.swissgrid_1.bbox.2: 'c' is not of type 'number' (rule: properties.grids.additionalProperties.properties.bbox.items.type)
 -- tilegeneration/wrong_type.yaml:6:10 grids.swissgrid_1.srs: ['EPSG:21781'] is not of type 'string' (rule: properties.grids.additionalProperties.properties.srs.type)""",  # noqa
-                )
+                ),
             )
 
     def test_zoom_errors(self) -> None:
@@ -139,7 +139,7 @@ class TestError(CompareCase):
                     "ERROR",
                     """The config file is invalid:
 -- tilegeneration/wrong_srs_auth.yaml:3:5 grids.swissgrid_01.srs: 'toto:21781' does not match '^EPSG:[0-9]+$' (rule: properties.grids.additionalProperties.properties.srs.pattern)""",  # noqa
-                )
+                ),
             )
 
     def test_wrong_srs_id(self) -> None:
@@ -155,7 +155,7 @@ class TestError(CompareCase):
                     "ERROR",
                     """The config file is invalid:
 -- tilegeneration/wrong_srs_id.yaml:3:5 grids.swissgrid_01.srs: 'EPSG:21781a' does not match '^EPSG:[0-9]+$' (rule: properties.grids.additionalProperties.properties.srs.pattern)""",  # noqa
-                )
+                ),
             )
 
     def test_wrong_srs(self) -> None:
@@ -171,7 +171,7 @@ class TestError(CompareCase):
                     "ERROR",
                     """The config file is invalid:
 -- tilegeneration/wrong_srs.yaml:3:5 grids.swissgrid_01.srs: 'EPSG21781' does not match '^EPSG:[0-9]+$' (rule: properties.grids.additionalProperties.properties.srs.pattern)""",
-                )
+                ),
             )
 
     def test_wrong_map(self) -> None:
@@ -196,7 +196,7 @@ class TestError(CompareCase):
 -- tilegeneration/wrong_map.yaml:3:5 layers.test: 'url' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
 -- tilegeneration/wrong_map.yaml:3:5 layers.test: 'wmts_style' is a required property (rule: properties.layers.additionalProperties.anyOf.0.required)
 -- tilegeneration/wrong_map.yaml:3:5 layers.test: 'wmts_style' is a required property (rule: properties.layers.additionalProperties.anyOf.1.required)""",
-                )
+                ),
             )
 
     def test_wrong_sequence(self) -> None:
@@ -214,5 +214,5 @@ class TestError(CompareCase):
 -- tilegeneration/wrong_sequence.yaml:3:5 grids.test.resolutions: 'test' is not of type 'array' (rule: properties.grids.additionalProperties.properties.resolutions.type)
 -- tilegeneration/wrong_sequence.yaml:3:5 grids.test: 'bbox' is a required property (rule: properties.grids.additionalProperties.required)
 -- tilegeneration/wrong_sequence.yaml:3:5 grids.test: 'srs' is a required property (rule: properties.grids.additionalProperties.required)""",
-                )
+                ),
             )

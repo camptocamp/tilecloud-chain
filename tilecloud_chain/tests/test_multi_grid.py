@@ -48,7 +48,7 @@ class TestMultiGrid(CompareCase):
                 ("swissgrid_21781", 0, 1, 1),
             ],
             regex=True,
-            expected="""The tile generation of layer 'all \(DATE=2012\)' is finish
+            expected=r"""The tile generation of layer 'all \(DATE=2012\)' is finish
 Nb generated metatiles: 2
 Nb metatiles dropped: 0
 Nb generated tiles: 8
@@ -83,7 +83,7 @@ Size per tile: [0-9]{3} o
                 ("swissgrid_2056", 0, 1, 1),
             ],
             regex=True,
-            expected="""The tile generation of layer 'one \(DATE=2012\)' is finish
+            expected=r"""The tile generation of layer 'one \(DATE=2012\)' is finish
 Nb generated metatiles: 1
 Nb metatiles dropped: 0
 Nb generated tiles: 4
@@ -121,7 +121,7 @@ Size per tile: [0-9]{3} o
                         (0, 1, 1),
                     ],
                     regex=True,
-                    expected="""The tile generation of layer 'all \(DATE=2012\)' is finish
+                    expected=r"""The tile generation of layer 'all \(DATE=2012\)' is finish
         Nb generated metatiles: 1
         Nb metatiles dropped: 0
         Nb generated tiles: 4
@@ -211,8 +211,8 @@ Size per tile: [0-9]{3} o
                             "mime_type": "image/png",
                             "height": 20,
                             "width": 64,
-                        }
-                    ]
+                        },
+                    ],
                 },
             ),
             (
@@ -224,8 +224,8 @@ Size per tile: [0-9]{3} o
                             "mime_type": "image/png",
                             "height": 20,
                             "width": 64,
-                        }
-                    ]
+                        },
+                    ],
                 },
             ),
         ):

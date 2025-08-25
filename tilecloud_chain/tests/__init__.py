@@ -24,7 +24,7 @@ config.dictConfig(
             "tilecloud": {"level": "DEBUG"},
             "tilecloud_chain": {"level": "DEBUG"},
         },
-    }
+    },
 )
 
 
@@ -80,7 +80,7 @@ class CompareCase(TestCase):
         return mystdout.getvalue(), mystderr.getvalue()
 
     def assert_cmd_equals(
-        self, cmd: list[str] | str, main_func: Callable, empty_err: bool = False, **kargs: Any
+        self, cmd: list[str] | str, main_func: Callable, empty_err: bool = False, **kargs: Any,
     ) -> None:
         out, err = self.run_cmd(cmd, main_func)
         if empty_err:
@@ -131,7 +131,7 @@ class CompareCase(TestCase):
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
     def assert_main_except_equals(
-        self, cmd: str, main_func: Callable, expected: list[list[str]], get_error: bool = False, **kargs: Any
+        self, cmd: str, main_func: Callable, expected: list[list[str]], get_error: bool = False, **kargs: Any,
     ) -> None:
         sys.argv = cmd.split(" ")
         try:
@@ -154,7 +154,7 @@ class CompareCase(TestCase):
 
     def assert_yaml_equals(self, result: str, expected: str) -> None:
         expected = yaml.dump(
-            yaml.safe_load(expected), width=120, default_flow_style=False, Dumper=NoAliasDumper
+            yaml.safe_load(expected), width=120, default_flow_style=False, Dumper=NoAliasDumper,
         )
         result = yaml.dump(yaml.safe_load(result), width=120, default_flow_style=False, Dumper=NoAliasDumper)
         self.assert_result_equals(result=result, expected=expected)
@@ -173,7 +173,7 @@ class CompareCase(TestCase):
         self.assert_tiles_generated_deleted(directory=directory, **kargs)
 
     def assert_tiles_generated_deleted(
-        self, directory: str, tiles_pattern: str, tiles: Any, expected: str = "", **kargs: Any
+        self, directory: str, tiles_pattern: str, tiles: Any, expected: str = "", **kargs: Any,
     ) -> None:
         self.assert_cmd_equals(expected=expected, **kargs)
         count = 0

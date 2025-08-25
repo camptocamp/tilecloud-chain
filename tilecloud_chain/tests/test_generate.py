@@ -331,7 +331,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png",
                     tiles=list(
-                        zip(repeat("polygon2", len(x2)), repeat("0_2", len(x2)), x2, y2, strict=False)
+                        zip(repeat("polygon2", len(x2)), repeat("0_2", len(x2)), x2, y2, strict=False),
                     ),
                     regex=True,
                     expected=r"""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
@@ -355,7 +355,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png",
                     tiles=list(
-                        zip(repeat("polygon2", len(x3)), repeat("0_1", len(x3)), x3, y3, strict=False)
+                        zip(repeat("polygon2", len(x3)), repeat("0_1", len(x3)), x3, y3, strict=False),
                     ),
                     regex=True,
                     expected=r"""The tile generation of layer 'polygon2 \(DATE=2012\)' is finish
@@ -814,7 +814,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                         "tilecloud_chain.generate",
                         "ERROR",
                         "not authorized, authorized user is: www-data.",
-                    )
+                    ),
                 )
 
     def test_verbose(self) -> None:
@@ -981,9 +981,9 @@ Size per tile: 4[0-9][0-9] o
                             r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
                             r"A layer might be disabled for this request\. Check wms/ows_enable_request settings\.'",
                             "",
-                        ]
+                        ],
                     ),
-                ]
+                ],
             ],
         )
 
@@ -1001,7 +1001,7 @@ Size per tile: 4[0-9][0-9] o
                     "0/0/0:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash grid=swissgrid_5 "
                     "# comment\n"
                     "0/0/8:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash grid=swissgrid_5\n"
-                    "0/8/0:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash grid=swissgrid_5\n"
+                    "0/8/0:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash grid=swissgrid_5\n",
                 )
 
             self.assert_tiles_generated(

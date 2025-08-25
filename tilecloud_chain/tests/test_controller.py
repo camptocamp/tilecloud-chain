@@ -975,7 +975,7 @@ class TestController(CompareCase):
         gene = TileGeneration()
         await gene.ainit(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, "multi_host"), self.MULTIHOST_CAPABILITIES, True
+            await controller.wmts_capabilities(gene, "multi_host"), self.MULTIHOST_CAPABILITIES, True,
         )
 
     @pytest.mark.asyncio
@@ -1119,7 +1119,7 @@ class TestController(CompareCase):
         gene = TileGeneration()
         await gene.ainit(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, "multi_url"), self.MULTIHOST_CAPABILITIES, True
+            await controller.wmts_capabilities(gene, "multi_url"), self.MULTIHOST_CAPABILITIES, True,
         )
 
     CONFIG = """
@@ -1721,7 +1721,7 @@ sqs:
                             "path": "1.0.0/point/default/legend-5.png",
                             "width": 64,
                         },
-                    ]
+                    ],
                 },
             ),
             (
@@ -1742,7 +1742,7 @@ sqs:
                             "path": "1.0.0/line/default/legend-50.png",
                             "width": 71,
                         },
-                    ]
+                    ],
                 },
             ),
             (
@@ -1755,7 +1755,7 @@ sqs:
                             "path": "1.0.0/polygon/default/legend-5.png",
                             "width": 81,
                         },
-                    ]
+                    ],
                 },
             ),
             (
@@ -1776,7 +1776,7 @@ sqs:
                             "path": "1.0.0/all/default/legend-50.png",
                             "width": 81,
                         },
-                    ]
+                    ],
                 },
             ),
         ):

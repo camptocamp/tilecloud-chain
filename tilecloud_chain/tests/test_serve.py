@@ -1085,8 +1085,8 @@ Size per tile: 4[0-9][0-9] o
                             "I": "114",
                             "J": "111",
                         }.items()
-                    ]
-                )
+                    ],
+                ),
             },
             start_response,
         )

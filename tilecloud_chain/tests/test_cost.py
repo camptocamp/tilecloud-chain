@@ -68,7 +68,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -102,7 +102,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -140,7 +140,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -178,7 +178,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -211,7 +211,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -244,7 +244,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -304,7 +304,7 @@ S3 get: %(get)s [$/month]
                         "get": "55.78",
                         # 'cloudfront': '54.78',
                     },
-                ]
+                ],
             ),
         )
 
@@ -335,7 +335,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -368,7 +368,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -401,7 +401,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -435,7 +435,7 @@ S3 get: %(get)s [$/month]
                         "get": "32.89",
                         # 'cloudfront': '31.89',
                     },
-                ]
+                ],
             ),
         )
 
@@ -463,6 +463,6 @@ S3 get: %(get)s [$/month]
                     "SQS usage: 0.00 [$]",
                     self.LAYER_SUMMARY % {"tiles": "125886", "time": "2:05:53", "cost": "1.26"},
                     self.FINAL_SUMMARY % {"storage": "0.00", "get": "32.89"},
-                ]
+                ],
             ),
         )
