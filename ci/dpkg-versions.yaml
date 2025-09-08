@@ -143,7 +143,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libpixman-1-0: 0.42.2-1build1
   ubuntu_24_04/libpng16-16t64: 1.6.43-5build1
   ubuntu_24_04/libpoppler134: 24.02.0-1ubuntu9.6
-  ubuntu_24_04/libpq5: 16.9-0ubuntu0.24.04.1
+  ubuntu_24_04/libpq5: 16.10-0ubuntu0.24.04.1
   ubuntu_24_04/libproc2-0: 2:4.0.4-4ubuntu3.2
   ubuntu_24_04/libproj25: 9.4.0-1build2
   ubuntu_24_04/libpsl5t64: 0.21.2-1.1build1
@@ -218,7 +218,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/perl-base: 5.38.2-3.2ubuntu0.2
   ubuntu_24_04/perl-modules-5.38: 5.38.2-3.2ubuntu0.2
   ubuntu_24_04/postgresql-client: 16+257build1.1
-  ubuntu_24_04/postgresql-client-16: 16.9-0ubuntu0.24.04.1
+  ubuntu_24_04/postgresql-client-16: 16.10-0ubuntu0.24.04.1
   ubuntu_24_04/postgresql-client-common: 257build1.1
   ubuntu_24_04/procps: 2:4.0.4-4ubuntu3.2
   ubuntu_24_04/proj-data: 9.4.0-1build2
