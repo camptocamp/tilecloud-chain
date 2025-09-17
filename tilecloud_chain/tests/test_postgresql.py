@@ -166,7 +166,7 @@ async def test_maintenance_pending_tile(
     SessionMaker: sessionmaker,
     tilestore: PostgresqlTileStore,
 ):
-    job_id, metatile_0_id, metatile_1_id = queue
+    _job_id, metatile_0_id, metatile_1_id = queue
 
     with SessionMaker() as session:
         metatile_0 = session.query(Queue).filter(Queue.id == metatile_0_id).one()
@@ -191,7 +191,7 @@ async def test_maintenance_pending_job(
     SessionMaker: sessionmaker,
     tilestore: PostgresqlTileStore,
 ):
-    job_id, metatile_0_id, metatile_1_id = queue
+    job_id, _metatile_0_id, _metatile_1_id = queue
     with SessionMaker() as session:
         job = session.query(Job).filter(Job.id == job_id).one()
         job.status = _STATUS_PENDING
