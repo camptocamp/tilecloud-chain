@@ -42,9 +42,9 @@ import sqlalchemy
 import sqlalchemy.schema
 import sqlalchemy.sql.functions
 from prometheus_client import Counter, Gauge, Summary
-from sqlalchemy import JSON, Column, DateTime, Integer, Unicode, and_, delete, select, update
+from sqlalchemy import JSON, DateTime, Integer, Unicode, and_, delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from tilecloud import Tile, TileCoord
 
 from tilecloud_chain import DatedConfig, configuration, controller, generate
@@ -130,19 +130,19 @@ class Job(Base):
     __tablename__ = "job"
     __table_args__ = {"schema": _schema}  # noqa: RUF012
 
-    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
-    name = Column(Unicode, nullable=False)
-    command = Column(Unicode, nullable=False)
-    config_filename = Column(Unicode, nullable=False)
-    status = Column(Unicode, nullable=False, default=_STATUS_CREATED, index=True)
-    message = Column(Unicode)
-    created_at = Column(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    name: Mapped[str] = mapped_column(Unicode, nullable=False)
+    command: Mapped[str] = mapped_column(Unicode, nullable=False)
+    config_filename: Mapped[str] = mapped_column(Unicode, nullable=False)
+    status: Mapped[str] = mapped_column(Unicode, nullable=False, default=_STATUS_CREATED, index=True)
+    message: Mapped[str | None] = mapped_column(Unicode)
+    created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         server_default=sqlalchemy.sql.functions.now(),
         index=True,
     )
-    started_at = Column(DateTime(timezone=True), index=True)
+    started_at: Mapped[datetime.datetime | None] = mapped_column(DateTime(timezone=True), index=True)
 
     def __repr__(self) -> str:
         """Return the representation of the job."""
@@ -155,12 +155,12 @@ class Queue(Base):
     __tablename__ = "queue"
     __table_args__ = {"schema": _schema}  # noqa: RUF012
 
-    id = Column(Integer, primary_key=True, nullable=False, autoincrement=True)
-    job_id = Column(Integer, nullable=False, index=True)
-    zoom = Column(Integer, nullable=False, index=True)
-    status = Column(Unicode, nullable=False, default=_STATUS_CREATED, index=True)
-    error = Column(Unicode)
-    started_at = Column(DateTime(timezone=True), index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False, autoincrement=True)
+    job_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    zoom: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    status: Mapped[str] = mapped_column(Unicode, nullable=False, default=_STATUS_CREATED, index=True)
+    error: Mapped[str | None] = mapped_column(Unicode)
+    started_at: Mapped[datetime.datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     # Like this:
     # {
     #     "x": 0,
@@ -169,7 +169,7 @@ class Queue(Base):
     #     "n": 5,
     #     "metadata": {},
     # }
-    meta_tile = Column(JSON, nullable=False)
+    meta_tile: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
     def __repr__(self) -> str:
         """Return the representation of the queue entry."""
@@ -198,9 +198,9 @@ async def _start_job(
             result = await session.execute(select(Job).where(Job.id == job_id))
             job = result.scalar()
             assert job is not None
-            job.status = _STATUS_ERROR  # type: ignore[assignment]
+            job.status = _STATUS_ERROR
             job.message = (
-                f"The given command '{command0}' is not allowed, allowed command are: "  # type: ignore[assignment]
+                f"The given command '{command0}' is not allowed, allowed command are: "
                 f"{', '.join(allowed_commands)}"
             )
             await session.commit()
@@ -217,8 +217,8 @@ async def _start_job(
                 result = await session.execute(select(Job).where(Job.id == job_id))
                 job = result.scalar()
                 assert job is not None
-                job.status = _STATUS_ERROR  # type: ignore[assignment]
-                job.message = f"The argument {arg} is not allowed, allowed arguments are: {', '.join(allowed_arguments)}"  # type: ignore[assignment]
+                job.status = _STATUS_ERROR
+                job.message = f"The argument {arg} is not allowed, allowed arguments are: {', '.join(allowed_arguments)}"
                 await session.commit()
             return
 
@@ -283,10 +283,10 @@ async def _start_job(
         result = await session.execute(select(Job).where(Job.id == job_id).with_for_update(of=Job))
         job = result.scalar()
         assert job is not None
-        job.status = _STATUS_DONE if completed_process.returncode == 0 else _STATUS_ERROR  # type: ignore[assignment]
-        job.message = stdout.decode()  # type: ignore[assignment]
+        job.status = _STATUS_DONE if completed_process.returncode == 0 else _STATUS_ERROR
+        job.message = stdout.decode()
         if stderr:
-            job.message += "\nError:\n" + stderr.decode()  # type: ignore[assignment]
+            job.message += "\nError:\n" + stderr.decode()
         await session.commit()
 
     if completed_process.returncode != 0:
@@ -444,7 +444,7 @@ class PostgresqlTileStore(AsyncTileStore):
                         job,
                         status,
                         [
-                            f"{_decode_tilecoord(sqlalchemy_tile.meta_tile)}: {sqlalchemy_tile.error}"  # type: ignore[arg-type]
+                            f"{_decode_tilecoord(sqlalchemy_tile.meta_tile)}: {sqlalchemy_tile.error}"
                             for sqlalchemy_tile in queue_results.scalars()
                         ],
                     ),
@@ -488,9 +488,9 @@ class PostgresqlTileStore(AsyncTileStore):
                 )
                 job = result.scalar()
                 if job is not None:
-                    job_id = job.id  # type: ignore[assignment]
-                    job.status = _STATUS_PENDING  # type: ignore[assignment]
-                    job.started_at = datetime.datetime.now(tz=datetime.timezone.utc)  # type: ignore[assignment]
+                    job_id = job.id
+                    job.status = _STATUS_PENDING
+                    job.started_at = datetime.datetime.now(tz=datetime.timezone.utc)
                     await session.commit()
             if job_id != -1:
                 await _start_job(
@@ -532,9 +532,9 @@ class PostgresqlTileStore(AsyncTileStore):
                             ),
                         )
                         if count_result != 0:
-                            job.status = _STATUS_ERROR  # type: ignore[assignment]
+                            job.status = _STATUS_ERROR
                         else:
-                            job.status = _STATUS_DONE  # type: ignore[assignment]
+                            job.status = _STATUS_DONE
                 await session.commit()
             async with self.SessionMaker() as session:
                 result = await session.execute(select(Job).where(Job.status == _STATUS_STARTED))
@@ -554,7 +554,7 @@ class PostgresqlTileStore(AsyncTileStore):
                     )
                     # Add the job as to be processed
                     if job.config_filename not in self.jobs:
-                        self.jobs[job.config_filename] = job.id  # type: ignore[index,assignment]
+                        self.jobs[job.config_filename] = job.id
                 await session.commit()
 
         if not self.jobs:
@@ -604,10 +604,10 @@ class PostgresqlTileStore(AsyncTileStore):
                         sqlalchemy_tile = result.scalar()
                         if sqlalchemy_tile is None:
                             continue
-                        sqlalchemy_tile.status = _STATUS_PENDING  # type: ignore[assignment]
-                        sqlalchemy_tile.started_at = datetime.datetime.now(tz=datetime.timezone.utc)  # type: ignore[assignment]
+                        sqlalchemy_tile.status = _STATUS_PENDING
+                        sqlalchemy_tile.started_at = datetime.datetime.now(tz=datetime.timezone.utc)
                         meta_tile = _decode_message(
-                            sqlalchemy_tile.meta_tile,  # type: ignore[arg-type]
+                            sqlalchemy_tile.meta_tile,
                             postgresql_id=sqlalchemy_tile.id,
                         )
                         await session.commit()
@@ -658,8 +658,8 @@ class PostgresqlTileStore(AsyncTileStore):
                 )
                 sqlalchemy_tile = result.scalar()
                 if sqlalchemy_tile is not None:
-                    sqlalchemy_tile.status = _STATUS_ERROR  # type: ignore[assignment]
-                    sqlalchemy_tile.error = str(tile.error)  # type: ignore[assignment]
+                    sqlalchemy_tile.status = _STATUS_ERROR
+                    sqlalchemy_tile.error = str(tile.error)
                     await session.commit()
             else:
                 if not hasattr(tile, "postgresql_id"):
