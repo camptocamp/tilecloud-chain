@@ -21,13 +21,13 @@ services:
     user: www-data
 
   redis_master:
-    image: bitnami/redis:7.4.3
+    image: bitnamilegacy/redis:7.4.3
     environment:
       - REDIS_REPLICATION_MODE=master
       - ALLOW_EMPTY_PASSWORD=yes
 
   redis_slave:
-    image: bitnami/redis:7.4.3
+    image: bitnamilegacy/redis:7.4.3
     environment:
       - REDIS_REPLICATION_MODE=slave
       - REDIS_MASTER_HOST=redis_master
@@ -36,7 +36,7 @@ services:
       - redis_master
 
   redis_sentinel:
-    image: bitnami/redis-sentinel:7.4.3
+    image: bitnamilegacy/redis-sentinel:7.4.3
     environment:
       - REDIS_MASTER_HOST=redis_master
       - REDIS_MASTER_SET=mymaster
