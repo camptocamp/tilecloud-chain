@@ -1,6 +1,6 @@
 """PostgreSQL queue."""
 
-# Copyright (c) 2023-2024 by Camptocamp
+# Copyright (c) 2023-2025 by Camptocamp
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ import objgraph
 import sqlalchemy
 import sqlalchemy.sql.functions
 from prometheus_client import Counter, Gauge, Summary
-from sqlalchemy import JSON, Column, DateTime, Integer, Unicode, and_
+from sqlalchemy import JSON, Column, DateTime, Integer, Unicode, and_, select
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from tilecloud import Tile, TileCoord, TileStore
@@ -181,11 +181,16 @@ def _start_job(
     command0 = command[0].replace("_", "-")
 
     if command0 not in allowed_commands:
-        job.status = _STATUS_ERROR  # type: ignore[assignment]
-        job.error = (  # type: ignore[attr-defined]
-            f"The given command '{command0}' is not allowed, allowed command are: "
-            f"{', '.join(allowed_commands)}"
-        )
+        with SessionMaker() as session:
+            result = session.execute(select(Job).where(Job.id == job_id))
+            job = result.scalar()  # type: ignore[assignment]
+            assert job is not None
+            job.status = _STATUS_ERROR  # type: ignore[assignment]
+            job.message = (
+                f"The given command '{command0}' is not allowed, allowed command are: "  # type: ignore[assignment]
+                f"{', '.join(allowed_commands)}"
+            )
+            session.commit()
         return
 
     add_role = False
@@ -195,11 +200,13 @@ def _start_job(
 
     for arg in arguments:
         if arg.startswith("-") and arg not in allowed_arguments:
-            job.status = _STATUS_ERROR  # type: ignore[assignment]
-            job.error = (  # type: ignore[attr-defined]
-                f"The argument {arg} is not allowed, allowed arguments are: "
-                f"{', '.join(allowed_arguments)}"
-            )
+            with SessionMaker() as session:
+                result = session.execute(select(Job).where(Job.id == job_id))
+                job = result.scalar()  # type: ignore[assignment]
+                assert job is not None
+                job.status = _STATUS_ERROR  # type: ignore[assignment]
+                job.message = f"The argument {arg} is not allowed, allowed arguments are: {', '.join(allowed_arguments)}"  # type: ignore[assignment]
+                session.commit()
             return
 
     final_command = [
@@ -256,10 +263,15 @@ def _start_job(
         env=env,
     )
 
-    job.status = _STATUS_STARTED if completed_process.returncode == 0 else _STATUS_ERROR  # type: ignore[assignment]
-    job.message = completed_process.stdout.decode()  # type: ignore[assignment]
-    if completed_process.stderr:
-        job.message += "\nError:\n" + completed_process.stderr.decode()  # type: ignore[assignment]
+    with SessionMaker() as session:
+        result = session.execute(select(Job).where(Job.id == job_id).with_for_update(of=Job))
+        job = result.scalar()  # type: ignore[assignment]
+        assert job is not None
+        job.status = _STATUS_DONE if completed_process.returncode == 0 else _STATUS_ERROR  # type: ignore[assignment]
+        job.message = completed_process.stdout.decode()  # type: ignore[assignment]
+        if completed_process.stderr:
+            job.message += "\nError:\n" + completed_process.stderr.decode()  # type: ignore[assignment]
+        session.commit()
 
     if completed_process.returncode != 0:
         _LOGGER.warning(
