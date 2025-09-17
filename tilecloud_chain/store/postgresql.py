@@ -194,11 +194,16 @@ async def _start_job(
     command0 = command[0].replace("_", "-")
 
     if command0 not in allowed_commands:
-        job.status = _STATUS_ERROR  # type: ignore[assignment]
-        job.error = (  # type: ignore[attr-defined]
-            f"The given command '{command0}' is not allowed, allowed command are: "
-            f"{', '.join(allowed_commands)}"
-        )
+        async with SessionMaker() as session:
+            result = await session.execute(select(Job).where(Job.id == job_id))
+            job = result.scalar()
+            assert job is not None
+            job.status = _STATUS_ERROR  # type: ignore[assignment]
+            job.message = (
+                f"The given command '{command0}' is not allowed, allowed command are: "  # type: ignore[assignment]
+                f"{', '.join(allowed_commands)}"
+            )
+            await session.commit()
         return
 
     add_role = False
@@ -213,9 +218,8 @@ async def _start_job(
                 job = result.scalar()
                 assert job is not None
                 job.status = _STATUS_ERROR  # type: ignore[assignment]
-                job.error = (  # type: ignore[attr-defined]
-                    f"The argument {arg} is not allowed, allowed arguments are: {', '.join(allowed_arguments)}"
-                )
+                job.message = f"The argument {arg} is not allowed, allowed arguments are: {', '.join(allowed_arguments)}"  # type: ignore[assignment]
+                await session.commit()
             return
 
     final_command = [
@@ -283,6 +287,7 @@ async def _start_job(
         job.message = stdout.decode()  # type: ignore[assignment]
         if stderr:
             job.message += "\nError:\n" + stderr.decode()  # type: ignore[assignment]
+        await session.commit()
 
     if completed_process.returncode != 0:
         _LOGGER.warning(
