@@ -132,7 +132,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libodbc2: 2.3.12-1ubuntu0.24.04.1
   ubuntu_24_04/libodbcinst2: 2.3.12-1ubuntu0.24.04.1
   ubuntu_24_04/libogdi4.1: 4.1.1+ds-3build1
-  ubuntu_24_04/libopenjp2-7: 2.5.0-2ubuntu0.3
+  ubuntu_24_04/libopenjp2-7: 2.5.0-2ubuntu0.4
   ubuntu_24_04/libp11-kit0: 0.25.3-4ubuntu2.1
   ubuntu_24_04/libpam-modules: 1.5.3-5ubuntu5.4
   ubuntu_24_04/libpam-modules-bin: 1.5.3-5ubuntu5.4
