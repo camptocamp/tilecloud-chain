@@ -47,8 +47,8 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libbrotli1: 1.1.0-2build2
   ubuntu_24_04/libbsd0: 0.12.1-1build1.1
   ubuntu_24_04/libbz2-1.0: 1.0.8-5.1build0.1
-  ubuntu_24_04/libc-bin: 2.39-0ubuntu8.5
-  ubuntu_24_04/libc6: 2.39-0ubuntu8.5
+  ubuntu_24_04/libc-bin: 2.39-0ubuntu8.6
+  ubuntu_24_04/libc6: 2.39-0ubuntu8.6
   ubuntu_24_04/libcairo2: 1.18.0-3build1
   ubuntu_24_04/libcap-ng0: 0.8.4-2build2
   ubuntu_24_04/libcap2: 1:2.66-5ubuntu2.2
@@ -134,10 +134,10 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libogdi4.1: 4.1.1+ds-3build1
   ubuntu_24_04/libopenjp2-7: 2.5.0-2ubuntu0.4
   ubuntu_24_04/libp11-kit0: 0.25.3-4ubuntu2.1
-  ubuntu_24_04/libpam-modules: 1.5.3-5ubuntu5.4
-  ubuntu_24_04/libpam-modules-bin: 1.5.3-5ubuntu5.4
-  ubuntu_24_04/libpam-runtime: 1.5.3-5ubuntu5.4
-  ubuntu_24_04/libpam0g: 1.5.3-5ubuntu5.4
+  ubuntu_24_04/libpam-modules: 1.5.3-5ubuntu5.5
+  ubuntu_24_04/libpam-modules-bin: 1.5.3-5ubuntu5.5
+  ubuntu_24_04/libpam-runtime: 1.5.3-5ubuntu5.5
+  ubuntu_24_04/libpam0g: 1.5.3-5ubuntu5.5
   ubuntu_24_04/libpcre2-8-0: 10.42-4ubuntu2.1
   ubuntu_24_04/libperl5.38t64: 5.38.2-3.2ubuntu0.2
   ubuntu_24_04/libpixman-1-0: 0.42.2-1build1
@@ -227,8 +227,8 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/python3-minimal: 3.12.3-0ubuntu2
   ubuntu_24_04/python3-numpy: 1:1.26.4+ds-6ubuntu1
   ubuntu_24_04/python3-pil: 10.2.0-1ubuntu1
-  ubuntu_24_04/python3-pip: 24.0+dfsg-1ubuntu1.2
-  ubuntu_24_04/python3-pip-whl: 24.0+dfsg-1ubuntu1.2
+  ubuntu_24_04/python3-pip: 24.0+dfsg-1ubuntu1.3
+  ubuntu_24_04/python3-pip-whl: 24.0+dfsg-1ubuntu1.3
   ubuntu_24_04/python3-pkg-resources: 68.1.2-2ubuntu1.2
   ubuntu_24_04/python3-setuptools: 68.1.2-2ubuntu1.2
   ubuntu_24_04/python3-setuptools-whl: 68.1.2-2ubuntu1.2
