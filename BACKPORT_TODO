@@ -1,0 +1,12 @@
+Backport of #3130 to 1.21
+
+Error on cherry-picking: 781e38be4d61751bfd431ec018b052ff7a4c5ee2, a0749f768681a8f43c63bd9d5ee85cd17c52b503
+
+To continue do:
+```bash
+git fetch && \
+  git checkout ghci/backport/3130-to-1.21 && \
+  git reset --hard HEAD^ && \
+  git cherry-pick 781e38be4d61751bfd431ec018b052ff7a4c5ee2 a0749f768681a8f43c63bd9d5ee85cd17c52b503
+git push origin ghci/backport/3130-to-1.21 --force
+```
