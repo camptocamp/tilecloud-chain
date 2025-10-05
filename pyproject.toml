@@ -67,7 +67,7 @@ pyramid = "2.0.2"
 jsonschema-validator-new = "0.1.0"
 azure-storage-blob = "12.19.1"
 waitress = "3.0.2"
-certifi = "2025.8.3"
+certifi = "2025.10.5"
 azure-identity = { version = "1.16.1", optional = true }
 cryptography = "46.0.2"
 gunicorn = "23.0.0"
