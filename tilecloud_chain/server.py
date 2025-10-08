@@ -337,12 +337,22 @@ class Server:
                     )
                 properties = await blob.get_blob_properties()
                 data = await (await blob.download_blob()).readall()
+                headers = {
+                    **headers,
+                    **(
+                        {"Content-Type": properties.content_settings.content_type}
+                        if properties.content_settings.content_type
+                        else {}
+                    ),
+                    **(
+                        {"Content-Encoding": properties.content_settings.content_encoding}
+                        if properties.content_settings.content_encoding
+                        else {}
+                    ),
+                }
                 return Response(
                     content=data,
-                    headers={
-                        "Content-Encoding": cast("str", properties.content_settings.content_encoding),
-                        "Content-Type": cast("str", properties.content_settings.content_type),
-                    },
+                    headers=headers,
                 )
             except ResourceNotFoundError:
                 return self.error(config, 404, f"{path} not found", **kwargs)
@@ -357,8 +367,10 @@ class Server:
             async with aiofiles.open(p, "rb") as file:
                 data = await file.read()
             content_type = mimetypes.guess_type(p)[0]
-            if content_type:
-                headers["Content-Type"] = content_type
+            headers = {
+                **headers,
+                **({"Content-Type": content_type} if content_type else {}),
+            }
             return Response(content=data, headers=headers)
 
     async def serve(
