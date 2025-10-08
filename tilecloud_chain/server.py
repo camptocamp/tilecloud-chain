@@ -307,13 +307,23 @@ class Server(Generic[Response]):
                     )
                 properties = blob.get_blob_properties()
                 data = blob.download_blob().readall()
+                headers = {
+                    **headers,
+                    **(
+                        {"Content-Type": properties.content_settings.content_type}
+                        if properties.content_settings.content_type
+                        else {}
+                    ),
+                    **(
+                        {"Content-Encoding": properties.content_settings.content_encoding}
+                        if properties.content_settings.content_encoding
+                        else {}
+                    ),
+                }
                 return self.response(
                     config,
                     data if isinstance(data, bytes) else data.encode("utf-8"),  # type: ignore
-                    {
-                        "Content-Encoding": cast(str, properties.content_settings.content_encoding),
-                        "Content-Type": cast(str, properties.content_settings.content_type),
-                    },
+                    headers,
                     **kwargs,
                 )
             except ResourceNotFoundError:
@@ -329,8 +339,10 @@ class Server(Generic[Response]):
             with open(p, "rb") as file:
                 data = file.read()
             content_type = mimetypes.guess_type(p)[0]
-            if content_type:
-                headers["Content-Type"] = content_type
+            headers = {
+                **headers,
+                **({"Content-Type": content_type} if content_type else {}),
+            }
             return self.response(config, data, headers, **kwargs)
 
     def __call__(
