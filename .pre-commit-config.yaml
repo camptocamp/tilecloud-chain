@@ -3,6 +3,9 @@ exclude: |-
     tilecloud_chain/configuration\.py
   )$
 
+default_language_version:
+  python: '3.13'
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
