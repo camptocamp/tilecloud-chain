@@ -25,7 +25,7 @@ pyramid-mako = "1.1.0"
 python-dateutil = "2.9.0.post0"
 tilecloud = { version = "1.13.2", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.6"
-PyYAML = "6.0.2"
+PyYAML = "6.0.3"
 Shapely = "2.1.2"
 jsonschema = "4.24.0"
 pyramid = "2.0.2"
@@ -36,9 +36,9 @@ certifi = "2025.10.5"
 Paste = "3.10.1"
 psutil = "7.0.0"
 pyproj = "3.7.2"
-psycopg = { version = "3.2.10", extras = ["binary"] }
+psycopg = { version = "3.2.11", extras = ["binary"] }
 aiohttp = "3.12.15"
-sqlalchemy = { version = "2.0.43", extras = ["asyncio"] }
+sqlalchemy = { version = "2.0.44", extras = ["asyncio"] }
 aiofiles = "24.1.0"
 asyncpg = "0.30.0"
 nest-asyncio = "1.6.0"
