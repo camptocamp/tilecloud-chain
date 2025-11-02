@@ -33,7 +33,7 @@ jobs:
 
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.13'
+          python-version: '3.14'
       - run: python3 -m pip install setuptools==76.1.0 wheel==0.45.1
       - run: python3 -m pip install --user --requirement=ci/requirements.txt
 
