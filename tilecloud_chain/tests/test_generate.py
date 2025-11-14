@@ -3,6 +3,7 @@ import shutil
 from itertools import product, repeat
 
 import pytest
+from PIL import Image
 from testfixtures import LogCapture
 
 from tilecloud.store.redis import RedisTileStore
@@ -1148,3 +1149,33 @@ Tiles in error:
             )
         finally:
             os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = main_congifile
+
+    def test_webp(self) -> None:
+        for d in ("-d", ""):
+            with LogCapture("tilecloud_chain", level=30) as log_capture:
+                self.assert_tiles_generated(
+                    cmd=".build/venv/bin/generate_tiles {} "
+                    "-c tilegeneration/test-nosns.yaml -l point_webp --zoom 0".format(d),
+                    main_func=generate.main,
+                    directory="/tmp/tiles/",
+                    tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.webp",
+                    tiles=[("point_webp", 0, 7, 4)],
+                    regex=True,
+                    expected=r"""The tile generation of layer 'point_webp \(DATE=2012\)' is finish
+    Nb generated metatiles: 1
+    Nb metatiles dropped: 0
+    Nb generated tiles: 1
+    Nb tiles dropped: 0
+    Nb tiles stored: 1
+    Nb tiles in error: 0
+    Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
+    Total size: [23][0-9][0-9] o
+    Time per tile: [0-9]+ ms
+    Size per tile: [23][0-9][0-9] o
+
+    """,
+                )
+                log_capture.check()
+                with open("/tmp/tiles/1.0.0/point_webp/default/2012/swissgrid_5/0/7/4.webp", "rb") as file:
+                    image = Image.open(file, formats=["WEBP"])
+                    assert image.format == "WEBP"

@@ -517,6 +517,27 @@ class TestServe(CompareCase):
       </Layer>
 
       <Layer>
+        <ows:Title>point_webp</ows:Title>
+        <ows:Identifier>point_webp</ows:Identifier>
+        <Style isDefault="true">
+          <ows:Identifier>default</ows:Identifier>
+        </Style>
+        <Format>image/webp</Format>
+        <Dimension>
+          <ows:Identifier>DATE</ows:Identifier>
+          <Default>2012</Default>
+          <Value>2005</Value>
+          <Value>2010</Value>
+          <Value>2012</Value>
+        </Dimension>
+        <ResourceURL format="image/webp" resourceType="tile"
+                     template="http://wmts1/tiles/wmts/1.0.0/point_webp/default/{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.webp" />
+        <TileMatrixSetLink>
+          <TileMatrixSet>swissgrid_5</TileMatrixSet>
+        </TileMatrixSetLink>
+      </Layer>
+
+      <Layer>
         <ows:Title>polygon</ows:Title>
         <ows:Identifier>polygon</ows:Identifier>
         <Style isDefault="true">
