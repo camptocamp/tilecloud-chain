@@ -113,7 +113,7 @@ layers:
     empty_tile_detection:
       size: 334
       hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
-  point_hash:
+  point_hash: &point_hash
     <<: *layer
     layers: point
     geoms:
@@ -172,6 +172,12 @@ layers:
     empty_tile_detection:
       size: 334
       hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+  point_webp:
+    <<: *point_hash
+    mime_type: image/webp
+    extension: webp
+    meta_size: 1
+    bbox: [420000, 30000, 600000, 150000]
   all:
     <<: *layer
     layers: point,line,polygon
