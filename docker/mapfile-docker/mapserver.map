@@ -26,6 +26,14 @@ MAP
     FILLED true
   END
 
+  OUTPUTFORMAT
+    NAME "webp"
+    DRIVER "GDAL/WEBP"
+    MIMETYPE "image/webp"
+    IMAGEMODE RGBA
+    EXTENSION "webp"
+  END
+
   LAYER
     NAME "point"
     TYPE POINT
