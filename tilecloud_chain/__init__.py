@@ -1177,6 +1177,7 @@ class TileGeneration:
                                 configuration.TILE_SIZE_DEFAULT,
                             ),
                             layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT),
+                            save_options=layer.get("meta_save_options"),  # type: ignore[arg-type]
                         ),
                     )
                 return NoneTileStore()

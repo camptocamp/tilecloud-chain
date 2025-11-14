@@ -5081,26 +5081,26 @@ zarr = ["fsspec", "kerchunk", "zarr (>=3.1.3)"]
 
 [[package]]
 name = "tilecloud"
-version = "1.13.2"
+version = "1.13.4"
 description = "Tools for managing tiles"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "tilecloud-1.13.2-py3-none-any.whl", hash = "sha256:9b14a5ba2ec0634ccd2297f2fb6cb190ccbc8aef34bb9184ab25a75baa0ef44a"},
-    {file = "tilecloud-1.13.2.tar.gz", hash = "sha256:65ec27412977067c6bdd4afecd86980e48ccadd34b19fab238c299cba243211c"},
+    {file = "tilecloud-1.13.4-py3-none-any.whl", hash = "sha256:b58738a8649f84acc6360239fc2fc62da6660afd3f593c78e64df034f5001194"},
+    {file = "tilecloud-1.13.4.tar.gz", hash = "sha256:5fa2c293e2b9bcd846716a73c9050565f8807e34f87ff01e33e796a2020b9bc4"},
 ]
 
 [package.dependencies]
-azure-identity = {version = "*", optional = true, markers = "extra == \"azure\""}
-azure-storage-blob = {version = "*", optional = true, markers = "extra == \"azure\""}
-boto3 = {version = "*", optional = true, markers = "extra == \"aws\""}
+azure-identity = {version = "*", optional = true, markers = "extra == \"azure\" or extra == \"all\""}
+azure-storage-blob = {version = "*", optional = true, markers = "extra == \"azure\" or extra == \"all\""}
+boto3 = {version = "*", optional = true, markers = "extra == \"aws\" or extra == \"all\""}
 bottle = "*"
 cryptography = "*"
 Pillow = "*"
 pyproj = "*"
-pyramid = {version = "*", optional = true, markers = "extra == \"wsgi\""}
-redis = {version = "*", optional = true, markers = "extra == \"redis\""}
+pyramid = {version = "*", optional = true, markers = "extra == \"wsgi\" or extra == \"all\""}
+redis = {version = "*", optional = true, markers = "extra == \"redis\" or extra == \"all\""}
 requests = "*"
 
 [package.extras]
@@ -6011,4 +6011,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.14"
-content-hash = "d789c25761b352ac5e94428894341e47c70771742affe61fb2b7dc1708105e04"
+content-hash = "6278c2c5c259d9f38dddc3f88ece341bd3b48624b94b060e9c25b95fcab606cc"
