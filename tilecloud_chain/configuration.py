@@ -1613,6 +1613,15 @@ default: 128
 
 
 
+LayerMetaSaveOptions = dict[str, Any]
+"""
+Layer meta save options.
+
+The Pillow options used to save the tile generated from the meta-tiles
+"""
+
+
+
 LayerMetaSize = int
 """
 Layer meta size.
@@ -1794,6 +1803,13 @@ class LayerWms(TypedDict, total=False):
     The meta-tiles buffer in pixels
 
     default: 128
+    """
+
+    meta_save_options: "LayerMetaSaveOptions"
+    """
+    Layer meta save options.
+
+    The Pillow options used to save the tile generated from the meta-tiles
     """
 
     layers: Required["LayerLayers"]
