@@ -295,6 +295,11 @@
       "type": "integer",
       "default": 128
     },
+    "layer_meta_save_options": {
+      "title": "Layer meta save options",
+      "description": "The Pillow options used to save the tile generated from the meta-tiles",
+      "type": "object"
+    },
     "layer_layers": {
       "title": "Layer layers",
       "description": "The WMS layers",
@@ -570,6 +575,9 @@
         "meta_buffer": {
           "$ref": "#/definitions/layer_meta_buffer",
           "default": 128
+        },
+        "meta_save_options": {
+          "$ref": "#/definitions/layer_meta_save_options"
         },
         "layers": {
           "$ref": "#/definitions/layer_layers"

@@ -121,6 +121,7 @@
 - <a id="definitions/layer_meta"></a>**`layer_meta`** _(boolean)_: Use meta-tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles. Default: `false`.
 - <a id="definitions/layer_meta_size"></a>**`layer_meta_size`** _(integer)_: The meta-tile size in tiles. Default: `5`.
 - <a id="definitions/layer_meta_buffer"></a>**`layer_meta_buffer`** _(integer)_: The meta-tiles buffer in pixels. Default: `128`.
+- <a id="definitions/layer_meta_save_options"></a>**`layer_meta_save_options`** _(object)_: The Pillow options used to save the tile generated from the meta-tiles.
 - <a id="definitions/layer_layers"></a>**`layer_layers`** _(string)_: The WMS layers.
 - <a id="definitions/layer_wmts_style"></a>**`layer_wmts_style`** _(string)_: The WMTS style.
 - <a id="definitions/layer_mime_type"></a>**`layer_mime_type`** _(string)_: The MIME type of the tiles.
@@ -175,6 +176,7 @@
   - **`meta`**: Refer to _[#/definitions/layer_meta](#definitions/layer_meta)_.
   - **`meta_size`**: Refer to _[#/definitions/layer_meta_size](#definitions/layer_meta_size)_. Default: `5`.
   - **`meta_buffer`**: Refer to _[#/definitions/layer_meta_buffer](#definitions/layer_meta_buffer)_. Default: `128`.
+  - **`meta_save_options`**: Refer to _[#/definitions/layer_meta_save_options](#definitions/layer_meta_save_options)_.
   - **`layers`**: Refer to _[#/definitions/layer_layers](#definitions/layer_layers)_.
   - **`wmts_style`**: Refer to _[#/definitions/layer_wmts_style](#definitions/layer_wmts_style)_.
   - **`mime_type`**: Refer to _[#/definitions/layer_mime_type](#definitions/layer_mime_type)_.
