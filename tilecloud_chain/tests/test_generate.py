@@ -1175,9 +1175,9 @@ Tiles in error:
     Nb tiles stored: 1
     Nb tiles in error: 0
     Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-    Total size: [23][0-9][0-9] o
+    Total size: [234][0-9][0-9] o
     Time per tile: [0-9]+ ms
-    Size per tile: [23][0-9][0-9] o
+    Size per tile: [234][0-9][0-9] o
 
     """,
                 )

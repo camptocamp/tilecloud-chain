@@ -3084,13 +3084,13 @@ zarr = ["fsspec", "zarr"]
 
 [[package]]
 name = "tilecloud"
-version = "1.12.9"
+version = "1.12.10"
 description = "Tools for managing tiles"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "tilecloud-1.12.9-py3-none-any.whl", hash = "sha256:774f88c7649a4d32a1e3a7243e5431c3706861e2fde2546356cba99781239358"},
-    {file = "tilecloud-1.12.9.tar.gz", hash = "sha256:4fa34053c7aa8abdbd38caede7602d105e416662117d218bc940addb1d2f879b"},
+    {file = "tilecloud-1.12.10-py3-none-any.whl", hash = "sha256:69434d3266f31eca9ea58736ab5a501f8939f10d5c92cf6acf024aeed306cdf6"},
+    {file = "tilecloud-1.12.10.tar.gz", hash = "sha256:4ded9a45a651e09a56ea4d85f062f717e555d545fb7dc0d36f85e3fea91befa4"},
 ]
 
 [package.dependencies]
@@ -3535,4 +3535,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "cd0b790a921e8b42f162399c124d20e4816ec216caa496a48e28f056dda4fa40"
+content-hash = "3c565b732530dbac9487e01d546935ed1dbf7f1f652480de96419a3d22b9a928"
