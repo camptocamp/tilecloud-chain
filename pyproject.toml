@@ -28,7 +28,7 @@ python = ">=3.11,<3.14"
 c2casgiutils = { version = "0.5.0", extras = ["all"] }
 fastapi = {extras = ["standard"], version = "0.120.4"}
 python-dateutil = "2.9.0.post0"
-tilecloud = { version = "1.13.4", extras = ["azure", "aws", "redis", "wsgi"] }
+tilecloud = { version = "1.13.5", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.6"
 PyYAML = "6.0.3"
 Shapely = "2.1.2"

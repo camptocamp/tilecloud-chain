@@ -311,7 +311,7 @@ async def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = No
                                 "FORMAT": layer.get("legend_mime", configuration.LAYER_LEGEND_MIME_DEFAULT),
                                 "TRANSPARENT": "TRUE"
                                 if layer.get("legend_mime", configuration.LAYER_LEGEND_MIME_DEFAULT)
-                                == "image/png"
+                                in ("image/png", "image/webp")
                                 else "FALSE",
                                 "STYLE": layer["wmts_style"],
                                 "SCALE": resolution / 0.00028,
