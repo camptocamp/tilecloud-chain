@@ -120,7 +120,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/libminizip1: 1.1-8build1
   ubuntu_22_04/libmount1: 2.37.2-4ubuntu3.4
   ubuntu_22_04/libmpdec3: 2.5.1-2build2
-  ubuntu_22_04/libmysqlclient21: 8.0.43-0ubuntu0.22.04.1
+  ubuntu_22_04/libmysqlclient21: 8.0.44-0ubuntu0.22.04.1
   ubuntu_22_04/libncurses6: 6.3-2ubuntu0.1
   ubuntu_22_04/libncursesw6: 6.3-2ubuntu0.1
   ubuntu_22_04/libnetcdf19: 1:4.8.1-1
