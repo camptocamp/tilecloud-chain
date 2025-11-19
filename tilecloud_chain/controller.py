@@ -542,7 +542,9 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                                 "REQUEST": "GetLegendGraphic",
                                 "LAYER": wms_layer,
                                 "FORMAT": layer["legend_mime"],
-                                "TRANSPARENT": "TRUE" if layer["legend_mime"] == "image/png" else "FALSE",
+                                "TRANSPARENT": "TRUE"
+                                if layer["legend_mime"] in ("image/png", "image/webp")
+                                else "FALSE",
                                 "STYLE": layer["wmts_style"],
                                 "SCALE": resolution / 0.00028,
                             }
