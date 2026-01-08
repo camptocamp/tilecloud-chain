@@ -76,7 +76,7 @@ Paste = "3.10.1"
 psutil = "6.1.1"
 cryptography = "46.0.3"
 requests = "2.32.5"
-urllib3 = "2.6.0"
+urllib3 = "2.6.3"
 
 [tool.poetry.group.dev.dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.13.3" }
