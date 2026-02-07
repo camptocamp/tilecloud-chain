@@ -81,8 +81,8 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/libgeotiff5: 1.7.0-2build1
   ubuntu_22_04/libgfortran5: 12.3.0-1ubuntu1~22.04.2
   ubuntu_22_04/libgif7: 5.1.9-2ubuntu0.1
-  ubuntu_22_04/libglib2.0-0: 2.72.4-0ubuntu2.8
-  ubuntu_22_04/libglib2.0-data: 2.72.4-0ubuntu2.8
+  ubuntu_22_04/libglib2.0-0: 2.72.4-0ubuntu2.9
+  ubuntu_22_04/libglib2.0-data: 2.72.4-0ubuntu2.9
   ubuntu_22_04/libgmp10: 2:6.2.1+dfsg-3ubuntu1
   ubuntu_22_04/libgnutls30: 3.7.3-4ubuntu1.7
   ubuntu_22_04/libgomp1: 12.3.0-1ubuntu1~22.04.2
@@ -150,9 +150,9 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/libproj22: 8.2.1-1
   ubuntu_22_04/libpsl5: 0.21.0-1.2build2
   ubuntu_22_04/libpython3-stdlib: 3.10.6-1~22.04.1
-  ubuntu_22_04/libpython3.10: 3.10.12-1~22.04.13
-  ubuntu_22_04/libpython3.10-minimal: 3.10.12-1~22.04.13
-  ubuntu_22_04/libpython3.10-stdlib: 3.10.12-1~22.04.13
+  ubuntu_22_04/libpython3.10: 3.10.12-1~22.04.14
+  ubuntu_22_04/libpython3.10-minimal: 3.10.12-1~22.04.14
+  ubuntu_22_04/libpython3.10-stdlib: 3.10.12-1~22.04.14
   ubuntu_22_04/libqhull-r8.0: 2020.2-4
   ubuntu_22_04/libquadmath0: 12.3.0-1ubuntu1~22.04.2
   ubuntu_22_04/libraqm0: 0.7.0-4ubuntu1
@@ -239,8 +239,8 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/python3-pkg-resources: 59.6.0-1.2ubuntu0.22.04.3
   ubuntu_22_04/python3-setuptools: 59.6.0-1.2ubuntu0.22.04.3
   ubuntu_22_04/python3-wheel: 0.37.1-2ubuntu0.22.04.1
-  ubuntu_22_04/python3.10: 3.10.12-1~22.04.13
-  ubuntu_22_04/python3.10-minimal: 3.10.12-1~22.04.13
+  ubuntu_22_04/python3.10: 3.10.12-1~22.04.14
+  ubuntu_22_04/python3.10-minimal: 3.10.12-1~22.04.14
   ubuntu_22_04/readline-common: 8.1.2-1
   ubuntu_22_04/sed: 4.8-1ubuntu2
   ubuntu_22_04/sensible-utils: 0.0.17
