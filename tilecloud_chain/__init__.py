@@ -794,7 +794,7 @@ class TileGeneration:
         base_config: tilecloud_chain.configuration.Configuration | None = None,
     ) -> DatedConfig:
         """Get the validated configuration for the file name, with cache management."""
-        if not config_file.exists():
+        if not await config_file.exists():
             _LOGGER.error("Missing config file %s", config_file)
             if ignore_error:
                 return DatedConfig(cast("tilecloud_chain.configuration.Configuration", {}), 0, Path())
