@@ -41,8 +41,8 @@ from pathlib import Path
 from typing import Annotated, Any, NamedTuple, cast
 from urllib.parse import urlencode
 
-import aiofiles
 import aiohttp
+import anyio
 import botocore.exceptions
 import fastapi
 import html_sanitizer
@@ -361,12 +361,11 @@ class Server:
             folder = Path(cache_filesystem["folder"] or "")
             if path.split(".")[-1] not in self.get_static_allow_extension(config):
                 return self.error(config, 403, "Extension not allowed", **kwargs)
-            p = folder / path
-            if not p.is_file():
+            p = anyio.Path(folder / path)
+            if not await p.is_file():
                 return self.error(config, 404, f"{path} not found", **kwargs)
-            async with aiofiles.open(p, "rb") as file:
-                data = await file.read()
-            content_type = mimetypes.guess_type(p)[0]
+            data = await p.read_bytes()
+            content_type = mimetypes.guess_type(str(p))[0]
             headers = {
                 **headers,
                 **({"Content-Type": content_type} if content_type else {}),
