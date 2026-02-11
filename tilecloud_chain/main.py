@@ -29,6 +29,9 @@ import os
 import resource
 from collections.abc import AsyncGenerator, Generator
 from contextlib import asynccontextmanager
+# Using pathlib.Path here instead of anyio.Path because this is used at module level
+# for static file directory configuration, which doesn't require async I/O operations
+from pathlib import Path
 
 import c2casgiutils
 import c2cwsgiutils.prometheus
@@ -161,7 +164,7 @@ health_checks.FACTORY.add(health_checks.Redis(tags=["redis", "all"]))
 
 # Add Routers
 # Mount the most specific routes first to ensure correct routing precedence.
-app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 app.include_router(server.router, tags=["wmts"])  # WMTS routes
 app.mount("/c2c", c2casgiutils.app)  # C2C utility routes
 app.mount("/admin", admin.app)  # Admin routes
