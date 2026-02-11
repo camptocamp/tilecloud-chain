@@ -2069,6 +2069,7 @@ class Process:
         """Process the tile."""
         if tile and tile.data:
             fd_in, name_in = tempfile.mkstemp()
+            os.close(fd_in)  # Close the file descriptor since anyio.Path will open its own handle
             async_path_in = anyio.Path(name_in)
             await async_path_in.write_bytes(tile.data)
 
@@ -2077,6 +2078,7 @@ class Process:
 
                 if cmd.get("need_out", configuration.NEED_OUT_DEFAULT):
                     fd_out, name_out = tempfile.mkstemp()
+                    os.close(fd_out)  # Close the file descriptor immediately
                     Path(name_out).unlink()
                 else:
                     name_out = name_in
@@ -2113,14 +2115,11 @@ class Process:
                         return tile
 
                 if cmd.get("need_out", configuration.NEED_OUT_DEFAULT):
-                    os.close(fd_in)
                     Path(name_in).unlink()
                     name_in = name_out
-                    fd_in = fd_out
 
             async_path_out = anyio.Path(name_in)
             tile.data = await async_path_out.read_bytes()
-            os.close(fd_in)
             Path(name_in).unlink()
 
         return tile
