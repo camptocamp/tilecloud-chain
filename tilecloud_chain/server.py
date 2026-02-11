@@ -364,7 +364,7 @@ class Server:
             p = folder / path
             if not p.is_file():
                 return self.error(config, 404, f"{path} not found", **kwargs)
-            async with AsyncPath(p).open("rb") as file:
+            async with await AsyncPath(p).open("rb") as file:
                 data = await file.read()
             content_type = mimetypes.guess_type(p)[0]
             headers = {

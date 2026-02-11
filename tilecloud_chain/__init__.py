@@ -845,7 +845,7 @@ class TileGeneration:
         if self.hosts_cache is not None and self.hosts_cache.mtime == file_path.stat().st_mtime:
             return self.hosts_cache.hosts
 
-        async with AsyncPath(file_path).open(encoding="utf-8") as hosts_file:
+        async with await AsyncPath(file_path).open(encoding="utf-8") as hosts_file:
             content = await hosts_file.read()
             ruamel = YAML(typ="safe")
             hosts: dict[str, Path] = {}
@@ -865,7 +865,7 @@ class TileGeneration:
         base_config: tilecloud_chain.configuration.Configuration | None = None,
     ) -> tuple[DatedConfig, bool]:
         """Get the validated configuration for the file name."""
-        async with AsyncPath(config_file).open(encoding="utf-8") as f:
+        async with await AsyncPath(config_file).open(encoding="utf-8") as f:
             content = await f.read()
             config: dict[str, Any] = {}
             config.update({} if base_config is None else base_config)
@@ -2068,7 +2068,7 @@ class Process:
         """Process the tile."""
         if tile and tile.data:
             fd_in, name_in = tempfile.mkstemp()
-            async with AsyncPath(name_in).open("wb") as file_in:
+            async with await AsyncPath(name_in).open("wb") as file_in:
                 await file_in.write(tile.data)
 
             for cmd in self.config:
@@ -2117,7 +2117,7 @@ class Process:
                     name_in = name_out
                     fd_in = fd_out
 
-            async with AsyncPath(name_in).open("rb") as file_out:
+            async with await AsyncPath(name_in).open("rb") as file_out:
                 tile.data = await file_out.read()
             os.close(fd_in)
             Path(name_in).unlink()

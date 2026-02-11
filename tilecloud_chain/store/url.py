@@ -57,7 +57,7 @@ class URLTileStore(AsyncTileStore):
         )
         if host_limit_path.exists() and self._hosts_limit.mtime != host_limit_path.stat().st_mtime:
             yaml = YAML(typ="safe")
-            async with AsyncPath(host_limit_path).open(encoding="utf-8") as f:
+            async with await AsyncPath(host_limit_path).open(encoding="utf-8") as f:
                 content = await f.read()
                 self._hosts_limit.config = yaml.load(content)
                 self._hosts_limit.mtime = host_limit_path.stat().st_mtime
