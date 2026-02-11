@@ -801,8 +801,10 @@ class TileGeneration:
             sys.exit(1)
 
         config: DatedConfig | None = self.configs.get(config_file)
-        if config is not None and config.mtime == config_file.stat().st_mtime:
-            return config
+        if config is not None:
+            config_stat = await config_file.stat()
+            if config.mtime == config_stat.st_mtime:
+                return config
 
         config, success = await self._get_config(config_file, ignore_error, base_config)
         if not success or config is None:
@@ -1010,7 +1012,7 @@ class TileGeneration:
         all_dimensions += [[p] for p in options_dimensions.items()]
         return [{}] if len(all_dimensions) == 0 else [dict(d) for d in product(*all_dimensions)]
 
-    def get_store(
+    async def get_store(
         self,
         config: DatedConfig,
         cache: tilecloud_chain.configuration.Cache,
@@ -1062,7 +1064,7 @@ class TileGeneration:
             filename = Path(
                 layout.filename(TileCoord(0, 0, 0), metadata=metadata).replace("/0/0/0", "") + ".mbtiles",
             )
-            filename.parent.mkdir(parents=True, exist_ok=True)
+            await filename.parent.mkdir(parents=True, exist_ok=True)
             cache_tilestore = TileStoreWrapper(
                 MBTilesTileStore(
                     sqlite3.connect(filename),
@@ -1083,11 +1085,11 @@ class TileGeneration:
             filename = Path(
                 layout.filename(TileCoord(0, 0, 0), metadata=metadata).replace("/0/0/0", "") + ".bsddb",
             )
-            filename.parent.mkdir(parents=True, exist_ok=True)
+            await filename.parent.mkdir(parents=True, exist_ok=True)
             db = bsddb.hashopen(
                 filename,
                 # and os.path.exists(filename) to avoid error on non existing file
-                "r" if read_only and filename.exists() else "c",
+                "r" if read_only and await filename.exists() else "c",
             )
 
             self._close_actions.append(Close(db))
@@ -1126,7 +1128,7 @@ class TileGeneration:
                 configuration.DEFAULT_CACHE_DEFAULT,
             )
             cache_obj = config.config["caches"][cache_name]
-            return self.get_store(config, cache_obj, layer_name, grid_name)
+            return await self.get_store(config, cache_obj, layer_name, grid_name)
 
         return TimedTileStoreWrapper(
             MultiTileStore(get_store),
@@ -1838,10 +1840,11 @@ class MultiAction:
         layer: str,
     ) -> Callable[[Tile], Awaitable[Tile | None]] | None:
         """Get the action based on the tile's layer name."""
-        if not config_file.exists():
+        if not await config_file.exists():
             _LOGGER.warning("Config file %s does not exist", config_file)
             return None
-        mtime = config_file.stat().st_mtime
+        config_stat = await config_file.stat()
+        mtime = config_stat.st_mtime
         action = self.actions.get((config_file, layer))
         if action is not None and action.mtime != mtime:
             action = None
@@ -2146,9 +2149,9 @@ class TilesFileStore(AsyncTileStore):
 
     async def list(self) -> AsyncIterator[Tile]:
         """List the tiles."""
-        with self.tiles_file_path.open(encoding="utf-8") as tiles_file:
+        async with await self.tiles_file_path.open(encoding="utf-8") as tiles_file:
             while True:
-                line = tiles_file.readline()
+                line = await tiles_file.readline()
                 if not line:
                     return
                 line = line.split("#")[0].strip()

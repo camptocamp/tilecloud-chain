@@ -241,7 +241,7 @@ class Server:
         self.filter_cache.setdefault(config.file, {})[layer_name] = DatedFilter(layer_filter, config.mtime)
         return layer_filter
 
-    def get_store(
+    async def get_store(
         self,
         config: tilecloud_chain.DatedConfig,
         layer_name: str,
@@ -255,7 +255,7 @@ class Server:
 
         assert _TILEGENERATION
 
-        store = _TILEGENERATION.get_store(
+        store = await _TILEGENERATION.get_store(
             config,
             self.get_cache(config),
             layer_name,
@@ -610,7 +610,7 @@ class Server:
             ):
                 return await self._map_cache(config, layer, tile)
 
-        store = self.get_store(config, params["LAYER"], params["TILEMATRIXSET"])
+        store = await self.get_store(config, params["LAYER"], params["TILEMATRIXSET"])
         if store is None:
             return self.error(
                 config,
@@ -992,9 +992,9 @@ async def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes |
     else:
         cache_filesystem = cast("tilecloud_chain.configuration.CacheFilesystem", cache)
         p = Path(cache_filesystem["folder"]) / path
-        if not p.is_file():
+        if not await p.is_file():
             return None
-        return p.read_bytes()
+        return await p.read_bytes()
 
 
 async def _get_layer_legend(
