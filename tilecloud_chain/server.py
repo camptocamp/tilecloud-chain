@@ -1,6 +1,6 @@
 """The server to serve the tiles."""
 
-# Copyright (c) 2013-2025 by Stéphane Brunner
+# Copyright (c) 2013-2026 by Stéphane Brunner
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,17 +37,16 @@ import time
 from copy import copy
 from dataclasses import dataclass
 from io import BytesIO
-from pathlib import Path
 from typing import Annotated, Any, NamedTuple, cast
 from urllib.parse import urlencode
 
-import aiofiles
 import aiohttp
 import botocore.exceptions
 import fastapi
 import html_sanitizer
 import tilecloud.store.s3
 import yaml
+from anyio import Path
 from azure.core.exceptions import ResourceNotFoundError
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import Response
@@ -242,7 +241,7 @@ class Server:
         self.filter_cache.setdefault(config.file, {})[layer_name] = DatedFilter(layer_filter, config.mtime)
         return layer_filter
 
-    def get_store(
+    async def get_store(
         self,
         config: tilecloud_chain.DatedConfig,
         layer_name: str,
@@ -256,7 +255,7 @@ class Server:
 
         assert _TILEGENERATION
 
-        store = _TILEGENERATION.get_store(
+        store = await _TILEGENERATION.get_store(
             config,
             self.get_cache(config),
             layer_name,
@@ -362,11 +361,11 @@ class Server:
             if path.split(".")[-1] not in self.get_static_allow_extension(config):
                 return self.error(config, 403, "Extension not allowed", **kwargs)
             p = folder / path
-            if not p.is_file():
+            if not await p.is_file():
                 return self.error(config, 404, f"{path} not found", **kwargs)
-            async with aiofiles.open(p, "rb") as file:
+            async with await p.open("rb") as file:
                 data = await file.read()
-            content_type = mimetypes.guess_type(p)[0]
+            content_type = mimetypes.guess_type(str(p))[0]
             headers = {
                 **headers,
                 **({"Content-Type": content_type} if content_type else {}),
@@ -611,7 +610,7 @@ class Server:
             ):
                 return await self._map_cache(config, layer, tile)
 
-        store = self.get_store(config, params["LAYER"], params["TILEMATRIXSET"])
+        store = await self.get_store(config, params["LAYER"], params["TILEMATRIXSET"])
         if store is None:
             return self.error(
                 config,
@@ -993,9 +992,9 @@ async def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes |
     else:
         cache_filesystem = cast("tilecloud_chain.configuration.CacheFilesystem", cache)
         p = Path(cache_filesystem["folder"]) / path
-        if not p.is_file():
+        if not await p.is_file():
             return None
-        return p.read_bytes()
+        return await p.read_bytes()
 
 
 async def _get_layer_legend(

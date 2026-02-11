@@ -1,6 +1,6 @@
 """PostgreSQL queue."""
 
-# Copyright (c) 2023-2025 by Camptocamp
+# Copyright (c) 2023-2026 by Camptocamp
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,13 +34,13 @@ import logging
 import os
 import shlex
 from collections.abc import AsyncIterator
-from pathlib import Path
 from typing import Any, cast
 
 import objgraph
 import sqlalchemy
 import sqlalchemy.schema
 import sqlalchemy.sql.functions
+from anyio import Path
 from prometheus_client import Counter, Gauge, Summary
 from sqlalchemy import JSON, DateTime, Integer, Unicode, and_, delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine

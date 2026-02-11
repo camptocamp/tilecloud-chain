@@ -11,13 +11,13 @@ import sys
 from argparse import ArgumentParser, Namespace
 from collections.abc import Awaitable, Callable
 from getpass import getuser
-from pathlib import Path
 from typing import IO, cast
 
 import boto3
 import objgraph
 import prometheus_client
 import tilecloud.filter.error
+from anyio import Path
 from tilecloud import Tile, TileCoord
 from tilecloud.filter.logger import Logger
 from tilecloud.layout.wms import WMSTileLayout

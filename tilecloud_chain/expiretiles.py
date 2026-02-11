@@ -1,11 +1,12 @@
 """Import the osm2pgsql expire-tiles file to Postgres."""
 
+import asyncio
 import logging
 import sys
 from argparse import ArgumentParser
-from pathlib import Path
 
 import psycopg2.sql
+from anyio import Path
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import unary_union
 from tilecloud.grid.quad import QuadTileGrid
@@ -15,7 +16,7 @@ from tilecloud_chain import parse_tilecoord
 logger = logging.getLogger(__name__)
 
 
-def main() -> None:
+async def async_main() -> None:
     """Import the osm2pgsql expire-tiles file to Postgres."""
     try:
         parser = ArgumentParser(
@@ -118,8 +119,9 @@ def main() -> None:
         grid = QuadTileGrid(
             max_extent=(-20037508.34, -20037508.34, 20037508.34, 20037508.34),
         )
-        with options.file.open(encoding="utf-8") as f:
-            for coord in f:
+        async with await options.file.open(encoding="utf-8") as f:
+            content = await f.read()
+            for coord in content.splitlines():
                 extent = grid.extent(parse_tilecoord(coord), options.buffer)
                 geoms.append(
                     Polygon(
@@ -189,3 +191,8 @@ def main() -> None:
     except:  # pylint: disable=bare-except
         logger.exception("Exit with exception")
         sys.exit(1)
+
+
+def main() -> None:
+    """Entry point for the import-expiretiles command."""
+    asyncio.run(async_main())

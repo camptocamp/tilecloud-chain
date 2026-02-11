@@ -3,8 +3,8 @@
 import logging
 from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import dataclass
-from pathlib import Path
 
+from anyio import Path
 from tilecloud import Tile
 
 from tilecloud_chain.store import AsyncTilesIterator, AsyncTileStore
@@ -32,8 +32,8 @@ class MultiTileStore(AsyncTileStore):
         self.stores: dict[tuple[Path, str, str], _DatedStore | None] = {}
 
     async def _get_store(self, config_file: Path, layer: str, grid_name: str) -> AsyncTileStore | None:
-        config_path = Path(config_file)
-        mtime = config_path.stat().st_mtime
+        stat_info = await config_file.stat()
+        mtime = stat_info.st_mtime
         store = self.stores.get((config_file, layer, grid_name))
         if store is not None and store.mtime != mtime:
             store = None
