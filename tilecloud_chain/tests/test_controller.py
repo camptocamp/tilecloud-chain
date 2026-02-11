@@ -1,10 +1,10 @@
 import os
 import shutil
+from pathlib import Path
 
 import pytest
 import pytest_check
 import yaml
-from anyio import Path
 from PIL import Image
 
 from tilecloud_chain import TileGeneration, controller

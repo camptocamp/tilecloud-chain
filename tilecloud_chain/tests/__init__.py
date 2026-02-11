@@ -7,12 +7,12 @@ import traceback
 from collections.abc import Callable
 from io import StringIO
 from logging import config
+from pathlib import Path
 from typing import Any
 from unittest import TestCase
 
 import pytest
 import yaml
-from anyio import Path
 
 DIFF = 200
 _LOGGER = logging.getLogger("tests")

@@ -32,8 +32,7 @@ class MultiTileStore(AsyncTileStore):
         self.stores: dict[tuple[Path, str, str], _DatedStore | None] = {}
 
     async def _get_store(self, config_file: Path, layer: str, grid_name: str) -> AsyncTileStore | None:
-        config_path = Path(config_file)
-        stat_info = await config_path.stat()
+        stat_info = await config_file.stat()
         mtime = stat_info.st_mtime
         store = self.stores.get((config_file, layer, grid_name))
         if store is not None and store.mtime != mtime:

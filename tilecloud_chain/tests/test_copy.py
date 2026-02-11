@@ -1,8 +1,8 @@
 import os
 import shutil
+from pathlib import Path
 
 import requests
-from anyio import Path
 
 from tilecloud_chain import copy_
 from tilecloud_chain.tests import CompareCase
