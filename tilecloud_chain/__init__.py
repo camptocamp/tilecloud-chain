@@ -26,7 +26,7 @@ from math import ceil, sqrt
 from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, TextIO, TypedDict, cast
 
-import aiofiles.threadpool.text
+from anyio import AsyncFile, Path as AsyncPath
 import boto3
 import c2cwsgiutils.pyramid_logging
 import c2cwsgiutils.setup_process
@@ -614,7 +614,7 @@ class TileGeneration:
         self._close_actions: list[Close] = []
         self.error_lock = asyncio.Lock()
         self.tilestream_lock = asyncio.Lock()
-        self.error_files_: dict[str, aiofiles.threadpool.text.AsyncTextIOWrapper] = {}
+        self.error_files_: dict[str, AsyncFile[Any]] = {}
         self.functions_tiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
         self.functions_metatiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
         self.functions: list[Callable[[Tile], Awaitable[Tile | None]]] = self.functions_metatiles
@@ -845,7 +845,7 @@ class TileGeneration:
         if self.hosts_cache is not None and self.hosts_cache.mtime == file_path.stat().st_mtime:
             return self.hosts_cache.hosts
 
-        async with aiofiles.open(file_path, encoding="utf-8") as hosts_file:
+        async with AsyncPath(file_path).open(encoding="utf-8") as hosts_file:
             content = await hosts_file.read()
             ruamel = YAML(typ="safe")
             hosts: dict[str, Path] = {}
@@ -865,7 +865,7 @@ class TileGeneration:
         base_config: tilecloud_chain.configuration.Configuration | None = None,
     ) -> tuple[DatedConfig, bool]:
         """Get the validated configuration for the file name."""
-        async with aiofiles.open(config_file, encoding="utf-8") as f:
+        async with AsyncPath(config_file).open(encoding="utf-8") as f:
             content = await f.read()
             config: dict[str, Any] = {}
             config.update({} if base_config is None else base_config)
@@ -1212,7 +1212,7 @@ class TileGeneration:
         self.imap(meta_get)
         self.functions = self.functions_tiles
 
-    async def create_log_tiles_error(self, layer: str) -> aiofiles.threadpool.text.AsyncTextIOWrapper | None:
+    async def create_log_tiles_error(self, layer: str) -> AsyncFile[Any] | None:
         """Create the error file for the given layer."""
         main_config = await self.get_main_config()
         if "error_file" in main_config.config.get("generation", {}):
@@ -1224,7 +1224,7 @@ class TileGeneration:
             # Create parent directories if they don't exist
             error_file_path.parent.mkdir(parents=True, exist_ok=True)
             # Use async open for better async compatibility
-            error_file = await aiofiles.open(error_file_path, "a", encoding="utf-8")
+            error_file = await AsyncPath(error_file_path).open("a", encoding="utf-8")
             await error_file.write(f"# [{time_}] Start the layer '{layer}' generation\n")
             self.error_files_[layer] = error_file
             return error_file
@@ -1238,7 +1238,7 @@ class TileGeneration:
     async def get_log_tiles_error_file(
         self,
         layer: str,
-    ) -> aiofiles.threadpool.text.AsyncTextIOWrapper | None:
+    ) -> AsyncFile[Any] | None:
         """Get the error file for the given layer."""
         return (
             self.error_files_[layer]
@@ -2068,7 +2068,7 @@ class Process:
         """Process the tile."""
         if tile and tile.data:
             fd_in, name_in = tempfile.mkstemp()
-            async with aiofiles.open(name_in, "wb") as file_in:
+            async with AsyncPath(name_in).open("wb") as file_in:
                 await file_in.write(tile.data)
 
             for cmd in self.config:
@@ -2117,7 +2117,7 @@ class Process:
                     name_in = name_out
                     fd_in = fd_out
 
-            async with aiofiles.open(name_in, "rb") as file_out:
+            async with AsyncPath(name_in).open("rb") as file_out:
                 tile.data = await file_out.read()
             os.close(fd_in)
             Path(name_in).unlink()

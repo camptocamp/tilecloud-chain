@@ -41,7 +41,7 @@ from pathlib import Path
 from typing import Annotated, Any, NamedTuple, cast
 from urllib.parse import urlencode
 
-import aiofiles
+from anyio import Path as AsyncPath
 import aiohttp
 import botocore.exceptions
 import fastapi
@@ -364,7 +364,7 @@ class Server:
             p = folder / path
             if not p.is_file():
                 return self.error(config, 404, f"{path} not found", **kwargs)
-            async with aiofiles.open(p, "rb") as file:
+            async with AsyncPath(p).open("rb") as file:
                 data = await file.read()
             content_type = mimetypes.guess_type(p)[0]
             headers = {

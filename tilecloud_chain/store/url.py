@@ -8,7 +8,7 @@ from collections.abc import AsyncGenerator, Iterable
 from pathlib import Path
 from typing import Any, cast
 
-import aiofiles
+from anyio import Path as AsyncPath
 import aiohttp
 import jsonschema_validator
 from ruamel.yaml import YAML
@@ -57,7 +57,7 @@ class URLTileStore(AsyncTileStore):
         )
         if host_limit_path.exists() and self._hosts_limit.mtime != host_limit_path.stat().st_mtime:
             yaml = YAML(typ="safe")
-            async with aiofiles.open(host_limit_path, encoding="utf-8") as f:
+            async with AsyncPath(host_limit_path).open(encoding="utf-8") as f:
                 content = await f.read()
                 self._hosts_limit.config = yaml.load(content)
                 self._hosts_limit.mtime = host_limit_path.stat().st_mtime
