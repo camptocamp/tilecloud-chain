@@ -26,7 +26,6 @@ from math import ceil, sqrt
 from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, TextIO, TypedDict, cast
 
 import anyio
-from anyio import Path
 import boto3
 import c2cwsgiutils.pyramid_logging
 import c2cwsgiutils.setup_process
@@ -34,6 +33,7 @@ import jsonschema_validator
 import psycopg2
 import pyproj
 import shapely.ops
+from anyio import Path
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob.aio import BlobServiceClient, ContainerClient
 from c2cwsgiutils import sentry

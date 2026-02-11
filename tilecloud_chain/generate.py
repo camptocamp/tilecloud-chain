@@ -13,12 +13,11 @@ from collections.abc import Awaitable, Callable
 from getpass import getuser
 from typing import IO, cast
 
-from anyio import Path
-
 import boto3
 import objgraph
 import prometheus_client
 import tilecloud.filter.error
+from anyio import Path
 from tilecloud import Tile, TileCoord
 from tilecloud.filter.logger import Logger
 from tilecloud.layout.wms import WMSTileLayout

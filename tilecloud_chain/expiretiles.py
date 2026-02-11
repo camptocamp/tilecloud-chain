@@ -5,8 +5,8 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-from anyio import Path
 import psycopg2.sql
+from anyio import Path
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import unary_union
 from tilecloud.grid.quad import QuadTileGrid

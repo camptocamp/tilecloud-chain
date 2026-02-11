@@ -1,7 +1,6 @@
-from anyio import Path
-
 import psycopg2
 import pytest
+from anyio import Path
 from testfixtures import LogCapture
 
 from tilecloud_chain import expiretiles

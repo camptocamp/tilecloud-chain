@@ -12,12 +12,12 @@ from math import exp, log
 from typing import IO, Any, Literal, cast
 from urllib.parse import urlencode
 
-from anyio import Path
 import PIL.ImageFile
 import requests
 import ruamel.yaml
 import tilecloud.store.s3
 import yaml
+from anyio import Path
 from azure.storage.blob import ContentSettings
 from PIL import Image
 from prometheus_client import Summary

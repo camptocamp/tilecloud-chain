@@ -1,4 +1,4 @@
-# Copyright (c) 2025 by Stéphane Brunner
+# Copyright (c) 2025-2026 by Stéphane Brunner
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,9 +29,7 @@ import os
 import resource
 from collections.abc import AsyncGenerator, Generator
 from contextlib import asynccontextmanager
-import os
 
-from anyio import Path
 import c2casgiutils
 import c2cwsgiutils.prometheus
 import prometheus_client

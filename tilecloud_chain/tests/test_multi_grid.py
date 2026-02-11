@@ -1,9 +1,9 @@
 import os
-from anyio import Path
 
 import pytest
 import pytest_check
 import yaml
+from anyio import Path
 
 from tilecloud_chain import TileGeneration, controller, generate
 from tilecloud_chain.tests import CompareCase

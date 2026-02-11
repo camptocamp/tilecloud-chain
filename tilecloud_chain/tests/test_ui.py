@@ -1,8 +1,8 @@
 import subprocess
-from anyio import Path
 
 import pytest
 import skimage.io
+from anyio import Path
 from c2cwsgiutils.acceptance.image import check_image
 
 REGENERATE = False

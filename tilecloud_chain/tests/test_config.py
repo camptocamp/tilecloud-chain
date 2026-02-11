@@ -1,6 +1,6 @@
 import os
-from anyio import Path
 
+from anyio import Path
 from testfixtures import LogCapture
 
 from tilecloud_chain import controller

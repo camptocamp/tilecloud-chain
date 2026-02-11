@@ -1,6 +1,6 @@
 """The server to serve the tiles."""
 
-# Copyright (c) 2013-2025 by Stéphane Brunner
+# Copyright (c) 2013-2026 by Stéphane Brunner
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -41,12 +41,12 @@ from typing import Annotated, Any, NamedTuple, cast
 from urllib.parse import urlencode
 
 import aiohttp
-from anyio import Path
 import botocore.exceptions
 import fastapi
 import html_sanitizer
 import tilecloud.store.s3
 import yaml
+from anyio import Path
 from azure.core.exceptions import ResourceNotFoundError
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import Response

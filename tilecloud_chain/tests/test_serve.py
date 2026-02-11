@@ -1,9 +1,9 @@
 import os
 import shutil
-from anyio import Path
 
 import pytest
 import yaml
+from anyio import Path
 from fastapi import HTTPException
 from testfixtures import LogCapture
 

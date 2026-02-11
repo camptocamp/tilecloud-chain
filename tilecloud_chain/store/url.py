@@ -8,8 +8,8 @@ from collections.abc import AsyncGenerator, Iterable
 from typing import Any, cast
 
 import aiohttp
-from anyio import Path
 import jsonschema_validator
+from anyio import Path
 from ruamel.yaml import YAML
 from tilecloud import BoundingPyramid, Tile, TileCoord, TileLayout
 

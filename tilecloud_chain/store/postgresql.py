@@ -1,6 +1,6 @@
 """PostgreSQL queue."""
 
-# Copyright (c) 2023-2025 by Camptocamp
+# Copyright (c) 2023-2026 by Camptocamp
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
