@@ -868,15 +868,15 @@ class TileGeneration:
         base_config: tilecloud_chain.configuration.Configuration | None = None,
     ) -> tuple[DatedConfig, bool]:
         """Get the validated configuration for the file name."""
-        config_path = Path(config_file)
-        async with await config_path.open(encoding="utf-8") as f:
+
+        async with await config_file.open(encoding="utf-8") as f:
             content = await f.read()
             config: dict[str, Any] = {}
             config.update({} if base_config is None else base_config)
             ruamel = YAML()
             config.update(ruamel.load(content))
 
-        config_stat = await config_path.stat()
+        config_stat = await config_file.stat()
         dated_config = DatedConfig(
             cast("tilecloud_chain.configuration.Configuration", config),
             config_stat.st_mtime,
