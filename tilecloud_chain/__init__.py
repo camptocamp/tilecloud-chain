@@ -2079,6 +2079,8 @@ class Process:
                 if cmd.get("need_out", configuration.NEED_OUT_DEFAULT):
                     fd_out, name_out = tempfile.mkstemp()
                     os.close(fd_out)  # Close the file descriptor immediately
+                    # Delete the temp file so the subprocess can create it fresh
+                    # This maintains compatibility with the original behavior
                     Path(name_out).unlink()
                 else:
                     name_out = name_in
