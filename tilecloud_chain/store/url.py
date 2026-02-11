@@ -8,8 +8,8 @@ from collections.abc import AsyncGenerator, Iterable
 from pathlib import Path
 from typing import Any, cast
 
-import aiofiles
 import aiohttp
+import anyio
 import jsonschema_validator
 from ruamel.yaml import YAML
 from tilecloud import BoundingPyramid, Tile, TileCoord, TileLayout
@@ -49,30 +49,29 @@ class URLTileStore(AsyncTileStore):
 
     async def _get_hosts_limit(self) -> host_limit.HostLimit:
         """Initialize the store."""
-        host_limit_path = Path(
+        host_limit_path = anyio.Path(
             os.environ.get(
                 "TILEGENERATION_HOSTS_LIMIT",
                 "/etc/tilegeneration/hosts_limit.yaml",
             ),
         )
-        if host_limit_path.exists() and self._hosts_limit.mtime != host_limit_path.stat().st_mtime:
+        if await host_limit_path.exists() and self._hosts_limit.mtime != (await host_limit_path.stat()).st_mtime:
             yaml = YAML(typ="safe")
-            async with aiofiles.open(host_limit_path, encoding="utf-8") as f:
-                content = await f.read()
-                self._hosts_limit.config = yaml.load(content)
-                self._hosts_limit.mtime = host_limit_path.stat().st_mtime
+            content = await host_limit_path.read_text(encoding="utf-8")
+            self._hosts_limit.config = yaml.load(content)
+            self._hosts_limit.mtime = (await host_limit_path.stat()).st_mtime
 
-                schema_data = pkgutil.get_data("tilecloud_chain", "host-limit-schema.json")
-                assert schema_data
-                errors, _ = jsonschema_validator.validate(
-                    str(host_limit_path),
-                    cast("dict[str, Any]", self._hosts_limit),
-                    json.loads(schema_data),
-                )
+            schema_data = pkgutil.get_data("tilecloud_chain", "host-limit-schema.json")
+            assert schema_data
+            errors, _ = jsonschema_validator.validate(
+                str(host_limit_path),
+                cast("dict[str, Any]", self._hosts_limit),
+                json.loads(schema_data),
+            )
 
-                if errors:
-                    _LOGGER.error("The host limit file is invalid, ignoring:\n%s", "\n".join(errors))
-                    self._hosts_limit.config = {}
+            if errors:
+                _LOGGER.error("The host limit file is invalid, ignoring:\n%s", "\n".join(errors))
+                self._hosts_limit.config = {}
         return self._hosts_limit.config
 
     async def get_one(self, tile: Tile) -> Tile | None:
