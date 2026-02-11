@@ -34,7 +34,6 @@ import logging
 import os
 import shlex
 from collections.abc import AsyncIterator
-from pathlib import Path
 from typing import Any, cast
 
 import objgraph

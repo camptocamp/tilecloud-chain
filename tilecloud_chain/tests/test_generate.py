@@ -2,7 +2,7 @@ import json
 import os
 import shutil
 from itertools import product, repeat
-from pathlib import Path
+from anyio import Path
 
 from PIL import Image
 from testfixtures import LogCapture

@@ -1,6 +1,6 @@
 import os
 import shutil
-from pathlib import Path
+from anyio import Path
 
 import pytest
 import yaml

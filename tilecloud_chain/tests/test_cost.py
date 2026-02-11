@@ -1,5 +1,5 @@
 import os
-from pathlib import Path
+from anyio import Path
 
 from tilecloud_chain import cost
 from tilecloud_chain.tests import CompareCase

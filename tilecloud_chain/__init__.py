@@ -23,10 +23,10 @@ from hashlib import sha1
 from io import BytesIO
 from itertools import product
 from math import ceil, sqrt
-from pathlib import Path
 from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, TextIO, TypedDict, cast
 
-import aiofiles.threadpool.text
+import anyio
+from anyio import Path
 import boto3
 import c2cwsgiutils.pyramid_logging
 import c2cwsgiutils.setup_process
@@ -614,7 +614,7 @@ class TileGeneration:
         self._close_actions: list[Close] = []
         self.error_lock = asyncio.Lock()
         self.tilestream_lock = asyncio.Lock()
-        self.error_files_: dict[str, aiofiles.threadpool.text.AsyncTextIOWrapper] = {}
+        self.error_files_: dict[str, anyio.AsyncFile[str]] = {}
         self.functions_tiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
         self.functions_metatiles: list[Callable[[Tile], Awaitable[Tile | None]]] = []
         self.functions: list[Callable[[Tile], Awaitable[Tile | None]]] = self.functions_metatiles
@@ -837,15 +837,16 @@ class TileGeneration:
     async def get_hosts(self, silent: bool = False) -> dict[str, Path]:
         """Get the hosts from the hosts file."""
         file_path = Path(os.environ["TILEGENERATION_HOSTSFILE"])
-        if not file_path.exists():
+        if not await file_path.exists():
             if not silent:
                 _LOGGER.error("Missing hosts file %s", file_path)
             return {}
 
-        if self.hosts_cache is not None and self.hosts_cache.mtime == file_path.stat().st_mtime:
+        file_stat = await file_path.stat()
+        if self.hosts_cache is not None and self.hosts_cache.mtime == file_stat.st_mtime:
             return self.hosts_cache.hosts
 
-        async with aiofiles.open(file_path, encoding="utf-8") as hosts_file:
+        async with await file_path.open(encoding="utf-8") as hosts_file:
             content = await hosts_file.read()
             ruamel = YAML(typ="safe")
             hosts: dict[str, Path] = {}
@@ -855,7 +856,7 @@ class TileGeneration:
             else:
                 hosts = hosts_raw
 
-        self.hosts_cache = DatedHosts(hosts, file_path.stat().st_mtime)
+        self.hosts_cache = DatedHosts(hosts, file_stat.st_mtime)
         return hosts
 
     async def _get_config(
@@ -865,16 +866,18 @@ class TileGeneration:
         base_config: tilecloud_chain.configuration.Configuration | None = None,
     ) -> tuple[DatedConfig, bool]:
         """Get the validated configuration for the file name."""
-        async with aiofiles.open(config_file, encoding="utf-8") as f:
+        config_path = Path(config_file)
+        async with await config_path.open(encoding="utf-8") as f:
             content = await f.read()
             config: dict[str, Any] = {}
             config.update({} if base_config is None else base_config)
             ruamel = YAML()
             config.update(ruamel.load(content))
 
+        config_stat = await config_path.stat()
         dated_config = DatedConfig(
             cast("tilecloud_chain.configuration.Configuration", config),
-            Path(config_file).stat().st_mtime,
+            config_stat.st_mtime,
             config_file,
         )
         success = self.validate_config(dated_config, ignore_error)
@@ -1212,7 +1215,7 @@ class TileGeneration:
         self.imap(meta_get)
         self.functions = self.functions_tiles
 
-    async def create_log_tiles_error(self, layer: str) -> aiofiles.threadpool.text.AsyncTextIOWrapper | None:
+    async def create_log_tiles_error(self, layer: str) -> anyio.AsyncFile[str] | None:
         """Create the error file for the given layer."""
         main_config = await self.get_main_config()
         if "error_file" in main_config.config.get("generation", {}):
@@ -1222,9 +1225,9 @@ class TileGeneration:
                 main_config.config["generation"]["error_file"].format(layer=layer, datetime=now),
             )
             # Create parent directories if they don't exist
-            error_file_path.parent.mkdir(parents=True, exist_ok=True)
+            await error_file_path.parent.mkdir(parents=True, exist_ok=True)
             # Use async open for better async compatibility
-            error_file = await aiofiles.open(error_file_path, "a", encoding="utf-8")
+            error_file = await error_file_path.open("a", encoding="utf-8")
             await error_file.write(f"# [{time_}] Start the layer '{layer}' generation\n")
             self.error_files_[layer] = error_file
             return error_file
@@ -1238,7 +1241,7 @@ class TileGeneration:
     async def get_log_tiles_error_file(
         self,
         layer: str,
-    ) -> aiofiles.threadpool.text.AsyncTextIOWrapper | None:
+    ) -> anyio.AsyncFile[str] | None:
         """Get the error file for the given layer."""
         return (
             self.error_files_[layer]
@@ -2068,7 +2071,8 @@ class Process:
         """Process the tile."""
         if tile and tile.data:
             fd_in, name_in = tempfile.mkstemp()
-            async with aiofiles.open(name_in, "wb") as file_in:
+            name_in_path = Path(name_in)
+            async with await name_in_path.open("wb") as file_in:
                 await file_in.write(tile.data)
 
             for cmd in self.config:
@@ -2076,7 +2080,8 @@ class Process:
 
                 if cmd.get("need_out", configuration.NEED_OUT_DEFAULT):
                     fd_out, name_out = tempfile.mkstemp()
-                    Path(name_out).unlink()
+                    name_out_path = Path(name_out)
+                    await name_out_path.unlink()
                 else:
                     name_out = name_in
 
@@ -2113,14 +2118,15 @@ class Process:
 
                 if cmd.get("need_out", configuration.NEED_OUT_DEFAULT):
                     os.close(fd_in)
-                    Path(name_in).unlink()
+                    await name_in_path.unlink()
                     name_in = name_out
+                    name_in_path = Path(name_in)
                     fd_in = fd_out
 
-            async with aiofiles.open(name_in, "rb") as file_out:
+            async with await name_in_path.open("rb") as file_out:
                 tile.data = await file_out.read()
             os.close(fd_in)
-            Path(name_in).unlink()
+            await name_in_path.unlink()
 
         return tile
 

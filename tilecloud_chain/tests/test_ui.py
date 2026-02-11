@@ -1,5 +1,5 @@
 import subprocess
-from pathlib import Path
+from anyio import Path
 
 import pytest
 import skimage.io

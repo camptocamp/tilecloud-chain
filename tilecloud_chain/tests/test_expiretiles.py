@@ -1,4 +1,4 @@
-from pathlib import Path
+from anyio import Path
 
 import psycopg2
 import pytest

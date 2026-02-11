@@ -7,7 +7,7 @@ import traceback
 from collections.abc import Callable
 from io import StringIO
 from logging import config
-from pathlib import Path
+from anyio import Path
 from typing import Any
 from unittest import TestCase
 

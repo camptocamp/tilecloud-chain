@@ -11,8 +11,9 @@ import sys
 from argparse import ArgumentParser, Namespace
 from collections.abc import Awaitable, Callable
 from getpass import getuser
-from pathlib import Path
 from typing import IO, cast
+
+from anyio import Path
 
 import boto3
 import objgraph

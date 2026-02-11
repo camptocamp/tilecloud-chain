@@ -37,12 +37,11 @@ import time
 from copy import copy
 from dataclasses import dataclass
 from io import BytesIO
-from pathlib import Path
 from typing import Annotated, Any, NamedTuple, cast
 from urllib.parse import urlencode
 
-import aiofiles
 import aiohttp
+from anyio import Path
 import botocore.exceptions
 import fastapi
 import html_sanitizer
@@ -362,11 +361,11 @@ class Server:
             if path.split(".")[-1] not in self.get_static_allow_extension(config):
                 return self.error(config, 403, "Extension not allowed", **kwargs)
             p = folder / path
-            if not p.is_file():
+            if not await p.is_file():
                 return self.error(config, 404, f"{path} not found", **kwargs)
-            async with aiofiles.open(p, "rb") as file:
+            async with await p.open("rb") as file:
                 data = await file.read()
-            content_type = mimetypes.guess_type(p)[0]
+            content_type = mimetypes.guess_type(str(p))[0]
             headers = {
                 **headers,
                 **({"Content-Type": content_type} if content_type else {}),

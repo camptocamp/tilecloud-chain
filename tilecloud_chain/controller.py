@@ -9,10 +9,10 @@ from dataclasses import dataclass
 from hashlib import sha1
 from io import BytesIO, StringIO
 from math import exp, log
-from pathlib import Path
 from typing import IO, Any, Literal, cast
 from urllib.parse import urlencode
 
+from anyio import Path
 import PIL.ImageFile
 import requests
 import ruamel.yaml
@@ -166,9 +166,9 @@ async def _send(
 
         folder = Path(cache["folder"] or "")
         filename = folder / path
-        filename.parent.mkdir(parents=True, exist_ok=True)
-        with filename.open("wb") as f:
-            f.write(data)
+        await filename.parent.mkdir(parents=True, exist_ok=True)
+        async with await filename.open("wb") as f:
+            await f.write(data)
 
 
 def _get_legend_image(
