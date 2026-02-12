@@ -1529,7 +1529,7 @@ class HashLogger:
             assert tile.data
             _LOGGER.exception("%s: %s", str(ex), tile.data)
             raise
-        for px in image.getdata():  # mypy: disable=attr-defined
+        for px in image.getdata():  # type: ignore[attr-defined]
             if ref is None:
                 ref = px
             elif px != ref:
