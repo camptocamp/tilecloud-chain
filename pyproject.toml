@@ -39,7 +39,7 @@ certifi = "2025.10.5"
 Paste = "3.10.1"
 psutil = "7.1.2"
 pyproj = "3.7.2"
-aiohttp = "3.13.2"
+aiohttp = "3.13.3"
 sqlalchemy = { version = "2.0.44", extras = ["asyncio"] }
 anyio = "4.8.0"
 asyncpg = "0.30.0"
