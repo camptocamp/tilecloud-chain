@@ -135,16 +135,21 @@
     - **`values`** _(array, required)_: The values present in the capabilities.
       - **Items** _(string)_
     - **`default`** _(string, required)_: The default value present in the capabilities.
-- <a id="definitions/layer_legends"></a>**`layer_legends`** _(array)_: The provided legend.
+- <a id="definitions/layer_legend"></a>**`layer_legend`** _(object)_: Legend configuration for the layer. Cannot contain additional properties. Default: `{}`.
+  - **`enabled`** _(boolean)_: Set to false if the layer has no legend. Default: `true`.
+  - **`mime_type`**: Refer to _[#/definitions/layer_legend_mime](#definitions/layer_legend_mime)_.
+  - **`extension`**: Refer to _[#/definitions/layer_legend_extension](#definitions/layer_legend_extension)_.
+  - **`items`**: Refer to _[#/definitions/layer_legend_items](#definitions/layer_legend_items)_.
+- <a id="definitions/layer_legend_items"></a>**`layer_legend_items`** _(array)_: The provided legend.
   - **Items** _(object)_: Cannot contain additional properties.
     - **`mime_type`** _(string, required)_: The mime type used in the WMS request.
     - **`href`** _(string, required)_: The URL of the legend image.
-    - **`width`** _(string)_: The width of the legend image.
-    - **`height`** _(string)_: The height of the legend image.
-    - **`min_scale`** _(string)_: The max scale of the legend image.
-    - **`max_scale`** _(string)_: The max scale of the legend image.
-    - **`min_resolution`** _(string)_: The max resolution of the legend image.
-    - **`max_resolution`** _(string)_: The max resolution of the legend image.
+    - **`width`** _(integer)_: The width of the legend image.
+    - **`height`** _(integer)_: The height of the legend image.
+    - **`min_scale`** _(number)_: The min scale of the legend image.
+    - **`max_scale`** _(number)_: The max scale of the legend image.
+    - **`min_resolution`** _(number)_: The min resolution of the legend image.
+    - **`max_resolution`** _(number)_: The max resolution of the legend image.
 - <a id="definitions/layer_legend_mime"></a>**`layer_legend_mime`** _(string)_: The mime type used to store the generated legend.
 - <a id="definitions/layer_legend_extension"></a>**`layer_legend_extension`** _(string)_: The extension used to store the generated legend.
 - <a id="definitions/layer_pre_hash_post_process"></a>**`layer_pre_hash_post_process`** _(string)_: Do an image post process before the empty hash check.
@@ -182,7 +187,8 @@
   - **`mime_type`**: Refer to _[#/definitions/layer_mime_type](#definitions/layer_mime_type)_.
   - **`extension`**: Refer to _[#/definitions/layer_extension](#definitions/layer_extension)_.
   - **`dimensions`**: Refer to _[#/definitions/layer_dimensions](#definitions/layer_dimensions)_.
-  - **`legends`**: Refer to _[#/definitions/layer_legends](#definitions/layer_legends)_.
+  - **`legend`**: Refer to _[#/definitions/layer_legend](#definitions/layer_legend)_.
+  - **`legends`**: Refer to _[#/definitions/layer_legend_items](#definitions/layer_legend_items)_.
   - **`legend_mime`**: Refer to _[#/definitions/layer_legend_mime](#definitions/layer_legend_mime)_.
   - **`legend_extension`**: Refer to _[#/definitions/layer_legend_extension](#definitions/layer_legend_extension)_.
   - **`pre_hash_post_process`**: Refer to _[#/definitions/layer_pre_hash_post_process](#definitions/layer_pre_hash_post_process)_.
@@ -215,7 +221,8 @@
   - **`mime_type`**: Refer to _[#/definitions/layer_mime_type](#definitions/layer_mime_type)_.
   - **`extension`**: Refer to _[#/definitions/layer_extension](#definitions/layer_extension)_.
   - **`dimensions`**: Refer to _[#/definitions/layer_dimensions](#definitions/layer_dimensions)_.
-  - **`legends`**: Refer to _[#/definitions/layer_legends](#definitions/layer_legends)_.
+  - **`legend`**: Refer to _[#/definitions/layer_legend](#definitions/layer_legend)_.
+  - **`legends`**: Refer to _[#/definitions/layer_legend_items](#definitions/layer_legend_items)_.
   - **`legend_mime`**: Refer to _[#/definitions/layer_legend_mime](#definitions/layer_legend_mime)_.
   - **`legend_extension`**: Refer to _[#/definitions/layer_legend_extension](#definitions/layer_legend_extension)_.
   - **`pre_hash_post_process`**: Refer to _[#/definitions/layer_pre_hash_post_process](#definitions/layer_pre_hash_post_process)_.

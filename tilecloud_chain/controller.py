@@ -53,7 +53,7 @@ _ONE_DAY_IN_SECONDS = 86400
 class LegendLayerCache:
     """Cache for legend layer configurations."""
 
-    data: tilecloud_chain.Legend
+    data: tilecloud_chain.configuration.LayerLegendItem
     timestamp: float
 
 
@@ -284,11 +284,14 @@ def _legend_metadata(
     layer: tilecloud_chain.configuration.Layer,
     base_url: str,
     path: str,
-) -> tilecloud_chain.Legend | None:
+) -> tilecloud_chain.configuration.LayerLegendItem | None:
     img = _get(path, cache)
     if img is not None:
-        new_legend: tilecloud_chain.Legend = {
-            "mime_type": layer["legend_mime"],
+        legend = layer.get("legend", {})
+        legend_mime = legend.get("mime_type", layer.get("legend_mime"))
+        assert legend_mime is not None
+        new_legend: tilecloud_chain.configuration.LayerLegendItem = {
+            "mime_type": legend_mime,
             "href": os.path.join(base_url, path),
         }
         try:
@@ -326,14 +329,27 @@ def _fill_legend(
 
     start = time.perf_counter()
     legend_image_future = {}
-    legend_image_metadata: dict[str, dict[float, tilecloud_chain.Legend | None]] = {}
+    legend_image_metadata: dict[str, dict[float, tilecloud_chain.configuration.LayerLegendItem | None]] = {}
     with concurrent.futures.ThreadPoolExecutor(
         max_workers=int(os.environ.get("TILECLOUD_CHAIN_CONCURRENT_GET_LEGEND", "10"))
     ) as executor:
         for layer_name, layer in config.config.get("layers", {}).items():
+            legend = layer.get("legend", {})
+            legend_mime = legend.get("mime_type", layer.get("legend_mime"))
+            legend_extension = legend.get("extension", layer.get("legend_extension"))
+            legend_enabled = legend.get("enabled", configuration.LEGEND_ENABLED_DEFAULT)
+            if not legend_enabled:
+                continue
+
+            legend_items = legend.get("items", layer.get("legends"))
+            if legend_items is not None:
+                gene.layer_legends[layer_name] = legend_items
+                continue
+
             if (
-                "legend_mime" in layer
-                and "legend_extension" in layer
+                legend_enabled
+                and legend_mime is not None
+                and legend_extension is not None
                 and layer_name not in gene.layer_legends
             ):
                 for zoom, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
@@ -356,7 +372,7 @@ def _fill_legend(
                                 "1.0.0",
                                 layer_name,
                                 layer["wmts_style"],
-                                f"legend{zoom}.{layer['legend_extension']}",
+                                f"legend{zoom}.{legend_extension}",
                             ]
                         )
                         legend_image_future[
@@ -394,9 +410,12 @@ def _fill_legend(
     _LOGGER.debug("Get %i legend images in %s", len(legend_image_future), time.perf_counter() - start)
 
     for layer_name, layer in config.config.get("layers", {}).items():
-        previous_legend: tilecloud_chain.Legend | None = None
+        previous_legend: tilecloud_chain.configuration.LayerLegendItem | None = None
         previous_resolution = None
-        if "legend_mime" in layer and "legend_extension" in layer and layer_name not in gene.layer_legends:
+        legend = layer.get("legend", {})
+        legend_mime = legend.get("mime_type", layer.get("legend_mime"))
+        legend_extension = legend.get("extension", layer.get("legend_extension"))
+        if legend_mime is not None and legend_extension is not None and layer_name not in gene.layer_legends:
             gene.layer_legends[layer_name] = []
             legends = gene.layer_legends[layer_name]
             for _, resolution in enumerate(config.config["grids"][layer["grid"]]["resolutions"]):
@@ -525,7 +544,18 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
     cache = config.config["caches"][gene.options.cache]
 
     for layer_name, layer in config.config.get("layers", {}).items():
-        if "legend_mime" in layer and "legend_extension" in layer and layer["type"] == "wms":
+        legend = layer.get("legend", {})
+        legend_mime = legend.get("mime_type", layer.get("legend_mime"))
+        legend_extension = legend.get("extension", layer.get("legend_extension"))
+        legend_enabled = legend.get("enabled", configuration.LEGEND_ENABLED_DEFAULT)
+        legend_items = legend.get("items", layer.get("legends"))
+        if (
+            legend_enabled
+            and legend_items is None
+            and legend_mime is not None
+            and legend_extension is not None
+            and layer["type"] == "wms"
+        ):
             session = requests.session()
             session.headers.update(layer["headers"])
             previous_hash = None
@@ -541,9 +571,9 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                                 "VERSION": layer.get("version", "1.0.0"),
                                 "REQUEST": "GetLegendGraphic",
                                 "LAYER": wms_layer,
-                                "FORMAT": layer["legend_mime"],
+                                "FORMAT": legend_mime,
                                 "TRANSPARENT": "TRUE"
-                                if layer["legend_mime"] in ("image/png", "image/webp")
+                                if legend_mime in ("image/png", "image/webp")
                                 else "FALSE",
                                 "STYLE": layer["wmts_style"],
                                 "SCALE": resolution / 0.00028,
@@ -556,7 +586,7 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                         resolution,
                         url,
                         session,
-                        layer["legend_mime"].split("/")[0],
+                        legend_mime.split("/")[0],
                         out,
                     )
                     if legend_image is not None:
@@ -570,16 +600,15 @@ def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = None) ->
                     image.paste(i, (0, y))
                     y += i.size[1]
                 string_io = BytesIO()
-                image.save(string_io, FORMAT_BY_CONTENT_TYPE[layer["legend_mime"]])
+                image.save(string_io, FORMAT_BY_CONTENT_TYPE[legend_mime])
                 result = string_io.getvalue()
-                new_hash = sha1(result).hexdigest()  # nosec # noqa: S303
+                new_hash = sha1(result).hexdigest()  # nosec # noqa: S303, S324
                 if new_hash != previous_hash:
                     previous_hash = new_hash
                     _send(
                         result,
-                        f"1.0.0/{layer_name}/{layer['wmts_style']}/"
-                        f"legend{zoom}.{layer['legend_extension']}",
-                        layer["legend_mime"],
+                        f"1.0.0/{layer_name}/{layer['wmts_style']}/legend{zoom}.{legend_extension}",
+                        legend_mime,
                         cache,
                     )
 

@@ -1894,3 +1894,399 @@ sqs:
 </Capabilities>""",
             True,
         )
+
+    def test_no_legends(self) -> None:
+        self.assert_tiles_generated(
+            cmd=".build/venv/bin/generate_controler -c tilegeneration/test-no-legends.yaml --legends",
+            main_func=controller.main,
+            directory="/tmp/tiles/1.0.0/",
+            tiles_pattern="%s/default/legend%i.png",
+            tiles=[],
+        )
+
+        gene = TileGeneration("tilegeneration/test-no-legends.yaml", configure_logging=False)
+        config = gene.get_config("tilegeneration/test-no-legends.yaml")
+        self.assert_result_equals(
+            controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            r"""<\?xml version="1.0" encoding="UTF-8"\?>
+<Capabilities version="1.0.0"
+    xmlns="http://www.opengis.net/wmts/1.0"
+    xmlns:ows="http://www.opengis.net/ows/1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gml="http://www.opengis.net/gml"
+    xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
+  <ows:OperationsMetadata>
+    <ows:Operation name="GetCapabilities">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="http://wmts1/tiles/1.0.0/WMTSCapabilities.xml">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>REST</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="GetTile">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="http://wmts1/tiles/">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>REST</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+  </ows:OperationsMetadata>
+  <!-- <ServiceMetadataURL xlink:href="" /> -->
+  <Contents>
+
+    <Layer>
+      <ows:Title>all</ows:Title>
+      <ows:Identifier>all</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/all/default/"""
+            r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>line</ows:Title>
+      <ows:Identifier>line</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/line/default/"""
+            r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>point</ows:Title>
+      <ows:Identifier>point</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/point/default/"""
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>polygon</ows:Title>
+      <ows:Identifier>polygon</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/polygon/default/"""
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+
+
+    <TileMatrixSet>
+      <ows:Identifier>swissgrid</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>19</MatrixWidth>
+        <MatrixHeight>13</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>1</ows:Identifier>
+        <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>38</MatrixWidth>
+        <MatrixHeight>25</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>2</ows:Identifier>
+        <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>94</MatrixWidth>
+        <MatrixHeight>63</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>3</ows:Identifier>
+        <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>188</MatrixWidth>
+        <MatrixHeight>125</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>4</ows:Identifier>
+        <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>375</MatrixWidth>
+        <MatrixHeight>250</MatrixHeight>
+      </TileMatrix>
+    </TileMatrixSet>
+  </Contents>
+</Capabilities>""",
+            True,
+        )
+
+    def test_legends_items(self) -> None:
+        self.assert_tiles_generated(
+            cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends-items.yaml --legends",
+            main_func=controller.main,
+            directory="/tmp/tiles/1.0.0/",
+            tiles_pattern="%s/default/legend%i.png",
+            tiles=[],
+        )
+
+        gene = TileGeneration("tilegeneration/test-legends-items.yaml", configure_logging=False)
+        config = gene.get_config("tilegeneration/test-legends-items.yaml")
+        self.assert_result_equals(
+            controller.get_wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            r"""<\?xml version="1.0" encoding="UTF-8"\?>
+<Capabilities version="1.0.0"
+    xmlns="http://www.opengis.net/wmts/1.0"
+    xmlns:ows="http://www.opengis.net/ows/1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:gml="http://www.opengis.net/gml"
+    xsi:schemaLocation="http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd">
+  <ows:OperationsMetadata>
+    <ows:Operation name="GetCapabilities">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="http://wmts1/tiles/1.0.0/WMTSCapabilities.xml">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>REST</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="GetTile">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:href="http://wmts1/tiles/">
+            <ows:Constraint name="GetEncoding">
+              <ows:AllowedValues>
+                <ows:Value>REST</ows:Value>
+              </ows:AllowedValues>
+            </ows:Constraint>
+          </ows:Get>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+  </ows:OperationsMetadata>
+  <!-- <ServiceMetadataURL xlink:href="" /> -->
+  <Contents>
+
+    <Layer>
+      <ows:Title>all</ows:Title>
+      <ows:Identifier>all</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+        <LegendURL format="image/png" xlink:href="http://example.com/legend1.png" width="20" height="20" maxScaleDenominator="5000" minScaleDenominator="1000" />
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/all/default/"""
+            r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>line</ows:Title>
+      <ows:Identifier>line</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+        <LegendURL format="image/png" xlink:href="http://example.com/legend1.png" width="20" height="20" maxScaleDenominator="178571.42857142858" minScaleDenominator="35714.28571428572" />
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/line/default/"""
+            r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>point</ows:Title>
+      <ows:Identifier>point</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+        <LegendURL format="image/png" xlink:href="http://example.com/legend1.png" width="20" height="20" maxScaleDenominator="5000" minScaleDenominator="1000" />
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/point/default/"""
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+    <Layer>
+      <ows:Title>polygon</ows:Title>
+      <ows:Identifier>polygon</ows:Identifier>
+      <Style isDefault="true">
+        <ows:Identifier>default</ows:Identifier>
+        <LegendURL format="image/png" xlink:href="http://example.com/legend1.png" width="20" height="20" maxScaleDenominator="5000" minScaleDenominator="1000" />
+      </Style>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>DATE</ows:Identifier>
+        <Default>2012</Default>
+        <Value>2005</Value>
+        <Value>2010</Value>
+        <Value>2012</Value>
+      </Dimension>
+      <ResourceURL format="image/png" resourceType="tile"
+                   template="http://wmts1/tiles/1.0.0/polygon/default/"""
+            """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <TileMatrixSetLink>
+        <TileMatrixSet>swissgrid</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+
+
+
+    <TileMatrixSet>
+      <ows:Identifier>swissgrid</ows:Identifier>
+      <ows:SupportedCRS>urn:ogc:def:crs:EPSG::21781</ows:SupportedCRS>
+      <TileMatrix>
+        <ows:Identifier>0</ows:Identifier>
+        <ScaleDenominator>357142.85714[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>19</MatrixWidth>
+        <MatrixHeight>13</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>1</ows:Identifier>
+        <ScaleDenominator>178571.42857[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>38</MatrixWidth>
+        <MatrixHeight>25</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>2</ows:Identifier>
+        <ScaleDenominator>71428.571428[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>94</MatrixWidth>
+        <MatrixHeight>63</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>3</ows:Identifier>
+        <ScaleDenominator>35714.285714[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>188</MatrixWidth>
+        <MatrixHeight>125</MatrixHeight>
+      </TileMatrix>
+      <TileMatrix>
+        <ows:Identifier>4</ows:Identifier>
+        <ScaleDenominator>17857.142857[0-9]*</ScaleDenominator>
+        <TopLeftCorner>420000 350000</TopLeftCorner>
+        <TileWidth>256</TileWidth>
+        <TileHeight>256</TileHeight>
+        <MatrixWidth>375</MatrixWidth>
+        <MatrixHeight>250</MatrixHeight>
+      </TileMatrix>
+    </TileMatrixSet>
+  </Contents>
+</Capabilities>""",
+            True,
+        )

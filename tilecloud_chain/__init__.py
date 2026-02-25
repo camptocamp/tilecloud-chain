@@ -316,17 +316,6 @@ class Close:
         self.db.close()
 
 
-class Legend(TypedDict, total=False):
-    """Legend fields."""
-
-    mime_type: str
-    href: str
-    max_resolution: float
-    min_resolution: float
-    width: int
-    height: int
-
-
 class DatedConfig:
     """Loaded config with timestamps to be able to invalidate it on configuration file change."""
 
@@ -457,7 +446,7 @@ class TileGeneration:
         self.maxconsecutive_errors = maxconsecutive_errors
         self.out = out
         self.grid_cache: dict[str, dict[str, DatedTileGrid]] = {}
-        self.layer_legends: dict[str, list[Legend]] = {}
+        self.layer_legends: dict[str, list[tilecloud_chain.configuration.LayerLegendItem]] = {}
         self.config_file = config_file
         self.base_config = base_config
         self.configs: dict[str, DatedConfig] = {}
@@ -1666,7 +1655,7 @@ class HashLogger:
             f"""Tile: {tile.tilecoord} {tile.formated_metadata}
     {self.block}:
         size: {len(tile.data)}
-        hash: {sha1(tile.data).hexdigest()}""",  # noqa: E501
+        hash: {sha1(tile.data).hexdigest()}""",  # noqa: E501, S324
             file=self.out,
         )
         return tile
