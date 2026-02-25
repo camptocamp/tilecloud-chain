@@ -11,6 +11,7 @@ known_third_party = "c2cwsgiutils"
 [tool.ruff]
 line-length = 110
 target-version = "py310"
+exclude = ["test_*.py", "tilecloud_chain/tests/__init__.py", "tilecloud_chain/configuration.py"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

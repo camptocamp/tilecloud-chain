@@ -1,37 +1,30 @@
-"""Automatically generated file from a JSON schema."""
+"""
+Automatically generated file from a JSON schema.
+"""
 
-from typing import Any, Literal, TypedDict, Union
 
+from typing import Any, Dict, List, Literal, Tuple, TypedDict, Union
 from typing_extensions import Required
 
-ADMIN_PATH_DEFAULT = "admin"
+
+ADMIN_PATH_DEFAULT = 'admin'
 """ Default value of the field path 'Server admin_path' """
 
 
-ALLOWED_ARGUMENTS_DEFAULT = [
-    "--layer",
-    "--get-hash",
-    "--generate-legend-images",
-    "--get-bbox",
-    "--ignore-error",
-    "--bbox",
-    "--zoom",
-    "--test",
-    "--near",
-    "--time",
-    "--measure-generation-time",
-    "--no-geom",
-    "--dimensions",
-]
+
+ALLOWED_ARGUMENTS_DEFAULT = ['--layer', '--get-hash', '--generate-legend-images', '--get-bbox', '--ignore-error', '--bbox', '--zoom', '--test', '--near', '--time', '--measure-generation-time', '--no-geom', '--dimensions']
 """ Default value of the field path 'Server allowed_arguments' """
 
 
-ALLOWED_COMMANDS_DEFAULT = ["generate-tiles", "generate-controller", "generate-cost"]
+
+ALLOWED_COMMANDS_DEFAULT = ['generate-tiles', 'generate-controller', 'generate-cost']
 """ Default value of the field path 'Server allowed_commands' """
 
 
-AWS_REGION_DEFAULT = "eu-west-1"
+
+AWS_REGION_DEFAULT = 'eu-west-1'
 """ Default value of the field path 'aws_region' """
+
 
 
 class Address(TypedDict, total=False):
@@ -84,6 +77,7 @@ class Address(TypedDict, total=False):
     """
 
 
+
 class Argument(TypedDict, total=False):
     """
     Argument.
@@ -120,6 +114,7 @@ class Argument(TypedDict, total=False):
     """
 
 
+
 class Authentication(TypedDict, total=False):
     """
     Authentication.
@@ -144,6 +139,7 @@ class Authentication(TypedDict, total=False):
     """
 
 
+
 AwsRegion = str
 """
 AWS region.
@@ -155,32 +151,40 @@ default: eu-west-1
 """
 
 
-CACHE_FOLDER_DEFAULT = ""
+
+CACHE_FOLDER_DEFAULT = ''
 """ Default value of the field path 'cache_folder' """
 
 
-CACHE_WMST_CAPABILITIES_FILE_DEFAULT = "1.0.0/WMTSCapabilities.xml"
+
+CACHE_WMST_CAPABILITIES_FILE_DEFAULT = '1.0.0/WMTSCapabilities.xml'
 """ Default value of the field path 'cache_wmtscapabilities_file' """
+
 
 
 CENTER_X_DEFAULT = 2600000
 """ Default value of the field path 'OpenLayers center_x' """
 
 
+
 CENTER_Y_DEFAULT = 1200000
 """ Default value of the field path 'OpenLayers center_y' """
+
 
 
 CLOUDFRONT_DOWNLOAD_DEFAULT = 0.12
 """ Default value of the field path 'CloudFront cost download' """
 
 
+
 CLOUDFRONT_GET_DEFAULT = 0.009
 """ Default value of the field path 'CloudFront cost get' """
 
 
+
 COST_TILE_SIZE_DEFAULT = 20
 """ Default value of the field path 'Layer cost tile_size' """
+
 
 
 Cache = Union["CacheFilesystem", "CacheS3", "CacheAzure", "CacheMbtiles", "CacheBsddb"]
@@ -193,7 +197,8 @@ Aggregation type: anyOf
 """
 
 
-CacheAzure = Union[dict[str, str], "CacheAzureTyped"]
+
+CacheAzure = Union[Dict[str, str], "CacheAzureTyped"]
 """
 Cache Azure.
 
@@ -205,8 +210,9 @@ See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 """
 
 
+
 class CacheAzureTyped(TypedDict, total=False):
-    type: Literal["azure"]
+    type: Literal['azure']
     wmtscapabilities_file: "CacheWmstCapabilitiesFile"
     """
     Cache WMST capabilities file.
@@ -259,7 +265,8 @@ class CacheAzureTyped(TypedDict, total=False):
     """
 
 
-CacheBsddb = Union[dict[str, str], "CacheBsddbTyped"]
+
+CacheBsddb = Union[Dict[str, str], "CacheBsddbTyped"]
 """
 Cache BSDDB.
 
@@ -269,8 +276,9 @@ See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 """
 
 
+
 class CacheBsddbTyped(TypedDict, total=False):
-    type: Literal["bsddb"]
+    type: Literal['bsddb']
     wmtscapabilities_file: "CacheWmstCapabilitiesFile"
     """
     Cache WMST capabilities file.
@@ -307,7 +315,8 @@ class CacheBsddbTyped(TypedDict, total=False):
     """
 
 
-CacheFilesystem = Union[dict[str, str], "CacheFilesystemTyped"]
+
+CacheFilesystem = Union[Dict[str, str], "CacheFilesystemTyped"]
 """
 Cache filesystem.
 
@@ -317,8 +326,9 @@ See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 """
 
 
+
 class CacheFilesystemTyped(TypedDict, total=False):
-    type: Literal["filesystem"]
+    type: Literal['filesystem']
     wmtscapabilities_file: "CacheWmstCapabilitiesFile"
     """
     Cache WMST capabilities file.
@@ -353,6 +363,7 @@ class CacheFilesystemTyped(TypedDict, total=False):
 
     default:
     """
+
 
 
 CacheFolder = str
@@ -365,12 +376,14 @@ default:
 """
 
 
-CacheHost = list[str]
+
+CacheHost = List[str]
 """
 Cache host.
 
 The host used to build the HTTP URLs
 """
+
 
 
 CacheHttpUrl = str
@@ -381,11 +394,13 @@ The HTTP URL %host will be replaces by one of the hosts
 """
 
 
-CacheHttpUrls = list[str]
+
+CacheHttpUrls = List[str]
 """ Cache HTTP URLs. """
 
 
-CacheMbtiles = Union[dict[str, str], "CacheMbtilesTyped"]
+
+CacheMbtiles = Union[Dict[str, str], "CacheMbtilesTyped"]
 """
 Cache MBtiles.
 
@@ -395,8 +410,9 @@ See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 """
 
 
+
 class CacheMbtilesTyped(TypedDict, total=False):
-    type: Literal["mbtiles"]
+    type: Literal['mbtiles']
     wmtscapabilities_file: "CacheWmstCapabilitiesFile"
     """
     Cache WMST capabilities file.
@@ -433,7 +449,8 @@ class CacheMbtilesTyped(TypedDict, total=False):
     """
 
 
-CacheS3 = Union[dict[str, str], "CacheS3Typed"]
+
+CacheS3 = Union[Dict[str, str], "CacheS3Typed"]
 """
 Cache S3.
 
@@ -443,8 +460,9 @@ See: https://github.com/camptocamp/jsonschema-gentypes/issues/7
 """
 
 
+
 class CacheS3Typed(TypedDict, total=False):
-    type: Literal["s3"]
+    type: Literal['s3']
     wmtscapabilities_file: "CacheWmstCapabilitiesFile"
     """
     Cache WMST capabilities file.
@@ -525,6 +543,7 @@ class CacheS3Typed(TypedDict, total=False):
     """
 
 
+
 CacheWmstCapabilitiesFile = str
 """
 Cache WMST capabilities file.
@@ -535,6 +554,7 @@ default: 1.0.0/WMTSCapabilities.xml
 """
 
 
+
 class CloudfrontCost(TypedDict, total=False):
     """
     CloudFront cost.
@@ -542,7 +562,7 @@ class CloudfrontCost(TypedDict, total=False):
     The CloudFront cost (main configuration)
     """
 
-    get: int | float
+    get: Union[int, float]
     """
     CloudFront Get.
 
@@ -551,7 +571,7 @@ class CloudfrontCost(TypedDict, total=False):
     default: 0.009
     """
 
-    download: int | float
+    download: Union[int, float]
     """
     CloudFront Download.
 
@@ -561,17 +581,18 @@ class CloudfrontCost(TypedDict, total=False):
     """
 
 
-class Configuration(TypedDict, total=False):
-    """TileCloud-chain configuration."""
 
-    defaults: dict[str, Any]
+class Configuration(TypedDict, total=False):
+    """ TileCloud-chain configuration. """
+
+    defaults: Dict[str, Any]
     """
     Defaults.
 
     Used to put YAML references
     """
 
-    grids: dict[str, "Grid"]
+    grids: Dict[str, "Grid"]
     """
     Grids.
 
@@ -581,7 +602,7 @@ class Configuration(TypedDict, total=False):
       pattern: ^[a-zA-Z0-9_\-~\.]+$
     """
 
-    caches: dict[str, "Cache"]
+    caches: Dict[str, "Cache"]
     """
     Caches.
 
@@ -591,7 +612,7 @@ class Configuration(TypedDict, total=False):
       pattern: ^[a-zA-Z0-9_\-~\.]+$
     """
 
-    layers: dict[str, "Layer"]
+    layers: Dict[str, "Layer"]
     """
     Layers.
 
@@ -601,7 +622,7 @@ class Configuration(TypedDict, total=False):
       pattern: ^[a-zA-Z0-9_\-~\.]+$
     """
 
-    process: dict[str, "ProcessCommand"]
+    process: Dict[str, "ProcessCommand"]
     """
     Process.
 
@@ -702,6 +723,7 @@ class Configuration(TypedDict, total=False):
     """
 
 
+
 class Contact(TypedDict, total=False):
     """
     Contact.
@@ -721,6 +743,7 @@ class Contact(TypedDict, total=False):
 
     The information
     """
+
 
 
 class Cost(TypedDict, total=False):
@@ -761,16 +784,20 @@ class Cost(TypedDict, total=False):
     """
 
 
+
 DATA_BUFFER_DEFAULT = 128
 """ Default value of the field path 'Layer Mapnik data_buffer' """
 
 
-DEFAULT_CACHE_DEFAULT = "default"
+
+DEFAULT_CACHE_DEFAULT = 'default'
 """ Default value of the field path 'Generation default_cache' """
+
 
 
 DROP_EMPTY_UTFGRID_DEFAULT = False
 """ Default value of the field path 'Layer Mapnik drop_empty_utfgrid' """
+
 
 
 class Database(TypedDict, total=False):
@@ -833,24 +860,30 @@ class Database(TypedDict, total=False):
     """
 
 
+
 EXPIRATION_DEFAULT = 28800
 """ Default value of the field path 'Redis expiration' """
+
 
 
 EXPIRES_DEFAULT = 8
 """ Default value of the field path 'Server expires' """
 
 
+
 GENERATE_SALT_DEFAULT = False
 """ Default value of the field path 'Layer WMS generate_salt' """
+
 
 
 GEOMETRIES_REDIRECT_DEFAULT = False
 """ Default value of the field path 'Server geoms_redirect' """
 
 
-GITHUB_ACCESS_DEFAULT = "pull"
+
+GITHUB_ACCESS_DEFAULT = 'pull'
 """ Default value of the field path 'Authentication github_access_type' """
+
 
 
 class Generation(TypedDict, total=False):
@@ -869,7 +902,7 @@ class Generation(TypedDict, total=False):
     default: default
     """
 
-    default_layers: list[str]
+    default_layers: List[str]
     """
     Default layers.
 
@@ -909,7 +942,8 @@ class Generation(TypedDict, total=False):
     """
 
 
-GithubAccess = Union[Literal["push"], Literal["pull"], Literal["admin"]]
+
+GithubAccess = Union[Literal['push'], Literal['pull'], Literal['admin']]
 """
 GitHub access.
 
@@ -917,12 +951,13 @@ The kind of rights the user should have on the repository
 
 default: pull
 """
-GITHUBACCESS_PUSH: Literal["push"] = "push"
+GITHUBACCESS_PUSH: Literal['push'] = "push"
 """The values for the 'GitHub access' enum"""
-GITHUBACCESS_PULL: Literal["pull"] = "pull"
+GITHUBACCESS_PULL: Literal['pull'] = "pull"
 """The values for the 'GitHub access' enum"""
-GITHUBACCESS_ADMIN: Literal["admin"] = "admin"
+GITHUBACCESS_ADMIN: Literal['admin'] = "admin"
 """The values for the 'GitHub access' enum"""
+
 
 
 class Grid(TypedDict, total=False):
@@ -939,7 +974,7 @@ class Grid(TypedDict, total=False):
     The scale used to build a FreeTileGrid typically '2'
     """
 
-    resolutions: Required[list[int | float]]
+    resolutions: Required[List[Union[int, float]]]
     """
     Resolutions.
 
@@ -948,7 +983,7 @@ class Grid(TypedDict, total=False):
     Required property
     """
 
-    bbox: Required[list[int | float]]
+    bbox: Required[List[Union[int, float]]]
     """
     Bounding box.
 
@@ -1006,16 +1041,19 @@ class Grid(TypedDict, total=False):
     """
 
 
-HOST_DEFAULT = "s3-eu-west-1.amazonaws.com"
+
+HOST_DEFAULT = 's3-eu-west-1.amazonaws.com'
 """ Default value of the field path 'Cache S3 host' """
 
 
-Headers = dict[str, "_HeadersAdditionalproperties"]
+
+Headers = Dict[str, "_HeadersAdditionalproperties"]
 """
 Headers.
 
 The headers that we send to the WMS backend
 """
+
 
 
 class Info(TypedDict, total=False):
@@ -1040,20 +1078,35 @@ class Info(TypedDict, total=False):
     """
 
 
+
+LAYER_LEGEND_DEFAULT: Dict[str, Any] = {}
+""" Default value of the field path 'layer_legend' """
+
+
+
 LAYER_META_BUFFER_DEFAULT = 128
 """ Default value of the field path 'layer_meta_buffer' """
+
 
 
 LAYER_META_DEFAULT = False
 """ Default value of the field path 'layer_meta' """
 
 
+
 LAYER_META_SIZE_DEFAULT = 5
 """ Default value of the field path 'layer_meta_size' """
 
 
+
 LAYER_PIXEL_BUFFER_DEFAULT = 0
 """ Default value of the field path 'layer_px_buffer' """
+
+
+
+LEGEND_ENABLED_DEFAULT = True
+""" Default value of the field path 'Layer legend enabled' """
+
 
 
 Layer = Union["LayerWms", "LayerMapnik"]
@@ -1066,7 +1119,8 @@ Aggregation type: anyOf
 """
 
 
-LayerBoundingBox = list[int | float]
+
+LayerBoundingBox = List[Union[int, float]]
 """
 Layer bounding box.
 
@@ -1077,6 +1131,7 @@ maxLength: 4
 """
 
 
+
 class LayerCost(TypedDict, total=False):
     """
     Layer cost.
@@ -1084,7 +1139,7 @@ class LayerCost(TypedDict, total=False):
     The rules used to calculate the cost
     """
 
-    tileonly_generation_time: int | float
+    tileonly_generation_time: Union[int, float]
     """
     tile only generation time.
 
@@ -1093,7 +1148,7 @@ class LayerCost(TypedDict, total=False):
     default: 40
     """
 
-    tile_generation_time: int | float
+    tile_generation_time: Union[int, float]
     """
     tile generation time.
 
@@ -1102,7 +1157,7 @@ class LayerCost(TypedDict, total=False):
     default: 30
     """
 
-    metatile_generation_time: int | float
+    metatile_generation_time: Union[int, float]
     """
     Meta tile generation time.
 
@@ -1111,7 +1166,7 @@ class LayerCost(TypedDict, total=False):
     default: 30
     """
 
-    tile_size: int | float
+    tile_size: Union[int, float]
     """
     Cost tile size.
 
@@ -1119,6 +1174,7 @@ class LayerCost(TypedDict, total=False):
 
     default: 20
     """
+
 
 
 LayerDimensionName = str
@@ -1131,12 +1187,14 @@ pattern: (?i)^(?!(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGH
 """
 
 
-LayerDimensions = list["_LayerDimensionsItem"]
+
+LayerDimensions = List["_LayerDimensionsItem"]
 """
 layer dimensions.
 
 The WMTS dimensions
 """
+
 
 
 class LayerEmptyMetaTileDetection(TypedDict, total=False):
@@ -1165,6 +1223,7 @@ class LayerEmptyMetaTileDetection(TypedDict, total=False):
     """
 
 
+
 class LayerEmptyTileDetection(TypedDict, total=False):
     """
     Layer empty tile detection.
@@ -1191,6 +1250,7 @@ class LayerEmptyTileDetection(TypedDict, total=False):
     """
 
 
+
 LayerExtension = str
 """
 Layer extension.
@@ -1199,12 +1259,14 @@ The layer extension
 """
 
 
-LayerGeometries = list["_LayerGeometriesItem"]
+
+LayerGeometries = List["_LayerGeometriesItem"]
 """
 Layer geometries.
 
 The geometries used to determine where we should create the tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-geomsql
 """
+
 
 
 LayerGrid = str
@@ -1215,12 +1277,60 @@ The used grid name
 """
 
 
+
 LayerLayers = str
 """
 Layer layers.
 
 The WMS layers
 """
+
+
+
+class LayerLegend(TypedDict, total=False):
+    """
+    Layer legend.
+
+    Legend configuration for the layer
+
+    default:
+      {}
+    """
+
+    enabled: bool
+    """
+    Legend enabled.
+
+    Set to false if the layer has no legend
+
+    default: True
+    """
+
+    mime_type: "LayerLegendMime"
+    """
+    Layer legend MIME.
+
+    The mime type used to store the generated legend
+
+    pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
+    """
+
+    extension: "LayerLegendExtension"
+    """
+    Layer legend extension.
+
+    The extension used to store the generated legend
+
+    pattern: ^[a-zA-Z0-9]+$
+    """
+
+    items: "LayerLegends"
+    """
+    Layer legends.
+
+    The provided legend
+    """
+
 
 
 LayerLegendExtension = str
@@ -1233,6 +1343,74 @@ pattern: ^[a-zA-Z0-9]+$
 """
 
 
+
+class LayerLegendItem(TypedDict, total=False):
+    """ Layer legend item. """
+
+    mime_type: Required[str]
+    """
+    MIME type.
+
+    The mime type used in the WMS request
+
+    pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
+
+    Required property
+    """
+
+    href: Required[str]
+    """
+    Href.
+
+    The URL of the legend image
+
+    Required property
+    """
+
+    width: int
+    """
+    Width.
+
+    The width of the legend image
+    """
+
+    height: int
+    """
+    Height.
+
+    The height of the legend image
+    """
+
+    min_scale: Union[int, float]
+    """
+    Min scale.
+
+    The min scale of the legend image
+    """
+
+    max_scale: Union[int, float]
+    """
+    Max scale.
+
+    The max scale of the legend image
+    """
+
+    min_resolution: Union[int, float]
+    """
+    Min resolution.
+
+    The min resolution of the legend image
+    """
+
+    max_resolution: Union[int, float]
+    """
+    Max resolution.
+
+    The max resolution of the legend image
+    """
+
+
+
 LayerLegendMime = str
 """
 Layer legend MIME.
@@ -1243,7 +1421,8 @@ pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
 """
 
 
-LayerLegends = list["_LayerLegendsItem"]
+
+LayerLegends = List["LayerLegendItem"]
 """
 Layer legends.
 
@@ -1251,10 +1430,11 @@ The provided legend
 """
 
 
-class LayerMapnik(TypedDict, total=False):
-    """Layer Mapnik."""
 
-    type: Literal["mapnik"]
+class LayerMapnik(TypedDict, total=False):
+    """ Layer Mapnik. """
+
+    type: Literal['mapnik']
     title: "LayerTitle"
     """
     Layer title.
@@ -1369,6 +1549,16 @@ class LayerMapnik(TypedDict, total=False):
     The WMTS dimensions
     """
 
+    legend: "LayerLegend"
+    """
+    Layer legend.
+
+    Legend configuration for the layer
+
+    default:
+      {}
+    """
+
     legends: "LayerLegends"
     """
     Layer legends.
@@ -1477,7 +1667,7 @@ class LayerMapnik(TypedDict, total=False):
     default: 4
     """
 
-    layers_fields: dict[str, "_LayersFieldsAdditionalproperties"]
+    layers_fields: Dict[str, "_LayersFieldsAdditionalproperties"]
     """
     Layers fields.
 
@@ -1494,6 +1684,7 @@ class LayerMapnik(TypedDict, total=False):
     """
 
 
+
 LayerMeta = bool
 """
 Layer meta.
@@ -1502,6 +1693,7 @@ Use meta-tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/ti
 
 default: False
 """
+
 
 
 LayerMetaBuffer = int
@@ -1514,12 +1706,14 @@ default: 128
 """
 
 
-LayerMetaSaveOptions = dict[str, Any]
+
+LayerMetaSaveOptions = Dict[str, Any]
 """
 Layer meta save options.
 
 The Pillow options used to save the tile generated from the meta-tiles
 """
+
 
 
 LayerMetaSize = int
@@ -1532,6 +1726,7 @@ default: 5
 """
 
 
+
 LayerMimeType = str
 """
 Layer MIME type.
@@ -1542,12 +1737,14 @@ pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
 """
 
 
+
 LayerMinResolutionSeed = Union[int, float]
 """
 layer min resolution seed.
 
 The minimum resolutions to pre-generate
 """
+
 
 
 LayerPixelBuffer = int
@@ -1560,12 +1757,14 @@ default: 0
 """
 
 
+
 LayerPostProcess = str
 """
 Layer post process.
 
 Do an image post process after the empty hash check
 """
+
 
 
 LayerPreHashPostProcess = str
@@ -1576,6 +1775,7 @@ Do an image post process before the empty hash check
 """
 
 
+
 LayerTitle = str
 """
 Layer title.
@@ -1584,10 +1784,11 @@ The title, use to generate the capabilities
 """
 
 
-class LayerWms(TypedDict, total=False):
-    """Layer WMS."""
 
-    type: Literal["wms"]
+class LayerWms(TypedDict, total=False):
+    """ Layer WMS. """
+
+    type: Literal['wms']
     title: "LayerTitle"
     """
     Layer title.
@@ -1711,6 +1912,16 @@ class LayerWms(TypedDict, total=False):
     The WMTS dimensions
     """
 
+    legend: "LayerLegend"
+    """
+    Layer legend.
+
+    Legend configuration for the layer
+
+    default:
+      {}
+    """
+
     legends: "LayerLegends"
     """
     Layer legends.
@@ -1803,14 +2014,14 @@ class LayerWms(TypedDict, total=False):
     The layers use for query (To be used with the server)
     """
 
-    info_formats: list[str]
+    info_formats: List[str]
     """
     Info formats.
 
     The query info format
     """
 
-    params: dict[str, "_ParametersAdditionalproperties"]
+    params: Dict[str, "_ParametersAdditionalproperties"]
     """
     Parameters.
 
@@ -1834,6 +2045,7 @@ class LayerWms(TypedDict, total=False):
     """
 
 
+
 LayerWmtsStyle = str
 """
 Layer WMTS style.
@@ -1842,6 +2054,7 @@ The WMTS style
 
 pattern: ^[a-zA-Z0-9_\-\+~\.]+$
 """
+
 
 
 class Logging(TypedDict, total=False):
@@ -1861,39 +2074,48 @@ class Logging(TypedDict, total=False):
     """
 
 
+
 MAP_INITIAL_ZOOM_DEFAULT = 3
 """ Default value of the field path 'OpenLayers zoom' """
 
 
-MATRIX_IDENTIFIER_DEFAULT = "zoom"
+
+MATRIX_IDENTIFIER_DEFAULT = 'zoom'
 """ Default value of the field path 'Grid matrix_identifier' """
+
 
 
 MAX_CONSECUTIVE_ERRORS_DEFAULT = 10
 """ Default value of the field path 'Generation maxconsecutive_errors' """
 
 
+
 MAX_ERRORS_AGE_DEFAULT = 86400
 """ Default value of the field path 'Redis max_errors_age' """
+
 
 
 MAX_ERRORS_NUMBER_DEFAULT = 100
 """ Default value of the field path 'Redis max_errors_nb' """
 
 
+
 MAX_PENDING_MINUTES_DEFAULT = 10
 """ Default value of the field path 'PostgreSQL max_pending_minutes' """
+
 
 
 MAX_RETRIES_DEFAULT = 5
 """ Default value of the field path 'Redis max_retries' """
 
 
+
 META_TILE_GENERATION_TIME_DEFAULT = 30
 """ Default value of the field path 'Layer cost metatile_generation_time' """
 
 
-MatrixIdentifier = Union[Literal["zoom"], Literal["resolution"]]
+
+MatrixIdentifier = Union[Literal['zoom'], Literal['resolution']]
 """
 Matrix identifier.
 
@@ -1901,10 +2123,11 @@ The identifier to use in the tiles URL, recommend to be resolution (default)
 
 default: zoom
 """
-MATRIXIDENTIFIER_ZOOM: Literal["zoom"] = "zoom"
+MATRIXIDENTIFIER_ZOOM: Literal['zoom'] = "zoom"
 """The values for the 'Matrix identifier' enum"""
-MATRIXIDENTIFIER_RESOLUTION: Literal["resolution"] = "resolution"
+MATRIXIDENTIFIER_RESOLUTION: Literal['resolution'] = "resolution"
 """The values for the 'Matrix identifier' enum"""
+
 
 
 class Metadata(TypedDict, total=False):
@@ -1939,7 +2162,7 @@ class Metadata(TypedDict, total=False):
     default: OGC WMTS
     """
 
-    keywords: list[str]
+    keywords: List[str]
     """
     Keywords.
 
@@ -1961,16 +2184,20 @@ class Metadata(TypedDict, total=False):
     """
 
 
+
 NEED_OUT_DEFAULT = False
 """ Default value of the field path 'Process command item need_out' """
+
 
 
 NUMBER_PROCESS_DEFAULT = 1
 """ Default value of the field path 'Generation number_process' """
 
 
-OUTPUT_FORMAT_DEFAULT = "png"
+
+OUTPUT_FORMAT_DEFAULT = 'png'
 """ Default value of the field path 'Layer Mapnik output_format' """
+
 
 
 class Openlayers(TypedDict, total=False):
@@ -1999,7 +2226,7 @@ class Openlayers(TypedDict, total=False):
     default: +proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs
     """
 
-    center_x: int | float
+    center_x: Union[int, float]
     """
     Center x.
 
@@ -2008,7 +2235,7 @@ class Openlayers(TypedDict, total=False):
     default: 2600000
     """
 
-    center_y: int | float
+    center_y: Union[int, float]
     """
     Center y.
 
@@ -2017,7 +2244,7 @@ class Openlayers(TypedDict, total=False):
     default: 1200000
     """
 
-    zoom: int | float
+    zoom: Union[int, float]
     """
     Map initial zoom.
 
@@ -2027,7 +2254,8 @@ class Openlayers(TypedDict, total=False):
     """
 
 
-OutputFormat = Union[Literal["png"], Literal["png256"], Literal["jpeg"], Literal["grid"]]
+
+OutputFormat = Union[Literal['png'], Literal['png256'], Literal['jpeg'], Literal['grid']]
 """
 Output format.
 
@@ -2035,38 +2263,45 @@ The Mapnik output format
 
 default: png
 """
-OUTPUTFORMAT_PNG: Literal["png"] = "png"
+OUTPUTFORMAT_PNG: Literal['png'] = "png"
 """The values for the 'Output format' enum"""
-OUTPUTFORMAT_PNG256: Literal["png256"] = "png256"
+OUTPUTFORMAT_PNG256: Literal['png256'] = "png256"
 """The values for the 'Output format' enum"""
-OUTPUTFORMAT_JPEG: Literal["jpeg"] = "jpeg"
+OUTPUTFORMAT_JPEG: Literal['jpeg'] = "jpeg"
 """The values for the 'Output format' enum"""
-OUTPUTFORMAT_GRID: Literal["grid"] = "grid"
+OUTPUTFORMAT_GRID: Literal['grid'] = "grid"
 """The values for the 'Output format' enum"""
+
 
 
 PENDING_COUNT_DEFAULT = 10
 """ Default value of the field path 'Redis pending_count' """
 
 
+
 PENDING_MAX_COUNT_DEFAULT = 10000
 """ Default value of the field path 'Redis pending_max_count' """
+
 
 
 PENDING_TIMEOUT_DEFAULT = 300
 """ Default value of the field path 'Redis pending_timeout' """
 
 
+
 PORT_DEFAULT = 5432
 """ Default value of the field path 'Database port' """
 
 
-PREFIX_DEFAULT = "tilecloud_cache"
+
+PREFIX_DEFAULT = 'tilecloud_cache'
 """ Default value of the field path 'Redis prefix' """
 
 
-PROJ4JS_DEFINITION_DEFAULT = "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs"
+
+PROJ4JS_DEFINITION_DEFAULT = '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs'
 """ Default value of the field path 'OpenLayers proj4js_def' """
+
 
 
 class Phone(TypedDict, total=False):
@@ -2089,6 +2324,7 @@ class Phone(TypedDict, total=False):
 
     The fax number
     """
+
 
 
 class Postgresql(TypedDict, total=False):
@@ -2115,12 +2351,14 @@ class Postgresql(TypedDict, total=False):
     """
 
 
-ProcessCommand = list["_ProcessCommandItem"]
+
+ProcessCommand = List["_ProcessCommandItem"]
 """
 Process command.
 
 A command
 """
+
 
 
 class Provider(TypedDict, total=False):
@@ -2148,11 +2386,13 @@ class Provider(TypedDict, total=False):
     """
 
 
-QUEUE_STORE_DEFAULT = "redis"
+
+QUEUE_STORE_DEFAULT = 'redis'
 """ Default value of the field path 'TileCloud-chain configuration queue_store' """
 
 
-QueueStore = Union[Literal["redis"], Literal["sqs"], Literal["postgresql"]]
+
+QueueStore = Union[Literal['redis'], Literal['sqs'], Literal['postgresql']]
 """
 Queue store.
 
@@ -2160,28 +2400,33 @@ The used queue store
 
 default: redis
 """
-QUEUESTORE_REDIS: Literal["redis"] = "redis"
+QUEUESTORE_REDIS: Literal['redis'] = "redis"
 """The values for the 'Queue store' enum"""
-QUEUESTORE_SQS: Literal["sqs"] = "sqs"
+QUEUESTORE_SQS: Literal['sqs'] = "sqs"
 """The values for the 'Queue store' enum"""
-QUEUESTORE_POSTGRESQL: Literal["postgresql"] = "postgresql"
+QUEUESTORE_POSTGRESQL: Literal['postgresql'] = "postgresql"
 """The values for the 'Queue store' enum"""
 
 
-REDIS_QUEUE_DEFAULT = "tilecloud"
+
+REDIS_QUEUE_DEFAULT = 'tilecloud'
 """ Default value of the field path 'Redis queue' """
+
 
 
 REQUEST_DEFAULT = 0.01
 """ Default value of the field path 'SQS cost request' """
 
 
+
 REQUEST_PER_LAYERS_DEFAULT = 10000000
 """ Default value of the field path 'Cost request_per_layers' """
 
 
+
 RESOLUTION_DEFAULT = 4
 """ Default value of the field path 'Layer Mapnik resolution' """
+
 
 
 class Redis(TypedDict, total=False):
@@ -2200,17 +2445,17 @@ class Redis(TypedDict, total=False):
     pattern: ^rediss?://([^:@/]*:[^:@/]*@)?[^:@/]+(:[0-9]+)?(/.*)?$
     """
 
-    sentinels: list["_SentinelsItem"]
+    sentinels: List["_SentinelsItem"]
     """
     Sentinels.
 
     The sentinels (main configuration), can also be set in the `TILECLOUD_CHAIN_REDIS_SENTINELS` environment variable
     """
 
-    connection_kwargs: dict[str, Any]
+    connection_kwargs: Dict[str, Any]
     """ The Redis connection arguments (main configuration) """
 
-    sentinel_kwargs: dict[str, Any]
+    sentinel_kwargs: Dict[str, Any]
     """ The Redis sentinel arguments (main configuration) """
 
     service_name: str
@@ -2327,6 +2572,7 @@ class Redis(TypedDict, total=False):
     """
 
 
+
 class S3Cost(TypedDict, total=False):
     """
     S3 cost.
@@ -2334,7 +2580,7 @@ class S3Cost(TypedDict, total=False):
     The S3 cost (main configuration)
     """
 
-    storage: int | float
+    storage: Union[int, float]
     """
     S3 Storage.
 
@@ -2343,7 +2589,7 @@ class S3Cost(TypedDict, total=False):
     default: 0.125
     """
 
-    put: int | float
+    put: Union[int, float]
     """
     S3 Put.
 
@@ -2352,7 +2598,7 @@ class S3Cost(TypedDict, total=False):
     default: 0.01
     """
 
-    get: int | float
+    get: Union[int, float]
     """
     S3 Get.
 
@@ -2361,7 +2607,7 @@ class S3Cost(TypedDict, total=False):
     default: 0.01
     """
 
-    download: int | float
+    download: Union[int, float]
     """
     S3 Download.
 
@@ -2371,44 +2617,55 @@ class S3Cost(TypedDict, total=False):
     """
 
 
+
 S3_DOWNLOAD_DEFAULT = 0.12
 """ Default value of the field path 'S3 cost download' """
+
 
 
 S3_GET_DEFAULT = 0.01
 """ Default value of the field path 'S3 cost get' """
 
 
+
 S3_PUT_DEFAULT = 0.01
 """ Default value of the field path 'S3 cost put' """
+
 
 
 S3_STORAGE_DEFAULT = 0.125
 """ Default value of the field path 'S3 cost storage' """
 
 
-SERVICE_NAME_DEFAULT = "mymaster"
+
+SERVICE_NAME_DEFAULT = 'mymaster'
 """ Default value of the field path 'Redis service_name' """
 
 
-SERVICE_TYPE_DEFAULT = "OGC WMTS"
+
+SERVICE_TYPE_DEFAULT = 'OGC WMTS'
 """ Default value of the field path 'Metadata servicetype' """
 
 
-SQS_QUEUE_DEFAULT = "tilecloud"
+
+SQS_QUEUE_DEFAULT = 'tilecloud'
 """ Default value of the field path 'SQS queue' """
 
 
-SRS_DEFAULT = "EPSG:2056"
+
+SRS_DEFAULT = 'EPSG:2056'
 """ Default value of the field path 'OpenLayers srs' """
 
 
-STATIC_ALLOW_EXTENSION_DEFAULT = ["jpeg", "png", "xml", "js", "html", "css"]
+
+STATIC_ALLOW_EXTENSION_DEFAULT = ['jpeg', 'png', 'xml', 'js', 'html', 'css']
 """ Default value of the field path 'Server static_allow_extension' """
 
 
-STATIC_PATH_DEFAULT = "static"
+
+STATIC_PATH_DEFAULT = 'static'
 """ Default value of the field path 'Server static_path' """
+
 
 
 SentinelHost = str
@@ -2419,6 +2676,7 @@ The sentinel host name (main configuration)
 """
 
 
+
 SentinelPort = Union[str, int]
 """
 Sentinel port.
@@ -2427,6 +2685,7 @@ The sentinel port (main configuration)
 
 Aggregation type: anyOf
 """
+
 
 
 class Server(TypedDict, total=False):
@@ -2443,7 +2702,7 @@ class Server(TypedDict, total=False):
     The used cache name
     """
 
-    layers: list[str]
+    layers: List[str]
     """
     WMS Layers.
 
@@ -2459,7 +2718,7 @@ class Server(TypedDict, total=False):
     default: False
     """
 
-    static_allow_extension: list[str]
+    static_allow_extension: List[str]
     """
     Static allow extension.
 
@@ -2510,14 +2769,14 @@ class Server(TypedDict, total=False):
     default: 8
     """
 
-    predefined_commands: list["_PredefinedCommandsItem"]
+    predefined_commands: List["_PredefinedCommandsItem"]
     """
     Predefined commands.
 
     The predefined commands used to generate the tiles
     """
 
-    allowed_commands: list[str]
+    allowed_commands: List[str]
     """
     Allowed commands.
 
@@ -2529,7 +2788,7 @@ class Server(TypedDict, total=False):
       - generate-cost
     """
 
-    allowed_arguments: list[str]
+    allowed_arguments: List[str]
     """
     Allowed arguments.
 
@@ -2566,6 +2825,7 @@ class Server(TypedDict, total=False):
     """
 
 
+
 class Sns(TypedDict, total=False):
     """
     SNS.
@@ -2591,6 +2851,7 @@ class Sns(TypedDict, total=False):
     pattern: ^(eu|us|ap|sa)-(north|south|east|west|central)(east|west)?-[1-3]$
     default: eu-west-1
     """
+
 
 
 class Sqs(TypedDict, total=False):
@@ -2620,6 +2881,7 @@ class Sqs(TypedDict, total=False):
     """
 
 
+
 class SqsCost(TypedDict, total=False):
     """
     SQS cost.
@@ -2627,7 +2889,7 @@ class SqsCost(TypedDict, total=False):
     The SQS cost, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-sqs (main configuration)
     """
 
-    request: int | float
+    request: Union[int, float]
     """
     Request.
 
@@ -2637,64 +2899,80 @@ class SqsCost(TypedDict, total=False):
     """
 
 
-TILES_URL_DEFAULT = "http://s3-{region}.amazonaws.com/{bucket}/{folder}"
+
+TILES_URL_DEFAULT = 'http://s3-{region}.amazonaws.com/{bucket}/{folder}'
 """ Default value of the field path 'Cache S3 tiles_url' """
+
 
 
 TILE_GENERATION_TIME_DEFAULT = 30
 """ Default value of the field path 'Layer cost tile_generation_time' """
 
 
+
 TILE_ONLY_GENERATION_TIME_DEFAULT = 40
 """ Default value of the field path 'Layer cost tileonly_generation_time' """
+
 
 
 TILE_SIZE_DEFAULT = 256
 """ Default value of the field path 'Grid tile_size' """
 
 
+
 TIMEOUT_DEFAULT = 5
 """ Default value of the field path 'Redis timeout' """
 
 
-UNIT_DEFAULT = "m"
+
+UNIT_DEFAULT = 'm'
 """ Default value of the field path 'Grid unit' """
 
 
-VERSION_DEFAULT = "1.1.1"
+
+VERSION_DEFAULT = '1.1.1'
 """ Default value of the field path 'Layer WMS version' """
 
 
-WMTS_PATH_DEFAULT = "wmts"
+
+WMTS_PATH_DEFAULT = 'wmts'
 """ Default value of the field path 'Server wmts_path' """
+
 
 
 _GenerateItem = str
 """ pattern: ^[a-zA-Z0-9_\-\+~\.]+$ """
 
 
+
 _HeadersAdditionalproperties = str
 """ The header value """
 
 
-_LAYER_MAPNIK_LAYERS_DEFAULT = "__all__"
+
+_LAYER_MAPNIK_LAYERS_DEFAULT = '__all__'
 """ Default value of the field path 'Layer Mapnik layers' """
+
 
 
 _LAYER_MAPNIK_META_BUFFER_DEFAULT = 0
 """ Default value of the field path 'Layer Mapnik meta_buffer' """
 
 
+
 _LAYER_MAPNIK_META_SIZE_DEFAULT = 1
 """ Default value of the field path 'Layer Mapnik meta_size' """
+
 
 
 _LAYER_WMS_META_BUFFER_DEFAULT = 128
 """ Default value of the field path 'Layer WMS meta_buffer' """
 
 
+
 _LAYER_WMS_META_SIZE_DEFAULT = 5
 """ Default value of the field path 'Layer WMS meta_size' """
+
 
 
 class _LayerDimensionsItem(TypedDict, total=False):
@@ -2709,7 +2987,7 @@ class _LayerDimensionsItem(TypedDict, total=False):
     Required property
     """
 
-    generate: Required[list["_GenerateItem"]]
+    generate: Required[List["_GenerateItem"]]
     """
     Generate.
 
@@ -2718,7 +2996,7 @@ class _LayerDimensionsItem(TypedDict, total=False):
     Required property
     """
 
-    values: Required[list["_ValuesItem"]]
+    values: Required[List["_ValuesItem"]]
     """
     Values.
 
@@ -2737,6 +3015,7 @@ class _LayerDimensionsItem(TypedDict, total=False):
 
     Required property
     """
+
 
 
 class _LayerGeometriesItem(TypedDict, total=False):
@@ -2758,14 +3037,14 @@ class _LayerGeometriesItem(TypedDict, total=False):
     Required property
     """
 
-    min_resolution: int | float
+    min_resolution: Union[int, float]
     """
     Min resolution.
 
     The min resolution where the query is valid
     """
 
-    max_resolution: int | float
+    max_resolution: Union[int, float]
     """
     Max resolution.
 
@@ -2773,76 +3052,15 @@ class _LayerGeometriesItem(TypedDict, total=False):
     """
 
 
-class _LayerLegendsItem(TypedDict, total=False):
-    mime_type: Required[str]
-    """
-    MIME type.
 
-    The mime type used in the WMS request
-
-    pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
-
-    Required property
-    """
-
-    href: Required[str]
-    """
-    Href.
-
-    The URL of the legend image
-
-    Required property
-    """
-
-    width: str
-    """
-    Width.
-
-    The width of the legend image
-    """
-
-    height: str
-    """
-    Height.
-
-    The height of the legend image
-    """
-
-    min_scale: str
-    """
-    Min scale.
-
-    The max scale of the legend image
-    """
-
-    max_scale: str
-    """
-    Max scale.
-
-    The max scale of the legend image
-    """
-
-    min_resolution: str
-    """
-    Min resolution.
-
-    The max resolution of the legend image
-    """
-
-    max_resolution: str
-    """
-    Max resolution.
-
-    The max resolution of the legend image
-    """
-
-
-_LayersFieldsAdditionalproperties = list[str]
+_LayersFieldsAdditionalproperties = List[str]
 """ The Mapnik layer fields """
+
 
 
 _ParametersAdditionalproperties = str
 """ The parameter value """
+
 
 
 class _PredefinedCommandsItem(TypedDict, total=False):
@@ -2859,6 +3077,7 @@ class _PredefinedCommandsItem(TypedDict, total=False):
 
     The name used in the admin interface
     """
+
 
 
 class _ProcessCommandItem(TypedDict, total=False):
@@ -2888,8 +3107,10 @@ class _ProcessCommandItem(TypedDict, total=False):
     """
 
 
-_SentinelsItem = tuple["SentinelHost", "SentinelPort"]
+
+_SentinelsItem = Tuple["SentinelHost", "SentinelPort"]
 """ A sentinel (main configuration) """
+
 
 
 _ValuesItem = str

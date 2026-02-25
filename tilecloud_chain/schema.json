@@ -367,11 +367,36 @@
         "required": ["name", "generate", "values", "default"]
       }
     },
-    "layer_legends": {
+    "layer_legend": {
+      "title": "Layer legend",
+      "description": "Legend configuration for the layer",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "title": "Legend enabled",
+          "description": "Set to false if the layer has no legend",
+          "type": "boolean",
+          "default": true
+        },
+        "mime_type": {
+          "$ref": "#/definitions/layer_legend_mime"
+        },
+        "extension": {
+          "$ref": "#/definitions/layer_legend_extension"
+        },
+        "items": {
+          "$ref": "#/definitions/layer_legend_items"
+        }
+      },
+      "default": {}
+    },
+    "layer_legend_items": {
       "title": "Layer legends",
       "description": "The provided legend",
       "type": "array",
       "items": {
+        "title": "Layer legend item",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -389,32 +414,32 @@
           "width": {
             "title": "Width",
             "description": "The width of the legend image",
-            "type": "string"
+            "type": "integer"
           },
           "height": {
             "title": "Height",
             "description": "The height of the legend image",
-            "type": "string"
+            "type": "integer"
           },
           "min_scale": {
             "title": "Min scale",
-            "description": "The max scale of the legend image",
-            "type": "string"
+            "description": "The min scale of the legend image",
+            "type": "number"
           },
           "max_scale": {
             "title": "Max scale",
             "description": "The max scale of the legend image",
-            "type": "string"
+            "type": "number"
           },
           "min_resolution": {
             "title": "Min resolution",
-            "description": "The max resolution of the legend image",
-            "type": "string"
+            "description": "The min resolution of the legend image",
+            "type": "number"
           },
           "max_resolution": {
             "title": "Max resolution",
             "description": "The max resolution of the legend image",
-            "type": "string"
+            "type": "number"
           }
         },
         "required": ["mime_type", "href"]
@@ -594,8 +619,11 @@
         "dimensions": {
           "$ref": "#/definitions/layer_dimensions"
         },
+        "legend": {
+          "$ref": "#/definitions/layer_legend"
+        },
         "legends": {
-          "$ref": "#/definitions/layer_legends"
+          "$ref": "#/definitions/layer_legend_items"
         },
         "legend_mime": {
           "$ref": "#/definitions/layer_legend_mime"
@@ -714,8 +742,11 @@
         "dimensions": {
           "$ref": "#/definitions/layer_dimensions"
         },
+        "legend": {
+          "$ref": "#/definitions/layer_legend"
+        },
         "legends": {
-          "$ref": "#/definitions/layer_legends"
+          "$ref": "#/definitions/layer_legend_items"
         },
         "legend_mime": {
           "$ref": "#/definitions/layer_legend_mime"
