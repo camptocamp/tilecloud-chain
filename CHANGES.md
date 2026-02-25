@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 1.22
+
+1. In the layer, the `legend_mime`, `legend_extension` and `legends` becomes deprecated,
+   they are replaced by `legend.mime_type`, `legend.extension` and `legend.items`.
+
 ## Release 1.17
 
 1. Change the validator and parser => duplicate key generate an error: on/off are no more considered as boolean.

@@ -14,11 +14,20 @@ caches:
 
 defaults:
   layer: &layer
-    grids: [swissgrid]
+    grid: swissgrid
     type: wms
     legend:
       mime_type: image/png
       extension: png
+      items:
+        - href: http://example.com/legend1.png
+          mime_type: image/png
+          width: 20
+          height: 20
+          min_scale: 1000
+          max_scale: 5000
+          min_resolution: 10
+          max_resolution: 50
     wmts_style: default
     mime_type: image/png
     extension: png
@@ -43,15 +52,25 @@ defaults:
 layers:
   point:
     <<: *layer
-    url: http://mapserver:8080/
+    url: http://mapserver:8080/mapserv
     layers: point
     geoms:
       - sql: the_geom AS geom FROM tests.point
         connection: user=postgresql password=postgresql dbname=tests host=db
     min_resolution_seed: 10
+    legend:
+      mime_type: image/png
+      extension: png
+      items:
+        - href: http://example.com/legend1.png
+          mime_type: image/png
+          width: 20
+          height: 20
+          min_scale: 1000
+          max_scale: 5000
   line:
     <<: *layer
-    url: http://mapserver:8080/
+    url: http://mapserver:8080/mapserv
     layers: line
     headers:
       Cache-Control: no-cache
@@ -66,9 +85,19 @@ layers:
     empty_tile_detection:
       size: 334
       hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
+    legend:
+      mime_type: image/png
+      extension: png
+      items:
+        - href: http://example.com/legend1.png
+          mime_type: image/png
+          width: 20
+          height: 20
+          min_resolution: 10
+          max_resolution: 50
   polygon:
     <<: *layer
-    url: http://mapserver:8080/
+    url: http://mapserver:8080/mapserv
     layers: polygon
     meta: false
     geoms:
@@ -82,7 +111,7 @@ layers:
       hash: dd6cb45962bccb3ad2450ab07011ef88f766eda8
   all:
     <<: *layer
-    url: http://mapserver:8080/
+    url: http://mapserver:8080/mapserv
     layers: point,line,polygon
     meta: false
     bbox: [550000.0, 170000.0, 560000.0, 180000.0]

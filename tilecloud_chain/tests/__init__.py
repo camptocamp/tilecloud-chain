@@ -41,6 +41,7 @@ class CompareCase(TestCase):
         result = re.sub("^[^\n]*\r", "", result)
         print("== Result ==")
         print(result)
+        print("== End result ==")
         result = result.split("\n")
         for n, test in enumerate(zip(expected, result, strict=False)):
             if test[0] != "PASS...":
