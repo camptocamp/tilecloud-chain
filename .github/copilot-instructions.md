@@ -9,3 +9,7 @@ The project must use async-friendly APIs for I/O to don't block the event loop.
 **Exception**: Test files in `tilecloud_chain/tests/` may not follow these rules, as there are no performance requirements.
 
 The user documentation in the `tilecloud_chain/USAGE.rst` file should be updated to reflect the changes in the codebase.
+
+## Bash
+
+Use the long parameter names for clarity and maintainability.
