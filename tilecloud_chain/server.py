@@ -999,13 +999,31 @@ async def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes |
 
 async def _get_layer_legend(
     layer_name: str,
-    layer: tilecloud_chain.configuration.Layer,
-    cache: tilecloud_chain.configuration.Cache,
+    layer: configuration.Layer,
+    cache: configuration.Cache,
     base_url: str,
     config: DatedConfig,
     current_time: float,
-) -> list[tilecloud_chain.Legend] | None:
+) -> list[configuration.LayerLegendItem] | None:
     """Get legend configuration for a layer."""
+
+    legend = layer.get("legend", {})
+    legend_mime = legend.get(
+        "mime_type",
+        layer.get("legend_mime", configuration.LAYER_LEGEND_MIME_TYPE_DEFAULT),
+    )
+    legend_extension = legend.get(
+        "extension",
+        layer.get("legend_extension", configuration.LAYER_LEGEND_EXTENSION_DEFAULT),
+    )
+    legend_enabled = legend.get("enabled", configuration.LAYER_LEGEND_ENABLED_DEFAULT)
+    if not legend_enabled:
+        return []
+
+    legend_items = legend.get("items", layer.get("legends"))
+    if legend_items is not None:
+        return legend_items
+
     cache_key = f"{config.file}:{layer_name}"
     legend_config = None
 
@@ -1036,14 +1054,14 @@ async def _get_layer_legend(
 
     if legend_config:
         return [
-            tilecloud_chain.Legend(
-                mime_type=legend_metadata["mime_type"],
+            configuration.LayerLegendItem(
+                mime_type=legend_mime,
                 href=str(
                     Path(base_url)
                     / "1.0.0"
                     / layer_name
                     / layer["wmts_style"]
-                    / f"legend-{legend_metadata['resolution']}.{layer.get('legend_extension', configuration.LAYER_LEGEND_EXTENSION_DEFAULT)}",
+                    / f"legend-{legend_metadata['resolution']}.{legend_extension}",
                 ),
                 min_resolution=legend_metadata.get("min_resolution"),
                 max_resolution=legend_metadata.get("max_resolution"),
@@ -1081,6 +1099,11 @@ async def _fill_legend(
     tasks = []
     layer_names = []
     for layer_name, layer in config.config.get("layers", {}).items():
+        legend = layer.get("legend", {})
+        legend_enabled = legend.get("enabled", configuration.LAYER_LEGEND_ENABLED_DEFAULT)
+        if not legend_enabled:
+            continue
+
         if layer_name not in _TILEGENERATION.layer_legends:
             tasks.append(_get_layer_legend(layer_name, layer, cache, base_url, config, current_time))
             layer_names.append(layer_name)

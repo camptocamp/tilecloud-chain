@@ -138,17 +138,22 @@
     - <a id="definitions/layer_dimensions/items/properties/values"></a>**`values`** *(array, required)*: The values present in the capabilities.
       - <a id="definitions/layer_dimensions/items/properties/values/items"></a>**Items** *(string)*: Must match pattern: `^[a-zA-Z0-9_\-\+~\.]+$` ([Test](https://regexr.com/?expression=%5E%5Ba-zA-Z0-9_%5C-%5C%2B~%5C.%5D%2B%24)).
     - <a id="definitions/layer_dimensions/items/properties/default"></a>**`default`** *(string, required)*: The default value present in the capabilities. Must match pattern: `^[a-zA-Z0-9_\-\+~\.]+$` ([Test](https://regexr.com/?expression=%5E%5Ba-zA-Z0-9_%5C-%5C%2B~%5C.%5D%2B%24)).
-- <a id="definitions/layer_legends"></a>**`layer_legends`** *(array)*: The provided legend.
-  - <a id="definitions/layer_legends/items"></a>**Items** *(object)*: Cannot contain additional properties.
-    - <a id="definitions/layer_legends/items/properties/mime_type"></a>**`mime_type`** *(string, required)*: The mime type used in the WMS request. Must match pattern: `^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$` ([Test](https://regexr.com/?expression=%5E%5Ba-zA-Z0-9%21%23%24%25%5E%26%5C%2A_%5C-%5C%2B%7B%7D%5C%7C%27.%60~%5D%2B/%5Ba-zA-Z0-9%21%23%24%25%5E%26%5C%2A_%5C-%5C%2B%7B%7D%5C%7C%27.%60~%5D%2B%24)).
-    - <a id="definitions/layer_legends/items/properties/href"></a>**`href`** *(string, required)*: The URL of the legend image.
-    - <a id="definitions/layer_legends/items/properties/width"></a>**`width`** *(string)*: The width of the legend image.
-    - <a id="definitions/layer_legends/items/properties/height"></a>**`height`** *(string)*: The height of the legend image.
-    - <a id="definitions/layer_legends/items/properties/min_scale"></a>**`min_scale`** *(string)*: The max scale of the legend image.
-    - <a id="definitions/layer_legends/items/properties/max_scale"></a>**`max_scale`** *(string)*: The max scale of the legend image.
-    - <a id="definitions/layer_legends/items/properties/min_resolution"></a>**`min_resolution`** *(string)*: The max resolution of the legend image.
-    - <a id="definitions/layer_legends/items/properties/max_resolution"></a>**`max_resolution`** *(string)*: The max resolution of the legend image.
-- <a id="definitions/layer_legend_mime"></a>**`layer_legend_mime`** *(string)*: The mime type used to store the generated legend. Must match pattern: `^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$` ([Test](https://regexr.com/?expression=%5E%5Ba-zA-Z0-9%21%23%24%25%5E%26%5C%2A_%5C-%5C%2B%7B%7D%5C%7C%27.%60~%5D%2B/%5Ba-zA-Z0-9%21%23%24%25%5E%26%5C%2A_%5C-%5C%2B%7B%7D%5C%7C%27.%60~%5D%2B%24)). Default: `"image/png"`.
+- <a id="definitions/layer_legend"></a>**`layer_legend`** *(object)*: Legend configuration for the layer. Cannot contain additional properties. Default: `{}`.
+  - <a id="definitions/layer_legend/properties/enabled"></a>**`enabled`** *(boolean)*: Set to false if the layer has no legend. Default: `true`.
+  - <a id="definitions/layer_legend/properties/mime_type"></a>**`mime_type`**: Refer to *[#/definitions/layer_legend_mime_type](#definitions/layer_legend_mime_type)*.
+  - <a id="definitions/layer_legend/properties/extension"></a>**`extension`**: Refer to *[#/definitions/layer_legend_extension](#definitions/layer_legend_extension)*.
+  - <a id="definitions/layer_legend/properties/items"></a>**`items`**: Refer to *[#/definitions/layer_legend_items](#definitions/layer_legend_items)*.
+- <a id="definitions/layer_legend_items"></a>**`layer_legend_items`** *(array)*: The provided legend.
+  - <a id="definitions/layer_legend_items/items"></a>**Items** *(object)*: Cannot contain additional properties.
+    - <a id="definitions/layer_legend_items/items/properties/mime_type"></a>**`mime_type`** *(string, required)*: The mime type used in the WMS request. Must match pattern: `^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$` ([Test](https://regexr.com/?expression=%5E%5Ba-zA-Z0-9%21%23%24%25%5E%26%5C%2A_%5C-%5C%2B%7B%7D%5C%7C%27.%60~%5D%2B/%5Ba-zA-Z0-9%21%23%24%25%5E%26%5C%2A_%5C-%5C%2B%7B%7D%5C%7C%27.%60~%5D%2B%24)).
+    - <a id="definitions/layer_legend_items/items/properties/href"></a>**`href`** *(string, required)*: The URL of the legend image.
+    - <a id="definitions/layer_legend_items/items/properties/width"></a>**`width`** *(integer)*: The width of the legend image.
+    - <a id="definitions/layer_legend_items/items/properties/height"></a>**`height`** *(integer)*: The height of the legend image.
+    - <a id="definitions/layer_legend_items/items/properties/min_scale"></a>**`min_scale`** *(number)*: The min scale of the legend image.
+    - <a id="definitions/layer_legend_items/items/properties/max_scale"></a>**`max_scale`** *(number)*: The max scale of the legend image.
+    - <a id="definitions/layer_legend_items/items/properties/min_resolution"></a>**`min_resolution`** *(number)*: The min resolution of the legend image.
+    - <a id="definitions/layer_legend_items/items/properties/max_resolution"></a>**`max_resolution`** *(number)*: The max resolution of the legend image.
+- <a id="definitions/layer_legend_mime_type"></a>**`layer_legend_mime_type`** *(string)*: The mime type used to store the generated legend. Must match pattern: `^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$` ([Test](https://regexr.com/?expression=%5E%5Ba-zA-Z0-9%21%23%24%25%5E%26%5C%2A_%5C-%5C%2B%7B%7D%5C%7C%27.%60~%5D%2B/%5Ba-zA-Z0-9%21%23%24%25%5E%26%5C%2A_%5C-%5C%2B%7B%7D%5C%7C%27.%60~%5D%2B%24)). Default: `"image/png"`.
 - <a id="definitions/layer_legend_extension"></a>**`layer_legend_extension`** *(string)*: The extension used to store the generated legend. Must match pattern: `^[a-zA-Z0-9]+$` ([Test](https://regexr.com/?expression=%5E%5Ba-zA-Z0-9%5D%2B%24)). Default: `"png"`.
 - <a id="definitions/layer_pre_hash_post_process"></a>**`layer_pre_hash_post_process`** *(string)*: Do an image post process before the empty hash check.
 - <a id="definitions/layer_post_process"></a>**`layer_post_process`** *(string)*: Do an image post process after the empty hash check.
@@ -188,8 +193,9 @@
   - <a id="definitions/layer_wms/properties/mime_type"></a>**`mime_type`** *(required)*: Refer to *[#/definitions/layer_mime_type](#definitions/layer_mime_type)*.
   - <a id="definitions/layer_wms/properties/extension"></a>**`extension`** *(required)*: Refer to *[#/definitions/layer_extension](#definitions/layer_extension)*.
   - <a id="definitions/layer_wms/properties/dimensions"></a>**`dimensions`**: Refer to *[#/definitions/layer_dimensions](#definitions/layer_dimensions)*.
-  - <a id="definitions/layer_wms/properties/legends"></a>**`legends`**: Refer to *[#/definitions/layer_legends](#definitions/layer_legends)*.
-  - <a id="definitions/layer_wms/properties/legend_mime"></a>**`legend_mime`**: Refer to *[#/definitions/layer_legend_mime](#definitions/layer_legend_mime)*.
+  - <a id="definitions/layer_wms/properties/legend"></a>**`legend`**: Refer to *[#/definitions/layer_legend](#definitions/layer_legend)*.
+  - <a id="definitions/layer_wms/properties/legends"></a>**`legends`**: Refer to *[#/definitions/layer_legend_items](#definitions/layer_legend_items)*.
+  - <a id="definitions/layer_wms/properties/legend_mime"></a>**`legend_mime`**: Refer to *[#/definitions/layer_legend_mime_type](#definitions/layer_legend_mime_type)*.
   - <a id="definitions/layer_wms/properties/legend_extension"></a>**`legend_extension`**: Refer to *[#/definitions/layer_legend_extension](#definitions/layer_legend_extension)*.
   - <a id="definitions/layer_wms/properties/pre_hash_post_process"></a>**`pre_hash_post_process`**: Refer to *[#/definitions/layer_pre_hash_post_process](#definitions/layer_pre_hash_post_process)*.
   - <a id="definitions/layer_wms/properties/post_process"></a>**`post_process`**: Refer to *[#/definitions/layer_post_process](#definitions/layer_post_process)*.
@@ -224,8 +230,9 @@
   - <a id="definitions/layer_mapnik/properties/mime_type"></a>**`mime_type`** *(required)*: Refer to *[#/definitions/layer_mime_type](#definitions/layer_mime_type)*.
   - <a id="definitions/layer_mapnik/properties/extension"></a>**`extension`** *(required)*: Refer to *[#/definitions/layer_extension](#definitions/layer_extension)*.
   - <a id="definitions/layer_mapnik/properties/dimensions"></a>**`dimensions`**: Refer to *[#/definitions/layer_dimensions](#definitions/layer_dimensions)*.
-  - <a id="definitions/layer_mapnik/properties/legends"></a>**`legends`**: Refer to *[#/definitions/layer_legends](#definitions/layer_legends)*.
-  - <a id="definitions/layer_mapnik/properties/legend_mime"></a>**`legend_mime`**: Refer to *[#/definitions/layer_legend_mime](#definitions/layer_legend_mime)*.
+  - <a id="definitions/layer_mapnik/properties/legend"></a>**`legend`**: Refer to *[#/definitions/layer_legend](#definitions/layer_legend)*.
+  - <a id="definitions/layer_mapnik/properties/legends"></a>**`legends`**: Refer to *[#/definitions/layer_legend_items](#definitions/layer_legend_items)*.
+  - <a id="definitions/layer_mapnik/properties/legend_mime"></a>**`legend_mime`**: Refer to *[#/definitions/layer_legend_mime_type](#definitions/layer_legend_mime_type)*.
   - <a id="definitions/layer_mapnik/properties/legend_extension"></a>**`legend_extension`**: Refer to *[#/definitions/layer_legend_extension](#definitions/layer_legend_extension)*.
   - <a id="definitions/layer_mapnik/properties/pre_hash_post_process"></a>**`pre_hash_post_process`**: Refer to *[#/definitions/layer_pre_hash_post_process](#definitions/layer_pre_hash_post_process)*.
   - <a id="definitions/layer_mapnik/properties/post_process"></a>**`post_process`**: Refer to *[#/definitions/layer_post_process](#definitions/layer_post_process)*.

@@ -1074,13 +1074,23 @@ class Info(TypedDict, total=False):
 
 
 
+LAYER_LEGEND_DEFAULT: dict[str, Any] = {}
+""" Default value of the field path 'layer_legend' """
+
+
+
+LAYER_LEGEND_ENABLED_DEFAULT = True
+""" Default value of the field path 'Layer legend enabled' """
+
+
+
 LAYER_LEGEND_EXTENSION_DEFAULT = 'png'
 """ Default value of the field path 'layer_legend_extension' """
 
 
 
-LAYER_LEGEND_MIME_DEFAULT = 'image/png'
-""" Default value of the field path 'layer_legend_mime' """
+LAYER_LEGEND_MIME_TYPE_DEFAULT = 'image/png'
+""" Default value of the field path 'layer_legend_mime_type' """
 
 
 
@@ -1291,6 +1301,54 @@ The WMS layers
 
 
 
+class LayerLegend(TypedDict, total=False):
+    """
+    Layer legend.
+
+    Legend configuration for the layer
+
+    default:
+      {}
+    """
+
+    enabled: bool
+    """
+    Layer legend enabled.
+
+    Set to false if the layer has no legend
+
+    default: True
+    """
+
+    mime_type: "LayerLegendMimeType"
+    """
+    Layer legend MIME type.
+
+    The mime type used to store the generated legend
+
+    default: image/png
+    pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
+    """
+
+    extension: "LayerLegendExtension"
+    """
+    Layer legend extension.
+
+    The extension used to store the generated legend
+
+    default: png
+    pattern: ^[a-zA-Z0-9]+$
+    """
+
+    items: "LayerLegends"
+    """
+    Layer legends.
+
+    The provided legend
+    """
+
+
+
 LayerLegendExtension = str
 """
 Layer legend extension.
@@ -1303,9 +1361,76 @@ pattern: ^[a-zA-Z0-9]+$
 
 
 
-LayerLegendMime = str
+class LayerLegendItem(TypedDict, total=False):
+    """ Layer legend item. """
+
+    mime_type: Required[str]
+    """
+    MIME type.
+
+    The mime type used in the WMS request
+
+    pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
+
+    Required property
+    """
+
+    href: Required[str]
+    """
+    Href.
+
+    The URL of the legend image
+
+    Required property
+    """
+
+    width: int
+    """
+    Width.
+
+    The width of the legend image
+    """
+
+    height: int
+    """
+    Height.
+
+    The height of the legend image
+    """
+
+    min_scale: int | float
+    """
+    Min scale.
+
+    The min scale of the legend image
+    """
+
+    max_scale: int | float
+    """
+    Max scale.
+
+    The max scale of the legend image
+    """
+
+    min_resolution: int | float
+    """
+    Min resolution.
+
+    The min resolution of the legend image
+    """
+
+    max_resolution: int | float
+    """
+    Max resolution.
+
+    The max resolution of the legend image
+    """
+
+
+
+LayerLegendMimeType = str
 """
-Layer legend MIME.
+Layer legend MIME type.
 
 The mime type used to store the generated legend
 
@@ -1315,7 +1440,7 @@ pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
 
 
 
-LayerLegends = list["_LayerLegendsItem"]
+LayerLegends = list["LayerLegendItem"]
 """
 Layer legends.
 
@@ -1463,6 +1588,16 @@ class LayerMapnik(TypedDict, total=False):
     The WMTS dimensions
     """
 
+    legend: "LayerLegend"
+    """
+    Layer legend.
+
+    Legend configuration for the layer
+
+    default:
+      {}
+    """
+
     legends: "LayerLegends"
     """
     Layer legends.
@@ -1470,9 +1605,9 @@ class LayerMapnik(TypedDict, total=False):
     The provided legend
     """
 
-    legend_mime: "LayerLegendMime"
+    legend_mime: "LayerLegendMimeType"
     """
-    Layer legend MIME.
+    Layer legend MIME type.
 
     The mime type used to store the generated legend
 
@@ -1859,6 +1994,16 @@ class LayerWms(TypedDict, total=False):
     The WMTS dimensions
     """
 
+    legend: "LayerLegend"
+    """
+    Layer legend.
+
+    Legend configuration for the layer
+
+    default:
+      {}
+    """
+
     legends: "LayerLegends"
     """
     Layer legends.
@@ -1866,9 +2011,9 @@ class LayerWms(TypedDict, total=False):
     The provided legend
     """
 
-    legend_mime: "LayerLegendMime"
+    legend_mime: "LayerLegendMimeType"
     """
-    Layer legend MIME.
+    Layer legend MIME type.
 
     The mime type used to store the generated legend
 
@@ -2958,71 +3103,6 @@ class _LayerGeometriesItem(TypedDict, total=False):
     Max resolution.
 
     The max resolution where the query is valid
-    """
-
-
-
-class _LayerLegendsItem(TypedDict, total=False):
-    mime_type: Required[str]
-    """
-    MIME type.
-
-    The mime type used in the WMS request
-
-    pattern: ^[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+/[a-zA-Z0-9!#$%^&\*_\-\+{}\|'.`~]+$
-
-    Required property
-    """
-
-    href: Required[str]
-    """
-    Href.
-
-    The URL of the legend image
-
-    Required property
-    """
-
-    width: str
-    """
-    Width.
-
-    The width of the legend image
-    """
-
-    height: str
-    """
-    Height.
-
-    The height of the legend image
-    """
-
-    min_scale: str
-    """
-    Min scale.
-
-    The max scale of the legend image
-    """
-
-    max_scale: str
-    """
-    Max scale.
-
-    The max scale of the legend image
-    """
-
-    min_resolution: str
-    """
-    Min resolution.
-
-    The max resolution of the legend image
-    """
-
-    max_resolution: str
-    """
-    Max resolution.
-
-    The max resolution of the legend image
     """
 
 
