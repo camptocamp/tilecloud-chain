@@ -3,9 +3,7 @@ Automatically generated file from a JSON schema.
 """
 
 
-from typing import Any, Literal, TypedDict, Union
-
-from typing_extensions import Required
+from typing import Any, Literal, Required, TypedDict, Union
 
 ADMIN_PATH_DEFAULT = "admin"
 """ Default value of the field path 'Server admin_path' """
