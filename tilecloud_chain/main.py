@@ -137,14 +137,14 @@ app.add_middleware(
                     "script-src-elem": [
                         "'self'",
                         "'unsafe-inline'",  # TODO: remove this: https://github.com/camptocamp/tilecloud-chain/issues/3053
-                        "https://cdn.jsdelivr.net/npm/ol@10.6.1/",
+                        "https://cdn.jsdelivr.net/npm/ol@10.8.0/",
                         "https://unpkg.com/ol-layerswitcher@4.1.2/",
                         "https://cdnjs.cloudflare.com/ajax/libs/proj4js/",
                     ],
                     "style-src-elem": [
                         "'self'",
                         "'unsafe-inline'",  # TODO: remove this: https://github.com/camptocamp/tilecloud-chain/issues/3053
-                        "https://cdn.jsdelivr.net/npm/ol@10.6.1/",
+                        "https://cdn.jsdelivr.net/npm/ol@10.8.0/",
                         "https://unpkg.com/ol-layerswitcher@4.1.2/",
                     ],
                 },
