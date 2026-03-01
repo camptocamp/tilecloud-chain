@@ -20,7 +20,7 @@ Shapely = "1.8.5.post1"
 cee_syslog_handler = "0.6.0" # c2cwsgiutils
 gunicorn = "23.0.0" # c2cwsgiutils
 objgraph = "3.5.0" # c2cwsgiutils
-psycopg2 = "2.9.10" # c2cwsgiutils
+psycopg2 = "2.9.11" # c2cwsgiutils
 pyramid-tm = "2.4" # c2cwsgiutils
 sentry-sdk = "2.8.0" # c2cwsgiutils
 sqlalchemy = "1.4.54" # c2cwsgiutils
@@ -39,7 +39,7 @@ cryptography = "46.0.5"
 Pillow = "10.3.0"
 certifi = "2026.1.4"
 redis = "4.4.4"
-requests = "2.32.4"
+requests = "2.32.5"
 # Workaround to be able to do the lock file update
 urllib3 = "1.26.20"
 idna = "3.7"
