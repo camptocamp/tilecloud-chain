@@ -358,7 +358,7 @@ class Server:
         else:
             cache_filesystem = cast("tilecloud_chain.configuration.CacheFilesystem", cache)
             folder = Path(cache_filesystem["folder"] or "")
-            if path.split(".")[-1] not in self.get_static_allow_extension(config):
+            if path.rsplit(".", maxsplit=1)[-1] not in self.get_static_allow_extension(config):
                 return self.error(config, 403, "Extension not allowed", **kwargs)
             p = folder / path
             if not await p.is_file():
@@ -400,7 +400,7 @@ class Server:
                 headers = {
                     "Content-Type": "application/xml",
                     "Expires": (
-                        datetime.datetime.now(tz=datetime.timezone.utc)
+                        datetime.datetime.now(tz=datetime.UTC)
                         + datetime.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat(),
                     "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
@@ -632,7 +632,7 @@ class Server:
                 headers={
                     "Content-Type": tile2.content_type,
                     "Expires": (
-                        datetime.datetime.now(tz=datetime.timezone.utc)
+                        datetime.datetime.now(tz=datetime.UTC)
                         + datetime.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat(),
                     "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
@@ -676,7 +676,7 @@ class Server:
                     response_headers["Pragma"] = "no-cache"
                 else:
                     response_headers["Expires"] = (
-                        datetime.datetime.now(tz=datetime.timezone.utc)
+                        datetime.datetime.now(tz=datetime.UTC)
                         + datetime.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat()
                     response_headers["Cache-Control"] = f"max-age={3600 * self.get_expires_hours(config)}"
@@ -715,7 +715,7 @@ class Server:
             headers.update(
                 {
                     "Expires": (
-                        datetime.datetime.now(tz=datetime.timezone.utc)
+                        datetime.datetime.now(tz=datetime.UTC)
                         + datetime.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat(),
                     "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",

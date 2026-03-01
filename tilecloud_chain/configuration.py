@@ -3,8 +3,7 @@ Automatically generated file from a JSON schema.
 """
 
 
-from typing import Any, Literal, TypedDict, Union
-from typing_extensions import Required
+from typing import Any, Literal, Required, TypedDict, Union
 
 
 ALLOWED_ARGUMENTS_DEFAULT = ['--layer', '--get-hash', '--generate-legend-images', '--get-bbox', '--ignore-error', '--bbox', '--zoom', '--test', '--near', '--time', '--measure-generation-time', '--no-geom', '--dimensions']
