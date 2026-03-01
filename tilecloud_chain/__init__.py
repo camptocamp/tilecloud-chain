@@ -1374,7 +1374,7 @@ class TileGeneration:
 
         if self.options.near is None and self.options.geom:
             for g in layer.get("geoms", []):
-                with _GEOMS_GET_SUMMARY.labels(layer_name, host if host else self.options.host).time():
+                with _GEOMS_GET_SUMMARY.labels(layer_name, host or self.options.host).time():
                     connection = psycopg2.connect(g["connection"])
                     cursor = connection.cursor()
                     sql = f"SELECT ST_AsBinary(geom) FROM (SELECT {g['sql']}) AS g"  # nosec # noqa: S608
@@ -1432,7 +1432,7 @@ class TileGeneration:
             "Initialize tilecoords for layer %s with grids %s (%s)",
             layer_name,
             ", ".join(grid_names),
-            used_grid_name if used_grid_name else "-",
+            used_grid_name or "-",
         )
         grid_tilecoords: dict[str, Iterable[TileCoord]] = {}
         for grid_name in grid_names:

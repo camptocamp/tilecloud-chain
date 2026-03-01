@@ -358,7 +358,7 @@ class Server:
         else:
             cache_filesystem = cast("tilecloud_chain.configuration.CacheFilesystem", cache)
             folder = Path(cache_filesystem["folder"] or "")
-            if path.split(".")[-1] not in self.get_static_allow_extension(config):
+            if path.rsplit(".", maxsplit=1)[-1] not in self.get_static_allow_extension(config):
                 return self.error(config, 403, "Extension not allowed", **kwargs)
             p = folder / path
             if not await p.is_file():

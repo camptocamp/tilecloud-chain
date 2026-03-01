@@ -1,6 +1,6 @@
 [tool.ruff]
 line-length = 110
-target-version = "py310"
+target-version = "py311"
 exclude = ["test_*.py", "tilecloud_chain/tests/__init__.py", "tilecloud_chain/configuration.py"]
 
 [tool.ruff.lint]
@@ -89,7 +89,6 @@ classifiers = [
     'Operating System :: OS Independent',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
@@ -105,7 +104,7 @@ license = "BSD-2-Clause"
 authors = [{name = "Camptocamp",email = "info@camptocamp.com"}]
 packages = [{ include = "tilecloud_chain" }]
 include = ["tilecloud_chain/py.typed", "tilecloud_chain/*.rst", "tilecloud_chain/*.md"]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = ["c2cwsgiutils[broadcast,debug,oauth2,standard]", "python-dateutil", "tilecloud[aws,azure,redis,wsgi]", "Jinja2", "PyYAML", "Shapely", "jsonschema", "jsonschema-validator-new", "azure-storage-blob", "certifi", "Paste", "psutil", "pyproj", "psycopg[binary]", "aiohttp", "sqlalchemy[asyncio]", "pytest-asyncio", "anyio", "asyncpg", "nest-asyncio", "c2casgiutils[all]", "fastapi[standard]", "html-sanitizer"]
 
 [project.urls]
