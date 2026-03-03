@@ -98,7 +98,7 @@ class SecurityPolicy:
 
         if identity is None:
             return Denied("User is not signed in.")
-        if identity.auth_type in ("test_user",):
+        if identity.auth_type == "test_user":
             return Allowed(f"All access auth type: {identity.auth_type}")
         if identity.is_admin:
             return Allowed("The User is admin.")
