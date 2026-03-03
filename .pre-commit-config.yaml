@@ -125,3 +125,4 @@ repos:
           - --output-format=pylint
         additional_dependencies:
           - prospector-profile-duplicated==0.3.0 # pypi
+          - setuptools==80.9.0 # pypi
