@@ -8,7 +8,7 @@
 | 1.17    | 23/06/2025      |
 | 1.18    | Unsupported     |
 | 1.19    | Unsupported     |
-| 1.20    | Best effort     |
-| 1.21    | Best effort     |
+| 1.20    | Unsupported     |
+| 1.21    | 23/06/2026      |
 | 1.22    | Best effort     |
 | 1.23    | Unsupported     |
