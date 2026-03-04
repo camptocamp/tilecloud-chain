@@ -13,7 +13,7 @@ pre_commit:
   arguments:
     - --color=never
 
-python_version: '3.10'
+python_version: '3.11'
 
 generate:
   - source: tilecloud_chain/schema.json
