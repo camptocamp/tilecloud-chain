@@ -280,13 +280,13 @@ files = [
 
 [[package]]
 name = "certifi"
-version = "2025.11.12"
+version = "2026.2.25"
 description = "Python package for providing Mozilla's CA Bundle."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "certifi-2025.11.12-py3-none-any.whl", hash = "sha256:97de8790030bbd5c2d96b7ec782fc2f7820ef8dba6db909ccf95449f2d062d4b"},
-    {file = "certifi-2025.11.12.tar.gz", hash = "sha256:d8ab5478f2ecd78af242878415affce761ca6bc54a22a27e026d7c25357c3316"},
+    {file = "certifi-2026.2.25-py3-none-any.whl", hash = "sha256:027692e4402ad994f1c42e52a4997a9763c646b73e4096e4d5d6db8af1d6f0fa"},
+    {file = "certifi-2026.2.25.tar.gz", hash = "sha256:e887ab5cee78ea814d3472169153c2d12cd43b14bd03329a39a9c6e2e80bfba7"},
 ]
 
 [[package]]
@@ -3552,4 +3552,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "215939cd7ef2ea5db7bb8d0d9f79fc57955e982f3a9d2a5c42ee4da979d09f5c"
+content-hash = "6055b3b09c065ce8b820b65ef3bf17288143f3b8e5bd5dc4ff8a14ccf85f3c1d"
