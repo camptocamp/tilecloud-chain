@@ -292,7 +292,7 @@ class Run:
         for func in self.functions:
             try:
                 _LOGGER.debug("[%s] Run: %s", tilecoord, func)
-                n = datetime.datetime.now(tz=datetime.timezone.utc)
+                n = datetime.datetime.now(tz=datetime.UTC)
                 if self.safe:
                     try:
                         tile = await func(tile)
@@ -306,7 +306,7 @@ class Run:
                     "[%s] %s in %s",
                     tilecoord,
                     func.time_message if getattr(func, "time_message", None) is not None else func,  # type: ignore[attr-defined]
-                    str(datetime.datetime.now(tz=datetime.timezone.utc) - n),
+                    str(datetime.datetime.now(tz=datetime.UTC) - n),
                 )
                 if tile is None:
                     _LOGGER.debug("[%s] Drop", tilecoord)
@@ -1210,7 +1210,7 @@ class TileGeneration:
         """Create the error file for the given layer."""
         main_config = await self.get_main_config()
         if "error_file" in main_config.config.get("generation", {}):
-            now = datetime.datetime.now(tz=datetime.timezone.utc)
+            now = datetime.datetime.now(tz=datetime.UTC)
             time_ = now.strftime("%d-%m-%Y %H:%M:%S")
             error_file_path = Path(
                 main_config.config["generation"]["error_file"].format(layer=layer, datetime=now),
@@ -1248,7 +1248,7 @@ class TileGeneration:
         if "error_file" in config.config["generation"]:
             assert tile is not None
 
-            time_ = datetime.datetime.now(tz=datetime.timezone.utc).strftime("%d-%m-%Y %H:%M:%S")
+            time_ = datetime.datetime.now(tz=datetime.UTC).strftime("%d-%m-%Y %H:%M:%S")
             if await self.get_log_tiles_error_file(tile.metadata["layer"]) is None:
                 message = "Missing error file"
                 raise MissingErrorFileError(message)
@@ -1657,7 +1657,7 @@ class TileGeneration:
 
         test = self.options.test if test is None else test
 
-        start = datetime.datetime.now(tz=datetime.timezone.utc)
+        start = datetime.datetime.now(tz=datetime.UTC)
 
         run = Run(self, self.functions_metatiles, out=self.out)
         await run.init()
@@ -1704,7 +1704,7 @@ class TileGeneration:
                 await run(await anext(self.tilestream))
 
         self.error += run.error
-        self.duration = datetime.datetime.now(tz=datetime.timezone.utc) - start
+        self.duration = datetime.datetime.now(tz=datetime.UTC) - start
         for ca in self._close_actions:
             ca()
 

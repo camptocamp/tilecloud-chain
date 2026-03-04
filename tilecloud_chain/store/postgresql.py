@@ -470,7 +470,7 @@ class PostgresqlTileStore(AsyncTileStore):
                         and_(
                             Job.status == _STATUS_PENDING,
                             Job.started_at
-                            < datetime.datetime.now(tz=datetime.timezone.utc)
+                            < datetime.datetime.now(tz=datetime.UTC)
                             - datetime.timedelta(minutes=self.max_pending_minutes),
                         ),
                     )
@@ -490,7 +490,7 @@ class PostgresqlTileStore(AsyncTileStore):
                 if job is not None:
                     job_id = job.id
                     job.status = _STATUS_PENDING
-                    job.started_at = datetime.datetime.now(tz=datetime.timezone.utc)
+                    job.started_at = datetime.datetime.now(tz=datetime.UTC)
                     await session.commit()
             if job_id != -1:
                 await _start_job(
@@ -546,7 +546,7 @@ class PostgresqlTileStore(AsyncTileStore):
                             and_(
                                 Queue.status == _STATUS_PENDING,
                                 Queue.started_at
-                                < datetime.datetime.now(tz=datetime.timezone.utc)
+                                < datetime.datetime.now(tz=datetime.UTC)
                                 - datetime.timedelta(minutes=self.max_pending_minutes),
                             ),
                         )
@@ -605,7 +605,7 @@ class PostgresqlTileStore(AsyncTileStore):
                         if sqlalchemy_tile is None:
                             continue
                         sqlalchemy_tile.status = _STATUS_PENDING
-                        sqlalchemy_tile.started_at = datetime.datetime.now(tz=datetime.timezone.utc)
+                        sqlalchemy_tile.started_at = datetime.datetime.now(tz=datetime.UTC)
                         meta_tile = _decode_message(
                             sqlalchemy_tile.meta_tile,
                             postgresql_id=sqlalchemy_tile.id,
