@@ -366,9 +366,9 @@ class Generate:
                     self.n += 1
                     assert options.time
                     if self.n == options.time:
-                        self.t1 = datetime.datetime.now(tz=datetime.timezone.utc)
+                        self.t1 = datetime.datetime.now(tz=datetime.UTC)
                     elif self.n == 2 * options.time:
-                        t2 = datetime.datetime.now(tz=datetime.timezone.utc)
+                        t2 = datetime.datetime.now(tz=datetime.UTC)
                         assert self.t1
                         duration = (t2 - self.t1) / options.time
                         time = (
