@@ -1,5 +1,4 @@
 import logging
-import os
 from collections.abc import AsyncIterator
 
 from azure.identity import DefaultAzureCredential
@@ -7,6 +6,7 @@ from azure.storage.blob import ContentSettings
 from azure.storage.blob.aio import BlobServiceClient, ContainerClient
 from tilecloud import Tile, TileLayout
 
+from tilecloud_chain.settings import settings
 from tilecloud_chain.store import AsyncTileStore
 
 _LOGGER = logging.getLogger(__name__)
@@ -25,21 +25,24 @@ class AzureStorageBlobTileStore(AsyncTileStore):
     ) -> None:
         """Initialize."""
         if container_client is None:
-            if "AZURE_STORAGE_CONNECTION_STRING" in os.environ:
+            if settings.azure.storage_connection_string:
                 assert container is not None
                 self.container_client = BlobServiceClient.from_connection_string(
-                    os.environ["AZURE_STORAGE_CONNECTION_STRING"],
+                    settings.azure.storage_connection_string,
                 ).get_container_client(container=container)
-            elif "AZURE_STORAGE_BLOB_CONTAINER_URL" in os.environ:
+            elif settings.azure.storage_blob_container_url:
                 self.container_client = ContainerClient.from_container_url(
-                    os.environ["AZURE_STORAGE_BLOB_CONTAINER_URL"],
+                    settings.azure.storage_blob_container_url,
                 )
-                if os.environ.get("AZURE_STORAGE_BLOB_VALIDATE_CONTAINER_NAME", "false").lower() == "true":
+                if settings.azure.storage_blob_validate_container_name:
                     assert container == self.container_client.container_name
             else:
                 assert container is not None
+                if not settings.azure.storage_account_url:
+                    message = "TILECLOUD_CHAIN__AZURE__STORAGE_ACCOUNT_URL is not configured"
+                    raise ValueError(message)
                 self.container_client = BlobServiceClient(
-                    account_url=os.environ["AZURE_STORAGE_ACCOUNT_URL"],
+                    account_url=settings.azure.storage_account_url,
                     credential=DefaultAzureCredential(),  # type: ignore[arg-type]
                 ).get_container_client(container=container)
         else:

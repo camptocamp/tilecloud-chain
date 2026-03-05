@@ -30,7 +30,6 @@ import asyncio
 import io
 import json
 import logging
-import multiprocessing
 import os
 import shlex
 import urllib.parse
@@ -49,6 +48,7 @@ import tilecloud_chain.server
 import tilecloud_chain.store.postgresql
 from tilecloud_chain import TileGeneration, configuration, controller, generate, server
 from tilecloud_chain.controller import get_status
+from tilecloud_chain.settings import settings
 
 _LOG = logging.getLogger(__name__)
 # Initialize templates
@@ -257,12 +257,7 @@ async def admin_run(
 
     if main is not None:
         return_dict: dict[str, Any] = {}
-        proc = multiprocessing.Process(
-            target=_run_in_process,
-            args=(final_command, env, main, return_dict),
-        )
-        proc.start()
-        proc.join()
+        await _run(final_command, main, return_dict)
         return CommandResponse(out=return_dict.get("out", ""), error=return_dict.get("error", False))
 
     process = await asyncio.create_subprocess_exec(
@@ -285,12 +280,12 @@ async def admin_run(
     stdout_parsed = _parse_stdout(stdout.decode())
     out = _format_output(
         "<br />".join(stdout_parsed),
-        int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", "1000")),
+        settings.max_output_length,
     )
     if stderr:
         out += "<br />Error:<br />" + _format_output(
             stderr.decode().replace("\n", "<br />"),
-            int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", "1000")),
+            settings.max_output_length,
         )
 
     return CommandResponse(out=out, error=process.returncode != 0)
@@ -455,9 +450,8 @@ def _format_output(string: str, max_length: int = 1000) -> str:
     return string
 
 
-def _run_in_process(
+async def _run(
     final_command: list[str],
-    env: dict[str, str],
     main: Callable[[list[str], IO[str]], Any],
     return_dict: dict[str, Any],
 ) -> None:
@@ -465,15 +459,13 @@ def _run_in_process(
     error = False
     out = io.StringIO()
     try:
-        for key, value in env.items():
-            os.environ[key] = value
         _LOG.debug("Running the command `%s` using the function directly", display_command)
-        main(final_command, out)
+        await main(final_command, out)
     except Exception:  # noqa: BLE001
         _LOG.exception("Error while running the command `%s`", display_command)
         error = True
     return_dict["out"] = _format_output(
         "<br />".join(_parse_stdout(out.getvalue())),
-        int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", "1000")),
+        settings.max_output_length,
     )
     return_dict["error"] = error

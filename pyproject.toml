@@ -45,6 +45,7 @@ sqlalchemy = { version = "2.0.47", extras = ["asyncio"] }
 anyio = "4.12.1"
 asyncpg = "0.31.0"
 html-sanitizer = "2.6.0"
+pydantic-settings = "2.13.1"
 
 [tool.poetry.group.dev.dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.17.3" }
@@ -105,7 +106,7 @@ authors = [{name = "Camptocamp",email = "info@camptocamp.com"}]
 packages = [{ include = "tilecloud_chain" }]
 include = ["tilecloud_chain/py.typed", "tilecloud_chain/*.rst", "tilecloud_chain/*.md"]
 requires-python = ">=3.11"
-dependencies = ["c2cwsgiutils[broadcast,debug,oauth2,standard]", "python-dateutil", "tilecloud[aws,azure,redis,wsgi]", "Jinja2", "PyYAML", "Shapely", "jsonschema", "jsonschema-validator-new", "azure-storage-blob", "certifi", "Paste", "psutil", "pyproj", "psycopg[binary]", "aiohttp", "sqlalchemy[asyncio]", "pytest-asyncio", "anyio", "asyncpg", "nest-asyncio", "c2casgiutils[all]", "fastapi[standard]", "html-sanitizer"]
+dependencies = ["c2cwsgiutils[broadcast,debug,oauth2,standard]", "python-dateutil", "tilecloud[aws,azure,redis,wsgi]", "Jinja2", "PyYAML", "Shapely", "jsonschema", "jsonschema-validator-new", "azure-storage-blob", "certifi", "Paste", "psutil", "pyproj", "psycopg[binary]", "aiohttp", "sqlalchemy[asyncio]", "pytest-asyncio", "anyio", "asyncpg", "nest-asyncio", "c2casgiutils[all]", "fastapi[standard]", "html-sanitizer", "pydantic-settings"]
 
 [project.urls]
 repository = "https://github.com/camptocamp/tilecloud-chain"

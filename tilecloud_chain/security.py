@@ -1,11 +1,11 @@
 """Security policy for the pyramid application."""
 
-import os
-
 import c2cwsgiutils.auth
 import pyramid.request
 from c2cwsgiutils.auth import AuthConfig
 from pyramid.security import Allowed, Denied
+
+from tilecloud_chain.settings import settings
 
 
 class User:
@@ -54,11 +54,11 @@ class SecurityPolicy:
     def identity(self, request: pyramid.request.Request) -> User:
         """Return app-specific user object."""
         if not hasattr(request, "user"):
-            if "TEST_USER" in os.environ:
+            if settings.tests.user:
                 user = User(
                     auth_type="test_user",
-                    login=os.environ["TEST_USER"],
-                    name=os.environ["TEST_USER"],
+                    login=settings.tests.user,
+                    name=settings.tests.user,
                     url="https://example.com/user",
                     is_auth=True,
                     token=None,

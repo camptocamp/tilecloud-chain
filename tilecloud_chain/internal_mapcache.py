@@ -4,7 +4,6 @@ import contextlib
 import datetime
 import json
 import logging
-import os
 import struct
 import sys
 import threading
@@ -20,12 +19,13 @@ from tilecloud import Tile, TileCoord
 import tilecloud_chain.configuration
 from tilecloud_chain import Run, configuration
 from tilecloud_chain.generate import Generate
+from tilecloud_chain.settings import settings
 from tilecloud_chain.store import AsyncTileStore
 
 if TYPE_CHECKING:
     from tilecloud_chain.server import Server
 
-_MAX_GENERATION_TIME = int(os.environ.get("TILEGENERATION_MAX_GENERATION_TIME", "60"))
+_MAX_GENERATION_TIME = settings.max_generation_time
 _LOG = logging.getLogger(__name__)
 _lock = threading.Lock()
 _GENERATOR = None
@@ -56,44 +56,38 @@ class RedisStore(AsyncTileStore):
         """Initialize."""
         super().__init__(**kwargs)
 
-        redis_options = os.environ.get(
-            "TILECLOUD_CHAIN_REDIS_OPTIONS",
-            cast("str", config.get("redis_options", "")),
-        )
+        redis_options = settings.redis.options or cast("str", config.get("redis_options", ""))
         connection_kwargs = {
             key: yaml.load(value, Loader=yaml.SafeLoader)
             for key, value in [e.split("=", 1) for e in redis_options.split(",") if "=" in e]
         }
 
-        socket_timeout = os.environ.get(
-            "TILECLOUD_CHAIN_REDIS_SOCKET_TIMEOUT",
-            cast("str", config.get("socket_timeout")),
-        )
+        socket_timeout = settings.redis.socket_timeout or cast("str", config.get("socket_timeout"))
         if socket_timeout is not None:
             connection_kwargs["socket_timeout"] = int(socket_timeout)
-        db = os.environ.get("TILECLOUD_CHAIN_REDIS_DB", cast("str", config.get("db")))
+        db = settings.redis.db or cast("str", config.get("db"))
         if db is not None:
             connection_kwargs["db"] = int(db)
-        url = os.environ.get("TILECLOUD_CHAIN_REDIS_URL", cast("str", config.get("url")))
+        url = settings.redis.url or cast("str", config.get("url"))
         if url is not None:
             self._master = aioredis.Redis.from_url(url, **connection_kwargs)
             self._slave = self._master
         else:
-            sentinels: list[tuple[str, str | int]] = []
-            if "TILECLOUD_CHAIN_REDIS_SENTINELs" in os.environ:
-                sentinels_string = os.environ["TILECLOUD_CHAIN_REDIS_SENTINELS"]
-                sentinels_tmp = [s.split(":") for s in sentinels_string.split(",")]
-                sentinels = [  # pylint: disable=unnecessary-comprehension
-                    (host, port) for host, port in sentinels_tmp
-                ]
+            sentinels = []
+            if settings.redis.sentinels:
+                sentinels = [s.split(":") for s in settings.redis.sentinels.split(",")]
             else:
-                sentinels = config["sentinels"]
+                sentinels = config.get("sentinels", [])
 
             sentinels = [(host, int(port)) for host, port in sentinels]
             sentinel = aioredis.Sentinel(sentinels, **connection_kwargs)
-            service_name = os.environ.get(
-                "TILECLOUD_CHAIN_REDIS_SERVICE_NAME",
-                config.get("service_name", tilecloud_chain.configuration.SERVICE_NAME_DEFAULT),
+            service_name = (
+                settings.redis.sentinel_service_name
+                or settings.redis.service_name
+                or config.get(
+                    "service_name",
+                    tilecloud_chain.configuration.SERVICE_NAME_DEFAULT,
+                )
             )
             self._master = sentinel.master_for(service_name)
             self._slave = sentinel.slave_for(service_name)
@@ -167,7 +161,7 @@ class Generator:
         redis_config = (await self._tilegeneration.get_main_config()).config.get("redis", {})
         self._cache_store = RedisStore(redis_config)
 
-        log_level = os.environ.get("TILE_MAPCACHE_LOGLEVEL")
+        log_level = settings.logging.mapcache_log_level
 
         class Options(NamedTuple):
             verbose: bool

@@ -32,7 +32,6 @@ import html
 import logging
 import math
 import mimetypes
-import os
 import time
 from copy import copy
 from dataclasses import dataclass
@@ -65,6 +64,7 @@ from tilecloud_chain import (
     internal_mapcache,
 )
 from tilecloud_chain.controller import validate_generate_wmts_capabilities
+from tilecloud_chain.settings import settings
 from tilecloud_chain.store import AsyncTileStore
 
 _LOGGER = logging.getLogger(__name__)
@@ -109,7 +109,7 @@ async def init_tilegeneration(config_file: Path | None) -> None:
     if _TILEGENERATION is None:
         if config_file is not None:
             _LOGGER.info("Use config file: '%s'", config_file)
-        log_level = os.environ.get("TILE_SERVER_LOGLEVEL")
+        log_level = settings.logging.server_log_level
 
         class Options(NamedTuple):
             verbose: bool
@@ -730,8 +730,7 @@ router = fastapi.APIRouter()
 
 async def startup(_main_app: FastAPI) -> None:
     """Initialize the FastAPI app."""
-    config_file_path = os.environ.get("TILEGENERATION_CONFIGFILE")
-    config_file = Path(config_file_path) if config_file_path else None
+    config_file = settings.config_file
     await init_tilegeneration(config_file)
 
 
