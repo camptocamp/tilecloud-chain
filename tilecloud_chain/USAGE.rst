@@ -765,10 +765,8 @@ Logging:
   (default: ``INFO``)
 
 - ``TILECLOUD_CHAIN__LOGGING__SERVER_LOG_LEVEL``: Server component log verbosity
-  (default: ``quiet``)
 
 - ``TILECLOUD_CHAIN__LOGGING__MAPCACHE_LOG_LEVEL``: Internal MapCache log verbosity
-  (default: ``verbose``)
 
 Valid log levels: ``DEBUG``, ``INFO``, ``WARN``, ``ERROR``, ``CRITICAL``
 
