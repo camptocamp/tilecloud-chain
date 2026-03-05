@@ -107,12 +107,7 @@ app.add_middleware(
 )
 
 route_prefix = settings.route_prefix
-if route_prefix and route_prefix.startswith("/"):
-    route_prefix = route_prefix[1:]
-if route_prefix and not route_prefix.endswith("/"):
-    route_prefix = route_prefix + "/"
-
-route_prefix_escaped = re.escape(route_prefix)
+route_prefix_escaped = re.escape(route_prefix[1:])
 
 _LOGGER.info("Using route prefix: '%s'", route_prefix)
 
@@ -180,10 +175,11 @@ health_checks.FACTORY.add(health_checks.Redis(tags=["redis", "all"]))
 
 # Add Routers
 # Mount the most specific routes first to ensure correct routing precedence.
-app.mount(f"{route_prefix}/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
+app.mount(f"{route_prefix}static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 app.include_router(server.router, tags=["wmts"])  # WMTS routes
-app.mount(f"{route_prefix}/c2c", c2casgiutils.app)  # C2C utility routes
-app.mount(f"{route_prefix}/admin", admin.app)  # Admin routes
+app.mount(f"{route_prefix}c2c", c2casgiutils.app)  # C2C utility routes
+app.mount(f"{route_prefix}admin", admin.app)  # Admin routes
+
 
 # Get Prometheus HTTP server port from environment variable 9000 by default
 start_http_server(config.settings.prometheus.port)

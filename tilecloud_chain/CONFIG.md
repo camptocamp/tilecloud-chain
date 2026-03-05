@@ -306,7 +306,7 @@
   - <a id="definitions/server/properties/geoms_redirect"></a>**`geoms_redirect`** *(boolean)*: Take care on the geometries. Default: `false`.
   - <a id="definitions/server/properties/static_allow_extension"></a>**`static_allow_extension`** *(array)*: The allowed extension of static files. Default: `["jpeg", "png", "xml", "js", "html", "css"]`.
     - <a id="definitions/server/properties/static_allow_extension/items"></a>**Items** *(string)*
-  - <a id="definitions/server/properties/wmts_path"></a>**`wmts_path`** *(string)*: The sub-path for the WMTS (main configuration). Default: `""`.
+  - <a id="definitions/server/properties/wmts_path"></a>**`wmts_path`** *(string)*: No more used, replaced by `TILECLOUD_CHAIN__WMTS_PATH` environment variable.
   - <a id="definitions/server/properties/expires"></a>**`expires`** *(integer)*: The browser cache expiration in hours. Default: `8`.
   - <a id="definitions/server/properties/predefined_commands"></a>**`predefined_commands`** *(array)*: The predefined commands used to generate the tiles.
     - <a id="definitions/server/properties/predefined_commands/items"></a>**Items** *(object)*: Cannot contain additional properties.

@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import pytest
 from testfixtures import LogCapture
 
 from tilecloud_chain import controller, generate
@@ -8,33 +9,35 @@ from tilecloud_chain.tests import CompareCase
 
 
 class TestError(CompareCase):
-    def setUp(self) -> None:  # noqa
+    def setup_method(self) -> None:  # noqa
         self.maxDiff = None
 
     @classmethod
-    def setUpClass(cls):  # noqa
+    def setup_class(cls):  # noqa
         os.chdir(Path(__file__).parent)
 
     @classmethod
-    def tearDownClass(cls):  # noqa
+    def teardown_class(cls):  # noqa
         os.chdir(Path(__file__).parent.parent.parent)
 
-    def test_resolution(self) -> None:
+    @pytest.mark.asyncio
+    async def test_resolution(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
-            self.run_cmd(
+            await self.run_cmd(
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_resolutions.yaml",
-                main_func=controller.main,
+                main_func=controller.async_main,
                 get_error=True,
             )
             log_capture.check(
                 ("tilecloud_chain", "ERROR", "The resolution 0.1 * resolution_scale 5 is not an integer."),
             )
 
-    def test_mapnik_grid_meta(self) -> None:
+    @pytest.mark.asyncio
+    async def test_mapnik_grid_meta(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
-            self.run_cmd(
+            await self.run_cmd(
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_mapnik_grid_meta.yaml",
-                main_func=controller.main,
+                main_func=controller.async_main,
                 get_error=True,
             )
             log_capture.check(
@@ -45,11 +48,13 @@ class TestError(CompareCase):
                 ),
             )
 
-    def test_type(self) -> None:
+
+    @pytest.mark.asyncio
+    async def test_type(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
-            self.run_cmd(
+            await self.run_cmd(
                 cmd=".build/venv/bin/generate-controller -v -c tilegeneration/wrong_type.yaml",
-                main_func=controller.main,
+                main_func=controller.async_main,
                 get_error=True,
             )
             log_capture.check(
@@ -107,11 +112,12 @@ class TestError(CompareCase):
                 ),
             )
 
-    def test_zoom_errors(self) -> None:
+    @pytest.mark.asyncio
+    async def test_zoom_errors(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
-            self.run_cmd(
+            await self.run_cmd(
                 cmd=".build/venv/bin/generate-tiles -c tilegeneration/test-nosns.yaml -l point --zoom 4,10",
-                main_func=generate.main,
+                main_func=generate.async_main,
             )
             log_capture.check_present(
                 (
@@ -127,11 +133,12 @@ class TestError(CompareCase):
                 ),
             )
 
-    def test_wrong_srs_auth(self) -> None:
+    @pytest.mark.asyncio
+    async def test_wrong_srs_auth(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
-            self.run_cmd(
+            await self.run_cmd(
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_srs_auth.yaml",
-                main_func=controller.main,
+                main_func=controller.async_main,
                 get_error=True,
             )
             log_capture.check(
@@ -143,11 +150,12 @@ class TestError(CompareCase):
                 ),
             )
 
-    def test_wrong_srs_id(self) -> None:
+    @pytest.mark.asyncio
+    async def test_wrong_srs_id(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
-            self.run_cmd(
+            await self.run_cmd(
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_srs_id.yaml",
-                main_func=controller.main,
+                main_func=controller.async_main,
                 get_error=True,
             )
             log_capture.check(
@@ -159,11 +167,12 @@ class TestError(CompareCase):
                 ),
             )
 
-    def test_wrong_srs(self) -> None:
+    @pytest.mark.asyncio
+    async def test_wrong_srs(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
-            self.run_cmd(
+            await self.run_cmd(
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_srs.yaml",
-                main_func=controller.main,
+                main_func=controller.async_main,
                 get_error=True,
             )
             log_capture.check(
@@ -175,11 +184,12 @@ class TestError(CompareCase):
                 ),
             )
 
-    def test_wrong_map(self) -> None:
+    @pytest.mark.asyncio
+    async def test_wrong_map(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
-            self.run_cmd(
+            await self.run_cmd(
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_map.yaml",
-                main_func=controller.main,
+                main_func=controller.async_main,
                 get_error=True,
             )
             log_capture.check(
@@ -200,11 +210,12 @@ class TestError(CompareCase):
                 ),
             )
 
-    def test_wrong_sequence(self) -> None:
+    @pytest.mark.asyncio
+    async def test_wrong_sequence(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
-            self.run_cmd(
+            await self.run_cmd(
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/wrong_sequence.yaml",
-                main_func=controller.main,
+                main_func=controller.async_main,
                 get_error=True,
             )
             log_capture.check(

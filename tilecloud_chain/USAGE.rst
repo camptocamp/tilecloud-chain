@@ -532,8 +532,8 @@ The cache configuration is like this:
 The container should already exists.
 
 For the authentication you should set those environment variables:
-``AZURE_STORAGE_CONNECTION_STRING`` on your local environment,
-or ``AZURE_STORAGE_ACCOUNT_URL`` if you run your container on Azure.
+``TILECLOUD_CHAIN__AZURE__STORAGE_CONNECTION_STRING`` on your local environment,
+or ``TILECLOUD_CHAIN__AZURE__STORAGE_ACCOUNT_URL`` if you run your container on Azure.
 
 
 Other related configuration
@@ -786,7 +786,7 @@ Server:
 - ``TILECLOUD_CHAIN__DEVELOPMENT``: Enable development features if set to ``true``
   (default: ``false``)
 
-- ``TILECLOUD_CHAIN__VISIBLE_ENTRY_POINT``: Base URL path for tile access
+- ``TILECLOUD_CHAIN__ROUTE_PREFIX``: Base URL path for tile access
   (default: ``/tiles/``)
 
 Worker:
@@ -813,7 +813,7 @@ Tests:
 
 - ``TILECLOUD_CHAIN__TESTS__USER``: Inject a test user for authentication
 
-See also: [settings.py](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/settings.py)
+See also: ``settings.py` <https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/settings.py>`_.
 
 Admin and test pages
 --------------------

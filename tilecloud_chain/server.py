@@ -36,7 +36,7 @@ import time
 from copy import copy
 from dataclasses import dataclass
 from io import BytesIO
-from typing import Annotated, Any, NamedTuple, cast
+from typing import Annotated, Any, Literal, NamedTuple, cast
 from urllib.parse import urlencode
 
 import aiohttp
@@ -84,7 +84,7 @@ _SANITIZER = html_sanitizer.Sanitizer(
         "keep_typographic_whitespace": True,
     },
 )
-_TEMPLATES = Jinja2Templates(directory="tilecloud_chain/templates")
+_TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
 # Constants
 _ONE_DAY_IN_SECONDS = 86400
@@ -179,7 +179,7 @@ class Server:
     @staticmethod
     def get_static_allow_extension(config: tilecloud_chain.DatedConfig) -> list[str]:
         """Get the allowed extensions in the static view."""
-        return config.config["server"].get(
+        return config.config.get("server", {}).get(
             "static_allow_extension",
             ["jpeg", "png", "xml", "js", "html", "css"],
         )
@@ -187,7 +187,7 @@ class Server:
     @staticmethod
     def get_cache_name(config: tilecloud_chain.DatedConfig) -> str:
         """Get the cache name."""
-        return config.config["server"].get(
+        return config.config.get("server", {}).get(
             "cache",
             config.config["generation"].get("default_cache", configuration.DEFAULT_CACHE_DEFAULT),
         )
@@ -380,23 +380,31 @@ class Server:
         request: Request,
     ) -> Response:
         """Async serve method for FastAPI."""
+
         if not config or not config.config:
             raise HTTPException(
                 status_code=404,
                 detail="No configuration file found for the host or the configuration has an error, see logs for details",
             )
 
+        assert _TILEGENERATION
+
+        if params.get("SERVICE", "WMTS") != "WMTS":
+            raise HTTPException(
+                status_code=400,
+                detail=f"Wrong Service '{params.get('SERVICE', 'WMTS')}'",
+            )
+        if params.get("VERSION", "1.0.0") != "1.0.0":
+            raise HTTPException(
+                status_code=400,
+                detail=f"Wrong Version '{params.get('VERSION', '1.0.0')}'",
+            )
+
         try:
             dimensions = []
             metadata = {}
-            assert _TILEGENERATION
 
-            if params["SERVICE"] != "WMTS":
-                raise HTTPException(status_code=400, detail=f"Wrong Service '{params['SERVICE']}'")  # noqa: TRY301
-            if params["VERSION"] != "1.0.0":
-                raise HTTPException(status_code=400, detail=f"Wrong Version '{params['VERSION']}'")  # noqa: TRY301
-
-            if params["REQUEST"] == "GetCapabilities":
+            if params.get("REQUEST", "GetCapabilities") == "GetCapabilities":
                 headers = {
                     "Content-Type": "application/xml",
                     "Expires": (
@@ -435,15 +443,6 @@ class Server:
 
                 await _fill_legend(cache, base_urls[0], config=config)
 
-                wmts_path = ""
-                if server_config is not None:
-                    wmts_path = server_config.get(
-                        "wmts_path",
-                        tilecloud_chain.configuration.WMTS_PATH_DEFAULT,
-                    )
-                    if wmts_path and not wmts_path.endswith("/"):
-                        wmts_path += "/"
-
                 return _TEMPLATES.TemplateResponse(
                     "wmts_get_capabilities.jinja",
                     {
@@ -453,7 +452,7 @@ class Server:
                         "layer_legends": _TILEGENERATION.layer_legends,
                         "grids": config.config["grids"],
                         "base_urls": base_urls,
-                        "base_url_postfix": wmts_path,
+                        "base_url_postfix": settings.wmts_path,
                         "get_tile_matrix_identifier": get_tile_matrix_identifier,
                         "server": server_config is not None,
                         "has_metadata": "metadata" in config.config,
@@ -478,7 +477,10 @@ class Server:
                 or "TILEROW" not in params
                 or "TILECOL" not in params
             ):
-                raise HTTPException(status_code=400, detail="Not all required parameters are present")  # noqa: TRY301
+                raise HTTPException(  # noqa: TRY301
+                    status_code=400,
+                    detail="Not all required parameters are present, required parameters are FORMAT, LAYER, TILEMATRIXSET, TILEMATRIX, TILEROW, and TILECOL",
+                )
 
             if params["LAYER"] in self.get_layers(config):
                 layer = cast(
@@ -523,7 +525,10 @@ class Server:
 
             if params["REQUEST"] == "GetFeatureInfo":
                 if "I" not in params or "J" not in params or "INFO_FORMAT" not in params:
-                    raise HTTPException(status_code=400, detail="Not all required parameters are present")  # noqa: TRY301
+                    raise HTTPException(  # noqa: TRY301
+                        status_code=400,
+                        detail="Not all required parameters are present, required parameters are I, J, and INFO_FORMAT",
+                    )
                 if "query_layers" in layer:
                     return await self.forward(
                         config,
@@ -727,6 +732,8 @@ class Server:
 server = Server()
 router = fastapi.APIRouter()
 
+route_prefix = f"{settings.route_prefix}{settings.wmts_path}"
+
 
 async def startup(_main_app: FastAPI) -> None:
     """Initialize the FastAPI app."""
@@ -781,7 +788,7 @@ async def get_host_config(
     return config
 
 
-@router.get("/{version}/WMTSCapabilities.xml", summary="Get the WMTS capabilities.")
+@router.get(f"{route_prefix}{{version}}/WMTSCapabilities.xml", summary="Get the WMTS capabilities.")
 async def wmts_capabilities(
     request: Request,
     version: Annotated[str, fastapi.Path(..., description="WMTS version")],
@@ -791,7 +798,7 @@ async def wmts_capabilities(
     """Get the WMTS capabilities."""
     assert _TILEGENERATION
 
-    params = {
+    params: dict[str, str] = {
         "SERVICE": "WMTS",
         "VERSION": version,
         "REQUEST": "GetCapabilities",
@@ -801,65 +808,11 @@ async def wmts_capabilities(
 
 
 @router.get(
-    "/{version}/{layer}/{style}/{dimensions_parameters:path}/{tilematrixset}/{tilematrix}/{tilerow}/{tilecol}.{extension}",
-    summary="Get the WMTS tile.",
+    f"{route_prefix}{{version}}/{{layer}}/{{style}}/{{dimensions_parameters:path}}/{{tilematrixset}}/{{tilematrix}}/{{tilerow}}/{{tilecol}}/{{i}}/{{j}}",
+    summary="Get the WMTS Feature Info.",
 )
-async def wmts_tile(
-    version: Annotated[str, fastapi.Path(..., description="WMTS version")],
-    layer: Annotated[str, fastapi.Path(..., description="Layer name")],
-    style: Annotated[str, fastapi.Path(..., description="Style name")],
-    dimensions_parameters: Annotated[str, fastapi.Path(..., description="Dimensions parameters")],
-    tilematrixset: Annotated[str, fastapi.Path(..., description="Tile matrix set")],
-    tilematrix: Annotated[str, fastapi.Path(..., description="Tile matrix")],
-    tilerow: Annotated[str, fastapi.Path(..., description="Tile row")],
-    tilecol: Annotated[str, fastapi.Path(..., description="Tile column")],
-    extension: Annotated[str, fastapi.Path(..., description="File extension")],
-    request: Request,
-    config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
-    host: Annotated[str, fastapi.Depends(get_host_name)],
-) -> Response:
-    """
-    Get the WMTS tile.
-
-    For low zoom levels, the tile is served from the static cache (filesystem or object storage like S3 or Azure).
-
-    For high zoom levels, the tile is generated dynamically:
-    - From dynamic cache (Redis).
-    - Generate from WMS if it does not exist in the cache.
-    """
-
-    del extension  # Needed for FastAPI documentation
-
-    if layer in server.get_layers(config):
-        layer_obj = cast(
-            "tilecloud_chain.configuration.LayerWms",
-            config.config["layers"][layer],
-        )
-    else:
-        raise HTTPException(status_code=400, detail=f"Wrong Layer '{layer}'")
-
-    params = {
-        "SERVICE": "WMTS",
-        "VERSION": version,
-        "REQUEST": "GetTile",
-        "LAYER": layer,
-        "STYLE": style,
-        "TILEMATRIXSET": tilematrixset,
-        "TILEMATRIX": tilematrix,
-        "TILEROW": tilerow,
-        "TILECOL": tilecol,
-    }
-
-    for index, dimension in enumerate(layer_obj.get("dimensions", {})):
-        params[dimension["name"].upper()] = dimensions_parameters[index]
-
-    params["FORMAT"] = layer_obj["mime_type"]
-
-    return await server.serve(params, config, host, request)
-
-
 @router.get(
-    "/{version}/{layer}/{style}/{dimensions_parameters:path}/{tilematrixset}/{tilematrix}/{tilerow}/{tilecol}/{i}/{j}",
+    f"{route_prefix}{{version}}/{{layer}}/{{style}}/{{dimensions_parameters:path}}/{{tilematrixset}}/{{tilematrix}}/{{tilerow}}/{{tilecol}}/{{i}}/{{j}}.xml",
     summary="Get the WMTS Feature Info.",
 )
 async def wmts_feature_info(
@@ -869,10 +822,10 @@ async def wmts_feature_info(
     dimensions_parameters: Annotated[str, fastapi.Path(..., description="Dimensions parameters")],
     tilematrixset: Annotated[str, fastapi.Path(..., description="Tile matrix set")],
     tilematrix: Annotated[str, fastapi.Path(..., description="Tile matrix")],
-    tilerow: Annotated[str, fastapi.Path(..., description="Tile row")],
-    tilecol: Annotated[str, fastapi.Path(..., description="Tile column")],
-    i: Annotated[str, fastapi.Path(..., description="Pixel I coordinate")],
-    j: Annotated[str, fastapi.Path(..., description="Pixel J coordinate")],
+    tilerow: Annotated[int, fastapi.Path(..., description="Tile row")],
+    tilecol: Annotated[int, fastapi.Path(..., description="Tile column")],
+    i: Annotated[int, fastapi.Path(..., description="Pixel I coordinate")],
+    j: Annotated[int, fastapi.Path(..., description="Pixel J coordinate")],
     request: Request,
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
     host: Annotated[str, fastapi.Depends(get_host_name)],
@@ -891,7 +844,7 @@ async def wmts_feature_info(
     else:
         raise HTTPException(status_code=400, detail=f"Wrong Layer '{layer}'")
 
-    params = {
+    params: dict[str, str] = {
         "SERVICE": "WMTS",
         "VERSION": version,
         "REQUEST": "GetFeatureInfo",
@@ -899,15 +852,90 @@ async def wmts_feature_info(
         "STYLE": style,
         "TILEMATRIXSET": tilematrixset,
         "TILEMATRIX": tilematrix,
-        "TILEROW": tilerow,
-        "TILECOL": tilecol,
-        "I": i,
-        "J": j,
+        "TILEROW": tilerow,  # type: ignore[dict-item]
+        "TILECOL": tilecol,  # type: ignore[dict-item]
+        "I": i,  # type: ignore[dict-item]
+        "J": j,  # type: ignore[dict-item]
         "INFO_FORMAT": layer_obj.get("info_formats", ["application/vnd.ogc.gml"])[0],
+        "FORMAT": layer_obj["mime_type"],
     }
 
-    for index, dimension in enumerate(layer_obj.get("dimensions", {})):
-        params[dimension["name"].upper()] = dimensions_parameters[index]
+    dimensions: list[tilecloud_chain.configuration.LayerDimensionsItem] = layer_obj.get("dimensions", [])
+    if dimensions:
+        dimensions_parameters_list = dimensions_parameters.split("/")
+        for index, dimension in enumerate(dimensions):
+            params[dimension["name"].upper()] = dimensions_parameters_list[index]
+
+    return await server.serve(params, config, host, request)
+
+
+@router.get(
+    f"{route_prefix}{{version}}/{{layer}}/{{style}}/{{dimensions_parameters:path}}/{{tilematrixset}}/{{tilematrix}}/{{tilerow}}/{{tilecol}}.{{extension}}",
+    summary="Get the WMTS tile.",
+)
+async def wmts_tile(
+    version: Annotated[str, fastapi.Path(..., description="WMTS version")],
+    layer: Annotated[str, fastapi.Path(..., description="Layer name")],
+    style: Annotated[str, fastapi.Path(..., description="Style name")],
+    dimensions_parameters: Annotated[str, fastapi.Path(..., description="Dimensions parameters")],
+    tilematrixset: Annotated[str, fastapi.Path(..., description="Tile matrix set")],
+    tilematrix: Annotated[str, fastapi.Path(..., description="Tile matrix")],
+    tilerow: Annotated[int, fastapi.Path(..., description="Tile row")],
+    tilecol: Annotated[int, fastapi.Path(..., description="Tile column")],
+    extension: Annotated[
+        Literal["jpg", "jpeg", "png", "webp", "json"],
+        fastapi.Path(..., description="File extension"),
+    ],
+    request: Request,
+    config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
+    host: Annotated[str, fastapi.Depends(get_host_name)],
+) -> Response:
+    """
+    Get the WMTS tile.
+
+    For low zoom levels, the tile is served from the static cache (filesystem or object storage like S3 or Azure).
+
+    For high zoom levels, the tile is generated dynamically:
+    - From dynamic cache (Redis).
+    - Generate from WMS if it does not exist in the cache.
+    """
+
+    if layer in server.get_layers(config):
+        layer_obj = cast(
+            "tilecloud_chain.configuration.LayerWms",
+            config.config["layers"][layer],
+        )
+    else:
+        raise HTTPException(status_code=400, detail=f"Wrong Layer '{layer}'")
+
+    params: dict[str, str] = {
+        "SERVICE": "WMTS",
+        "VERSION": version,
+        "REQUEST": "GetTile",
+        "LAYER": layer,
+        "STYLE": style,
+        "TILEMATRIXSET": tilematrixset,
+        "TILEMATRIX": tilematrix,
+        "TILEROW": tilerow,  # type: ignore[dict-item]
+        "TILECOL": tilecol,  # type: ignore[dict-item]
+    }
+
+    dimensions: list[tilecloud_chain.configuration.LayerDimensionsItem] = layer_obj.get("dimensions", [])
+    if dimensions:
+        dimensions_parameters_list = dimensions_parameters.split("/")
+        for index, dimension in enumerate(dimensions):
+            params[dimension["name"].upper()] = dimensions_parameters_list[index]
+
+    if extension == "webp":
+        params["FORMAT"] = "image/webp"
+    elif extension == "png":
+        params["FORMAT"] = "image/png"
+    elif extension in ("jpg", "jpeg"):
+        params["FORMAT"] = "image/jpeg"
+    elif extension == "json":
+        params["FORMAT"] = "application/json"
+    else:
+        raise HTTPException(status_code=400, detail=f"Wrong extension '{extension}'")
 
     return await server.serve(params, config, host, request)
 
@@ -925,10 +953,10 @@ async def wmts_kvp(
     dimensions: Annotated[str | None, Query(..., description="Dimensions")] = None,
     tilematrixset: Annotated[str | None, Query(..., description="Tile matrix set")] = None,
     tilematrix: Annotated[str | None, Query(..., description="Tile matrix")] = None,
-    tilerow: Annotated[str | None, Query(..., description="Tile row")] = None,
-    tilecol: Annotated[str | None, Query(..., description="Tile column")] = None,
-    i: Annotated[str | None, Query(..., description="Pixel I coordinate")] = None,
-    j: Annotated[str | None, Query(..., description="Pixel J coordinate")] = None,
+    tilerow: Annotated[int | None, Query(..., description="Tile row")] = None,
+    tilecol: Annotated[int | None, Query(..., description="Tile column")] = None,
+    i: Annotated[int | None, Query(..., description="Pixel I coordinate")] = None,
+    j: Annotated[int | None, Query(..., description="Pixel J coordinate")] = None,
 ) -> Response:
     """Get the tiles using the KVP (Key-Value Parameters) interface."""
 
@@ -938,16 +966,24 @@ async def wmts_kvp(
         dimensions,
         tilematrixset,
         tilematrix,
-        tilerow,
-        tilecol,
-        i,
-        j,
     )  # Needed for FastAPI documentation
+    params: dict[str, str] = {k.upper(): v for k, v in fastapi_request.query_params.items() if v is not None}
+    if tilerow is not None:
+        params["TILEROW"] = tilerow  # type: ignore[assignment]
+    if tilecol is not None:
+        params["TILECOL"] = tilecol  # type: ignore[assignment]
+    if i is not None:
+        params["I"] = i  # type: ignore[assignment]
+    if j is not None:
+        params["J"] = j  # type: ignore[assignment]
 
     if not service or not version or not request:
-        raise HTTPException(status_code=400, detail="Not all required parameters are present")
+        raise HTTPException(
+            status_code=400,
+            detail="Not all required parameters are present, required parameters are SERVICE, VERSION and REQUEST",
+        )
 
-    return await server.serve(dict(fastapi_request.query_params), config, host, fastapi_request)
+    return await server.serve(params, config, host, fastapi_request)
 
 
 def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:
@@ -1011,10 +1047,6 @@ async def _get_layer_legend(
         "mime_type",
         layer.get("legend_mime", configuration.LAYER_LEGEND_MIME_TYPE_DEFAULT),
     )
-    legend_extension = legend.get(
-        "extension",
-        layer.get("legend_extension", configuration.LAYER_LEGEND_EXTENSION_DEFAULT),
-    )
     legend_enabled = legend.get("enabled", configuration.LAYER_LEGEND_ENABLED_DEFAULT)
     if not legend_enabled:
         return []
@@ -1055,13 +1087,7 @@ async def _get_layer_legend(
         return [
             configuration.LayerLegendItem(
                 mime_type=legend_mime,
-                href=str(
-                    Path(base_url)
-                    / "1.0.0"
-                    / layer_name
-                    / layer["wmts_style"]
-                    / f"legend-{legend_metadata['resolution']}.{legend_extension}",
-                ),
+                href=base_url + legend_metadata["path"],
                 min_resolution=legend_metadata.get("min_resolution"),
                 max_resolution=legend_metadata.get("max_resolution"),
                 width=legend_metadata["width"],

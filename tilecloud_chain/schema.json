@@ -352,6 +352,7 @@
       "description": "The WMTS dimensions",
       "type": "array",
       "items": {
+        "title": "layer dimensions item",
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -1150,9 +1151,8 @@
         },
         "wmts_path": {
           "title": "WMTS path",
-          "description": "The sub-path for the WMTS (main configuration)",
-          "type": "string",
-          "default": ""
+          "description": "No more used, replaced by `TILECLOUD_CHAIN__WMTS_PATH` environment variable",
+          "type": "string"
         },
         "expires": {
           "title": "Expires",

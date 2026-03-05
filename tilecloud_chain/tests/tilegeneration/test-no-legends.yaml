@@ -10,11 +10,10 @@ caches:
     type: filesystem
     http_url: http://wmts1/tiles/
     folder: /tmp/tiles
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
 
 defaults:
   layer: &layer
-    grid: swissgrid
+    grids: [swissgrid]
     type: wms
     legend:
       enabled: false

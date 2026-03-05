@@ -150,7 +150,7 @@ class MapnikDropActionTileStore(MapnikTileStore):
                 await self.queue_store.delete_one(tile)
 
             for count in self.count:
-                count(None)
+                await count(None)
         return result
 
     async def __contains__(self, tile: Tile) -> bool:

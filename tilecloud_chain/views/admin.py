@@ -33,7 +33,7 @@ import logging
 import os
 import shlex
 import urllib.parse
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import IO, Annotated, Any
 
 import pyproj
@@ -179,7 +179,7 @@ async def admin_index(
         "current_url": str(request.url),
         "commands": server_config.get("predefined_commands", []),
         "status": await get_status(gene) if queue_store != "postgresql" else None,
-        "admin_path": main_server_config.get("admin_path", "admin"),
+        "admin_path": f"{settings.route_prefix}admin",
         "AuthenticationType": auth.AuthenticationType,
         "jobs_status": jobs_status,
         "footer": main_server_config.get("admin_footer") if has_access else None,
@@ -251,9 +251,9 @@ async def admin_run(
 
     main = None
     if final_command[0] in ["generate-tiles", "generate_tiles"]:
-        main = generate.main
+        main = generate.async_main
     elif final_command[0] in ["generate-controller", "generate_controller"]:
-        main = controller.main
+        main = controller.async_main
 
     if main is not None:
         return_dict: dict[str, Any] = {}
@@ -452,7 +452,7 @@ def _format_output(string: str, max_length: int = 1000) -> str:
 
 async def _run(
     final_command: list[str],
-    main: Callable[[list[str], IO[str]], Any],
+    main: Callable[[list[str], IO[str]], Awaitable[Any]],
     return_dict: dict[str, Any],
 ) -> None:
     display_command = shlex.join(final_command)

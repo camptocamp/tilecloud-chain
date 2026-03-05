@@ -5,35 +5,73 @@ from pathlib import Path
 import pytest
 import pytest_check
 import yaml
+from anyio import Path as AnyioPath
 from PIL import Image
 
-from tilecloud_chain import TileGeneration, controller
+from tilecloud_chain import TileGeneration, controller, server
 from tilecloud_chain.tests import CompareCase
 
 
+# Helper function for tests
+async def wmts_capabilities(gene: TileGeneration, cache: str) -> str:
+    """Generate WMTS capabilities XML for testing purposes."""
+    assert gene.config_file
+    config = await gene.get_config(gene.config_file)
+    config.config["generation"]["default_cache"] = cache
+
+    params = {
+        "SERVICE": "WMTS",
+        "VERSION": "1.0.0",
+        "REQUEST": "GetCapabilities",
+    }
+
+    # Temporarily set the global tilegeneration for the server
+    old_tilegeneration = server._TILEGENERATION
+    server._TILEGENERATION = gene
+
+    try:
+        response = await server.server.serve(params, config, "localhost", None)
+        return response.body.decode("utf-8")
+    finally:
+        server._TILEGENERATION = old_tilegeneration
+
+
 class TestController(CompareCase):
-    def setUp(self) -> None:  # noqa
-        self.maxDiff = None
+    def setup_method(self) -> None:
+        pass
 
     @classmethod
-    def setUpClass(cls):  # noqa
+    def setup_class(cls):
         os.chdir(Path(__file__).parent)
         if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     @classmethod
-    def tearDownClass(cls):  # noqa
+    def teardown_class(cls):
         os.chdir(Path(__file__).parent.parent.parent)
         if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
+    async def get_capabilities(self, gene, cache_name):
+        server._TILEGENERATION = gene
+        config = await gene.get_config(gene.config_file)
+        config.config["generation"]["default_cache"] = cache_name
+        params = {
+            "SERVICE": "WMTS",
+            "VERSION": "1.0.0",
+            "REQUEST": "GetCapabilities",
+        }
+        response = await server.server.serve(params, config, "localhost", None)
+        server._TILEGENERATION = None
+        return response.body.decode("utf-8")
+
     @pytest.mark.asyncio
     async def test_capabilities(self) -> None:
-        gene = TileGeneration()
-        await gene.ainit(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
-        config = gene.get_config(Path("tilegeneration/test-fix.yaml"))
+        gene = TileGeneration(AnyioPath("tilegeneration/test-fix.yaml"), configure_logging=False)
+        await gene.ainit()
+        config = await gene.get_config(AnyioPath("tilegeneration/test-fix.yaml"))
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await self.get_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -972,21 +1010,21 @@ class TestController(CompareCase):
 
     @pytest.mark.asyncio
     async def test_multi_host_capabilities(self) -> None:
-        gene = TileGeneration()
-        await gene.ainit(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
+        gene = TileGeneration(AnyioPath("tilegeneration/test-fix.yaml"), configure_logging=False)
+        await gene.ainit()
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, "multi_host"),
+            await self.get_capabilities(gene, "multi_host"),
             self.MULTIHOST_CAPABILITIES,
             True,
         )
 
     @pytest.mark.asyncio
     async def test_capabilities_slash(self) -> None:
-        gene = TileGeneration()
-        await gene.ainit(Path("tilegeneration/test-capabilities.yaml"), configure_logging=False)
-        config = gene.get_config(Path("tilegeneration/test-capabilities.yaml"))
+        gene = TileGeneration(AnyioPath("tilegeneration/test-capabilities.yaml"), configure_logging=False)
+        await gene.ainit()
+        config = await gene.get_config(AnyioPath("tilegeneration/test-capabilities.yaml"))
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await self.get_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -1118,10 +1156,10 @@ class TestController(CompareCase):
 
     @pytest.mark.asyncio
     async def test_multi_url_capabilities(self) -> None:
-        gene = TileGeneration()
-        await gene.ainit(Path("tilegeneration/test-fix.yaml"), configure_logging=False)
+        gene = TileGeneration(AnyioPath("tilegeneration/test-fix.yaml"), configure_logging=False)
+        await gene.ainit()
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, "multi_url"),
+            await self.get_capabilities(gene, "multi_url"),
             self.MULTIHOST_CAPABILITIES,
             True,
         )
@@ -1132,7 +1170,6 @@ caches:
     folder: /tmp/tiles
     http_url: http://wmts1/tiles/
     type: filesystem
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   mbtiles:
     folder: /tmp/tiles/mbtiles
     http_url: http://wmts1/tiles/
@@ -1654,17 +1691,19 @@ sqs:
   queue: sqs_point
     """
 
-    def test_config(self) -> None:
-        self.assert_cmd_yaml_equals(
+    @pytest.mark.asyncio
+    async def test_config(self) -> None:
+        await self.assert_cmd_yaml_equals(
             cmd=".build/venv/bin/generate-controller --dump-config -c tilegeneration/test-fix.yaml",
-            main_func=controller.main,
+            main_func=controller.async_main,
             expected=self.CONFIG,
         )
 
-    def test_config_line(self) -> None:
-        self.assert_cmd_yaml_equals(
+    @pytest.mark.asyncio
+    async def test_config_line(self) -> None:
+        await self.assert_cmd_yaml_equals(
             cmd=".build/venv/bin/generate-controller -l line --dump-config -c tilegeneration/test-fix.yaml",
-            main_func=controller.main,
+            main_func=controller.async_main,
             expected=self.CONFIG,
         )
 
@@ -1681,10 +1720,11 @@ sqs:
         assert quote('ab"c') == "'ab\"c'"
         assert quote("") == "''"
 
-    def test_generate_legend_images(self) -> None:
-        self.assert_tiles_generated(
+    @pytest.mark.asyncio
+    async def test_generate_legend_images(self) -> None:
+        await self.assert_tiles_generated(
             cmd=".build/venv/bin/generate-controler -c tilegeneration/test-legends.yaml --generate-legend-images",
-            main_func=controller.main,
+            main_func=controller.async_main,
             directory="/tmp/tiles/1.0.0/",
             tiles_pattern="%s/default/%s",
             tiles=[
@@ -1734,14 +1774,14 @@ sqs:
                     "metadata": [
                         {
                             "height": 35,
+                            "max_resolution": 15.811388300841893,
                             "mime_type": "image/png",
-                            "min_resolution": 15.811388300841893,
                             "path": "1.0.0/line/default/legend-5.png",
                             "width": 71,
                         },
                         {
                             "height": 35,
-                            "max_resolution": 15.811388300841893,
+                            "min_resolution": 15.811388300841893,
                             "mime_type": "image/png",
                             "path": "1.0.0/line/default/legend-50.png",
                             "width": 71,
@@ -1768,14 +1808,14 @@ sqs:
                     "metadata": [
                         {
                             "height": 78,
+                            "max_resolution": 15.811388300841893,
                             "mime_type": "image/png",
-                            "min_resolution": 15.811388300841893,
                             "path": "1.0.0/all/default/legend-5.png",
                             "width": 81,
                         },
                         {
                             "height": 78,
-                            "max_resolution": 15.811388300841893,
+                            "min_resolution": 15.811388300841893,
                             "mime_type": "image/png",
                             "path": "1.0.0/all/default/legend-50.png",
                             "width": 81,
@@ -1794,19 +1834,30 @@ sqs:
 
     @pytest.mark.asyncio
     async def test_legends(self) -> None:
-        self.assert_tiles_generated(
+        await self.assert_tiles_generated(
             cmd=".build/venv/bin/generate-controler -c tilegeneration/test-legends.yaml --legends",
-            main_func=controller.main,
+            main_func=controller.async_main,
             directory="/tmp/tiles/1.0.0/",
-            tiles_pattern="%s/default/legend%i.png",
-            tiles=[("point", 0), ("line", 0), ("line", 2), ("polygon", 0), ("all", 0), ("all", 2)],
+            tiles_pattern="%s/default/%s",
+            tiles=[
+                ("point", "legend-5.png"),
+                ("point", "legend.yaml"),
+                ("line", "legend-5.png"),
+                ("line", "legend-50.png"),
+                ("line", "legend.yaml"),
+                ("polygon", "legend-5.png"),
+                ("polygon", "legend.yaml"),
+                ("all", "legend-5.png"),
+                ("all", "legend-50.png"),
+                ("all", "legend.yaml"),
+            ],
         )
 
-        gene = TileGeneration()
-        await gene.ainit(Path("tilegeneration/test-legends.yaml"), configure_logging=False)
-        config = gene.get_config(Path("tilegeneration/test-legends.yaml"))
+        gene = TileGeneration(AnyioPath("tilegeneration/test-legends.yaml"), configure_logging=False)
+        await gene.ainit()
+        config = await gene.get_config(AnyioPath("tilegeneration/test-legends.yaml"))
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -1851,10 +1902,10 @@ sqs:
       <ows:Identifier>all</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/all/default/legend0.png" """
-            """width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/all/default/legend2.png" """
-            """width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/all/default/legend-5.png" """
+            """width="[0-9]*" height="[0-9]*" maxScaleDenominator="56469.24393[0-9]*" />
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/all/default/legend-50.png" """
+            """width="[0-9]*" height="[0-9]*" minScaleDenominator="56469.24393[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -1877,10 +1928,10 @@ sqs:
       <ows:Identifier>line</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend0.png" """
-            r"""width="[0-9]*" height="[0-9]*" minScaleDenominator="112938.48786[0-9]*" />
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend2.png" """
-            r"""width="[0-9]*" height="[0-9]*" maxScaleDenominator="112938.48786[0-9]*" />
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend-5.png" """
+            r"""width="[0-9]*" height="[0-9]*" maxScaleDenominator="56469.24393[0-9]*" />
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend-50.png" """
+            r"""width="[0-9]*" height="[0-9]*" minScaleDenominator="56469.24393[0-9]*" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -1903,7 +1954,7 @@ sqs:
       <ows:Identifier>point</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/point/default/legend0.png" """
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/point/default/legend-5.png" """
             """width="[0-9]*" height="[0-9]*" />
       </Style>
       <Format>image/png</Format>
@@ -1927,7 +1978,7 @@ sqs:
       <ows:Identifier>polygon</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/polygon/default/legend0.png" """
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/polygon/default/legend-5.png" """
             """width="[0-9]*" height="[0-9]*" />
       </Style>
       <Format>image/png</Format>
@@ -2004,18 +2055,19 @@ sqs:
 
     @pytest.mark.asyncio
     async def test_no_legends(self) -> None:
-        self.assert_tiles_generated(
+        await self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_controler -c tilegeneration/test-no-legends.yaml --legends",
-            main_func=controller.main,
+            main_func=controller.async_main,
             directory="/tmp/tiles/1.0.0/",
-            tiles_pattern="%s/default/legend%i.png",
+            tiles_pattern="%s/default/legend-%i.png",
             tiles=[],
         )
 
-        gene = TileGeneration("tilegeneration/test-no-legends.yaml", configure_logging=False)
-        config = gene.get_config("tilegeneration/test-no-legends.yaml")
+        gene = TileGeneration(AnyioPath("tilegeneration/test-no-legends.yaml"), configure_logging=False)
+        await gene.ainit()
+        config = await gene.get_config(AnyioPath("tilegeneration/test-no-legends.yaml"))
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -2201,18 +2253,19 @@ sqs:
 
     @pytest.mark.asyncio
     async def test_legends_items(self) -> None:
-        self.assert_tiles_generated(
+        await self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends-items.yaml --legends",
-            main_func=controller.main,
+            main_func=controller.async_main,
             directory="/tmp/tiles/1.0.0/",
-            tiles_pattern="%s/default/legend%i.png",
+            tiles_pattern="%s/default/legend-%i.png",
             tiles=[],
         )
 
-        gene = TileGeneration("tilegeneration/test-legends-items.yaml", configure_logging=False)
-        config = gene.get_config("tilegeneration/test-legends-items.yaml")
+        gene = TileGeneration(AnyioPath("tilegeneration/test-legends-items.yaml"), configure_logging=False)
+        await gene.ainit()
+        config = await gene.get_config(AnyioPath("tilegeneration/test-legends-items.yaml"))
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
