@@ -58,7 +58,7 @@ class LoggingSettings(BaseModel):
     tilecloud_log_level: _LOGGING_LEVELS = "INFO"
     tilecloud_chain_log_level: _LOGGING_LEVELS = "INFO"
     server_log_level: _TCC_LOG_LEVELS = "quiet"
-    mapcache_log_level: str | None = "verbose"
+    mapcache_log_level: _TCC_LOG_LEVELS = "verbose"
 
 
 class RedisSettings(BaseModel):
