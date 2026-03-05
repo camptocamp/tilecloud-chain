@@ -54,33 +54,6 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     && strip /venv/lib/python*/site-packages/shapely/*.so \
     && apt-get remove --purge --autoremove --yes ${DEV_PACKAGES} binutils
 
-# From c2cwsgiutils
-
-CMD ["/venv/bin/pserve", "c2c:///app/application.ini"]
-
-ENV LOG_TYPE=console \
-    DEVELOPMENT=0 \
-    PKG_CONFIG_ALLOW_SYSTEM_LIBS=OHYESPLEASE
-
-# End from c2cwsgiutils
-
-ENV TILEGENERATION_CONFIGFILE=/etc/tilegeneration/config.yaml \
-    TILEGENERATION_MAIN_CONFIGFILE=/etc/tilegeneration/config.yaml \
-    TILEGENERATION_HOSTSFILE=/etc/tilegeneration/hosts.yaml \
-    TILECLOUD_CHAIN_LOG_LEVEL=INFO \
-    TILECLOUD_LOG_LEVEL=INFO \
-    C2CWSGIUTILS_LOG_LEVEL=WARN \
-    WAITRESS_LOG_LEVEL=INFO \
-    WSGI_LOG_LEVEL=INFO \
-    SQL_LOG_LEVEL=WARN \
-    OTHER_LOG_LEVEL=WARN \
-    VISIBLE_ENTRY_POINT=/ \
-    TILE_SERVER_LOGLEVEL=quiet \
-    TILE_MAPCACHE_LOGLEVEL=verbose \
-    WAITRESS_THREADS=10 \
-    PYRAMID_INCLUDES= \
-    DEBUGTOOLBAR_HOSTS=
-
 EXPOSE 8080
 
 WORKDIR /app/
@@ -137,7 +110,6 @@ RUN --mount=type=cache,target=/root/.cache \
     POETRY_DYNAMIC_VERSIONING_BYPASS=0.0.0 python3 -m pip install --disable-pip-version-check --no-deps --editable=. \
     && python3 -m pip freeze > /requirements.txt
 
-ENV TILEGENERATION_MAIN_CONFIGFILE=
 
 # Set runner as final
 FROM runner

@@ -13,7 +13,7 @@ services:
       - --reload-include=tilecloud/**/*.py
       - --reload-include=c2casgiutils/**/*.py
     environment:
-      - DEVELOPMENT=TRUE
+      - TILECLOUD_CHAIN__DEVELOPMENT=TRUE
     volumes:
       - ./tilecloud_chain:/app/tilecloud_chain:ro
       # - ../tilecloud/tilecloud:/usr/local/lib/python3.10/dist-packages/tilecloud:ro

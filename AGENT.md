@@ -6,6 +6,10 @@ The project must use async-friendly APIs for I/O to don't block the event loop.
 - All disk or network operation must be done with async API; avoid blocking calls on the event loop.
 - Don't allow sequential `await` calls in loops; use e.g. `asyncio.gather` or `asyncio.TaskGroup`.
 
+## Environment variables
+
+The environment variable should not be accessed directly (except the one defined by an other project), they should be defined in the `Settings` class in `tilecloud_chain/settings.py` and accessed through the `settings` object.
+
 ## Bash
 
 Use the long parameter names for clarity and maintainability.
@@ -13,6 +17,10 @@ Use the long parameter names for clarity and maintainability.
 ## Documentation
 
 The user documentation in the `tilecloud_chain/USAGE.rst` file should be updated to reflect the changes in the codebase.
+
+All the environment variable defined in `tilecloud_chain/settings.py` should also be documented in the `tilecloud_chain/USAGE.md`.
+
+The changes in the codebase that affect the user should be documented in the `CHANGELOG.md`.
 
 ## Tests
 

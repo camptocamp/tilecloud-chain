@@ -2,13 +2,13 @@
 
 import asyncio
 import logging
-import os
 import sys
 from argparse import ArgumentParser, Namespace
 from typing import TYPE_CHECKING, cast
 
 from tilecloud_chain import Count, DropEmpty, HashDropper, TileGeneration, add_common_options
 from tilecloud_chain.format import duration_format, size_format
+from tilecloud_chain.settings import settings
 
 if TYPE_CHECKING:
     import tilecloud_chain.configuration
@@ -122,7 +122,7 @@ async def _async_main() -> None:
         raise
     except:  # pylint: disable=bare-except
         _logger.exception("Exit with exception")
-        if os.environ.get("TESTS", "false").lower() == "true":
+        if settings.tests.enabled:
             raise
         sys.exit(1)
 

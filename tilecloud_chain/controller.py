@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-import os
 import sys
 from argparse import ArgumentParser
 from dataclasses import dataclass
@@ -31,6 +30,7 @@ from tilecloud_chain import (
     get_azure_container_client,
     get_queue_store,
 )
+from tilecloud_chain.settings import settings
 
 _LOGGER = logging.getLogger(__name__)
 _GET_STATUS_SUMMARY = Summary("tilecloud_chain_get_status", "Number of get_stats", ["type", "queue"])
@@ -122,7 +122,7 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         raise
     except:  # pylint: disable=bare-except
         _LOGGER.exception("Exit with exception")
-        if os.environ.get("TESTS", "false").lower() == "true":
+        if settings.tests.enabled:
             raise
         sys.exit(1)
 
