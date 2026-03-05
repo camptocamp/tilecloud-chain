@@ -33,6 +33,7 @@ import logging
 import os
 import shlex
 import urllib.parse
+from abc.collections import Awaitable
 from collections.abc import Callable
 from typing import IO, Annotated, Any
 
@@ -452,7 +453,7 @@ def _format_output(string: str, max_length: int = 1000) -> str:
 
 async def _run(
     final_command: list[str],
-    main: Callable[[list[str], IO[str]], Any],
+    main: Callable[[list[str], IO[str]], Awaitable[Any]],
     return_dict: dict[str, Any],
 ) -> None:
     display_command = shlex.join(final_command)

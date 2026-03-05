@@ -112,7 +112,7 @@ class Settings(BaseSettings):
     frontend: str | None = None
     prometheus_port: int | None = None
     development: bool = False
-    route_prefix: str = "/"
+    route_prefix: str = "/tiles/"
 
     azure: AzureSettings = AzureSettings()
     logging: LoggingSettings = LoggingSettings()
