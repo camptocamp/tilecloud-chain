@@ -107,12 +107,12 @@ app.add_middleware(
 )
 
 route_prefix = settings.route_prefix
-if route_prefix and route_prefix.startswith("/"):
-    route_prefix = route_prefix[1:]
+if route_prefix and not route_prefix.startswith("/"):
+    route_prefix = f"/{route_prefix}"
 if route_prefix and not route_prefix.endswith("/"):
     route_prefix = route_prefix + "/"
 
-route_prefix_escaped = re.escape(route_prefix)
+route_prefix_escaped = re.escape(route_prefix[1:])
 
 _LOGGER.info("Using route prefix: '%s'", route_prefix)
 

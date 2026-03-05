@@ -31,7 +31,7 @@ async def tilestore() -> PostgresqlTileStore:
 
 @pytest.fixture
 def SessionMaker() -> sessionmaker:
-    engine = create_engine(os.environ["TILECLOUD_CHAIN_SQLALCHEMY_URL"])
+    engine = create_engine(os.environ["TILECLOUD_CHAIN__POSTGRESQL__SQLALCHEMY_URL"])
     return sessionmaker(engine)  # noqa
 
 

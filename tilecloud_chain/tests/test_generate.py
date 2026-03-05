@@ -991,8 +991,8 @@ Size per tile: 4[0-9][0-9] o
         )
 
     def test_error_file_use(self) -> None:
-        main_congifile = os.environ["TILEGENERATION_MAIN_CONFIGFILE"]
-        os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = "tilegeneration/test-nosns.yaml"
+        main_congifile = os.environ.get("TILECLOUD_CHAIN__MAIN_CONFIG_FILE")
+        os.environ["TILECLOUD_CHAIN__MAIN_CONFIG_FILE"] = "tilegeneration/test-nosns.yaml"
 
         try:
             error_list_path = Path("error.list")
@@ -1030,7 +1030,7 @@ Size per tile: 4[0-9][0-9] o
     """,
             )
         finally:
-            os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = main_congifile
+            os.environ["TILECLOUD_CHAIN__MAIN_CONFIG_FILE"] = main_congifile
 
     def test_multy(self) -> None:
         for d in ("-v", ""):
@@ -1115,8 +1115,8 @@ Tiles in error:
         )
 
     def test_redis_main_config(self) -> None:
-        main_congifile = os.environ["TILEGENERATION_MAIN_CONFIGFILE"]
-        os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = "tilegeneration/test-redis-main.yaml"
+        main_congifile = os.environ.get("TILECLOUD_CHAIN__MAIN_CONFIG_FILE")
+        os.environ["TILECLOUD_CHAIN__MAIN_CONFIG_FILE"] = "tilegeneration/test-redis-main.yaml"
 
         try:
             RedisTileStore(sentinels=[["redis_sentinel", 26379]]).delete_all()
@@ -1169,7 +1169,7 @@ Tiles in error:
     """,
             )
         finally:
-            os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = main_congifile
+            os.environ["TILECLOUD_CHAIN__MAIN_CONFIG_FILE"] = main_congifile
 
     def test_webp(self) -> None:
         for d in ("-d", ""):
