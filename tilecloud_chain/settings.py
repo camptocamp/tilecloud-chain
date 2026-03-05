@@ -37,7 +37,7 @@ class AzureSettings(BaseModel):
 
     storage_connection_string: str | None = None
     storage_blob_container_url: str | None = None
-    storage_blob_validate_container_name: bool = False
+    storage_blob_validate_container_name: bool = True
     storage_account_url: str | None = None
 
 

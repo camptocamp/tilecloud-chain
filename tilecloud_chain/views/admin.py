@@ -251,9 +251,9 @@ async def admin_run(
 
     main = None
     if final_command[0] in ["generate-tiles", "generate_tiles"]:
-        main = generate.main
+        main = generate.async_main
     elif final_command[0] in ["generate-controller", "generate_controller"]:
-        main = controller.main
+        main = controller.async_main
 
     if main is not None:
         return_dict: dict[str, Any] = {}
