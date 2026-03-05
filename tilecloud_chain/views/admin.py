@@ -33,8 +33,7 @@ import logging
 import os
 import shlex
 import urllib.parse
-from abc.collections import Awaitable
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import IO, Annotated, Any
 
 import pyproj

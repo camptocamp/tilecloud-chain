@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from anyio import Path
 from pydantic import BaseModel, ConfigDict
@@ -41,6 +41,10 @@ class AzureSettings(BaseModel):
     storage_account_url: str | None = None
 
 
+_LOGGING_LEVELS = Literal["CRITICAL", "ERROR", "WARN", "WARNING", "INFO", "DEBUG", "NOTSET"]
+_TCC_LOG_LEVELS = Literal["quiet", "verbose", "debug"]
+
+
 class LoggingSettings(BaseModel):
     """Logging settings."""
 
@@ -48,13 +52,13 @@ class LoggingSettings(BaseModel):
 
     ci: bool = False
     log_type: str = "console"
-    other_log_level: str = "WARN"
-    sql_log_level: str = "WARN"
-    c2casgiutils_log_level: str = "WARN"
-    tilecloud_log_level: str = "INFO"
-    tilecloud_chain_log_level: str = "INFO"
-    server_log_level: str | None = None
-    mapcache_log_level: str | None = None
+    other_log_level: _LOGGING_LEVELS = "WARN"
+    sql_log_level: _LOGGING_LEVELS = "WARN"
+    c2casgiutils_log_level: _LOGGING_LEVELS = "WARN"
+    tilecloud_log_level: _LOGGING_LEVELS = "INFO"
+    tilecloud_chain_log_level: _LOGGING_LEVELS = "INFO"
+    server_log_level: _TCC_LOG_LEVELS = "quiet"
+    mapcache_log_level: str | None = "verbose"
 
 
 class RedisSettings(BaseModel):
