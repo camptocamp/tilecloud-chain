@@ -135,7 +135,7 @@ class CompareCase:
                 with Path(expect[0]).open() as f:
                     self.assert_result_equals(f.read(), expect[1], **kargs)
 
-    def assert_main_except_equals(
+    async def assert_main_except_equals(
         self,
         cmd: str,
         main_func: Callable,
@@ -145,7 +145,7 @@ class CompareCase:
     ) -> None:
         sys.argv = cmd.split(" ")
         try:
-            main_func()
+            await main_func()
             assert get_error is False
         except SystemExit as e:
             if get_error:

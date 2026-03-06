@@ -129,10 +129,10 @@ async def async_main() -> None:
 
 def process() -> None:
     """Copy the tiles from a cache to an other."""
-    asyncio.run(_async_process())
+    asyncio.run(async_process())
 
 
-async def _async_process() -> None:
+async def async_process() -> None:
     """Copy the tiles from a cache to an other."""
     try:
         parser = ArgumentParser(

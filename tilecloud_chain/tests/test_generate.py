@@ -52,10 +52,11 @@ class TestGenerate(CompareCase):
 
             log_capture.check()
 
-    def test_get_wrong_hash(self) -> None:
+    @pytest.mark.asyncio
+    async def test_get_wrong_hash(self) -> None:
         for d in ("-d", "-q"):
             with LogCapture("tilecloud_chain") as log_capture:
-                self.assert_cmd_exit_equals(
+                await self.assert_cmd_exit_equals(
                     cmd=f".build/venv/bin/generate-tiles {d} --get-hash 0/7/5 "
                     "-c tilegeneration/test.yaml -l all",
                     main_func=generate.async_main,
@@ -826,10 +827,11 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_not_authorised_user(self) -> None:
+    @pytest.mark.asyncio
+    async def test_not_authorised_user(self) -> None:
         for d in ("-d", "-q"):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_cmd_exit_equals(
+                await self.assert_cmd_exit_equals(
                     cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-authorised.yaml",
                     main_func=generate.async_main,
                 )
@@ -841,10 +843,11 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                     ),
                 )
 
-    def test_verbose(self) -> None:
+    @pytest.mark.asyncio
+    async def test_verbose(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.run_cmd(
+                await self.run_cmd(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -t 2 -v -l polygon",
                     main_func=generate.async_main,
@@ -973,11 +976,12 @@ Size per tile: 4[0-9][0-9] o
 """,
             )
 
-    def test_error_file_create(self) -> None:
+    @pytest.mark.asyncio
+    async def test_error_file_create(self) -> None:
         error_list_path = Path("error.list")
         if error_list_path.exists():
             error_list_path.unlink()
-        self.assert_main_except_equals(
+        await self.assert_main_except_equals(
             cmd=".build/venv/bin/generate-tiles -q -c tilegeneration/test-nosns.yaml -l point_error",
             main_func=generate.async_main,
             regex=True,

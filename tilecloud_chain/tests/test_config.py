@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import pytest
 from testfixtures import LogCapture
 
 from tilecloud_chain import controller
@@ -19,9 +20,10 @@ class TestConfig(CompareCase):
     def teardown_class(cls):  # noqa
         os.chdir(Path(__file__).parent.parent.parent)
 
-    def test_int_grid(self) -> None:
+    @pytest.mark.asyncio
+    async def test_int_grid(self) -> None:
         with LogCapture("tilecloud_chain") as log_capture:
-            self.run_cmd(
+            await self.run_cmd(
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/test-int-grid.yaml --dump-config",
                 main_func=controller.main,
             )

@@ -74,7 +74,7 @@ image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
             await self.assert_cmd_equals(
                 cmd=f".build/venv/bin/generate-process {d} -c "
                 "tilegeneration/test-copy.yaml --cache src optipng",
-                main_func=copy_.process,
+                main_func=copy_.async_process,
                 regex=True,
                 expected=(
                     """The tile process of layer 'point_hash' is finish
