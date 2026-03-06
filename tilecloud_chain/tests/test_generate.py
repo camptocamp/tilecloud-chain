@@ -4,6 +4,7 @@ import shutil
 from itertools import product, repeat
 from pathlib import Path
 
+from anyio import Path as AnyioPath
 from PIL import Image
 from testfixtures import LogCapture
 from tilecloud.store.redis import RedisTileStore
@@ -993,7 +994,7 @@ Size per tile: 4[0-9][0-9] o
 
     def test_error_file_use(self) -> None:
         main_config_file = settings.main_config_file
-        settings.main_config_file = Path("tilegeneration/test-nosns.yaml")
+        settings.main_config_file = AnyioPath("tilegeneration/test-nosns.yaml")
 
         try:
             error_list_path = Path("error.list")
@@ -1117,7 +1118,7 @@ Tiles in error:
 
     def test_redis_main_config(self) -> None:
         main_config_file = settings.main_config_file
-        settings.main_config_file = Path("tilegeneration/test-redis-main.yaml")
+        settings.main_config_file = AnyioPath("tilegeneration/test-redis-main.yaml")
 
         try:
             RedisTileStore(sentinels=[["redis_sentinel", 26379]]).delete_all()
