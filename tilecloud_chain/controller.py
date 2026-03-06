@@ -113,7 +113,7 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
             yaml_out = StringIO()
             ru_yaml.dump(config.config, yaml_out)
             print(yaml_out.getvalue())
-            sys.exit(0)
+            return
 
         if options.legends:
             await _generate_legend_images(gene, out)

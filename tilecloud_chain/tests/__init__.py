@@ -175,8 +175,10 @@ class CompareCase:
     async def assert_cmd_yaml_equals(self, cmd: str, main_func: Callable, **kargs: Any) -> None:
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
-        await self.assert_main_equals(cmd, main_func, [])
-        sys.stdout = old_stdout
+        try:
+            await self.assert_main_equals(cmd, main_func, [])
+        finally:
+            sys.stdout = old_stdout
         self.assert_yaml_equals(result=mystdout.getvalue(), **kargs)
 
     async def assert_tiles_generated(self, directory: str, **kargs: Any) -> None:
