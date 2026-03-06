@@ -25,6 +25,6 @@ class TestConfig(CompareCase):
         with LogCapture("tilecloud_chain") as log_capture:
             await self.run_cmd(
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/test-int-grid.yaml --dump-config",
-                main_func=controller.main,
+                main_func=controller.async_main,
             )
             log_capture.check()

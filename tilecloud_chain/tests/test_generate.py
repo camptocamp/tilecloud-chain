@@ -1022,8 +1022,8 @@ Size per tile: 4[0-9][0-9] o
 
     @pytest.mark.asyncio
     async def test_error_file_use(self) -> None:
-        main_config_file = settings.async_main_config_file
-        settings.async_main_config_file = AnyioPath("tilegeneration/test-nosns.yaml")
+        main_config_file = settings.main_config_file
+        settings.main_config_file = AnyioPath("tilegeneration/test-nosns.yaml")
 
         try:
             error_list_path = Path("error.list")
@@ -1061,7 +1061,7 @@ Size per tile: 4[0-9][0-9] o
     """,
             )
         finally:
-            settings.async_main_config_file = main_config_file
+            settings.main_config_file = main_config_file
 
     @pytest.mark.asyncio
     async def test_multy(self) -> None:
@@ -1149,8 +1149,8 @@ Tiles in error:
 
     @pytest.mark.asyncio
     async def test_redis_main_config(self) -> None:
-        main_config_file = settings.async_main_config_file
-        settings.async_main_config_file = AnyioPath("tilegeneration/test-redis-main.yaml")
+        main_config_file = settings.main_config_file
+        settings.main_config_file = AnyioPath("tilegeneration/test-redis-main.yaml")
 
         try:
             RedisTileStore(sentinels=[["redis_sentinel", 26379]]).delete_all()
@@ -1203,7 +1203,7 @@ Tiles in error:
     """,
             )
         finally:
-            settings.async_main_config_file = main_config_file
+            settings.main_config_file = main_config_file
 
     @pytest.mark.asyncio
     async def test_webp(self) -> None:
