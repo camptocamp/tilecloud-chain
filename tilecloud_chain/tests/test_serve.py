@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from anyio import Path as AnyioPath
 from fastapi import HTTPException
 from testfixtures import LogCapture
 
@@ -156,7 +157,7 @@ class TestServe(CompareCase):
     @pytest.mark.asyncio
     async def test_serve_kvp(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
-            await self.assert_tiles_generated_async(
+            await self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-nosns.yaml "
                 "--layer=point_hash --zoom 1",
                 main_func=generate.async_main,
@@ -188,7 +189,7 @@ class TestServe(CompareCase):
                 config = DatedConfig(
                     config=yaml.safe_load(f),
                     mtime=Path("tilegeneration/test-nosns.yaml").stat().st_mtime,
-                    filename="tilegeneration/test-nosns.yaml",
+                    file=AnyioPath("tilegeneration/test-nosns.yaml"),
                 )
             params = {
                 "Service": "WMTS",
@@ -717,7 +718,7 @@ class TestServe(CompareCase):
     @pytest.mark.asyncio
     async def test_mbtiles_rest(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
-            await self.assert_tiles_generated_async(
+            await self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-serve.yaml"
                 " --layer=point_hash --zoom 1",
                 main_func=generate.async_main,
@@ -746,7 +747,7 @@ class TestServe(CompareCase):
                 config = DatedConfig(
                     config=yaml.safe_load(f),
                     mtime=Path("tilegeneration/test-serve.yaml").stat().st_mtime,
-                    file="tilegeneration/test-serve.yaml",
+                    file=AnyioPath("tilegeneration/test-serve.yaml"),
                 )
             params = {
                 "Service": "WMTS",
@@ -868,7 +869,7 @@ class TestServe(CompareCase):
                 config = DatedConfig(
                     config=yaml.safe_load(f),
                     mtime=Path("tilegeneration/test-bsddb.yaml").stat().st_mtime,
-                    filename="tilegeneration/test-bsddb.yaml",
+                    file=AnyioPath("tilegeneration/test-bsddb.yaml"),
                 )
             params = {
                 "Service": "WMTS",
@@ -976,7 +977,7 @@ class TestServe(CompareCase):
             config = DatedConfig(
                 config=yaml.safe_load(f),
                 mtime=Path("tilegeneration/test-serve.yaml").stat().st_mtime,
-                filename="tilegeneration/test-serve.yaml",
+                file=AnyioPath("tilegeneration/test-serve.yaml"),
             )
         params = {
             "Service": "WMTS",
@@ -1014,7 +1015,7 @@ class TestServe(CompareCase):
             config = DatedConfig(
                 config=yaml.safe_load(f),
                 mtime=Path("tilegeneration/test-serve.yaml").stat().st_mtime,
-                filename="tilegeneration/test-serve.yaml",
+                file=AnyioPath("tilegeneration/test-serve.yaml"),
             )
         params = {
             "Service": "WMTS",
@@ -1186,7 +1187,7 @@ Size per tile: 4[0-9][0-9] o
                 config = DatedConfig(
                     config=yaml.safe_load(f),
                     mtime=Path("tilegeneration/test-serve-wmtscapabilities.yaml").stat().st_mtime,
-                    filename="tilegeneration/test-serve-wmtscapabilities.yaml",
+                    file=AnyioPath("tilegeneration/test-serve-wmtscapabilities.yaml"),
                 )
             params = {
                 "Service": "WMTS",
