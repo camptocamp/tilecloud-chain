@@ -21,10 +21,11 @@ class TestMultiGrid(CompareCase):
     def teardown_class(cls) -> None:
         os.chdir(Path(__file__).parent.parent.parent)
 
-    def test_generate_all(self) -> None:
+    @pytest.mark.asyncio
+    async def test_generate_all(self) -> None:
         """Test generating tiles for layer 'all'."""
         # This creates and checks tiles for the 'all' layer
-        self.assert_tiles_generated(
+        await self.assert_tiles_generated(
             cmd=[
                 ".build/venv/bin/generate-tiles",
                 "-d",
@@ -61,9 +62,10 @@ Size per tile: [0-9]{3} o
 """,
         )
 
-    def test_generate_one(self) -> None:
+    @pytest.mark.asyncio
+    async def test_generate_one(self) -> None:
         """Test generating tiles for layer 'one' which has only one grid."""
-        self.assert_tiles_generated(
+        await self.assert_tiles_generated(
             cmd=[
                 ".build/venv/bin/generate-tiles",
                 "-d",
@@ -96,11 +98,12 @@ Size per tile: [0-9]{3} o
 """,
         )
 
-    def test_generate_all_with_grid(self) -> None:
+    @pytest.mark.asyncio
+    async def test_generate_all_with_grid(self) -> None:
         """Test generating tiles for layer 'all' with --grid parameter."""
         for grid in ("swissgrid_2056", "swissgrid_21781"):
             with pytest_check.check:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=[
                         ".build/venv/bin/generate-tiles",
                         "-d",
@@ -134,9 +137,10 @@ Size per tile: [0-9]{3} o
         """,
                 )
 
-    def test_get_hash(self) -> None:
+    @pytest.mark.asyncio
+    async def test_get_hash(self) -> None:
         """Test getting hash on layer 'all'."""
-        self.assert_cmd_equals(
+        await self.assert_cmd_equals(
             cmd=[
                 ".build/venv/bin/generate-tiles",
                 "-d",
@@ -157,14 +161,15 @@ Size per tile: [0-9]{3} o
   """,
         )
 
-    def test_get_bbox_grid(self) -> None:
+    @pytest.mark.asyncio
+    async def test_get_bbox_grid(self) -> None:
         """Test getting bbox on layer 'all'."""
         for grid, expected in (
             ("swissgrid_2056", "2420000,1094000,2676000,1350000"),
             ("swissgrid_21781", "420000,94000,676000,350000"),
         ):
             with pytest_check.check:
-                self.assert_cmd_equals(
+                await self.assert_cmd_equals(
                     cmd=[
                         ".build/venv/bin/generate-tiles",
                         "-d",
@@ -178,9 +183,10 @@ Size per tile: [0-9]{3} o
         """,
                 )
 
-    def test_generate_legend_all(self) -> None:
+    @pytest.mark.asyncio
+    async def test_generate_legend_all(self) -> None:
         """Test generating legend images for layer 'all'."""
-        self.assert_tiles_generated(
+        await self.assert_tiles_generated(
             cmd=[
                 ".build/venv/bin/generate-controller",
                 "-d",

@@ -1048,7 +1048,7 @@ class TestServe(CompareCase):
 
     @pytest.mark.asyncio
     async def test_wsgi(self) -> None:
-        self.assert_tiles_generated(
+        await self.assert_tiles_generated(
             cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-serve.yaml --layer=point_hash --zoom 1",
             main_func=generate.async_main,
             directory="/tmp/tiles/mbtiles/",

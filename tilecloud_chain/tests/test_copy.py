@@ -2,6 +2,7 @@ import os
 import shutil
 from pathlib import Path
 
+import pytest
 import requests
 
 from tilecloud_chain import copy_
@@ -25,12 +26,13 @@ class TestGenerate(CompareCase):
         if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
-    def test_copy(self) -> None:
+    @pytest.mark.asyncio
+    async def test_copy(self) -> None:
         with Path("/tmp/tiles/src/1.0.0/point_hash/default/21781/0/0/0.png").open("w") as f:
             f.write("test image")
 
         for d in ("-d", "-q", "-v"):
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=f".build/venv/bin/generate-copy {d} -c tilegeneration/test-copy.yaml src dst",
                 main_func=copy_.async_main,
                 regex=True,
@@ -53,7 +55,8 @@ Size per tile: 10(.0)? o
         with Path("/tmp/tiles/dst/1.0.0/point_hash/default/21781/0/0/0.png").open() as f:
             assert f.read() == "test image"
 
-    def test_process(self) -> None:
+    @pytest.mark.asyncio
+    async def test_process(self) -> None:
         for d in ("-vd", "-q", "-v", ""):
             response = requests.get(
                 "http://mapserver:8080/?STYLES=default&SERVICE=WMS&FORMAT=\
@@ -68,7 +71,7 @@ image%2Fpng&REQUEST=GetMap&HEIGHT=256&WIDTH=256&VERSION=1.1.1&BBOX=\
             ).stat()
             assert statinfo.st_size == 755
 
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=f".build/venv/bin/generate-process {d} -c "
                 "tilegeneration/test-copy.yaml --cache src optipng",
                 main_func=copy_.process,

@@ -1668,15 +1668,17 @@ sqs:
   queue: sqs_point
     """
 
-    def test_config(self) -> None:
-        self.assert_cmd_yaml_equals(
+    @pytest.mark.asyncio
+    async def test_config(self) -> None:
+        await self.assert_cmd_yaml_equals(
             cmd=".build/venv/bin/generate-controller --dump-config -c tilegeneration/test-fix.yaml",
             main_func=controller.async_main,
             expected=self.CONFIG,
         )
 
-    def test_config_line(self) -> None:
-        self.assert_cmd_yaml_equals(
+    @pytest.mark.asyncio
+    async def test_config_line(self) -> None:
+        await self.assert_cmd_yaml_equals(
             cmd=".build/venv/bin/generate-controller -l line --dump-config -c tilegeneration/test-fix.yaml",
             main_func=controller.async_main,
             expected=self.CONFIG,
@@ -1695,8 +1697,9 @@ sqs:
         assert quote('ab"c') == "'ab\"c'"
         assert quote("") == "''"
 
-    def test_generate_legend_images(self) -> None:
-        self.assert_tiles_generated(
+    @pytest.mark.asyncio
+    async def test_generate_legend_images(self) -> None:
+        await self.assert_tiles_generated(
             cmd=".build/venv/bin/generate-controler -c tilegeneration/test-legends.yaml --generate-legend-images",
             main_func=controller.async_main,
             directory="/tmp/tiles/1.0.0/",
@@ -1808,7 +1811,7 @@ sqs:
 
     @pytest.mark.asyncio
     async def test_legends(self) -> None:
-        self.assert_tiles_generated(
+        await self.assert_tiles_generated(
             cmd=".build/venv/bin/generate-controler -c tilegeneration/test-legends.yaml --legends",
             main_func=controller.async_main,
             directory="/tmp/tiles/1.0.0/",
@@ -2018,7 +2021,7 @@ sqs:
 
     @pytest.mark.asyncio
     async def test_no_legends(self) -> None:
-        self.assert_tiles_generated(
+        await self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_controler -c tilegeneration/test-no-legends.yaml --legends",
             main_func=controller.async_main,
             directory="/tmp/tiles/1.0.0/",
@@ -2216,7 +2219,7 @@ sqs:
 
     @pytest.mark.asyncio
     async def test_legends_items(self) -> None:
-        self.assert_tiles_generated(
+        await self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends-items.yaml --legends",
             main_func=controller.async_main,
             directory="/tmp/tiles/1.0.0/",

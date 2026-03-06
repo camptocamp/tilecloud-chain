@@ -60,13 +60,13 @@ class CompareCase:
                     raise
         assert len(expected) == len(result), repr(result)
 
-    def run_cmd(self, cmd: list[str] | str, main_func: Callable, get_error: bool = False) -> tuple[str, str]:
+    async def run_cmd(self, cmd: list[str] | str, main_func: Callable, get_error: bool = False) -> tuple[str, str]:
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
         old_stderr = sys.stderr
         sys.stderr = mystderr = StringIO()
         try:
-            self.assert_main_equals(cmd, main_func, [], get_error)
+            await self.assert_main_equals(cmd, main_func, [], get_error)
         except AssertionError:
             sys.stdout = old_stdout
             sys.stderr = old_stderr
@@ -80,62 +80,25 @@ class CompareCase:
         _LOGGER.info(mystderr.getvalue())
         return mystdout.getvalue(), mystderr.getvalue()
 
-    def assert_cmd_equals(
+    async def assert_cmd_equals(
         self,
         cmd: list[str] | str,
         main_func: Callable,
         empty_err: bool = False,
         **kargs: Any,
     ) -> None:
-        out, err = self.run_cmd(cmd, main_func)
+        out, err = await self.run_cmd(cmd, main_func)
         if empty_err:
             assert err == ""
         out = out.decode("utf-8") if isinstance(out, bytes) else str(out)
         self.assert_result_equals(result=out, **kargs)
 
-    def assert_cmd_exit_equals(self, cmd: str, main_func: Callable) -> None:
+    async def assert_cmd_exit_equals(self, cmd: str, main_func: Callable) -> None:
         sys.argv = re.sub(" +", " ", cmd).split(" ")
         with pytest.raises(SystemExit):
-            main_func()
+            await main_func()
 
-    def assert_main_equals(
-        self,
-        cmd: list[str] | str,
-        main_func: Callable,
-        expected: list[list[str]] | None = None,
-        get_error: bool = False,
-        **kargs: Any,
-    ) -> None:
-        if expected:
-            for expect in expected:
-                if Path(expect[0]).exists():
-                    Path(expect[0]).unlink()
-        if type(cmd) is list:
-            sys.argv = cmd
-        else:
-            sys.argv = re.sub(" +", " ", cmd).split(" ")
-        try:
-            main_func()
-            assert not get_error
-        except SystemExit as e:
-            _LOGGER.exception("SystemExit raised")
-            if get_error:
-                assert e.code not in (None, 0), str(e)  # noqa: PT017
-            else:
-                assert e.code in (None, 0), str(e)  # noqa: PT017
-        except AssertionError:
-            raise
-        except Exception:
-            if not get_error:
-                _LOGGER.exception("Unexpected error")
-            assert get_error, traceback.format_exc()
-
-        if expected:
-            for expect in expected:
-                with Path(expect[0]).open() as f:
-                    self.assert_result_equals(f.read(), expect[1], **kargs)
-
-    async def assert_main_equals_async(
+    async def assert_main_equals(
         self,
         cmd: list[str] | str,
         main_func: Callable,
@@ -209,20 +172,20 @@ class CompareCase:
         result = yaml.dump(yaml.safe_load(result), width=120, default_flow_style=False, Dumper=NoAliasDumper)
         self.assert_result_equals(result=result, expected=expected)
 
-    def assert_cmd_yaml_equals(self, cmd: str, main_func: Callable, **kargs: Any) -> None:
+    async def assert_cmd_yaml_equals(self, cmd: str, main_func: Callable, **kargs: Any) -> None:
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
-        self.assert_main_equals(cmd, main_func, [])
+        await self.assert_main_equals(cmd, main_func, [])
         sys.stdout = old_stdout
         self.assert_yaml_equals(result=mystdout.getvalue(), **kargs)
 
-    def assert_tiles_generated(self, directory: str, **kargs: Any) -> None:
+    async def assert_tiles_generated(self, directory: str, **kargs: Any) -> None:
         if Path(directory).exists():
             shutil.rmtree(directory, ignore_errors=True)
 
-        self.assert_tiles_generated_deleted(directory=directory, **kargs)
+        await self.assert_tiles_generated_deleted(directory=directory, **kargs)
 
-    def assert_tiles_generated_deleted(
+    async def assert_tiles_generated_deleted(
         self,
         directory: str,
         tiles_pattern: str,
@@ -230,7 +193,7 @@ class CompareCase:
         expected: str = "",
         **kargs: Any,
     ) -> None:
-        self.assert_cmd_equals(expected=expected, **kargs)
+        await self.assert_cmd_equals(expected=expected, **kargs)
         count = 0
         for path, _dirs, files in os.walk(directory):
             if len(files) != 0:
@@ -245,71 +208,8 @@ class CompareCase:
             print(tile_path)
             assert tile_path.exists()
 
-
-    async def run_cmd_async(self, cmd: list[str] | str, main_func: Callable, get_error: bool = False) -> tuple[str, str]:
-        old_stdout = sys.stdout
-        sys.stdout = mystdout = StringIO()
-        old_stderr = sys.stderr
-        sys.stderr = mystderr = StringIO()
-        try:
-            await self.assert_main_equals_async(cmd, main_func, [], get_error)
-        except AssertionError:
-            sys.stdout = old_stdout
-            sys.stderr = old_stderr
-            print(mystdout.getvalue())
-            print(mystderr.getvalue())
-            raise
-        finally:
-            sys.stdout = old_stdout
-            sys.stderr = old_stderr
-        _LOGGER.info(mystdout.getvalue())
-        _LOGGER.info(mystderr.getvalue())
-        return mystdout.getvalue(), mystderr.getvalue()
-
-    async def assert_cmd_equals_async(
-        self,
-        cmd: list[str] | str,
-        main_func: Callable,
-        empty_err: bool = False,
-        **kargs: Any,
-    ) -> None:
-        out, err = await self.run_cmd_async(cmd, main_func)
-        if empty_err:
-            assert err == ""
-        out = out.decode("utf-8") if isinstance(out, bytes) else str(out)
-        self.assert_result_equals(result=out, **kargs)
-
-    async def assert_tiles_generated_async(self, directory: str, **kargs: Any) -> None:
-        if Path(directory).exists():
-            shutil.rmtree(directory, ignore_errors=True)
-
-        await self.assert_tiles_generated_deleted_async(directory=directory, **kargs)
-
-    async def assert_tiles_generated_deleted_async(
-        self,
-        directory: str,
-        tiles_pattern: str,
-        tiles: Any,
-        expected: str = "",
-        **kargs: Any,
-    ) -> None:
-        await self.assert_cmd_equals_async(expected=expected, **kargs)
-        count = 0
-        for path, _dirs, files in os.walk(directory):
-            if len(files) != 0:
-                _LOGGER.info("%s %s", path, files)
-                print((path, files))
-                count += len(files)
-
-        assert count == len(tiles)
-        for tile in tiles:
-            tile_path = Path(directory + tiles_pattern % tile)
-            _LOGGER.info("%s", tile_path)
-            print(tile_path)
-            assert tile_path.exists()
-
-    def assert_files_generated(self, **kargs):
-        self.assert_tiles_generated(tiles_pattern="%s", **kargs)
+    async def assert_files_generated(self, **kargs):
+        await self.assert_tiles_generated(tiles_pattern="%s", **kargs)
 
 
 class MatchRegex:

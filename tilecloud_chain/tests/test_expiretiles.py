@@ -30,7 +30,8 @@ class TestExpireTiles(CompareCase):
         Path("/tmp/expired").unlink()
         Path("/tmp/expired-empty").unlink()
 
-    def test_expire_tiles(
+    @pytest.mark.asyncio
+    async def test_expire_tiles(
         self,
     ) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
@@ -51,7 +52,7 @@ class TestExpireTiles(CompareCase):
                 pytest.approx([538274.006497397, 151463.940954133], abs=1e-6),
             ]
 
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=[
                     ".build/venv/bin/import_expiretiles",
                     "--create",
@@ -79,7 +80,7 @@ class TestExpireTiles(CompareCase):
 
             assert [parse_coord(e) for e in geom_re.match(geoms[0]).group(1).split(",")] == geom_coords
 
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=[
                     ".build/venv/bin/import_expiretiles",
                     "--create",
@@ -102,7 +103,7 @@ class TestExpireTiles(CompareCase):
             assert [geom_re] == geoms
             assert [parse_coord(e) for e in geom_re.match(geoms[0]).group(1).split(",")] == geom_coords
 
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=[
                     ".build/venv/bin/import_expiretiles",
                     "--simplify",
@@ -141,9 +142,10 @@ class TestExpireTiles(CompareCase):
 
             log_capture.check()
 
-    def test_expire_tiles_empty(self) -> None:
+    @pytest.mark.asyncio
+    async def test_expire_tiles_empty(self) -> None:
         with LogCapture("tilecloud_chain", level=30):
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=[
                     ".build/venv/bin/import_expiretiles",
                     "--create",
