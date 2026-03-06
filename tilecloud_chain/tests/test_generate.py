@@ -9,6 +9,7 @@ from testfixtures import LogCapture
 from tilecloud.store.redis import RedisTileStore
 
 from tilecloud_chain import controller, generate
+from tilecloud_chain.settings import settings
 from tilecloud_chain.tests import CompareCase
 
 
@@ -991,8 +992,8 @@ Size per tile: 4[0-9][0-9] o
         )
 
     def test_error_file_use(self) -> None:
-        main_congifile = os.environ.get("TILECLOUD_CHAIN__MAIN_CONFIG_FILE")
-        os.environ["TILECLOUD_CHAIN__MAIN_CONFIG_FILE"] = "tilegeneration/test-nosns.yaml"
+        main_config_file = settings.main_config_file
+        settings.main_config_file = Path("tilegeneration/test-nosns.yaml")
 
         try:
             error_list_path = Path("error.list")
@@ -1030,7 +1031,7 @@ Size per tile: 4[0-9][0-9] o
     """,
             )
         finally:
-            os.environ["TILECLOUD_CHAIN__MAIN_CONFIG_FILE"] = main_congifile
+            settings.main_config_file = main_config_file
 
     def test_multy(self) -> None:
         for d in ("-v", ""):
@@ -1115,8 +1116,8 @@ Tiles in error:
         )
 
     def test_redis_main_config(self) -> None:
-        main_congifile = os.environ.get("TILECLOUD_CHAIN__MAIN_CONFIG_FILE")
-        os.environ["TILECLOUD_CHAIN__MAIN_CONFIG_FILE"] = "tilegeneration/test-redis-main.yaml"
+        main_config_file = settings.main_config_file
+        settings.main_config_file = Path("tilegeneration/test-redis-main.yaml")
 
         try:
             RedisTileStore(sentinels=[["redis_sentinel", 26379]]).delete_all()
@@ -1169,7 +1170,7 @@ Tiles in error:
     """,
             )
         finally:
-            os.environ["TILECLOUD_CHAIN__MAIN_CONFIG_FILE"] = main_congifile
+            settings.main_config_file = main_config_file
 
     def test_webp(self) -> None:
         for d in ("-d", ""):
