@@ -12,6 +12,30 @@ from tilecloud_chain import TileGeneration, controller, server
 from tilecloud_chain.tests import CompareCase
 
 
+# Helper function for tests
+async def wmts_capabilities(gene: TileGeneration, cache: str) -> str:
+    """Generate WMTS capabilities XML for testing purposes."""
+    assert gene.config_file
+    config = await gene.get_config(gene.config_file)
+    config.config["generation"]["default_cache"] = cache
+
+    params = {
+        "SERVICE": "WMTS",
+        "VERSION": "1.0.0",
+        "REQUEST": "GetCapabilities",
+    }
+
+    # Temporarily set the global tilegeneration for the server
+    old_tilegeneration = server._TILEGENERATION
+    server._TILEGENERATION = gene
+
+    try:
+        response = await server.server.serve(params, config, "localhost", None)
+        return response.body.decode("utf-8")
+    finally:
+        server._TILEGENERATION = old_tilegeneration
+
+
 class TestController(CompareCase):
     def setup_method(self) -> None:
         pass
@@ -1823,7 +1847,7 @@ sqs:
         await gene.ainit()
         config = await gene.get_config(AnyioPath("tilegeneration/test-legends.yaml"))
         self.assert_result_equals(
-            await server.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -2033,7 +2057,7 @@ sqs:
         await gene.ainit()
         config = await gene.get_config(AnyioPath("tilegeneration/test-no-legends.yaml"))
         self.assert_result_equals(
-            await server.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -2231,7 +2255,7 @@ sqs:
         await gene.ainit()
         config = await gene.get_config(AnyioPath("tilegeneration/test-legends-items.yaml"))
         self.assert_result_equals(
-            await server.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"

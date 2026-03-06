@@ -246,10 +246,10 @@ Size per tile: [0-9]{3} o
         """Test capabilities generation for the multi-grid config."""
         gene = TileGeneration(Path("tilegeneration/test-multi-grid.yaml"), configure_logging=False)
         await gene.ainit()
-        config = gene.get_config(Path("tilegeneration/test-multi-grid.yaml"))
+        config = await gene.get_config(Path("tilegeneration/test-multi-grid.yaml"))
 
-        from tilecloud_chain.server import get_wmts_capabilities
+        from tilecloud_chain.tests.test_controller import wmts_capabilities
 
-        capabilities = await get_wmts_capabilities(gene, config.config["generation"]["default_cache"])
+        capabilities = await wmts_capabilities(gene, config.config["generation"]["default_cache"])
 
         assert capabilities == "gggg"
