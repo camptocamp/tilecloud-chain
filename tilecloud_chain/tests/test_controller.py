@@ -1823,7 +1823,7 @@ sqs:
         await gene.ainit()
         config = await gene.get_config(AnyioPath("tilegeneration/test-legends.yaml"))
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await server.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -2033,7 +2033,7 @@ sqs:
         await gene.ainit()
         config = await gene.get_config(AnyioPath("tilegeneration/test-no-legends.yaml"))
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await server.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -2231,7 +2231,7 @@ sqs:
         await gene.ainit()
         config = await gene.get_config(AnyioPath("tilegeneration/test-legends-items.yaml"))
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await server.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
