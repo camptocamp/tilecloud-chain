@@ -6,15 +6,15 @@ from tilecloud_chain.tests import CompareCase
 
 
 class TestCost(CompareCase):
-    def setUp(self) -> None:  # noqa
+    def setup_method(self) -> None:
         self.maxDiff = None
 
     @classmethod
-    def setUpClass(cls):  # noqa
+    def setup_class(cls):
         os.chdir(Path(__file__).parent)
 
     @classmethod
-    def tearDownClass(cls):  # noqa
+    def teardown_class(cls):
         os.chdir(Path(__file__).parent.parent.parent)
 
     ZOOM_SUMMARY = """

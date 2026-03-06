@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from anyio import Path as AsyncPath
 from fastapi import HTTPException
 from testfixtures import LogCapture
 
@@ -138,17 +139,17 @@ _CAPABILITIES = (
 
 
 class TestServe(CompareCase):
-    def setUp(self) -> None:
+    def setup_method(self) -> None:
         self.maxDiff = None
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         os.chdir(Path(__file__).parent)
         if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         os.chdir(Path(__file__).parent.parent.parent)
         if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
@@ -156,10 +157,10 @@ class TestServe(CompareCase):
     @pytest.mark.asyncio
     async def test_serve_kvp(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
-            self.assert_tiles_generated(
+            await self.assert_tiles_generated_async(
                 cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-nosns.yaml "
                 "--layer=point_hash --zoom 1",
-                main_func=generate.main,
+                main_func=generate.async_main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/%s",
                 tiles=[
@@ -717,10 +718,10 @@ class TestServe(CompareCase):
     @pytest.mark.asyncio
     async def test_mbtiles_rest(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
-            self.assert_tiles_generated(
+            await self.assert_tiles_generated_async(
                 cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-serve.yaml"
                 " --layer=point_hash --zoom 1",
-                main_func=generate.main,
+                main_func=generate.async_main,
                 directory="/tmp/tiles/mbtiles/",
                 tiles_pattern="1.0.0/%s",
                 tiles=[("point_hash/default/2012/swissgrid_5.png.mbtiles")],
@@ -838,10 +839,10 @@ class TestServe(CompareCase):
     @pytest.mark.asyncio
     async def test_bsddb_rest(self):
         with LogCapture("tilecloud_chain", level=30) as log_capture:
-            self.assert_tiles_generated(
+            await self.assert_tiles_generated_async(
                 cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-bsddb.yaml"
                 " --layer=point_hash --zoom=1",
-                main_func=generate.main,
+                main_func=generate.async_main,
                 directory="/tmp/tiles/bsddb/",
                 tiles_pattern="1.0.0/%s",
                 tiles=[("point_hash/default/2012/swissgrid_5.png.bsddb")],

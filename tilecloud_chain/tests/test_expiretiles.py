@@ -9,11 +9,11 @@ from tilecloud_chain.tests import CompareCase, MatchRegex
 
 
 class TestExpireTiles(CompareCase):
-    def setUp(self) -> None:
+    def setup_method(self) -> None:
         self.maxDiff = None
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         with Path("/tmp/expired").open("w") as f:
             f.write("18/135900/92720\n")
             f.write("18/135900/92721\n")
@@ -26,7 +26,7 @@ class TestExpireTiles(CompareCase):
             pass
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         Path("/tmp/expired").unlink()
         Path("/tmp/expired-empty").unlink()
 

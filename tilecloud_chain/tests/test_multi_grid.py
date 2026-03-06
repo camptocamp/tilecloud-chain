@@ -10,15 +10,15 @@ from tilecloud_chain.tests import CompareCase
 
 
 class TestMultiGrid(CompareCase):
-    def setUp(self) -> None:
+    def setup_method(self) -> None:
         self.maxDiff = None
 
     @classmethod
-    def setUpClass(cls) -> None:
+    def setup_class(cls) -> None:
         os.chdir(Path(__file__).parent)
 
     @classmethod
-    def tearDownClass(cls) -> None:
+    def teardown_class(cls) -> None:
         os.chdir(Path(__file__).parent.parent.parent)
 
     def test_generate_all(self) -> None:

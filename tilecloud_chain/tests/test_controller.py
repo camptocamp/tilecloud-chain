@@ -13,17 +13,17 @@ from tilecloud_chain.tests import CompareCase
 
 
 class TestController(CompareCase):
-    def setUp(self) -> None:  # noqa
-        self.maxDiff = None
+    def setup_method(self) -> None:
+        pass
 
     @classmethod
-    def setUpClass(cls):  # noqa
+    def setup_class(cls):
         os.chdir(Path(__file__).parent)
         if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     @classmethod
-    def tearDownClass(cls):  # noqa
+    def teardown_class(cls):
         os.chdir(Path(__file__).parent.parent.parent)
         if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")

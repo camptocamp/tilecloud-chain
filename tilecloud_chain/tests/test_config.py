@@ -8,15 +8,15 @@ from tilecloud_chain.tests import CompareCase
 
 
 class TestConfig(CompareCase):
-    def setUp(self) -> None:  # noqa
+    def setup_method(self) -> None:  # noqa
         self.maxDiff = None
 
     @classmethod
-    def setUpClass(cls):  # noqa
+    def setup_class(cls):  # noqa
         os.chdir(Path(__file__).parent)
 
     @classmethod
-    def tearDownClass(cls):  # noqa
+    def teardown_class(cls):  # noqa
         os.chdir(Path(__file__).parent.parent.parent)
 
     def test_int_grid(self) -> None:
