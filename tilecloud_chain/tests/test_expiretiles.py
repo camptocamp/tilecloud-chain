@@ -63,7 +63,7 @@ class TestExpireTiles(CompareCase):
                     "expired",
                     "the_geom",
                 ],
-                main_func=expiretiles.main,
+                main_func=expiretiles.async_main,
                 expected="""Import successful
     """,
             )
@@ -91,7 +91,7 @@ class TestExpireTiles(CompareCase):
                     "expired",
                     "the_geom",
                 ],
-                main_func=expiretiles.main,
+                main_func=expiretiles.async_main,
                 expected="""Import successful
     """,
             )
@@ -113,7 +113,7 @@ class TestExpireTiles(CompareCase):
                     "user=postgresql password=postgresql dbname=tests host=db",
                     "expired2",
                 ],
-                main_func=expiretiles.main,
+                main_func=expiretiles.async_main,
                 expected="""Import successful
     """,
             )
@@ -155,7 +155,7 @@ class TestExpireTiles(CompareCase):
                     "expired",
                     "the_geom",
                 ],
-                main_func=expiretiles.main,
+                main_func=expiretiles.async_main,
                 expected="""No coords found
     """,
             )

@@ -32,7 +32,7 @@ class TestMultiGrid(CompareCase):
                 "--layer=all",
                 "--zoom=0",
             ],
-            main_func=generate.main,
+            main_func=generate.async_main,
             directory="/tmp/tiles/",
             tiles_pattern="1.0.0/all/default/2012/%s/%i/%i/%i.png",
             tiles=[
@@ -71,7 +71,7 @@ Size per tile: [0-9]{3} o
                 "--layer=one",
                 "--zoom=0",
             ],
-            main_func=generate.main,
+            main_func=generate.async_main,
             directory="/tmp/tiles/",
             tiles_pattern="1.0.0/one/default/2012/%s/%i/%i/%i.png",
             tiles=[
@@ -109,7 +109,7 @@ Size per tile: [0-9]{3} o
                         f"--grid={grid}",
                         "--zoom=0",
                     ],
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern=f"1.0.0/all/default/2012/{grid}/%i/%i/%i.png",
                     tiles=[
@@ -145,7 +145,7 @@ Size per tile: [0-9]{3} o
                 "--layer=all",
                 "--grid=swissgrid_21781",
             ],
-            main_func=generate.main,
+            main_func=generate.async_main,
             expected="""Tile: 4/0/0:+2/+2 config_file=tilegeneration/test-multi-grid.yaml dimension_DATE=2012 grid=swissgrid_21781 host=localhost layer=all
       empty_metatile_detection:
           size: 2367
@@ -173,7 +173,7 @@ Size per tile: [0-9]{3} o
                         "--layer=all",
                         f"--grid={grid}",
                     ],
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     expected=f"""Tile bounds: [{expected}]
         """,
                 )
@@ -188,7 +188,7 @@ Size per tile: [0-9]{3} o
                 "--config=tilegeneration/test-multi-grid.yaml",
                 "--layer=all",
             ],
-            main_func=controller.main,
+            main_func=controller.async_main,
             directory="/tmp/tiles/",
             tiles_pattern="1.0.0/%s/default/%s",
             tiles=[

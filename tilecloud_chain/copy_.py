@@ -83,10 +83,10 @@ Size per tile: {self.count.size / self.count.nb if self.count.nb != 0 else -1} o
 
 def main() -> None:
     """Copy the tiles from a cache to an other."""
-    asyncio.run(_async_main())
+    asyncio.run(async_main())
 
 
-async def _async_main() -> None:
+async def async_main() -> None:
     """Copy the tiles from a cache to an other."""
     try:
         parser = ArgumentParser(

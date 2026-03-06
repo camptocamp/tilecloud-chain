@@ -42,7 +42,7 @@ S3 get: %(get)s [$/month]
     def test_cost_point(self) -> None:
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-cost -c tilegeneration/test-fix.yaml -l point",
-            main_func=cost.main,
+            main_func=cost.async_main,
             expected="\n".join(
                 [
                     "Calculate zoom 0.",
@@ -76,7 +76,7 @@ S3 get: %(get)s [$/month]
     def test_cost_point_count(self) -> None:
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-cost -c tilegeneration/test-fix.yaml -l point --cost-algo count",
-            main_func=cost.main,
+            main_func=cost.async_main,
             expected="\n".join(
                 [
                     "Calculate zoom 0.",
@@ -110,7 +110,7 @@ S3 get: %(get)s [$/month]
     def test_cost_line(self) -> None:
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-cost -c tilegeneration/test-fix.yaml -l line",
-            main_func=cost.main,
+            main_func=cost.async_main,
             expected="\n".join(
                 [
                     "Calculate zoom 0.",
@@ -148,7 +148,7 @@ S3 get: %(get)s [$/month]
     def test_cost_line_count(self) -> None:
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-cost -d -c tilegeneration/test-fix.yaml -l line --cost-algo count",
-            main_func=cost.main,
+            main_func=cost.async_main,
             expected="\n".join(
                 [
                     "Calculate zoom 0.",
@@ -186,7 +186,7 @@ S3 get: %(get)s [$/month]
     def test_cost_polygon(self) -> None:
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-cost -c tilegeneration/test-fix.yaml -l polygon",
-            main_func=cost.main,
+            main_func=cost.async_main,
             expected="\n".join(
                 [
                     "Calculate zoom 0.",
@@ -219,7 +219,7 @@ S3 get: %(get)s [$/month]
     def test_cost_polygon_count(self) -> None:
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-cost -c tilegeneration/test-fix.yaml -l polygon --cost-algo count",
-            main_func=cost.main,
+            main_func=cost.async_main,
             expected="\n".join(
                 [
                     "Calculate zoom 0.",
@@ -252,7 +252,7 @@ S3 get: %(get)s [$/month]
     def test_cost_default(self) -> None:
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-cost -c tilegeneration/test-fix.yaml",
-            main_func=cost.main,
+            main_func=cost.async_main,
             expected="\n".join(
                 [
                     "",
@@ -312,7 +312,7 @@ S3 get: %(get)s [$/month]
     def test_cost_polygon2(self) -> None:
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-cost -c tilegeneration/test-fix.yaml -l polygon2",
-            main_func=cost.main,
+            main_func=cost.async_main,
             expected="\n".join(
                 [
                     "Calculate zoom 0.",
@@ -343,7 +343,7 @@ S3 get: %(get)s [$/month]
     def test_cost_nometa(self) -> None:
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-cost -c tilegeneration/test-fix.yaml -l all",
-            main_func=cost.main,
+            main_func=cost.async_main,
             expected="\n".join(
                 [
                     "Calculate zoom 0.",
@@ -376,7 +376,7 @@ S3 get: %(get)s [$/month]
     def test_cost_layer_bbox(self) -> None:
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-cost -c tilegeneration/test-fix.yaml -l all --cost-algo count",
-            main_func=cost.main,
+            main_func=cost.async_main,
             expected="\n".join(
                 [
                     "Calculate zoom 0.",
@@ -409,7 +409,7 @@ S3 get: %(get)s [$/month]
     def test_cost_no_geom(self) -> None:
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-cost -c tilegeneration/test-fix.yaml -l point --no-geom",
-            main_func=cost.main,
+            main_func=cost.async_main,
             expected="\n".join(
                 [
                     "Calculate zoom 0.",
@@ -443,7 +443,7 @@ S3 get: %(get)s [$/month]
     def test_cost_sqs_nometa(self) -> None:
         self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-cost -c tilegeneration/test.yaml -l point_hash_no_meta",
-            main_func=cost.main,
+            main_func=cost.async_main,
             expected="\n".join(
                 [
                     "Calculate zoom 0.",

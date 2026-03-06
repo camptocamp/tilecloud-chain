@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 import yaml
-from anyio import Path as AsyncPath
 from fastapi import HTTPException
 from testfixtures import LogCapture
 
@@ -1051,7 +1050,7 @@ class TestServe(CompareCase):
     async def test_wsgi(self) -> None:
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-serve.yaml --layer=point_hash --zoom 1",
-            main_func=generate.main,
+            main_func=generate.async_main,
             directory="/tmp/tiles/mbtiles/",
             tiles_pattern="1.0.0/%s",
             tiles=[("point_hash/default/2012/swissgrid_5.png.mbtiles")],

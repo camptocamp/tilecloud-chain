@@ -1671,14 +1671,14 @@ sqs:
     def test_config(self) -> None:
         self.assert_cmd_yaml_equals(
             cmd=".build/venv/bin/generate-controller --dump-config -c tilegeneration/test-fix.yaml",
-            main_func=controller.main,
+            main_func=controller.async_main,
             expected=self.CONFIG,
         )
 
     def test_config_line(self) -> None:
         self.assert_cmd_yaml_equals(
             cmd=".build/venv/bin/generate-controller -l line --dump-config -c tilegeneration/test-fix.yaml",
-            main_func=controller.main,
+            main_func=controller.async_main,
             expected=self.CONFIG,
         )
 
@@ -1698,7 +1698,7 @@ sqs:
     def test_generate_legend_images(self) -> None:
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate-controler -c tilegeneration/test-legends.yaml --generate-legend-images",
-            main_func=controller.main,
+            main_func=controller.async_main,
             directory="/tmp/tiles/1.0.0/",
             tiles_pattern="%s/default/%s",
             tiles=[
@@ -1810,7 +1810,7 @@ sqs:
     async def test_legends(self) -> None:
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate-controler -c tilegeneration/test-legends.yaml --legends",
-            main_func=controller.main,
+            main_func=controller.async_main,
             directory="/tmp/tiles/1.0.0/",
             tiles_pattern="%s/default/legend%i.png",
             tiles=[("point", 0), ("line", 0), ("line", 2), ("polygon", 0), ("all", 0), ("all", 2)],
@@ -2020,7 +2020,7 @@ sqs:
     async def test_no_legends(self) -> None:
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_controler -c tilegeneration/test-no-legends.yaml --legends",
-            main_func=controller.main,
+            main_func=controller.async_main,
             directory="/tmp/tiles/1.0.0/",
             tiles_pattern="%s/default/legend%i.png",
             tiles=[],
@@ -2218,7 +2218,7 @@ sqs:
     async def test_legends_items(self) -> None:
         self.assert_tiles_generated(
             cmd=".build/venv/bin/generate_controler -c tilegeneration/test-legends-items.yaml --legends",
-            main_func=controller.main,
+            main_func=controller.async_main,
             directory="/tmp/tiles/1.0.0/",
             tiles_pattern="%s/default/legend%i.png",
             tiles=[],

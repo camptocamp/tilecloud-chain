@@ -32,7 +32,7 @@ class TestGenerate(CompareCase):
         for d in ("-d", "-q", "-v"):
             self.assert_cmd_equals(
                 cmd=f".build/venv/bin/generate-copy {d} -c tilegeneration/test-copy.yaml src dst",
-                main_func=copy_.main,
+                main_func=copy_.async_main,
                 regex=True,
                 expected=(
                     """The tile copy of layer 'point_hash' is finish
