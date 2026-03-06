@@ -106,7 +106,7 @@ class Settings(BaseSettings):
     objgraph_limit: int = 10
     objgraph_gene: bool = False
     config_file: AnyioPath = Path("/etc/tilegeneration/config.yaml")
-    main_config_file: AnyioPath = Path("/etc/tilegeneration/config.yaml")
+    main_config_file: AnyioPath | None = None
     hosts_file: AnyioPath = Path("/etc/tilegeneration/hosts.yaml")
     hosts_limit: AnyioPath = Path("/etc/tilegeneration/hosts_limit.yaml")
     ignore_config_error: bool = False
