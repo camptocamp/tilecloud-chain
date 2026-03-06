@@ -32,7 +32,6 @@ import html
 import logging
 import math
 import mimetypes
-import os
 import time
 from copy import copy
 from dataclasses import dataclass
