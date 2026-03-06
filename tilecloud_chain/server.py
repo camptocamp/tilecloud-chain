@@ -32,6 +32,7 @@ import html
 import logging
 import math
 import mimetypes
+import os
 import time
 from copy import copy
 from dataclasses import dataclass
@@ -84,7 +85,7 @@ _SANITIZER = html_sanitizer.Sanitizer(
         "keep_typographic_whitespace": True,
     },
 )
-_TEMPLATES = Jinja2Templates(directory="tilecloud_chain/templates")
+_TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
 # Constants
 _ONE_DAY_IN_SECONDS = 86400
@@ -179,7 +180,7 @@ class Server:
     @staticmethod
     def get_static_allow_extension(config: tilecloud_chain.DatedConfig) -> list[str]:
         """Get the allowed extensions in the static view."""
-        return config.config["server"].get(
+        return config.config.get("server", {}).get(
             "static_allow_extension",
             ["jpeg", "png", "xml", "js", "html", "css"],
         )
@@ -187,7 +188,7 @@ class Server:
     @staticmethod
     def get_cache_name(config: tilecloud_chain.DatedConfig) -> str:
         """Get the cache name."""
-        return config.config["server"].get(
+        return config.config.get("server", {}).get(
             "cache",
             config.config["generation"].get("default_cache", configuration.DEFAULT_CACHE_DEFAULT),
         )

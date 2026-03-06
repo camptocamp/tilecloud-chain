@@ -8,7 +8,7 @@ import yaml
 from anyio import Path as AnyioPath
 from PIL import Image
 
-from tilecloud_chain import TileGeneration, controller
+from tilecloud_chain import TileGeneration, controller, server
 from tilecloud_chain.tests import CompareCase
 
 
@@ -28,13 +28,26 @@ class TestController(CompareCase):
         if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
+    async def get_capabilities(self, gene, cache_name):
+        server._TILEGENERATION = gene
+        config = await gene.get_config(gene.config_file)
+        config.config["generation"]["default_cache"] = cache_name
+        params = {
+            "SERVICE": "WMTS",
+            "VERSION": "1.0.0",
+            "REQUEST": "GetCapabilities",
+        }
+        response = await server.server.serve(params, config, "localhost", None)
+        server._TILEGENERATION = None
+        return response.body.decode("utf-8")
+
     @pytest.mark.asyncio
     async def test_capabilities(self) -> None:
         gene = TileGeneration(AnyioPath("tilegeneration/test-fix.yaml"), configure_logging=False)
         await gene.ainit()
-        config = gene.get_config(AnyioPath("tilegeneration/test-fix.yaml"))
+        config = await gene.get_config(AnyioPath("tilegeneration/test-fix.yaml"))
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await self.get_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -976,7 +989,7 @@ class TestController(CompareCase):
         gene = TileGeneration(AnyioPath("tilegeneration/test-fix.yaml"), configure_logging=False)
         await gene.ainit()
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, "multi_host"),
+            await self.get_capabilities(gene, "multi_host"),
             self.MULTIHOST_CAPABILITIES,
             True,
         )
@@ -985,9 +998,9 @@ class TestController(CompareCase):
     async def test_capabilities_slash(self) -> None:
         gene = TileGeneration(AnyioPath("tilegeneration/test-capabilities.yaml"), configure_logging=False)
         await gene.ainit()
-        config = gene.get_config(AnyioPath("tilegeneration/test-capabilities.yaml"))
+        config = await gene.get_config(AnyioPath("tilegeneration/test-capabilities.yaml"))
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, config.config["generation"]["default_cache"]),
+            await self.get_capabilities(gene, config.config["generation"]["default_cache"]),
             r"""<\?xml version="1.0" encoding="UTF-8"\?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -1122,7 +1135,7 @@ class TestController(CompareCase):
         gene = TileGeneration(AnyioPath("tilegeneration/test-fix.yaml"), configure_logging=False)
         await gene.ainit()
         self.assert_result_equals(
-            await controller.wmts_capabilities(gene, "multi_url"),
+            await self.get_capabilities(gene, "multi_url"),
             self.MULTIHOST_CAPABILITIES,
             True,
         )
