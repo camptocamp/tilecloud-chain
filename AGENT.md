@@ -21,14 +21,31 @@ Use the long parameter names for clarity and maintainability.
 
 ## Development
 
-Copy `docker-compose.override.sample.yaml` to `docker-compose.override.yaml` and use it for development.
-It contains comments that can be used to activate development features.
+To develop on the project, you should use the `docker-compose.override.yaml` file.
+Copy `docker-compose.override.sample.yaml` to `docker-compose.override.yaml`.
+
+This will:
+
+- Mount the local source code into the container.
+- Enable the reload mode for the application.
+
+To start the application, use the following command:
+
+```bash
+docker compose up -d
+```
+
+The application will be available at:
+
+- `http://localhost:9050/` for the main application.
+- `http://localhost:9051/` for the application with a test user.
+- `http://localhost:9052/` for the application with PostgreSQL.
 
 ## Documentation
 
 The user documentation in the `tilecloud_chain/USAGE.rst` file should be updated to reflect the changes in the codebase.
 
-All the environment variable defined in `tilecloud_chain/settings.py` should also be documented in the `tilecloud_chain/USAGE.md`.
+All the environment variable defined in `tilecloud_chain/settings.py` should also be documented in the `tilecloud_chain/USAGE.rst`.
 
 The changes in the codebase that affect the user should be documented in the `CHANGELOG.md`.
 

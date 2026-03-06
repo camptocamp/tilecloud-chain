@@ -532,8 +532,8 @@ The cache configuration is like this:
 The container should already exists.
 
 For the authentication you should set those environment variables:
-``AZURE_STORAGE_CONNECTION_STRING`` on your local environment,
-or ``AZURE_STORAGE_ACCOUNT_URL`` if you run your container on Azure.
+``TILECLOUD_CHAIN__AZURE__STORAGE_CONNECTION_STRING`` on your local environment,
+or ``TILECLOUD_CHAIN__AZURE__STORAGE_ACCOUNT_URL`` if you run your container on Azure.
 
 
 Other related configuration
