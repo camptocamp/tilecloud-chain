@@ -48,6 +48,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from tilecloud import Tile, TileCoord
 
 from tilecloud_chain import DatedConfig, configuration, controller, generate
+from tilecloud_chain.settings import settings
 from tilecloud_chain.store import AsyncTileStore
 
 _LOGGER = logging.getLogger(__name__)
@@ -87,7 +88,7 @@ _STATUS_DONE = "done"
 _STATUS_CANCELLED = "cancelled"
 _STATUS_PENDING = "pending"
 
-_schema = os.environ.get("TILECLOUD_CHAIN_POSTGRESQL_SCHEMA", "tilecloud_chain")
+_schema = settings.postgresql.schema_name
 
 
 def _encode_message(metatile: Tile) -> dict[str, Any]:
@@ -248,8 +249,6 @@ async def _start_job(
         error = False
         out = io.StringIO()
         try:
-            for key, value in env.items():
-                os.environ[key] = value
             _LOGGER.info("Running the command `%s` using the function directly", display_command)
             await main(final_command, out)
             _LOGGER.info("Successfully ran the command `%s` using the function directly", display_command)
@@ -265,7 +264,7 @@ async def _start_job(
             result = await session.execute(select(Job).where(Job.id == job_id).with_for_update(of=Job))
             job = result.scalar()
             job.status = _STATUS_ERROR if error else _STATUS_STARTED  # type: ignore[union-attr]
-            job.message = out.getvalue()[: int(os.environ.get("TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH", "1000"))]  # type: ignore[union-attr]
+            job.message = out.getvalue()[: settings.max_output_length]  # type: ignore[union-attr]
             await session.commit()
         return
 
@@ -578,17 +577,13 @@ class PostgresqlTileStore(AsyncTileStore):
                     continue
                 job_id = self.jobs.pop(config_filename)
                 try:
-                    if os.environ.get("TILECLOUD_CHAIN_OBJGRAPH_POSTGRESQL", "0").lower() in (
-                        "1",
-                        "true",
-                        "on",
-                    ):
+                    if settings.postgresql.objgraph_postgresql:
                         for generation in range(3):
                             gc.collect(generation)
                         values = [
                             f"{name}: {number} {diff}"
                             for name, number, diff in objgraph.growth(
-                                limit=int(os.environ.get("TILECLOUD_CHAIN_OBJGRAPH_LIMIT", "10")),
+                                limit=settings.postgresql.objgraph_limit,
                             )
                         ]
                         if values:
@@ -686,7 +681,7 @@ class PostgresqlTileStore(AsyncTileStore):
 async def get_postgresql_queue_store(config: DatedConfig) -> PostgresqlTileStore:
     """Get the postgreSQL queue tile store."""
     conf = config.config.get("postgresql", {})
-    sqlalchemy_url = os.environ.get("TILECLOUD_CHAIN_SQLALCHEMY_URL", conf.get("sqlalchemy_url"))
+    sqlalchemy_url = settings.postgresql.sqlalchemy_url or conf.get("sqlalchemy_url")
     assert sqlalchemy_url is not None
 
     tilestore = PostgresqlTileStore(

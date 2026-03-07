@@ -60,6 +60,7 @@ import tilecloud_chain.configuration
 from tilecloud_chain import configuration
 from tilecloud_chain.filter.error import MaximumConsecutiveErrors, TooManyError
 from tilecloud_chain.multitilestore import MultiTileStore
+from tilecloud_chain.settings import settings
 from tilecloud_chain.store import (
     AsyncTileStore,
     CallWrapper,
@@ -83,10 +84,7 @@ _HOST_CONTEXT: contextvars.ContextVar[str | None] = contextvars.ContextVar("host
 _LAYER_CONTEXT: contextvars.ContextVar[str | None] = contextvars.ContextVar("layer")
 _META_TILE_COORD_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar("meta_tilecoord")
 
-_ALLOWED_COMMANDS = os.environ.get(
-    "TILEGENERATION_ALLOWED_PROCESS_COMMANDS",
-    "optipng,jpegoptim,pngquant",
-).split(",")
+_ALLOWED_COMMANDS = settings.allowed_process_commands
 
 
 def formatted_metadata(tile: Tile) -> str:
@@ -118,9 +116,7 @@ def add_common_options(
         "--config",
         type=Path,
         default=(
-            os.environ.get("TILEGENERATION_CONFIGFILE", "tilegeneration/config.yaml")
-            if default_config_file
-            else None
+            str(settings.config_file or Path("tilegeneration/config.yaml")) if default_config_file else None
         ),
         help="path to the configuration file",
         metavar="FILE",
@@ -440,19 +436,22 @@ class TileFilter(logging.Filter):
 
 def get_azure_container_client(container: str) -> ContainerClient:
     """Get the Azure blog storage client."""
-    if os.environ.get("AZURE_STORAGE_CONNECTION_STRING"):
+    if settings.azure.storage_connection_string:
         return BlobServiceClient.from_connection_string(
-            os.environ["AZURE_STORAGE_CONNECTION_STRING"],
+            settings.azure.storage_connection_string,
         ).get_container_client(container=container)
-    if "AZURE_STORAGE_BLOB_CONTAINER_URL" in os.environ:
-        container_client = ContainerClient.from_container_url(os.environ["AZURE_STORAGE_BLOB_CONTAINER_URL"])
-        if os.environ.get("AZURE_STORAGE_BLOB_VALIDATE_CONTAINER_NAME", "true").lower() == "true":
+    if settings.azure.storage_blob_container_url:
+        container_client = ContainerClient.from_container_url(settings.azure.storage_blob_container_url)
+        if settings.azure.storage_blob_validate_container_name:
             assert container == container_client.container_name, (
                 f"Container name mismatch: {container} != {container_client.container_name}"
             )
         return container_client
+    if not settings.azure.storage_account_url:
+        message = "TILECLOUD_CHAIN__AZURE__STORAGE_ACCOUNT_URL is not configured"
+        raise ValueError(message)
     return BlobServiceClient(
-        account_url=os.environ["AZURE_STORAGE_ACCOUNT_URL"],
+        account_url=settings.azure.storage_account_url,
         credential=DefaultAzureCredential(),  # type: ignore[arg-type]
     ).get_container_client(container=container)
 
@@ -657,7 +656,7 @@ class TileGeneration:
         if not hasattr(self.options, "ignore_error"):
             self.options.ignore_error = False
 
-        if configure_logging and os.environ.get("CI", "false").lower() != "true":
+        if configure_logging and not settings.logging.ci:
             ###
             # logging configuration
             # https://docs.python.org/3/library/logging.config.html#logging-config-dictschema
@@ -666,17 +665,17 @@ class TileGeneration:
                 {
                     "version": 1,
                     "root": {
-                        "level": os.environ["OTHER_LOG_LEVEL"],
-                        "handlers": [os.environ["LOG_TYPE"]],
+                        "level": settings.logging.other_log_level,
+                        "handlers": [settings.logging.log_type],
                     },
                     "loggers": {
                         # "level = INFO" logs SQL queries.
                         # "level = DEBUG" logs SQL queries and results.
                         # "level = WARN" logs neither.  (Recommended for production systems.)
-                        "sqlalchemy.engine": {"level": os.environ["SQL_LOG_LEVEL"]},
-                        "c2cwsgiutils": {"level": os.environ["C2CWSGIUTILS_LOG_LEVEL"]},
-                        "tilecloud": {"level": os.environ["TILECLOUD_LOG_LEVEL"]},
-                        "tilecloud_chain": {"level": os.environ["TILECLOUD_CHAIN_LOG_LEVEL"]},
+                        "sqlalchemy.engine": {"level": settings.logging.sql_log_level},
+                        "c2casgiutils": {"level": settings.logging.c2casgiutils_log_level},
+                        "tilecloud": {"level": settings.logging.tilecloud_log_level},
+                        "tilecloud_chain": {"level": settings.logging.tilecloud_chain_log_level},
                     },
                     "handlers": {
                         "console": {
@@ -753,10 +752,10 @@ class TileGeneration:
         if host not in hosts:
             _LOGGER.error("Missing host '%s' in global config", host)
             return None
-        default_config_file = os.environ.get("TILEGENERATION_CONFIGFILE")
+        default_config_file = settings.config_file or Path("tilegeneration/config.yaml")
         config_file = hosts.get(
             host,
-            Path(default_config_file) if default_config_file else None,
+            default_config_file,
         )
         _LOGGER.debug("For the host %s, use config file: %s", host, config_file)
         return config_file
@@ -806,11 +805,9 @@ class TileGeneration:
 
     async def get_main_config(self) -> DatedConfig:
         """Get the main configuration."""
-        if os.environ.get("TILEGENERATION_MAIN_CONFIGFILE"):
-            return await self.get_config(
-                Path(os.environ["TILEGENERATION_MAIN_CONFIGFILE"]),
-                ignore_error=False,
-            )
+        main_config_file = settings.main_config_file
+        if main_config_file:
+            return await self.get_config(main_config_file, ignore_error=False)
         if self.config_file:
             return await self.get_config(self.config_file, self.options.ignore_error, self.base_config)
         _LOGGER.error("No provided configuration file")
@@ -827,7 +824,11 @@ class TileGeneration:
 
     async def get_hosts(self, silent: bool = False) -> dict[str, Path]:
         """Get the hosts from the hosts file."""
-        file_path = Path(os.environ["TILEGENERATION_HOSTSFILE"])
+        file_path = settings.hosts_file
+        if file_path is None:
+            if not silent:
+                _LOGGER.error("Missing hosts file configuration")
+            return {}
         if not await file_path.exists():
             if not silent:
                 _LOGGER.error("Missing hosts file %s", file_path)
@@ -899,17 +900,14 @@ class TileGeneration:
 
         if errors:
             _LOGGER.error("The config file is invalid:\n%s", "\n".join(errors))
-            if not (
-                ignore_error
-                or os.environ.get("TILEGENERATION_IGNORE_CONFIG_ERROR", "FALSE").lower() == "true"
-            ):
+            if not (ignore_error or settings.ignore_config_error):
                 sys.exit(1)
 
         error = False
         grids = config.config.get("grids", {})
         for grid in grids.values():
             if "resolution_scale" in grid:
-                scale = grid["resolution_scale"]
+                scale = grid.get("resolution_scale", 1)
                 for resolution in grid["resolutions"]:
                     if resolution * scale % 1 != 0.0:
                         _LOGGER.error(
@@ -942,9 +940,7 @@ class TileGeneration:
                 )
                 error = True
 
-        if error and not (
-            ignore_error or os.environ.get("TILEGENERATION_IGNORE_CONFIG_ERROR", "FALSE").lower() == "true"
-        ):
+        if error and not (ignore_error or settings.ignore_config_error):
             sys.exit(1)
 
         return not (error or errors)
@@ -1134,7 +1130,7 @@ class TileGeneration:
             not self.options.quiet
             and not self.options.verbose
             and not self.options.debug
-            and os.environ.get("FRONTEND") != "noninteractive"
+            and settings.frontend != "noninteractive"
         ):
 
             async def log_tiles(tile: Tile) -> Tile:
@@ -1268,7 +1264,7 @@ class TileGeneration:
             return dated_grid.grid
 
         grid = config.config["grids"][grid_name]
-        scale = grid["resolution_scale"]
+        scale = grid.get("resolution_scale", 1)
 
         tilegrid = FreeTileGrid(
             resolutions=cast("list[int]", [r * scale for r in grid["resolutions"]]),
@@ -1663,7 +1659,7 @@ class TileGeneration:
         await run.init()
 
         if test is None:
-            nb_tasks = int(os.environ.get("TILECLOUD_CHAIN_NB_TASKS", "1")) if self.multi_task else 1
+            nb_tasks = settings.nb_tasks if self.multi_task else 1
 
             async def target() -> None:
                 _LOGGER.debug("Start run")
@@ -2202,15 +2198,9 @@ async def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWr
         # Create a Redis queue
         conf = config.config["redis"]
         tilestore_kwargs: dict[str, Any] = {
-            "name": os.environ.get(
-                "TILECLOUD_CHAIN_REDIS_QUEUE",
-                conf.get("queue", configuration.REDIS_QUEUE_DEFAULT),
-            ),
+            "name": settings.redis.queue or conf.get("queue", configuration.REDIS_QUEUE_DEFAULT),
             "stop_if_empty": not daemon,
-            "timeout": os.environ.get(
-                "TILECLOUD_CHAIN_REDIS_TIMEOUT",
-                conf.get("timeout", configuration.TIMEOUT_DEFAULT),
-            ),
+            "timeout": settings.redis.timeout or conf.get("timeout", configuration.TIMEOUT_DEFAULT),
             "pending_timeout": conf.get("pending_timeout", configuration.PENDING_TIMEOUT_DEFAULT),
             "max_retries": conf.get("max_retries", configuration.MAX_RETRIES_DEFAULT),
             "max_errors_age": conf.get("max_errors_age", configuration.MAX_ERRORS_AGE_DEFAULT),
@@ -2218,30 +2208,33 @@ async def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWr
             "connection_kwargs": conf.get("connection_kwargs", {}),
             "sentinel_kwargs": conf.get("sentinel_kwargs"),
         }
-        socket_timeout = os.environ.get("TILECLOUD_CHAIN_REDIS_SOCKET_TIMEOUT", conf.get("socket_timeout"))
+        socket_timeout = settings.redis.socket_timeout or conf.get("socket_timeout")
         if socket_timeout is not None:
             tilestore_kwargs["connection_kwargs"]["socket_timeout"] = socket_timeout
-        db = os.environ.get("TILECLOUD_CHAIN_REDIS_DB", conf.get("db"))
+        db = settings.redis.db or conf.get("db")
         if db is not None:
             tilestore_kwargs["connection_kwargs"]["db"] = db
-        url = os.environ.get("TILECLOUD_CHAIN_REDIS_URL", conf.get("url"))
+        url = settings.redis.url or conf.get("url")
         if url is not None:
             tilestore_kwargs["url"] = url
         else:
-            sentinels: list[tuple[str, str | int]] = []
-            if "TILECLOUD_CHAIN_REDIS_SENTINELs" in os.environ:
-                sentinels_string = os.environ["TILECLOUD_CHAIN_REDIS_SENTINELS"]
-                sentinels_tmp = [s.split(":") for s in sentinels_string.split(",")]
-                sentinels = [  # pylint: disable=unnecessary-comprehension
-                    (host, port) for host, port in sentinels_tmp
+            sentinels: list[tuple[str, int]] = []
+            if settings.redis.sentinels:
+                sentinels = [
+                    (host, int(port))
+                    for host, port in (s.split(":") for s in settings.redis.sentinels.split(","))
                 ]
             elif "sentinels" in conf:
-                sentinels = conf["sentinels"]
+                sentinels = [(host, int(port)) for host, port in conf["sentinels"]]
 
-            tilestore_kwargs["sentinels"] = [(host, int(port)) for host, port in sentinels]
-            tilestore_kwargs["service_name"] = os.environ.get(
-                "TILECLOUD_CHAIN_REDIS_SERVICE_NAME",
-                conf.get("service_name", configuration.SERVICE_NAME_DEFAULT),
+            tilestore_kwargs["sentinels"] = sentinels
+            tilestore_kwargs["service_name"] = (
+                settings.redis.sentinel_service_name
+                or settings.redis.service_name
+                or conf.get(
+                    "service_name",
+                    configuration.SERVICE_NAME_DEFAULT,
+                )
             )
         if "pending_count" in conf:
             tilestore_kwargs["pending_count"] = conf["pending_count"]

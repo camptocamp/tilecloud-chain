@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-import os
 import sys
 from argparse import ArgumentParser
 from dataclasses import dataclass
@@ -31,6 +30,7 @@ from tilecloud_chain import (
     get_azure_container_client,
     get_queue_store,
 )
+from tilecloud_chain.settings import settings
 
 _LOGGER = logging.getLogger(__name__)
 _GET_STATUS_SUMMARY = Summary("tilecloud_chain_get_status", "Number of get_stats", ["type", "queue"])
@@ -113,7 +113,7 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
             yaml_out = StringIO()
             ru_yaml.dump(config.config, yaml_out)
             print(yaml_out.getvalue())
-            sys.exit(0)
+            return
 
         if options.legends:
             await _generate_legend_images(gene, out)
@@ -122,7 +122,7 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         raise
     except:  # pylint: disable=bare-except
         _LOGGER.exception("Exit with exception")
-        if os.environ.get("TESTS", "false").lower() == "true":
+        if settings.tests.enabled:
             raise
         sys.exit(1)
 
@@ -368,8 +368,8 @@ async def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = No
                     if previous_resolution_metadata is not None:
                         assert previous_resolution is not None
                         middle_res = exp((log(previous_resolution) + log(resolution)) / 2)
-                        previous_resolution_metadata["min_resolution"] = middle_res
-                        resolution_metadata["max_resolution"] = middle_res
+                        previous_resolution_metadata["max_resolution"] = middle_res
+                        resolution_metadata["min_resolution"] = middle_res
                     metadata.append(resolution_metadata)
                     previous_resolution_metadata = resolution_metadata
                     previous_resolution = resolution

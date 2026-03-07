@@ -139,11 +139,11 @@
         <LegendURL format="{{ legend['mime_type'] }}" xlink:href="{{ legend['href'] }}" {%
         if 'width' in legend %}width="{{ legend['width'] }}" {% endif %}{%
         if 'height' in legend %}height="{{ legend['height'] }}" {% endif %}{%
-        if 'max_scale' in legend %}maxScaleDenominator="{{ legend['max_scale'] }}" {% else %}{%
-        if 'max_resolution' in legend %}maxScaleDenominator="{{ legend['max_resolution'] / 0.00028 }}" {%
+        if 'max_scale' in legend and legend['max_scale'] is not none %}maxScaleDenominator="{{ legend['max_scale'] }}" {% else %}{%
+        if 'max_resolution' in legend and legend['max_resolution'] is not none %}maxScaleDenominator="{{ legend['max_resolution'] / 0.00028 }}" {%
         endif %}{% endif %}{%
-        if 'min_scale' in legend %}minScaleDenominator="{{ legend['min_scale'] }}" {% else %}{%
-        if 'min_resolution' in legend %}minScaleDenominator="{{ legend['min_resolution'] / 0.00028 }}" {%
+        if 'min_scale' in legend and legend['min_scale'] is not none %}minScaleDenominator="{{ legend['min_scale'] }}" {% else %}{%
+        if 'min_resolution' in legend and legend['min_resolution'] is not none %}minScaleDenominator="{{ legend['min_resolution'] / 0.00028 }}" {%
         endif %}{% endif %}/>{%
         endfor %}
       </Style>

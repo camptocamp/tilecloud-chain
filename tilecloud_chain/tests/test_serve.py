@@ -1,13 +1,15 @@
 import os
 import shutil
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import yaml
+from anyio import Path as AnyioPath
 from fastapi import HTTPException
 from testfixtures import LogCapture
 
-from tilecloud_chain import DatedConfig, generate, server
+from tilecloud_chain import DatedConfig, TileGeneration, generate, server
 from tilecloud_chain.tests import CompareCase
 
 _CAPABILITIES = (
@@ -138,17 +140,17 @@ _CAPABILITIES = (
 
 
 class TestServe(CompareCase):
-    def setUp(self) -> None:
+    def setup_method(self) -> None:
         self.maxDiff = None
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         os.chdir(Path(__file__).parent)
         if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         os.chdir(Path(__file__).parent.parent.parent)
         if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
@@ -156,10 +158,10 @@ class TestServe(CompareCase):
     @pytest.mark.asyncio
     async def test_serve_kvp(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
-            self.assert_tiles_generated(
+            await self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-nosns.yaml "
                 "--layer=point_hash --zoom 1",
-                main_func=generate.main,
+                main_func=generate.async_main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/%s",
                 tiles=[
@@ -183,12 +185,15 @@ class TestServe(CompareCase):
             )
 
             server._PYRAMID_SERVER = None
-            server._TILEGENERATION = None
+            server._TILEGENERATION = TileGeneration(
+                config_file=AnyioPath("tilegeneration/test-nosns.yaml"),
+                configure_logging=False,
+            )
             with Path("tilegeneration/test-nosns.yaml").open() as f:
                 config = DatedConfig(
                     config=yaml.safe_load(f),
                     mtime=Path("tilegeneration/test-nosns.yaml").stat().st_mtime,
-                    filename="tilegeneration/test-nosns.yaml",
+                    file=AnyioPath("tilegeneration/test-nosns.yaml"),
                 )
             params = {
                 "Service": "WMTS",
@@ -214,49 +219,49 @@ class TestServe(CompareCase):
             params["Service"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Service"] = "WMTS"
             params["Request"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Request"] = "GetTile"
             params["Version"] = "0.9"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Version"] = "1.0.0"
             params["Format"] = "image/jpeg"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Format"] = "image/png"
             params["Layer"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Layer"] = "point_hash"
             params["Style"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Style"] = "default"
             params["TileMatrixSet"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["TileMatrixSet"] = "swissgrid_5"
             del params["Service"]
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params = {
                 "Service": "WMTS",
@@ -280,14 +285,14 @@ class TestServe(CompareCase):
       <ows:Operation name="GetCapabilities">
         <ows:DCP>
           <ows:HTTP>
-            <ows:Get xlink:href="http://wmts1/tiles/wmts/1.0.0/WMTSCapabilities.xml">
+            <ows:Get xlink:href="http://wmts1/tiles/1.0.0/WMTSCapabilities.xml">
               <ows:Constraint name="GetEncoding">
                 <ows:AllowedValues>
                   <ows:Value>REST</ows:Value>
                 </ows:AllowedValues>
               </ows:Constraint>
             </ows:Get>
-            <ows:Get xlink:href="http://wmts1/tiles/wmts/">
+            <ows:Get xlink:href="http://wmts1/tiles/">
               <ows:Constraint name="GetEncoding">
                 <ows:AllowedValues>
                   <ows:Value>KVP</ows:Value>
@@ -300,7 +305,7 @@ class TestServe(CompareCase):
       <ows:Operation name="GetTile">
         <ows:DCP>
           <ows:HTTP>
-            <ows:Get xlink:href="http://wmts1/tiles/wmts/">
+            <ows:Get xlink:href="http://wmts1/tiles/">
               <ows:Constraint name="GetEncoding">
                 <ows:AllowedValues>
                   <ows:Value>REST</ows:Value>
@@ -330,7 +335,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/all/default/"""
+                    template="http://wmts1/tiles/1.0.0/all/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -352,7 +357,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/line/default/"""
+                    template="http://wmts1/tiles/1.0.0/line/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -374,7 +379,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/mapnik/default/"""
+                    template="http://wmts1/tiles/1.0.0/mapnik/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -396,7 +401,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="application/utfgrid" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/mapnik_grid/default/"""
+                    template="http://wmts1/tiles/1.0.0/mapnik_grid/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -418,7 +423,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="application/utfgrid" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/mapnik_grid_drop/default/"""
+                    template="http://wmts1/tiles/1.0.0/mapnik_grid_drop/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -440,7 +445,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/point/default/"""
+                    template="http://wmts1/tiles/1.0.0/point/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -462,7 +467,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/point_error/default/"""
+                    template="http://wmts1/tiles/1.0.0/point_error/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -484,7 +489,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/point_hash/default/"""
+                    template="http://wmts1/tiles/1.0.0/point_hash/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -506,7 +511,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/point_hash_no_meta/default/"""
+                    template="http://wmts1/tiles/1.0.0/point_hash_no_meta/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -528,7 +533,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/point_px_buffer/default/"""
+                    template="http://wmts1/tiles/1.0.0/point_px_buffer/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -550,7 +555,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/webp" resourceType="tile"
-                     template="http://wmts1/tiles/wmts/1.0.0/point_webp/default/{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.webp" />
+                     template="http://wmts1/tiles/1.0.0/point_webp/default/{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.webp" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
         </TileMatrixSetLink>
@@ -571,7 +576,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/polygon/default/"""
+                    template="http://wmts1/tiles/1.0.0/polygon/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -593,7 +598,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/polygon2/default/"""
+                    template="http://wmts1/tiles/1.0.0/polygon2/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_01</TileMatrixSet>
@@ -717,10 +722,10 @@ class TestServe(CompareCase):
     @pytest.mark.asyncio
     async def test_mbtiles_rest(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
-            self.assert_tiles_generated(
+            await self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-serve.yaml"
                 " --layer=point_hash --zoom 1",
-                main_func=generate.main,
+                main_func=generate.async_main,
                 directory="/tmp/tiles/mbtiles/",
                 tiles_pattern="1.0.0/%s",
                 tiles=[("point_hash/default/2012/swissgrid_5.png.mbtiles")],
@@ -741,12 +746,15 @@ class TestServe(CompareCase):
             )
 
             server._PYRAMID_SERVER = None
-            server._TILEGENERATION = None
+            server._TILEGENERATION = TileGeneration(
+                config_file=AnyioPath("tilegeneration/test-serve.yaml"),
+                configure_logging=False,
+            )
             with Path("tilegeneration/test-serve.yaml").open() as f:
                 config = DatedConfig(
                     config=yaml.safe_load(f),
                     mtime=Path("tilegeneration/test-serve.yaml").stat().st_mtime,
-                    file="tilegeneration/test-serve.yaml",
+                    file=AnyioPath("tilegeneration/test-serve.yaml"),
                 )
             params = {
                 "Service": "WMTS",
@@ -775,33 +783,33 @@ class TestServe(CompareCase):
             params["Version"] = "0.9"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Version"] = "1.0.0"
             params["Format"] = "image/jpeg"
             params["TileCol"] = "14"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Format"] = "image/png"
             params["TileCol"] = "14"
             params["Layer"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Layer"] = "point_hash"
             params["Style"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Style"] = "default"
             params["TileMatrixSet"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params = {
                 "Service": "WMTS",
@@ -828,7 +836,7 @@ class TestServe(CompareCase):
             assert response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 response.body.decode("utf-8"),
-                _CAPABILITIES,
+                _CAPABILITIES.replace("/tiles/wmts/", "/tiles/"),
                 regex=True,
             )
 
@@ -838,10 +846,11 @@ class TestServe(CompareCase):
     @pytest.mark.asyncio
     async def test_bsddb_rest(self):
         with LogCapture("tilecloud_chain", level=30) as log_capture:
-            self.assert_tiles_generated(
+            await self.assert_tiles_generated(
+
                 cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-bsddb.yaml"
                 " --layer=point_hash --zoom=1",
-                main_func=generate.main,
+                main_func=generate.async_main,
                 directory="/tmp/tiles/bsddb/",
                 tiles_pattern="1.0.0/%s",
                 tiles=[("point_hash/default/2012/swissgrid_5.png.bsddb")],
@@ -862,13 +871,16 @@ class TestServe(CompareCase):
             )
 
             server._PYRAMID_SERVER = None
-            server._TILEGENERATION = None
+            server._TILEGENERATION = TileGeneration(
+                config_file=AnyioPath("tilegeneration/test-bsddb.yaml"),
+                configure_logging=False,
+            )
 
             with Path("tilegeneration/test-bsddb.yaml").open() as f:
                 config = DatedConfig(
                     config=yaml.safe_load(f),
                     mtime=Path("tilegeneration/test-bsddb.yaml").stat().st_mtime,
-                    filename="tilegeneration/test-bsddb.yaml",
+                    file=AnyioPath("tilegeneration/test-bsddb.yaml"),
                 )
             params = {
                 "Service": "WMTS",
@@ -895,33 +907,33 @@ class TestServe(CompareCase):
             params["Version"] = "0.9"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Version"] = "1.0.0"
             params["Format"] = "image/jpeg"
             params["TileCol"] = "14"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Format"] = "image/png"
             params["TileCol"] = "14"
             params["Layer"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Layer"] = "point_hash"
             params["Style"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Style"] = "default"
             params["TileMatrixSet"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params = {
                 "Service": "WMTS",
@@ -970,13 +982,16 @@ class TestServe(CompareCase):
     @pytest.mark.asyncio
     async def test_serve_gfi(self) -> None:
         server._PYRAMID_SERVER = None
-        server._TILEGENERATION = None
+        server._TILEGENERATION = TileGeneration(
+            config_file=AnyioPath("tilegeneration/test-serve.yaml"),
+            configure_logging=False,
+        )
 
         with Path("tilegeneration/test-serve.yaml").open() as f:
             config = DatedConfig(
                 config=yaml.safe_load(f),
                 mtime=Path("tilegeneration/test-serve.yaml").stat().st_mtime,
-                filename="tilegeneration/test-serve.yaml",
+                file=AnyioPath("tilegeneration/test-serve.yaml"),
             )
         params = {
             "Service": "WMTS",
@@ -1008,13 +1023,16 @@ class TestServe(CompareCase):
         )
 
         server._PYRAMID_SERVER = None
-        server._TILEGENERATION = None
+        server._TILEGENERATION = TileGeneration(
+            config_file=AnyioPath("tilegeneration/test-serve.yaml"),
+            configure_logging=False,
+        )
 
         with Path("tilegeneration/test-serve.yaml").open() as f:
             config = DatedConfig(
                 config=yaml.safe_load(f),
                 mtime=Path("tilegeneration/test-serve.yaml").stat().st_mtime,
-                filename="tilegeneration/test-serve.yaml",
+                file=AnyioPath("tilegeneration/test-serve.yaml"),
             )
         params = {
             "Service": "WMTS",
@@ -1047,75 +1065,66 @@ class TestServe(CompareCase):
         )
 
     @pytest.mark.asyncio
-    async def test_wsgi(self) -> None:
-        self.assert_tiles_generated(
-            cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-serve.yaml --layer=point_hash --zoom 1",
-            main_func=generate.main,
-            directory="/tmp/tiles/mbtiles/",
-            tiles_pattern="1.0.0/%s",
-            tiles=[("point_hash/default/2012/swissgrid_5.png.mbtiles")],
-            regex=True,
-            expected=r"""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
-Nb generated metatiles: 1
-Nb metatiles dropped: 0
-Nb generated tiles: 64
-Nb tiles dropped: 62
-Nb tiles stored: 2
-Nb tiles in error: 0
-Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: [89][0-9][0-9] o
-Time per tile: [0-9]+ ms
-Size per tile: 4[0-9][0-9] o
+    async def test_rest_integration(self) -> None:
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
 
-""",
-        )
+        from tilecloud_chain.server import router
 
         server._PYRAMID_SERVER = None
-        server._TILEGENERATION = None
-
-        global code, headers  # noqa: PLW0603
-        code = None
-        headers = None
-
-        def start_response(p_code, p_headers):
-            global code, headers  # noqa: PLW0603
-            code = p_code
-            headers = {}
-            for key, value in p_headers:
-                headers[key] = value
-
-        result = await server.server.serve(
-            await server._TILEGENERATION.get_main_config(),
-            "tilegeneration/test-serve.yaml",
-            {
-                "QUERY_STRING": "&".join(
-                    [
-                        "{}={}".format(*item)
-                        for item in {
-                            "Service": "WMTS",
-                            "Version": "1.0.0",
-                            "Request": "GetFeatureInfo",
-                            "Format": "image/png",
-                            "Info_Format": "application/vnd.ogc.gml",
-                            "Layer": "point_hash",
-                            "Query_Layer": "point_hash",
-                            "Style": "default",
-                            "TileMatrixSet": "swissgrid_5",
-                            "TileMatrix": "1",
-                            "TileRow": "11",
-                            "TileCol": "14",
-                            "I": "114",
-                            "J": "111",
-                        }.items()
-                    ],
-                ),
-            },
-            start_response,
+        server.server.store_cache = {}
+        server._TILEGENERATION = TileGeneration(
+            config_file=AnyioPath("tilegeneration/test-serve.yaml"),
+            configure_logging=False,
         )
-        assert code == "200 OK"
-        self.assert_result_equals(
-            result[0].decode("utf-8"),
-            """<?xml version="1.0" encoding="UTF-8"?>
+
+        app = FastAPI()
+        app.include_router(router)
+        client = TestClient(app)
+
+        async def get_one_side_effect(tile):
+            if tile.tilecoord.z == 1 and tile.tilecoord.x == 14 and tile.tilecoord.y == 11:
+                    t = MagicMock()
+                    t.data = b"dummy_png"
+                    t.content_type = "image/png"
+                    t.error = None
+                    return t
+            return None
+
+        with patch("aiohttp.ClientSession.get") as mock_get, \
+                patch("tilecloud_chain.IntersectGeometryFilter.filter_tilecoord", return_value=True), \
+                patch.object(server._TILEGENERATION, "get_store", new_callable=AsyncMock) as mock_get_store:
+
+            # Mock the store
+            mock_store = AsyncMock()
+            mock_store.get_one.side_effect = get_one_side_effect
+            mock_get_store.return_value = mock_store
+
+            # Mock the response context manager
+            mock_response = AsyncMock()
+            mock_response.status = 200
+            mock_response.read.return_value = b"""<?xml version="1.0" encoding="UTF-8"?>
+
+<msGMLOutput
+    xmlns:gml="http://www.opengis.net/gml"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+</msGMLOutput>
+"""
+            mock_response.headers = {"Content-Type": "application/xml"}
+            mock_get.return_value.__aenter__.return_value = mock_response
+
+            # 1. GetFeatureInfo
+            response = client.get(
+                "/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14/114/111.xml",
+                params={
+                    "Info_Format": "application/vnd.ogc.gml",
+                },
+            )
+            assert response.status_code == 200, response.text
+            self.assert_result_equals(
+                response.text,
+                """<?xml version="1.0" encoding="UTF-8"?>
 
 <msGMLOutput
     xmlns:gml="http://www.opengis.net/gml"
@@ -1123,70 +1132,45 @@ Size per tile: 4[0-9][0-9] o
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 </msGMLOutput>
 """,
-        )
+            )
 
-        result = await server.server.serve(
-            await server._TILEGENERATION.get_main_config(),
-            "tilegeneration/test-serve.yaml",
-            {
-                "QUERY_STRING": "",
-                "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/14/11/114/111.xml",
-            },
-            start_response,
-        )
-        self.assert_result_equals(
-            result[0].decode("utf-8"),
-            """<?xml version="1.0" encoding="UTF-8"?>
+            # 2. GetTile (204 No Content)
+            # Row 12 -> TMS Row 12 (if height 25).
+            # We inserted Row 13 (WMTS 11). So WMTS 12 (TMS 12) should be empty.
+            response = client.get("/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png")
+            assert response.status_code == 204
 
-<msGMLOutput
-    xmlns:gml="http://www.opengis.net/gml"
-    xmlns:xlink="http://www.w3.org/1999/xlink"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-</msGMLOutput>
-""",
-        )
+            # 3. GetTile (200 OK)
+            # Row 11 -> TMS Row 13.
+            response = client.get("/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png")
+            assert response.status_code == 200
+            assert response.headers["Cache-Control"] == "max-age=28800"
+            assert response.headers["Content-Type"] == "image/png"
 
-        await server.server.serve(
-            await server._TILEGENERATION.get_main_config(),
-            "tilegeneration/test-serve.yaml",
-            {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png"},
-            start_response,
-        )
-        assert code == "204 No Content"
-
-        await server.server.serve(
-            await server._TILEGENERATION.get_main_config(),
-            "tilegeneration/test-serve.yaml",
-            {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png"},
-            start_response,
-        )
-        assert code == "200 OK"
-        assert headers["Cache-Control"] == "max-age=28800"
-
-        result = await server.server.serve(
-            await server._TILEGENERATION.get_main_config(),
-            "tilegeneration/test-serve.yaml",
-            {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/WMTSCapabilities.xml"},
-            start_response,
-        )
-        assert code == "200 OK"
-        self.assert_result_equals(
-            result[0].decode("utf-8"),
-            _CAPABILITIES,
-            regex=True,
-        )
+            # 4. GetCapabilities
+            response = client.get("/1.0.0/WMTSCapabilities.xml")
+            assert response.status_code == 200
+            assert response.headers["Content-Type"] == "application/xml"
+            self.assert_result_equals(
+                response.text,
+                _CAPABILITIES.replace("/tiles/wmts/", "/tiles/"),
+                regex=True,
+            )
 
     @pytest.mark.asyncio
     async def test_ondemend_wmtscapabilities(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             server._PYRAMID_SERVER = None
-            server._TILEGENERATION = None
+            server._TILEGENERATION = TileGeneration(
+                config_file=AnyioPath("tilegeneration/test-serve-wmtscapabilities.yaml"),
+                configure_logging=False,
+            )
 
             with Path("tilegeneration/test-serve-wmtscapabilities.yaml").open() as f:
                 config = DatedConfig(
                     config=yaml.safe_load(f),
                     mtime=Path("tilegeneration/test-serve-wmtscapabilities.yaml").stat().st_mtime,
-                    filename="tilegeneration/test-serve-wmtscapabilities.yaml",
+                    file=AnyioPath("tilegeneration/test-serve-wmtscapabilities.yaml"),
                 )
             params = {
                 "Service": "WMTS",

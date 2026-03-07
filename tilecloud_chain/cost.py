@@ -19,10 +19,10 @@ _LOGGER = logging.getLogger(__name__)
 
 def main() -> None:
     """Calculate the cost, main function."""
-    asyncio.run(_async_main())
+    asyncio.run(async_main())
 
 
-async def _async_main() -> None:
+async def async_main() -> None:
     """Calculate the cost, main function."""
     try:
         parser = ArgumentParser(description="Used to calculate the generation cost", prog=sys.argv[0])
