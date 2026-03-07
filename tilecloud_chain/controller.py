@@ -368,8 +368,8 @@ async def _generate_legend_images(gene: TileGeneration, out: IO[str] | None = No
                     if previous_resolution_metadata is not None:
                         assert previous_resolution is not None
                         middle_res = exp((log(previous_resolution) + log(resolution)) / 2)
-                        previous_resolution_metadata["min_resolution"] = middle_res
-                        resolution_metadata["max_resolution"] = middle_res
+                        previous_resolution_metadata["max_resolution"] = middle_res
+                        resolution_metadata["min_resolution"] = middle_res
                     metadata.append(resolution_metadata)
                     previous_resolution_metadata = resolution_metadata
                     previous_resolution = resolution

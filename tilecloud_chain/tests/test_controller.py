@@ -1774,14 +1774,14 @@ sqs:
                     "metadata": [
                         {
                             "height": 35,
+                            "max_resolution": 15.811388300841893,
                             "mime_type": "image/png",
-                            "min_resolution": 15.811388300841893,
                             "path": "1.0.0/line/default/legend-5.png",
                             "width": 71,
                         },
                         {
                             "height": 35,
-                            "max_resolution": 15.811388300841893,
+                            "min_resolution": 15.811388300841893,
                             "mime_type": "image/png",
                             "path": "1.0.0/line/default/legend-50.png",
                             "width": 71,
@@ -1808,14 +1808,14 @@ sqs:
                     "metadata": [
                         {
                             "height": 78,
+                            "max_resolution": 15.811388300841893,
                             "mime_type": "image/png",
-                            "min_resolution": 15.811388300841893,
                             "path": "1.0.0/all/default/legend-5.png",
                             "width": 81,
                         },
                         {
                             "height": 78,
-                            "max_resolution": 15.811388300841893,
+                            "min_resolution": 15.811388300841893,
                             "mime_type": "image/png",
                             "path": "1.0.0/all/default/legend-50.png",
                             "width": 81,

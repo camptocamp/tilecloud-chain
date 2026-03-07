@@ -1011,10 +1011,6 @@ async def _get_layer_legend(
         "mime_type",
         layer.get("legend_mime", configuration.LAYER_LEGEND_MIME_TYPE_DEFAULT),
     )
-    legend_extension = legend.get(
-        "extension",
-        layer.get("legend_extension", configuration.LAYER_LEGEND_EXTENSION_DEFAULT),
-    )
     legend_enabled = legend.get("enabled", configuration.LAYER_LEGEND_ENABLED_DEFAULT)
     if not legend_enabled:
         return []
@@ -1055,13 +1051,7 @@ async def _get_layer_legend(
         return [
             configuration.LayerLegendItem(
                 mime_type=legend_mime,
-                href=str(
-                    Path(base_url)
-                    / "1.0.0"
-                    / layer_name
-                    / layer["wmts_style"]
-                    / f"legend-{legend_metadata['resolution']}.{legend_extension}",
-                ),
+                href=base_url + legend_metadata["path"],
                 min_resolution=legend_metadata.get("min_resolution"),
                 max_resolution=legend_metadata.get("max_resolution"),
                 width=legend_metadata["width"],
