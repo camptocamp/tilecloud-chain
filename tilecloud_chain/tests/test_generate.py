@@ -814,8 +814,8 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                     tiles=((5, 7), (7, 4)),
                     regex=True,
                     expected=r"""The tile generation of layer 'mapnik_grid_drop' is finish
-    Nb generated tiles: 2
-    Nb tiles dropped: 0
+    Nb generated tiles: 12
+    Nb tiles dropped: 10
     Nb tiles stored: 2
     Nb tiles in error: 0
     Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]

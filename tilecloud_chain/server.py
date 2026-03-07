@@ -380,6 +380,8 @@ class Server:
         request: Request,
     ) -> Response:
         """Async serve method for FastAPI."""
+        params = {k.upper(): v for k, v in params.items()}
+
         if not config or not config.config:
             raise HTTPException(
                 status_code=404,
@@ -947,8 +949,7 @@ async def wmts_kvp(
     if not service or not version or not request:
         raise HTTPException(status_code=400, detail="Not all required parameters are present")
 
-    params = {k.upper(): v for k, v in fastapi_request.query_params.items()}
-    return await server.serve(params, config, host, fastapi_request)
+    return await server.serve(dict(fastapi_request.query_params), config, host, fastapi_request)
 
 
 def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:

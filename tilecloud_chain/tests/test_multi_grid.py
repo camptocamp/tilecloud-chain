@@ -252,7 +252,7 @@ Size per tile: [0-9]{3} o
         from tilecloud_chain.tests.test_controller import wmts_capabilities
 
         capabilities = await wmts_capabilities(gene, config.config["generation"]["default_cache"])
-        capabilities = "\n".join(line.strip() for line in capabilities.splitlines() if line.strip)
+        capabilities = "\n".join(line.rstrip() for line in capabilities.splitlines() if line.strip)
         assert capabilities == """<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"

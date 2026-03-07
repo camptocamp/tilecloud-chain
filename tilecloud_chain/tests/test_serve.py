@@ -211,56 +211,57 @@ class TestServe(CompareCase):
             assert response.headers["Cache-Control"] == "max-age=28800"
 
             params["TileRow"] = "12"
-            response = await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 204
+            with pytest.raises(HTTPException) as excinfo:
+                await server.server.serve(params, config, "localhost", None)
+            assert excinfo.value.status_code == 204
 
             params["TileRow"] = "11"
             params["Service"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Service"] = "WMTS"
             params["Request"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Request"] = "GetTile"
             params["Version"] = "0.9"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Version"] = "1.0.0"
             params["Format"] = "image/jpeg"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Format"] = "image/png"
             params["Layer"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Layer"] = "point_hash"
             params["Style"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Style"] = "default"
             params["TileMatrixSet"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["TileMatrixSet"] = "swissgrid_5"
             del params["Service"]
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params = {
                 "Service": "WMTS",
@@ -284,14 +285,14 @@ class TestServe(CompareCase):
       <ows:Operation name="GetCapabilities">
         <ows:DCP>
           <ows:HTTP>
-            <ows:Get xlink:href="http://wmts1/tiles/wmts/1.0.0/WMTSCapabilities.xml">
+            <ows:Get xlink:href="http://wmts1/tiles/1.0.0/WMTSCapabilities.xml">
               <ows:Constraint name="GetEncoding">
                 <ows:AllowedValues>
                   <ows:Value>REST</ows:Value>
                 </ows:AllowedValues>
               </ows:Constraint>
             </ows:Get>
-            <ows:Get xlink:href="http://wmts1/tiles/wmts/">
+            <ows:Get xlink:href="http://wmts1/tiles/">
               <ows:Constraint name="GetEncoding">
                 <ows:AllowedValues>
                   <ows:Value>KVP</ows:Value>
@@ -304,7 +305,7 @@ class TestServe(CompareCase):
       <ows:Operation name="GetTile">
         <ows:DCP>
           <ows:HTTP>
-            <ows:Get xlink:href="http://wmts1/tiles/wmts/">
+            <ows:Get xlink:href="http://wmts1/tiles/">
               <ows:Constraint name="GetEncoding">
                 <ows:AllowedValues>
                   <ows:Value>REST</ows:Value>
@@ -334,7 +335,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/all/default/"""
+                    template="http://wmts1/tiles/1.0.0/all/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -356,7 +357,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/line/default/"""
+                    template="http://wmts1/tiles/1.0.0/line/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -378,7 +379,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/mapnik/default/"""
+                    template="http://wmts1/tiles/1.0.0/mapnik/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -400,7 +401,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="application/utfgrid" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/mapnik_grid/default/"""
+                    template="http://wmts1/tiles/1.0.0/mapnik_grid/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -422,7 +423,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="application/utfgrid" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/mapnik_grid_drop/default/"""
+                    template="http://wmts1/tiles/1.0.0/mapnik_grid_drop/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.json" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -444,7 +445,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/point/default/"""
+                    template="http://wmts1/tiles/1.0.0/point/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -466,7 +467,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/point_error/default/"""
+                    template="http://wmts1/tiles/1.0.0/point_error/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -488,7 +489,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/point_hash/default/"""
+                    template="http://wmts1/tiles/1.0.0/point_hash/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -510,7 +511,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/point_hash_no_meta/default/"""
+                    template="http://wmts1/tiles/1.0.0/point_hash_no_meta/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -532,7 +533,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/point_px_buffer/default/"""
+                    template="http://wmts1/tiles/1.0.0/point_px_buffer/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -554,7 +555,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/webp" resourceType="tile"
-                     template="http://wmts1/tiles/wmts/1.0.0/point_webp/default/{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.webp" />
+                     template="http://wmts1/tiles/1.0.0/point_webp/default/{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.webp" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
         </TileMatrixSetLink>
@@ -575,7 +576,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/polygon/default/"""
+                    template="http://wmts1/tiles/1.0.0/polygon/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
@@ -597,7 +598,7 @@ class TestServe(CompareCase):
           <Value>2012</Value>
         </Dimension>
         <ResourceURL format="image/png" resourceType="tile"
-                    template="http://wmts1/tiles/wmts/1.0.0/polygon2/default/"""
+                    template="http://wmts1/tiles/1.0.0/polygon2/default/"""
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_01</TileMatrixSet>
@@ -782,33 +783,33 @@ class TestServe(CompareCase):
             params["Version"] = "0.9"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Version"] = "1.0.0"
             params["Format"] = "image/jpeg"
             params["TileCol"] = "14"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Format"] = "image/png"
             params["TileCol"] = "14"
             params["Layer"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Layer"] = "point_hash"
             params["Style"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Style"] = "default"
             params["TileMatrixSet"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params = {
                 "Service": "WMTS",
@@ -835,7 +836,7 @@ class TestServe(CompareCase):
             assert response.headers["Content-Type"] == "application/xml"
             self.assert_result_equals(
                 response.body.decode("utf-8"),
-                _CAPABILITIES,
+                _CAPABILITIES.replace("/tiles/wmts/", "/tiles/"),
                 regex=True,
             )
 
@@ -845,7 +846,8 @@ class TestServe(CompareCase):
     @pytest.mark.asyncio
     async def test_bsddb_rest(self):
         with LogCapture("tilecloud_chain", level=30) as log_capture:
-            await self.assert_tiles_generated_async(
+            await self.assert_tiles_generated(
+
                 cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-bsddb.yaml"
                 " --layer=point_hash --zoom=1",
                 main_func=generate.async_main,
@@ -905,33 +907,33 @@ class TestServe(CompareCase):
             params["Version"] = "0.9"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Version"] = "1.0.0"
             params["Format"] = "image/jpeg"
             params["TileCol"] = "14"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Format"] = "image/png"
             params["TileCol"] = "14"
             params["Layer"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Layer"] = "point_hash"
             params["Style"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params["Style"] = "default"
             params["TileMatrixSet"] = "test"
             with pytest.raises(HTTPException) as response:
                 await server.server.serve(params, config, "localhost", None)
-            assert response.status_code == 400
+            assert response.value.status_code == 400
 
             params = {
                 "Service": "WMTS",
@@ -1191,7 +1193,7 @@ Size per tile: 4[0-9][0-9] o
         assert code == "200 OK"
         self.assert_result_equals(
             result[0].decode("utf-8"),
-            _CAPABILITIES,
+            _CAPABILITIES.replace("/tiles/wmts/", "/tiles/"),
             regex=True,
         )
 
