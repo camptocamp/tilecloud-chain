@@ -63,6 +63,16 @@ To run the tests faster (without rebuilding everything), ensure the containers a
 docker exec tilecloud-chain-test-1 pytest -vvv --color=yes [test_file]
 ```
 
+To be able to run the `make` command sou should modify the `Makefile` by adding `SHELL := /bin/bash`
+
+You should also add the following folder in the `PATH`:
+
+- `~/.venv/bin`
+- `~/.pyenv/shims`
+- `~/.pyenv/bin`
+
+In the Docker container the application is in the `/app` folder who will have the local files directly.
+
 ## Python Code Quality
 
 To check the code quality, use the `make checks` command.
