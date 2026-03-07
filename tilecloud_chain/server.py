@@ -374,7 +374,7 @@ class Server:
 
     async def serve(
         self,
-        params: dict[str, str],
+        params: dict[str, str | int],
         config: tilecloud_chain.DatedConfig,
         host: str,
         request: Request,
@@ -843,7 +843,7 @@ async def wmts_tile(
     else:
         raise HTTPException(status_code=400, detail=f"Wrong Layer '{layer}'")
 
-    params = {
+    params: dict[str, str | int] = {
         "SERVICE": "WMTS",
         "VERSION": version,
         "REQUEST": "GetTile",
@@ -898,7 +898,7 @@ async def wmts_feature_info(
     else:
         raise HTTPException(status_code=400, detail=f"Wrong Layer '{layer}'")
 
-    params = {
+    params: dict[str, str | int] = {
         "SERVICE": "WMTS",
         "VERSION": version,
         "REQUEST": "GetFeatureInfo",
