@@ -1,8 +1,6 @@
 import os
 import shutil
 from pathlib import Path
-from unittest.mock import MagicMock, patch
-from urllib.parse import parse_qs, urlparse
 
 import pytest
 import pytest_check
