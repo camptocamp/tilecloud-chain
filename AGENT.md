@@ -57,6 +57,12 @@ Test files in `tilecloud_chain/tests/` may not follow the rules concerning `asyn
 
 To run the tests, use the `make tests` command.
 
+To run the tests faster (without rebuilding everything), ensure the containers are running with `make tests-fast` or `docker compose up -d`, and then use:
+
+```bash
+docker exec tilecloud-chain-test-1 pytest -vvv --color=yes [test_file]
+```
+
 ## Python Code Quality
 
 To check the code quality, use the `make checks` command.

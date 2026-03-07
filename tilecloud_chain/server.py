@@ -853,7 +853,7 @@ async def wmts_tile(
     }
 
     for index, dimension in enumerate(layer_obj.get("dimensions", {})):
-        params[dimension["name"].upper()] = dimensions_parameters[index]
+        params[dimension["name"].upper()] = dimensions_parameters.split("/")[index]
 
     params["FORMAT"] = layer_obj["mime_type"]
 
@@ -861,7 +861,7 @@ async def wmts_tile(
 
 
 @router.get(
-    "/{version}/{layer}/{style}/{dimensions_parameters:path}/{tilematrixset}/{tilematrix}/{tilerow}/{tilecol}/{i}/{j}",
+    "/{version}/{layer}/{style}/{dimensions_parameters:path}/{tilematrixset}/{tilematrix}/{tilerow}/{tilecol}/{j}/{i}.{extension}",
     summary="Get the WMTS Feature Info.",
 )
 async def wmts_feature_info(
@@ -873,8 +873,9 @@ async def wmts_feature_info(
     tilematrix: Annotated[str, fastapi.Path(..., description="Tile matrix")],
     tilerow: Annotated[str, fastapi.Path(..., description="Tile row")],
     tilecol: Annotated[str, fastapi.Path(..., description="Tile column")],
-    i: Annotated[str, fastapi.Path(..., description="Pixel I coordinate")],
     j: Annotated[str, fastapi.Path(..., description="Pixel J coordinate")],
+    i: Annotated[str, fastapi.Path(..., description="Pixel I coordinate")],
+    extension: Annotated[str, fastapi.Path(..., description="File extension")],
     request: Request,
     config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
     host: Annotated[str, fastapi.Depends(get_host_name)],
@@ -884,6 +885,7 @@ async def wmts_feature_info(
 
     This is a proxy to a WMS GetFeatureInfo.
     """
+    del extension  # Needed for FastAPI documentation
 
     if layer in server.get_layers(config):
         layer_obj = cast(
@@ -909,7 +911,7 @@ async def wmts_feature_info(
     }
 
     for index, dimension in enumerate(layer_obj.get("dimensions", {})):
-        params[dimension["name"].upper()] = dimensions_parameters[index]
+        params[dimension["name"].upper()] = dimensions_parameters.split("/")[index]
 
     return await server.serve(params, config, host, request)
 

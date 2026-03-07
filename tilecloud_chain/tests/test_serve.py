@@ -212,9 +212,8 @@ class TestServe(CompareCase):
             assert response.headers["Cache-Control"] == "max-age=28800"
 
             params["TileRow"] = "12"
-            with pytest.raises(HTTPException) as excinfo:
-                await server.server.serve(params, config, "localhost", None)
-            assert excinfo.value.status_code == 204
+            response = await server.server.serve(params, config, "localhost", None)
+            assert response.status_code == 204
 
             params["TileRow"] = "11"
             params["Service"] = "test"
@@ -1117,12 +1116,12 @@ class TestServe(CompareCase):
 
             # 1. GetFeatureInfo
             response = client.get(
-                "/1.0.0/point_hash/default/2012/swissgrid_5/1/14/11/114/111.xml",
+                "/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14/114/111.xml",
                 params={
                     "Info_Format": "application/vnd.ogc.gml",
                 },
             )
-            assert response.status_code == 200
+            assert response.status_code == 200, response.text
             self.assert_result_equals(
                 response.text,
                 """<?xml version="1.0" encoding="UTF-8"?>
