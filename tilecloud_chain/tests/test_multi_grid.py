@@ -252,7 +252,7 @@ Size per tile: [0-9]{3} o
         from tilecloud_chain.tests.test_controller import wmts_capabilities
 
         capabilities = await wmts_capabilities(gene, config.config["generation"]["default_cache"])
-
+        capabilities = "\n".join(line.strip() for line in capabilities.splitlines() if line.strip)
         assert capabilities == """<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities version="1.0.0"
     xmlns="http://www.opengis.net/wmts/1.0"
@@ -291,7 +291,6 @@ Size per tile: [0-9]{3} o
   </ows:OperationsMetadata>
   <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
-
     <Layer>
       <ows:Title>all</ows:Title>
       <ows:Identifier>all</ows:Identifier>
@@ -316,7 +315,6 @@ Size per tile: [0-9]{3} o
         <TileMatrixSet>swissgrid_2056</TileMatrixSet>
       </TileMatrixSetLink>
     </Layer>
-
     <Layer>
       <ows:Title>one</ows:Title>
       <ows:Identifier>one</ows:Identifier>
@@ -338,9 +336,6 @@ Size per tile: [0-9]{3} o
         <TileMatrixSet>swissgrid_2056</TileMatrixSet>
       </TileMatrixSetLink>
     </Layer>
-
-
-
     <TileMatrixSet>
       <ows:Identifier>swissgrid_2056</ows:Identifier>
       <ows:SupportedCRS>urn:ogc:def:crs:EPSG::2056</ows:SupportedCRS>
