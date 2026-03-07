@@ -374,13 +374,12 @@ class Server:
 
     async def serve(
         self,
-        params: dict[str, str | int],
+        params: dict[str, str],
         config: tilecloud_chain.DatedConfig,
         host: str,
         request: Request,
     ) -> Response:
         """Async serve method for FastAPI."""
-        params = {k.upper(): v for k, v in params.items()}
 
         if not config or not config.config:
             raise HTTPException(
@@ -793,7 +792,7 @@ async def wmts_capabilities(
     """Get the WMTS capabilities."""
     assert _TILEGENERATION
 
-    params = {
+    params: dict[str, str] = {
         "SERVICE": "WMTS",
         "VERSION": version,
         "REQUEST": "GetCapabilities",
@@ -843,7 +842,7 @@ async def wmts_tile(
     else:
         raise HTTPException(status_code=400, detail=f"Wrong Layer '{layer}'")
 
-    params: dict[str, str | int] = {
+    params: dict[str, str] = {
         "SERVICE": "WMTS",
         "VERSION": version,
         "REQUEST": "GetTile",
@@ -851,8 +850,8 @@ async def wmts_tile(
         "STYLE": style,
         "TILEMATRIXSET": tilematrixset,
         "TILEMATRIX": tilematrix,
-        "TILEROW": tilerow,
-        "TILECOL": tilecol,
+        "TILEROW": tilerow,  # type: ignore[dict-item]
+        "TILECOL": tilecol,  # type: ignore[dict-item]
     }
 
     for index, dimension in enumerate(layer_obj.get("dimensions", {})):
@@ -898,7 +897,7 @@ async def wmts_feature_info(
     else:
         raise HTTPException(status_code=400, detail=f"Wrong Layer '{layer}'")
 
-    params: dict[str, str | int] = {
+    params: dict[str, str] = {
         "SERVICE": "WMTS",
         "VERSION": version,
         "REQUEST": "GetFeatureInfo",
@@ -906,10 +905,10 @@ async def wmts_feature_info(
         "STYLE": style,
         "TILEMATRIXSET": tilematrixset,
         "TILEMATRIX": tilematrix,
-        "TILEROW": tilerow,
-        "TILECOL": tilecol,
-        "I": i,
-        "J": j,
+        "TILEROW": tilerow,  # type: ignore[dict-item]
+        "TILECOL": tilecol,  # type: ignore[dict-item]
+        "I": i,  # type: ignore[dict-item]
+        "J": j,  # type: ignore[dict-item]
         "INFO_FORMAT": layer_obj.get("info_formats", ["application/vnd.ogc.gml"])[0],
     }
 
@@ -932,10 +931,10 @@ async def wmts_kvp(
     dimensions: Annotated[str | None, Query(..., description="Dimensions")] = None,
     tilematrixset: Annotated[str | None, Query(..., description="Tile matrix set")] = None,
     tilematrix: Annotated[str | None, Query(..., description="Tile matrix")] = None,
-    tilerow: Annotated[str | None, Query(..., description="Tile row")] = None,
-    tilecol: Annotated[str | None, Query(..., description="Tile column")] = None,
-    i: Annotated[str | None, Query(..., description="Pixel I coordinate")] = None,
-    j: Annotated[str | None, Query(..., description="Pixel J coordinate")] = None,
+    tilerow: Annotated[int | None, Query(..., description="Tile row")] = None,
+    tilecol: Annotated[int | None, Query(..., description="Tile column")] = None,
+    i: Annotated[int | None, Query(..., description="Pixel I coordinate")] = None,
+    j: Annotated[int | None, Query(..., description="Pixel J coordinate")] = None,
 ) -> Response:
     """Get the tiles using the KVP (Key-Value Parameters) interface."""
 
@@ -945,16 +944,21 @@ async def wmts_kvp(
         dimensions,
         tilematrixset,
         tilematrix,
-        tilerow,
-        tilecol,
-        i,
-        j,
     )  # Needed for FastAPI documentation
+    params: dict[str, str] = {k.upper(): v for k, v in fastapi_request.query_params.items() if v is not None}
+    if tilerow is not None:
+        params["TILEROW"] = tilerow  # type: ignore[assignment]
+    if tilecol is not None:
+        params["TILECOL"] = tilecol  # type: ignore[assignment]
+    if i is not None:
+        params["I"] = i  # type: ignore[assignment]
+    if j is not None:
+        params["J"] = j  # type: ignore[assignment]
 
     if not service or not version or not request:
         raise HTTPException(status_code=400, detail="Not all required parameters are present")
 
-    return await server.serve(dict(fastapi_request.query_params), config, host, fastapi_request)
+    return await server.serve(params, config, host, fastapi_request)
 
 
 def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:
