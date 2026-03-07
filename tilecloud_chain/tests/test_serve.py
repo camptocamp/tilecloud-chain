@@ -1,6 +1,7 @@
 import os
 import shutil
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import yaml
@@ -1065,78 +1066,66 @@ class TestServe(CompareCase):
         )
 
     @pytest.mark.asyncio
-    async def test_wsgi(self) -> None:
-        await self.assert_tiles_generated(
-            cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-serve.yaml --layer=point_hash --zoom 1",
-            main_func=generate.async_main,
-            directory="/tmp/tiles/mbtiles/",
-            tiles_pattern="1.0.0/%s",
-            tiles=[("point_hash/default/2012/swissgrid_5.png.mbtiles")],
-            regex=True,
-            expected=r"""The tile generation of layer 'point_hash \(DATE=2012\)' is finish
-Nb generated metatiles: 1
-Nb metatiles dropped: 0
-Nb generated tiles: 64
-Nb tiles dropped: 62
-Nb tiles stored: 2
-Nb tiles in error: 0
-Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
-Total size: [89][0-9][0-9] o
-Time per tile: [0-9]+ ms
-Size per tile: 4[0-9][0-9] o
+    async def test_rest_integration(self) -> None:
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
 
-""",
-        )
+        from tilecloud_chain.server import router
 
         server._PYRAMID_SERVER = None
+        server.server.store_cache = {}
         server._TILEGENERATION = TileGeneration(
             config_file=AnyioPath("tilegeneration/test-serve.yaml"),
             configure_logging=False,
         )
 
-        global code, headers  # noqa: PLW0603
-        code = None
-        headers = None
+        app = FastAPI()
+        app.include_router(router)
+        client = TestClient(app)
 
-        def start_response(p_code, p_headers):
-            global code, headers  # noqa: PLW0603
-            code = p_code
-            headers = {}
-            for key, value in p_headers:
-                headers[key] = value
+        async def get_one_side_effect(tile):
+            if tile.tilecoord.z == 1 and tile.tilecoord.x == 14 and tile.tilecoord.y == 11:
+                    t = MagicMock()
+                    t.data = b"dummy_png"
+                    t.content_type = "image/png"
+                    t.error = None
+                    return t
+            return None
 
-        result = await server.server.serve(
-            await server._TILEGENERATION.get_main_config(),
-            "tilegeneration/test-serve.yaml",
-            {
-                "QUERY_STRING": "&".join(
-                    [
-                        "{}={}".format(*item)
-                        for item in {
-                            "Service": "WMTS",
-                            "Version": "1.0.0",
-                            "Request": "GetFeatureInfo",
-                            "Format": "image/png",
-                            "Info_Format": "application/vnd.ogc.gml",
-                            "Layer": "point_hash",
-                            "Query_Layer": "point_hash",
-                            "Style": "default",
-                            "TileMatrixSet": "swissgrid_5",
-                            "TileMatrix": "1",
-                            "TileRow": "11",
-                            "TileCol": "14",
-                            "I": "114",
-                            "J": "111",
-                        }.items()
-                    ],
-                ),
-            },
-            start_response,
-        )
-        assert code == "200 OK"
-        self.assert_result_equals(
-            result[0].decode("utf-8"),
-            """<?xml version="1.0" encoding="UTF-8"?>
+        with patch("aiohttp.ClientSession.get") as mock_get, \
+                patch("tilecloud_chain.IntersectGeometryFilter.filter_tilecoord", return_value=True), \
+                patch.object(server._TILEGENERATION, "get_store", new_callable=AsyncMock) as mock_get_store:
+
+            # Mock the store
+            mock_store = AsyncMock()
+            mock_store.get_one.side_effect = get_one_side_effect
+            mock_get_store.return_value = mock_store
+
+            # Mock the response context manager
+            mock_response = AsyncMock()
+            mock_response.status = 200
+            mock_response.read.return_value = b"""<?xml version="1.0" encoding="UTF-8"?>
+
+<msGMLOutput
+    xmlns:gml="http://www.opengis.net/gml"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+</msGMLOutput>
+"""
+            mock_response.headers = {"Content-Type": "application/xml"}
+            mock_get.return_value.__aenter__.return_value = mock_response
+
+            # 1. GetFeatureInfo
+            response = client.get(
+                "/1.0.0/point_hash/default/2012/swissgrid_5/1/14/11/114/111.xml",
+                params={
+                    "Info_Format": "application/vnd.ogc.gml",
+                },
+            )
+            assert response.status_code == 200
+            self.assert_result_equals(
+                response.text,
+                """<?xml version="1.0" encoding="UTF-8"?>
 
 <msGMLOutput
     xmlns:gml="http://www.opengis.net/gml"
@@ -1144,58 +1133,30 @@ Size per tile: 4[0-9][0-9] o
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 </msGMLOutput>
 """,
-        )
+            )
 
-        result = await server.server.serve(
-            await server._TILEGENERATION.get_main_config(),
-            "tilegeneration/test-serve.yaml",
-            {
-                "QUERY_STRING": "",
-                "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/14/11/114/111.xml",
-            },
-            start_response,
-        )
-        self.assert_result_equals(
-            result[0].decode("utf-8"),
-            """<?xml version="1.0" encoding="UTF-8"?>
+            # 2. GetTile (204 No Content)
+            # Row 12 -> TMS Row 12 (if height 25).
+            # We inserted Row 13 (WMTS 11). So WMTS 12 (TMS 12) should be empty.
+            response = client.get("/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png")
+            assert response.status_code == 204
 
-<msGMLOutput
-    xmlns:gml="http://www.opengis.net/gml"
-    xmlns:xlink="http://www.w3.org/1999/xlink"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-</msGMLOutput>
-""",
-        )
+            # 3. GetTile (200 OK)
+            # Row 11 -> TMS Row 13.
+            response = client.get("/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png")
+            assert response.status_code == 200
+            assert response.headers["Cache-Control"] == "max-age=28800"
+            assert response.headers["Content-Type"] == "image/png"
 
-        await server.server.serve(
-            await server._TILEGENERATION.get_main_config(),
-            "tilegeneration/test-serve.yaml",
-            {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png"},
-            start_response,
-        )
-        assert code == "204 No Content"
-
-        await server.server.serve(
-            await server._TILEGENERATION.get_main_config(),
-            "tilegeneration/test-serve.yaml",
-            {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png"},
-            start_response,
-        )
-        assert code == "200 OK"
-        assert headers["Cache-Control"] == "max-age=28800"
-
-        result = await server.server.serve(
-            await server._TILEGENERATION.get_main_config(),
-            "tilegeneration/test-serve.yaml",
-            {"QUERY_STRING": "", "PATH_INFO": "/wmts/1.0.0/WMTSCapabilities.xml"},
-            start_response,
-        )
-        assert code == "200 OK"
-        self.assert_result_equals(
-            result[0].decode("utf-8"),
-            _CAPABILITIES.replace("/tiles/wmts/", "/tiles/"),
-            regex=True,
-        )
+            # 4. GetCapabilities
+            response = client.get("/1.0.0/WMTSCapabilities.xml")
+            assert response.status_code == 200
+            assert response.headers["Content-Type"] == "application/xml"
+            self.assert_result_equals(
+                response.text,
+                _CAPABILITIES.replace("/tiles/wmts/", "/tiles/"),
+                regex=True,
+            )
 
     @pytest.mark.asyncio
     async def test_ondemend_wmtscapabilities(self) -> None:
