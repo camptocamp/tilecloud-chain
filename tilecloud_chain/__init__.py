@@ -907,7 +907,7 @@ class TileGeneration:
         grids = config.config.get("grids", {})
         for grid in grids.values():
             if "resolution_scale" in grid:
-                scale = grid["resolution_scale"]
+                scale = grid.get("resolution_scale", 1)
                 for resolution in grid["resolutions"]:
                     if resolution * scale % 1 != 0.0:
                         _LOGGER.error(
@@ -1264,7 +1264,7 @@ class TileGeneration:
             return dated_grid.grid
 
         grid = config.config["grids"][grid_name]
-        scale = grid["resolution_scale"]
+        scale = grid.get("resolution_scale", 1)
 
         tilegrid = FreeTileGrid(
             resolutions=cast("list[int]", [r * scale for r in grid["resolutions"]]),

@@ -48,3 +48,4 @@ generation:
 
 server:
   geoms_redirect: true
+  wmts_path: wmts

@@ -8,7 +8,7 @@ from anyio import Path as AnyioPath
 from fastapi import HTTPException
 from testfixtures import LogCapture
 
-from tilecloud_chain import DatedConfig, generate, server
+from tilecloud_chain import DatedConfig, TileGeneration, generate, server
 from tilecloud_chain.tests import CompareCase
 
 _CAPABILITIES = (
@@ -184,7 +184,10 @@ class TestServe(CompareCase):
             )
 
             server._PYRAMID_SERVER = None
-            server._TILEGENERATION = None
+            server._TILEGENERATION = TileGeneration(
+                config_file=AnyioPath("tilegeneration/test-nosns.yaml"),
+                configure_logging=False,
+            )
             with Path("tilegeneration/test-nosns.yaml").open() as f:
                 config = DatedConfig(
                     config=yaml.safe_load(f),
@@ -742,7 +745,10 @@ class TestServe(CompareCase):
             )
 
             server._PYRAMID_SERVER = None
-            server._TILEGENERATION = None
+            server._TILEGENERATION = TileGeneration(
+                config_file=AnyioPath("tilegeneration/test-serve.yaml"),
+                configure_logging=False,
+            )
             with Path("tilegeneration/test-serve.yaml").open() as f:
                 config = DatedConfig(
                     config=yaml.safe_load(f),
@@ -863,7 +869,10 @@ class TestServe(CompareCase):
             )
 
             server._PYRAMID_SERVER = None
-            server._TILEGENERATION = None
+            server._TILEGENERATION = TileGeneration(
+                config_file=AnyioPath("tilegeneration/test-bsddb.yaml"),
+                configure_logging=False,
+            )
 
             with Path("tilegeneration/test-bsddb.yaml").open() as f:
                 config = DatedConfig(
@@ -971,7 +980,10 @@ class TestServe(CompareCase):
     @pytest.mark.asyncio
     async def test_serve_gfi(self) -> None:
         server._PYRAMID_SERVER = None
-        server._TILEGENERATION = None
+        server._TILEGENERATION = TileGeneration(
+            config_file=AnyioPath("tilegeneration/test-serve.yaml"),
+            configure_logging=False,
+        )
 
         with Path("tilegeneration/test-serve.yaml").open() as f:
             config = DatedConfig(
@@ -1009,7 +1021,10 @@ class TestServe(CompareCase):
         )
 
         server._PYRAMID_SERVER = None
-        server._TILEGENERATION = None
+        server._TILEGENERATION = TileGeneration(
+            config_file=AnyioPath("tilegeneration/test-serve.yaml"),
+            configure_logging=False,
+        )
 
         with Path("tilegeneration/test-serve.yaml").open() as f:
             config = DatedConfig(
@@ -1072,7 +1087,10 @@ Size per tile: 4[0-9][0-9] o
         )
 
         server._PYRAMID_SERVER = None
-        server._TILEGENERATION = None
+        server._TILEGENERATION = TileGeneration(
+            config_file=AnyioPath("tilegeneration/test-serve.yaml"),
+            configure_logging=False,
+        )
 
         global code, headers  # noqa: PLW0603
         code = None
@@ -1181,7 +1199,10 @@ Size per tile: 4[0-9][0-9] o
     async def test_ondemend_wmtscapabilities(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             server._PYRAMID_SERVER = None
-            server._TILEGENERATION = None
+            server._TILEGENERATION = TileGeneration(
+                config_file=AnyioPath("tilegeneration/test-serve-wmtscapabilities.yaml"),
+                configure_logging=False,
+            )
 
             with Path("tilegeneration/test-serve-wmtscapabilities.yaml").open() as f:
                 config = DatedConfig(

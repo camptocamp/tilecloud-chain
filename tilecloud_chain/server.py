@@ -947,7 +947,8 @@ async def wmts_kvp(
     if not service or not version or not request:
         raise HTTPException(status_code=400, detail="Not all required parameters are present")
 
-    return await server.serve(dict(fastapi_request.query_params), config, host, fastapi_request)
+    params = {k.upper(): v for k, v in fastapi_request.query_params.items()}
+    return await server.serve(params, config, host, fastapi_request)
 
 
 def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:
