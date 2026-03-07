@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 import pytest_check
 import yaml
+from anyio import Path as AnyioPath
 
 from tilecloud_chain import TileGeneration, controller, generate
 from tilecloud_chain.tests import CompareCase
@@ -244,9 +245,9 @@ Size per tile: [0-9]{3} o
     @pytest.mark.asyncio
     async def test_capabilities(self) -> None:
         """Test capabilities generation for the multi-grid config."""
-        gene = TileGeneration(Path("tilegeneration/test-multi-grid.yaml"), configure_logging=False)
+        gene = TileGeneration(AnyioPath("tilegeneration/test-multi-grid.yaml"), configure_logging=False)
         await gene.ainit()
-        config = await gene.get_config(Path("tilegeneration/test-multi-grid.yaml"))
+        config = await gene.get_config(AnyioPath("tilegeneration/test-multi-grid.yaml"))
 
         from tilecloud_chain.tests.test_controller import wmts_capabilities
 
