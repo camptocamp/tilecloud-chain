@@ -1170,7 +1170,6 @@ caches:
     folder: /tmp/tiles
     http_url: http://wmts1/tiles/
     type: filesystem
-    wmtscapabilities_file: 1.0.0/WMTSCapabilities.xml
   mbtiles:
     folder: /tmp/tiles/mbtiles
     http_url: http://wmts1/tiles/
