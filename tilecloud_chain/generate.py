@@ -42,6 +42,7 @@ from tilecloud_chain import (
 from tilecloud_chain.database_logger import DatabaseLogger, DatabaseLoggerInit
 from tilecloud_chain.format import default_int, duration_format, size_format
 from tilecloud_chain.multitilestore import MultiTileStore
+from tilecloud_chain.settings import settings
 from tilecloud_chain.store import AsyncTileStore, CallWrapper
 from tilecloud_chain.store.url import URLTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
@@ -56,7 +57,7 @@ async def _objgraph(tile: Tile) -> Tile:
     values = [
         f"{name}: {number} {diff}"
         for name, number, diff in objgraph.growth(
-            limit=int(os.environ.get("TILECLOUD_CHAIN_OBJGRAPH_LIMIT", "10")),
+            limit=settings.objgraph_limit,
         )
     ]
     if values:
@@ -119,7 +120,7 @@ class Generate:
         if self._options.role != "slave" or self._options.tiles:
             await self._generate_queue(layer_name)
 
-        if os.environ.get("TILECLOUD_CHAIN_OBJGRAPH_GENE", "0").lower() in ("1", "true", "on"):
+        if settings.objgraph_gene:
             self._gene.imap(_objgraph)
 
         await self.generate_consume()
@@ -670,14 +671,14 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         if options.detach:
             detach()
 
-        if options.daemon and "C2C__PROMETHEUS__PORT" in os.environ:
-            prometheus_client.start_http_server(int(os.environ["C2C__PROMETHEUS__PORT"]))
+        if options.daemon and settings.prometheus_port is not None:
+            prometheus_client.start_http_server(settings.prometheus_port)
 
         config = options.config
         assert isinstance(config, Path) or config is None
-        config_file_name = os.environ.get("TILEGENERATION_CONFIGFILE")
+        config_file_name = settings.config_file
         gene = TileGeneration(
-            config_file=config or (Path(config_file_name) if config_file_name else None),
+            config_file=config or config_file_name,
             options=options,
             multi_task=options.get_hash is None,
             out=out,
@@ -690,7 +691,7 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
             and options.config is not None
             and "authorised_user" in (await gene.get_main_config()).config.get("generation", {})
             and (await gene.get_main_config()).config["generation"]["authorised_user"] != getuser()
-            and os.environ.get("TILECLOUD_CHAIN_SLAVE", "false").lower() != "true"
+            and not settings.slave
         ):
             _LOGGER.error(
                 "not authorized, authorized user is: %s.",
@@ -739,7 +740,7 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         raise
     except:  # pylint: disable=bare-except
         _LOGGER.exception("Exit with exception")
-        if os.environ.get("TESTS", "false").lower() == "true":
+        if settings.tests.enabled:
             raise
         sys.exit(1)
 

@@ -75,6 +75,7 @@ make tests
 
 - [Usage Guide](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst)
 - [Configuration Reference](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/CONFIG.md)
+- [Environment variables](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/settings.py)
 
 ## Contributing
 

@@ -532,8 +532,8 @@ The cache configuration is like this:
 The container should already exists.
 
 For the authentication you should set those environment variables:
-``AZURE_STORAGE_CONNECTION_STRING`` on your local environment,
-or ``AZURE_STORAGE_ACCOUNT_URL`` if you run your container on Azure.
+``TILECLOUD_CHAIN__AZURE__STORAGE_CONNECTION_STRING`` on your local environment,
+or ``TILECLOUD_CHAIN__AZURE__STORAGE_ACCOUNT_URL`` if you run your container on Azure.
 
 
 Other related configuration
@@ -714,63 +714,106 @@ Environment variables
 Environment Variables Reference
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Configuration can be customized through the following environment variables:
+Configuration uses nested environment variables with the ``TILECLOUD_CHAIN__``
+prefix and ``__`` delimiter, for example:
 
-- ``TILEGENERATION_CONFIGFILE``: Path to the main configuration file
+- ``TILECLOUD_CHAIN__CONFIG_FILE``
+- ``TILECLOUD_CHAIN__HTTP``
+- ``TILECLOUD_CHAIN__LOGGING__LOG_TYPE``
+
+Tile generation:
+
+- ``TILECLOUD_CHAIN__CONFIG_FILE``: Path to the main configuration file
   (default: ``/etc/tilegeneration/config.yaml``)
 
-- ``TILEGENERATION_MAIN_CONFIGFILE``: Path to the main configuration file when using multi-tenant mode
+- ``TILECLOUD_CHAIN__MAIN_CONFIG_FILE``: Path to the main configuration file when using multi-tenant mode
   (default: ``/etc/tilegeneration/config.yaml``)
 
-- ``TILEGENERATION_HOSTSFILE``: Path to hosts mapping configuration
+- ``TILECLOUD_CHAIN__HOSTS_FILE``: Path to hosts mapping configuration
   (default: ``/etc/tilegeneration/hosts.yaml``)
 
-- ``TILEGENERATION_MAX_GENERATION_TIME``: Maximum tile generation time in seconds before timeout
+- ``TILECLOUD_CHAIN__HOSTS_LIMIT``: File that contains the maximum request per host
+  (default: ``/etc/tilegeneration/hosts_limit.yaml``)
+
+- ``TILECLOUD_CHAIN__IGNORE_CONFIG_ERROR``: Ignore configuration errors if set to ``true``
+  (default: ``false``)
+
+- ``TILECLOUD_CHAIN__MAX_GENERATION_TIME``: Maximum tile generation time in seconds before timeout
   (default: ``60``)
 
-- ``TILECLOUD_CHAIN_MAX_OUTPUT_LENGTH``: Maximum output length shown in admin interface
-  (default: ``1000``)
+- ``TILECLOUD_CHAIN__ALLOWED_PROCESS_COMMANDS``: Comma-separated list of allowed process commands
+  (default: ``optipng,jpegoptim,pngquant``)
 
-Logging Configuration:
+Logging:
 
-- ``LOG_TYPE``: Logging output format, either ``console`` or ``json`` for Logstash
+- ``TILECLOUD_CHAIN__LOGGING__LOG_TYPE``: Logging output format, either ``console`` or ``json``
   (default: ``console``)
 
-- ``TILECLOUD_CHAIN_LOG_LEVEL``: Log level for TileCloud Chain
-  (default: ``INFO``)
-
-- ``TILECLOUD_LOG_LEVEL``: Log level for TileCloud core
-  (default: ``INFO``)
-
-- ``C2CWSGI_LOG_LEVEL``: Log level for C2C WSGI
+- ``TILECLOUD_CHAIN__LOGGING__OTHER_LOG_LEVEL``: Log level for other components
   (default: ``WARN``)
 
-- ``OTHER_LOG_LEVEL``: Log level for other components
+- ``TILECLOUD_CHAIN__LOGGING__SQL_LOG_LEVEL``: Log level for SQLAlchemy
   (default: ``WARN``)
+
+- ``TILECLOUD_CHAIN__LOGGING__C2CASGIUTILS_LOG_LEVEL``: Log level for C2C ASGI utils
+  (default: ``WARN``)
+
+- ``TILECLOUD_CHAIN__LOGGING__TILECLOUD_LOG_LEVEL``: Log level for TileCloud core
+  (default: ``INFO``)
+
+- ``TILECLOUD_CHAIN__LOGGING__TILECLOUD_CHAIN_LOG_LEVEL``: Log level for TileCloud Chain
+  (default: ``INFO``)
+
+- ``TILECLOUD_CHAIN__LOGGING__SERVER_LOG_LEVEL``: Server component log verbosity
+  (default: ``quiet``)
+
+- ``TILECLOUD_CHAIN__LOGGING__MAPCACHE_LOG_LEVEL``: Internal MapCache log verbosity
+  (default: ``verbose``)
 
 Valid log levels: ``DEBUG``, ``INFO``, ``WARN``, ``ERROR``, ``CRITICAL``
 
-Server Configuration:
+Server:
 
-- ``TILE_SERVER_LOG_LEVEL``: Server component log verbosity
-  (default: ``quiet``)
+- ``TILECLOUD_CHAIN__HTTP``: Enable HTTP mode if set to ``true``
+  (default: ``false``)
 
-- ``TILE_MAPCACHE_LOG_LEVEL``: Internal MapCache log verbosity
-  (default: ``verbose``)
+- ``TILECLOUD_CHAIN__SENTRY_DSN``: Sentry DSN used for error reporting
 
-- ``DEVELOPMENT``: Enable Pyramid development features if set to ``1``
-  (default: ``0``)
+- ``TILECLOUD_CHAIN__FRONTEND``: Frontend mode (e.g. ``noninteractive``)
 
-- ``VISIBLE_ENTRY_POINT``: Base URL path for tile access
+- ``TILECLOUD_CHAIN__PROMETHEUS_PORT``: Port for Prometheus metrics server
+
+- ``TILECLOUD_CHAIN__DEVELOPMENT``: Enable development features if set to ``true``
+  (default: ``false``)
+
+- ``TILECLOUD_CHAIN__ROUTE_PREFIX``: Base URL path for tile access
   (default: ``/tiles/``)
 
--  ``TILEGENERATION_HOSTS_LIMIT``: File that contains the maximum request per host
-   (default: ``/etc/tilegeneration/hosts_limit.yaml``)
+Worker:
 
-Worker Configuration:
-
-- ``TILECLOUD_CHAIN_NB_TASKS``: Number of concurrent tasks to run in parallel
+- ``TILECLOUD_CHAIN__NB_TASKS``: Number of concurrent tasks to run in parallel
   (default: ``1``)
+
+- ``TILECLOUD_CHAIN__MAX_OUTPUT_LENGTH``: Maximum output length shown in admin interface
+  (default: ``1000``)
+
+- ``TILECLOUD_CHAIN__SLAVE``: Run in slave mode if set to ``true``
+  (default: ``false``)
+
+- ``TILECLOUD_CHAIN__OBJGRAPH_LIMIT``: Number of entries to include in objgraph reports
+  (default: ``10``)
+
+- ``TILECLOUD_CHAIN__OBJGRAPH_GENE``: Enable objgraph collection during generation if set to ``true``
+  (default: ``false``)
+
+Tests:
+
+- ``TILECLOUD_CHAIN__TESTS__ENABLED``: Enable test mode if set to ``true``
+  (default: ``false``)
+
+- ``TILECLOUD_CHAIN__TESTS__USER``: Inject a test user for authentication
+
+See also: ``settings.py` <https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/settings.py>`_.
 
 Admin and test pages
 --------------------

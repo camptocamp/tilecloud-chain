@@ -26,6 +26,7 @@
 
 import logging
 import os
+import re
 import resource
 from collections.abc import AsyncGenerator, Generator
 from contextlib import asynccontextmanager
@@ -53,13 +54,17 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
 
 from tilecloud_chain import server
+from tilecloud_chain.settings import settings
 from tilecloud_chain.views import admin
 
 _LOGGER = logging.getLogger(__name__)
 
 # Initialize Sentry if the URL is provided
 if config.settings.sentry.dsn or "SENTRY_DSN" in os.environ:
-    _LOGGER.info("Sentry is enabled with URL: %s", config.settings.sentry.dsn or os.environ.get("SENTRY_DSN"))
+    _LOGGER.info(
+        "Sentry is enabled with URL: %s",
+        config.settings.sentry.dsn or os.environ.get("SENTRY_DSN"),
+    )
     sentry_sdk.init(**config.settings.sentry.model_dump())
 
 
@@ -84,7 +89,7 @@ app.add_middleware(
     allowed_hosts=["*"],  # Configure with specific hosts in production
 )
 
-http = os.environ.get("HTTP", "False").lower() in ["true", "1"]
+http = settings.http
 # Add HTTPSRedirectMiddleware
 if not http:
     app.add_middleware(HTTPSRedirectMiddleware)
@@ -101,12 +106,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+route_prefix = settings.route_prefix
+route_prefix_escaped = re.escape(route_prefix[1:])
+
+_LOGGER.info("Using route prefix: '%s'", route_prefix)
+
 app.add_middleware(
     headers.ArmorHeaderMiddleware,
     headers_config={
         "http": {"headers": {"Strict-Transport-Security": None} if not http else {}},
         "admin": {
-            "path_match": r"^admin/?$",
+            "path_match": rf"^{route_prefix_escaped}admin/?$",
             "headers": {
                 "Content-Security-Policy": {
                     "default-src": ["'self'"],
@@ -130,7 +140,7 @@ app.add_middleware(
             },
         },
         "admin-test": {
-            "path_match": r"^admin/test/?$",
+            "path_match": rf"^{route_prefix_escaped}admin/test/?$",
             "headers": {
                 "Content-Security-Policy": {
                     "default-src": ["'self'"],
@@ -165,10 +175,11 @@ health_checks.FACTORY.add(health_checks.Redis(tags=["redis", "all"]))
 
 # Add Routers
 # Mount the most specific routes first to ensure correct routing precedence.
-app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
+app.mount(f"{route_prefix}static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 app.include_router(server.router, tags=["wmts"])  # WMTS routes
-app.mount("/c2c", c2casgiutils.app)  # C2C utility routes
-app.mount("/admin", admin.app)  # Admin routes
+app.mount(f"{route_prefix}c2c", c2casgiutils.app)  # C2C utility routes
+app.mount(f"{route_prefix}admin", admin.app)  # Admin routes
+
 
 # Get Prometheus HTTP server port from environment variable 9000 by default
 start_http_server(config.settings.prometheus.port)

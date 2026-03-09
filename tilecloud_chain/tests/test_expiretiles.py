@@ -9,11 +9,11 @@ from tilecloud_chain.tests import CompareCase, MatchRegex
 
 
 class TestExpireTiles(CompareCase):
-    def setUp(self) -> None:
+    def setup_method(self) -> None:
         self.maxDiff = None
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         with Path("/tmp/expired").open("w") as f:
             f.write("18/135900/92720\n")
             f.write("18/135900/92721\n")
@@ -26,11 +26,12 @@ class TestExpireTiles(CompareCase):
             pass
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         Path("/tmp/expired").unlink()
         Path("/tmp/expired-empty").unlink()
 
-    def test_expire_tiles(
+    @pytest.mark.asyncio
+    async def test_expire_tiles(
         self,
     ) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
@@ -51,7 +52,7 @@ class TestExpireTiles(CompareCase):
                 pytest.approx([538274.006497397, 151463.940954133], abs=1e-6),
             ]
 
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=[
                     ".build/venv/bin/import_expiretiles",
                     "--create",
@@ -63,7 +64,7 @@ class TestExpireTiles(CompareCase):
                     "expired",
                     "the_geom",
                 ],
-                main_func=expiretiles.main,
+                main_func=expiretiles.async_main,
                 expected="""Import successful
     """,
             )
@@ -79,7 +80,7 @@ class TestExpireTiles(CompareCase):
 
             assert [parse_coord(e) for e in geom_re.match(geoms[0]).group(1).split(",")] == geom_coords
 
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=[
                     ".build/venv/bin/import_expiretiles",
                     "--create",
@@ -91,7 +92,7 @@ class TestExpireTiles(CompareCase):
                     "expired",
                     "the_geom",
                 ],
-                main_func=expiretiles.main,
+                main_func=expiretiles.async_main,
                 expected="""Import successful
     """,
             )
@@ -102,7 +103,7 @@ class TestExpireTiles(CompareCase):
             assert [geom_re] == geoms
             assert [parse_coord(e) for e in geom_re.match(geoms[0]).group(1).split(",")] == geom_coords
 
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=[
                     ".build/venv/bin/import_expiretiles",
                     "--simplify",
@@ -113,7 +114,7 @@ class TestExpireTiles(CompareCase):
                     "user=postgresql password=postgresql dbname=tests host=db",
                     "expired2",
                 ],
-                main_func=expiretiles.main,
+                main_func=expiretiles.async_main,
                 expected="""Import successful
     """,
             )
@@ -141,9 +142,10 @@ class TestExpireTiles(CompareCase):
 
             log_capture.check()
 
-    def test_expire_tiles_empty(self) -> None:
+    @pytest.mark.asyncio
+    async def test_expire_tiles_empty(self) -> None:
         with LogCapture("tilecloud_chain", level=30):
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=[
                     ".build/venv/bin/import_expiretiles",
                     "--create",
@@ -155,7 +157,7 @@ class TestExpireTiles(CompareCase):
                     "expired",
                     "the_geom",
                 ],
-                main_func=expiretiles.main,
+                main_func=expiretiles.async_main,
                 expected="""No coords found
     """,
             )

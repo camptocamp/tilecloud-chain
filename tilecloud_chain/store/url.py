@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-import os
 import pkgutil
 import urllib.parse
 from collections.abc import AsyncGenerator, Iterable
@@ -9,11 +8,11 @@ from typing import Any, cast
 
 import aiohttp
 import jsonschema_validator
-from anyio import Path
 from ruamel.yaml import YAML
 from tilecloud import BoundingPyramid, Tile, TileCoord, TileLayout
 
 from tilecloud_chain import host_limit
+from tilecloud_chain.settings import settings
 from tilecloud_chain.store import AsyncTileStore
 
 _LOGGER = logging.getLogger(__name__)
@@ -48,12 +47,7 @@ class URLTileStore(AsyncTileStore):
 
     async def _get_hosts_limit(self) -> host_limit.HostLimit:
         """Initialize the store."""
-        host_limit_path = Path(
-            os.environ.get(
-                "TILEGENERATION_HOSTS_LIMIT",
-                "/etc/tilegeneration/hosts_limit.yaml",
-            ),
-        )
+        host_limit_path = settings.hosts_limit
         if await host_limit_path.exists():
             host_stat = await host_limit_path.stat()
             if self._hosts_limit.mtime != host_stat.st_mtime:

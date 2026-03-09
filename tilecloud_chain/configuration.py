@@ -1192,12 +1192,57 @@ pattern: (?i)^(?!(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGH
 
 
 
-LayerDimensions = list["_LayerDimensionsItem"]
+LayerDimensions = list["LayerDimensionsItem"]
 """
 layer dimensions.
 
 The WMTS dimensions
 """
+
+
+
+class LayerDimensionsItem(TypedDict, total=False):
+    """ layer dimensions item. """
+
+    name: Required["LayerDimensionName"]
+    """
+    Layer dimension name.
+
+    The dimension name
+
+    pattern: (?i)^(?!(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\-~\.]+$
+
+    Required property
+    """
+
+    generate: Required[list["_GenerateItem"]]
+    """
+    Generate.
+
+    The values that should be generate
+
+    Required property
+    """
+
+    values: Required[list["_ValuesItem"]]
+    """
+    Values.
+
+    The values present in the capabilities
+
+    Required property
+    """
+
+    default: Required[str]
+    """
+    Default.
+
+    The default value present in the capabilities
+
+    pattern: ^[a-zA-Z0-9_\-\+~\.]+$
+
+    Required property
+    """
 
 
 
@@ -2808,9 +2853,7 @@ class Server(TypedDict, total=False):
     """
     WMTS path.
 
-    The sub-path for the WMTS (main configuration)
-
-    default: 
+    No more used, replaced by `TILECLOUD_CHAIN__WMTS_PATH` environment variable
     """
 
     expires: int
@@ -2988,11 +3031,6 @@ VERSION_DEFAULT = '1.1.1'
 
 
 
-WMTS_PATH_DEFAULT = ''
-""" Default value of the field path 'Server wmts_path' """
-
-
-
 _GenerateItem = str
 """ pattern: ^[a-zA-Z0-9_\-\+~\.]+$ """
 
@@ -3025,49 +3063,6 @@ _LAYER_WMS_META_BUFFER_DEFAULT = 128
 
 _LAYER_WMS_META_SIZE_DEFAULT = 5
 """ Default value of the field path 'Layer WMS meta_size' """
-
-
-
-class _LayerDimensionsItem(TypedDict, total=False):
-    name: Required["LayerDimensionName"]
-    """
-    Layer dimension name.
-
-    The dimension name
-
-    pattern: (?i)^(?!(SERVICE|VERSION|REQUEST|LAYERS|STYLES|SRS|CRS|BBOX|WIDTH|HEIGHT|FORMAT|BGCOLOR|TRANSPARENT|SLD|EXCEPTIONS|SALT))[a-z0-9_\-~\.]+$
-
-    Required property
-    """
-
-    generate: Required[list["_GenerateItem"]]
-    """
-    Generate.
-
-    The values that should be generate
-
-    Required property
-    """
-
-    values: Required[list["_ValuesItem"]]
-    """
-    Values.
-
-    The values present in the capabilities
-
-    Required property
-    """
-
-    default: Required[str]
-    """
-    Default.
-
-    The default value present in the capabilities
-
-    pattern: ^[a-zA-Z0-9_\-\+~\.]+$
-
-    Required property
-    """
 
 
 

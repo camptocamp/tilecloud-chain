@@ -4,37 +4,41 @@ import shutil
 from itertools import product, repeat
 from pathlib import Path
 
+import pytest
+from anyio import Path as AnyioPath
 from PIL import Image
 from testfixtures import LogCapture
 from tilecloud.store.redis import RedisTileStore
 
 from tilecloud_chain import controller, generate
+from tilecloud_chain.settings import settings
 from tilecloud_chain.tests import CompareCase
 
 
 class TestGenerate(CompareCase):
-    def setUp(self) -> None:
+    def setup_method(self) -> None:
         self.maxDiff = None
 
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         os.chdir(Path(__file__).parent)
         if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
     @classmethod
-    def tearDownClass(cls):
+    def teardown_class(cls):
         os.chdir(Path(__file__).parent.parent.parent)
         if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
 
-    def test_get_hash(self) -> None:
+    @pytest.mark.asyncio
+    async def test_get_hash(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             for d in ("-d", ""):
-                self.assert_cmd_equals(
+                await self.assert_cmd_equals(
                     cmd=f".build/venv/bin/generate-tiles {d} --get-hash 4/0/0 "
                     "-c tilegeneration/test.yaml -l point",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     expected="""Tile: 4/0/0:+8/+8 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissgrid_5 host=localhost layer=point
             empty_metatile_detection:
                 size: 20743
@@ -48,13 +52,14 @@ class TestGenerate(CompareCase):
 
             log_capture.check()
 
-    def test_get_wrong_hash(self) -> None:
+    @pytest.mark.asyncio
+    async def test_get_wrong_hash(self) -> None:
         for d in ("-d", "-q"):
             with LogCapture("tilecloud_chain") as log_capture:
-                self.assert_cmd_exit_equals(
+                await self.assert_cmd_exit_equals(
                     cmd=f".build/venv/bin/generate-tiles {d} --get-hash 0/7/5 "
                     "-c tilegeneration/test.yaml -l all",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                 )
                 log_capture.check_present(
                     (
@@ -64,39 +69,41 @@ class TestGenerate(CompareCase):
                     ),
                 )
 
-    def test_get_bbox(self) -> None:
+    @pytest.mark.asyncio
+    async def test_get_bbox(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_cmd_equals(
+                await self.assert_cmd_equals(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test.yaml --get-bbox 4/4/4 -l point",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     expected="""Tile bounds: [425120,343600,426400,344880]
 """,
                 )
-                self.assert_cmd_equals(
+                await self.assert_cmd_equals(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test.yaml --get-bbox 4/4/4:+1/+1 -l point",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     expected="""Tile bounds: [425120,343600,426400,344880]
     """,
                 )
-                self.assert_cmd_equals(
+                await self.assert_cmd_equals(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test.yaml --get-bbox 4/4/4:+2/+2 -l point",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     expected="""Tile bounds: [425120,342320,427680,344880]
     """,
                 )
                 log_capture.check()
 
-    def test_hash_mapnik(self):
+    @pytest.mark.asyncio
+    async def test_hash_mapnik(self):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_cmd_equals(
+                await self.assert_cmd_equals(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "--get-hash 4/0/0 -c tilegeneration/test.yaml -l mapnik",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissgrid_5 host=localhost layer=mapnik
     empty_metatile_detection:
         size: 334
@@ -109,13 +116,14 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_hash_mapnik_grid(self) -> None:
+    @pytest.mark.asyncio
+    async def test_hash_mapnik_grid(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_cmd_equals(
+                await self.assert_cmd_equals(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "--get-hash 4/0/0 -c tilegeneration/test.yaml -l all",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     expected="""Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissgrid_5 host=localhost layer=all
     empty_metatile_detection:
         size: 334
@@ -128,12 +136,13 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_test_all(self) -> None:
+    @pytest.mark.asyncio
+    async def test_test_all(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml -t 1",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png",
                     tiles=[
@@ -172,13 +181,14 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_test_dimensions(self) -> None:
+    @pytest.mark.asyncio
+    async def test_test_dimensions(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml -t 1 "
                     "--dimensions DATE=2013",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2013/swissgrid_5/%i/%i/%i.png",
                     tiles=[
@@ -217,11 +227,12 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_multigeom(self) -> None:
+    @pytest.mark.asyncio
+    async def test_multigeom(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
-            self.assert_tiles_generated(
+            await self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate-tiles -c tilegeneration/test-multigeom.yaml",
-                main_func=generate.main,
+                main_func=generate.async_main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/pp/default/2012/swissgrid_5/%i/%i/%i.png",
                 tiles=[
@@ -292,7 +303,8 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
             )
             log_capture.check()
 
-    def test_zoom_identifier(self) -> None:
+    @pytest.mark.asyncio
+    async def test_zoom_identifier(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             xy = list(product(range(585, 592), range(429, 432)))
             x = [e[0] for e in xy]
@@ -304,10 +316,10 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
             x3 = [e[0] for e in xy3]
             y3 = [e[1] for e in xy3]
             for d in ("-d", ""):
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 0",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png",
                     tiles=list(zip(repeat("polygon2", len(x)), repeat("1", len(x)), x, y, strict=False)),
@@ -326,10 +338,10 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
 
     """,
                 )
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 1",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png",
                     tiles=list(
@@ -350,10 +362,10 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
 
     """,
                 )
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -t 1 -l polygon2 -z 2",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_01/%s/%i/%i.png",
                     tiles=list(
@@ -376,13 +388,14 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
             log_capture.check()
 
-    def test_empty_bbox(self) -> None:
+    @pytest.mark.asyncio
+    async def test_empty_bbox(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml "
                     "-l point_hash --bbox 700000 250000 800000 300000",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s",
                     tiles=[],
@@ -406,13 +419,14 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                     ("tilecloud_chain", "WARNING", "bounds empty for zoom 3"),
                 )
 
-    def test_zoom(self) -> None:
+    @pytest.mark.asyncio
+    async def test_zoom(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l point_hash --zoom 1",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png",
                     tiles=[("point_hash", 1, 11, 14), ("point_hash", 1, 15, 8)],
@@ -433,13 +447,14 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_zoom_range(self) -> None:
+    @pytest.mark.asyncio
+    async def test_zoom_range(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l point_hash --zoom 1-3",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png",
                     tiles=[
@@ -467,14 +482,15 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_no_zoom(self) -> None:
+    @pytest.mark.asyncio
+    async def test_no_zoom(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=(
                         f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml -l point_hash"
                     ),
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png",
                     tiles=[
@@ -504,13 +520,14 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_py_buffer(self) -> None:
+    @pytest.mark.asyncio
+    async def test_py_buffer(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml "
                     "-l point_px_buffer --zoom 0-2",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/point_px_buffer/default/2012/swissgrid_5/%i/%i/%i.png",
                     tiles=[(0, 5, 7), (0, 7, 4), (1, 11, 14), (1, 15, 8), (2, 29, 35), (2, 39, 21)],
@@ -531,15 +548,16 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_zoom_list(self) -> None:
+    @pytest.mark.asyncio
+    async def test_zoom_list(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=(
                         f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml "
                         "-l point_hash --zoom 0,2,3"
                     ),
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png",
                     tiles=[
@@ -567,13 +585,14 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_layer_bbox(self) -> None:
+    @pytest.mark.asyncio
+    async def test_layer_bbox(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l polygon -z 0",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png",
                     tiles=list(product((5, 6, 7), (4, 5, 6, 7))),
@@ -591,11 +610,11 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
     """,
                 )
 
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l polygon -z 0"
                     " -b 550000 170000 560000 180000",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png",
                     tiles=[(6, 5), (7, 5)],
@@ -613,11 +632,11 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
     """,
                 )
 
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l polygon -z 0"
                     " -b 550000.0 170000.0 560000.0 180000.0",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png",
                     tiles=[(6, 5), (7, 5)],
@@ -635,9 +654,9 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
     """,
                 )
 
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml -l all -z 0",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/all/default/2012/swissgrid_5/0/%i/%i.png",
                     tiles=[(6, 5), (7, 5)],
@@ -656,13 +675,14 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_hash_generation(self) -> None:
+    @pytest.mark.asyncio
+    async def test_hash_generation(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l point_hash -z 0",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/point_hash/default/2012/swissgrid_5/0/%i/%i.png",
                     tiles=[(5, 7), (7, 4)],
@@ -683,13 +703,14 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_mapnik(self):
+    @pytest.mark.asyncio
+    async def test_mapnik(self):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l mapnik -z 0",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/mapnik/default/2012/swissgrid_5/0/%i/%i.png",
                     tiles=list(product((5, 6, 7), (4, 5, 6, 7))),
@@ -708,13 +729,14 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_mapnik_grid(self):
+    @pytest.mark.asyncio
+    async def test_mapnik_grid(self):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l mapnik_grid -z 0",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/mapnik_grid/default/2012/swissgrid_5/0/%i/%i.json",
                     tiles=list(product((5, 6, 7), (4, 5, 6, 7))),
@@ -779,20 +801,21 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                     }
                 log_capture.check()
 
-    def test_mapnik_grid_drop(self):
+    @pytest.mark.asyncio
+    async def test_mapnik_grid_drop(self):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l mapnik_grid_drop -z 0",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/mapnik_grid_drop/default/2012/swissgrid_5/0/%i/%i.json",
                     tiles=((5, 7), (7, 4)),
                     regex=True,
                     expected=r"""The tile generation of layer 'mapnik_grid_drop' is finish
-    Nb generated tiles: 2
-    Nb tiles dropped: 0
+    Nb generated tiles: 12
+    Nb tiles dropped: 10
     Nb tiles stored: 2
     Nb tiles in error: 0
     Total time: [0-9]+:[0-9][0-9]:[0-9][0-9]
@@ -804,12 +827,13 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_not_authorised_user(self) -> None:
+    @pytest.mark.asyncio
+    async def test_not_authorised_user(self) -> None:
         for d in ("-d", "-q"):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_cmd_exit_equals(
+                await self.assert_cmd_exit_equals(
                     cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-authorised.yaml",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                 )
                 log_capture.check(
                     (
@@ -819,22 +843,24 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                     ),
                 )
 
-    def test_verbose(self) -> None:
+    @pytest.mark.asyncio
+    async def test_verbose(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.run_cmd(
+                await self.run_cmd(
                     cmd=f".build/venv/bin/generate-tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -t 2 -v -l polygon",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                 )
                 log_capture.check()
 
-    def test_time(self) -> None:
+    @pytest.mark.asyncio
+    async def test_time(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_cmd_equals(
+                await self.assert_cmd_equals(
                     cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test.yaml --time 2 -l polygon",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     expected=r"""size: 770
     size: 862
     size: 862
@@ -848,12 +874,13 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 )
                 log_capture.check()
 
-    def test_time_layer_bbox(self) -> None:
+    @pytest.mark.asyncio
+    async def test_time_layer_bbox(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_cmd_equals(
+                await self.assert_cmd_equals(
                     cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test.yaml --time 2 -l all",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     expected=r"""size: 1010
     size: 1010
     size: 1010
@@ -871,7 +898,7 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
     #     with LogCapture("tilecloud_chain", level=30) as log_capture:
     #         self.assert_cmd_equals(
     #             cmd='.build/venv/bin/generate-tiles %s -c tilegeneration/test.yaml -t 1 --daemonize' % d,
-    #             main_func=generate.main,
+    #             main_func=generate.async_main,
     #             expected=r"""Daemonize with pid [0-9]*.""",
     #             regex=True)
     #         log_capture.check()
@@ -885,7 +912,8 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
             with path.open("w"):
                 pass
 
-    def test_delete_meta(self) -> None:
+    @pytest.mark.asyncio
+    async def test_delete_meta(self) -> None:
         for d in ("-d", ""):
             if Path("/tmp/tiles/").exists():
                 shutil.rmtree("/tmp/tiles/")
@@ -893,12 +921,12 @@ Tile: 4/0/0 config_file=tilegeneration/test.yaml dimension_DATE=2012 grid=swissg
                 tiles_pattern="/tmp/tiles/1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png",
                 tiles=list(product(range(12), range(16))),
             )
-            self.assert_tiles_generated_deleted(
+            await self.assert_tiles_generated_deleted(
                 cmd=(
                     f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml "
                     "-l point_hash_no_meta -z 0"
                 ),
-                main_func=generate.main,
+                main_func=generate.async_main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png",
                 tiles=[(5, 7), (7, 4)],
@@ -916,7 +944,8 @@ Size per tile: 4[0-9][0-9] o
 """,
             )
 
-    def test_delete_no_meta(self) -> None:
+    @pytest.mark.asyncio
+    async def test_delete_no_meta(self) -> None:
         for d in ("-d", ""):
             if Path("/tmp/tiles/").exists():
                 shutil.rmtree("/tmp/tiles/")
@@ -924,12 +953,12 @@ Size per tile: 4[0-9][0-9] o
                 tiles_pattern="/tmp/tiles/1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png",
                 tiles=list(product(range(12), range(16))),
             )
-            self.assert_tiles_generated_deleted(
+            await self.assert_tiles_generated_deleted(
                 cmd=(
                     f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-nosns.yaml "
                     "-l point_hash_no_meta -z 0"
                 ),
-                main_func=generate.main,
+                main_func=generate.async_main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/point_hash_no_meta/default/2012/swissgrid_5/0/%i/%i.png",
                 tiles=[(5, 7), (7, 4)],
@@ -947,13 +976,14 @@ Size per tile: 4[0-9][0-9] o
 """,
             )
 
-    def test_error_file_create(self) -> None:
+    @pytest.mark.asyncio
+    async def test_error_file_create(self) -> None:
         error_list_path = Path("error.list")
         if error_list_path.exists():
             error_list_path.unlink()
-        self.assert_main_except_equals(
+        await self.assert_main_except_equals(
             cmd=".build/venv/bin/generate-tiles -q -c tilegeneration/test-nosns.yaml -l point_error",
-            main_func=generate.main,
+            main_func=generate.async_main,
             regex=True,
             get_error=True,
             expected=[
@@ -990,9 +1020,10 @@ Size per tile: 4[0-9][0-9] o
             ],
         )
 
-    def test_error_file_use(self) -> None:
-        main_congifile = os.environ["TILEGENERATION_MAIN_CONFIGFILE"]
-        os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = "tilegeneration/test-nosns.yaml"
+    @pytest.mark.asyncio
+    async def test_error_file_use(self) -> None:
+        main_config_file = settings.main_config_file
+        settings.main_config_file = AnyioPath("tilegeneration/test-nosns.yaml")
 
         try:
             error_list_path = Path("error.list")
@@ -1008,9 +1039,9 @@ Size per tile: 4[0-9][0-9] o
                     "0/8/0:+8/+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 layer=point_hash grid=swissgrid_5\n",
                 )
 
-            self.assert_tiles_generated(
+            await self.assert_tiles_generated(
                 cmd=".build/venv/bin/generate-tiles -d --tiles error.list",
-                main_func=generate.main,
+                main_func=generate.async_main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/point_hash/default/2012/swissgrid_5/%i/%i/%i.png",
                 tiles=[(0, 5, 7), (0, 7, 4)],
@@ -1030,13 +1061,14 @@ Size per tile: 4[0-9][0-9] o
     """,
             )
         finally:
-            os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = main_congifile
+            settings.main_config_file = main_config_file
 
-    def test_multy(self) -> None:
+    @pytest.mark.asyncio
+    async def test_multy(self) -> None:
         for d in ("-v", ""):
-            self.assert_tiles_generated(
+            await self.assert_tiles_generated(
                 cmd=f".build/venv/bin/generate-tiles {d} -c tilegeneration/test-multidim.yaml",
-                main_func=generate.main,
+                main_func=generate.async_main,
                 directory="/tmp/tiles/",
                 tiles_pattern="1.0.0/multi/default/%s/swissgrid/%i/%i/%i.png",
                 tiles=[
@@ -1063,11 +1095,12 @@ Size per tile: 498 o
 """,
             )
 
-    def test_redis(self) -> None:
+    @pytest.mark.asyncio
+    async def test_redis(self) -> None:
         RedisTileStore(sentinels=[["redis_sentinel", 26379]]).delete_all()
-        self.assert_cmd_equals(
+        await self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-tiles -c tilegeneration/test-redis.yaml --role master -l point",
-            main_func=generate.main,
+            main_func=generate.async_main,
             regex=False,
             expected="""The tile generation of layer 'point (DATE=2012)' is finish
 Nb of generated jobs: 10
@@ -1075,9 +1108,9 @@ Nb of generated jobs: 10
 """,
         )
 
-        self.assert_cmd_equals(
+        await self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-controller -c tilegeneration/test-redis.yaml --status",
-            main_func=controller.main,
+            main_func=controller.async_main,
             regex=False,
             expected="""Approximate number of tiles to generate: 10
 Approximate number of generating tiles: 0
@@ -1085,9 +1118,9 @@ Tiles in error:
 """,
         )
 
-        self.assert_cmd_equals(
+        await self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-tiles -c tilegeneration/test-redis.yaml --role slave",
-            main_func=generate.main,
+            main_func=generate.async_main,
             regex=True,
             expected=r"""The tile generation is finish
 Nb generated metatiles: 10
@@ -1104,9 +1137,9 @@ Size per tile: \d+ o
 """,
         )
 
-        self.assert_cmd_equals(
+        await self.assert_cmd_equals(
             cmd=".build/venv/bin/generate-controller -c tilegeneration/test-redis.yaml --status",
-            main_func=controller.main,
+            main_func=controller.async_main,
             regex=False,
             expected="""Approximate number of tiles to generate: 0
 Approximate number of generating tiles: 0
@@ -1114,15 +1147,16 @@ Tiles in error:
 """,
         )
 
-    def test_redis_main_config(self) -> None:
-        main_congifile = os.environ["TILEGENERATION_MAIN_CONFIGFILE"]
-        os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = "tilegeneration/test-redis-main.yaml"
+    @pytest.mark.asyncio
+    async def test_redis_main_config(self) -> None:
+        main_config_file = settings.main_config_file
+        settings.main_config_file = AnyioPath("tilegeneration/test-redis-main.yaml")
 
         try:
             RedisTileStore(sentinels=[["redis_sentinel", 26379]]).delete_all()
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=".build/venv/bin/generate-tiles -c tilegeneration/test-redis-project.yaml --role master -l point",
-                main_func=generate.main,
+                main_func=generate.async_main,
                 regex=False,
                 expected="""The tile generation of layer 'point (DATE=2012)' is finish
     Nb of generated jobs: 10
@@ -1130,9 +1164,9 @@ Tiles in error:
     """,
             )
 
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/test-redis-project.yaml --status",
-                main_func=controller.main,
+                main_func=controller.async_main,
                 regex=False,
                 expected="""Approximate number of tiles to generate: 10
     Approximate number of generating tiles: 0
@@ -1140,9 +1174,9 @@ Tiles in error:
     """,
             )
 
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=".build/venv/bin/generate-tiles -c tilegeneration/test-redis-project.yaml --role slave",
-                main_func=generate.main,
+                main_func=generate.async_main,
                 regex=True,
                 expected=r"""The tile generation is finish
     Nb generated metatiles: 10
@@ -1159,9 +1193,9 @@ Tiles in error:
     """,
             )
 
-            self.assert_cmd_equals(
+            await self.assert_cmd_equals(
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/test-redis-project.yaml --status",
-                main_func=controller.main,
+                main_func=controller.async_main,
                 regex=False,
                 expected="""Approximate number of tiles to generate: 0
     Approximate number of generating tiles: 0
@@ -1169,15 +1203,16 @@ Tiles in error:
     """,
             )
         finally:
-            os.environ["TILEGENERATION_MAIN_CONFIGFILE"] = main_congifile
+            settings.main_config_file = main_config_file
 
-    def test_webp(self) -> None:
+    @pytest.mark.asyncio
+    async def test_webp(self) -> None:
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:
-                self.assert_tiles_generated(
+                await self.assert_tiles_generated(
                     cmd=f".build/venv/bin/generate_tiles {d} "
                     "-c tilegeneration/test-nosns.yaml -l point_webp --zoom 0",
-                    main_func=generate.main,
+                    main_func=generate.async_main,
                     directory="/tmp/tiles/",
                     tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.webp",
                     tiles=[("point_webp", 0, 7, 4)],
