@@ -66,5 +66,11 @@
       matchFileNames: ['.python-version$'],
       versioning: 'regex:^(?<major>\\d+)\\.(?<minor>\\d+)$',
     },
+    /** Don't upgrade poetry-plugin-tweak-dependencies-version on branch 1.17 */
+    {
+      matchDepNames: ['poetry-plugin-tweak-dependencies-version'],
+      matchBaseBranches: ['1.17'],
+      enabled: false,
+    },
   ],
 }
