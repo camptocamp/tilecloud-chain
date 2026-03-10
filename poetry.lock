@@ -584,14 +584,14 @@ sqlalchemy = ["sqlalchemy"]
 
 [[package]]
 name = "c2cwsgiutils"
-version = "6.1.8"
+version = "6.1.9"
 description = "Common utilities for Camptocamp WSGI applications"
 optional = false
 python-versions = ">=3.10"
 groups = ["main", "dev"]
 files = [
-    {file = "c2cwsgiutils-6.1.8-py3-none-any.whl", hash = "sha256:c70b5ee20bc22f9279bdb2a263b0cadc2bd8b307cc6109964de43adcd0e87b5e"},
-    {file = "c2cwsgiutils-6.1.8.tar.gz", hash = "sha256:3652aec8ae6a967107a10e0f9869f222b89aa6bce1c12c04a6f7ae744539bf31"},
+    {file = "c2cwsgiutils-6.1.9-py3-none-any.whl", hash = "sha256:a9b82c76a9fe0729915f13c433bdb59df9b7861946ae5c01e593a2e7e18ff7ee"},
+    {file = "c2cwsgiutils-6.1.9.tar.gz", hash = "sha256:8322a1390f91c2dfb3502ae9f72ae128925c712054807fa1773b5c5ff293531d"},
 ]
 
 [package.dependencies]
@@ -6295,4 +6295,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.14"
-content-hash = "4b97631414569c39eff1df9882e082e1f9eb90a2ed0e7b6cf91b4fb3feaf573e"
+content-hash = "e4786b838001ce089096addd1249e39ddf06b31cc4b942d7cb1f81a960a509bc"
