@@ -933,13 +933,14 @@ def main(global_config: Any, **settings: Any) -> Router:
     """Start the server in Pyramid."""
     del global_config  # unused
 
-    REGISTRY.register(c2cwsgiutils.prometheus.MemoryMapCollector("pss"))
-    if os.environ.get("TILECLOUD_CHAIN_PROMETHEUS_MEMORY_MAP", "false").lower() in ("true", "1", "on"):
-        REGISTRY.register(c2cwsgiutils.prometheus.MemoryMapCollector("rss"))
-        REGISTRY.register(c2cwsgiutils.prometheus.MemoryMapCollector("size"))
-    REGISTRY.register(_ResourceCollector())
-    REGISTRY.register(_MemoryInfoCollector())
-    prometheus_client.start_http_server(int(os.environ["C2C_PROMETHEUS_PORT"]))
+    if "C2C_PROMETHEUS_PORT" in os.environ:
+        REGISTRY.register(c2cwsgiutils.prometheus.MemoryMapCollector("pss"))
+        if os.environ.get("TILECLOUD_CHAIN_PROMETHEUS_MEMORY_MAP", "false").lower() in ("true", "1", "on"):
+            REGISTRY.register(c2cwsgiutils.prometheus.MemoryMapCollector("rss"))
+            REGISTRY.register(c2cwsgiutils.prometheus.MemoryMapCollector("size"))
+        REGISTRY.register(_ResourceCollector())
+        REGISTRY.register(_MemoryInfoCollector())
+        prometheus_client.start_http_server(int(os.environ["C2C_PROMETHEUS_PORT"]))
 
     config = Configurator(settings=settings)
 
