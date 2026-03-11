@@ -58,7 +58,7 @@ services:
       C2C__AUTH__GITHUB__CLIENT_SECRET: '1234'
       C2C__AUTH__JWT__SECRET: '1234'
       C2C__PROMETHEUS__PORT: '9110'
-      C2C__HTTP: TRUE
+      C2C__HTTP: 'TRUE'
     ports:
       - '9050:8080'
     links:

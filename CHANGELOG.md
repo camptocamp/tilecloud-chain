@@ -75,5 +75,5 @@ Azure:
 - `AZURE_STORAGE_BLOB_VALIDATE_CONTAINER_NAME` -> `TILECLOUD_CHAIN__AZURE__STORAGE_BLOB_VALIDATE_CONTAINER_NAME`
 - `AZURE_STORAGE_ACCOUNT_URL` -> `TILECLOUD_CHAIN__AZURE__STORAGE_ACCOUNT_URL`
 
-There is also all the `c2cwsgiutils` environment variable that should bbe migrate to `c2casgiutils`
+There is also all the `c2cwsgiutils` environment variables that should be migrated to `c2casgiutils`
 See: c2casgiutils [environment variables](https://github.com/camptocamp/c2casgiutils?tab=readme-ov-file#environment-variables) and [correspondences](https://github.com/camptocamp/c2casgiutils/blob/master/C2CWSGIUTILS.md).

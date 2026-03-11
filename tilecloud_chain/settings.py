@@ -111,10 +111,10 @@ class PostgresqlSettings(BaseModel):
 class SecuritySettings(BaseModel):
     """Security settings."""
 
-    trusted_hosts: list[str] = ["*"]
-    cors_origins: list[str] = ["*"]
-    cors_methods: list[str] = ["*"]
-    cors_headers: list[str] = ["*"]
+    trusted_hosts: StrList = ["*"]
+    cors_origins: StrList = ["*"]
+    cors_methods: StrList = ["*"]
+    cors_headers: StrList = ["*"]
     cors_credentials: bool = True
 
 

@@ -1,6 +1,7 @@
 exclude: |-
   (?x)^(
     tilecloud_chain/configuration\.py
+    |tilecloud_chain/host_limit\.py
   )$
 
 default_language_version:
@@ -53,7 +54,7 @@ repos:
         additional_dependencies:
           - prettier@2.8.4
   - repo: https://github.com/camptocamp/jsonschema-gentypes
-    rev: 2.12.0
+    rev: 2.13.0
     hooks:
       - id: jsonschema-gentypes
         files: |-

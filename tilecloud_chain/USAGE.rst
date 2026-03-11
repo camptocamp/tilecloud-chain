@@ -718,7 +718,6 @@ Configuration uses nested environment variables with the ``TILECLOUD_CHAIN__``
 prefix and ``__`` delimiter, for example:
 
 - ``TILECLOUD_CHAIN__CONFIG_FILE``
-- ``TILECLOUD_CHAIN__HTTP``
 - ``TILECLOUD_CHAIN__LOGGING__LOG_TYPE``
 
 Tile generation:
@@ -774,14 +773,9 @@ Valid log levels: ``DEBUG``, ``INFO``, ``WARN``, ``ERROR``, ``CRITICAL``
 
 Server:
 
-- ``TILECLOUD_CHAIN__HTTP``: Enable HTTP mode if set to ``true``
-  (default: ``false``)
-
 - ``TILECLOUD_CHAIN__SENTRY_DSN``: Sentry DSN used for error reporting
 
 - ``TILECLOUD_CHAIN__FRONTEND``: Frontend mode (e.g. ``noninteractive``)
-
-- ``TILECLOUD_CHAIN__PROMETHEUS_PORT``: Port for Prometheus metrics server
 
 - ``TILECLOUD_CHAIN__DEVELOPMENT``: Enable development features if set to ``true``
   (default: ``false``)
@@ -808,10 +802,8 @@ Worker:
 
 Tests:
 
-- ``TILECLOUD_CHAIN__TESTS__ENABLED``: Enable test mode if set to ``true``
+- ``TILECLOUD_CHAIN__TESTS``: Enable test mode if set to ``true``
   (default: ``false``)
-
-- ``TILECLOUD_CHAIN__TESTS__USER``: Inject a test user for authentication
 
 See also: ``settings.py` <https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/settings.py>`_.
 

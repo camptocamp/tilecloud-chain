@@ -6,12 +6,7 @@ headers: |
   """
 
 pre_commit:
-  enabled: true
-  hooks_skip:
-    - jsonschema-gentypes
-    - shellcheck
-  arguments:
-    - --color=never
+  enabled: false
 
 python_version: '3.11'
 
