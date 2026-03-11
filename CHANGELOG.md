@@ -32,10 +32,7 @@ Logging:
 
 Server:
 
-- `HTTP` -> `TILECLOUD_CHAIN__HTTP`
-- `SENTRY_DSN` -> `TILECLOUD_CHAIN__SENTRY_DSN`
 - `FRONTEND` -> `TILECLOUD_CHAIN__FRONTEND`
-- `C2C__PROMETHEUS__PORT` -> `TILECLOUD_CHAIN__PROMETHEUS_PORT`
 - `DEVELOPMENT` -> `TILECLOUD_CHAIN__DEVELOPMENT`
 - `VISIBLE_ENTRY_POINT` -> `TILECLOUD_CHAIN__ROUTE_PREFIX`
 
@@ -49,8 +46,8 @@ Worker:
 
 Tests:
 
-- `TESTS` -> `TILECLOUD_CHAIN__TESTS__ENABLED`
-- `TEST_USER` -> `TILECLOUD_CHAIN__TESTS__USER`
+- `TESTS` -> `TILECLOUD_CHAIN__TESTS`
+- `TEST_USER` -> `C2C__AUTH__TEST__USERNAME`
 
 PostgreSQL:
 
@@ -77,3 +74,6 @@ Azure:
 - `AZURE_STORAGE_BLOB_CONTAINER_URL` -> `TILECLOUD_CHAIN__AZURE__STORAGE_BLOB_CONTAINER_URL`
 - `AZURE_STORAGE_BLOB_VALIDATE_CONTAINER_NAME` -> `TILECLOUD_CHAIN__AZURE__STORAGE_BLOB_VALIDATE_CONTAINER_NAME`
 - `AZURE_STORAGE_ACCOUNT_URL` -> `TILECLOUD_CHAIN__AZURE__STORAGE_ACCOUNT_URL`
+
+There is also all the `c2cwsgiutils` environment variable that should bbe migrate to `c2casgiutils`
+See: c2casgiutils [environment variables](https://github.com/camptocamp/c2casgiutils?tab=readme-ov-file#environment-variables) and [correspondences](https://github.com/camptocamp/c2casgiutils/blob/master/C2CWSGIUTILS.md).

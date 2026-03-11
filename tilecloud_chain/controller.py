@@ -122,7 +122,7 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         raise
     except:  # pylint: disable=bare-except
         _LOGGER.exception("Exit with exception")
-        if settings.tests.enabled:
+        if settings.tests:
             raise
         sys.exit(1)
 

@@ -19,6 +19,11 @@ the commit message should start with a capital letter.
 
 Use the long parameter names for clarity and maintainability.
 
+## Dependencies
+
+In the `pyproject.toml` file the `project.dependencies` are managed automatically,
+when you need to touch the dependencies you should update `tool.poetry.dependencies` or `tool.poetry.group.dev.dependencies`.
+
 ## Development
 
 To develop on the project, you should use the `docker-compose.override.yaml` file.

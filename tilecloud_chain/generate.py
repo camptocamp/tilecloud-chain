@@ -18,6 +18,7 @@ import objgraph
 import prometheus_client
 import tilecloud.filter.error
 from anyio import Path
+from c2casgiutils.config import settings as c2c_settings
 from tilecloud import Tile, TileCoord
 from tilecloud.filter.logger import Logger
 from tilecloud.layout.wms import WMSTileLayout
@@ -671,8 +672,8 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         if options.detach:
             detach()
 
-        if options.daemon and settings.prometheus_port is not None:
-            prometheus_client.start_http_server(settings.prometheus_port)
+        if options.daemon and c2c_settings.prometheus.port is not None:
+            prometheus_client.start_http_server(c2c_settings.prometheus.port)
 
         config = options.config
         assert isinstance(config, Path) or config is None
@@ -740,7 +741,7 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         raise
     except:  # pylint: disable=bare-except
         _LOGGER.exception("Exit with exception")
-        if settings.tests.enabled:
+        if settings.tests:
             raise
         sys.exit(1)
 

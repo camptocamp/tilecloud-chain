@@ -1,11 +1,8 @@
-"""Security policy for the pyramid application."""
+"""Security policy for the application."""
 
 import c2cwsgiutils.auth
 import pyramid.request
 from c2cwsgiutils.auth import AuthConfig
-from pyramid.security import Allowed, Denied
-
-from tilecloud_chain.settings import settings
 
 
 class User:
@@ -46,64 +43,3 @@ class User:
             return c2cwsgiutils.auth.check_access_config(self.request, auth_config)
 
         return False
-
-
-class SecurityPolicy:
-    """The pyramid security policy."""
-
-    def identity(self, request: pyramid.request.Request) -> User:
-        """Return app-specific user object."""
-        if not hasattr(request, "user"):
-            if settings.tests.user:
-                user = User(
-                    auth_type="test_user",
-                    login=settings.tests.user,
-                    name=settings.tests.user,
-                    url="https://example.com/user",
-                    is_auth=True,
-                    token=None,
-                    request=request,
-                )
-            else:
-                is_auth, c2cuser = c2cwsgiutils.auth.is_auth_user(request)
-                user = User(
-                    "github_oauth",
-                    c2cuser.get("login"),
-                    c2cuser.get("name"),
-                    c2cuser.get("url"),
-                    is_auth,
-                    c2cuser.get("token"),
-                    request,
-                )
-            request.user = user
-        return request.user  # type: ignore[no-any-return]
-
-    def authenticated_userid(self, request: pyramid.request.Request) -> str | None:
-        """Return a string ID for the user."""
-        identity = self.identity(request)
-
-        if identity is None:
-            return None
-
-        return identity.login
-
-    def permits(
-        self,
-        request: pyramid.request.Request,
-        context: AuthConfig,
-        permission: str,
-    ) -> Allowed | Denied:
-        """Allow access to everything if signed in."""
-        identity = self.identity(request)
-
-        if identity is None:
-            return Denied("User is not signed in.")
-        if identity.auth_type == "test_user":
-            return Allowed(f"All access auth type: {identity.auth_type}")
-        if identity.is_admin:
-            return Allowed("The User is admin.")
-        if permission == "all":
-            return Denied("Root access is required.")
-        if identity.has_access(context):
-            return Allowed("The User has access.")
-        return Denied(f"The User has no access to source {permission}.")
