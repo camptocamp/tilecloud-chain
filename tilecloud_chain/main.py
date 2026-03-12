@@ -43,6 +43,7 @@ import prometheus_client.registry
 import psutil
 import sentry_sdk
 from c2casgiutils import config, headers, health_checks
+from c2casgiutils.config import settings as c2c_settings
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -65,7 +66,11 @@ if config.settings.sentry.dsn or "SENTRY_DSN" in os.environ:
         "Sentry is enabled with URL: %s",
         config.settings.sentry.dsn or os.environ.get("SENTRY_DSN"),
     )
-    sentry_sdk.init(**config.settings.sentry.model_dump())
+    sentry_sdk.init(
+        **{k: v for k, v in config.settings.sentry.model_dump().items() if v is not None and k != "tags"},
+    )
+    for tag, value in config.settings.sentry.tags.items():
+        sentry_sdk.set_tag(tag, value)
 
 
 @asynccontextmanager
@@ -86,10 +91,10 @@ app = FastAPI(title="TileCloud-chain WMTS API", lifespan=_lifespan)
 # Add TrustedHostMiddleware (should be first)
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["*"],  # Configure with specific hosts in production
+    allowed_hosts=settings.security.trusted_hosts,  # Configure with specific hosts in production
 )
 
-http = settings.http
+http = c2c_settings.http
 # Add HTTPSRedirectMiddleware
 if not http:
     app.add_middleware(HTTPSRedirectMiddleware)
@@ -100,10 +105,10 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # Set all CORS origins enabled
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=settings.security.cors_origins,
+    allow_credentials=settings.security.cors_credentials,
+    allow_methods=settings.security.cors_methods,
+    allow_headers=settings.security.cors_headers,
 )
 
 route_prefix = settings.route_prefix

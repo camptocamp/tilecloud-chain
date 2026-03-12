@@ -108,13 +108,14 @@ class PostgresqlSettings(BaseModel):
     objgraph_limit: int = 10
 
 
-class TestSettings(BaseModel):
-    """Test settings."""
+class SecuritySettings(BaseModel):
+    """Security settings."""
 
-    model_config = ConfigDict(extra="ignore")
-
-    enabled: bool = False
-    user: str | None = None
+    trusted_hosts: StrList = ["*"]
+    cors_origins: StrList = ["*"]
+    cors_methods: StrList = ["*"]
+    cors_headers: StrList = ["*"]
+    cors_credentials: bool = True
 
 
 class Settings(BaseSettings):
@@ -132,9 +133,7 @@ class Settings(BaseSettings):
     ignore_config_error: bool = False
     max_generation_time: int = 60
     allowed_process_commands: StrList = ["optipng", "jpegoptim", "pngquant"]
-    http: bool = False
     frontend: str | None = None
-    prometheus_port: int | None = None
     development: bool = False
     route_prefix: RoutePrefix = "/tiles/"
     wmts_path: WMTSPath = ""
@@ -143,7 +142,8 @@ class Settings(BaseSettings):
     logging: LoggingSettings = LoggingSettings()
     postgresql: PostgresqlSettings = PostgresqlSettings()
     redis: RedisSettings = RedisSettings()
-    tests: TestSettings = TestSettings()
+    tests: bool = False
+    security: SecuritySettings = SecuritySettings()
 
     model_config = SettingsConfigDict(
         env_prefix="TILECLOUD_CHAIN__",

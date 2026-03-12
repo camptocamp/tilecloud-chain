@@ -7,6 +7,7 @@ inherits:
 
 ignore-paths:
   - tilecloud_chain/configuration.py
+  - tilecloud_chain/host_limit.py
 
 pylint:
   disable:
