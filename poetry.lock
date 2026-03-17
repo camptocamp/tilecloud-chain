@@ -3362,14 +3362,14 @@ files = [
 
 [[package]]
 name = "prospector"
-version = "1.17.3"
+version = "1.18.0"
 description = "Prospector is a tool to analyse Python code by aggregating the result of other tools."
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "prospector-1.17.3-py3-none-any.whl", hash = "sha256:e3698bba95f86ef50d626df33b29272cf6462061aca2b19161186c4405a6a402"},
-    {file = "prospector-1.17.3.tar.gz", hash = "sha256:c4df723012c45fc70f5b71f5eee318dbccaf903c2012c8ecf3ec89f60e5cb822"},
+    {file = "prospector-1.18.0-py3-none-any.whl", hash = "sha256:7ec348c69df9c93e524f75ce98700ea8843b43782c71183fece9c6d7c3598fb9"},
+    {file = "prospector-1.18.0.tar.gz", hash = "sha256:e0d3d8f8601dd86064a120aca93d91bfe30a35b2241ebd84279738d3a1f2f87c"},
 ]
 
 [package.dependencies]
@@ -3382,12 +3382,12 @@ pep8-naming = ">=0.3.3,<=0.10.0"
 pycodestyle = ">=2.9.0"
 pydocstyle = ">=2.0.0"
 pyflakes = ">=2.2.0"
-pylint = ">=3.0"
+pylint = ">=4.0"
 pylint-celery = "0.3"
 pylint-django = ">=2.6.1"
 pyroma = {version = "*", optional = true, markers = "extra == \"with-pyroma\""}
 PyYAML = "*"
-requirements-detector = ">=1.3.2"
+requirements-detector = ">=1.5.0"
 ruff = {version = "*", optional = true, markers = "extra == \"with-ruff\""}
 setoptconf-tmp = ">=0.3.1,<0.4.0"
 toml = ">=0.10.2,<0.11.0"
@@ -6296,4 +6296,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.14"
-content-hash = "e7ff9962a0f6f3068101a383c7204ce07fadb89df0f8e3f8e470aee204533b81"
+content-hash = "5e3b647b26cba96e84a5d46bedff1608e69736e15b8655ae06d1ddddd338e71d"
