@@ -220,24 +220,21 @@ virtualenv = ["virtualenv (>=20.0.35)"]
 
 [[package]]
 name = "c2cwsgiutils"
-version = "6.0.9"
+version = "6.1.9"
 description = "Common utilities for Camptocamp WSGI applications"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 files = [
-    {file = "c2cwsgiutils-6.0.9-py3-none-any.whl", hash = "sha256:77e91d0bb74a62ab58b10e493b34a94e4a223dd33f35edef30d7b79d5424c374"},
-    {file = "c2cwsgiutils-6.0.9.tar.gz", hash = "sha256:f93ee7cb03a7d72cbb6699710963eb0d0cba25b0afae9a56ff5617b639b2b11d"},
+    {file = "c2cwsgiutils-6.1.9-py3-none-any.whl", hash = "sha256:a9b82c76a9fe0729915f13c433bdb59df9b7861946ae5c01e593a2e7e18ff7ee"},
+    {file = "c2cwsgiutils-6.1.9.tar.gz", hash = "sha256:8322a1390f91c2dfb3502ae9f72ae128925c712054807fa1773b5c5ff293531d"},
 ]
 
 [package.dependencies]
 alembic = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"alembic\" or extra == \"all\""}
 cee_syslog_handler = "*"
-certifi = "*"
 cornice = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
 gunicorn = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
-idna = "*"
 objgraph = {version = "*", optional = true, markers = "extra == \"debug\" or extra == \"all\""}
-pillow = "*"
 prometheus-client = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
 psycopg2 = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
 pyjwt = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"oauth2\" or extra == \"all\""}
@@ -249,13 +246,11 @@ redis = {version = "*", optional = true, markers = "extra == \"standard\" or ext
 requests = "*"
 requests-oauthlib = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"oauth2\" or extra == \"all\""}
 scikit-image = {version = "*", optional = true, markers = "extra == \"test-images\""}
-scipy = "*"
 sentry-sdk = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"sentry\" or extra == \"all\""}
 SQLAlchemy = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
 SQLAlchemy-Utils = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
 ujson = "*"
 urllib3 = "*"
-webob = "*"
 "zope.interface" = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
 "zope.sqlalchemy" = {version = "*", optional = true, markers = "extra == \"standard\" or extra == \"webserver\" or extra == \"all\""}
 
@@ -3392,4 +3387,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "4c821283aed6dfa9ea392c0441e04ede0617310a32aa7bc35c8906bf1ba6f7e3"
+content-hash = "e256e4ecc74f03b474f189d7597aa8e90b32271d908689dd2cfb4411a0fa8cab"
