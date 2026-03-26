@@ -39,7 +39,7 @@ cryptography = "46.0.6"
 Pillow = "10.3.0"
 certifi = "2026.2.25"
 redis = "4.4.4"
-requests = "2.32.4"
+requests = "2.33.0"
 # Workaround to be able to do the lock file update
 urllib3 = "1.26.20"
 idna = "3.7"
