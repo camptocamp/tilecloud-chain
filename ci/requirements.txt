@@ -2,5 +2,5 @@ c2cciutils==1.7.5
 poetry-dynamic-versioning==1.10.0
 poetry-plugin-export==1.10.0
 pre-commit==4.5.1
-importlib-metadata<8.7.2
+importlib-metadata<8.9.1
 tag-publish==1.1.1
