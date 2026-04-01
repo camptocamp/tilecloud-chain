@@ -1,6 +1,6 @@
 services:
   db:
-    image: camptocamp/postgres:17-postgis-3
+    image: camptocamp/postgres:18-postgis-3
     environment:
       POSTGRES_USER: postgresql
       POSTGRES_PASSWORD: postgresql
@@ -127,7 +127,7 @@ services:
       # - ../tilecloud/tilecloud:/usr/local/lib/python3.8/dist-packages/tilecloud
 
   shell:
-    image: camptocamp/postgres:17-postgis-3
+    image: camptocamp/postgres:18-postgis-3
     command:
       - tail
       - -f
