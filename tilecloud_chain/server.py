@@ -103,6 +103,49 @@ _LEGEND_CONFIG_CACHE: dict[str, LegendLayerCache] = {}
 _LEGEND_CONFIG_CACHE_LOCK: asyncio.Lock | None = None
 
 
+def _add_dimensions_to_params(
+    params: dict[str, str],
+    layer: str,
+    dimensions: list[tilecloud_chain.configuration.LayerDimensionsItem],
+    dimensions_parameters: str,
+) -> None:
+    expected_dimension_names = [dimension["name"] for dimension in dimensions]
+    provided_dimension_values = dimensions_parameters.split("/")
+
+    if len(provided_dimension_values) != len(expected_dimension_names):
+        details = [
+            f"expected {len(expected_dimension_names)} value(s) ({', '.join(expected_dimension_names)})",
+            f"got {len(provided_dimension_values)} value(s) ({', '.join(provided_dimension_values)})",
+        ]
+        if len(provided_dimension_values) < len(expected_dimension_names):
+            missing_dimensions = expected_dimension_names[len(provided_dimension_values) :]
+            details.append(f"missing dimension(s): {', '.join(missing_dimensions)}")
+        else:
+            unexpected_values = provided_dimension_values[len(expected_dimension_names) :]
+            details.append(f"unexpected value(s): {', '.join(unexpected_values)}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Wrong dimensions for layer '{layer}': {'; '.join(details)}",
+        )
+
+    empty_dimensions = [
+        expected_dimension_names[index]
+        for index, value in enumerate(provided_dimension_values)
+        if value == ""
+    ]
+    if empty_dimensions:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Wrong dimensions for layer '{layer}': "
+                f"empty value(s) for dimension(s): {', '.join(empty_dimensions)}"
+            ),
+        )
+
+    for index, dimension in enumerate(dimensions):
+        params[dimension["name"].upper()] = provided_dimension_values[index]
+
+
 async def init_tilegeneration(config_file: Path | None) -> None:
     """Initialize the tile generation."""
     global _TILEGENERATION  # noqa: PLW0603
@@ -862,9 +905,7 @@ async def wmts_feature_info(
 
     dimensions: list[tilecloud_chain.configuration.LayerDimensionsItem] = layer_obj.get("dimensions", [])
     if dimensions:
-        dimensions_parameters_list = dimensions_parameters.split("/")
-        for index, dimension in enumerate(dimensions):
-            params[dimension["name"].upper()] = dimensions_parameters_list[index]
+        _add_dimensions_to_params(params, layer, dimensions, dimensions_parameters)
 
     return await server.serve(params, config, host, request)
 
@@ -922,9 +963,7 @@ async def wmts_tile(
 
     dimensions: list[tilecloud_chain.configuration.LayerDimensionsItem] = layer_obj.get("dimensions", [])
     if dimensions:
-        dimensions_parameters_list = dimensions_parameters.split("/")
-        for index, dimension in enumerate(dimensions):
-            params[dimension["name"].upper()] = dimensions_parameters_list[index]
+        _add_dimensions_to_params(params, layer, dimensions, dimensions_parameters)
 
     if extension == "webp":
         params["FORMAT"] = "image/webp"

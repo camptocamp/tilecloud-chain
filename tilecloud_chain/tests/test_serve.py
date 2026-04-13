@@ -828,7 +828,6 @@ class TestServe(CompareCase):
     async def test_bsddb_rest(self):
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             await self.assert_tiles_generated(
-
                 cmd=".build/venv/bin/generate-tiles -d --config=tilegeneration/test-bsddb.yaml"
                 " --layer=point_hash --zoom=1",
                 main_func=generate.async_main,
@@ -1065,17 +1064,18 @@ class TestServe(CompareCase):
 
         async def get_one_side_effect(tile):
             if tile.tilecoord.z == 1 and tile.tilecoord.x == 14 and tile.tilecoord.y == 11:
-                    t = MagicMock()
-                    t.data = b"dummy_png"
-                    t.content_type = "image/png"
-                    t.error = None
-                    return t
+                t = MagicMock()
+                t.data = b"dummy_png"
+                t.content_type = "image/png"
+                t.error = None
+                return t
             return None
 
-        with patch("aiohttp.ClientSession.get") as mock_get, \
-                patch("tilecloud_chain.IntersectGeometryFilter.filter_tilecoord", return_value=True), \
-                patch.object(server._TILEGENERATION, "get_store", new_callable=AsyncMock) as mock_get_store:
-
+        with (
+            patch("aiohttp.ClientSession.get") as mock_get,
+            patch("tilecloud_chain.IntersectGeometryFilter.filter_tilecoord", return_value=True),
+            patch.object(server._TILEGENERATION, "get_store", new_callable=AsyncMock) as mock_get_store,
+        ):
             # Mock the store
             mock_store = AsyncMock()
             mock_store.get_one.side_effect = get_one_side_effect
@@ -1128,7 +1128,22 @@ class TestServe(CompareCase):
             assert response.headers["Cache-Control"] == "max-age=28800"
             assert response.headers["Content-Type"] == "image/png"
 
-            # 4. GetCapabilities
+            # 4. GetTile with wrong dimensions (empty value)
+            response = client.get("/tiles/1.0.0/point_hash/default//swissgrid_5/1/11/14.png")
+            assert response.status_code == 400
+            assert response.json()["detail"] == (
+                "Wrong dimensions for layer 'point_hash': empty value(s) for dimension(s): DATE"
+            )
+
+            # 5. GetTile with wrong dimensions (extra value)
+            response = client.get("/tiles/1.0.0/point_hash/default/2012/extra/swissgrid_5/1/11/14.png")
+            assert response.status_code == 400
+            assert response.json()["detail"] == (
+                "Wrong dimensions for layer 'point_hash': expected 1 value(s) (DATE); "
+                "got 2 value(s) (2012, extra); unexpected value(s): extra"
+            )
+
+            # 6. GetCapabilities
             response = client.get("/tiles/1.0.0/WMTSCapabilities.xml")
             assert response.status_code == 200
             assert response.headers["Content-Type"] == "application/xml"
