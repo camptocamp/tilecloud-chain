@@ -5,7 +5,7 @@
 - Add a Pydantic-based settings hierarchy for environment variables.
 - Update server, queue, admin, and generation code to read configuration from `tilecloud_chain.settings`.
 - Document the new nested environment variable scheme in `tilecloud_chain/USAGE.rst`.
-- Improve WMTS REST error messages for invalid dimension paths by returning a 400 with missing, empty, or unexpected dimension details instead of a server error.
+- Improve WMTS REST error messages for invalid dimensions by returning a 400 with missing, empty, unexpected, or not-allowed dimension values instead of a server error.
 
 Environment variable migration (legacy -> new)
 

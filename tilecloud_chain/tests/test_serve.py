@@ -1143,7 +1143,15 @@ class TestServe(CompareCase):
                 "got 2 value(s) (2012, extra); unexpected value(s): extra"
             )
 
-            # 6. GetCapabilities
+            # 6. GetTile with wrong dimensions value
+            response = client.get("/tiles/1.0.0/point_hash/default/20231011/swissgrid_5/1/11/14.png")
+            assert response.status_code == 400
+            assert response.json()["detail"] == (
+                "Wrong dimensions for layer 'point_hash': "
+                "DATE='20231011' not in allowed values (2005, 2010, 2012)"
+            )
+
+            # 7. GetCapabilities
             response = client.get("/tiles/1.0.0/WMTSCapabilities.xml")
             assert response.status_code == 200
             assert response.headers["Content-Type"] == "application/xml"

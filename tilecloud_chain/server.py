@@ -142,6 +142,25 @@ def _add_dimensions_to_params(
             ),
         )
 
+    wrong_dimensions = [
+        (
+            expected_dimension_names[index],
+            value,
+            dimensions[index]["values"],
+        )
+        for index, value in enumerate(provided_dimension_values)
+        if value not in dimensions[index]["values"]
+    ]
+    if wrong_dimensions:
+        details = [
+            (f"{name}='{value}' not in allowed values ({', '.join(expected_values)})")
+            for name, value, expected_values in wrong_dimensions
+        ]
+        raise HTTPException(
+            status_code=400,
+            detail=f"Wrong dimensions for layer '{layer}': {'; '.join(details)}",
+        )
+
     for index, dimension in enumerate(dimensions):
         params[dimension["name"].upper()] = provided_dimension_values[index]
 
