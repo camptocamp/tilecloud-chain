@@ -44,11 +44,11 @@ import psutil
 import sentry_sdk
 from c2casgiutils import config, headers, health_checks
 from c2casgiutils.config import settings as c2c_settings
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from prometheus_client import start_http_server
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -95,10 +95,6 @@ app.add_middleware(
 )
 
 http = c2c_settings.http
-# Add HTTPSRedirectMiddleware
-if not http:
-    app.add_middleware(HTTPSRedirectMiddleware)
-
 # Add GZipMiddleware
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
@@ -177,6 +173,17 @@ class RootResponse(BaseModel):
 
 # Add Health Checks
 health_checks.FACTORY.add(health_checks.Redis(tags=["redis", "all"]))
+
+
+@app.get(f"{route_prefix}c2c")
+async def redirect_c2c(request: Request) -> RedirectResponse:
+    """Redirect to the mounted c2c app canonical path."""
+    url = request.url
+    redirect_url = url.path + "/"
+    if url.query:
+        redirect_url += f"?{url.query}"
+    return RedirectResponse(url=redirect_url, status_code=307)
+
 
 # Add Routers
 # Mount the most specific routes first to ensure correct routing precedence.
