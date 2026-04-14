@@ -169,9 +169,15 @@ async def admin_index(
     if queue_store == "postgresql" and has_access and _postgresql_store and config.file:
         jobs_status = await _postgresql_store.get_status(config.file)
 
+    try:
+        nonce = request.state.nonce
+    except AttributeError as exc:
+        raise HTTPException(status_code=500, detail="CSP nonce not initialized") from exc
+
     assert auth_info, auth_info
     context = {
         "request": request,
+        "nonce": nonce,
         "has_access": has_access,
         "auth_info": auth_info,
         "auth_type": auth_type,
@@ -380,8 +386,14 @@ async def admin_test(
     if proj4js_def is None:
         proj4js_def = pyproj.CRS.from_string(srs).to_proj4()
 
+    try:
+        nonce = request.state.nonce
+    except AttributeError as exc:
+        raise HTTPException(status_code=500, detail="CSP nonce not initialized") from exc
+
     context = {
         "request": request,
+        "nonce": nonce,
         "proj4js_def": proj4js_def,
         "srs": srs,
         "center_x": config.config["openlayers"].get("center_x", configuration.CENTER_X_DEFAULT),

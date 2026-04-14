@@ -23,23 +23,28 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
-    <style>
+    <style nonce="{{ nonce }}">
       a {
         text-decoration: none;
       }
       a:hover {
         text-decoration: underline;
       }
+      .auth-box {
+        position: absolute;
+        right: 3rem;
+        top: 2rem;
+      }
     </style>
   </head>
   <body class="px-5 py-4">
-    <script>
+    <script nonce="{{ nonce }}">
       /* For dark mode */
       if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
         document.documentElement.setAttribute('data-bs-theme', 'dark');
       }
     </script>
-    <div style="position: absolute; right: 3rem; top: 2rem">
+    <div class="auth-box">
       {% if not auth_info.is_logged_in and auth_type == AuthenticationType.SECRET %}
       <form>
         Secret: <input type="password" name="secret" />
@@ -59,8 +64,7 @@
       <p>
         Logged as: <a href="{{ auth_info.user.url }}">{{ auth_info.user.display_name }}</a>
         <a
-          class="btn btn-outline-primary"
-          style="vertical-align: baseline; margin-left: 0.5rem"
+          class="btn btn-outline-primary align-baseline ms-2"
           href="{{ url_for('c2c_github_logout') }}?{{ urlencode({'came_from': request.url}) }}"
           >Logout</a
         >
@@ -159,7 +163,7 @@
             aria-controls="collapse{{ nb }}"
           >
             {{ job.name }} (
-            <script>
+            <script nonce="{{ nonce }}">
               window.document.write(new Date('{{ job.created_at.isoformat() }}').toLocaleString());
             </script>
             , {{ job.status }})
@@ -201,9 +205,7 @@
               {% if 'generate' in s %}
               <!---->
               {% set comma = true %}
-              <span style="color: var(--bs-success-text-emphasis)"
-                >{{ s['generate'] }} meta tiles to generate</span
-              >
+              <span class="text-success-emphasis">{{ s['generate'] }} meta tiles to generate</span>
               {% endif %}
               <!---->
               {% if 'pending' in s %}
@@ -215,9 +217,7 @@
               {% endif %}
               <!---->
               {% set comma = true %}
-              <span style="color: var(--bs-primary-text-emphasis)"
-                >{{ s['pending'] }} meta tiles being generated</span
-              >
+              <span class="text-primary-emphasis">{{ s['pending'] }} meta tiles being generated</span>
               {% endif %}
               <!---->
               {% if 'error' in s %}
@@ -227,7 +227,7 @@
               ,
               <!---->
               {% endif %}
-              <span style="color: var(--bs-danger-text-emphasis)">{{ s['error'] }} meta tiles in error</span>
+              <span class="text-danger-emphasis">{{ s['error'] }} meta tiles in error</span>
               {% endif %}
               <br />
               {% endfor %}
@@ -328,7 +328,7 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
-    <script>
+    <script nonce="{{ nonce }}">
       $(document).ready(function () {
         $('.command').click((handler) => {
           $('#name').val(handler.target.dataset.name);
