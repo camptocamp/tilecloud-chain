@@ -6,6 +6,7 @@
 - Update server, queue, admin, and generation code to read configuration from `tilecloud_chain.settings`.
 - Document the new nested environment variable scheme in `tilecloud_chain/USAGE.rst`.
 - Improve WMTS REST error messages for invalid dimensions by returning a 400 with missing, empty, unexpected, or not-allowed dimension values instead of a server error.
+- Replace `unsafe-inline` in admin CSP with c2casgiutils nonce-based CSP for inline scripts/styles.
 
 Environment variable migration (legacy -> new)
 

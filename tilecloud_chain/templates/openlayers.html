@@ -37,7 +37,7 @@
       referrerpolicy="no-referrer"
       rel="stylesheet"
     />
-    <style>
+    <style nonce="{{ nonce }}">
       html,
       body,
       #map {
@@ -78,7 +78,7 @@
       referrerpolicy="no-referrer"
     ></script>
 
-    <script>
+    <script nonce="{{ nonce }}">
       proj4.defs("{{ srs }}",`{{ proj4js_def }}`);
       ol.proj.proj4.register(proj4);
       var parser = new ol.format.WMTSCapabilities();

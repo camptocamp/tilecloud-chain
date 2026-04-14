@@ -129,20 +129,17 @@ app.add_middleware(
                     "default-src": ["'self'"],
                     "script-src-elem": [
                         "'self'",
-                        "'unsafe-inline'",  # TODO: remove this: https://github.com/camptocamp/tilecloud-chain/issues/3053
+                        headers.CSP_NONCE,
                         "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/",
                         "https://cdnjs.cloudflare.com/ajax/libs/jquery/",
                         "https://cdnjs.cloudflare.com/ajax/libs/popper.js/",
                     ],
                     "style-src-elem": [
                         "'self'",
-                        "'unsafe-inline'",  # TODO: remove this: https://github.com/camptocamp/tilecloud-chain/issues/3053
+                        headers.CSP_NONCE,
                         "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/",
                     ],
-                    "style-src-attr": [
-                        "'self'",
-                        "'unsafe-inline'",  # TODO: remove this: https://github.com/camptocamp/tilecloud-chain/issues/3053
-                    ],
+                    "style-src-attr": ["'none'"],
                 },
             },
         },
@@ -153,14 +150,14 @@ app.add_middleware(
                     "default-src": ["'self'"],
                     "script-src-elem": [
                         "'self'",
-                        "'unsafe-inline'",  # TODO: remove this: https://github.com/camptocamp/tilecloud-chain/issues/3053
+                        headers.CSP_NONCE,
                         "https://cdn.jsdelivr.net/npm/ol@10.8.0/",
                         "https://unpkg.com/ol-layerswitcher@4.1.2/",
                         "https://cdnjs.cloudflare.com/ajax/libs/proj4js/",
                     ],
                     "style-src-elem": [
                         "'self'",
-                        "'unsafe-inline'",  # TODO: remove this: https://github.com/camptocamp/tilecloud-chain/issues/3053
+                        headers.CSP_NONCE,
                         "https://cdn.jsdelivr.net/npm/ol@10.8.0/",
                         "https://unpkg.com/ol-layerswitcher@4.1.2/",
                     ],
