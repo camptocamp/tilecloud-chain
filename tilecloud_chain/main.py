@@ -94,7 +94,6 @@ app.add_middleware(
     allowed_hosts=settings.security.trusted_hosts,  # Configure with specific hosts in production
 )
 
-http = c2c_settings.http
 # Add GZipMiddleware
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
@@ -115,7 +114,14 @@ _LOGGER.info("Using route prefix: '%s'", route_prefix)
 app.add_middleware(
     headers.ArmorHeaderMiddleware,
     headers_config={
-        "http": {"headers": {"Strict-Transport-Security": None} if not http else {}},
+        "http": {
+            "headers": {
+                "Strict-Transport-Security": None,
+                "Expect-CT": None,
+            }
+            if c2c_settings.http
+            else {}
+        },
         "admin": {
             "path_match": rf"^{route_prefix_escaped}admin/?$",
             "headers": {

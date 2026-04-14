@@ -2196,7 +2196,7 @@ async def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWr
         )
     if queue_store == "redis":
         # Create a Redis queue
-        conf = config.config["redis"]
+        conf = config.config.get("redis", {})
         tilestore_kwargs: dict[str, Any] = {
             "name": settings.redis.queue or conf.get("queue", configuration.REDIS_QUEUE_DEFAULT),
             "stop_if_empty": not daemon,
