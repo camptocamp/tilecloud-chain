@@ -15,6 +15,10 @@ The environment variable should not be accessed directly (except the one defined
 The commit messages should be clear and descriptive, we don't use the conventional commits format,
 the commit message should start with a capital letter.
 
+## Pull requests
+
+The pull request description should not contain a `Testing` section.
+
 ## Bash
 
 Use the long parameter names for clarity and maintainability.
