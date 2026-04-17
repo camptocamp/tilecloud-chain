@@ -26,7 +26,7 @@ version = "0.0.0"
 [tool.poetry.dependencies]
 # Minimal version should also be set in the jsonschema-gentypes.yaml file
 python = ">=3.11,<3.14"
-c2casgiutils = { version = "0.8.0", extras = ["all"] }
+c2casgiutils = { version = "0.11.0", extras = ["all"] }
 fastapi = {extras = ["standard"], version = "0.135.2"}
 python-dateutil = "2.9.0.post0"
 tilecloud = { version = "1.13.5", extras = ["azure", "aws", "redis", "wsgi"] }
