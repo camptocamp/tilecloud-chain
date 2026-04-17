@@ -7,6 +7,8 @@
 - Document the new nested environment variable scheme in `tilecloud_chain/USAGE.rst`.
 - Improve WMTS REST error messages for invalid dimensions by returning a 400 with missing, empty, unexpected, or not-allowed dimension values instead of a server error.
 - Replace `unsafe-inline` in admin CSP with c2casgiutils nonce-based CSP for inline scripts/styles.
+- Conditionally enable `headers.ForwardedHeadersMiddleware` from `config.settings.proxy_headers` to rewrite host, scheme, and port from trusted proxy headers.
+- Document `C2C__PROXY_HEADERS__TYPE` and `C2C__PROXY_HEADERS__TRUSTED_HOSTS` for proxy header configuration.
 
 Environment variable migration (legacy -> new)
 

@@ -167,6 +167,14 @@ app.add_middleware(
     },
 )
 
+proxy_headers_settings = getattr(config.settings, "proxy_headers", None)
+if proxy_headers_settings is not None and proxy_headers_settings.type != "none":
+    app.add_middleware(
+        headers.ForwardedHeadersMiddleware,
+        trusted_hosts=proxy_headers_settings.trusted_hosts,
+        headers_type=proxy_headers_settings.type,
+    )
+
 
 class RootResponse(BaseModel):
     """Response of the root endpoint."""
