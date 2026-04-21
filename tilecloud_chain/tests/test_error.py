@@ -1,11 +1,17 @@
 import os
 from pathlib import Path
+from types import SimpleNamespace
+from typing import TYPE_CHECKING, cast
 
 import pytest
 from testfixtures import LogCapture
+from tilecloud import Tile, TileCoord
 
-from tilecloud_chain import controller, generate
+from tilecloud_chain import Run, controller, generate
 from tilecloud_chain.tests import CompareCase
+
+if TYPE_CHECKING:
+    from tilecloud_chain import TileGeneration
 
 
 class TestError(CompareCase):
@@ -228,3 +234,88 @@ class TestError(CompareCase):
 -- tilegeneration/wrong_sequence.yaml:3:5 grids.test: 'srs' is a required property (rule: properties.grids.additionalProperties.required)""",
                 ),
             )
+
+
+@pytest.mark.asyncio
+async def test_run_delete_metatile_on_error() -> None:
+    class QueueStore:
+        def __init__(self) -> None:
+            self.deleted: list[Tile] = []
+
+        async def delete_one(self, tile: Tile) -> Tile:
+            self.deleted.append(tile)
+            return tile
+
+    queue_store = QueueStore()
+
+    class DummyGeneration:
+        def __init__(self, queue_store: QueueStore) -> None:
+            self.queue_store = queue_store
+            self.options = SimpleNamespace(debug=False)
+            self.maxconsecutive_errors = False
+
+        async def get_main_config(self):
+            return SimpleNamespace(config={"generation": {}})
+
+    async def identity(tile: Tile) -> Tile:
+        return tile
+
+    run = Run(cast("TileGeneration", DummyGeneration(queue_store)), [identity])
+    run.max_consecutive_errors = None
+
+    metatile = Tile(TileCoord(2, 2, 1))
+    metatile.postgresql_id = 42
+    metatile.elapsed_togenerate = 1
+
+    child_tile = Tile(
+        TileCoord(2, 2, 1),
+        metadata={
+            "config_file": "/etc/tilegeneration/config.yaml",
+            "dimension_DATE": "20230811",
+            "grid": "3857",
+            "host": "localhost",
+            "job_id": 3,
+            "layer": "osm-wmts",
+        },
+    )
+    child_tile.metatile = metatile
+    child_tile.error = "boom"
+
+    await run(child_tile)
+
+    assert queue_store.deleted == [metatile]
+
+
+@pytest.mark.asyncio
+async def test_run_delete_tile_on_error_without_metatile() -> None:
+    class QueueStore:
+        def __init__(self) -> None:
+            self.deleted: list[Tile] = []
+
+        async def delete_one(self, tile: Tile) -> Tile:
+            self.deleted.append(tile)
+            return tile
+
+    queue_store = QueueStore()
+
+    class DummyGeneration:
+        def __init__(self, queue_store: QueueStore) -> None:
+            self.queue_store = queue_store
+            self.options = SimpleNamespace(debug=False)
+            self.maxconsecutive_errors = False
+
+        async def get_main_config(self):
+            return SimpleNamespace(config={"generation": {}})
+
+    async def identity(tile: Tile) -> Tile:
+        return tile
+
+    run = Run(cast("TileGeneration", DummyGeneration(queue_store)), [identity])
+    run.max_consecutive_errors = None
+
+    tile = Tile(TileCoord(2, 2, 1), metadata={"layer": "osm-wmts", "host": "localhost"})
+    tile.error = "boom"
+
+    await run(tile)
+
+    assert queue_store.deleted == [tile]

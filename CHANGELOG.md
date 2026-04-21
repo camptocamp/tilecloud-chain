@@ -9,6 +9,7 @@
 - Replace `unsafe-inline` in admin CSP with c2casgiutils nonce-based CSP for inline scripts/styles.
 - Conditionally enable `headers.ForwardedHeadersMiddleware` from `config.settings.proxy_headers` to rewrite host, scheme, and port from trusted proxy headers.
 - Document `C2C__PROXY_HEADERS__TYPE` and `C2C__PROXY_HEADERS__TRUSTED_HOSTS` for proxy header configuration.
+- Fix PostgreSQL queue cleanup on generation errors so child tiles release their parent metatile queue item instead of failing with missing `postgresql_id`.
 
 Environment variable migration (legacy -> new)
 
