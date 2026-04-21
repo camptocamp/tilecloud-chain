@@ -152,15 +152,15 @@
     {% if jobs_status %}
     <h2>Jobs</h2>
     <div class="accordion" id="accordionJobs">
-      {% for nb, (job, status, errors) in jobs_status | enumerate %}
+      {% for job, status, errors in jobs_status %}
       <div class="accordion-item">
         <h2 class="accordion-header">
           <button
             class="accordion-button collapsed"
             type="button"
             data-bs-toggle="collapse"
-            data-bs-target="#collapse{{ nb }}"
-            aria-controls="collapse{{ nb }}"
+            data-bs-target="#collapse{{ loop.index0 }}"
+            aria-controls="collapse{{ loop.index0 }}"
           >
             {{ job.name }} (
             <script nonce="{{ nonce }}">
@@ -170,7 +170,7 @@
             <!-- {{ job.id }} -->
           </button>
         </h2>
-        <div id="collapse{{ nb }}" class="accordion-collapse collapse">
+        <div id="collapse{{ loop.index0 }}" class="accordion-collapse collapse">
           <div class="accordion-body">
             <p>
               <code>{{ job.command }}</code>
