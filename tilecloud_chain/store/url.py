@@ -85,7 +85,7 @@ class URLTileStore(AsyncTileStore):
             return tile
 
         url_split = urllib.parse.urlparse(url)
-        assert url_split.hostname is not None
+        assert url_split.hostname is not None, f"Parsed URL is missing a hostname: {url!r}"
         if url_split.hostname in self._hosts_semaphore:
             semaphore = self._hosts_semaphore[url_split.hostname]
         else:
