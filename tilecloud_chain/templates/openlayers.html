@@ -82,6 +82,7 @@
       proj4.defs("{{ srs }}",`{{ proj4js_def }}`);
       ol.proj.proj4.register(proj4);
       var parser = new ol.format.WMTSCapabilities();
+      const requestedLayer = new URLSearchParams(window.location.search).get('layer');
 
       fetch('{{ url_for("wmts_capabilities", version="1.0.0") }}')
         .then(function (response) {
@@ -109,20 +110,36 @@
                 // To have radio buttons
                 type: 'base',
                 opacity: 1,
-                visible: visible,
+                visible: requestedLayer ? wmtsLayer.Identifier === requestedLayer : visible,
                 source: new ol.source.WMTS(options),
-                title: wmtsLayer.Title
+                title: wmtsLayer.Title,
+                name: wmtsLayer.Identifier,
               })
             );
             visible = false;
           }
+
+          if (!layers.some(function (layer) { return layer.get('type') === 'base' && layer.getVisible(); })) {
+            const firstBaseLayer = layers.find(function (layer) {
+              return layer.get('type') === 'base';
+            });
+            if (firstBaseLayer) {
+              firstBaseLayer.setVisible(true);
+            }
+          }
+
           layers.push(
             new ol.layer.Tile({
               source: new ol.source.TileDebug(tileGridOptions),
             })
           );
 
-          map = new ol.Map({
+          const defaultInteractions =
+            typeof ol.interaction.defaults === 'function'
+              ? ol.interaction.defaults()
+              : ol.interaction.defaults.defaults();
+
+          const map = new ol.Map({
             layers: layers,
             target: 'map',
             view: new ol.View({
@@ -132,7 +149,35 @@
               resolutions: resolutions,
               constrainResolution: true
             }),
+            interactions: defaultInteractions.extend([
+              new ol.interaction.Link({
+                params: ['x', 'y', 'z'],
+                replace: true,
+              }),
+            ]),
           });
+
+          const updateLayerInUrl = function () {
+            const activeBaseLayer = map
+              .getLayers()
+              .getArray()
+              .find(function (layer) {
+                return layer.get('type') === 'base' && layer.getVisible();
+              });
+            const url = new URL(window.location.href);
+            if (activeBaseLayer) {
+              url.searchParams.set('layer', activeBaseLayer.get('name'));
+            } else {
+              url.searchParams.delete('layer');
+            }
+            window.history.replaceState(history.state, '', url);
+          };
+
+          map.getLayerGroup().on('change', function () {
+            updateLayerInUrl();
+          });
+
+          updateLayerInUrl();
 
           const layerSwitcher = new ol.control.LayerSwitcher({
             activationMode: 'click',

@@ -2,6 +2,7 @@
 
 ## 2.0.0
 
+- Persist admin test map state in the URL on `/admin/test` with map position (`x`, `y`, `z`) and selected layer (`layer`).
 - Add a Pydantic-based settings hierarchy for environment variables.
 - Update server, queue, admin, and generation code to read configuration from `tilecloud_chain.settings`.
 - Document the new nested environment variable scheme in `tilecloud_chain/USAGE.rst`.

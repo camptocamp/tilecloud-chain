@@ -814,3 +814,10 @@ On the URL `<base URL>/admin/` you can see the status of the generation, a tool 
 to a test page.
 
 Beware, the test page assumes we have configured only one grid.
+
+The test page stores its current state in the URL query string, so you can share or reload the same view:
+
+- ``x``: center X coordinate
+- ``y``: center Y coordinate
+- ``z``: zoom level
+- ``layer``: selected WMTS layer identifier
