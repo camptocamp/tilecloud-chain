@@ -1273,9 +1273,9 @@ class TileGeneration:
         scale = grid.get("resolution_scale", 1)
 
         tilegrid = FreeTileGrid(
-            resolutions=cast("list[int]", [r * scale for r in grid["resolutions"]]),
+            resolutions=[r * scale for r in grid["resolutions"]],
             scale=scale,
-            max_extent=cast("tuple[int, int, int, int]", grid["bbox"]),
+            max_extent=cast("tuple[int, int, int, int] | tuple[float, float, float, float]", grid["bbox"]),
             tile_size=grid.get("tile_size", configuration.TILE_SIZE_DEFAULT),
         )
 

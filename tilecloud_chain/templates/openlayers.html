@@ -30,13 +30,6 @@
       referrerpolicy="no-referrer"
       rel="stylesheet"
     />
-    <link
-      crossorigin="anonymous"
-      href="https://unpkg.com/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.css"
-      integrity="sha384-9IKFPrNeauQbpZtFkHvCW76SX8i7sqHPLlub4n6yg7ZCrjfpc6bQl4vuhhAVS6nX"
-      referrerpolicy="no-referrer"
-      rel="stylesheet"
-    />
     <style nonce="{{ nonce }}">
       html,
       body,
@@ -49,9 +42,84 @@
         color: black;
       }
 
+      .layer-panel {
+        top: 0.5em;
+        right: 0.5em;
+        max-height: calc(100% - 1em);
+        max-width: min(22em, calc(100% - 1em));
+        overflow-y: auto;
+        background-color: rgba(255, 255, 255, 0.95);
+        color: #111;
+        border-radius: 0.35em;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+        padding: 0.75em;
+        font-size: 0.95em;
+      }
+
+      .layer-panel-title {
+        margin: 0 0 0.5em;
+        font-weight: 600;
+      }
+
+      .layer-panel-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .layer-panel-item {
+        padding: 0.35em 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+      }
+
+      .layer-panel-item:first-child {
+        border-top: none;
+        padding-top: 0;
+      }
+
+      .layer-panel-row {
+        display: flex;
+        gap: 0.5em;
+        align-items: center;
+      }
+
+      .layer-panel-label {
+        flex: 1;
+      }
+
+      .layer-panel-dimensions {
+        margin-top: 0.4em;
+        display: grid;
+        gap: 0.35em;
+      }
+
+      .layer-panel-dimension {
+        display: grid;
+        gap: 0.2em;
+      }
+
+      .layer-panel-dimension label {
+        font-size: 0.8em;
+        opacity: 0.8;
+      }
+
+      .layer-panel-dimension select {
+        width: 100%;
+      }
+
       @media (prefers-color-scheme: dark) {
         body {
           background-color: #444;
+        }
+
+        .layer-panel {
+          background-color: rgba(42, 42, 42, 0.95);
+          color: #f2f2f2;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .layer-panel-item {
+          border-top-color: rgba(255, 255, 255, 0.2);
         }
       }
     </style>
@@ -65,13 +133,6 @@
       src="https://cdn.jsdelivr.net/npm/ol@10.8.0/dist/ol.js"
     ></script>
     <script
-      crossorigin="anonymous"
-      integrity="sha384-rzmK1JrrlJNUgG9Kgq6gqwP22n7S7IyDdif/eTuEc8QiG/QGTgerkxHjzJbtr9GN"
-      referrerpolicy="no-referrer"
-      src="https://unpkg.com/ol-layerswitcher@4.1.2/dist/ol-layerswitcher.js"
-    ></script>
-
-    <script
       src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.19.10/proj4.js"
       integrity="sha512-QXAXxYhXWvAc5fA3edU2rOQANjhwKAAlqz1WEhh/FXzODQoqVb9PkHqJcCG7aFoJpN0VQMNnxOBztoIQOcEO5w=="
       crossorigin="anonymous"
@@ -82,7 +143,68 @@
       proj4.defs("{{ srs }}",`{{ proj4js_def }}`);
       ol.proj.proj4.register(proj4);
       var parser = new ol.format.WMTSCapabilities();
-      const requestedLayer = new URLSearchParams(window.location.search).get('layer');
+      const urlParams = new URLSearchParams(window.location.search);
+      const requestedLayer = urlParams.get('layer');
+
+      const getUrlDimensions = function () {
+        const dimensions = {};
+        urlParams.forEach(function (value, key) {
+          if (key.startsWith('dimension_')) {
+            dimensions[key.substring('dimension_'.length)] = value;
+          }
+        });
+        return dimensions;
+      };
+
+      const getDimensionValues = function (dimension) {
+        if (!dimension) {
+          return [];
+        }
+        if (Array.isArray(dimension.Value)) {
+          return dimension.Value;
+        }
+        if (dimension.Value !== undefined && dimension.Value !== null) {
+          return [dimension.Value];
+        }
+        return [];
+      };
+
+      const getLayerDimensionDefinitions = function (wmtsLayer) {
+        return (wmtsLayer.Dimension || [])
+          .map(function (dimension) {
+            const name = dimension.Identifier || dimension.identifier;
+            if (!name) {
+              return null;
+            }
+
+            const values = getDimensionValues(dimension);
+            const defaultValue =
+              dimension.Default !== undefined && dimension.Default !== null
+                ? dimension.Default
+                : (values[0] || '');
+
+            return {
+              name: name,
+              values: values,
+              defaultValue: defaultValue,
+            };
+          })
+          .filter(function (definition) {
+            return definition !== null;
+          });
+      };
+
+      const getLayerDefaultDimensions = function (wmtsLayer) {
+        const dimensions = {};
+        getLayerDimensionDefinitions(wmtsLayer).forEach(function (dimensionDefinition) {
+          if (dimensionDefinition.defaultValue !== '') {
+            dimensions[dimensionDefinition.name] = dimensionDefinition.defaultValue;
+          }
+        });
+        return dimensions;
+      };
+
+      const requestedDimensions = getUrlDimensions();
 
       fetch('{{ url_for("wmts_capabilities", version="1.0.0") }}')
         .then(function (response) {
@@ -95,11 +217,18 @@
           let resolutions = [];
           let tileGridOptions = {};
           let visible = true;
-          for (wmtsLayer of result.Contents.Layer) {
+          for (const wmtsLayer of result.Contents.Layer) {
             const options = ol.source.WMTS.optionsFromCapabilities(result, {
               projection: "{{ srs }}",
               layer: wmtsLayer.Identifier,
             });
+            const layerDefaultDimensions = getLayerDefaultDimensions(wmtsLayer);
+            const layerDimensionDefinitions = getLayerDimensionDefinitions(wmtsLayer);
+            const sourceDimensions = {
+              ...layerDefaultDimensions,
+              ...(options.dimensions || {}),
+              ...(wmtsLayer.Identifier === requestedLayer ? requestedDimensions : {}),
+            };
             tileGridOptions = {
               projection: "{{ srs }}",
               tileGrid: options.tileGrid,
@@ -110,10 +239,17 @@
                 // To have radio buttons
                 type: 'base',
                 opacity: 1,
+                transition: 0,
+                useInterimTilesOnError: false,
                 visible: requestedLayer ? wmtsLayer.Identifier === requestedLayer : visible,
-                source: new ol.source.WMTS(options),
+                source: new ol.source.WMTS({
+                  ...options,
+                  dimensions: sourceDimensions,
+                }),
                 title: wmtsLayer.Title,
                 name: wmtsLayer.Identifier,
+                dimensionDefinitions: layerDimensionDefinitions,
+                wmtsOptions: options,
               })
             );
             visible = false;
@@ -157,6 +293,141 @@
             ]),
           });
 
+          const setActiveLayerByName = function (layerName) {
+            map.getLayers().getArray().forEach(function (layer) {
+              if (layer.get('type') === 'base') {
+                layer.setVisible(layer.get('name') === layerName);
+              }
+            });
+          };
+
+          const createPanelControl = function () {
+            const element = document.createElement('div');
+            element.className = 'layer-panel ol-unselectable ol-control';
+
+            const title = document.createElement('h3');
+            title.className = 'layer-panel-title';
+            title.textContent = 'Layers';
+            element.appendChild(title);
+
+            const list = document.createElement('ul');
+            list.className = 'layer-panel-list';
+            element.appendChild(list);
+
+            const render = function () {
+              list.replaceChildren();
+
+              const baseLayers = map
+                .getLayers()
+                .getArray()
+                .filter(function (layer) {
+                  return layer.get('type') === 'base';
+                });
+
+              baseLayers.forEach(function (layer) {
+                const layerName = layer.get('name');
+                const layerTitle = layer.get('title') || layerName;
+                const isVisible = layer.getVisible();
+                const layerId = 'layer-option-' + layerName.replace(/[^A-Za-z0-9_-]/g, '_');
+
+                const item = document.createElement('li');
+                item.className = 'layer-panel-item';
+
+                const row = document.createElement('div');
+                row.className = 'layer-panel-row';
+
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'base-layer';
+                radio.value = layerName;
+                radio.id = layerId;
+                radio.checked = isVisible;
+                radio.addEventListener('change', function () {
+                  setActiveLayerByName(layerName);
+                  render();
+                  updateLayerInUrl();
+                });
+
+                const label = document.createElement('label');
+                label.className = 'layer-panel-label';
+                label.textContent = layerTitle;
+                label.htmlFor = layerId;
+
+                row.appendChild(radio);
+                row.appendChild(label);
+                item.appendChild(row);
+
+                const dimensionDefinitions = layer.get('dimensionDefinitions') || [];
+                if (isVisible && dimensionDefinitions.length > 0) {
+                  const dimensionsContainer = document.createElement('div');
+                  dimensionsContainer.className = 'layer-panel-dimensions';
+                  const source = layer.getSource();
+                  const currentDimensions = source.getDimensions() || {};
+
+                  dimensionDefinitions.forEach(function (dimensionDefinition) {
+                    const dimensionItem = document.createElement('div');
+                    dimensionItem.className = 'layer-panel-dimension';
+
+                    const dimensionLabel = document.createElement('label');
+                    dimensionLabel.textContent = dimensionDefinition.name;
+
+                    const select = document.createElement('select');
+                    const selectId =
+                      layerId +
+                      '-dimension-' +
+                      dimensionDefinition.name.replace(/[^A-Za-z0-9_-]/g, '_');
+                    select.id = selectId;
+                    dimensionLabel.htmlFor = selectId;
+                    const values = dimensionDefinition.values.length > 0
+                      ? dimensionDefinition.values
+                      : [dimensionDefinition.defaultValue];
+                    const selectedValue =
+                      currentDimensions[dimensionDefinition.name] ||
+                      dimensionDefinition.defaultValue ||
+                      values[0] ||
+                      '';
+
+                    values.forEach(function (value) {
+                      const option = document.createElement('option');
+                      option.value = value;
+                      option.textContent = value;
+                      option.selected = value === selectedValue;
+                      select.appendChild(option);
+                    });
+
+                    select.addEventListener('change', function () {
+                      const currentDimensions = source.getDimensions() || {};
+                      const nextDimensions = {
+                        ...currentDimensions,
+                        [dimensionDefinition.name]: select.value,
+                      };
+                      const nextSource = new ol.source.WMTS({
+                        ...(layer.get('wmtsOptions') || {}),
+                        dimensions: nextDimensions,
+                      });
+                      layer.setSource(nextSource);
+                      render();
+                      updateLayerInUrl();
+                    });
+
+                    dimensionItem.appendChild(dimensionLabel);
+                    dimensionItem.appendChild(select);
+                    dimensionsContainer.appendChild(dimensionItem);
+                  });
+
+                  item.appendChild(dimensionsContainer);
+                }
+
+                list.appendChild(item);
+              });
+            };
+
+            return {
+              control: new ol.control.Control({ element: element }),
+              render: render,
+            };
+          };
+
           const updateLayerInUrl = function () {
             const activeBaseLayer = map
               .getLayers()
@@ -167,6 +438,20 @@
             const url = new URL(window.location.href);
             if (activeBaseLayer) {
               url.searchParams.set('layer', activeBaseLayer.get('name'));
+              const toDelete = [];
+              url.searchParams.forEach(function (_, key) {
+                if (key.startsWith('dimension_')) {
+                  toDelete.push(key);
+                }
+              });
+              toDelete.forEach(function (key) {
+                url.searchParams.delete(key);
+              });
+
+              const sourceDimensions = activeBaseLayer.getSource().getDimensions() || {};
+              Object.entries(sourceDimensions).forEach(function ([name, value]) {
+                url.searchParams.set('dimension_' + name, value);
+              });
             } else {
               url.searchParams.delete('layer');
             }
@@ -177,13 +462,11 @@
             updateLayerInUrl();
           });
 
-          updateLayerInUrl();
+          const panel = createPanelControl();
+          map.addControl(panel.control);
+          panel.render();
 
-          const layerSwitcher = new ol.control.LayerSwitcher({
-            activationMode: 'click',
-            startActive: true
-          });
-          map.addControl(layerSwitcher);
+          updateLayerInUrl();
         });
     </script>
   </body>

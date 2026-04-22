@@ -96,6 +96,11 @@ layers:
     empty_tile_detection:
       size: 1651
       hash: 2892fea0a474228f5d66a534b0b5231d923696da
+    dimensions:
+      - name: DIM
+        default: 'default'
+        generate: ['generate']
+        values: ['default', 'generate']
 
 generation:
   default_cache: local
