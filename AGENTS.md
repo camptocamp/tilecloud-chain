@@ -33,6 +33,9 @@ when you need to touch the dependencies you should update `tool.poetry.dependenc
 To develop on the project, you should use the `docker-compose.override.yaml` file.
 Copy `docker-compose.override.sample.yaml` to `docker-compose.override.yaml`.
 
+If the ports `9050`/`9051`/`9052` are in use, stop the related Docker container(s);
+otherwise the Docker container will fail to start.
+
 This will:
 
 - Mount the local source code into the container.
@@ -46,9 +49,16 @@ docker compose up -d
 
 The application will be available at:
 
-- `http://localhost:9050/` for the main application.
-- `http://localhost:9051/` for the application with a test user.
-- `http://localhost:9052/` for the application with PostgreSQL.
+- [Main application](http://localhost:9050/).
+- [Application with a test user, with Redis](http://localhost:9051/).
+- [Application with a test user, with PostgreSQL](http://localhost:9052/).
+
+Full URLs:
+
+- [Unauthenticated admin page](http://localhost:9050/tiles/admin/).
+- [Authenticated admin page with Redis](http://localhost:9051/tiles/admin/).
+- [Authenticated admin page with PostgreSQL](http://localhost:9052/tiles/admin/).
+- [Test page](http://localhost:9050/tiles/admin/test).
 
 ## Documentation
 
