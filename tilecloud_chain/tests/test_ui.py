@@ -39,3 +39,19 @@ def test_ui(url, expected_file_name, height, width):
         Path(__file__).parent / f"{expected_file_name}.expected.png",
         generate_expected_image=REGENERATE,
     )
+
+
+def test_openlayers_dimension_selection_uses_source_updates_and_permalink_sync():
+    content = (Path(__file__).parent.parent / "templates" / "openlayers.html").read_text()
+
+    assert "layer.setSource(nextSource);" in content
+    assert "new ol.source.WMTS({" in content
+    assert "source.setDimensions(nextDimensions);" not in content
+    assert "url.searchParams.set('dimension_' + name, value);" in content
+    assert "if (key.startsWith('dimension_'))" in content
+
+
+def test_openlayers_dimension_selection_disables_interim_tiles_on_error():
+    content = (Path(__file__).parent.parent / "templates" / "openlayers.html").read_text()
+
+    assert "useInterimTilesOnError: false," in content
