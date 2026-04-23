@@ -49,9 +49,28 @@ def test_openlayers_dimension_selection_uses_source_updates_and_permalink_sync()
     assert "source.setDimensions(nextDimensions);" not in content
     assert "url.searchParams.set('dimension_' + name, value);" in content
     assert "if (key.startsWith('dimension_'))" in content
+    assert "url.searchParams.set('grid', activeGridDefinition.id);" in content
 
 
 def test_openlayers_dimension_selection_disables_interim_tiles_on_error():
     content = (Path(__file__).parent.parent / "templates" / "openlayers.html").read_text()
 
     assert "useInterimTilesOnError: false," in content
+
+
+def test_openlayers_grid_selector_handles_projection_change():
+    content = (Path(__file__).parent.parent / "templates" / "openlayers.html").read_text()
+
+    assert "const requestedGrid = urlParams.get('grid');" in content
+    assert "gridDefinitions: gridDefinitions," in content
+    assert "selectedGridId: selectedGridDefinition.id," in content
+    assert "gridLabel.textContent = 'Grid';" in content
+    assert "layer.set('selectedGridId', nextGridDefinition.id);" in content
+    assert "map.setView(" in content
+    assert "const canTransform = function (sourceProjectionCode, destinationProjectionCode)" in content
+    assert "const transformCenterSafe = function (center, sourceProjectionCode, destinationProjectionCode)" in content
+    assert "const transformExtentSafe = function (extent, sourceProjectionCode, destinationProjectionCode)" in content
+    assert "const currentExtent = currentView.calculateExtent(size);" in content
+    assert "transformedExtent = transformExtentSafe(" in content
+    assert "nextView.fit(transformedExtent," in content
+    assert "transformCenterSafe(currentCenter, currentProjectionCode, nextProjectionCode)" in content
