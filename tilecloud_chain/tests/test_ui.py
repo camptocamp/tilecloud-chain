@@ -67,7 +67,10 @@ def test_openlayers_grid_selector_handles_projection_change():
     assert "gridLabel.textContent = 'Grid';" in content
     assert "layer.set('selectedGridId', nextGridDefinition.id);" in content
     assert "map.setView(" in content
-    assert "ol.proj.transform(currentCenter, currentProjectionCode, nextProjectionCode);" in content
+    assert "const canTransform = function (sourceProjectionCode, destinationProjectionCode)" in content
+    assert "const transformCenterSafe = function (center, sourceProjectionCode, destinationProjectionCode)" in content
+    assert "const transformExtentSafe = function (extent, sourceProjectionCode, destinationProjectionCode)" in content
     assert "const currentExtent = currentView.calculateExtent(size);" in content
-    assert "ol.proj.transformExtent(" in content
+    assert "transformedExtent = transformExtentSafe(" in content
     assert "nextView.fit(transformedExtent," in content
+    assert "transformCenterSafe(currentCenter, currentProjectionCode, nextProjectionCode)" in content

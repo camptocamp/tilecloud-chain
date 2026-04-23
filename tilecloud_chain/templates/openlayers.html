@@ -357,6 +357,49 @@
             return projection || projectionCode;
           };
 
+          const canTransform = function (sourceProjectionCode, destinationProjectionCode) {
+            if (!sourceProjectionCode || !destinationProjectionCode) {
+              return false;
+            }
+            if (sourceProjectionCode === destinationProjectionCode) {
+              return true;
+            }
+            try {
+              const transform = ol.proj.getTransform(sourceProjectionCode, destinationProjectionCode);
+              return typeof transform === 'function';
+            } catch (_error) {
+              return false;
+            }
+          };
+
+          const transformCenterSafe = function (center, sourceProjectionCode, destinationProjectionCode) {
+            if (!center) {
+              return null;
+            }
+            if (!canTransform(sourceProjectionCode, destinationProjectionCode)) {
+              return null;
+            }
+            try {
+              return ol.proj.transform(center, sourceProjectionCode, destinationProjectionCode);
+            } catch (_error) {
+              return null;
+            }
+          };
+
+          const transformExtentSafe = function (extent, sourceProjectionCode, destinationProjectionCode) {
+            if (!extent) {
+              return null;
+            }
+            if (!canTransform(sourceProjectionCode, destinationProjectionCode)) {
+              return null;
+            }
+            try {
+              return ol.proj.transformExtent(extent, sourceProjectionCode, destinationProjectionCode);
+            } catch (_error) {
+              return null;
+            }
+          };
+
           const updateViewForLayer = function (layer) {
             if (!layer) {
               return;
@@ -384,7 +427,7 @@
               if (size && currentProjectionCode) {
                 const currentExtent = currentView.calculateExtent(size);
                 if (currentProjectionCode !== nextProjectionCode) {
-                  transformedExtent = ol.proj.transformExtent(
+                  transformedExtent = transformExtentSafe(
                     currentExtent,
                     currentProjectionCode,
                     nextProjectionCode
@@ -396,7 +439,9 @@
 
               if (currentCenter) {
                 if (currentProjectionCode && currentProjectionCode !== nextProjectionCode) {
-                  nextCenter = ol.proj.transform(currentCenter, currentProjectionCode, nextProjectionCode);
+                  nextCenter =
+                    transformCenterSafe(currentCenter, currentProjectionCode, nextProjectionCode) ||
+                    defaultCenter;
                 } else {
                   nextCenter = currentCenter;
                 }
@@ -461,7 +506,13 @@
           const initialCenter =
             initialProjectionCode === defaultProjectionCode
               ? defaultCenter
-              : ol.proj.transform(defaultCenter, defaultProjectionCode, initialProjectionCode);
+              : (
+                  transformCenterSafe(
+                    defaultCenter,
+                    defaultProjectionCode,
+                    initialProjectionCode
+                  ) || defaultCenter
+                );
 
           tileGridOptions = initialGridDefinition
             ? {
