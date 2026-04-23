@@ -314,7 +314,7 @@
       - <a id="definitions/server/properties/predefined_commands/items/properties/name"></a>**`name`** *(string)*: The name used in the admin interface.
   - <a id="definitions/server/properties/allowed_commands"></a>**`allowed_commands`** *(array)*: The allowed commands (main configuration). Default: `["generate-tiles", "generate-controller", "generate-cost"]`.
     - <a id="definitions/server/properties/allowed_commands/items"></a>**Items** *(string)*
-  - <a id="definitions/server/properties/allowed_arguments"></a>**`allowed_arguments`** *(array)*: The allowed arguments (main configuration). Default: `["--layer", "--get-hash", "--generate-legend-images", "--get-bbox", "--ignore-error", "--bbox", "--zoom", "--test", "--near", "--time", "--measure-generation-time", "--no-geom", "--dimensions"]`.
+  - <a id="definitions/server/properties/allowed_arguments"></a>**`allowed_arguments`** *(array)*: The allowed arguments (main configuration). Default: `["--layer", "--get-hash", "--generate-legend-images", "--get-bbox", "--ignore-error", "--bbox", "--zoom", "--grid", "--test", "--near", "--time", "--measure-generation-time", "--no-geom", "--dimensions"]`.
     - <a id="definitions/server/properties/allowed_arguments/items"></a>**Items** *(string)*
   - <a id="definitions/server/properties/admin_footer"></a>**`admin_footer`** *(string)*: The footer of the admin interface.
   - <a id="definitions/server/properties/admin_footer_classes"></a>**`admin_footer_classes`** *(string)*: The CSS classes used on the footer of the admin interface.

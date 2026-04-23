@@ -6,7 +6,7 @@ Automatically generated file from a JSON schema.
 from typing import Any, Literal, Required, TypedDict, Union
 
 
-ALLOWED_ARGUMENTS_DEFAULT = ['--layer', '--get-hash', '--generate-legend-images', '--get-bbox', '--ignore-error', '--bbox', '--zoom', '--test', '--near', '--time', '--measure-generation-time', '--no-geom', '--dimensions']
+ALLOWED_ARGUMENTS_DEFAULT = ['--layer', '--get-hash', '--generate-legend-images', '--get-bbox', '--ignore-error', '--bbox', '--zoom', '--grid', '--test', '--near', '--time', '--measure-generation-time', '--no-geom', '--dimensions']
 r""" Default value of the field path 'Server allowed_arguments' """
 
 
@@ -2898,6 +2898,7 @@ class Server(TypedDict, total=False):
       - --ignore-error
       - --bbox
       - --zoom
+      - --grid
       - --test
       - --near
       - --time

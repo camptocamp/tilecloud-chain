@@ -93,6 +93,21 @@
         gap: 0.35em;
       }
 
+      .layer-panel-grid {
+        margin-top: 0.4em;
+        display: grid;
+        gap: 0.2em;
+      }
+
+      .layer-panel-grid label {
+        font-size: 0.8em;
+        opacity: 0.8;
+      }
+
+      .layer-panel-grid select {
+        width: 100%;
+      }
+
       .layer-panel-dimension {
         display: grid;
         gap: 0.2em;
@@ -145,6 +160,10 @@
       var parser = new ol.format.WMTSCapabilities();
       const urlParams = new URLSearchParams(window.location.search);
       const requestedLayer = urlParams.get('layer');
+      const requestedGrid = urlParams.get('grid');
+      const defaultProjectionCode = '{{ srs }}';
+      const defaultCenter = [{{ center_x }}, {{ center_y }}];
+      const defaultZoom = {{ zoom }};
 
       const getUrlDimensions = function () {
         const dimensions = {};
@@ -204,6 +223,61 @@
         return dimensions;
       };
 
+      const getLayerGridDefinitions = function (result, wmtsLayer) {
+        const links = wmtsLayer.TileMatrixSetLink || [];
+        const definitions = links
+          .map(function (tileMatrixSetLink) {
+            const gridId = tileMatrixSetLink.TileMatrixSet;
+            if (!gridId) {
+              return null;
+            }
+            const options = ol.source.WMTS.optionsFromCapabilities(result, {
+              layer: wmtsLayer.Identifier,
+              matrixSet: gridId,
+            });
+            if (!options || !options.tileGrid) {
+              return null;
+            }
+
+            const projection = options.projection;
+            const projectionCode =
+              typeof projection === 'string'
+                ? projection
+                : (projection && projection.getCode ? projection.getCode() : defaultProjectionCode);
+
+            return {
+              id: gridId,
+              projectionCode: projectionCode,
+              wmtsOptions: options,
+            };
+          })
+          .filter(function (definition) {
+            return definition !== null;
+          });
+
+        if (definitions.length > 0) {
+          return definitions;
+        }
+
+        const fallbackOptions = ol.source.WMTS.optionsFromCapabilities(result, {
+          layer: wmtsLayer.Identifier,
+        });
+        if (!fallbackOptions || !fallbackOptions.tileGrid) {
+          return [];
+        }
+
+        const fallbackProjection = fallbackOptions.projection;
+        const fallbackProjectionCode =
+          typeof fallbackProjection === 'string'
+            ? fallbackProjection
+            : (fallbackProjection && fallbackProjection.getCode ? fallbackProjection.getCode() : defaultProjectionCode);
+        return [{
+          id: fallbackOptions.matrixSet || 'default',
+          projectionCode: fallbackProjectionCode,
+          wmtsOptions: fallbackOptions,
+        }];
+      };
+
       const requestedDimensions = getUrlDimensions();
 
       fetch('{{ url_for("wmts_capabilities", version="1.0.0") }}')
@@ -214,14 +288,22 @@
           const result = parser.read(text);
 
           let layers = [];
-          let resolutions = [];
           let tileGridOptions = {};
           let visible = true;
           for (const wmtsLayer of result.Contents.Layer) {
-            const options = ol.source.WMTS.optionsFromCapabilities(result, {
-              projection: "{{ srs }}",
-              layer: wmtsLayer.Identifier,
-            });
+            const gridDefinitions = getLayerGridDefinitions(result, wmtsLayer);
+            if (gridDefinitions.length === 0) {
+              continue;
+            }
+            const selectedGridId =
+              requestedLayer === wmtsLayer.Identifier && requestedGrid
+                ? requestedGrid
+                : gridDefinitions[0].id;
+            const selectedGridDefinition =
+              gridDefinitions.find(function (gridDefinition) {
+                return gridDefinition.id === selectedGridId;
+              }) || gridDefinitions[0];
+            const options = selectedGridDefinition.wmtsOptions;
             const layerDefaultDimensions = getLayerDefaultDimensions(wmtsLayer);
             const layerDimensionDefinitions = getLayerDimensionDefinitions(wmtsLayer);
             const sourceDimensions = {
@@ -229,11 +311,6 @@
               ...(options.dimensions || {}),
               ...(wmtsLayer.Identifier === requestedLayer ? requestedDimensions : {}),
             };
-            tileGridOptions = {
-              projection: "{{ srs }}",
-              tileGrid: options.tileGrid,
-            };
-            resolutions =  options.tileGrid.getResolutions()
             layers.unshift(
               new ol.layer.Tile({
                 // To have radio buttons
@@ -249,11 +326,114 @@
                 title: wmtsLayer.Title,
                 name: wmtsLayer.Identifier,
                 dimensionDefinitions: layerDimensionDefinitions,
-                wmtsOptions: options,
+                gridDefinitions: gridDefinitions,
+                selectedGridId: selectedGridDefinition.id,
               })
             );
             visible = false;
           }
+
+          const getActiveBaseLayer = function () {
+            return map
+              .getLayers()
+              .getArray()
+              .find(function (layer) {
+                return layer.get('type') === 'base' && layer.getVisible();
+              });
+          };
+
+          const getSelectedGridDefinition = function (layer) {
+            const gridDefinitions = layer.get('gridDefinitions') || [];
+            const selectedGridId = layer.get('selectedGridId');
+            return (
+              gridDefinitions.find(function (gridDefinition) {
+                return gridDefinition.id === selectedGridId;
+              }) || gridDefinitions[0]
+            );
+          };
+
+          const projectionFromCode = function (projectionCode) {
+            const projection = ol.proj.get(projectionCode);
+            return projection || projectionCode;
+          };
+
+          const updateViewForLayer = function (layer) {
+            if (!layer) {
+              return;
+            }
+            const gridDefinition = getSelectedGridDefinition(layer);
+            if (!gridDefinition || !gridDefinition.wmtsOptions || !gridDefinition.wmtsOptions.tileGrid) {
+              return;
+            }
+
+            const nextProjectionCode = gridDefinition.projectionCode || defaultProjectionCode;
+            const nextProjection = projectionFromCode(nextProjectionCode);
+            const nextResolutions = gridDefinition.wmtsOptions.tileGrid.getResolutions();
+            const currentView = map.getView();
+            const size = map.getSize();
+
+            let nextCenter = defaultCenter;
+            let nextZoom = defaultZoom;
+            let transformedExtent = null;
+            if (currentView) {
+              const currentCenter = currentView.getCenter();
+              const currentProjection = currentView.getProjection();
+              const currentProjectionCode = currentProjection ? currentProjection.getCode() : null;
+              nextZoom = currentView.getZoom() !== undefined ? currentView.getZoom() : nextZoom;
+
+              if (size && currentProjectionCode) {
+                const currentExtent = currentView.calculateExtent(size);
+                if (currentProjectionCode !== nextProjectionCode) {
+                  transformedExtent = ol.proj.transformExtent(
+                    currentExtent,
+                    currentProjectionCode,
+                    nextProjectionCode
+                  );
+                } else {
+                  transformedExtent = currentExtent;
+                }
+              }
+
+              if (currentCenter) {
+                if (currentProjectionCode && currentProjectionCode !== nextProjectionCode) {
+                  nextCenter = ol.proj.transform(currentCenter, currentProjectionCode, nextProjectionCode);
+                } else {
+                  nextCenter = currentCenter;
+                }
+              }
+            }
+
+            const nextView = new ol.View({
+              projection: nextProjection,
+              center: nextCenter,
+              zoom: nextZoom,
+              resolutions: nextResolutions,
+              constrainResolution: true,
+            });
+            map.setView(nextView);
+            if (transformedExtent && size) {
+              nextView.fit(transformedExtent, {
+                size: size,
+                nearest: true,
+              });
+            }
+          };
+
+          const updateDebugLayer = function () {
+            const activeBaseLayer = getActiveBaseLayer();
+            if (!activeBaseLayer || !debugLayer) {
+              return;
+            }
+            const gridDefinition = getSelectedGridDefinition(activeBaseLayer);
+            if (!gridDefinition || !gridDefinition.wmtsOptions || !gridDefinition.wmtsOptions.tileGrid) {
+              return;
+            }
+            tileGridOptions = {
+              projection: projectionFromCode(gridDefinition.projectionCode || defaultProjectionCode),
+              tileGrid: gridDefinition.wmtsOptions.tileGrid,
+            };
+            debugLayer.setSource(new ol.source.TileDebug(tileGridOptions));
+          };
 
           if (!layers.some(function (layer) { return layer.get('type') === 'base' && layer.getVisible(); })) {
             const firstBaseLayer = layers.find(function (layer) {
@@ -264,11 +444,36 @@
             }
           }
 
-          layers.push(
-            new ol.layer.Tile({
-              source: new ol.source.TileDebug(tileGridOptions),
-            })
-          );
+          const initialActiveLayer = layers.find(function (layer) {
+            return layer.get('type') === 'base' && layer.getVisible();
+          });
+
+          const initialGridDefinition = initialActiveLayer
+            ? getSelectedGridDefinition(initialActiveLayer)
+            : null;
+          const initialProjectionCode = initialGridDefinition
+            ? initialGridDefinition.projectionCode
+            : defaultProjectionCode;
+          const initialResolutions = initialGridDefinition
+            ? initialGridDefinition.wmtsOptions.tileGrid.getResolutions()
+            : undefined;
+          const initialProjection = projectionFromCode(initialProjectionCode);
+          const initialCenter =
+            initialProjectionCode === defaultProjectionCode
+              ? defaultCenter
+              : ol.proj.transform(defaultCenter, defaultProjectionCode, initialProjectionCode);
+
+          tileGridOptions = initialGridDefinition
+            ? {
+                projection: projectionFromCode(initialProjectionCode),
+                tileGrid: initialGridDefinition.wmtsOptions.tileGrid,
+              }
+            : {};
+
+          const debugLayer = new ol.layer.Tile({
+            source: new ol.source.TileDebug(tileGridOptions),
+          });
+          layers.push(debugLayer);
 
           const defaultInteractions =
             typeof ol.interaction.defaults === 'function'
@@ -279,10 +484,10 @@
             layers: layers,
             target: 'map',
             view: new ol.View({
-              projection: "{{ srs }}",
-              center: [{{ center_x }}, {{ center_y }}],
-              zoom: {{ zoom }},
-              resolutions: resolutions,
+              projection: initialProjection,
+              center: initialCenter,
+              zoom: defaultZoom,
+              resolutions: initialResolutions,
               constrainResolution: true
             }),
             interactions: defaultInteractions.extend([
@@ -299,6 +504,9 @@
                 layer.setVisible(layer.get('name') === layerName);
               }
             });
+            const activeLayer = getActiveBaseLayer();
+            updateViewForLayer(activeLayer);
+            updateDebugLayer();
           };
 
           const createPanelControl = function () {
@@ -358,6 +566,57 @@
                 item.appendChild(row);
 
                 const dimensionDefinitions = layer.get('dimensionDefinitions') || [];
+                const gridDefinitions = layer.get('gridDefinitions') || [];
+                const selectedGridId = layer.get('selectedGridId');
+                const selectedGridDefinition = getSelectedGridDefinition(layer);
+                if (isVisible && gridDefinitions.length > 0) {
+                  const gridContainer = document.createElement('div');
+                  gridContainer.className = 'layer-panel-grid';
+
+                  const gridLabel = document.createElement('label');
+                  const gridSelectId = layerId + '-grid';
+                  gridLabel.textContent = 'Grid';
+                  gridLabel.htmlFor = gridSelectId;
+
+                  const gridSelect = document.createElement('select');
+                  gridSelect.id = gridSelectId;
+
+                  gridDefinitions.forEach(function (gridDefinition) {
+                    const option = document.createElement('option');
+                    option.value = gridDefinition.id;
+                    option.textContent =
+                      gridDefinition.id + ' (' + (gridDefinition.projectionCode || 'unknown') + ')';
+                    option.selected = gridDefinition.id === selectedGridId;
+                    gridSelect.appendChild(option);
+                  });
+
+                  gridSelect.addEventListener('change', function () {
+                    const nextGridDefinition = gridDefinitions.find(function (gridDefinition) {
+                      return gridDefinition.id === gridSelect.value;
+                    });
+                    if (!nextGridDefinition) {
+                      return;
+                    }
+
+                    layer.set('selectedGridId', nextGridDefinition.id);
+                    const source = layer.getSource();
+                    const nextDimensions = source.getDimensions() || {};
+                    const nextSource = new ol.source.WMTS({
+                      ...nextGridDefinition.wmtsOptions,
+                      dimensions: nextDimensions,
+                    });
+                    layer.setSource(nextSource);
+                    updateViewForLayer(layer);
+                    updateDebugLayer();
+                    render();
+                    updateLayerInUrl();
+                  });
+
+                  gridContainer.appendChild(gridLabel);
+                  gridContainer.appendChild(gridSelect);
+                  item.appendChild(gridContainer);
+                }
+
                 if (isVisible && dimensionDefinitions.length > 0) {
                   const dimensionsContainer = document.createElement('div');
                   dimensionsContainer.className = 'layer-panel-dimensions';
@@ -401,11 +660,13 @@
                         ...currentDimensions,
                         [dimensionDefinition.name]: select.value,
                       };
+                      const gridDefinition = selectedGridDefinition || getSelectedGridDefinition(layer);
                       const nextSource = new ol.source.WMTS({
-                        ...(layer.get('wmtsOptions') || {}),
+                        ...(gridDefinition ? gridDefinition.wmtsOptions : {}),
                         dimensions: nextDimensions,
                       });
                       layer.setSource(nextSource);
+                      updateDebugLayer();
                       render();
                       updateLayerInUrl();
                     });
@@ -438,6 +699,12 @@
             const url = new URL(window.location.href);
             if (activeBaseLayer) {
               url.searchParams.set('layer', activeBaseLayer.get('name'));
+              const activeGridDefinition = getSelectedGridDefinition(activeBaseLayer);
+              if (activeGridDefinition) {
+                url.searchParams.set('grid', activeGridDefinition.id);
+              } else {
+                url.searchParams.delete('grid');
+              }
               const toDelete = [];
               url.searchParams.forEach(function (_, key) {
                 if (key.startsWith('dimension_')) {
@@ -454,6 +721,7 @@
               });
             } else {
               url.searchParams.delete('layer');
+              url.searchParams.delete('grid');
             }
             window.history.replaceState(history.state, '', url);
           };
