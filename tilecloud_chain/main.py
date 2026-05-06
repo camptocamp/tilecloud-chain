@@ -151,14 +151,14 @@ app.add_middleware(
                     "script-src-elem": [
                         "'self'",
                         headers.CSP_NONCE,
-                        "https://cdn.jsdelivr.net/npm/ol@10.8.0/",
+                        "https://cdn.jsdelivr.net/npm/ol@10.9.0/",
                         "https://unpkg.com/ol-layerswitcher@4.1.2/",
                         "https://cdnjs.cloudflare.com/ajax/libs/proj4js/",
                     ],
                     "style-src-elem": [
                         "'self'",
                         headers.CSP_NONCE,
-                        "https://cdn.jsdelivr.net/npm/ol@10.8.0/",
+                        "https://cdn.jsdelivr.net/npm/ol@10.9.0/",
                         "https://unpkg.com/ol-layerswitcher@4.1.2/",
                     ],
                 },
