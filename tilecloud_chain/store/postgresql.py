@@ -316,7 +316,27 @@ class PostgresqlTileStore(AsyncTileStore):
         self.allowed_commands = allowed_commands
         self.allowed_arguments = allowed_arguments
         self.max_pending_minutes = max_pending_minutes
+        self._insert_batch_size = max(1, settings.postgresql.queue_insert_batch_size)
+        self._insert_buffer: list[dict[str, Any]] = []
+        self._insert_lock = asyncio.Lock()
         self.SessionMaker: async_sessionmaker[AsyncSession] | None = None  # pylint: disable=invalid-name
+
+    async def _flush_put_buffer(self, session: AsyncSession | None = None) -> None:
+        async with self._insert_lock:
+            if not self._insert_buffer:
+                return
+
+            rows = self._insert_buffer
+            self._insert_buffer = []
+
+        if session is not None:
+            await session.execute(sqlalchemy.insert(Queue), rows)
+            return
+
+        assert self.SessionMaker is not None
+        async with self.SessionMaker() as current_session:
+            await current_session.execute(sqlalchemy.insert(Queue), rows)
+            await current_session.commit()
 
     async def init(self) -> None:
         """Initialize the store."""
@@ -460,6 +480,7 @@ class PostgresqlTileStore(AsyncTileStore):
         - Create the job list to be process
         """
         assert self.SessionMaker is not None
+        await self._flush_put_buffer()
         with _MAINTENANCE_SUMMARY.time():
             # Restart the too long pending jobs (queue generation)
             async with self.SessionMaker() as session:
@@ -563,6 +584,7 @@ class PostgresqlTileStore(AsyncTileStore):
         """List the meta tiles in the queue."""
         assert self.SessionMaker is not None
         while True:
+            await self._flush_put_buffer()
             if not self.jobs:
                 await self._maintenance()
 
@@ -615,16 +637,25 @@ class PostgresqlTileStore(AsyncTileStore):
     async def put_one(self, tile: Tile) -> Tile:
         """Put the meta tile in the queue."""
         assert self.SessionMaker is not None
-        async with self.SessionMaker() as session:
-            session.add(
-                Queue(
-                    job_id=tile.metadata["job_id"],
-                    zoom=tile.tilecoord.z,
-                    meta_tile=_encode_message(tile),
-                ),
+        should_flush = False
+        async with self._insert_lock:
+            self._insert_buffer.append(
+                {
+                    "job_id": tile.metadata["job_id"],
+                    "zoom": tile.tilecoord.z,
+                    "meta_tile": _encode_message(tile),
+                },
             )
-            await session.commit()
+            should_flush = len(self._insert_buffer) >= self._insert_batch_size
+        if should_flush:
+            async with self.SessionMaker() as session:
+                await self._flush_put_buffer(session)
+                await session.commit()
         return tile
+
+    async def close(self) -> None:
+        """Flush pending queue inserts."""
+        await self._flush_put_buffer()
 
     async def delete_one(self, tile: Tile) -> Tile:
         """Delete the meta tile from the queue."""

@@ -7,6 +7,9 @@ from tilecloud import Tile, TileCoord, TileStore
 class AsyncTileStore:
     """A tile store."""
 
+    async def close(self) -> None:
+        """Close the store resources."""
+
     async def __contains__(self, tile: Tile) -> bool:
         """
         Return true if this store contains ``tile``.
