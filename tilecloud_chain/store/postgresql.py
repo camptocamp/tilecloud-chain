@@ -475,8 +475,7 @@ class PostgresqlTileStore(AsyncTileStore):
         - an estimated remaining time (for started jobs)
         """
         assert self.SessionMaker is not None
-        result = []
-        # TODO: Consolidate the query https://github.com/camptocamp/tilecloud-chain/issues/3030
+        result: list[tuple[Job, list[dict[str, int]], list[str], str | None]] = []
         async with self.SessionMaker() as session:
             now = datetime.datetime.now(tz=datetime.UTC)
             jobs_result = await session.execute(
@@ -484,41 +483,72 @@ class PostgresqlTileStore(AsyncTileStore):
                 .where(Job.config_filename == config_filename.as_posix())
                 .order_by(Job.created_at.desc()),
             )
-            for job in jobs_result.scalars():
-                result_by_zoom_level: dict[int, dict[str, int]] = {}
-                nb_generate = 0
-                nb_pending = 0
-                nb_error = 0
+            jobs = list(jobs_result.scalars())
+            if not jobs:
+                return result
 
-                nb_tiles_zoom_results = await session.execute(
-                    select(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
-                    .where(and_(Queue.status == _STATUS_CREATED, Queue.job_id == job.id))
-                    .group_by(Queue.zoom),
+            job_ids = [job.id for job in jobs]
+            queue_statuses = (_STATUS_CREATED, _STATUS_PENDING, _STATUS_ERROR)
+            status_labels = {
+                _STATUS_CREATED: "generate",
+                _STATUS_PENDING: "pending",
+                _STATUS_ERROR: "error",
+            }
+
+            statuses_result = await session.execute(
+                select(
+                    Queue.job_id,
+                    Queue.zoom,
+                    Queue.status,
+                    sqlalchemy.sql.functions.count(Queue.id),
                 )
-                for nb_tiles, zoom in nb_tiles_zoom_results:
-                    result_by_zoom_level.setdefault(zoom, {})["generate"] = nb_tiles
-                    nb_generate += nb_tiles
-
-                nb_tiles_zoom_results = await session.execute(
-                    select(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
-                    .where(and_(Queue.status == _STATUS_PENDING, Queue.job_id == job.id))
-                    .group_by(Queue.zoom),
+                .where(
+                    and_(
+                        Queue.job_id.in_(job_ids),
+                        Queue.status.in_(queue_statuses),
+                    ),
                 )
-                for nb_tiles, zoom in nb_tiles_zoom_results:
-                    result_by_zoom_level.setdefault(zoom, {})["pending"] = nb_tiles
-                    nb_pending += nb_tiles
+                .group_by(Queue.job_id, Queue.zoom, Queue.status),
+            )
+            status_by_job: dict[int, dict[int, dict[str, int]]] = {}
+            for job_id, zoom, queue_status, count in statuses_result:
+                label = status_labels.get(queue_status)
+                if label is None:
+                    continue
+                status_by_job.setdefault(job_id, {}).setdefault(zoom, {})[label] = count
 
-                nb_tiles_zoom_results = await session.execute(
-                    select(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
-                    .where(and_(Queue.status == _STATUS_ERROR, Queue.job_id == job.id))
-                    .group_by(Queue.zoom),
+            ranked_errors = (
+                select(
+                    Queue.job_id.label("job_id"),
+                    Queue.meta_tile.label("meta_tile"),
+                    Queue.error.label("error"),
+                    sqlalchemy.func.row_number()
+                    .over(partition_by=Queue.job_id, order_by=Queue.started_at.desc())
+                    .label("rank"),
                 )
-                for nb_tiles, zoom in nb_tiles_zoom_results:
-                    result_by_zoom_level.setdefault(zoom, {})["error"] = nb_tiles
-                    nb_error += nb_tiles
+                .where(and_(Queue.job_id.in_(job_ids), Queue.status == _STATUS_ERROR))
+                .subquery()
+            )
+            errors_result = await session.execute(
+                select(
+                    ranked_errors.c.job_id,
+                    ranked_errors.c.meta_tile,
+                    ranked_errors.c.error,
+                )
+                .where(ranked_errors.c.rank <= 5)
+                .order_by(ranked_errors.c.job_id.asc(), ranked_errors.c.rank.asc()),
+            )
+            errors_by_job: dict[int, list[str]] = {}
+            for job_id, meta_tile, error in errors_result:
+                errors_by_job.setdefault(job_id, []).append(f"{_decode_tilecoord(meta_tile)}: {error}")
 
-                status = [{"zoom": zoom, **data} for zoom, data in result_by_zoom_level.items()]
-                status = sorted(status, key=lambda x: x["zoom"])
+            for job in jobs:
+                result_by_zoom_level = status_by_job.get(job.id, {})
+                status = [{"zoom": zoom, **data} for zoom, data in sorted(result_by_zoom_level.items())]
+
+                nb_generate = sum(data.get("generate", 0) for data in result_by_zoom_level.values())
+                nb_pending = sum(data.get("pending", 0) for data in result_by_zoom_level.values())
+                nb_error = sum(data.get("error", 0) for data in result_by_zoom_level.values())
 
                 eta: str | None = None
                 if (
@@ -534,23 +564,7 @@ class PostgresqlTileStore(AsyncTileStore):
                     elif remaining == 0:
                         eta = _format_duration(0)
 
-                queue_results = await session.execute(
-                    select(Queue)
-                    .where(and_(Queue.job_id == job.id, Queue.status == _STATUS_ERROR))
-                    .order_by(Queue.started_at.desc())
-                    .limit(5),
-                )
-                result.append(
-                    (
-                        job,
-                        status,
-                        [
-                            f"{_decode_tilecoord(sqlalchemy_tile.meta_tile)}: {sqlalchemy_tile.error}"
-                            for sqlalchemy_tile in queue_results.scalars()
-                        ],
-                        eta,
-                    ),
-                )
+                result.append((job, status, errors_by_job.get(job.id, []), eta))
         return result
 
     async def _maintenance(self) -> None:
