@@ -150,7 +150,7 @@
       <Format>{{ layer['mime_type'] }}</Format>{%
       if 'query_layers' in layer %}{%
       for info_format in layer.get('info_formats', ['application/vnd.ogc.gml']) %}
-      <InfoFormat>{{ infoformat }}</InfoFormat>{%
+      <InfoFormat>{{ info_format }}</InfoFormat>{%
       endfor %}{%
       endif %}{%
       for dimension in layer['dimensions'] %}
