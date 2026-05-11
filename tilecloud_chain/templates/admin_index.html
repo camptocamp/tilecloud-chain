@@ -152,7 +152,7 @@
     {% if jobs_status %}
     <h2>Jobs</h2>
     <div class="accordion" id="accordionJobs">
-      {% for job, status, errors in jobs_status %}
+      {% for job, status, errors, eta in jobs_status %}
       <div class="accordion-item">
         <h2 class="accordion-header">
           <button
@@ -175,7 +175,9 @@
             <p>
               <code>{{ job.command }}</code>
             </p>
-            {% if job.message %}
+            {% if eta %}
+            <p>Estimated remaining time: <strong>{{ eta }}</strong></p>
+            {% endif %} {% if job.message %}
             <pre>{{ job.message.strip() | safe | escape }}</pre>
             {% endif %}
             <!---->
