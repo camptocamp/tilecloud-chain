@@ -42,7 +42,7 @@ import sqlalchemy.schema
 import sqlalchemy.sql.functions
 from anyio import Path
 from prometheus_client import Counter, Gauge, Summary
-from sqlalchemy import JSON, DateTime, Integer, Unicode, and_, delete, select, update
+from sqlalchemy import JSON, DateTime, Integer, Unicode, and_, delete, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from tilecloud import Tile, TileCoord
@@ -117,6 +117,19 @@ def _decode_message(body: dict[str, Any], **kwargs: Any) -> Tile:
     return Tile(tilecoord, metadata=metadata, **kwargs)
 
 
+def _format_duration(seconds: int) -> str:
+    """Format a duration in a short style."""
+    seconds = max(seconds, 0)
+    days, rem = divmod(seconds, 86400)
+    hours, rem = divmod(rem, 3600)
+    minutes, _secs = divmod(rem, 60)
+    if days > 0:
+        return f"{days} days {hours}"
+    if hours > 0:
+        return f"{hours}:{minutes:02}"
+    return f"{minutes} minutes"
+
+
 class PostgresqlTileStoreError(Exception):
     """PostgreSQL TileStore Exception."""
 
@@ -144,6 +157,8 @@ class Job(Base):
         index=True,
     )
     started_at: Mapped[datetime.datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    tiles_started_at: Mapped[datetime.datetime | None] = mapped_column(DateTime(timezone=True))
+    meta_tiles_total: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     def __repr__(self) -> str:
         """Return the representation of the job."""
@@ -263,8 +278,16 @@ async def _start_job(
         async with SessionMaker() as session:
             result = await session.execute(select(Job).where(Job.id == job_id).with_for_update(of=Job))
             job = result.scalar()
-            job.status = _STATUS_ERROR if error else _STATUS_STARTED  # type: ignore[union-attr]
-            job.message = out.getvalue()[: settings.max_output_length]  # type: ignore[union-attr]
+            if job is not None:
+                count_result = await session.scalar(
+                    select(sqlalchemy.sql.functions.count(Queue.id)).where(Queue.job_id == job_id),
+                )
+                assert count_result is not None
+                job.meta_tiles_total = count_result
+                job.status = _STATUS_ERROR if error else _STATUS_STARTED
+                job.message = out.getvalue()[: settings.max_output_length]
+                if error:
+                    job.tiles_started_at = None
             await session.commit()
         return
 
@@ -356,6 +379,17 @@ class PostgresqlTileStore(AsyncTileStore):
         async with engine.connect() as connection:
             await connection.execute(sqlalchemy.schema.CreateSchema(_schema, if_not_exists=True))
             await connection.run_sync(Base.metadata.create_all)
+            await connection.execute(
+                text(
+                    f'ALTER TABLE "{_schema}"."job" ADD COLUMN IF NOT EXISTS tiles_started_at TIMESTAMPTZ',
+                ),
+            )
+            await connection.execute(
+                text(
+                    f'ALTER TABLE "{_schema}"."job" '
+                    "ADD COLUMN IF NOT EXISTS meta_tiles_total INTEGER NOT NULL DEFAULT 0",
+                ),
+            )
             await connection.commit()
 
         self.SessionMaker = async_sessionmaker(engine)  # pylint: disable=invalid-name
@@ -389,7 +423,19 @@ class PostgresqlTileStore(AsyncTileStore):
                 .where(and_(Queue.job_id == job_id, Queue.status == _STATUS_ERROR))
                 .values(status=_STATUS_CREATED, error=""),
             )
-            await session.execute(update(Job).where(Job.id == job_id).values(status=_STATUS_CREATED))
+            count_result = await session.scalar(
+                select(sqlalchemy.sql.functions.count(Queue.id)).where(Queue.job_id == job_id),
+            )
+            assert count_result is not None
+            await session.execute(
+                update(Job)
+                .where(Job.id == job_id)
+                .values(
+                    status=_STATUS_CREATED,
+                    tiles_started_at=None,
+                    meta_tiles_total=count_result,
+                ),
+            )
             await session.commit()
 
     async def cancel(self, job_id: int, config_filename: Path) -> None:
@@ -415,7 +461,10 @@ class PostgresqlTileStore(AsyncTileStore):
             await session.execute(update(Job).where(Job.id == job_id).values(status=_STATUS_CANCELLED))
             await session.commit()
 
-    async def get_status(self, config_filename: Path) -> list[tuple[Job, list[dict[str, int]], list[str]]]:
+    async def get_status(
+        self,
+        config_filename: Path,
+    ) -> list[tuple[Job, list[dict[str, int]], list[str], str | None]]:
         """
         Get the jobs.
 
@@ -423,11 +472,13 @@ class PostgresqlTileStore(AsyncTileStore):
         - the job
         - the status of the job
         - the last 5 meta tiles errors
+        - an estimated remaining time (for started jobs)
         """
         assert self.SessionMaker is not None
         result = []
         # TODO: Consolidate the query https://github.com/camptocamp/tilecloud-chain/issues/3030
         async with self.SessionMaker() as session:
+            now = datetime.datetime.now(tz=datetime.UTC)
             jobs_result = await session.execute(
                 select(Job)
                 .where(Job.config_filename == config_filename.as_posix())
@@ -435,6 +486,9 @@ class PostgresqlTileStore(AsyncTileStore):
             )
             for job in jobs_result.scalars():
                 result_by_zoom_level: dict[int, dict[str, int]] = {}
+                nb_generate = 0
+                nb_pending = 0
+                nb_error = 0
 
                 nb_tiles_zoom_results = await session.execute(
                     select(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
@@ -443,6 +497,7 @@ class PostgresqlTileStore(AsyncTileStore):
                 )
                 for nb_tiles, zoom in nb_tiles_zoom_results:
                     result_by_zoom_level.setdefault(zoom, {})["generate"] = nb_tiles
+                    nb_generate += nb_tiles
 
                 nb_tiles_zoom_results = await session.execute(
                     select(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
@@ -451,6 +506,7 @@ class PostgresqlTileStore(AsyncTileStore):
                 )
                 for nb_tiles, zoom in nb_tiles_zoom_results:
                     result_by_zoom_level.setdefault(zoom, {})["pending"] = nb_tiles
+                    nb_pending += nb_tiles
 
                 nb_tiles_zoom_results = await session.execute(
                     select(sqlalchemy.sql.functions.count(Queue.id), Queue.zoom)
@@ -459,9 +515,24 @@ class PostgresqlTileStore(AsyncTileStore):
                 )
                 for nb_tiles, zoom in nb_tiles_zoom_results:
                     result_by_zoom_level.setdefault(zoom, {})["error"] = nb_tiles
+                    nb_error += nb_tiles
 
                 status = [{"zoom": zoom, **data} for zoom, data in result_by_zoom_level.items()]
                 status = sorted(status, key=lambda x: x["zoom"])
+
+                eta: str | None = None
+                if (
+                    job.status == _STATUS_STARTED
+                    and job.tiles_started_at is not None
+                    and job.meta_tiles_total > 0
+                ):
+                    remaining = min(nb_generate + nb_pending + nb_error, job.meta_tiles_total)
+                    processed = max(job.meta_tiles_total - remaining, 0)
+                    elapsed_seconds = int((now - job.tiles_started_at).total_seconds())
+                    if processed > 0 and elapsed_seconds > 0:
+                        eta = _format_duration(int((remaining * elapsed_seconds) / processed))
+                    elif remaining == 0:
+                        eta = _format_duration(0)
 
                 queue_results = await session.execute(
                     select(Queue)
@@ -477,6 +548,7 @@ class PostgresqlTileStore(AsyncTileStore):
                             f"{_decode_tilecoord(sqlalchemy_tile.meta_tile)}: {sqlalchemy_tile.error}"
                             for sqlalchemy_tile in queue_results.scalars()
                         ],
+                        eta,
                     ),
                 )
         return result
@@ -522,6 +594,8 @@ class PostgresqlTileStore(AsyncTileStore):
                     job_id = job.id
                     job.status = _STATUS_PENDING
                     job.started_at = datetime.datetime.now(tz=datetime.UTC)
+                    job.tiles_started_at = None
+                    job.meta_tiles_total = 0
                     await session.commit()
             if job_id != -1:
                 await _start_job(
@@ -633,7 +707,19 @@ class PostgresqlTileStore(AsyncTileStore):
                         if sqlalchemy_tile is None:
                             continue
                         sqlalchemy_tile.status = _STATUS_PENDING
-                        sqlalchemy_tile.started_at = datetime.datetime.now(tz=datetime.UTC)
+                        now = datetime.datetime.now(tz=datetime.UTC)
+                        sqlalchemy_tile.started_at = now
+                        await session.execute(
+                            update(Job)
+                            .where(
+                                and_(
+                                    Job.id == job_id,
+                                    Job.status == _STATUS_STARTED,
+                                    Job.tiles_started_at.is_(None),
+                                ),
+                            )
+                            .values(tiles_started_at=now),
+                        )
                         meta_tile = _decode_message(
                             sqlalchemy_tile.meta_tile,
                             postgresql_id=sqlalchemy_tile.id,

@@ -107,9 +107,65 @@ async def test_retry(queue: tuple[int, int, int], SessionMaker: sessionmaker, ti
     with SessionMaker() as session:
         job = session.query(Job).filter(Job.id == job_id).one()
         assert job.status == _STATUS_CREATED
+        assert job.tiles_started_at is None
+        assert job.meta_tiles_total == 1
         metatiles = session.query(Queue).filter(Queue.job_id == job_id).all()
         assert len(metatiles) == 1
         assert metatiles[0].status == _STATUS_CREATED
+
+
+@pytest.mark.asyncio
+async def test_tiles_started_at_set_on_first_tile(
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
+):
+    job_id, _, _ = queue
+    with SessionMaker() as session:
+        job = session.query(Job).filter(Job.id == job_id).one()
+        assert job.tiles_started_at is None
+
+    _ = await anext(tilestore.list())
+
+    with SessionMaker() as session:
+        job = session.query(Job).filter(Job.id == job_id).one()
+        assert job.tiles_started_at is not None
+
+
+@pytest.mark.asyncio
+async def test_get_status_with_eta(
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
+):
+    job_id, _metatile_0_id, _metatile_1_id = queue
+    with SessionMaker() as session:
+        job = session.query(Job).filter(Job.id == job_id).one()
+        job.meta_tiles_total = 10
+        job.tiles_started_at = datetime.now(tz=UTC) - timedelta(seconds=100)
+        session.commit()
+
+    statuses = await tilestore.get_status(Path("config.yaml"))
+    status = next(status for status in statuses if status[0].id == job_id)
+    assert status[3] is not None
+
+
+@pytest.mark.asyncio
+async def test_get_status_with_eta_when_remaining_exceeds_total(
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
+):
+    job_id, _metatile_0_id, _metatile_1_id = queue
+    with SessionMaker() as session:
+        job = session.query(Job).filter(Job.id == job_id).one()
+        job.meta_tiles_total = 1
+        job.tiles_started_at = datetime.now(tz=UTC) - timedelta(seconds=100)
+        session.commit()
+
+    statuses = await tilestore.get_status(Path("config.yaml"))
+    status = next(status for status in statuses if status[0].id == job_id)
+    assert status[3] == "1 minutes"
 
 
 @pytest.mark.asyncio
