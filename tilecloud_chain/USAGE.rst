@@ -387,8 +387,12 @@ PostgreSQL
 ----------
 
 Is it possible to store the queue in a PostgreSQL database, for that you should at least set the
-``queue_store`` to ``postgresql`` in your (main) configuration file, and set the SqlAlchemy URL in the
-configuration file or in the ``TILECLOUD_CHAIN_SQLALCHEMY_URL`` environment variable.
+``queue_store`` to ``postgresql`` in your (main) configuration file, and set the SQLAlchemy URL in the
+configuration file or in the ``TILECLOUD_CHAIN__POSTGRESQL__SQLALCHEMY_URL`` environment variable.
+
+Queue inserts are batched to improve performance when generating very large pyramids. The default
+batch size is ``10000`` rows and can be changed with
+``TILECLOUD_CHAIN__POSTGRESQL__QUEUE_INSERT_BATCH_SIZE``.
 
 See the [configuration reference](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/CONFIG.md#definitions/postgresql) for the other configuration possibilities.
 
@@ -804,6 +808,22 @@ Tests:
 
 - ``TILECLOUD_CHAIN__TESTS``: Enable test mode if set to ``true``
   (default: ``false``)
+
+PostgreSQL:
+
+- ``TILECLOUD_CHAIN__POSTGRESQL__SCHEMA_NAME``: PostgreSQL schema used by TileCloud Chain
+  (default: ``tilecloud_chain``)
+
+- ``TILECLOUD_CHAIN__POSTGRESQL__SQLALCHEMY_URL``: SQLAlchemy connection URL for the PostgreSQL queue
+
+- ``TILECLOUD_CHAIN__POSTGRESQL__QUEUE_INSERT_BATCH_SIZE``: Number of queue rows inserted in one batch
+  (default: ``10000``)
+
+- ``TILECLOUD_CHAIN__POSTGRESQL__OBJGRAPH_POSTGRESQL``: Enable objgraph collection in PostgreSQL queue code
+  (default: ``false``)
+
+- ``TILECLOUD_CHAIN__POSTGRESQL__OBJGRAPH_LIMIT``: Number of entries to include in PostgreSQL objgraph reports
+  (default: ``10``)
 
 See also: ``settings.py` <https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/settings.py>`_.
 

@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from tilecloud import Tile, TileCoord
 
 from tilecloud_chain import DatedConfig
+from tilecloud_chain.settings import settings
 from tilecloud_chain.store.postgresql import (
     _STATUS_CANCELLED,
     _STATUS_CREATED,
@@ -64,6 +65,7 @@ async def queue(SessionMaker: sessionmaker, tilestore: PostgresqlTileStore) -> t
             },
         ),
     )
+    await tilestore.close()
 
     with SessionMaker() as session:
         metatile_0_id = session.query(Queue.id).filter(and_(Queue.job_id == job_id, Queue.zoom == 0)).one()[0]
@@ -202,3 +204,35 @@ async def test_maintenance_pending_job(
     with SessionMaker() as session:
         job = session.query(Job).filter(Job.id == job_id).one()
         assert job.status == _STATUS_STARTED
+
+
+@pytest.mark.asyncio
+async def test_put_one_batch_insert(SessionMaker: sessionmaker, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings.postgresql, "queue_insert_batch_size", 2)
+    tilestore = await get_postgresql_queue_store(DatedConfig({}, 0, "config.yaml"))
+
+    await tilestore.create_job("test-batch", "generate-tiles", Path("config.yaml"))
+    with SessionMaker() as session:
+        job = session.query(Job).filter(Job.name == "test-batch").one()
+        job.status = _STATUS_STARTED
+        job_id = job.id
+        session.commit()
+
+    await tilestore.put_one(Tile(TileCoord(0, 0, 0), metadata={"job_id": job_id}))
+    with SessionMaker() as session:
+        assert session.query(Queue).filter(Queue.job_id == job_id).count() == 0
+
+    await tilestore.put_one(Tile(TileCoord(1, 0, 0), metadata={"job_id": job_id}))
+    with SessionMaker() as session:
+        assert session.query(Queue).filter(Queue.job_id == job_id).count() == 2
+
+    await tilestore.put_one(Tile(TileCoord(2, 0, 0), metadata={"job_id": job_id}))
+    with SessionMaker() as session:
+        assert session.query(Queue).filter(Queue.job_id == job_id).count() == 2
+
+    await tilestore.close()
+    with SessionMaker() as session:
+        assert session.query(Queue).filter(Queue.job_id == job_id).count() == 3
+        session.query(Queue).filter(Queue.job_id == job_id).delete()
+        session.query(Job).filter(Job.id == job_id).delete()
+        session.commit()

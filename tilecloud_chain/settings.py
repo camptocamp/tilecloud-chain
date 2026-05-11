@@ -104,6 +104,7 @@ class PostgresqlSettings(BaseModel):
 
     schema_name: str = "tilecloud_chain"
     sqlalchemy_url: str | None = None
+    queue_insert_batch_size: int = 10000
     objgraph_postgresql: bool = False
     objgraph_limit: int = 10
 

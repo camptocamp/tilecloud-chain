@@ -1228,8 +1228,12 @@ class TileGeneration:
 
     async def close(self) -> None:
         """Close the tile generation."""
-        for file_ in self.error_files_.values():
-            await file_.aclose()
+        try:
+            if self.queue_store is not None:
+                await self.queue_store.close()
+        finally:
+            for file_ in self.error_files_.values():
+                await file_.aclose()
 
     async def get_log_tiles_error_file(
         self,

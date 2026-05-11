@@ -19,6 +19,10 @@ the commit message should start with a capital letter.
 
 The pull request description should not contain a `Testing` section.
 
+## Branch names
+
+Branch names should not contain `/`.
+
 ## Bash
 
 Use the long parameter names for clarity and maintainability.
