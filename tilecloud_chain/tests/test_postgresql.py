@@ -65,6 +65,7 @@ async def queue(SessionMaker: sessionmaker, tilestore: PostgresqlTileStore) -> t
             },
         ),
     )
+    await tilestore.close()
 
     with SessionMaker() as session:
         metatile_0_id = session.query(Queue.id).filter(and_(Queue.job_id == job_id, Queue.zoom == 0)).one()[0]
