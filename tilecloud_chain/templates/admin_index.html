@@ -166,7 +166,11 @@
             <script nonce="{{ nonce }}">
               window.document.write(new Date('{{ job.created_at.isoformat() }}').toLocaleString());
             </script>
-            , {{ job.status }})
+            ,
+            <span
+              class="badge {% if job.status == 'started' %}text-bg-success{% elif job.status == 'error' %}text-bg-danger{% elif job.status == 'done' %}text-bg-primary{% elif job.status == 'cancelled' %}text-bg-secondary{% else %}text-bg-light text-dark{% endif %}"
+              >{{ job.status }}</span
+            >)
             <!-- {{ job.id }} -->
           </button>
         </h2>
