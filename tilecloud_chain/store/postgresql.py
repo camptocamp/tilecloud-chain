@@ -319,24 +319,35 @@ class PostgresqlTileStore(AsyncTileStore):
         self._insert_batch_size = max(1, settings.postgresql.queue_insert_batch_size)
         self._insert_buffer: list[dict[str, Any]] = []
         self._insert_lock = asyncio.Lock()
+        self._flush_lock = asyncio.Lock()
         self.SessionMaker: async_sessionmaker[AsyncSession] | None = None  # pylint: disable=invalid-name
 
     async def _flush_put_buffer(self, session: AsyncSession | None = None) -> None:
-        async with self._insert_lock:
-            if not self._insert_buffer:
+        async with self._flush_lock:
+            rows: list[dict[str, Any]] = []
+            async with self._insert_lock:
+                if self._insert_buffer:
+                    rows = list(self._insert_buffer)
+
+            if not rows:
                 return
 
-            rows = self._insert_buffer
-            self._insert_buffer = []
+            try:
+                if session is not None:
+                    await session.execute(sqlalchemy.insert(Queue), rows)
+                else:
+                    assert self.SessionMaker is not None
+                    async with self.SessionMaker() as current_session:
+                        await current_session.execute(sqlalchemy.insert(Queue), rows)
+                        await current_session.commit()
+            except Exception:
+                async with self._insert_lock:
+                    self._insert_buffer[:0] = rows
+                raise
 
-        if session is not None:
-            await session.execute(sqlalchemy.insert(Queue), rows)
-            return
-
-        assert self.SessionMaker is not None
-        async with self.SessionMaker() as current_session:
-            await current_session.execute(sqlalchemy.insert(Queue), rows)
-            await current_session.commit()
+            async with self._insert_lock:
+                if self._insert_buffer[: len(rows)] == rows:
+                    del self._insert_buffer[: len(rows)]
 
     async def init(self) -> None:
         """Initialize the store."""

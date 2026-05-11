@@ -98,6 +98,10 @@ class TimedTileStoreWrapper(AsyncTileStore):
             async for tile in self._tile_store.get(tiles):
                 yield tile
 
+    async def close(self) -> None:
+        """See in superclass."""
+        await self._tile_store.close()
+
     def __getattr__(self, item: str) -> Any:
         """See in superclass."""
         return getattr(self._tile_store, item)
