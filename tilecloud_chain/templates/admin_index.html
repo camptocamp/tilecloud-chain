@@ -176,11 +176,8 @@
               <code>{{ job.command }}</code>
             </p>
             {% if eta %}
-            <p>
-              Estimated remaining time: <strong>{{ eta }}</strong>
-            </p>
-            {% endif %}
-            {% if job.message %}
+            <p>Estimated remaining time: <strong>{{ eta }}</strong></p>
+            {% endif %} {% if job.message %}
             <pre>{{ job.message.strip() | safe | escape }}</pre>
             {% endif %}
             <!---->
