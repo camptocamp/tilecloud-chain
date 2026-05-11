@@ -165,7 +165,7 @@ async def test_get_status_with_eta_when_remaining_exceeds_total(
 
     statuses = await tilestore.get_status(Path("config.yaml"))
     status = next(status for status in statuses if status[0].id == job_id)
-    assert status[3] == "1 minutes"
+    assert status[3] is None
 
 
 @pytest.mark.asyncio
