@@ -477,11 +477,15 @@ To use the SQS queue we should first fill the queue:
 
     generate-tiles --role master --layer <a_layer>
 
+The command output includes ``Nb of generated jobs: N`` to show how many jobs were inserted in the queue.
+
 And then generate the tiles present in the SQS queue:
 
 .. prompt:: bash
 
     generate-tiles --role slave --layer <a_layer>
+
+The command output includes ``Nb of consumed jobs: N`` to show how many jobs were consumed from the queue.
 
 For the slave to keep listening when the queue is empty and be able to support more than one layer, you must
 enable the daemon mode and must not specify the layer:

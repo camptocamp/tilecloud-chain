@@ -16,6 +16,7 @@
 - Use WMTS GetFeatureInfo in the `/admin/test` OpenLayers page by querying the active layer on map click and showing the response in a feature info panel.
 - Update example tilegeneration configs to enable tile optimization (`post_process` with `optipng`/`jpegoptim` and Pillow `meta_save_options`).
 - Document how to combine `post_process` and `meta_save_options` to optimize PNG/JPEG tiles.
+- Add `Nb of consumed jobs` to slave generation output to report how many queue jobs were consumed, complementing the master's generated jobs count.
 
 Environment variable migration (legacy -> new)
 
