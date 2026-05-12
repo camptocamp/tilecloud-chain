@@ -1123,6 +1123,7 @@ Tiles in error:
             main_func=generate.async_main,
             regex=True,
             expected=r"""The tile generation is finish
+Nb of consumed jobs: 10
 Nb generated metatiles: 10
 Nb metatiles dropped: 0
 Nb generated tiles: 640
@@ -1179,6 +1180,7 @@ Tiles in error:
                 main_func=generate.async_main,
                 regex=True,
                 expected=r"""The tile generation is finish
+    Nb of consumed jobs: 10
     Nb generated metatiles: 10
     Nb metatiles dropped: 0
     Nb generated tiles: 640
