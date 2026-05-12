@@ -67,7 +67,7 @@ _CAPABILITIES = (
         <ows:Identifier>default</ows:Identifier>
       </Style>
       <Format>image/png</Format>
-      <InfoFormat></InfoFormat>
+      <InfoFormat>application/vnd.ogc.gml</InfoFormat>
       <Dimension>
         <ows:Identifier>DATE</ows:Identifier>
         <Default>2012</Default>

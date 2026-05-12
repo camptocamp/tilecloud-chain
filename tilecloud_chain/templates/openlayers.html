@@ -56,6 +56,32 @@
         font-size: 0.95em;
       }
 
+      .feature-info-panel {
+        left: 0.5em;
+        bottom: 0.5em;
+        max-height: min(18em, calc(100% - 1em));
+        max-width: min(36em, calc(100% - 1em));
+        overflow: auto;
+        background-color: rgba(255, 255, 255, 0.95);
+        color: #111;
+        border-radius: 0.35em;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+        padding: 0.75em;
+        font-size: 0.85em;
+        display: none;
+      }
+
+      .feature-info-panel-title {
+        margin: 0 0 0.5em;
+        font-weight: 600;
+      }
+
+      .feature-info-panel-content {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
       .layer-panel-title {
         margin: 0 0 0.5em;
         font-weight: 600;
@@ -135,6 +161,12 @@
 
         .layer-panel-item {
           border-top-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-info-panel {
+          background-color: rgba(42, 42, 42, 0.95);
+          color: #f2f2f2;
+          border: 1px solid rgba(255, 255, 255, 0.2);
         }
       }
     </style>
@@ -223,6 +255,16 @@
         return dimensions;
       };
 
+      const getLayerInfoFormats = function (wmtsLayer) {
+        if (!wmtsLayer.InfoFormat) {
+          return [];
+        }
+        if (Array.isArray(wmtsLayer.InfoFormat)) {
+          return wmtsLayer.InfoFormat;
+        }
+        return [wmtsLayer.InfoFormat];
+      };
+
       const getLayerGridDefinitions = function (result, wmtsLayer) {
         const links = wmtsLayer.TileMatrixSetLink || [];
         const definitions = links
@@ -306,6 +348,7 @@
             const options = selectedGridDefinition.wmtsOptions;
             const layerDefaultDimensions = getLayerDefaultDimensions(wmtsLayer);
             const layerDimensionDefinitions = getLayerDimensionDefinitions(wmtsLayer);
+            const layerInfoFormats = getLayerInfoFormats(wmtsLayer);
             const sourceDimensions = {
               ...layerDefaultDimensions,
               ...(options.dimensions || {}),
@@ -326,6 +369,7 @@
                 title: wmtsLayer.Title,
                 name: wmtsLayer.Identifier,
                 dimensionDefinitions: layerDimensionDefinitions,
+                infoFormats: layerInfoFormats,
                 gridDefinitions: gridDefinitions,
                 selectedGridId: selectedGridDefinition.id,
               })
@@ -784,6 +828,102 @@
           const panel = createPanelControl();
           map.addControl(panel.control);
           panel.render();
+
+          const createFeatureInfoControl = function () {
+            const element = document.createElement('div');
+            element.className = 'feature-info-panel ol-unselectable ol-control';
+
+            const title = document.createElement('h3');
+            title.className = 'feature-info-panel-title';
+            title.textContent = 'Feature info';
+            element.appendChild(title);
+
+            const content = document.createElement('pre');
+            content.className = 'feature-info-panel-content';
+            content.textContent = 'Click on the map to run WMTS GetFeatureInfo.';
+            element.appendChild(content);
+
+            return {
+              control: new ol.control.Control({ element: element }),
+              setContent: function (nextContent) {
+                content.textContent = nextContent;
+                element.style.display = 'block';
+              },
+            };
+          };
+
+          const featureInfo = createFeatureInfoControl();
+          map.addControl(featureInfo.control);
+
+          map.on('singleclick', function (event) {
+            const activeBaseLayer = getActiveBaseLayer();
+            if (!activeBaseLayer) {
+              featureInfo.setContent('No active layer.');
+              return;
+            }
+
+            const source = activeBaseLayer.getSource();
+            if (!source || typeof source.getFeatureInfoUrl !== 'function') {
+              featureInfo.setContent('The active layer does not support WMTS GetFeatureInfo.');
+              return;
+            }
+
+            const infoFormats = activeBaseLayer.get('infoFormats') || [];
+            if (infoFormats.length === 0) {
+              featureInfo.setContent('The active layer is not queryable.');
+              return;
+            }
+
+            const view = map.getView();
+            const resolution = view.getResolution();
+            const projection = view.getProjection();
+            const infoFormat = infoFormats[0];
+            if (resolution === undefined || !projection) {
+              featureInfo.setContent('Cannot compute a valid GetFeatureInfo request for this view.');
+              return;
+            }
+
+            const url = source.getFeatureInfoUrl(event.coordinate, resolution, projection, {
+              'INFO_FORMAT': infoFormat,
+            });
+            if (!url) {
+              featureInfo.setContent('Cannot build the WMTS GetFeatureInfo URL for this layer.');
+              return;
+            }
+
+            featureInfo.setContent('Loading WMTS GetFeatureInfo...');
+            fetch(url)
+              .then(function (response) {
+                return response.text().then(function (text) {
+                  return {
+                    ok: response.ok,
+                    status: response.status,
+                    contentType: response.headers.get('Content-Type') || '',
+                    body: text,
+                  };
+                });
+              })
+              .then(function (result) {
+                const statusLine = 'Status: ' + result.status + (result.ok ? '' : ' (error)');
+                const formatLine = 'InfoFormat: ' + infoFormat;
+                const contentTypeLine = 'Content-Type: ' + (result.contentType || 'unknown');
+                const requestLine = 'Request URL: ' + url;
+                featureInfo.setContent(
+                  statusLine +
+                  '\n' +
+                  formatLine +
+                  '\n' +
+                  contentTypeLine +
+                  '\n' +
+                  requestLine +
+                  '\n\n' +
+                  result.body
+                );
+              })
+              .catch(function (error) {
+                featureInfo.setContent('GetFeatureInfo request failed: ' + error);
+              });
+          });
 
           updateLayerInUrl();
         });

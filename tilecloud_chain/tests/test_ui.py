@@ -74,3 +74,14 @@ def test_openlayers_grid_selector_handles_projection_change():
     assert "transformedExtent = transformExtentSafe(" in content
     assert "nextView.fit(transformedExtent," in content
     assert "transformCenterSafe(currentCenter, currentProjectionCode, nextProjectionCode)" in content
+
+
+def test_openlayers_test_page_uses_wmts_getfeatureinfo_on_click():
+    content = (Path(__file__).parent.parent / "templates" / "openlayers.html").read_text()
+
+    assert "map.on('singleclick', function (event) {" in content
+    assert "source.getFeatureInfoUrl(event.coordinate, resolution, projection, {" in content
+    assert "'INFO_FORMAT': infoFormat," in content
+    assert "fetch(url)" in content
+    assert "Feature info" in content
+    assert "Request URL: " in content
