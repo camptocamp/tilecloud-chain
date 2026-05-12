@@ -302,6 +302,26 @@ The ``cmd`` can have the following optional argument:
 -  ``in``, ``out`` the input and output files.
 -  ``x``, ``y``, ``z`` the tile coordinates.
 
+To optimize output images, configure both:
+
+- ``post_process`` on each layer to run external tools (for example ``optipng`` or ``jpegoptim``), and
+- ``meta_save_options`` on each layer to pass Pillow save options when splitting meta-tiles.
+
+Example:
+
+.. code:: yaml
+
+    layers:
+      plan:
+        post_process: optipng
+        meta_save_options:
+          optimize: true
+      ortho:
+        post_process: jpegoptim
+        meta_save_options:
+          optimize: true
+          quality: 90
+
 Logging
 ~~~~~~~
 
