@@ -85,3 +85,13 @@ def test_openlayers_test_page_uses_wmts_getfeatureinfo_on_click():
     assert "fetch(url)" in content
     assert "Feature info" in content
     assert "Request URL: " in content
+
+
+def test_openlayers_test_page_displays_zoom_dependent_legend_when_available():
+    content = (Path(__file__).parent.parent / "templates" / "openlayers.html").read_text()
+
+    assert "const getLayerLegendDefinitions = function (wmtsLayer, wmtsOptions)" in content
+    assert "legendDefinitions: layerLegendDefinitions," in content
+    assert "const getLegendForScale = function (legendDefinitions, scaleDenominator)" in content
+    assert "legendLabel.textContent = 'Legend (zoom)';" in content
+    assert "legendImage.src = selectedLegend.href;" in content
