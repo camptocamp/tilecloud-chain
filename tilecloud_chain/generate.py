@@ -419,11 +419,11 @@ class Generate:
             if self._options.role == "master":
                 assert self._count_tiles
                 message.append(f"Nb of generated jobs: {self._count_tiles.nb}")
-            elif self._options.role == "slave":
+            if self._options.role == "slave" and not self._options.tiles:
                 assert self._count_meta_tiles is not None
                 message.append(f"Nb of consumed jobs: {self._count_meta_tiles.nb}")
 
-            elif layer.get("meta") if layer is not None else self._options.role == "slave":
+            if layer.get("meta") if layer is not None else self._options.role == "slave":
                 assert self._count_meta_tiles is not None
                 assert self._count_metatiles_dropped is not None
                 message += [
