@@ -83,11 +83,18 @@ layers:
   plan:
     <<: *layer
     layers: plan
+    post_process: optipng
+    meta_save_options:
+      optimize: true
   ortho:
     <<: *layer
     layers: ortho
     extension: jpeg
     mime_type: image/jpeg
+    post_process: jpegoptim
+    meta_save_options:
+      optimize: true
+      quality: 90
     # no buffer needed on rater sources
     meta_buffer: 0
     empty_metatile_detection:

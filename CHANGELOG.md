@@ -14,6 +14,8 @@
 - In `/tiles/admin/test` add layer dimension selectors.
 - Batch PostgreSQL queue inserts (default 10,000 rows) for large metatile pyramids and add `TILECLOUD_CHAIN__POSTGRESQL__QUEUE_INSERT_BATCH_SIZE` to configure batch size.
 - Use WMTS GetFeatureInfo in the `/admin/test` OpenLayers page by querying the active layer on map click and showing the response in a feature info panel.
+- Update example tilegeneration configs to enable tile optimization (`post_process` with `optipng`/`jpegoptim` and Pillow `meta_save_options`).
+- Document how to combine `post_process` and `meta_save_options` to optimize PNG/JPEG tiles.
 
 Environment variable migration (legacy -> new)
 
