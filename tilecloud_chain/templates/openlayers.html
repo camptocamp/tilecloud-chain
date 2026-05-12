@@ -332,10 +332,10 @@
             }
 
             const minScaleDenominator = toFiniteNumber(
-              legendUrl.minScaleDenominator || legendUrl.MinScaleDenominator
+              legendUrl.minScaleDenominator ?? legendUrl.MinScaleDenominator
             );
             const maxScaleDenominator = toFiniteNumber(
-              legendUrl.maxScaleDenominator || legendUrl.MaxScaleDenominator
+              legendUrl.maxScaleDenominator ?? legendUrl.MaxScaleDenominator
             );
 
             return {
