@@ -78,6 +78,9 @@ To start the common attributes are:
 
 ``bbox`` used to limit the tiles generation.
 
+When generating WMTS capabilities, if a layer ``bbox`` is defined, it is also used to publish
+``TileMatrixSetLimits`` in each ``TileMatrixSetLink`` for that layer.
+
 ``px_buffer`` a buffer in px around the object area (geoms or extent).
 
 WMTS layout

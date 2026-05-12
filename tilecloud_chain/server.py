@@ -522,6 +522,7 @@ class Server:
                         "has_provider": "provider" in config.config,
                         "provider": config.config.get("provider"),
                         "get_grid_names": tilecloud_chain.get_grid_names,
+                        "get_tile_matrix_limits": tilecloud_chain.get_tile_matrix_limits,
                         "enumerate": enumerate,
                         "ceil": math.ceil,
                         "int": int,

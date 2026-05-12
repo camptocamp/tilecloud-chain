@@ -537,6 +537,57 @@ def get_grid_names(
     return grid_names
 
 
+def get_tile_matrix_limits(
+    config: DatedConfig,
+    layer_name: str,
+    grid_name: str,
+) -> list[dict[str, int | str]]:
+    """Get WMTS tile matrix limits for a layer and grid."""
+    layer = config.config["layers"][layer_name]
+    if "bbox" not in layer:
+        return []
+
+    grid = config.config["grids"][grid_name]
+    layer_bbox = [float(value) for value in layer["bbox"]]
+    if (
+        "proj4_literal" in layer
+        and "proj4_literal" in grid
+        and layer["proj4_literal"] != grid["proj4_literal"]
+    ):
+        layer_bbox = transform_bbox(layer["proj4_literal"], grid["proj4_literal"], layer_bbox)
+
+    grid_bbox = [float(value) for value in grid["bbox"]]
+    min_x = max(layer_bbox[0], grid_bbox[0])
+    min_y = max(layer_bbox[1], grid_bbox[1])
+    max_x = min(layer_bbox[2], grid_bbox[2])
+    max_y = min(layer_bbox[3], grid_bbox[3])
+    if min_x >= max_x or min_y >= max_y:
+        return []
+
+    tile_size = float(grid.get("tile_size", configuration.TILE_SIZE_DEFAULT))
+    limits: list[dict[str, int | str]] = []
+    for zoom, resolution in enumerate(grid["resolutions"]):
+        tile_span = float(resolution) * tile_size
+        matrix_width = math.ceil((grid_bbox[2] - grid_bbox[0]) / tile_span)
+        matrix_height = math.ceil((grid_bbox[3] - grid_bbox[1]) / tile_span)
+
+        min_tile_col = math.floor((min_x - grid_bbox[0]) / tile_span)
+        max_tile_col = math.ceil((max_x - grid_bbox[0]) / tile_span) - 1
+        min_tile_row = math.floor((grid_bbox[3] - max_y) / tile_span)
+        max_tile_row = math.ceil((grid_bbox[3] - min_y) / tile_span) - 1
+
+        limits.append(
+            {
+                "tile_matrix": get_tile_matrix_identifier(grid, resolution=float(resolution), zoom=zoom),
+                "min_tile_row": max(0, min(matrix_height - 1, min_tile_row)),
+                "max_tile_row": max(0, min(matrix_height - 1, max_tile_row)),
+                "min_tile_col": max(0, min(matrix_width - 1, min_tile_col)),
+                "max_tile_col": max(0, min(matrix_width - 1, max_tile_col)),
+            },
+        )
+    return limits
+
+
 def get_proj4_literal(srs: int) -> str:
     """Get the proj4 literal for a given SRS."""
     # Map known SRS values to their proj4 literals

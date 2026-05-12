@@ -164,6 +164,43 @@ class TestController(CompareCase):
             """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
+        <TileMatrixSetLimits>
+          <TileMatrixLimits>
+            <TileMatrix>0</TileMatrix>
+            <MinTileRow>6</MinTileRow>
+            <MaxTileRow>7</MaxTileRow>
+            <MinTileCol>5</MinTileCol>
+            <MaxTileCol>5</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>1</TileMatrix>
+            <MinTileRow>13</MinTileRow>
+            <MaxTileRow>14</MaxTileRow>
+            <MinTileCol>10</MinTileCol>
+            <MaxTileCol>10</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>2</TileMatrix>
+            <MinTileRow>33</MinTileRow>
+            <MaxTileRow>35</MaxTileRow>
+            <MinTileCol>25</MinTileCol>
+            <MaxTileCol>27</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>3</TileMatrix>
+            <MinTileRow>66</MinTileRow>
+            <MaxTileRow>70</MaxTileRow>
+            <MinTileCol>50</MinTileCol>
+            <MaxTileCol>54</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>4</TileMatrix>
+            <MinTileRow>132</MinTileRow>
+            <MaxTileRow>140</MaxTileRow>
+            <MinTileCol>101</MinTileCol>
+            <MaxTileCol>109</MaxTileCol>
+          </TileMatrixLimits>
+        </TileMatrixSetLimits>
       </TileMatrixSetLink>
     </Layer>
 
@@ -613,6 +650,43 @@ class TestController(CompareCase):
         r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
+        <TileMatrixSetLimits>
+          <TileMatrixLimits>
+            <TileMatrix>0</TileMatrix>
+            <MinTileRow>6</MinTileRow>
+            <MaxTileRow>7</MaxTileRow>
+            <MinTileCol>5</MinTileCol>
+            <MaxTileCol>5</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>1</TileMatrix>
+            <MinTileRow>13</MinTileRow>
+            <MaxTileRow>14</MaxTileRow>
+            <MinTileCol>10</MinTileCol>
+            <MaxTileCol>10</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>2</TileMatrix>
+            <MinTileRow>33</MinTileRow>
+            <MaxTileRow>35</MaxTileRow>
+            <MinTileCol>25</MinTileCol>
+            <MaxTileCol>27</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>3</TileMatrix>
+            <MinTileRow>66</MinTileRow>
+            <MaxTileRow>70</MaxTileRow>
+            <MinTileCol>50</MinTileCol>
+            <MaxTileCol>54</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>4</TileMatrix>
+            <MinTileRow>132</MinTileRow>
+            <MaxTileRow>140</MaxTileRow>
+            <MinTileCol>101</MinTileCol>
+            <MaxTileCol>109</MaxTileCol>
+          </TileMatrixLimits>
+        </TileMatrixSetLimits>
       </TileMatrixSetLink>
     </Layer>
 
@@ -1920,6 +1994,43 @@ sqs:
             r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
+        <TileMatrixSetLimits>
+          <TileMatrixLimits>
+            <TileMatrix>0</TileMatrix>
+            <MinTileRow>6</MinTileRow>
+            <MaxTileRow>7</MaxTileRow>
+            <MinTileCol>5</MinTileCol>
+            <MaxTileCol>5</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>1</TileMatrix>
+            <MinTileRow>13</MinTileRow>
+            <MaxTileRow>14</MaxTileRow>
+            <MinTileCol>10</MinTileCol>
+            <MaxTileCol>10</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>2</TileMatrix>
+            <MinTileRow>33</MinTileRow>
+            <MaxTileRow>35</MaxTileRow>
+            <MinTileCol>25</MinTileCol>
+            <MaxTileCol>27</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>3</TileMatrix>
+            <MinTileRow>66</MinTileRow>
+            <MaxTileRow>70</MaxTileRow>
+            <MinTileCol>50</MinTileCol>
+            <MaxTileCol>54</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>4</TileMatrix>
+            <MinTileRow>132</MinTileRow>
+            <MaxTileRow>140</MaxTileRow>
+            <MinTileCol>101</MinTileCol>
+            <MaxTileCol>109</MaxTileCol>
+          </TileMatrixLimits>
+        </TileMatrixSetLimits>
       </TileMatrixSetLink>
     </Layer>
 
@@ -2126,6 +2237,43 @@ sqs:
             r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
+        <TileMatrixSetLimits>
+          <TileMatrixLimits>
+            <TileMatrix>0</TileMatrix>
+            <MinTileRow>6</MinTileRow>
+            <MaxTileRow>7</MaxTileRow>
+            <MinTileCol>5</MinTileCol>
+            <MaxTileCol>5</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>1</TileMatrix>
+            <MinTileRow>13</MinTileRow>
+            <MaxTileRow>14</MaxTileRow>
+            <MinTileCol>10</MinTileCol>
+            <MaxTileCol>10</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>2</TileMatrix>
+            <MinTileRow>33</MinTileRow>
+            <MaxTileRow>35</MaxTileRow>
+            <MinTileCol>25</MinTileCol>
+            <MaxTileCol>27</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>3</TileMatrix>
+            <MinTileRow>66</MinTileRow>
+            <MaxTileRow>70</MaxTileRow>
+            <MinTileCol>50</MinTileCol>
+            <MaxTileCol>54</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>4</TileMatrix>
+            <MinTileRow>132</MinTileRow>
+            <MaxTileRow>140</MaxTileRow>
+            <MinTileCol>101</MinTileCol>
+            <MaxTileCol>109</MaxTileCol>
+          </TileMatrixLimits>
+        </TileMatrixSetLimits>
       </TileMatrixSetLink>
     </Layer>
 
@@ -2325,6 +2473,43 @@ sqs:
             r"""{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid</TileMatrixSet>
+        <TileMatrixSetLimits>
+          <TileMatrixLimits>
+            <TileMatrix>0</TileMatrix>
+            <MinTileRow>6</MinTileRow>
+            <MaxTileRow>7</MaxTileRow>
+            <MinTileCol>5</MinTileCol>
+            <MaxTileCol>5</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>1</TileMatrix>
+            <MinTileRow>13</MinTileRow>
+            <MaxTileRow>14</MaxTileRow>
+            <MinTileCol>10</MinTileCol>
+            <MaxTileCol>10</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>2</TileMatrix>
+            <MinTileRow>33</MinTileRow>
+            <MaxTileRow>35</MaxTileRow>
+            <MinTileCol>25</MinTileCol>
+            <MaxTileCol>27</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>3</TileMatrix>
+            <MinTileRow>66</MinTileRow>
+            <MaxTileRow>70</MaxTileRow>
+            <MinTileCol>50</MinTileCol>
+            <MaxTileCol>54</MaxTileCol>
+          </TileMatrixLimits>
+          <TileMatrixLimits>
+            <TileMatrix>4</TileMatrix>
+            <MinTileRow>132</MinTileRow>
+            <MaxTileRow>140</MaxTileRow>
+            <MinTileCol>101</MinTileCol>
+            <MaxTileCol>109</MaxTileCol>
+          </TileMatrixLimits>
+        </TileMatrixSetLimits>
       </TileMatrixSetLink>
     </Layer>
 
