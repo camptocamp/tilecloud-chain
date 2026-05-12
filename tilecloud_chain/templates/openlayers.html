@@ -148,6 +148,25 @@
         width: 100%;
       }
 
+      .layer-panel-legend {
+        margin-top: 0.5em;
+        display: grid;
+        gap: 0.35em;
+      }
+
+      .layer-panel-legend-label {
+        font-size: 0.8em;
+        opacity: 0.8;
+      }
+
+      .layer-panel-legend-image {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 0.25em;
+        background: rgba(255, 255, 255, 0.75);
+      }
+
       @media (prefers-color-scheme: dark) {
         body {
           background-color: #444;
@@ -265,6 +284,72 @@
         return [wmtsLayer.InfoFormat];
       };
 
+      const getLegendUrls = function (legendUrls) {
+        if (!legendUrls) {
+          return [];
+        }
+        if (Array.isArray(legendUrls)) {
+          return legendUrls;
+        }
+        return [legendUrls];
+      };
+
+      const toFiniteNumber = function (value) {
+        if (value === undefined || value === null || value === '') {
+          return null;
+        }
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+      };
+
+      const getLayerLegendDefinitions = function (wmtsLayer, wmtsOptions) {
+        const styles = Array.isArray(wmtsLayer.Style)
+          ? wmtsLayer.Style
+          : (wmtsLayer.Style ? [wmtsLayer.Style] : []);
+        if (styles.length === 0) {
+          return [];
+        }
+
+        const selectedStyleIdentifier = wmtsOptions && wmtsOptions.style ? wmtsOptions.style : null;
+        const selectedStyle =
+          styles.find(function (style) {
+            return style && style.Identifier === selectedStyleIdentifier;
+          }) ||
+          styles.find(function (style) {
+            return style && style.isDefault;
+          }) ||
+          styles[0];
+
+        return getLegendUrls(selectedStyle ? selectedStyle.LegendURL : null)
+          .map(function (legendUrl) {
+            const href =
+              legendUrl.href ||
+              legendUrl.Href ||
+              legendUrl['xlink:href'] ||
+              null;
+            if (!href) {
+              return null;
+            }
+
+            const minScaleDenominator = toFiniteNumber(
+              legendUrl.minScaleDenominator || legendUrl.MinScaleDenominator
+            );
+            const maxScaleDenominator = toFiniteNumber(
+              legendUrl.maxScaleDenominator || legendUrl.MaxScaleDenominator
+            );
+
+            return {
+              href: href,
+              format: legendUrl.format || legendUrl.Format || null,
+              minScaleDenominator: minScaleDenominator,
+              maxScaleDenominator: maxScaleDenominator,
+            };
+          })
+          .filter(function (legendUrl) {
+            return legendUrl !== null;
+          });
+      };
+
       const getLayerGridDefinitions = function (result, wmtsLayer) {
         const links = wmtsLayer.TileMatrixSetLink || [];
         const definitions = links
@@ -349,6 +434,7 @@
             const layerDefaultDimensions = getLayerDefaultDimensions(wmtsLayer);
             const layerDimensionDefinitions = getLayerDimensionDefinitions(wmtsLayer);
             const layerInfoFormats = getLayerInfoFormats(wmtsLayer);
+            const layerLegendDefinitions = getLayerLegendDefinitions(wmtsLayer, options);
             const sourceDimensions = {
               ...layerDefaultDimensions,
               ...(options.dimensions || {}),
@@ -370,6 +456,7 @@
                 name: wmtsLayer.Identifier,
                 dimensionDefinitions: layerDimensionDefinitions,
                 infoFormats: layerInfoFormats,
+                legendDefinitions: layerLegendDefinitions,
                 gridDefinitions: gridDefinitions,
                 selectedGridId: selectedGridDefinition.id,
               })
@@ -524,6 +611,62 @@
             debugLayer.setSource(new ol.source.TileDebug(tileGridOptions));
           };
 
+          const getScaleDenominatorForView = function (view) {
+            if (!view) {
+              return null;
+            }
+            const resolution = view.getResolution();
+            const projection = view.getProjection();
+            if (resolution === undefined || !projection) {
+              return null;
+            }
+            const metersPerUnit = projection.getMetersPerUnit();
+            if (!metersPerUnit) {
+              return null;
+            }
+            return (resolution * metersPerUnit) / 0.00028;
+          };
+
+          const getLegendForScale = function (legendDefinitions, scaleDenominator) {
+            if (!Array.isArray(legendDefinitions) || legendDefinitions.length === 0) {
+              return null;
+            }
+
+            const matchingLegends = legendDefinitions.filter(function (legendDefinition) {
+              if (scaleDenominator === null) {
+                return true;
+              }
+              if (
+                legendDefinition.minScaleDenominator !== null &&
+                scaleDenominator < legendDefinition.minScaleDenominator
+              ) {
+                return false;
+              }
+              if (
+                legendDefinition.maxScaleDenominator !== null &&
+                scaleDenominator > legendDefinition.maxScaleDenominator
+              ) {
+                return false;
+              }
+              return true;
+            });
+            if (matchingLegends.length === 0) {
+              return null;
+            }
+
+            matchingLegends.sort(function (legendA, legendB) {
+              const spanA =
+                (legendA.maxScaleDenominator === null ? Number.POSITIVE_INFINITY : legendA.maxScaleDenominator) -
+                (legendA.minScaleDenominator === null ? 0 : legendA.minScaleDenominator);
+              const spanB =
+                (legendB.maxScaleDenominator === null ? Number.POSITIVE_INFINITY : legendB.maxScaleDenominator) -
+                (legendB.minScaleDenominator === null ? 0 : legendB.minScaleDenominator);
+              return spanA - spanB;
+            });
+
+            return matchingLegends[0];
+          };
+
           if (!layers.some(function (layer) { return layer.get('type') === 'base' && layer.getVisible(); })) {
             const firstBaseLayer = layers.find(function (layer) {
               return layer.get('type') === 'base';
@@ -661,6 +804,7 @@
                 item.appendChild(row);
 
                 const dimensionDefinitions = layer.get('dimensionDefinitions') || [];
+                const legendDefinitions = layer.get('legendDefinitions') || [];
                 const gridDefinitions = layer.get('gridDefinitions') || [];
                 const selectedGridId = layer.get('selectedGridId');
                 const selectedGridDefinition = getSelectedGridDefinition(layer);
@@ -774,6 +918,29 @@
                   item.appendChild(dimensionsContainer);
                 }
 
+                if (isVisible && legendDefinitions.length > 0) {
+                  const legendContainer = document.createElement('div');
+                  legendContainer.className = 'layer-panel-legend';
+
+                  const legendLabel = document.createElement('div');
+                  legendLabel.className = 'layer-panel-legend-label';
+                  legendLabel.textContent = 'Legend (zoom)';
+                  legendContainer.appendChild(legendLabel);
+
+                  const selectedLegend = getLegendForScale(
+                    legendDefinitions,
+                    getScaleDenominatorForView(map.getView())
+                  );
+                  if (selectedLegend && selectedLegend.href) {
+                    const legendImage = document.createElement('img');
+                    legendImage.className = 'layer-panel-legend-image';
+                    legendImage.src = selectedLegend.href;
+                    legendImage.alt = layerTitle + ' legend';
+                    legendContainer.appendChild(legendImage);
+                    item.appendChild(legendContainer);
+                  }
+                }
+
                 list.appendChild(item);
               });
             };
@@ -821,13 +988,16 @@
             window.history.replaceState(history.state, '', url);
           };
 
-          map.getLayerGroup().on('change', function () {
-            updateLayerInUrl();
-          });
-
           const panel = createPanelControl();
           map.addControl(panel.control);
           panel.render();
+
+          map.getLayerGroup().on('change', function () {
+            updateLayerInUrl();
+          });
+          map.on('moveend', function () {
+            panel.render();
+          });
 
           const createFeatureInfoControl = function () {
             const element = document.createElement('div');
