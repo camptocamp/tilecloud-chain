@@ -13,6 +13,7 @@
 - Fix PostgreSQL queue cleanup on generation errors so child tiles release their parent metatile queue item instead of failing with missing `postgresql_id`.
 - In `/tiles/admin/test` add layer dimension selectors.
 - Batch PostgreSQL queue inserts (default 10,000 rows) for large metatile pyramids and add `TILECLOUD_CHAIN__POSTGRESQL__QUEUE_INSERT_BATCH_SIZE` to configure batch size.
+- Use WMTS GetFeatureInfo in the `/admin/test` OpenLayers page by querying the active layer on map click and showing the response in a feature info panel.
 
 Environment variable migration (legacy -> new)
 

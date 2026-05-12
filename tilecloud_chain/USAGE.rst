@@ -841,3 +841,6 @@ The test page stores its current state in the URL query string, so you can share
 - ``y``: center Y coordinate
 - ``z``: zoom level
 - ``layer``: selected WMTS layer identifier
+
+In the test page, clicking on the map sends a WMTS GetFeatureInfo request on the active layer (if queryable)
+and displays the response in a "Feature info" panel.
