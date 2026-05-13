@@ -206,6 +206,19 @@ class Generate:
                 )
                 sys.exit(1)
 
+        if self._options.tile:
+            try:
+                tilecoord = parse_tilecoord(self._options.tile)
+                grid_name = tilecloud_chain.get_grid_name(config, layer_name, self._options.grid)
+                self._gene.set_tilecoords(config, {grid_name: [tilecoord]}, layer_name)
+            except ValueError:
+                _LOGGER.exception(
+                    "Tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n",
+                    self._options.tile,
+                )
+                sys.exit(1)
+            return
+
         if self._options.role in ("local", "master"):
             # Generate a stream of metatiles
             self._gene.init_tilecoords(config, layer_name, self._options.grid)
@@ -662,6 +675,11 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
             help="Generate the tiles from a tiles file, use the format z/x/y, or z/x/y:+n/+n for metatiles",
         )
         parser.add_argument(
+            "--tile",
+            metavar="TILE",
+            help="Generate a specific tile, use the format z/x/y, or z/x/y:+n/+n for metatiles",
+        )
+        parser.add_argument(
             "--job-id",
             help="The job id in case of Postgres queue",
             type=int,
@@ -709,8 +727,20 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
                     configuration.DEFAULT_CACHE_DEFAULT,
                 )
 
+        if options.tiles is not None and options.tile is not None:
+            _LOGGER.error("The --tile and --tiles options are mutually exclusive")
+            sys.exit(1)
+
         if options.tiles is not None and options.role not in ["local", "master"]:
             _LOGGER.error("The --tiles option work only with role local or master")
+            sys.exit(1)
+
+        if options.tile is not None and options.role not in ["local", "master"]:
+            _LOGGER.error("The --tile option work only with role local or master")
+            sys.exit(1)
+
+        if options.tile is not None and options.layer is None:
+            _LOGGER.error("With --tile option you need to specify a layer")
             sys.exit(1)
 
         try:

@@ -97,6 +97,61 @@ class TestGenerate(CompareCase):
                 log_capture.check()
 
     @pytest.mark.asyncio
+    async def test_tile_option_metatile(self) -> None:
+        for d in ("-d", ""):
+            await self.assert_tiles_generated(
+                cmd=(
+                    f".build/venv/bin/generate-tiles {d} -q -c tilegeneration/test-nosns.yaml "
+                    "-l point_hash --tile 0/0/0:+8/+8"
+                ),
+                main_func=generate.async_main,
+                directory="/tmp/tiles/",
+                tiles_pattern="1.0.0/%s/default/2012/swissgrid_5/%i/%i/%i.png",
+                tiles=[("point_hash", 0, 5, 7), ("point_hash", 0, 7, 4)],
+            )
+
+    @pytest.mark.asyncio
+    async def test_tile_option_single_tile(self) -> None:
+        for d in ("-d", ""):
+            await self.assert_tiles_generated(
+                cmd=(
+                    f".build/venv/bin/generate-tiles {d} -q -c tilegeneration/test-nosns.yaml "
+                    "-l polygon --tile 0/6/5"
+                ),
+                main_func=generate.async_main,
+                directory="/tmp/tiles/",
+                tiles_pattern="1.0.0/polygon/default/2012/swissgrid_5/0/%i/%i.png",
+                tiles=[(5, 6)],
+            )
+
+    @pytest.mark.asyncio
+    async def test_tile_option_errors(self) -> None:
+        with LogCapture("tilecloud_chain") as log_capture:
+            await self.assert_cmd_exit_equals(
+                cmd=".build/venv/bin/generate-tiles -q -c tilegeneration/test-nosns.yaml --tile 0/0/0",
+                main_func=generate.async_main,
+            )
+            await self.assert_cmd_exit_equals(
+                cmd=(
+                    ".build/venv/bin/generate-tiles -q -c tilegeneration/test-nosns.yaml "
+                    "-l point_hash --tiles error.list --tile 0/0/0"
+                ),
+                main_func=generate.async_main,
+            )
+            log_capture.check_present(
+                (
+                    "tilecloud_chain.generate",
+                    "ERROR",
+                    "With --tile option you need to specify a layer",
+                ),
+                (
+                    "tilecloud_chain.generate",
+                    "ERROR",
+                    "The --tile and --tiles options are mutually exclusive",
+                ),
+            )
+
+    @pytest.mark.asyncio
     async def test_hash_mapnik(self):
         for d in ("-d", ""):
             with LogCapture("tilecloud_chain", level=30) as log_capture:

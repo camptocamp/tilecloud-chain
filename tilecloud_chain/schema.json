@@ -1202,6 +1202,7 @@
             "--get-hash",
             "--generate-legend-images",
             "--get-bbox",
+            "--tile",
             "--ignore-error",
             "--bbox",
             "--zoom",

@@ -17,6 +17,8 @@
 - Update example tilegeneration configs to enable tile optimization (`post_process` with `optipng`/`jpegoptim` and Pillow `meta_save_options`).
 - Document how to combine `post_process` and `meta_save_options` to optimize PNG/JPEG tiles.
 - Add `TileMatrixSetLimits` entries in WMTS capabilities when a layer defines a `bbox`, so clients can restrict tile requests to the advertised extent.
+- Add `generate-tiles --tile <z/x/y>` support to generate a specific tile or metatile without preparing a tiles file.
+- Expose `--tile` in admin command validation and command help examples.
 
 Environment variable migration (legacy -> new)
 

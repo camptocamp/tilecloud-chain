@@ -642,7 +642,22 @@ Generate tiles from an (error) tiles file:
 
 .. prompt:: bash
 
-    generate-tiles --layer <a_layer> --tiles <z/x/y>
+    generate-tiles --layer <a_layer> --tiles <path/to/error.list>
+
+Generate a specific tile:
+
+.. prompt:: bash
+
+    generate-tiles --layer <a_layer> --tile <z/x/y>
+
+Generate a specific metatile:
+
+.. prompt:: bash
+
+    generate-tiles --layer <a_layer> --tile <z/x/y:+n/+n>
+
+In the admin page command form, this option is available as well if ``--tile`` is in
+``server.allowed_arguments`` (it is included by default).
 
 Generate tiles on a bbox:
 
