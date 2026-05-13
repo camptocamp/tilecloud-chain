@@ -280,6 +280,14 @@
       <code>generate-tiles --layer=LAYER --get-hash=15/0/0</code>: Get the hash for the <code>LAYER</code>.
     </p>
     <p><code>generate-tiles --layer=LAYER --get-bbox=0/0/0</code>: Get the bbox of the tile.</p>
+    <p>
+      <code>generate-tiles --layer=LAYER --tile=Z/X/Y</code>: Generate one specific tile of the
+      <code>LAYER</code>.
+    </p>
+    <p>
+      <code>generate-tiles --layer=LAYER --tile=Z/X/Y:+N/+N</code>: Generate one specific metatile of the
+      <code>LAYER</code>.
+    </p>
 
     <h4><code>generate-tiles</code></h4>
     <p>Generate the tiles.</p>
@@ -295,6 +303,10 @@
       <li>
         <code>--get-bbox=Z/X/Y[:-N/+N]</code>: get the bbox of a tile, use the specified tile
         <code>Z/X/Y</code>, or <code>Z/X/Y:+N/+N</code> for metatiles (requires <code>--layer</code>).
+      </li>
+      <li><code>--tile=Z/X/Y</code>: generate the specified tile (requires <code>--layer</code>).</li>
+      <li>
+        <code>--tile=Z/X/Y:+N/+N</code>: generate the specified metatile (requires <code>--layer</code>).
       </li>
       <li>
         <code>--dimensions DIMENSION=VALUE [DIMENSION=VALUE ...]</code>: overwrite the dimensions values
