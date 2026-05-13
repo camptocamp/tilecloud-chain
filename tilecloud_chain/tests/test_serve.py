@@ -334,6 +334,43 @@ class TestServe(CompareCase):
                 """{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
+          <TileMatrixSetLimits>
+            <TileMatrixLimits>
+              <TileMatrix>0</TileMatrix>
+              <MinTileRow>6</MinTileRow>
+              <MaxTileRow>7</MaxTileRow>
+              <MinTileCol>5</MinTileCol>
+              <MaxTileCol>5</MaxTileCol>
+            </TileMatrixLimits>
+            <TileMatrixLimits>
+              <TileMatrix>1</TileMatrix>
+              <MinTileRow>13</MinTileRow>
+              <MaxTileRow>14</MaxTileRow>
+              <MinTileCol>10</MinTileCol>
+              <MaxTileCol>10</MaxTileCol>
+            </TileMatrixLimits>
+            <TileMatrixLimits>
+              <TileMatrix>2</TileMatrix>
+              <MinTileRow>33</MinTileRow>
+              <MaxTileRow>35</MaxTileRow>
+              <MinTileCol>25</MinTileCol>
+              <MaxTileCol>27</MaxTileCol>
+            </TileMatrixLimits>
+            <TileMatrixLimits>
+              <TileMatrix>3</TileMatrix>
+              <MinTileRow>66</MinTileRow>
+              <MaxTileRow>70</MaxTileRow>
+              <MinTileCol>50</MinTileCol>
+              <MaxTileCol>54</MaxTileCol>
+            </TileMatrixLimits>
+            <TileMatrixLimits>
+              <TileMatrix>4</TileMatrix>
+              <MinTileRow>132</MinTileRow>
+              <MaxTileRow>140</MaxTileRow>
+              <MinTileCol>101</MinTileCol>
+              <MaxTileCol>109</MaxTileCol>
+            </TileMatrixLimits>
+          </TileMatrixSetLimits>
         </TileMatrixSetLink>
       </Layer>
 
@@ -553,6 +590,43 @@ class TestServe(CompareCase):
                      template="http://wmts1/tiles/1.0.0/point_webp/default/{DATE}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.webp" />
         <TileMatrixSetLink>
           <TileMatrixSet>swissgrid_5</TileMatrixSet>
+          <TileMatrixSetLimits>
+            <TileMatrixLimits>
+              <TileMatrix>0</TileMatrix>
+              <MinTileRow>7</MinTileRow>
+              <MaxTileRow>12</MaxTileRow>
+              <MinTileCol>0</MinTileCol>
+              <MaxTileCol>7</MaxTileCol>
+            </TileMatrixLimits>
+            <TileMatrixLimits>
+              <TileMatrix>1</TileMatrix>
+              <MinTileRow>15</MinTileRow>
+              <MaxTileRow>24</MaxTileRow>
+              <MinTileCol>0</MinTileCol>
+              <MaxTileCol>14</MaxTileCol>
+            </TileMatrixLimits>
+            <TileMatrixLimits>
+              <TileMatrix>2</TileMatrix>
+              <MinTileRow>39</MinTileRow>
+              <MaxTileRow>62</MaxTileRow>
+              <MinTileCol>0</MinTileCol>
+              <MaxTileCol>35</MaxTileCol>
+            </TileMatrixLimits>
+            <TileMatrixLimits>
+              <TileMatrix>3</TileMatrix>
+              <MinTileRow>78</MinTileRow>
+              <MaxTileRow>124</MaxTileRow>
+              <MinTileCol>0</MinTileCol>
+              <MaxTileCol>70</MaxTileCol>
+            </TileMatrixLimits>
+            <TileMatrixLimits>
+              <TileMatrix>4</TileMatrix>
+              <MinTileRow>156</MinTileRow>
+              <MaxTileRow>249</MaxTileRow>
+              <MinTileCol>0</MinTileCol>
+              <MaxTileCol>140</MaxTileCol>
+            </TileMatrixLimits>
+          </TileMatrixSetLimits>
         </TileMatrixSetLink>
       </Layer>
 

@@ -16,6 +16,7 @@
 - Use WMTS GetFeatureInfo in the `/admin/test` OpenLayers page by querying the active layer on map click and showing the response in a feature info panel.
 - Update example tilegeneration configs to enable tile optimization (`post_process` with `optipng`/`jpegoptim` and Pillow `meta_save_options`).
 - Document how to combine `post_process` and `meta_save_options` to optimize PNG/JPEG tiles.
+- Add `TileMatrixSetLimits` entries in WMTS capabilities when a layer defines a `bbox`, so clients can restrict tile requests to the advertised extent.
 
 Environment variable migration (legacy -> new)
 
