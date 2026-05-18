@@ -136,6 +136,8 @@ class Generate:
         if self._options.role in ("master", "slave") and not self._options.tiles:
             main_config = await self._gene.get_main_config()
             self._queue_tilestore = await get_queue_store(main_config, self._options.daemon)
+            if self._options.role == "master":
+                self._gene.init(self._queue_tilestore, daemon=self._options.daemon)
 
         if self._options.role in ("local", "master"):
             self._gene.add_geom_filter()

@@ -19,6 +19,7 @@
 - Add `TileMatrixSetLimits` entries in WMTS capabilities when a layer defines a `bbox`, so clients can restrict tile requests to the advertised extent.
 - Add `generate-tiles --tile <z/x/y>` support to generate a specific tile or metatile without preparing a tiles file.
 - Expose `--tile` in admin command validation and command help examples.
+- Restore per-zoom admin job status counters for PostgreSQL queue jobs by correctly wiring the master generation queue store.
 
 Environment variable migration (legacy -> new)
 
