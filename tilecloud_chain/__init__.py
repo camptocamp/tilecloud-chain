@@ -238,7 +238,7 @@ class Run:
     Manage the max_consecutive_errors.
     """
 
-    _re_rm_xml_tag = re.compile("(<[^>]*>|\n)")
+    _re_rm_xml_tag = re.compile("<[^>]*>")
     max_consecutive_errors: MaximumConsecutiveErrors | None
 
     def __init__(

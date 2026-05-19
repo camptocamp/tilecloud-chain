@@ -21,6 +21,7 @@
 - Expose `--tile` in admin command validation and command help examples.
 - Restore per-zoom admin job status counters for PostgreSQL queue jobs by correctly wiring the master generation queue store.
 - Fix `generate-controller --status` on PostgreSQL queue configurations so it reports job status instead of failing with a `KeyError`.
+- Keep WMS XML error newlines in tile error logs and remove extra spaces in the admin job status header `(date, status)` display.
 
 Environment variable migration (legacy -> new)
 
