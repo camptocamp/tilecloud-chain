@@ -20,6 +20,7 @@
 - Add `generate-tiles --tile <z/x/y>` support to generate a specific tile or metatile without preparing a tiles file.
 - Expose `--tile` in admin command validation and command help examples.
 - Restore per-zoom admin job status counters for PostgreSQL queue jobs by correctly wiring the master generation queue store.
+- Fix `generate-controller --status` on PostgreSQL queue configurations so it reports job status instead of failing with a `KeyError`.
 
 Environment variable migration (legacy -> new)
 
