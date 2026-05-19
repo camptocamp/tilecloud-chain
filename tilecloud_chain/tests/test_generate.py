@@ -53,6 +53,131 @@ async def test_master_initializes_tilegeneration_with_queue_store(monkeypatch: p
     gene.init.assert_called_once_with(queue_store, daemon=False)
 
 
+@pytest.mark.asyncio
+async def test_ensure_postgresql_job_id_uses_default_title(monkeypatch: pytest.MonkeyPatch) -> None:
+    queue_store = Mock()
+    queue_store.create_job = AsyncMock(return_value=42)
+    queue_store.close = AsyncMock()
+    monkeypatch.setattr(generate, "get_queue_store", AsyncMock(return_value=queue_store))
+
+    options = Namespace(
+        role="master",
+        job_id=None,
+        get_hash=None,
+        get_bbox=None,
+        tiles=None,
+        daemon=False,
+        job_title=None,
+    )
+    gene = Mock()
+    gene.get_main_config = AsyncMock(
+        return_value=SimpleNamespace(config={"queue_store": "postgresql"}, file=AnyioPath("config.yaml")),
+    )
+
+    await generate._ensure_postgresql_job_id(options, gene, ["generate-tiles", "--role", "master"])
+
+    assert options.job_id == 42
+    queue_store.create_job.assert_awaited_once_with(
+        "User call",
+        "generate-tiles --role master",
+        AnyioPath("config.yaml"),
+        initial_status="pending",
+    )
+
+
+@pytest.mark.asyncio
+async def test_ensure_postgresql_job_id_uses_custom_title(monkeypatch: pytest.MonkeyPatch) -> None:
+    queue_store = Mock()
+    queue_store.create_job = AsyncMock(return_value=84)
+    queue_store.close = AsyncMock()
+    monkeypatch.setattr(generate, "get_queue_store", AsyncMock(return_value=queue_store))
+
+    options = Namespace(
+        role="master",
+        job_id=None,
+        get_hash=None,
+        get_bbox=None,
+        tiles=None,
+        daemon=False,
+        job_title="custom-title",
+    )
+    gene = Mock()
+    gene.get_main_config = AsyncMock(
+        return_value=SimpleNamespace(config={"queue_store": "postgresql"}, file=AnyioPath("config.yaml")),
+    )
+
+    await generate._ensure_postgresql_job_id(options, gene, ["generate-tiles", "--role", "master"])
+
+    assert options.job_id == 84
+    queue_store.create_job.assert_awaited_once_with(
+        "custom-title",
+        "generate-tiles --role master",
+        AnyioPath("config.yaml"),
+        initial_status="pending",
+    )
+
+
+@pytest.mark.asyncio
+async def test_ensure_postgresql_job_id_removes_job_title_from_saved_command(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    queue_store = Mock()
+    queue_store.create_job = AsyncMock(return_value=84)
+    queue_store.close = AsyncMock()
+    monkeypatch.setattr(generate, "get_queue_store", AsyncMock(return_value=queue_store))
+
+    options = Namespace(
+        role="master",
+        job_id=None,
+        get_hash=None,
+        get_bbox=None,
+        tiles=None,
+        daemon=False,
+        job_title="custom-title",
+    )
+    gene = Mock()
+    gene.get_main_config = AsyncMock(
+        return_value=SimpleNamespace(config={"queue_store": "postgresql"}, file=AnyioPath("config.yaml")),
+    )
+
+    await generate._ensure_postgresql_job_id(
+        options,
+        gene,
+        ["/tmp/.build/venv/bin/generate-tiles", "--role", "master", "--job-title", "custom-title"],
+    )
+
+    queue_store.create_job.assert_awaited_once_with(
+        "custom-title",
+        "generate-tiles --role master",
+        AnyioPath("config.yaml"),
+        initial_status="pending",
+    )
+
+
+@pytest.mark.asyncio
+async def test_activate_postgresql_job(monkeypatch: pytest.MonkeyPatch) -> None:
+    queue_store = Mock()
+    queue_store.close = AsyncMock()
+    queue_store.start_job = AsyncMock()
+
+    options = Namespace(job_id=42)
+
+    await generate._activate_postgresql_job(options, queue_store)
+
+    queue_store.close.assert_awaited_once_with()
+    queue_store.start_job.assert_awaited_once_with(42)
+
+
+def test_normalize_job_command_arguments() -> None:
+    assert generate._normalize_job_command_arguments(
+        ["/tmp/.build/venv/bin/generate-tiles", "--role", "master", "--job-title", "my title"],
+    ) == ["generate-tiles", "--role", "master"]
+
+    assert generate._normalize_job_command_arguments(
+        ["/tmp/.build/venv/bin/generate-tiles", "--role", "master", "--job-title=my title"],
+    ) == ["generate-tiles", "--role", "master"]
+
+
 class TestGenerate(CompareCase):
     def setup_method(self) -> None:
         self.maxDiff = None
@@ -68,6 +193,16 @@ class TestGenerate(CompareCase):
         os.chdir(Path(__file__).parent.parent.parent)
         if Path("/tmp/tiles").exists():
             shutil.rmtree("/tmp/tiles")
+
+    @pytest.mark.asyncio
+    async def test_postgresql_master_job_id_and_job_title_are_mutually_exclusive(self) -> None:
+        await self.assert_cmd_exit_equals(
+            cmd=(
+                ".build/venv/bin/generate-tiles -c tilegeneration/test-postgresql.yaml "
+                "--role master -l point --job-id 1 --job-title custom-title"
+            ),
+            main_func=generate.async_main,
+        )
 
     @pytest.mark.asyncio
     async def test_get_hash(self) -> None:

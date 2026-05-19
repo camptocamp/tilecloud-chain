@@ -8,7 +8,7 @@
 ## Release 1.17
 
 1. Change the validator and parser => duplicate key generate an error: on/off are no more considered as boolean.
-2. The argument --layer is no more used when we use the parameter --tiles, we get the information from the
+2. The argument --layer=<a_layer> is no more used when we use the parameter --tiles=<path/to/file>, we get the information from the
    tiles file.
 3. Be able to mutualise the service.
 4. Add Azure blob storage

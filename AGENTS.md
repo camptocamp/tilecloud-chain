@@ -27,6 +27,12 @@ Branch names should not contain `/`.
 
 Use the long parameter names for clarity and maintainability.
 
+## CLI documentation
+
+In examples, use `--argument=value` style for single-value options.
+Keep space-separated values for multi-value options (for example
+`--bbox <MINX> <MINY> <MAXX> <MAXY>` and `--near <X> <Y>`).
+
 ## Dependencies
 
 In the `pyproject.toml` file the `project.dependencies` are managed automatically,

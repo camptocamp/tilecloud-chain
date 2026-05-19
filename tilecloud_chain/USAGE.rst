@@ -152,7 +152,7 @@ To easily generate this configuration we can use the following command:
 
 ::
 
-    generate-tiles --get-hash <z/x/y> -l <layer_name>
+    generate-tiles --get-hash=<z/x/y> --layer=<layer_name>
 
 Where ``<z/x/y>`` should refer to an empty tile/metatile. Generally it's a good idea to use z as the maximum
 zoom, x and y as 0.
@@ -354,7 +354,7 @@ If we set a file path in configuration file:
         error_file: <path>
 
 The tiles that's in error will be append to the file, ant the tiles can be regenerated with
-``generate-tiles --tiles <path>``.
+``generate-tiles --tiles=<path>``.
 
 The ``<path>`` can be ``/tmp/error_{layer}_{datetime:%Y-%m-%d_%H:%M:%S}`` to have one file per layer and per
 run.
@@ -478,20 +478,20 @@ To use the SQS queue we should first fill the queue:
 
 .. prompt:: bash
 
-    generate-tiles --role master --layer <a_layer>
+    generate-tiles --role=master --layer=<a_layer>
 
 And then generate the tiles present in the SQS queue:
 
 .. prompt:: bash
 
-    generate-tiles --role slave --layer <a_layer>
+    generate-tiles --role=slave --layer=<a_layer>
 
 For the slave to keep listening when the queue is empty and be able to support more than one layer, you must
 enable the daemon mode and must not specify the layer:
 
 .. prompt:: bash
 
-    generate-tiles --role slave --daemon
+    generate-tiles --role=slave --daemon
 
 Configure SNS
 ~~~~~~~~~~~~~
@@ -618,43 +618,43 @@ Generate a specific layer:
 
 .. prompt:: bash
 
-    generate-tiles --layer <a_layer>
+    generate-tiles --layer=<a_layer>
 
 Generate a specific zoom:
 
 .. prompt:: bash
 
-    generate-tiles --zoom 5
+    generate-tiles --zoom=5
 
 Generate a specific zoom range:
 
 .. prompt:: bash
 
-    generate-tiles --zoom 2-8
+    generate-tiles --zoom=2-8
 
 Generate a specific some zoom levels:
 
 .. prompt:: bash
 
-    generate-tiles --zoom 2,4,7
+    generate-tiles --zoom=2,4,7
 
 Generate tiles from an (error) tiles file:
 
 .. prompt:: bash
 
-    generate-tiles --layer <a_layer> --tiles <path/to/error.list>
+    generate-tiles --layer=<a_layer> --tiles=<path/to/error.list>
 
 Generate a specific tile:
 
 .. prompt:: bash
 
-    generate-tiles --layer <a_layer> --tile <z/x/y>
+    generate-tiles --layer=<a_layer> --tile=<z/x/y>
 
 Generate a specific metatile:
 
 .. prompt:: bash
 
-    generate-tiles --layer <a_layer> --tile <z/x/y:+n/+n>
+    generate-tiles --layer=<a_layer> --tile=<z/x/y:+n/+n>
 
 In the admin page command form, this option is available as well if ``--tile`` is in
 ``server.allowed_arguments`` (it is included by default).
@@ -675,7 +675,12 @@ Generate a tiles in a different cache than the default one:
 
 .. prompt:: bash
 
-    generate-tiles --cache <a_cache>
+    generate-tiles --cache=<a_cache>
+
+With the PostgreSQL queue store, running ``generate-tiles --role=master`` without
+``--job-id`` now auto-creates a job and attaches generated metatiles to it.
+The default auto-created job title is ``User call``, and you can override it
+with ``--job-title=<title>``.
 
 Display queue status:
 
@@ -735,7 +740,7 @@ Useful options
 ``--debug`` or ``-d``: used to display debug message, please use this option to report issue. With the debug
 mode we don't catch exceptions, and we don't log time messages.
 
-``--test <n>`` or ``-t <n>``: used to generate only ``<n>`` tiles, useful for test.
+``--test=<n>`` or ``-t <n>``: used to generate only ``<n>`` tiles, useful for test.
 
 
 Mutualized
