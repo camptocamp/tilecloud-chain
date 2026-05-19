@@ -677,6 +677,15 @@ Generate a tiles in a different cache than the default one:
 
     generate-tiles --cache <a_cache>
 
+Display queue status:
+
+.. prompt:: bash
+
+    generate-controller --status
+
+With Redis/SQS this prints queue counters. With PostgreSQL this prints the job list with
+per-job counters (to generate, pending, in error) and ETA when available.
+
 
 Explain cost
 ------------

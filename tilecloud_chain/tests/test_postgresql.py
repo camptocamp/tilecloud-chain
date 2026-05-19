@@ -4,12 +4,13 @@ from pathlib import Path
 
 import pytest
 import pytest_asyncio
+from anyio import Path as AnyioPath
 from sqlalchemy import and_
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import sessionmaker
 from tilecloud import Tile, TileCoord
 
-from tilecloud_chain import DatedConfig
+from tilecloud_chain import DatedConfig, TileGeneration, controller
 from tilecloud_chain.settings import settings
 from tilecloud_chain.store.postgresql import (
     _STATUS_CANCELLED,
@@ -292,3 +293,42 @@ async def test_put_one_batch_insert(SessionMaker: sessionmaker, monkeypatch: pyt
         session.query(Queue).filter(Queue.job_id == job_id).delete()
         session.query(Job).filter(Job.id == job_id).delete()
         session.commit()
+
+
+@pytest.mark.asyncio
+async def test_controller_status_postgresql(SessionMaker: sessionmaker) -> None:
+    config_filename = AnyioPath(str(Path(__file__).parent / "tilegeneration/test-postgresql.yaml"))
+    gene = TileGeneration(config_filename, configure_logging=False)
+    await gene.ainit()
+    job_id = None
+    try:
+        status_lines = await controller.get_status(gene)
+        assert "Number of jobs: 0" in status_lines
+
+        tilestore = await get_postgresql_queue_store(DatedConfig({}, 0, config_filename))
+        await tilestore.create_job(
+            "status-job",
+            "generate-tiles --layer=point",
+            config_filename,
+        )
+        with SessionMaker() as session:
+            job = session.query(Job).filter(Job.name == "status-job").one()
+            job.status = _STATUS_STARTED
+            job_id = job.id
+            session.commit()
+
+        await tilestore.put_one(Tile(TileCoord(0, 0, 0), metadata={"job_id": job_id}))
+        await tilestore.close()
+
+        status_lines = await controller.get_status(gene)
+        status_text = "\n".join(status_lines)
+        assert "Number of jobs:" in status_text
+        assert f"Job {job_id} (status-job) [started]" in status_text
+        assert "  To generate: 1" in status_text
+    finally:
+        if job_id is not None:
+            with SessionMaker() as session:
+                session.query(Queue).filter(Queue.job_id == job_id).delete()
+                session.query(Job).filter(Job.id == job_id).delete()
+                session.commit()
+        await gene.close()

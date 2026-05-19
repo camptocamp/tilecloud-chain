@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from hashlib import sha1
 from io import BytesIO, StringIO
 from math import exp, log
-from typing import IO, Literal, cast
+from typing import IO, cast
 from urllib.parse import urlencode
 
 import PIL.ImageFile
@@ -70,7 +70,7 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
             "--status",
             default=False,
             action="store_true",
-            help="Display the SQS queue status and exit",
+            help="Display the queue status and exit",
         )
         parser.add_argument(
             "--legends",
@@ -406,9 +406,42 @@ async def get_status(gene: TileGeneration) -> list[str]:
     """Get the tile generation status."""
     config = await gene.get_main_config()
     store = await get_queue_store(config, daemon=False)
-    type_: Literal["redis", "sqs"] = "redis" if "redis" in config.config else "sqs"
-    conf = config.config[type_]
-    with _GET_STATUS_SUMMARY.labels(type_, conf.get("queue", configuration.REDIS_QUEUE_DEFAULT)).time():
+    queue_store = config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
+    if queue_store == "postgresql":
+        with _GET_STATUS_SUMMARY.labels("postgresql", "postgresql").time():
+            jobs_status = await store.get_status(config.file)
+
+        if not jobs_status:
+            return ["Number of jobs: 0"]
+
+        lines = [f"Number of jobs: {len(jobs_status)}"]
+        for job, status_by_zoom, errors, eta in jobs_status:
+            nb_generate = sum(data.get("generate", 0) for data in status_by_zoom)
+            nb_pending = sum(data.get("pending", 0) for data in status_by_zoom)
+            nb_error = sum(data.get("error", 0) for data in status_by_zoom)
+            lines.extend(
+                [
+                    f"Job {job.id} ({job.name}) [{job.status}]",
+                    f"  To generate: {nb_generate}",
+                    f"  Pending: {nb_pending}",
+                    f"  In error: {nb_error}",
+                    f"  ETA: {eta or '-'}",
+                ],
+            )
+            if errors:
+                lines.append(f"  Last error: {errors[0]}")
+        return lines
+
+    type_ = "redis" if queue_store == "redis" else "sqs"
+    queue_name: str
+    if type_ == "redis":
+        redis_conf = config.config.get("redis", {})
+        queue_name = redis_conf.get("queue", configuration.REDIS_QUEUE_DEFAULT)
+    else:
+        sqs_conf = config.config.get("sqs", {})
+        queue_name = sqs_conf.get("queue", configuration.SQS_QUEUE_DEFAULT)
+
+    with _GET_STATUS_SUMMARY.labels(type_, queue_name).time():
         status_ = store.get_status()
     return [name + ": " + str(value) for name, value in status_.items()]
 
