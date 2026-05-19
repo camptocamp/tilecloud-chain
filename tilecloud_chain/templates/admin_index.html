@@ -163,12 +163,7 @@
             aria-expanded="{% if job.status in ('created', 'pending', 'started') %}true{% else %}false{% endif %}"
             aria-controls="collapse{{ loop.index0 }}"
           >
-            {{ job.name }} (
-            <script nonce="{{ nonce }}">
-              window.document.write(new Date('{{ job.created_at.isoformat() }}').toLocaleString());
-            </script>
-            ,
-            <span
+            {{ job.name }} (<script nonce="{{ nonce }}">globalThis.document.write(new Date('{{ job.created_at.isoformat() }}').toLocaleString());</script>, <span
               class="badge {% if job.status == 'started' %}text-bg-success{% elif job.status == 'error' %}text-bg-danger{% elif job.status == 'done' %}text-bg-primary{% elif job.status == 'cancelled' %}text-bg-secondary{% else %}text-bg-light text-dark{% endif %}"
               >{{ job.status }}</span
             >)

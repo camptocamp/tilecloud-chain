@@ -1,2 +1,3 @@
 poetry.lock
 tilecloud_chain/CONFIG.md
+tilecloud_chain/templates/admin_index.html

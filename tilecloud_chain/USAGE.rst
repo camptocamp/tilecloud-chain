@@ -414,7 +414,7 @@ Is it possible to store the queue in a PostgreSQL database, for that you should 
 configuration file or in the ``TILECLOUD_CHAIN__POSTGRESQL__SQLALCHEMY_URL`` environment variable.
 
 Queue inserts are batched to improve performance when generating very large pyramids. The default
-batch size is ``10000`` rows and can be changed with
+batch size is ``100`` rows and can be changed with
 ``TILECLOUD_CHAIN__POSTGRESQL__QUEUE_INSERT_BATCH_SIZE``.
 
 See the [configuration reference](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/CONFIG.md#definitions/postgresql) for the other configuration possibilities.
