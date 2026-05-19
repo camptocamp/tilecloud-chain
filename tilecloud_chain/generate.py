@@ -624,6 +624,69 @@ def detach() -> None:
         sys.exit(1)
 
 
+async def _ensure_postgresql_job_id(
+    options: Namespace,
+    gene: TileGeneration,
+    args: list[str] | None = None,
+) -> bool:
+    if options.role != "master" or options.job_id is not None:
+        return False
+    if options.get_hash is not None or options.get_bbox is not None or options.tiles is not None:
+        return False
+
+    main_config = await gene.get_main_config()
+    if main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT) != "postgresql":
+        return False
+
+    queue_store = await get_queue_store(main_config, options.daemon)
+    try:
+        if not hasattr(queue_store, "create_job"):
+            return False
+
+        command_arguments = args if args is not None else sys.argv
+        command_arguments = _normalize_job_command_arguments(command_arguments)
+        job_title = options.job_title or "User call"
+        command = " ".join(quote(argument) for argument in command_arguments)
+        options.job_id = await queue_store.create_job(
+            job_title,
+            command,
+            main_config.file,
+            initial_status="pending",
+        )
+        return True
+    finally:
+        await queue_store.close()
+
+
+async def _activate_postgresql_job(options: Namespace, queue_store: AsyncTileStore | None) -> None:
+    if queue_store is None or options.job_id is None:
+        return
+
+    await queue_store.close()
+    if hasattr(queue_store, "start_job"):
+        await queue_store.start_job(options.job_id)
+
+
+def _normalize_job_command_arguments(arguments: list[str]) -> list[str]:
+    normalized_arguments: list[str] = []
+    skip_next = False
+    for argument in arguments:
+        if skip_next:
+            skip_next = False
+            continue
+        if argument == "--job-title":
+            skip_next = True
+            continue
+        if argument.startswith("--job-title="):
+            continue
+        normalized_arguments.append(argument)
+
+    if normalized_arguments:
+        normalized_arguments[0] = Path(normalized_arguments[0]).name
+
+    return normalized_arguments
+
+
 def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
     """Run the tiles generation."""
     asyncio.run(async_main(args, out))
@@ -686,8 +749,16 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
             help="The job id in case of Postgres queue",
             type=int,
         )
+        parser.add_argument(
+            "--job-title",
+            help="The title used when auto-creating a PostgreSQL job in master mode",
+        )
 
         options = parser.parse_args(args[1:] if args else sys.argv[1:])
+
+        if options.job_id is not None and options.job_title is not None:
+            _LOGGER.error("The --job-id and --job-title options are mutually exclusive")
+            sys.exit(1)
 
         if options.detach:
             detach()
@@ -745,6 +816,8 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
             _LOGGER.error("With --tile option you need to specify a layer")
             sys.exit(1)
 
+        auto_created_postgresql_job = await _ensure_postgresql_job_id(options, gene, args)
+
         try:
             generate = Generate(options, gene, out)
             await generate.init()
@@ -764,6 +837,9 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
                     config.config.get("layers", {}).keys(),
                 ):
                     await generate.gene(layer)
+
+            if auto_created_postgresql_job:
+                await _activate_postgresql_job(options, generate._queue_tilestore)  # noqa: SLF001
         except tilecloud.filter.error.TooManyErrors:
             _LOGGER.exception("Too many errors")
             sys.exit(1)

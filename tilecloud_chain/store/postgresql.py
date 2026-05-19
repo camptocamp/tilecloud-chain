@@ -394,12 +394,36 @@ class PostgresqlTileStore(AsyncTileStore):
 
         self.SessionMaker = async_sessionmaker(engine)  # pylint: disable=invalid-name
 
-    async def create_job(self, name: str, command: str, config_filename: Path) -> None:
+    async def create_job(
+        self,
+        name: str,
+        command: str,
+        config_filename: Path,
+        initial_status: str = _STATUS_CREATED,
+    ) -> int:
         """Create a job."""
         assert self.SessionMaker is not None
         async with self.SessionMaker() as session:
-            job = Job(name=name, command=command, config_filename=config_filename.as_posix())
+            job = Job(
+                name=name,
+                command=command,
+                config_filename=config_filename.as_posix(),
+                status=initial_status,
+            )
             session.add(job)
+            await session.commit()
+            await session.refresh(job)
+            return job.id
+
+    async def start_job(self, job_id: int) -> None:
+        """Mark a pending job as started."""
+        assert self.SessionMaker is not None
+        async with self.SessionMaker() as session:
+            await session.execute(
+                update(Job)
+                .where(and_(Job.id == job_id, Job.status == _STATUS_PENDING))
+                .values(status=_STATUS_STARTED, started_at=datetime.datetime.now(tz=datetime.UTC)),
+            )
             await session.commit()
 
     async def retry(self, job_id: int, config_filename: Path) -> None:

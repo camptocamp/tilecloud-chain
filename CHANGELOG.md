@@ -17,11 +17,12 @@
 - Update example tilegeneration configs to enable tile optimization (`post_process` with `optipng`/`jpegoptim` and Pillow `meta_save_options`).
 - Document how to combine `post_process` and `meta_save_options` to optimize PNG/JPEG tiles.
 - Add `TileMatrixSetLimits` entries in WMTS capabilities when a layer defines a `bbox`, so clients can restrict tile requests to the advertised extent.
-- Add `generate-tiles --tile <z/x/y>` support to generate a specific tile or metatile without preparing a tiles file.
+- Add `generate-tiles --tile=<z/x/y>` support to generate a specific tile or metatile without preparing a tiles file.
 - Expose `--tile` in admin command validation and command help examples.
 - Restore per-zoom admin job status counters for PostgreSQL queue jobs by correctly wiring the master generation queue store.
 - Fix `generate-controller --status` on PostgreSQL queue configurations so it reports job status instead of failing with a `KeyError`.
 - Keep WMS XML error newlines in tile error logs and remove extra spaces in the admin job status header `(date, status)` display.
+- Auto-create a PostgreSQL job when `generate-tiles --role=master` runs without `--job-id`, using `User call` as default title and allowing override with `--job-title=<title>`.
 
 Environment variable migration (legacy -> new)
 
