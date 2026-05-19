@@ -1,8 +1,11 @@
 import json
 import os
 import shutil
+from argparse import Namespace
 from itertools import product, repeat
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from anyio import Path as AnyioPath
@@ -13,6 +16,41 @@ from tilecloud.store.redis import RedisTileStore
 from tilecloud_chain import controller, generate
 from tilecloud_chain.settings import settings
 from tilecloud_chain.tests import CompareCase
+
+
+@pytest.mark.asyncio
+async def test_master_initializes_tilegeneration_with_queue_store(monkeypatch: pytest.MonkeyPatch) -> None:
+    queue_store = object()
+
+    async def fake_get_queue_store(_config: object, _daemon: bool) -> object:
+        return queue_store
+
+    monkeypatch.setattr(generate, "get_queue_store", fake_get_queue_store)
+
+    gene = Mock()
+    gene.get_main_config = AsyncMock(return_value=SimpleNamespace(config={}))
+    gene.add_geom_filter = Mock()
+    gene.imap = Mock()
+    gene.add_logger = Mock()
+    gene.put = Mock()
+    gene.counter = Mock(return_value=object())
+    gene.init = Mock()
+
+    generate_ = generate.Generate(
+        Namespace(
+            get_hash=None,
+            tiles=None,
+            role="master",
+            daemon=False,
+            local_process_number=None,
+        ),
+        gene,
+        out=None,
+    )
+
+    await generate_._generate_init()  # noqa: SLF001
+
+    gene.init.assert_called_once_with(queue_store, daemon=False)
 
 
 class TestGenerate(CompareCase):
