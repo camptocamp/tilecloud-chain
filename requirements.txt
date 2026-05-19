@@ -5,7 +5,7 @@ poetry-plugin-tweak-dependencies-version==1.5.6
 pip==26.1
 poetry-plugin-drop-python-upper-constraint==0.1.0
 certifi>=2024.7.4 # not directly required, pinned by Snyk to avoid a vulnerability
-idna>=3.7 # not directly required, pinned by Snyk to avoid a vulnerability
+idna>=3.15 # not directly required, pinned by Snyk to avoid a vulnerability
 jinja2>=3.1.4 # not directly required, pinned by Snyk to avoid a vulnerability
 zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
 cryptography>=46.0.7 # not directly required, pinned by Snyk to avoid a vulnerability
