@@ -5,6 +5,7 @@ from argparse import Namespace
 from itertools import product, repeat
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -15,6 +16,7 @@ from testfixtures import LogCapture
 from tilecloud.store.redis import RedisTileStore
 
 from tilecloud_chain import SparseMetaTileBoundingPyramid, controller, generate
+from tilecloud_chain import configuration as tcc_configuration
 from tilecloud_chain.settings import settings
 from tilecloud_chain.tests import CompareCase
 
@@ -239,14 +241,14 @@ def test_sparse_metatilecoords_split_by_row() -> None:
 
     bounding_pyramid = SparseMetaTileBoundingPyramid(
         tilegrid=Mock(),
-        grid=grid,
+        grid=cast("tcc_configuration.Grid", grid),
         geoms={0: geom},
         zooms=[0],
         resolutions=[1],
         px_buffer=0,
     )
 
-    metatilecoords = list(bounding_pyramid.metatilecoords(meta_size=1))
+    metatilecoords = list(bounding_pyramid.metatilecoords(1))
 
     assert [(coord.z, coord.x, coord.y, coord.n) for coord in metatilecoords] == [
         (0, 0, 3, 1),
@@ -1410,7 +1412,7 @@ Size per tile: 498 o
             main_func=generate.async_main,
             regex=False,
             expected="""The tile generation of layer 'point (DATE=2012)' is finish
-Nb of generated jobs: 10
+Nb of generated jobs: 6
 
 """,
         )
@@ -1419,7 +1421,7 @@ Nb of generated jobs: 10
             cmd=".build/venv/bin/generate-controller -c tilegeneration/test-redis.yaml --status",
             main_func=controller.async_main,
             regex=False,
-            expected="""Approximate number of tiles to generate: 10
+            expected="""Approximate number of tiles to generate: 6
 Approximate number of generating tiles: 0
 Tiles in error:
 """,
@@ -1430,11 +1432,11 @@ Tiles in error:
             main_func=generate.async_main,
             regex=True,
             expected=r"""The tile generation is finish
-Nb generated metatiles: 10
+Nb generated metatiles: 6
 Nb metatiles dropped: 0
-Nb generated tiles: 640
+Nb generated tiles: 384
 Nb tiles dropped: 0
-Nb tiles stored: 640
+Nb tiles stored: 384
 Nb tiles in error: 0
 Total time: 0:\d\d:\d\d
 Total size: \d+ Kio
@@ -1466,7 +1468,7 @@ Tiles in error:
                 main_func=generate.async_main,
                 regex=False,
                 expected="""The tile generation of layer 'point (DATE=2012)' is finish
-    Nb of generated jobs: 10
+    Nb of generated jobs: 6
 
     """,
             )
@@ -1475,7 +1477,7 @@ Tiles in error:
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/test-redis-project.yaml --status",
                 main_func=controller.async_main,
                 regex=False,
-                expected="""Approximate number of tiles to generate: 10
+                expected="""Approximate number of tiles to generate: 6
     Approximate number of generating tiles: 0
     Tiles in error:
     """,
@@ -1486,11 +1488,11 @@ Tiles in error:
                 main_func=generate.async_main,
                 regex=True,
                 expected=r"""The tile generation is finish
-    Nb generated metatiles: 10
+    Nb generated metatiles: 6
     Nb metatiles dropped: 0
-    Nb generated tiles: 640
+    Nb generated tiles: 384
     Nb tiles dropped: 0
-    Nb tiles stored: 640
+    Nb tiles stored: 384
     Nb tiles in error: 0
     Total time: 0:\d\d:\d\d
     Total size: \d+ Kio
