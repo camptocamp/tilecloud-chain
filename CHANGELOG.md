@@ -24,6 +24,7 @@
 - Keep WMS XML error newlines in tile error logs and remove extra spaces in the admin job status header `(date, status)` display.
 - Auto-create a PostgreSQL job when `generate-tiles --role=master` runs without `--job-id`, using `User call` as default title and allowing override with `--job-title=<title>`.
 - Speed up `generate-tiles --role=master` queue seeding for metatile layers by using per-row metatile scanline intervals instead of full bounding-pyramid scans, reducing candidate metatiles especially on sparse datasets.
+- Add support for `layers.<name>.geoms[].datasource` to load geometry masks from a GDAL datasource (for example a Shapefile), with relative paths resolved from the layer configuration file.
 
 Environment variable migration (legacy -> new)
 

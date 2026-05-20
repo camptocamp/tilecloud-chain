@@ -160,7 +160,9 @@ zoom, x and y as 0.
 Configure geom/sql
 ^^^^^^^^^^^^^^^^^^
 
-We can generate the tiles only on some geometries stored in PostGis.
+We can generate the tiles only on some geometries.
+
+PostGIS source configuration:
 
 The configuration is in the layer like this:
 
@@ -171,6 +173,19 @@ The configuration is in the layer like this:
         sql: <column> AS geom FROM <table>
         min_resolution: <resolution> # included, optional, last win
         max_resolution: <resolution> # included, optional, last win
+
+GDAL data source configuration (for example a shapefile):
+
+.. code:: yaml
+
+    geoms:
+    -   datasource: geoms/mask
+        sql: SELECT * FROM mask_layer # optional OGR SQL
+        min_resolution: <resolution> # included, optional, last win
+        max_resolution: <resolution> # included, optional, last win
+
+The ``datasource`` should be a relative file path from the configuration file
+directory and should stay inside that directory.
 
 Example:
 

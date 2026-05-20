@@ -495,6 +495,7 @@
       "type": "array",
       "items": {
         "type": "object",
+        "title": "Layer geometry",
         "additionalProperties": false,
         "properties": {
           "connection": {
@@ -502,9 +503,14 @@
             "description": "The PostgreSQL connection string",
             "type": "string"
           },
+          "datasource": {
+            "title": "Datasource",
+            "description": "The GDAL data source relative path (for example geoms_mask.geojson)",
+            "type": "string"
+          },
           "sql": {
             "title": "SQL",
-            "description": "The SQL query that get the geometry in geom e.g. `the_geom AS geom FROM my_table`",
+            "description": "For PostgreSQL source: SQL query that gets the geometry in `geom` (e.g. `the_geom AS geom FROM my_table`). For file data source: optional OGR SQL query.",
             "type": "string"
           },
           "min_resolution": {
@@ -518,7 +524,14 @@
             "type": "number"
           }
         },
-        "required": ["connection", "sql"]
+        "anyOf": [
+          {
+            "required": ["connection", "sql"]
+          },
+          {
+            "required": ["datasource"]
+          }
+        ]
       }
     },
     "layer_empty_tile_detection": {
