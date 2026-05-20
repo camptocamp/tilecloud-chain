@@ -419,7 +419,7 @@ class SparseMetaTileBoundingPyramid(BoundingPyramid):
         geoms: dict[str | int, BaseGeometry],
         zooms: Iterable[int],
         resolutions: list[int | float],
-        px_buffer: int | float,
+        px_buffer: float,
     ) -> None:
         super().__init__(tilegrid=tilegrid)
         self._grid = grid
@@ -814,6 +814,7 @@ class TileGeneration:
         self.multi_task = multi_task
         self.configs: dict[Path, DatedConfig] = {}
         self.hosts_cache: DatedHosts | None = None
+
         class Options(NamedTuple):
             verbose: bool
             debug: bool
@@ -1618,6 +1619,7 @@ class TileGeneration:
             config.mtime,
         )
         return geoms
+
     def init_tilecoords(
         self,
         config: DatedConfig,
