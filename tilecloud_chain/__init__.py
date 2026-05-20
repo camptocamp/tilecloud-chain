@@ -16,7 +16,7 @@ import sys
 import tempfile
 import time
 from argparse import ArgumentParser, Namespace
-from collections.abc import AsyncIterator, Awaitable, Callable, Iterable
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterable, Iterator
 from dataclasses import dataclass
 from fractions import Fraction
 from hashlib import sha1
@@ -40,6 +40,7 @@ from c2cwsgiutils import sentry
 from PIL import Image
 from prometheus_client import Counter, Summary
 from ruamel.yaml import YAML
+from shapely.geometry import box
 from shapely.geometry.base import BaseGeometry
 from shapely.geometry.polygon import Polygon
 from shapely.ops import unary_union
@@ -406,6 +407,197 @@ class DatedHosts:
     def __init__(self, hosts: dict[str, Path], mtime: float) -> None:
         self.hosts = hosts
         self.mtime = mtime
+
+
+class SparseMetaTileBoundingPyramid(BoundingPyramid):
+    """Bounding pyramid variant that computes sparse metatiles lazily."""
+
+    def __init__(
+        self,
+        tilegrid: TileGrid,
+        grid: tilecloud_chain.configuration.Grid,
+        geoms: dict[str | int, BaseGeometry],
+        zooms: Iterable[int],
+        resolutions: list[int | float],
+        px_buffer: float,
+    ) -> None:
+        super().__init__(tilegrid=tilegrid)
+        self._grid = grid
+        self._geoms = geoms
+        self._zooms = tuple(zooms)
+        self._resolutions = resolutions
+        self._px_buffer = float(px_buffer)
+
+    @staticmethod
+    def _bounds_to_index_range(
+        bounds_min: float,
+        bounds_max: float,
+        origin: float,
+        span: float,
+        max_index: int,
+    ) -> tuple[int, int] | None:
+        if bounds_min > bounds_max:
+            bounds_min, bounds_max = bounds_max, bounds_min
+        start = math.floor((bounds_min - origin) / span)
+        end = math.ceil((bounds_max - origin) / span) - 1
+        start = max(0, min(max_index, start))
+        end = max(0, min(max_index, end))
+        if start > end:
+            return None
+        return start, end
+
+    @staticmethod
+    def _y_bounds_to_index_range(
+        bounds_min: float,
+        bounds_max: float,
+        origin_top: float,
+        span: float,
+        max_index: int,
+    ) -> tuple[int, int] | None:
+        if bounds_min > bounds_max:
+            bounds_min, bounds_max = bounds_max, bounds_min
+        start = math.floor((origin_top - bounds_max) / span)
+        end = math.ceil((origin_top - bounds_min) / span) - 1
+        start = max(0, min(max_index, start))
+        end = max(0, min(max_index, end))
+        if start > end:
+            return None
+        return start, end
+
+    @staticmethod
+    def _merge_index_intervals(intervals: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:
+        sorted_intervals = sorted(intervals, key=lambda interval: (interval[0], interval[1]))
+        if not sorted_intervals:
+            return []
+        merged_intervals = [sorted_intervals[0]]
+        for start, end in sorted_intervals[1:]:
+            previous_start, previous_end = merged_intervals[-1]
+            if start <= previous_end + 1:
+                merged_intervals[-1] = (previous_start, max(previous_end, end))
+            else:
+                merged_intervals.append((start, end))
+        return merged_intervals
+
+    @staticmethod
+    def _iter_leaf_geometries(geometry: BaseGeometry) -> Iterable[BaseGeometry]:
+        geometries = getattr(geometry, "geoms", None)
+        if geometries is None:
+            yield geometry
+            return
+        for sub_geometry in geometries:
+            yield from SparseMetaTileBoundingPyramid._iter_leaf_geometries(sub_geometry)
+
+    @staticmethod
+    def _has_only_nan_bounds(bounds: tuple[float, float, float, float]) -> bool:
+        return all(math.isnan(value) for value in bounds)
+
+    def _get_zoom_context(
+        self,
+        zoom: int,
+        n: int,
+        tile_size: float,
+        grid_bbox: list[float],
+    ) -> tuple[BaseGeometry, float, int, int] | None:
+        geom = self._geoms.get(zoom)
+        if geom is None:
+            return None
+
+        resolution = float(self._resolutions[zoom])
+        metatile_span = tile_size * resolution * n
+        matrix_width = math.ceil((grid_bbox[2] - grid_bbox[0]) / metatile_span)
+        matrix_height = math.ceil((grid_bbox[3] - grid_bbox[1]) / metatile_span)
+
+        buffered_geom = geom
+        m_buffer = self._px_buffer * resolution
+        if m_buffer != 0:
+            buffered_geom = buffered_geom.buffer(m_buffer, 1)
+
+        if buffered_geom.is_empty:
+            return None
+        if self._has_only_nan_bounds(buffered_geom.bounds):
+            _LOGGER.warning("bounds empty for zoom %s", zoom)
+            return None
+
+        return buffered_geom, metatile_span, matrix_width - 1, matrix_height - 1
+
+    def _collect_row_intervals(
+        self,
+        row_geom: BaseGeometry,
+        grid_bbox: list[float],
+        metatile_span: float,
+        max_x_index: int,
+    ) -> list[tuple[int, int]]:
+        intervals: list[tuple[int, int]] = []
+        for sub_geometry in self._iter_leaf_geometries(row_geom):
+            if sub_geometry.is_empty:
+                continue
+            sub_minx, _, sub_maxx, _ = sub_geometry.bounds
+            if math.isnan(sub_minx) or math.isnan(sub_maxx):
+                continue
+            interval = self._bounds_to_index_range(
+                sub_minx,
+                sub_maxx,
+                grid_bbox[0],
+                metatile_span,
+                max_x_index,
+            )
+            if interval is not None:
+                intervals.append(interval)
+        return self._merge_index_intervals(intervals)
+
+    def _iter_row_tilecoords(
+        self,
+        zoom: int,
+        n: int,
+        buffered_geom: BaseGeometry,
+        grid_bbox: list[float],
+        metatile_span: float,
+        max_x_index: int,
+        row_range: tuple[int, int],
+    ) -> Iterator[TileCoord]:
+        row_start, row_end = row_range
+        for row in range(row_start, row_end + 1):
+            band_max_y = grid_bbox[3] - row * metatile_span
+            band_min_y = band_max_y - metatile_span
+            row_geom = buffered_geom.intersection(box(grid_bbox[0], band_min_y, grid_bbox[2], band_max_y))
+            if row_geom.is_empty:
+                continue
+            for start, end in self._collect_row_intervals(
+                row_geom,
+                grid_bbox,
+                metatile_span,
+                max_x_index,
+            ):
+                yield from self._iter_interval_tilecoords(zoom, n, row, start, end)
+
+    @staticmethod
+    def _iter_interval_tilecoords(zoom: int, n: int, row: int, start: int, end: int) -> Iterator[TileCoord]:
+        for x_index in range(start, end + 1):
+            yield TileCoord(zoom, x_index * n, row * n, n)
+
+    def metatilecoords(self, n: int = 8) -> Iterator[TileCoord]:
+        """Yield sparse metatile coordinates lazily for configured zoom levels."""
+        tile_size = float(self._grid.get("tile_size", configuration.TILE_SIZE_DEFAULT))
+        grid_bbox = [float(v) for v in self._grid["bbox"]]
+
+        for zoom in self._zooms:
+            zoom_context = self._get_zoom_context(zoom, n, tile_size, grid_bbox)
+            if zoom_context is None:
+                continue
+            buffered_geom, metatile_span, max_x_index, max_y_index = zoom_context
+            _, miny, _, maxy = buffered_geom.bounds
+            row_range = self._y_bounds_to_index_range(miny, maxy, grid_bbox[3], metatile_span, max_y_index)
+            if row_range is None:
+                continue
+            yield from self._iter_row_tilecoords(
+                zoom,
+                n,
+                buffered_geom,
+                grid_bbox,
+                metatile_span,
+                max_x_index,
+                row_range,
+            )
 
 
 class MissingErrorFileError(Exception):
@@ -1478,7 +1670,160 @@ class TileGeneration:
         )
         return geoms
 
-    def init_tilecoords(self, config: DatedConfig, layer_name: str, used_grid_name: str | None) -> None:
+    def _set_default_zoom_for_time(
+        self,
+        layer: tilecloud_chain.configuration.Layer,
+        resolutions: list[int | float],
+    ) -> None:
+        if self.options.time is None or self.options.zoom is not None:
+            return
+        if "min_resolution_seed" in layer:
+            self.options.zoom = [resolutions.index(layer["min_resolution_seed"])]
+        else:
+            self.options.zoom = [len(resolutions) - 1]
+
+    def _filter_zoom_outside_grid(
+        self,
+        resolutions: list[int | float],
+        grid_name: str,
+        layer_name: str,
+    ) -> None:
+        if self.options.zoom is None:
+            return
+        zoom_max = len(resolutions) - 1
+        for zoom in self.options.zoom:
+            if zoom > zoom_max:
+                _LOGGER.warning(
+                    "zoom %i is greater than the maximum zoom %i of grid %s of layer %s, ignored.",
+                    zoom,
+                    zoom_max,
+                    grid_name,
+                    layer_name,
+                )
+        self.options.zoom = [z for z in self.options.zoom if z <= zoom_max]
+
+    def _apply_min_resolution_seed_filter(
+        self,
+        layer: tilecloud_chain.configuration.Layer,
+        resolutions: list[int | float],
+        layer_name: str,
+    ) -> None:
+        if "min_resolution_seed" not in layer:
+            return
+        min_resolution_seed = layer["min_resolution_seed"]
+        if self.options.zoom is None:
+            self.options.zoom = [
+                z for z, resolution in enumerate(resolutions) if resolution >= min_resolution_seed
+            ]
+            return
+        for zoom in self.options.zoom:
+            resolution = resolutions[zoom]
+            if resolution < min_resolution_seed:
+                _LOGGER.warning(
+                    "zoom %i corresponds to resolution %s is smaller"
+                    " than the 'min_resolution_seed' %s of layer %s, ignored.",
+                    zoom,
+                    resolution,
+                    min_resolution_seed,
+                    layer_name,
+                )
+        self.options.zoom = [z for z in self.options.zoom if resolutions[z] >= min_resolution_seed]
+
+    def _resolve_grid_zooms(
+        self,
+        layer: tilecloud_chain.configuration.Layer,
+        resolutions: list[int | float],
+        grid_name: str,
+        layer_name: str,
+    ) -> list[int]:
+        self._set_default_zoom_for_time(layer, resolutions)
+        self._filter_zoom_outside_grid(resolutions, grid_name, layer_name)
+        self._apply_min_resolution_seed_filter(layer, resolutions, layer_name)
+        if self.options.zoom is None:
+            self.options.zoom = [z for z, _ in enumerate(resolutions)]
+        return list(self.options.zoom)
+
+    @staticmethod
+    def _has_only_nan_bounds(bounds: tuple[float, float, float, float]) -> bool:
+        return all(math.isnan(value) for value in bounds)
+
+    def _get_sparse_grid_tilecoords(
+        self,
+        config: DatedConfig,
+        layer_name: str,
+        grid_name: str,
+        layer: tilecloud_chain.configuration.Layer,
+        grid: tilecloud_chain.configuration.Grid,
+        geoms: dict[str | int, BaseGeometry],
+        zooms: list[int],
+        resolutions: list[int | float],
+    ) -> Iterator[TileCoord]:
+        meta_size = layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
+        px_buffer = layer.get("px_buffer", configuration.LAYER_PIXEL_BUFFER_DEFAULT)
+        tilegrid = self.get_grid(config, get_grid_name(config, layer_name, grid_name))
+        sparse_bounding_pyramid = SparseMetaTileBoundingPyramid(
+            tilegrid=tilegrid,
+            grid=grid,
+            geoms=geoms,
+            zooms=zooms,
+            resolutions=resolutions,
+            px_buffer=px_buffer,
+        )
+        return sparse_bounding_pyramid.metatilecoords(meta_size)
+
+    def _get_default_grid_tilecoords(
+        self,
+        config: DatedConfig,
+        layer_name: str,
+        grid_name: str,
+        layer: tilecloud_chain.configuration.Layer,
+        geoms: dict[str | int, BaseGeometry],
+        zooms: list[int],
+        resolutions: list[int | float],
+    ) -> Iterable[TileCoord]:
+        tilegrid = self.get_grid(config, get_grid_name(config, layer_name, grid_name))
+        bounding_pyramid = BoundingPyramid(tilegrid=tilegrid)
+        for zoom in zooms:
+            if zoom not in geoms:
+                continue
+            extent = geoms[zoom].bounds
+            if self._has_only_nan_bounds(extent):
+                _LOGGER.warning("bounds empty for zoom %s", zoom)
+                continue
+            minx, miny, maxx, maxy = extent
+            px_buffer = layer.get("px_buffer", configuration.LAYER_PIXEL_BUFFER_DEFAULT)
+            m_buffer = px_buffer * resolutions[zoom]
+            minx -= m_buffer
+            miny -= m_buffer
+            maxx += m_buffer
+            maxy += m_buffer
+            bounding_pyramid.add(
+                tilegrid.tilecoord(
+                    zoom,
+                    max(minx, tilegrid.max_extent[0]),
+                    max(miny, tilegrid.max_extent[1]),
+                ),
+            )
+            bounding_pyramid.add(
+                tilegrid.tilecoord(
+                    zoom,
+                    min(maxx, tilegrid.max_extent[2]),
+                    min(maxy, tilegrid.max_extent[3]),
+                ),
+            )
+        if layer["meta"]:
+            return bounding_pyramid.metatilecoords(
+                layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
+            )
+        return bounding_pyramid
+
+    def init_tilecoords(
+        self,
+        config: DatedConfig,
+        layer_name: str,
+        used_grid_name: str | None,
+        sparse_meta_seed: bool = False,
+    ) -> None:
         """Initialize the tilestream for the given layer."""
         if layer_name not in config.config.get("layers", {}):
             _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
@@ -1495,89 +1840,31 @@ class TileGeneration:
         for grid_name in grid_names:
             grid = get_grid_config(config, layer_name, grid_name)
             resolutions = grid["resolutions"]
-
-            if self.options.time is not None and self.options.zoom is None:
-                if "min_resolution_seed" in layer:
-                    self.options.zoom = [resolutions.index(layer["min_resolution_seed"])]
-                else:
-                    self.options.zoom = [len(resolutions) - 1]
-
-            if self.options.zoom is not None:
-                zoom_max = len(resolutions) - 1
-                for zoom in self.options.zoom:
-                    if zoom > zoom_max:
-                        _LOGGER.warning(
-                            "zoom %i is greater than the maximum zoom %i of grid %s of layer %s, ignored.",
-                            zoom,
-                            zoom_max,
-                            grid_name,
-                            layer_name,
-                        )
-                self.options.zoom = [z for z in self.options.zoom if z <= zoom_max]
-
-            if "min_resolution_seed" in layer:
-                if self.options.zoom is None:
-                    self.options.zoom = []
-                    for z, resolution in enumerate(resolutions):
-                        if resolution >= layer["min_resolution_seed"]:
-                            self.options.zoom.append(z)
-                else:
-                    for zoom in self.options.zoom:
-                        resolution = resolutions[zoom]
-                        if resolution < layer["min_resolution_seed"]:
-                            _LOGGER.warning(
-                                "zoom %i corresponds to resolution %s is smaller"
-                                " than the 'min_resolution_seed' %s of layer %s, ignored.",
-                                zoom,
-                                resolution,
-                                layer["min_resolution_seed"],
-                                layer_name,
-                            )
-                    self.options.zoom = [
-                        z for z in self.options.zoom if resolutions[z] >= layer["min_resolution_seed"]
-                    ]
-
-            if self.options.zoom is None:
-                self.options.zoom = [z for z, r in enumerate(resolutions)]
-
-            # Fill the bounding pyramid
-            tilegrid = self.get_grid(config, get_grid_name(config, layer_name, grid_name))
-            bounding_pyramid = BoundingPyramid(tilegrid=tilegrid)
+            zooms = self._resolve_grid_zooms(layer, resolutions, grid_name, layer_name)
             geoms = self.get_geoms(config, layer_name, grid_name)
-            for zoom in self.options.zoom:
-                if zoom in geoms:
-                    extent = geoms[zoom].bounds
 
-                    if len([e for e in extent if not math.isnan(e)]) == 0:
-                        _LOGGER.warning("bounds empty for zoom %s", zoom)
-                    else:
-                        minx, miny, maxx, maxy = extent
-                        px_buffer = layer.get("px_buffer", configuration.LAYER_PIXEL_BUFFER_DEFAULT)
-                        m_buffer = px_buffer * resolutions[zoom]
-                        minx -= m_buffer
-                        miny -= m_buffer
-                        maxx += m_buffer
-                        maxy += m_buffer
-                        bounding_pyramid.add(
-                            tilegrid.tilecoord(
-                                zoom,
-                                max(minx, tilegrid.max_extent[0]),
-                                max(miny, tilegrid.max_extent[1]),
-                            ),
-                        )
-                        bounding_pyramid.add(
-                            tilegrid.tilecoord(
-                                zoom,
-                                min(maxx, tilegrid.max_extent[2]),
-                                min(maxy, tilegrid.max_extent[3]),
-                            ),
-                        )
-            if layer["meta"]:
-                grid_tilecoords[grid_name] = bounding_pyramid.metatilecoords(
-                    layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT),
+            if sparse_meta_seed and layer["meta"]:
+                grid_tilecoords[grid_name] = self._get_sparse_grid_tilecoords(
+                    config,
+                    layer_name,
+                    grid_name,
+                    layer,
+                    grid,
+                    geoms,
+                    zooms,
+                    resolutions,
                 )
-            else:
-                grid_tilecoords[grid_name] = bounding_pyramid
+                continue
+
+            grid_tilecoords[grid_name] = self._get_default_grid_tilecoords(
+                config,
+                layer_name,
+                grid_name,
+                layer,
+                geoms,
+                zooms,
+                resolutions,
+            )
         self.set_tilecoords(config, grid_tilecoords, layer_name)
 
     @staticmethod

@@ -5,15 +5,18 @@ from argparse import Namespace
 from itertools import product, repeat
 from pathlib import Path
 from types import SimpleNamespace
+from typing import cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
 from anyio import Path as AnyioPath
 from PIL import Image
+from shapely.geometry import box
 from testfixtures import LogCapture
 from tilecloud.store.redis import RedisTileStore
 
-from tilecloud_chain import controller, generate
+from tilecloud_chain import SparseMetaTileBoundingPyramid, controller, generate
+from tilecloud_chain import configuration as tcc_configuration
 from tilecloud_chain.settings import settings
 from tilecloud_chain.tests import CompareCase
 
@@ -176,6 +179,83 @@ def test_normalize_job_command_arguments() -> None:
     assert generate._normalize_job_command_arguments(
         ["/tmp/.build/venv/bin/generate-tiles", "--role", "master", "--job-title=my title"],
     ) == ["generate-tiles", "--role", "master"]
+
+
+def test_merge_index_intervals_merges_overlaps_and_adjacency() -> None:
+    assert SparseMetaTileBoundingPyramid._merge_index_intervals([(5, 7), (1, 3), (3, 4), (9, 9), (8, 8)]) == [
+        (1, 9),
+    ]
+
+
+@pytest.mark.asyncio
+async def test_generate_queue_enables_sparse_seed_on_master() -> None:
+    options = Namespace(
+        get_hash=None,
+        tiles=None,
+        role="master",
+        get_bbox=None,
+        tile=None,
+        grid=None,
+    )
+    gene = Mock()
+    gene.config_file = AnyioPath("config.yaml")
+    config = SimpleNamespace(config={"layers": {"point": {}}})
+    gene.get_config = AsyncMock(return_value=config)
+    gene.init_tilecoords = Mock()
+
+    generate_ = generate.Generate(options, gene, out=None)
+    await generate_._generate_queue("point")  # noqa: SLF001
+
+    gene.init_tilecoords.assert_called_once_with(config, "point", None, sparse_meta_seed=True)
+
+
+@pytest.mark.asyncio
+async def test_generate_queue_disables_sparse_seed_on_local() -> None:
+    options = Namespace(
+        get_hash=None,
+        tiles=None,
+        role="local",
+        get_bbox=None,
+        tile=None,
+        grid=None,
+    )
+    gene = Mock()
+    gene.config_file = AnyioPath("config.yaml")
+    config = SimpleNamespace(config={"layers": {"point": {}}})
+    gene.get_config = AsyncMock(return_value=config)
+    gene.init_tilecoords = Mock()
+
+    generate_ = generate.Generate(options, gene, out=None)
+    await generate_._generate_queue("point")  # noqa: SLF001
+
+    gene.init_tilecoords.assert_called_once_with(config, "point", None, sparse_meta_seed=False)
+
+
+def test_sparse_metatilecoords_split_by_row() -> None:
+    grid = {
+        "bbox": [0, 0, 8, 8],
+        "tile_size": 1,
+        "resolutions": [1],
+    }
+    geom = box(0.2, 4.2, 1.8, 4.8).union(box(3.2, 4.2, 3.8, 4.8)).union(box(6.2, 2.2, 6.8, 2.8))
+
+    bounding_pyramid = SparseMetaTileBoundingPyramid(
+        tilegrid=Mock(),
+        grid=cast("tcc_configuration.Grid", grid),
+        geoms={0: geom},
+        zooms=[0],
+        resolutions=[1],
+        px_buffer=0,
+    )
+
+    metatilecoords = list(bounding_pyramid.metatilecoords(1))
+
+    assert [(coord.z, coord.x, coord.y, coord.n) for coord in metatilecoords] == [
+        (0, 0, 3, 1),
+        (0, 1, 3, 1),
+        (0, 3, 3, 1),
+        (0, 6, 5, 1),
+    ]
 
 
 class TestGenerate(CompareCase):
@@ -1332,7 +1412,7 @@ Size per tile: 498 o
             main_func=generate.async_main,
             regex=False,
             expected="""The tile generation of layer 'point (DATE=2012)' is finish
-Nb of generated jobs: 10
+Nb of generated jobs: 6
 
 """,
         )
@@ -1341,7 +1421,7 @@ Nb of generated jobs: 10
             cmd=".build/venv/bin/generate-controller -c tilegeneration/test-redis.yaml --status",
             main_func=controller.async_main,
             regex=False,
-            expected="""Approximate number of tiles to generate: 10
+            expected="""Approximate number of tiles to generate: 6
 Approximate number of generating tiles: 0
 Tiles in error:
 """,
@@ -1352,11 +1432,11 @@ Tiles in error:
             main_func=generate.async_main,
             regex=True,
             expected=r"""The tile generation is finish
-Nb generated metatiles: 10
+Nb generated metatiles: 6
 Nb metatiles dropped: 0
-Nb generated tiles: 640
+Nb generated tiles: 384
 Nb tiles dropped: 0
-Nb tiles stored: 640
+Nb tiles stored: 384
 Nb tiles in error: 0
 Total time: 0:\d\d:\d\d
 Total size: \d+ Kio
@@ -1388,7 +1468,7 @@ Tiles in error:
                 main_func=generate.async_main,
                 regex=False,
                 expected="""The tile generation of layer 'point (DATE=2012)' is finish
-    Nb of generated jobs: 10
+    Nb of generated jobs: 6
 
     """,
             )
@@ -1397,7 +1477,7 @@ Tiles in error:
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/test-redis-project.yaml --status",
                 main_func=controller.async_main,
                 regex=False,
-                expected="""Approximate number of tiles to generate: 10
+                expected="""Approximate number of tiles to generate: 6
     Approximate number of generating tiles: 0
     Tiles in error:
     """,
@@ -1408,11 +1488,11 @@ Tiles in error:
                 main_func=generate.async_main,
                 regex=True,
                 expected=r"""The tile generation is finish
-    Nb generated metatiles: 10
+    Nb generated metatiles: 6
     Nb metatiles dropped: 0
-    Nb generated tiles: 640
+    Nb generated tiles: 384
     Nb tiles dropped: 0
-    Nb tiles stored: 640
+    Nb tiles stored: 384
     Nb tiles in error: 0
     Total time: 0:\d\d:\d\d
     Total size: \d+ Kio

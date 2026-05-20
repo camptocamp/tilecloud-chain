@@ -223,7 +223,12 @@ class Generate:
 
         if self._options.role in ("local", "master"):
             # Generate a stream of metatiles
-            self._gene.init_tilecoords(config, layer_name, self._options.grid)
+            self._gene.init_tilecoords(
+                config,
+                layer_name,
+                self._options.grid,
+                sparse_meta_seed=self._options.role == "master",
+            )
 
         elif self._options.role == "hash":
             if layer_name not in config.config.get("layers", {}):
