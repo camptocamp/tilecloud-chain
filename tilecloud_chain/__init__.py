@@ -1552,7 +1552,7 @@ class TileGeneration:
         zoom: int,
         resolution: float,
         meta_size: int,
-        px_buffer: int | float,
+        px_buffer: float,
     ) -> list[tuple[int, list[tuple[int, int]]]]:
         cache_key = (
             str(config.file),
@@ -1637,9 +1637,9 @@ class TileGeneration:
         grid: tilecloud_chain.configuration.Grid,
         geometry: BaseGeometry,
         zoom: int,
-        resolution: int | float,
+        resolution: float,
         meta_size: int,
-        px_buffer: int | float,
+        px_buffer: float,
     ) -> Iterable[TileCoord]:
         row_intervals = self._get_sparse_metatile_intervals(
             config,
