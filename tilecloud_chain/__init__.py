@@ -16,7 +16,7 @@ import sys
 import tempfile
 import time
 from argparse import ArgumentParser, Namespace
-from collections.abc import AsyncIterator, Awaitable, Callable, Iterable
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterable, Iterator
 from dataclasses import dataclass
 from fractions import Fraction
 from hashlib import sha1
@@ -415,7 +415,7 @@ class SparseMetaTileBoundingPyramid(BoundingPyramid):
     def __init__(
         self,
         tilegrid: TileGrid,
-        grid: dict[str, Any],
+        grid: tilecloud_chain.configuration.Grid,
         geoms: dict[str | int, BaseGeometry],
         zooms: Iterable[int],
         resolutions: list[int | float],
@@ -487,7 +487,7 @@ class SparseMetaTileBoundingPyramid(BoundingPyramid):
         for sub_geometry in geometries:
             yield from SparseMetaTileBoundingPyramid._iter_leaf_geometries(sub_geometry)
 
-    def metatilecoords(self, meta_size: int) -> Iterable[TileCoord]:
+    def metatilecoords(self, n: int = 8) -> Iterator[TileCoord]:
         """Yield sparse metatile coordinates lazily for configured zoom levels."""
         tile_size = float(self._grid.get("tile_size", configuration.TILE_SIZE_DEFAULT))
         grid_bbox = [float(v) for v in self._grid["bbox"]]
@@ -498,7 +498,7 @@ class SparseMetaTileBoundingPyramid(BoundingPyramid):
                 continue
 
             resolution = float(self._resolutions[zoom])
-            metatile_span = tile_size * resolution * meta_size
+            metatile_span = tile_size * resolution * n
             matrix_width = math.ceil((grid_bbox[2] - grid_bbox[0]) / metatile_span)
             matrix_height = math.ceil((grid_bbox[3] - grid_bbox[1]) / metatile_span)
             max_x_index = matrix_width - 1
@@ -548,7 +548,7 @@ class SparseMetaTileBoundingPyramid(BoundingPyramid):
 
                 for start, end in self._merge_index_intervals(intervals):
                     for x_index in range(start, end + 1):
-                        yield TileCoord(zoom, x_index * meta_size, row * meta_size, meta_size)
+                        yield TileCoord(zoom, x_index * n, row * n, n)
 
 
 class MissingErrorFileError(Exception):
