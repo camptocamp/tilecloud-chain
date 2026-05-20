@@ -682,10 +682,10 @@ With the PostgreSQL queue store, running ``generate-tiles --role=master`` withou
 The default auto-created job title is ``User call``, and you can override it
 with ``--job-title=<title>``.
 
-When seeding metatiles with ``--role=master``, sparse geometry layers are now
-seeded with a scanline strategy (per metatile row) to avoid scanning full
-bounding extents that mostly contain empty space. This reduces queue build time
-on sparse datasets while keeping geometry filtering in the generation pipeline.
+When seeding metatiles with ``--role=master``, metatile layers use a scanline
+strategy (per metatile row) instead of scanning full bounding extents. This is
+especially beneficial on sparse datasets, where it reduces queue build time,
+while keeping geometry filtering in the generation pipeline.
 
 Display queue status:
 
