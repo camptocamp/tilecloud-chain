@@ -237,7 +237,28 @@ def test_sparse_metatilecoords_split_by_row_and_cache() -> None:
     }
     geom = box(0.2, 4.2, 1.8, 4.8).union(box(3.2, 4.2, 3.8, 4.8)).union(box(6.2, 2.2, 6.8, 2.8))
 
-    metatilecoords = gene._get_sparse_metatilecoords(
+    metatilecoords = list(
+        gene._get_sparse_metatilecoords(
+            config,
+            "layer",
+            "grid",
+            grid,
+            geom,
+            zoom=0,
+            resolution=1,
+            meta_size=1,
+            px_buffer=0,
+        ),
+    )
+
+    assert [(coord.z, coord.x, coord.y, coord.n) for coord in metatilecoords] == [
+        (0, 0, 3, 1),
+        (0, 1, 3, 1),
+        (0, 3, 3, 1),
+        (0, 6, 5, 1),
+    ]
+
+    intervals = gene._get_sparse_metatile_intervals(
         config,
         "layer",
         "grid",
@@ -248,15 +269,7 @@ def test_sparse_metatilecoords_split_by_row_and_cache() -> None:
         meta_size=1,
         px_buffer=0,
     )
-
-    assert [(coord.z, coord.x, coord.y, coord.n) for coord in metatilecoords] == [
-        (0, 0, 3, 1),
-        (0, 1, 3, 1),
-        (0, 3, 3, 1),
-        (0, 6, 5, 1),
-    ]
-
-    cached = gene._get_sparse_metatilecoords(
+    cached_intervals = gene._get_sparse_metatile_intervals(
         config,
         "layer",
         "grid",
@@ -267,7 +280,7 @@ def test_sparse_metatilecoords_split_by_row_and_cache() -> None:
         meta_size=1,
         px_buffer=0,
     )
-    assert cached is metatilecoords
+    assert cached_intervals is intervals
 
 
 class TestGenerate(CompareCase):

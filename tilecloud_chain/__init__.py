@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 from hashlib import sha1
 from io import BytesIO
-from itertools import product
+from itertools import chain, product
 from math import ceil, sqrt
 from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, TextIO, TypedDict, cast
 
@@ -675,7 +675,7 @@ class TileGeneration:
         self.hosts_cache: DatedHosts | None = None
         self.meta_tilecoords_sparse_cache: dict[
             tuple[str, float, str, str, int, int, float, float],
-            list[TileCoord],
+            list[tuple[int, list[tuple[int, int]]]],
         ] = {}
 
         class Options(NamedTuple):
@@ -1542,7 +1542,7 @@ class TileGeneration:
         for sub_geometry in geometries:
             yield from TileGeneration._iter_leaf_geometries(sub_geometry)
 
-    def _get_sparse_metatilecoords(
+    def _get_sparse_metatile_intervals(
         self,
         config: DatedConfig,
         layer_name: str,
@@ -1552,8 +1552,8 @@ class TileGeneration:
         zoom: int,
         resolution: float,
         meta_size: int,
-        px_buffer: float,
-    ) -> list[TileCoord]:
+        px_buffer: int | float,
+    ) -> list[tuple[int, list[tuple[int, int]]]]:
         cache_key = (
             str(config.file),
             config.mtime,
@@ -1597,7 +1597,7 @@ class TileGeneration:
             return []
 
         row_start, row_end = row_range
-        metatilecoords: list[TileCoord] = []
+        row_intervals: list[tuple[int, list[tuple[int, int]]]] = []
         for row in range(row_start, row_end + 1):
             band_max_y = grid_bbox[3] - row * metatile_span
             band_min_y = band_max_y - metatile_span
@@ -1622,12 +1622,40 @@ class TileGeneration:
                 if interval is not None:
                     intervals.append(interval)
 
-            for start, end in self._merge_index_intervals(intervals):
-                for x_index in range(start, end + 1):
-                    metatilecoords.append(TileCoord(zoom, x_index * meta_size, row * meta_size, meta_size))
+            merged_intervals = self._merge_index_intervals(intervals)
+            if merged_intervals:
+                row_intervals.append((row, merged_intervals))
 
-        self.meta_tilecoords_sparse_cache[cache_key] = metatilecoords
-        return metatilecoords
+        self.meta_tilecoords_sparse_cache[cache_key] = row_intervals
+        return row_intervals
+
+    def _get_sparse_metatilecoords(
+        self,
+        config: DatedConfig,
+        layer_name: str,
+        grid_name: str,
+        grid: tilecloud_chain.configuration.Grid,
+        geometry: BaseGeometry,
+        zoom: int,
+        resolution: int | float,
+        meta_size: int,
+        px_buffer: int | float,
+    ) -> Iterable[TileCoord]:
+        row_intervals = self._get_sparse_metatile_intervals(
+            config,
+            layer_name,
+            grid_name,
+            grid,
+            geometry,
+            zoom,
+            resolution,
+            meta_size,
+            px_buffer,
+        )
+        for row, intervals in row_intervals:
+            for start, end in intervals:
+                for x_index in range(start, end + 1):
+                    yield TileCoord(zoom, x_index * meta_size, row * meta_size, meta_size)
 
     def init_tilecoords(
         self,
@@ -1702,10 +1730,10 @@ class TileGeneration:
             if sparse_meta_seed and layer["meta"]:
                 meta_size = layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
                 px_buffer = layer.get("px_buffer", configuration.LAYER_PIXEL_BUFFER_DEFAULT)
-                metatilecoords: list[TileCoord] = []
+                metatilecoord_iterables: list[Iterable[TileCoord]] = []
                 for zoom in self.options.zoom:
                     if zoom in geoms:
-                        metatilecoords.extend(
+                        metatilecoord_iterables.append(
                             self._get_sparse_metatilecoords(
                                 config,
                                 layer_name,
@@ -1718,7 +1746,7 @@ class TileGeneration:
                                 px_buffer,
                             ),
                         )
-                grid_tilecoords[grid_name] = metatilecoords
+                grid_tilecoords[grid_name] = chain.from_iterable(metatilecoord_iterables)
                 continue
 
             # Fill the bounding pyramid
