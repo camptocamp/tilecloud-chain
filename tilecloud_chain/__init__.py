@@ -1550,9 +1550,9 @@ class TileGeneration:
         grid: tilecloud_chain.configuration.Grid,
         geometry: BaseGeometry,
         zoom: int,
-        resolution: int | float,
+        resolution: float,
         meta_size: int,
-        px_buffer: int | float,
+        px_buffer: float,
     ) -> list[TileCoord]:
         cache_key = (
             str(config.file),
