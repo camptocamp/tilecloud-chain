@@ -23,7 +23,7 @@
 - Fix `generate-controller --status` on PostgreSQL queue configurations so it reports job status instead of failing with a `KeyError`.
 - Keep WMS XML error newlines in tile error logs and remove extra spaces in the admin job status header `(date, status)` display.
 - Auto-create a PostgreSQL job when `generate-tiles --role=master` runs without `--job-id`, using `User call` as default title and allowing override with `--job-title=<title>`.
-- Speed up sparse geometry queue seeding in `generate-tiles --role=master` by using per-row metatile scanline intervals instead of full bounding-pyramid scans, reducing candidate metatiles on sparse datasets.
+- Speed up `generate-tiles --role=master` queue seeding for metatile layers by using per-row metatile scanline intervals instead of full bounding-pyramid scans, reducing candidate metatiles especially on sparse datasets.
 
 Environment variable migration (legacy -> new)
 
