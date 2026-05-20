@@ -40,6 +40,7 @@ from c2cwsgiutils import sentry
 from PIL import Image
 from prometheus_client import Counter, Summary
 from ruamel.yaml import YAML
+from shapely.geometry import box
 from shapely.geometry.base import BaseGeometry
 from shapely.geometry.polygon import Polygon
 from shapely.ops import unary_union
@@ -672,6 +673,10 @@ class TileGeneration:
         self.multi_task = multi_task
         self.configs: dict[Path, DatedConfig] = {}
         self.hosts_cache: DatedHosts | None = None
+        self.meta_tilecoords_sparse_cache: dict[
+            tuple[str, float, str, str, int, int, float, float],
+            list[TileCoord],
+        ] = {}
 
         class Options(NamedTuple):
             verbose: bool
@@ -1478,7 +1483,159 @@ class TileGeneration:
         )
         return geoms
 
-    def init_tilecoords(self, config: DatedConfig, layer_name: str, used_grid_name: str | None) -> None:
+    @staticmethod
+    def _bounds_to_index_range(
+        bounds_min: float,
+        bounds_max: float,
+        origin: float,
+        span: float,
+        max_index: int,
+    ) -> tuple[int, int] | None:
+        if bounds_min > bounds_max:
+            bounds_min, bounds_max = bounds_max, bounds_min
+        start = math.floor((bounds_min - origin) / span)
+        end = math.ceil((bounds_max - origin) / span) - 1
+        start = max(0, min(max_index, start))
+        end = max(0, min(max_index, end))
+        if start > end:
+            return None
+        return start, end
+
+    @staticmethod
+    def _y_bounds_to_index_range(
+        bounds_min: float,
+        bounds_max: float,
+        origin_top: float,
+        span: float,
+        max_index: int,
+    ) -> tuple[int, int] | None:
+        if bounds_min > bounds_max:
+            bounds_min, bounds_max = bounds_max, bounds_min
+        start = math.floor((origin_top - bounds_max) / span)
+        end = math.ceil((origin_top - bounds_min) / span) - 1
+        start = max(0, min(max_index, start))
+        end = max(0, min(max_index, end))
+        if start > end:
+            return None
+        return start, end
+
+    @staticmethod
+    def _merge_index_intervals(intervals: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:
+        sorted_intervals = sorted(intervals, key=lambda interval: (interval[0], interval[1]))
+        if not sorted_intervals:
+            return []
+        merged_intervals = [sorted_intervals[0]]
+        for start, end in sorted_intervals[1:]:
+            previous_start, previous_end = merged_intervals[-1]
+            if start <= previous_end + 1:
+                merged_intervals[-1] = (previous_start, max(previous_end, end))
+            else:
+                merged_intervals.append((start, end))
+        return merged_intervals
+
+    @staticmethod
+    def _iter_leaf_geometries(geometry: BaseGeometry) -> Iterable[BaseGeometry]:
+        geometries = getattr(geometry, "geoms", None)
+        if geometries is None:
+            yield geometry
+            return
+        for sub_geometry in geometries:
+            yield from TileGeneration._iter_leaf_geometries(sub_geometry)
+
+    def _get_sparse_metatilecoords(
+        self,
+        config: DatedConfig,
+        layer_name: str,
+        grid_name: str,
+        grid: tilecloud_chain.configuration.Grid,
+        geometry: BaseGeometry,
+        zoom: int,
+        resolution: int | float,
+        meta_size: int,
+        px_buffer: int | float,
+    ) -> list[TileCoord]:
+        cache_key = (
+            str(config.file),
+            config.mtime,
+            layer_name,
+            grid_name,
+            zoom,
+            meta_size,
+            float(px_buffer),
+            float(resolution),
+        )
+        if cache_key in self.meta_tilecoords_sparse_cache:
+            return self.meta_tilecoords_sparse_cache[cache_key]
+
+        tile_size = float(grid.get("tile_size", configuration.TILE_SIZE_DEFAULT))
+        metatile_span = tile_size * float(resolution) * meta_size
+        grid_bbox = [float(v) for v in grid["bbox"]]
+
+        matrix_width = math.ceil((grid_bbox[2] - grid_bbox[0]) / metatile_span)
+        matrix_height = math.ceil((grid_bbox[3] - grid_bbox[1]) / metatile_span)
+        max_x_index = matrix_width - 1
+        max_y_index = matrix_height - 1
+
+        geom = geometry
+        m_buffer = float(px_buffer) * float(resolution)
+        if m_buffer != 0:
+            geom = geom.buffer(m_buffer, 1)
+
+        if geom.is_empty:
+            self.meta_tilecoords_sparse_cache[cache_key] = []
+            return []
+
+        minx, miny, maxx, maxy = geom.bounds
+        if len([value for value in (minx, miny, maxx, maxy) if not math.isnan(value)]) == 0:
+            _LOGGER.warning("bounds empty for zoom %s", zoom)
+            self.meta_tilecoords_sparse_cache[cache_key] = []
+            return []
+
+        row_range = self._y_bounds_to_index_range(miny, maxy, grid_bbox[3], metatile_span, max_y_index)
+        if row_range is None:
+            self.meta_tilecoords_sparse_cache[cache_key] = []
+            return []
+
+        row_start, row_end = row_range
+        metatilecoords: list[TileCoord] = []
+        for row in range(row_start, row_end + 1):
+            band_max_y = grid_bbox[3] - row * metatile_span
+            band_min_y = band_max_y - metatile_span
+            row_geom = geom.intersection(box(grid_bbox[0], band_min_y, grid_bbox[2], band_max_y))
+            if row_geom.is_empty:
+                continue
+
+            intervals: list[tuple[int, int]] = []
+            for sub_geometry in self._iter_leaf_geometries(row_geom):
+                if sub_geometry.is_empty:
+                    continue
+                sub_minx, _, sub_maxx, _ = sub_geometry.bounds
+                if math.isnan(sub_minx) or math.isnan(sub_maxx):
+                    continue
+                interval = self._bounds_to_index_range(
+                    sub_minx,
+                    sub_maxx,
+                    grid_bbox[0],
+                    metatile_span,
+                    max_x_index,
+                )
+                if interval is not None:
+                    intervals.append(interval)
+
+            for start, end in self._merge_index_intervals(intervals):
+                for x_index in range(start, end + 1):
+                    metatilecoords.append(TileCoord(zoom, x_index * meta_size, row * meta_size, meta_size))
+
+        self.meta_tilecoords_sparse_cache[cache_key] = metatilecoords
+        return metatilecoords
+
+    def init_tilecoords(
+        self,
+        config: DatedConfig,
+        layer_name: str,
+        used_grid_name: str | None,
+        sparse_meta_seed: bool = False,
+    ) -> None:
         """Initialize the tilestream for the given layer."""
         if layer_name not in config.config.get("layers", {}):
             _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
@@ -1540,10 +1697,33 @@ class TileGeneration:
             if self.options.zoom is None:
                 self.options.zoom = [z for z, r in enumerate(resolutions)]
 
+            geoms = self.get_geoms(config, layer_name, grid_name)
+
+            if sparse_meta_seed and layer["meta"]:
+                meta_size = layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
+                px_buffer = layer.get("px_buffer", configuration.LAYER_PIXEL_BUFFER_DEFAULT)
+                metatilecoords: list[TileCoord] = []
+                for zoom in self.options.zoom:
+                    if zoom in geoms:
+                        metatilecoords.extend(
+                            self._get_sparse_metatilecoords(
+                                config,
+                                layer_name,
+                                grid_name,
+                                grid,
+                                geoms[zoom],
+                                zoom,
+                                resolutions[zoom],
+                                meta_size,
+                                px_buffer,
+                            ),
+                        )
+                grid_tilecoords[grid_name] = metatilecoords
+                continue
+
             # Fill the bounding pyramid
             tilegrid = self.get_grid(config, get_grid_name(config, layer_name, grid_name))
             bounding_pyramid = BoundingPyramid(tilegrid=tilegrid)
-            geoms = self.get_geoms(config, layer_name, grid_name)
             for zoom in self.options.zoom:
                 if zoom in geoms:
                     extent = geoms[zoom].bounds

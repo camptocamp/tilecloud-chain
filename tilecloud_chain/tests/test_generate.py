@@ -10,10 +10,11 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 from anyio import Path as AnyioPath
 from PIL import Image
+from shapely.geometry import box
 from testfixtures import LogCapture
 from tilecloud.store.redis import RedisTileStore
 
-from tilecloud_chain import controller, generate
+from tilecloud_chain import DatedConfig, TileGeneration, controller, generate
 from tilecloud_chain.settings import settings
 from tilecloud_chain.tests import CompareCase
 
@@ -176,6 +177,97 @@ def test_normalize_job_command_arguments() -> None:
     assert generate._normalize_job_command_arguments(
         ["/tmp/.build/venv/bin/generate-tiles", "--role", "master", "--job-title=my title"],
     ) == ["generate-tiles", "--role", "master"]
+
+
+def test_merge_index_intervals_merges_overlaps_and_adjacency() -> None:
+    assert TileGeneration._merge_index_intervals([(5, 7), (1, 3), (3, 4), (9, 9), (8, 8)]) == [(1, 9)]
+
+
+@pytest.mark.asyncio
+async def test_generate_queue_enables_sparse_seed_on_master() -> None:
+    options = Namespace(
+        get_hash=None,
+        tiles=None,
+        role="master",
+        get_bbox=None,
+        tile=None,
+        grid=None,
+    )
+    gene = Mock()
+    gene.config_file = AnyioPath("config.yaml")
+    config = SimpleNamespace(config={"layers": {"point": {}}})
+    gene.get_config = AsyncMock(return_value=config)
+    gene.init_tilecoords = Mock()
+
+    generate_ = generate.Generate(options, gene, out=None)
+    await generate_._generate_queue("point")  # noqa: SLF001
+
+    gene.init_tilecoords.assert_called_once_with(config, "point", None, sparse_meta_seed=True)
+
+
+@pytest.mark.asyncio
+async def test_generate_queue_disables_sparse_seed_on_local() -> None:
+    options = Namespace(
+        get_hash=None,
+        tiles=None,
+        role="local",
+        get_bbox=None,
+        tile=None,
+        grid=None,
+    )
+    gene = Mock()
+    gene.config_file = AnyioPath("config.yaml")
+    config = SimpleNamespace(config={"layers": {"point": {}}})
+    gene.get_config = AsyncMock(return_value=config)
+    gene.init_tilecoords = Mock()
+
+    generate_ = generate.Generate(options, gene, out=None)
+    await generate_._generate_queue("point")  # noqa: SLF001
+
+    gene.init_tilecoords.assert_called_once_with(config, "point", None, sparse_meta_seed=False)
+
+
+def test_sparse_metatilecoords_split_by_row_and_cache() -> None:
+    gene = TileGeneration(config_file=AnyioPath("tilegeneration/test-nosns.yaml"), configure_logging=False)
+    config = DatedConfig({"layers": {}, "grids": {}}, 1.0, AnyioPath("config.yaml"))
+    grid = {
+        "bbox": [0, 0, 8, 8],
+        "tile_size": 1,
+        "resolutions": [1],
+    }
+    geom = box(0.2, 4.2, 1.8, 4.8).union(box(3.2, 4.2, 3.8, 4.8)).union(box(6.2, 2.2, 6.8, 2.8))
+
+    metatilecoords = gene._get_sparse_metatilecoords(
+        config,
+        "layer",
+        "grid",
+        grid,
+        geom,
+        zoom=0,
+        resolution=1,
+        meta_size=1,
+        px_buffer=0,
+    )
+
+    assert [(coord.z, coord.x, coord.y, coord.n) for coord in metatilecoords] == [
+        (0, 0, 3, 1),
+        (0, 1, 3, 1),
+        (0, 3, 3, 1),
+        (0, 6, 5, 1),
+    ]
+
+    cached = gene._get_sparse_metatilecoords(
+        config,
+        "layer",
+        "grid",
+        grid,
+        box(0, 0, 8, 8),
+        zoom=0,
+        resolution=1,
+        meta_size=1,
+        px_buffer=0,
+    )
+    assert cached is metatilecoords
 
 
 class TestGenerate(CompareCase):
