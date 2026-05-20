@@ -159,8 +159,10 @@
 - <a id="definitions/layer_post_process"></a>**`layer_post_process`** *(string)*: Do an image post process after the empty hash check.
 - <a id="definitions/layer_geoms"></a>**`layer_geoms`** *(array)*: The geometries used to determine where we should create the tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-geomsql.
   - <a id="definitions/layer_geoms/items"></a>**Items** *(object)*: Cannot contain additional properties.
-    - <a id="definitions/layer_geoms/items/properties/connection"></a>**`connection`** *(string, required)*: The PostgreSQL connection string.
-    - <a id="definitions/layer_geoms/items/properties/sql"></a>**`sql`** *(string, required)*: The SQL query that get the geometry in geom e.g. `the_geom AS geom FROM my_table`.
+    - **Any of**
+    - <a id="definitions/layer_geoms/items/properties/connection"></a>**`connection`** *(string)*: The PostgreSQL connection string.
+    - <a id="definitions/layer_geoms/items/properties/datasource"></a>**`datasource`** *(string)*: The GDAL data source relative path (for example geoms_mask.geojson).
+    - <a id="definitions/layer_geoms/items/properties/sql"></a>**`sql`** *(string)*: For PostgreSQL source: SQL query that gets the geometry in `geom` (e.g. `the_geom AS geom FROM my_table`). For file data source: optional OGR SQL query.
     - <a id="definitions/layer_geoms/items/properties/min_resolution"></a>**`min_resolution`** *(number)*: The min resolution where the query is valid.
     - <a id="definitions/layer_geoms/items/properties/max_resolution"></a>**`max_resolution`** *(number)*: The max resolution where the query is valid.
 - <a id="definitions/layer_empty_tile_detection"></a>**`layer_empty_tile_detection`** *(object)*: The rules used to detect the empty tiles, use `generate-tiles --get-hash` to get what we can use, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-hash. Cannot contain additional properties.

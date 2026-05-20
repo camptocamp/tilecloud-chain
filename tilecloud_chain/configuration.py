@@ -1309,12 +1309,61 @@ The layer extension
 
 
 
-LayerGeometries = list["_LayerGeometriesItem"]
+LayerGeometries = list["LayerGeometry"]
 r"""
 Layer geometries.
 
 The geometries used to determine where we should create the tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-geomsql
 """
+
+
+
+class LayerGeometry(TypedDict, total=False):
+    r"""
+    Layer geometry.
+
+    anyOf:
+      - required:
+        - connection
+        - sql
+      - required:
+        - datasource
+    """
+
+    connection: str
+    r"""
+    Connection.
+
+    The PostgreSQL connection string
+    """
+
+    datasource: str
+    r"""
+    Datasource.
+
+    The GDAL data source relative path (for example geoms_mask.geojson)
+    """
+
+    sql: str
+    r"""
+    SQL.
+
+    For PostgreSQL source: SQL query that gets the geometry in `geom` (e.g. `the_geom AS geom FROM my_table`). For file data source: optional OGR SQL query.
+    """
+
+    min_resolution: int | float
+    r"""
+    Min resolution.
+
+    The min resolution where the query is valid
+    """
+
+    max_resolution: int | float
+    r"""
+    Max resolution.
+
+    The max resolution where the query is valid
+    """
 
 
 
@@ -3065,41 +3114,6 @@ r""" Default value of the field path 'Layer WMS meta_buffer' """
 
 _LAYER_WMS_META_SIZE_DEFAULT = 5
 r""" Default value of the field path 'Layer WMS meta_size' """
-
-
-
-class _LayerGeometriesItem(TypedDict, total=False):
-    connection: Required[str]
-    r"""
-    Connection.
-
-    The PostgreSQL connection string
-
-    Required property
-    """
-
-    sql: Required[str]
-    r"""
-    SQL.
-
-    The SQL query that get the geometry in geom e.g. `the_geom AS geom FROM my_table`
-
-    Required property
-    """
-
-    min_resolution: int | float
-    r"""
-    Min resolution.
-
-    The min resolution where the query is valid
-    """
-
-    max_resolution: int | float
-    r"""
-    Max resolution.
-
-    The max resolution where the query is valid
-    """
 
 
 

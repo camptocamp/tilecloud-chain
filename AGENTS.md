@@ -1,6 +1,6 @@
 The project must use async-friendly APIs for I/O to don't block the event loop.
 
-- `pathlib` must not be used, use `anyio.Path` instead.
+- `pathlib` must not be used in application code, use `anyio.Path` instead.
 - Converting a non-async function to `async` is allowed, and requires updating all call sites to `await` it.
 - `aiofiles` must not be used, use `anyio.Path` instead.
 - All disk or network operation must be done with async API; avoid blocking calls on the event loop.
@@ -83,6 +83,8 @@ The changes in the codebase that affect the user should be documented in the `CH
 The new functionalities should be reasonably tested in the `tilecloud_chain/tests/` folder.
 
 Test files in `tilecloud_chain/tests/` may not follow the rules concerning `async` requirements, as there are no performance requirements.
+
+Test files in `tilecloud_chain/tests/` may use `pathlib` when it is simpler for synchronous fixtures/assertions.
 
 To run the tests, use the `make tests` command.
 

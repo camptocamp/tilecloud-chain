@@ -13,3 +13,4 @@ OpenLayers
 pyproj
 geoms
 bbox
+mask.geojson

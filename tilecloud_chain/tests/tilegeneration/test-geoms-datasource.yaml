@@ -1,0 +1,26 @@
+grids:
+  swissgrid_5:
+    resolutions: [1000, 500, 250, 100, 50]
+    bbox: [420000, 30000, 900000, 350000]
+    srs: EPSG:21781
+
+caches:
+  local:
+    type: filesystem
+    folder: /tmp/tiles
+
+layers:
+  point_datasource:
+    type: wms
+    url: http://mapserver:8080/
+    layers: point
+    wmts_style: default
+    mime_type: image/png
+    extension: png
+    grid: swissgrid_5
+    geoms:
+      - datasource: geoms/mask.geojson
+
+generation:
+  default_cache: local
+  default_layers: [point_datasource]

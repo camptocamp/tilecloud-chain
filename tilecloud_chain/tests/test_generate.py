@@ -1,11 +1,12 @@
 import json
 import os
 import shutil
+import sys
 from argparse import Namespace
 from itertools import product, repeat
 from pathlib import Path
 from types import SimpleNamespace
-from typing import cast
+from typing import Any, cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -15,7 +16,7 @@ from shapely.geometry import box
 from testfixtures import LogCapture
 from tilecloud.store.redis import RedisTileStore
 
-from tilecloud_chain import SparseMetaTileBoundingPyramid, controller, generate
+from tilecloud_chain import DatedConfig, SparseMetaTileBoundingPyramid, TileGeneration, controller, generate
 from tilecloud_chain import configuration as tcc_configuration
 from tilecloud_chain.settings import settings
 from tilecloud_chain.tests import CompareCase
@@ -256,6 +257,211 @@ def test_sparse_metatilecoords_split_by_row() -> None:
         (0, 3, 3, 1),
         (0, 6, 5, 1),
     ]
+
+
+def test_resolve_gdal_datasource_relative() -> None:
+    datasource = TileGeneration._resolve_gdal_datasource(
+        AnyioPath("/tmp/tilegeneration/config.yaml"),
+        "geoms/mask.geojson",
+    )
+    assert datasource == "/tmp/tilegeneration/geoms/mask.geojson"
+
+
+def test_resolve_gdal_datasource_uri() -> None:
+    with pytest.raises(ValueError, match="Only relative file paths"):
+        TileGeneration._resolve_gdal_datasource(
+            AnyioPath("/tmp/tilegeneration/config.yaml"),
+            "PG:host=db dbname=tests",
+        )
+
+
+def test_resolve_gdal_datasource_parent_not_allowed() -> None:
+    with pytest.raises(ValueError, match="inside the config directory"):
+        TileGeneration._resolve_gdal_datasource(
+            AnyioPath("/tmp/tilegeneration/config.yaml"),
+            "../mask.geojson",
+        )
+
+
+def test_resolve_gdal_datasource_absolute_not_allowed() -> None:
+    with pytest.raises(ValueError, match="Only relative file paths"):
+        TileGeneration._resolve_gdal_datasource(
+            AnyioPath("/tmp/tilegeneration/config.yaml"),
+            "/tmp/mask.geojson",
+        )
+
+
+def test_load_geom_from_datasource_with_sql(monkeypatch: pytest.MonkeyPatch) -> None:
+    read_args: tuple[str, str | None] | None = None
+
+    def _read_ogr_geometries(datasource: str, sql: str | None) -> list[Any]:
+        nonlocal read_args
+        read_args = (datasource, sql)
+        return []
+
+    monkeypatch.setattr(TileGeneration, "_read_ogr_geometries", _read_ogr_geometries)
+
+    geom = TileGeneration._load_geom_from_datasource(
+        AnyioPath("/tmp/tilegeneration/config.yaml"),
+        {"datasource": "geoms/mask.geojson", "sql": "SELECT * FROM mask"},
+    )
+
+    assert read_args == ("/tmp/tilegeneration/geoms/mask.geojson", "SELECT * FROM mask")
+    assert geom.is_empty
+
+
+def test_get_geoms_from_datasource(monkeypatch: pytest.MonkeyPatch) -> None:
+    read_args: tuple[str, str | None] | None = None
+
+    def _read_ogr_geometries(datasource: str, sql: str | None) -> list[Any]:
+        nonlocal read_args
+        read_args = (datasource, sql)
+        return [box(550000, 170000, 560000, 180000)]
+
+    monkeypatch.setattr(TileGeneration, "_read_ogr_geometries", _read_ogr_geometries)
+
+    gene = TileGeneration(
+        options=Namespace(
+            verbose=False,
+            debug=False,
+            quiet=False,
+            bbox=None,
+            zoom=None,
+            test=None,
+            near=None,
+            time=None,
+            geom=True,
+            ignore_error=False,
+            host="localhost",
+        ),
+        configure_logging=False,
+    )
+    config = DatedConfig(
+        {
+            "grids": {
+                "swissgrid_5": {
+                    "resolutions": [1000, 500, 250],
+                    "bbox": [420000, 30000, 900000, 350000],
+                    "srs": "EPSG:21781",
+                },
+            },
+            "layers": {
+                "point_datasource": {
+                    "type": "wms",
+                    "url": "http://mapserver:8080/",
+                    "layers": "point",
+                    "wmts_style": "default",
+                    "mime_type": "image/png",
+                    "extension": "png",
+                    "grid": "swissgrid_5",
+                    "geoms": [{"datasource": "geoms/mask.geojson"}],
+                },
+            },
+        },
+        0,
+        AnyioPath("/tmp/tilegeneration/test-geoms-datasource.yaml"),
+    )
+
+    geoms = gene.get_geoms(config, "point_datasource", "swissgrid_5")
+
+    assert read_args == ("/tmp/tilegeneration/geoms/mask.geojson", None)
+    assert sorted(geoms.keys()) == [0, 1, 2]
+    assert geoms[0].bounds == (550000.0, 170000.0, 560000.0, 180000.0)
+
+
+def test_read_ogr_geometries_uses_sql_and_releases_result_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    execute_sql_calls: list[str] = []
+    release_calls = 0
+
+    class _Geometry:
+        def ExportToJson(self) -> str:  # noqa: N802
+            return json.dumps({"type": "Point", "coordinates": [1, 2]})
+
+    class _Feature:
+        @staticmethod
+        def GetGeometryRef() -> _Geometry:  # noqa: N802
+            return _Geometry()
+
+    class _Layer:
+        def __iter__(self):
+            return iter([_Feature()])
+
+    class _DataSource:
+        def GetLayer(self) -> _Layer:  # noqa: N802
+            return _Layer()
+
+        def ExecuteSQL(self, sql: str) -> _Layer:  # noqa: N802
+            execute_sql_calls.append(sql)
+            return _Layer()
+
+        def ReleaseResultSet(self, _layer: _Layer) -> None:  # noqa: N802
+            nonlocal release_calls
+            release_calls += 1
+
+    class _Ogr:
+        @staticmethod
+        def Open(_datasource: str) -> _DataSource:  # noqa: N802
+            return _DataSource()
+
+    monkeypatch.setitem(sys.modules, "osgeo", SimpleNamespace(ogr=_Ogr()))
+
+    geometries = TileGeneration._read_ogr_geometries("/tmp/mask.geojson", "SELECT * FROM mask")
+
+    assert len(geometries) == 1
+    assert execute_sql_calls == ["SELECT * FROM mask"]
+    assert release_calls == 1
+
+
+def test_read_ogr_geometries_without_sql_uses_default_layer(monkeypatch: pytest.MonkeyPatch) -> None:
+    get_layer_calls = 0
+
+    class _Geometry:
+        def ExportToJson(self) -> str:  # noqa: N802
+            return json.dumps({"type": "Point", "coordinates": [1, 2]})
+
+    class _Feature:
+        @staticmethod
+        def GetGeometryRef() -> _Geometry:  # noqa: N802
+            return _Geometry()
+
+    class _Layer:
+        def __iter__(self):
+            return iter([_Feature()])
+
+    class _DataSource:
+        def GetLayer(self) -> _Layer:  # noqa: N802
+            nonlocal get_layer_calls
+            get_layer_calls += 1
+            return _Layer()
+
+        def ExecuteSQL(self, _sql: str) -> _Layer:  # noqa: N802
+            raise AssertionError("ExecuteSQL should not be called without sql")
+
+        def ReleaseResultSet(self, _layer: _Layer) -> None:  # noqa: N802
+            raise AssertionError("ReleaseResultSet should not be called without sql")
+
+    class _Ogr:
+        @staticmethod
+        def Open(_datasource: str) -> _DataSource:  # noqa: N802
+            return _DataSource()
+
+    monkeypatch.setitem(sys.modules, "osgeo", SimpleNamespace(ogr=_Ogr()))
+
+    geometries = TileGeneration._read_ogr_geometries("/tmp/mask.geojson", None)
+
+    assert len(geometries) == 1
+    assert get_layer_calls == 1
+
+
+@pytest.mark.asyncio
+async def test_datasource_geom_config_is_valid() -> None:
+    gene = TileGeneration(configure_logging=False)
+    config = await gene.get_config(
+        AnyioPath(str(Path(__file__).parent / "tilegeneration/test-geoms-datasource.yaml")),
+        ignore_error=False,
+    )
+
+    assert "point_datasource" in config.config.get("layers", {})
 
 
 class TestGenerate(CompareCase):

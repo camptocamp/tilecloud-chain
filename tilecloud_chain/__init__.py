@@ -40,7 +40,7 @@ from c2cwsgiutils import sentry
 from PIL import Image
 from prometheus_client import Counter, Summary
 from ruamel.yaml import YAML
-from shapely.geometry import box
+from shapely.geometry import GeometryCollection, box, shape
 from shapely.geometry.base import BaseGeometry
 from shapely.geometry.polygon import Polygon
 from shapely.ops import unary_union
@@ -57,7 +57,6 @@ from tilecloud.store.redis import RedisTileStore
 from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.sqs import SQSTileStore, _maybe_stop
 
-import tilecloud_chain.configuration
 from tilecloud_chain import configuration
 from tilecloud_chain.filter.error import MaximumConsecutiveErrors, TooManyError
 from tilecloud_chain.multitilestore import MultiTileStore
@@ -216,7 +215,7 @@ def add_common_options(
 
 
 def get_tile_matrix_identifier(
-    grid: tilecloud_chain.configuration.Grid,
+    grid: configuration.Grid,
     resolution: float | None = None,
     zoom: int | None = None,
 ) -> str:
@@ -376,7 +375,7 @@ class DatedConfig:
 
     def __init__(
         self,
-        config: tilecloud_chain.configuration.Configuration,
+        config: configuration.Configuration,
         mtime: float,
         file: Path,
     ) -> None:
@@ -415,7 +414,7 @@ class SparseMetaTileBoundingPyramid(BoundingPyramid):
     def __init__(
         self,
         tilegrid: TileGrid,
-        grid: tilecloud_chain.configuration.Grid,
+        grid: configuration.Grid,
         geoms: dict[str | int, BaseGeometry],
         zooms: Iterable[int],
         resolutions: list[int | float],
@@ -687,7 +686,7 @@ def get_grid_config(
     config: DatedConfig,
     layer_name: str,
     grid_name: str | None,
-) -> tilecloud_chain.configuration.Grid:
+) -> configuration.Grid:
     """Get the grid configuration."""
     return config.config["grids"][get_grid_name(config, layer_name, grid_name)]
 
@@ -840,7 +839,7 @@ class TileGeneration:
         self,
         config_file: Path | None = None,
         options: Namespace | None = None,
-        base_config: tilecloud_chain.configuration.Configuration | None = None,
+        base_config: configuration.Configuration | None = None,
         configure_logging: bool = True,
         multi_task: bool = True,
         maxconsecutive_errors: bool = True,
@@ -858,7 +857,7 @@ class TileGeneration:
         self.maxconsecutive_errors = maxconsecutive_errors
         self.out = out
         self.grid_cache: dict[Path, dict[str, DatedTileGrid]] = {}
-        self.layer_legends: dict[str, list[tilecloud_chain.configuration.LayerLegendItem]] = {}
+        self.layer_legends: dict[str, list[configuration.LayerLegendItem]] = {}
         self.config_file = config_file
         self.base_config = base_config
         self.multi_task = multi_task
@@ -1017,7 +1016,7 @@ class TileGeneration:
         return (
             await self.get_config(config_file)
             if config_file
-            else DatedConfig(cast("tilecloud_chain.configuration.Configuration", {}), 0, Path())
+            else DatedConfig(cast("configuration.Configuration", {}), 0, Path())
         )
 
     async def get_tile_config(self, tile: Tile) -> DatedConfig:
@@ -1028,13 +1027,13 @@ class TileGeneration:
         self,
         config_file: Path,
         ignore_error: bool = True,
-        base_config: tilecloud_chain.configuration.Configuration | None = None,
+        base_config: configuration.Configuration | None = None,
     ) -> DatedConfig:
         """Get the validated configuration for the file name, with cache management."""
         if not await config_file.exists():
             _LOGGER.error("Missing config file %s", config_file)
             if ignore_error:
-                return DatedConfig(cast("tilecloud_chain.configuration.Configuration", {}), 0, Path())
+                return DatedConfig(cast("configuration.Configuration", {}), 0, Path())
             sys.exit(1)
 
         config: DatedConfig | None = self.configs.get(config_file)
@@ -1046,7 +1045,7 @@ class TileGeneration:
         config, success = await self._get_config(config_file, ignore_error, base_config)
         if not success or config is None:
             if ignore_error:
-                config = DatedConfig(cast("tilecloud_chain.configuration.Configuration", {}), 0, Path())
+                config = DatedConfig(cast("configuration.Configuration", {}), 0, Path())
             else:
                 sys.exit(1)
         self.configs[config_file] = config
@@ -1104,7 +1103,7 @@ class TileGeneration:
         self,
         config_file: Path,
         ignore_error: bool,
-        base_config: tilecloud_chain.configuration.Configuration | None = None,
+        base_config: configuration.Configuration | None = None,
     ) -> tuple[DatedConfig, bool]:
         """Get the validated configuration for the file name."""
 
@@ -1117,7 +1116,7 @@ class TileGeneration:
 
         config_stat = await config_file.stat()
         dated_config = DatedConfig(
-            cast("tilecloud_chain.configuration.Configuration", config),
+            cast("configuration.Configuration", config),
             config_stat.st_mtime,
             config_file,
         )
@@ -1227,7 +1226,7 @@ class TileGeneration:
             result *= fact**nb
         return result
 
-    def get_all_dimensions(self, layer: tilecloud_chain.configuration.Layer) -> list[dict[str, str]]:
+    def get_all_dimensions(self, layer: configuration.Layer) -> list[dict[str, str]]:
         """Get all the dimensions."""
         assert layer is not None
 
@@ -1249,7 +1248,7 @@ class TileGeneration:
     async def get_store(
         self,
         config: DatedConfig,
-        cache: tilecloud_chain.configuration.Cache,
+        cache: configuration.Cache,
         layer_name: str,
         grid_name: str | None,
         read_only: bool = False,
@@ -1272,7 +1271,7 @@ class TileGeneration:
         )
         # store
         if cache["type"] == "s3":
-            cache_s3 = cast("tilecloud_chain.configuration.CacheS3", cache)
+            cache_s3 = cast("configuration.CacheS3", cache)
             # on s3
             cache_tilestore: AsyncTileStore = TileStoreWrapper(
                 S3TileStore(
@@ -1283,7 +1282,7 @@ class TileGeneration:
                 ),
             )
         elif cache["type"] == "azure":
-            cache_azure = cast("tilecloud_chain.configuration.CacheAzureTyped", cache)
+            cache_azure = cast("configuration.CacheAzureTyped", cache)
             # on Azure
             cache_tilestore = AzureStorageBlobTileStore(
                 tilelayout=layout,
@@ -1622,15 +1621,13 @@ class TileGeneration:
                 geoms[z] = geom
 
         if self.options.near is None and self.options.geom:
-            for g in layer.get("geoms", []):
-                with _GEOMS_GET_SUMMARY.labels(layer_name, host or self.options.host).time():
-                    connection = psycopg2.connect(g["connection"])
-                    cursor = connection.cursor()
-                    sql = f"SELECT ST_AsBinary(geom) FROM (SELECT {g['sql']}) AS g"  # nosec # noqa: S608
-                    _LOGGER.info("Execute SQL: %s.", sql)
-                    cursor.execute(sql)
-                    geom_list = [loads_wkb(bytes(r[0])) for r in cursor.fetchall()]
-                    geom = unary_union(geom_list)
+            for geom_source in layer.get("geoms", cast("configuration.LayerGeometries", [])):
+                metrics_host = host or self.options.host
+                with _GEOMS_GET_SUMMARY.labels(layer_name, metrics_host).time():
+                    if "datasource" in geom_source:
+                        geom = self._load_geom_from_datasource(config.file, geom_source)
+                    else:
+                        geom = self._load_geom_from_postgis(geom_source)
 
                     # Reproject the geometry if needed
                     if (
@@ -1657,12 +1654,10 @@ class TileGeneration:
                             ),
                         )
                     for z, r in enumerate(grid["resolutions"]):
-                        if ("min_resolution" not in g or g["min_resolution"] <= r) and (
-                            "max_resolution" not in g or g["max_resolution"] >= r
+                        if ("min_resolution" not in geom_source or geom_source["min_resolution"] <= r) and (
+                            "max_resolution" not in geom_source or geom_source["max_resolution"] >= r
                         ):
                             geoms[z] = geom
-                    cursor.close()
-                    connection.close()
 
         self.geoms_cache.setdefault(config.file, {}).setdefault(layer_name, {})[grid_name] = DatedGeoms(
             geoms,
@@ -1670,9 +1665,92 @@ class TileGeneration:
         )
         return geoms
 
+    @staticmethod
+    def _resolve_gdal_datasource(config_file: Path, datasource: str) -> str:
+        """Resolve a GDAL datasource path relative to the config file when applicable."""
+        if re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", datasource):
+            message = "Only relative file paths are allowed in geoms.datasource."
+            raise ValueError(message)
+        datasource_path = Path(datasource)
+        if datasource_path.is_absolute():
+            message = "Only relative file paths are allowed in geoms.datasource."
+            raise ValueError(message)
+        if ".." in datasource_path.parts:
+            message = "The geoms.datasource path should stay inside the config directory."
+            raise ValueError(message)
+
+        config_directory = os.path.realpath(str(config_file.parent))
+        resolved_datasource = os.path.realpath(
+            os.path.normpath(str(config_file.parent / datasource_path)),
+        )
+        if os.path.commonpath([config_directory, resolved_datasource]) != config_directory:
+            message = "The geoms.datasource path should stay inside the config directory."
+            raise ValueError(message)
+        return resolved_datasource
+
+    @staticmethod
+    def _load_geom_from_postgis(geom_source: configuration.LayerGeometry) -> BaseGeometry:
+        """Load one geometry from a PostGIS source."""
+        connection = psycopg2.connect(geom_source["connection"])
+        try:
+            cursor = connection.cursor()
+            try:
+                sql = f"SELECT ST_AsBinary(geom) FROM (SELECT {geom_source['sql']}) AS g"  # nosec # noqa: S608
+                _LOGGER.info("Execute SQL: %s.", sql)
+                cursor.execute(sql)
+                geom_list = [loads_wkb(bytes(result[0])) for result in cursor.fetchall()]
+            finally:
+                cursor.close()
+        finally:
+            connection.close()
+        return unary_union(geom_list)
+
+    @staticmethod
+    def _load_geom_from_datasource(
+        config_file: Path, geom_source: configuration.LayerGeometry
+    ) -> BaseGeometry:
+        """Load one geometry from a GDAL datasource."""
+        datasource = TileGeneration._resolve_gdal_datasource(config_file, geom_source["datasource"])
+        geometries = TileGeneration._read_ogr_geometries(datasource, geom_source.get("sql"))
+
+        if not geometries:
+            return GeometryCollection()
+
+        return unary_union(geometries)
+
+    @staticmethod
+    def _read_ogr_geometries(datasource: str, sql: str | None) -> list[BaseGeometry]:
+        """Read geometries from a GDAL datasource using OGR."""
+        try:
+            from osgeo import ogr
+        except ModuleNotFoundError as exception:
+            message = "Unable to load GDAL Python bindings (osgeo.ogr)."
+            raise RuntimeError(message) from exception
+
+        data_source = ogr.Open(datasource)
+        if data_source is None:
+            message = f"Unable to open GDAL datasource '{datasource}'."
+            raise RuntimeError(message)
+
+        layer = data_source.ExecuteSQL(sql) if sql is not None else data_source.GetLayer()
+        if layer is None:
+            message = f"Unable to read GDAL datasource '{datasource}'."
+            raise RuntimeError(message)
+
+        try:
+            geometries = []
+            for feature in layer:
+                geometry = feature.GetGeometryRef()
+                if geometry is not None:
+                    geometries.append(shape(json.loads(geometry.ExportToJson())))
+            return geometries
+        finally:
+            if sql is not None:
+                data_source.ReleaseResultSet(layer)
+
     def _set_default_zoom_for_time(
         self,
-        layer: tilecloud_chain.configuration.Layer,
+        layer: configuration.Layer,
         resolutions: list[int | float],
     ) -> None:
         if self.options.time is None or self.options.zoom is not None:
@@ -1704,7 +1782,7 @@ class TileGeneration:
 
     def _apply_min_resolution_seed_filter(
         self,
-        layer: tilecloud_chain.configuration.Layer,
+        layer: configuration.Layer,
         resolutions: list[int | float],
         layer_name: str,
     ) -> None:
@@ -1731,7 +1809,7 @@ class TileGeneration:
 
     def _resolve_grid_zooms(
         self,
-        layer: tilecloud_chain.configuration.Layer,
+        layer: configuration.Layer,
         resolutions: list[int | float],
         grid_name: str,
         layer_name: str,
@@ -1752,8 +1830,8 @@ class TileGeneration:
         config: DatedConfig,
         layer_name: str,
         grid_name: str,
-        layer: tilecloud_chain.configuration.Layer,
-        grid: tilecloud_chain.configuration.Grid,
+        layer: configuration.Layer,
+        grid: configuration.Grid,
         geoms: dict[str | int, BaseGeometry],
         zooms: list[int],
         resolutions: list[int | float],
@@ -1776,7 +1854,7 @@ class TileGeneration:
         config: DatedConfig,
         layer_name: str,
         grid_name: str,
-        layer: tilecloud_chain.configuration.Layer,
+        layer: configuration.Layer,
         geoms: dict[str | int, BaseGeometry],
         zooms: list[int],
         resolutions: list[int | float],
@@ -2391,7 +2469,7 @@ def parse_tilecoord(string_representation: str) -> TileCoord:
 class Process:
     """Process a tile throw an external command."""
 
-    def __init__(self, config: tilecloud_chain.configuration.ProcessCommand, options: Namespace) -> None:
+    def __init__(self, config: configuration.ProcessCommand, options: Namespace) -> None:
         self.config = config
         self.options: list[Literal["verbose", "debug", "quiet", "default"]] = []
         if options.verbose:
