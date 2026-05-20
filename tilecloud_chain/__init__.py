@@ -1712,7 +1712,9 @@ class TileGeneration:
             return
         min_resolution_seed = layer["min_resolution_seed"]
         if self.options.zoom is None:
-            self.options.zoom = [z for z, resolution in enumerate(resolutions) if resolution >= min_resolution_seed]
+            self.options.zoom = [
+                z for z, resolution in enumerate(resolutions) if resolution >= min_resolution_seed
+            ]
             return
         for zoom in self.options.zoom:
             resolution = resolutions[zoom]
@@ -1810,7 +1812,9 @@ class TileGeneration:
                 ),
             )
         if layer["meta"]:
-            return bounding_pyramid.metatilecoords(layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT))
+            return bounding_pyramid.metatilecoords(
+                layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
+            )
         return bounding_pyramid
 
     def init_tilecoords(
