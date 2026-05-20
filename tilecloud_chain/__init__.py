@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 from hashlib import sha1
 from io import BytesIO
-from itertools import chain, product
+from itertools import product
 from math import ceil, sqrt
 from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, TextIO, TypedDict, cast
 
@@ -409,6 +409,147 @@ class DatedHosts:
         self.mtime = mtime
 
 
+class SparseMetaTileBoundingPyramid(BoundingPyramid):
+    """Bounding pyramid variant that computes sparse metatiles lazily."""
+
+    def __init__(
+        self,
+        tilegrid: TileGrid,
+        grid: dict[str, Any],
+        geoms: dict[str | int, BaseGeometry],
+        zooms: Iterable[int],
+        resolutions: list[int | float],
+        px_buffer: int | float,
+    ) -> None:
+        super().__init__(tilegrid=tilegrid)
+        self._grid = grid
+        self._geoms = geoms
+        self._zooms = tuple(zooms)
+        self._resolutions = resolutions
+        self._px_buffer = float(px_buffer)
+
+    @staticmethod
+    def _bounds_to_index_range(
+        bounds_min: float,
+        bounds_max: float,
+        origin: float,
+        span: float,
+        max_index: int,
+    ) -> tuple[int, int] | None:
+        if bounds_min > bounds_max:
+            bounds_min, bounds_max = bounds_max, bounds_min
+        start = math.floor((bounds_min - origin) / span)
+        end = math.ceil((bounds_max - origin) / span) - 1
+        start = max(0, min(max_index, start))
+        end = max(0, min(max_index, end))
+        if start > end:
+            return None
+        return start, end
+
+    @staticmethod
+    def _y_bounds_to_index_range(
+        bounds_min: float,
+        bounds_max: float,
+        origin_top: float,
+        span: float,
+        max_index: int,
+    ) -> tuple[int, int] | None:
+        if bounds_min > bounds_max:
+            bounds_min, bounds_max = bounds_max, bounds_min
+        start = math.floor((origin_top - bounds_max) / span)
+        end = math.ceil((origin_top - bounds_min) / span) - 1
+        start = max(0, min(max_index, start))
+        end = max(0, min(max_index, end))
+        if start > end:
+            return None
+        return start, end
+
+    @staticmethod
+    def _merge_index_intervals(intervals: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:
+        sorted_intervals = sorted(intervals, key=lambda interval: (interval[0], interval[1]))
+        if not sorted_intervals:
+            return []
+        merged_intervals = [sorted_intervals[0]]
+        for start, end in sorted_intervals[1:]:
+            previous_start, previous_end = merged_intervals[-1]
+            if start <= previous_end + 1:
+                merged_intervals[-1] = (previous_start, max(previous_end, end))
+            else:
+                merged_intervals.append((start, end))
+        return merged_intervals
+
+    @staticmethod
+    def _iter_leaf_geometries(geometry: BaseGeometry) -> Iterable[BaseGeometry]:
+        geometries = getattr(geometry, "geoms", None)
+        if geometries is None:
+            yield geometry
+            return
+        for sub_geometry in geometries:
+            yield from SparseMetaTileBoundingPyramid._iter_leaf_geometries(sub_geometry)
+
+    def metatilecoords(self, meta_size: int) -> Iterable[TileCoord]:
+        tile_size = float(self._grid.get("tile_size", configuration.TILE_SIZE_DEFAULT))
+        grid_bbox = [float(v) for v in self._grid["bbox"]]
+
+        for zoom in self._zooms:
+            geom = self._geoms.get(zoom)
+            if geom is None:
+                continue
+
+            resolution = float(self._resolutions[zoom])
+            metatile_span = tile_size * resolution * meta_size
+            matrix_width = math.ceil((grid_bbox[2] - grid_bbox[0]) / metatile_span)
+            matrix_height = math.ceil((grid_bbox[3] - grid_bbox[1]) / metatile_span)
+            max_x_index = matrix_width - 1
+            max_y_index = matrix_height - 1
+
+            buffered_geom = geom
+            m_buffer = self._px_buffer * resolution
+            if m_buffer != 0:
+                buffered_geom = buffered_geom.buffer(m_buffer, 1)
+
+            if buffered_geom.is_empty:
+                continue
+
+            minx, miny, maxx, maxy = buffered_geom.bounds
+            if all(math.isnan(value) for value in (minx, miny, maxx, maxy)):
+                _LOGGER.warning("bounds empty for zoom %s", zoom)
+                continue
+
+            row_range = self._y_bounds_to_index_range(miny, maxy, grid_bbox[3], metatile_span, max_y_index)
+            if row_range is None:
+                continue
+
+            row_start, row_end = row_range
+            for row in range(row_start, row_end + 1):
+                band_max_y = grid_bbox[3] - row * metatile_span
+                band_min_y = band_max_y - metatile_span
+                row_geom = buffered_geom.intersection(box(grid_bbox[0], band_min_y, grid_bbox[2], band_max_y))
+                if row_geom.is_empty:
+                    continue
+
+                intervals: list[tuple[int, int]] = []
+                for sub_geometry in self._iter_leaf_geometries(row_geom):
+                    if sub_geometry.is_empty:
+                        continue
+                    sub_minx, _, sub_maxx, _ = sub_geometry.bounds
+                    if math.isnan(sub_minx) or math.isnan(sub_maxx):
+                        continue
+                    interval = self._bounds_to_index_range(
+                        sub_minx,
+                        sub_maxx,
+                        grid_bbox[0],
+                        metatile_span,
+                        max_x_index,
+                    )
+                    if interval is not None:
+                        intervals.append(interval)
+
+                for start, end in self._merge_index_intervals(intervals):
+                    for x_index in range(start, end + 1):
+                        yield TileCoord(zoom, x_index * meta_size, row * meta_size, meta_size)
+
+
 class MissingErrorFileError(Exception):
     """Missing error file exception."""
 
@@ -673,11 +814,6 @@ class TileGeneration:
         self.multi_task = multi_task
         self.configs: dict[Path, DatedConfig] = {}
         self.hosts_cache: DatedHosts | None = None
-        self.meta_tilecoords_sparse_cache: dict[
-            tuple[str, float, str, str, int, int, float, float],
-            list[tuple[int, list[tuple[int, int]]]],
-        ] = {}
-
         class Options(NamedTuple):
             verbose: bool
             debug: bool
@@ -1482,181 +1618,6 @@ class TileGeneration:
             config.mtime,
         )
         return geoms
-
-    @staticmethod
-    def _bounds_to_index_range(
-        bounds_min: float,
-        bounds_max: float,
-        origin: float,
-        span: float,
-        max_index: int,
-    ) -> tuple[int, int] | None:
-        if bounds_min > bounds_max:
-            bounds_min, bounds_max = bounds_max, bounds_min
-        start = math.floor((bounds_min - origin) / span)
-        end = math.ceil((bounds_max - origin) / span) - 1
-        start = max(0, min(max_index, start))
-        end = max(0, min(max_index, end))
-        if start > end:
-            return None
-        return start, end
-
-    @staticmethod
-    def _y_bounds_to_index_range(
-        bounds_min: float,
-        bounds_max: float,
-        origin_top: float,
-        span: float,
-        max_index: int,
-    ) -> tuple[int, int] | None:
-        if bounds_min > bounds_max:
-            bounds_min, bounds_max = bounds_max, bounds_min
-        start = math.floor((origin_top - bounds_max) / span)
-        end = math.ceil((origin_top - bounds_min) / span) - 1
-        start = max(0, min(max_index, start))
-        end = max(0, min(max_index, end))
-        if start > end:
-            return None
-        return start, end
-
-    @staticmethod
-    def _merge_index_intervals(intervals: Iterable[tuple[int, int]]) -> list[tuple[int, int]]:
-        sorted_intervals = sorted(intervals, key=lambda interval: (interval[0], interval[1]))
-        if not sorted_intervals:
-            return []
-        merged_intervals = [sorted_intervals[0]]
-        for start, end in sorted_intervals[1:]:
-            previous_start, previous_end = merged_intervals[-1]
-            if start <= previous_end + 1:
-                merged_intervals[-1] = (previous_start, max(previous_end, end))
-            else:
-                merged_intervals.append((start, end))
-        return merged_intervals
-
-    @staticmethod
-    def _iter_leaf_geometries(geometry: BaseGeometry) -> Iterable[BaseGeometry]:
-        geometries = getattr(geometry, "geoms", None)
-        if geometries is None:
-            yield geometry
-            return
-        for sub_geometry in geometries:
-            yield from TileGeneration._iter_leaf_geometries(sub_geometry)
-
-    def _get_sparse_metatile_intervals(
-        self,
-        config: DatedConfig,
-        layer_name: str,
-        grid_name: str,
-        grid: tilecloud_chain.configuration.Grid,
-        geometry: BaseGeometry,
-        zoom: int,
-        resolution: float,
-        meta_size: int,
-        px_buffer: float,
-    ) -> list[tuple[int, list[tuple[int, int]]]]:
-        cache_key = (
-            str(config.file),
-            config.mtime,
-            layer_name,
-            grid_name,
-            zoom,
-            meta_size,
-            float(px_buffer),
-            float(resolution),
-        )
-        if cache_key in self.meta_tilecoords_sparse_cache:
-            return self.meta_tilecoords_sparse_cache[cache_key]
-
-        tile_size = float(grid.get("tile_size", configuration.TILE_SIZE_DEFAULT))
-        metatile_span = tile_size * float(resolution) * meta_size
-        grid_bbox = [float(v) for v in grid["bbox"]]
-
-        matrix_width = math.ceil((grid_bbox[2] - grid_bbox[0]) / metatile_span)
-        matrix_height = math.ceil((grid_bbox[3] - grid_bbox[1]) / metatile_span)
-        max_x_index = matrix_width - 1
-        max_y_index = matrix_height - 1
-
-        geom = geometry
-        m_buffer = float(px_buffer) * float(resolution)
-        if m_buffer != 0:
-            geom = geom.buffer(m_buffer, 1)
-
-        if geom.is_empty:
-            self.meta_tilecoords_sparse_cache[cache_key] = []
-            return []
-
-        minx, miny, maxx, maxy = geom.bounds
-        if len([value for value in (minx, miny, maxx, maxy) if not math.isnan(value)]) == 0:
-            _LOGGER.warning("bounds empty for zoom %s", zoom)
-            self.meta_tilecoords_sparse_cache[cache_key] = []
-            return []
-
-        row_range = self._y_bounds_to_index_range(miny, maxy, grid_bbox[3], metatile_span, max_y_index)
-        if row_range is None:
-            self.meta_tilecoords_sparse_cache[cache_key] = []
-            return []
-
-        row_start, row_end = row_range
-        row_intervals: list[tuple[int, list[tuple[int, int]]]] = []
-        for row in range(row_start, row_end + 1):
-            band_max_y = grid_bbox[3] - row * metatile_span
-            band_min_y = band_max_y - metatile_span
-            row_geom = geom.intersection(box(grid_bbox[0], band_min_y, grid_bbox[2], band_max_y))
-            if row_geom.is_empty:
-                continue
-
-            intervals: list[tuple[int, int]] = []
-            for sub_geometry in self._iter_leaf_geometries(row_geom):
-                if sub_geometry.is_empty:
-                    continue
-                sub_minx, _, sub_maxx, _ = sub_geometry.bounds
-                if math.isnan(sub_minx) or math.isnan(sub_maxx):
-                    continue
-                interval = self._bounds_to_index_range(
-                    sub_minx,
-                    sub_maxx,
-                    grid_bbox[0],
-                    metatile_span,
-                    max_x_index,
-                )
-                if interval is not None:
-                    intervals.append(interval)
-
-            merged_intervals = self._merge_index_intervals(intervals)
-            if merged_intervals:
-                row_intervals.append((row, merged_intervals))
-
-        self.meta_tilecoords_sparse_cache[cache_key] = row_intervals
-        return row_intervals
-
-    def _get_sparse_metatilecoords(
-        self,
-        config: DatedConfig,
-        layer_name: str,
-        grid_name: str,
-        grid: tilecloud_chain.configuration.Grid,
-        geometry: BaseGeometry,
-        zoom: int,
-        resolution: float,
-        meta_size: int,
-        px_buffer: float,
-    ) -> Iterable[TileCoord]:
-        row_intervals = self._get_sparse_metatile_intervals(
-            config,
-            layer_name,
-            grid_name,
-            grid,
-            geometry,
-            zoom,
-            resolution,
-            meta_size,
-            px_buffer,
-        )
-        for row, intervals in row_intervals:
-            for start, end in intervals:
-                for x_index in range(start, end + 1):
-                    yield TileCoord(zoom, x_index * meta_size, row * meta_size, meta_size)
-
     def init_tilecoords(
         self,
         config: DatedConfig,
@@ -1730,23 +1691,16 @@ class TileGeneration:
             if sparse_meta_seed and layer["meta"]:
                 meta_size = layer.get("meta_size", configuration.LAYER_META_SIZE_DEFAULT)
                 px_buffer = layer.get("px_buffer", configuration.LAYER_PIXEL_BUFFER_DEFAULT)
-                metatilecoord_iterables: list[Iterable[TileCoord]] = []
-                for zoom in self.options.zoom:
-                    if zoom in geoms:
-                        metatilecoord_iterables.append(
-                            self._get_sparse_metatilecoords(
-                                config,
-                                layer_name,
-                                grid_name,
-                                grid,
-                                geoms[zoom],
-                                zoom,
-                                resolutions[zoom],
-                                meta_size,
-                                px_buffer,
-                            ),
-                        )
-                grid_tilecoords[grid_name] = chain.from_iterable(metatilecoord_iterables)
+                tilegrid = self.get_grid(config, get_grid_name(config, layer_name, grid_name))
+                sparse_bounding_pyramid = SparseMetaTileBoundingPyramid(
+                    tilegrid=tilegrid,
+                    grid=grid,
+                    geoms=geoms,
+                    zooms=self.options.zoom,
+                    resolutions=resolutions,
+                    px_buffer=px_buffer,
+                )
+                grid_tilecoords[grid_name] = sparse_bounding_pyramid.metatilecoords(meta_size)
                 continue
 
             # Fill the bounding pyramid

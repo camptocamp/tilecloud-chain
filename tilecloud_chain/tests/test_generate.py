@@ -14,7 +14,7 @@ from shapely.geometry import box
 from testfixtures import LogCapture
 from tilecloud.store.redis import RedisTileStore
 
-from tilecloud_chain import DatedConfig, TileGeneration, controller, generate
+from tilecloud_chain import SparseMetaTileBoundingPyramid, controller, generate
 from tilecloud_chain.settings import settings
 from tilecloud_chain.tests import CompareCase
 
@@ -180,7 +180,9 @@ def test_normalize_job_command_arguments() -> None:
 
 
 def test_merge_index_intervals_merges_overlaps_and_adjacency() -> None:
-    assert TileGeneration._merge_index_intervals([(5, 7), (1, 3), (3, 4), (9, 9), (8, 8)]) == [(1, 9)]
+    assert SparseMetaTileBoundingPyramid._merge_index_intervals([(5, 7), (1, 3), (3, 4), (9, 9), (8, 8)]) == [
+        (1, 9),
+    ]
 
 
 @pytest.mark.asyncio
@@ -227,9 +229,7 @@ async def test_generate_queue_disables_sparse_seed_on_local() -> None:
     gene.init_tilecoords.assert_called_once_with(config, "point", None, sparse_meta_seed=False)
 
 
-def test_sparse_metatilecoords_split_by_row_and_cache() -> None:
-    gene = TileGeneration(config_file=AnyioPath("tilegeneration/test-nosns.yaml"), configure_logging=False)
-    config = DatedConfig({"layers": {}, "grids": {}}, 1.0, AnyioPath("config.yaml"))
+def test_sparse_metatilecoords_split_by_row() -> None:
     grid = {
         "bbox": [0, 0, 8, 8],
         "tile_size": 1,
@@ -237,19 +237,16 @@ def test_sparse_metatilecoords_split_by_row_and_cache() -> None:
     }
     geom = box(0.2, 4.2, 1.8, 4.8).union(box(3.2, 4.2, 3.8, 4.8)).union(box(6.2, 2.2, 6.8, 2.8))
 
-    metatilecoords = list(
-        gene._get_sparse_metatilecoords(
-            config,
-            "layer",
-            "grid",
-            grid,
-            geom,
-            zoom=0,
-            resolution=1,
-            meta_size=1,
-            px_buffer=0,
-        ),
+    bounding_pyramid = SparseMetaTileBoundingPyramid(
+        tilegrid=Mock(),
+        grid=grid,
+        geoms={0: geom},
+        zooms=[0],
+        resolutions=[1],
+        px_buffer=0,
     )
+
+    metatilecoords = list(bounding_pyramid.metatilecoords(meta_size=1))
 
     assert [(coord.z, coord.x, coord.y, coord.n) for coord in metatilecoords] == [
         (0, 0, 3, 1),
@@ -257,30 +254,6 @@ def test_sparse_metatilecoords_split_by_row_and_cache() -> None:
         (0, 3, 3, 1),
         (0, 6, 5, 1),
     ]
-
-    intervals = gene._get_sparse_metatile_intervals(
-        config,
-        "layer",
-        "grid",
-        grid,
-        geom,
-        zoom=0,
-        resolution=1,
-        meta_size=1,
-        px_buffer=0,
-    )
-    cached_intervals = gene._get_sparse_metatile_intervals(
-        config,
-        "layer",
-        "grid",
-        grid,
-        box(0, 0, 8, 8),
-        zoom=0,
-        resolution=1,
-        meta_size=1,
-        px_buffer=0,
-    )
-    assert cached_intervals is intervals
 
 
 class TestGenerate(CompareCase):
