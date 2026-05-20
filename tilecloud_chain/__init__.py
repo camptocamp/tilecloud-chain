@@ -488,6 +488,7 @@ class SparseMetaTileBoundingPyramid(BoundingPyramid):
             yield from SparseMetaTileBoundingPyramid._iter_leaf_geometries(sub_geometry)
 
     def metatilecoords(self, meta_size: int) -> Iterable[TileCoord]:
+        """Yield sparse metatile coordinates lazily for configured zoom levels."""
         tile_size = float(self._grid.get("tile_size", configuration.TILE_SIZE_DEFAULT))
         grid_bbox = [float(v) for v in self._grid["bbox"]]
 
