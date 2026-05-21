@@ -2365,6 +2365,11 @@ class HashDropper:
     ) -> None:
         self.size = size
         self.sha1code = sha1code
+        if len(sha1code) != 40 or re.fullmatch(r"[0-9a-fA-F]{40}", sha1code) is None:
+            raise ValueError(
+                "Invalid configuration for HashDropper.sha1code: "
+                f"expected a 40-character hexadecimal SHA-1 digest, got {sha1code!r}",
+            )
         self.sha1digest = bytes.fromhex(sha1code)
         self.store = store
         self.queue_store = queue_store
