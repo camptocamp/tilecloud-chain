@@ -1479,12 +1479,12 @@ class TileGeneration:
             tiles_count,
         )
 
-    async def _fetch_hash_tile(self, substream: AsyncIterator[Tile]) -> Tile:
+    async def _fetch_hash_tile(self, substream: AsyncIterator[Tile | None]) -> Tile:
         tile = await anext(substream)
         assert tile is not None
         return tile
 
-    async def _process_tiles_metatile(self, substream: AsyncIterator[Tile], run: Run) -> int:
+    async def _process_tiles_metatile(self, substream: AsyncIterator[Tile | None], run: Run) -> int:
         tasks = []
         async for tile in substream:
             assert tile is not None
