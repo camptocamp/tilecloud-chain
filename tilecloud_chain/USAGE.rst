@@ -211,6 +211,7 @@ bounds are normalized to ``[minx, miny, maxx, maxy]`` before computing intersect
 When the seed step already limits metatiles with geometries (for example with
 ``generate-tiles --role=master``), you can disable the second geometry intersection
 filter by setting ``geom_filter: false`` in the layer configuration.
+
 Legends
 ^^^^^^^
 
