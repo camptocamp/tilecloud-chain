@@ -1656,6 +1656,7 @@ class TileGeneration:
                             geom_source,
                             layer_proj4_literal=layer.get("proj4_literal"),
                             grid_proj4_literal=grid.get("proj4_literal"),
+                            grid_srs=grid.get("srs"),
                             layer_name=layer_name,
                         )
 
@@ -1710,6 +1711,7 @@ class TileGeneration:
         geom_source: configuration.LayerGeometry,
         layer_proj4_literal: str | None = None,
         grid_proj4_literal: str | None = None,
+        grid_srs: str | None = None,
         layer_name: str | None = None,
     ) -> BaseGeometry:
         """Load one geometry from a PostGIS source."""
@@ -1721,6 +1723,10 @@ class TileGeneration:
             if grid_proj4_literal is not None
             else source_projection_default
         )
+        destination_srid: int | None = None
+        if grid_srs is not None and grid_srs.startswith("EPSG:"):
+            destination_srid = int(grid_srs.split(":", 1)[1])
+
         transformers_by_srid: dict[int | None, pyproj.Transformer] = {}
 
         connection = psycopg2.connect(geom_source["connection"])
@@ -1751,7 +1757,12 @@ class TileGeneration:
                             srid = None
 
                     geom_item = loads_wkb(bytes(geom_wkb))
-                    if TileGeneration._needs_reprojection(source_projection, destination_projection):
+                    if TileGeneration._needs_reprojection(
+                        source_projection,
+                        destination_projection,
+                        source_srid=srid,
+                        destination_srid=destination_srid,
+                    ):
                         transformer = transformers_by_srid.get(srid)
                         if transformer is None:
                             assert source_projection is not None
@@ -1775,9 +1786,14 @@ class TileGeneration:
     def _needs_reprojection(
         source_projection: pyproj.CRS | None,
         destination_projection: pyproj.CRS | None,
+        source_srid: int | None = None,
+        destination_srid: int | None = None,
     ) -> bool:
         """Tell if a reprojection is required between source and destination CRS."""
         if source_projection is None or destination_projection is None:
+            return False
+
+        if source_srid is not None and destination_srid is not None and source_srid == destination_srid:
             return False
 
         source_epsg = source_projection.to_epsg()
