@@ -843,7 +843,8 @@ def transform_bbox(
         always_xy=True,
     )
 
-    bounds = transformer.transform_bounds(*normalized_bbox)
+    minx, miny, maxx, maxy = normalized_bbox
+    bounds = transformer.transform_bounds(minx, miny, maxx, maxy)
     return normalize_bbox(bounds)
 
 
