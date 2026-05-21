@@ -1281,6 +1281,7 @@ class TestServe(CompareCase):
                 mtime=Path("tilegeneration/test-multi-grid.yaml").stat().st_mtime,
                 file=AnyioPath("tilegeneration/test-multi-grid.yaml"),
             )
+        config.config.setdefault("server", {})
 
         base_params = {
             "SERVICE": "WMTS",
