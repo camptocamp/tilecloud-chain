@@ -2449,7 +2449,7 @@ class MultiAction:
                     return None
             else:
                 action.checked_at = now
-        return action.action if action is not None else None
+        return action.action
 
     async def __call__(self, tile: Tile) -> Tile | None:
         """Run the action."""
