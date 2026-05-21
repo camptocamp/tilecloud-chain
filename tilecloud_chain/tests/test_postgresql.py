@@ -22,6 +22,7 @@ from tilecloud_chain.store.postgresql import (
     Job,
     PostgresqlTileStore,
     Queue,
+    _format_duration,
     get_postgresql_queue_store,
 )
 
@@ -167,6 +168,14 @@ async def test_get_status_with_eta_when_remaining_exceeds_total(
     statuses = await tilestore.get_status(Path("config.yaml"))
     status = next(status for status in statuses if status[0].id == job_id)
     assert status[3] is None
+
+
+def test_format_duration_days_hours_text() -> None:
+    assert _format_duration(2 * 86400 + 2 * 3600) == "2 days 2 hours"
+
+
+def test_format_duration_one_day_one_hour_text() -> None:
+    assert _format_duration(86400 + 3600) == "1 day 1 hour"
 
 
 @pytest.mark.asyncio

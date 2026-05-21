@@ -124,7 +124,9 @@ def _format_duration(seconds: int) -> str:
     hours, rem = divmod(rem, 3600)
     minutes, _secs = divmod(rem, 60)
     if days > 0:
-        return f"{days} days {hours}"
+        day_label = "day" if days == 1 else "days"
+        hour_label = "hour" if hours == 1 else "hours"
+        return f"{days} {day_label} {hours} {hour_label}"
     if hours > 0:
         return f"{hours}:{minutes:02}"
     return f"{minutes} minutes"
