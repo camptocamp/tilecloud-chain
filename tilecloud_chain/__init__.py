@@ -765,17 +765,19 @@ def get_tile_matrix_limits(
     if min_x >= max_x or min_y >= max_y:
         return []
 
+    px_buffer = float(layer.get("px_buffer", configuration.LAYER_PIXEL_BUFFER_DEFAULT))
     tile_size = float(grid.get("tile_size", configuration.TILE_SIZE_DEFAULT))
     limits: list[dict[str, int | str]] = []
     for zoom, resolution in enumerate(grid["resolutions"]):
         tile_span = float(resolution) * tile_size
+        m_buffer = px_buffer * float(resolution)
         matrix_width = math.ceil((grid_bbox[2] - grid_bbox[0]) / tile_span)
         matrix_height = math.ceil((grid_bbox[3] - grid_bbox[1]) / tile_span)
 
-        min_tile_col = math.floor((min_x - grid_bbox[0]) / tile_span)
-        max_tile_col = math.ceil((max_x - grid_bbox[0]) / tile_span) - 1
-        min_tile_row = math.floor((grid_bbox[3] - max_y) / tile_span)
-        max_tile_row = math.ceil((grid_bbox[3] - min_y) / tile_span) - 1
+        min_tile_col = math.floor((min_x - m_buffer - grid_bbox[0]) / tile_span)
+        max_tile_col = math.ceil((max_x + m_buffer - grid_bbox[0]) / tile_span) - 1
+        min_tile_row = math.floor((grid_bbox[3] - (max_y + m_buffer)) / tile_span)
+        max_tile_row = math.ceil((grid_bbox[3] - (min_y - m_buffer)) / tile_span) - 1
 
         limits.append(
             {

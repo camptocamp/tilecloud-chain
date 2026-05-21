@@ -576,6 +576,43 @@ def test_get_tile_matrix_limits_with_reversed_bbox() -> None:
     ]
 
 
+def test_get_tile_matrix_limits_with_px_buffer() -> None:
+    config = DatedConfig(
+        cast(
+            "tcc_configuration.Configuration",
+            {
+                "layers": {
+                    "layer": {
+                        "bbox": [560000.0, 180000.0, 550000.0, 170000.0],
+                        "px_buffer": 100,
+                    },
+                },
+                "grids": {
+                    "grid": {
+                        "bbox": [420000.0, 30000.0, 900000.0, 350000.0],
+                        "resolutions": [100.0],
+                        "tile_size": 256,
+                    },
+                },
+            },
+        ),
+        0,
+        AnyioPath("config.yaml"),
+    )
+
+    limits = get_tile_matrix_limits(config, "layer", "grid")
+
+    assert limits == [
+        {
+            "tile_matrix": "0",
+            "min_tile_row": 6,
+            "max_tile_row": 7,
+            "min_tile_col": 4,
+            "max_tile_col": 5,
+        },
+    ]
+
+
 def test_get_geoms_respects_geometry_srid(monkeypatch: pytest.MonkeyPatch) -> None:
     class FakeCursor:
         def __init__(self, rows: list[tuple[bytes, int]]) -> None:
