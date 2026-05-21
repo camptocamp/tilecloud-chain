@@ -1,4 +1,3 @@
-from collections.abc import Awaitable
 from typing import IO, Any
 
 import pytest
