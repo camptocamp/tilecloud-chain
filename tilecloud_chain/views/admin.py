@@ -484,6 +484,9 @@ async def _run(
     )
     if error and not parsed_out:
         detail = f": {error_detail}" if error_detail else ""
-        parsed_out = f"Error while running the command{detail}"
+        parsed_out = _format_output(
+            f"Error while running the command{detail}",
+            settings.max_output_length,
+        )
     return_dict["out"] = parsed_out
     return_dict["error"] = error
