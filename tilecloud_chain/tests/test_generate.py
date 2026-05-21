@@ -627,7 +627,7 @@ def test_get_geoms_respects_geometry_srid(monkeypatch: pytest.MonkeyPatch) -> No
     geoms = gene.get_geoms(config, "layer", "grid_2056")
 
     assert not geoms[0].is_empty
-    assert geoms[0].bounds == geom.bounds
+    assert geoms[0].equals_exact(geom, 1e-8)
 
 
 class TestGenerate(CompareCase):

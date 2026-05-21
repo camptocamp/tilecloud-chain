@@ -1751,13 +1751,11 @@ class TileGeneration:
                             srid = None
 
                     geom_item = loads_wkb(bytes(geom_wkb))
-                    if (
-                        source_projection is not None
-                        and destination_projection is not None
-                        and source_projection != destination_projection
-                    ):
+                    if TileGeneration._needs_reprojection(source_projection, destination_projection):
                         transformer = transformers_by_srid.get(srid)
                         if transformer is None:
+                            assert source_projection is not None
+                            assert destination_projection is not None
                             transformer = pyproj.Transformer.from_crs(
                                 source_projection,
                                 destination_projection,
@@ -1772,6 +1770,22 @@ class TileGeneration:
         finally:
             connection.close()
         return unary_union(geom_list) if geom_list else GeometryCollection()
+
+    @staticmethod
+    def _needs_reprojection(
+        source_projection: pyproj.CRS | None,
+        destination_projection: pyproj.CRS | None,
+    ) -> bool:
+        """Tell if a reprojection is required between source and destination CRS."""
+        if source_projection is None or destination_projection is None:
+            return False
+
+        source_epsg = source_projection.to_epsg()
+        destination_epsg = destination_projection.to_epsg()
+        if source_epsg is not None and destination_epsg is not None and source_epsg == destination_epsg:
+            return False
+
+        return not source_projection.equals(destination_projection)
 
     @staticmethod
     def _load_geom_from_datasource(
