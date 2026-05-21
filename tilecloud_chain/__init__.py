@@ -1536,7 +1536,6 @@ class TileGeneration:
 
         return meta_get
 
-
     async def create_log_tiles_error(self, layer: str) -> anyio.AsyncFile[str] | None:
         """Create the error file for the given layer."""
         main_config = await self.get_main_config()
