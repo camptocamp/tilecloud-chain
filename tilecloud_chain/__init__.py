@@ -1573,7 +1573,7 @@ class TileGeneration:
         grid = get_grid_config(config, layer_name, grid_name)
 
         layer_bbox = normalize_bbox(layer["bbox"]) if "bbox" in layer else None
-        # Repoject the layer bbox
+        # Reproject the layer bbox
         if (
             layer_bbox
             and "proj4_literal" in layer
