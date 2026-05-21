@@ -577,7 +577,7 @@ class SparseMetaTileBoundingPyramid(BoundingPyramid):
     def metatilecoords(self, n: int = 8) -> Iterator[TileCoord]:
         """Yield sparse metatile coordinates lazily for configured zoom levels."""
         tile_size = float(self._grid.get("tile_size", configuration.TILE_SIZE_DEFAULT))
-        grid_bbox = [float(v) for v in self._grid["bbox"]]
+        grid_bbox = normalize_bbox(self._grid["bbox"])
 
         for zoom in self._zooms:
             zoom_context = self._get_zoom_context(zoom, n, tile_size, grid_bbox)
@@ -739,7 +739,7 @@ def get_tile_matrix_limits(
         return []
 
     grid = config.config["grids"][grid_name]
-    layer_bbox = [float(value) for value in layer["bbox"]]
+    layer_bbox = normalize_bbox(layer["bbox"])
     if (
         "proj4_literal" in layer
         and "proj4_literal" in grid
@@ -747,7 +747,7 @@ def get_tile_matrix_limits(
     ):
         layer_bbox = transform_bbox(layer["proj4_literal"], grid["proj4_literal"], layer_bbox)
 
-    grid_bbox = [float(value) for value in grid["bbox"]]
+    grid_bbox = normalize_bbox(grid["bbox"])
     min_x = max(layer_bbox[0], grid_bbox[0])
     min_y = max(layer_bbox[1], grid_bbox[1])
     max_x = min(layer_bbox[2], grid_bbox[2])
@@ -803,7 +803,22 @@ def get_proj4_literal(srs: int) -> str:
     return proj4_literals.get(srs, f"+init=EPSG:{srs}")
 
 
-def transform_bbox(proj4_literals_src: str, proj4_literals_dst: str, bbox: list[float]) -> list[float]:
+def normalize_bbox(
+    bbox: list[int | float] | tuple[int | float, int | float, int | float, int | float],
+) -> list[float]:
+    """Normalize a bounding box to [minx, miny, maxx, maxy]."""
+    minx = min(float(bbox[0]), float(bbox[2]))
+    miny = min(float(bbox[1]), float(bbox[3]))
+    maxx = max(float(bbox[0]), float(bbox[2]))
+    maxy = max(float(bbox[1]), float(bbox[3]))
+    return [minx, miny, maxx, maxy]
+
+
+def transform_bbox(
+    proj4_literals_src: str,
+    proj4_literals_dst: str,
+    bbox: list[int | float] | tuple[int | float, int | float, int | float, int | float],
+) -> list[float]:
     """
     Transform a bounding box from source projection to destination projection.
 
@@ -816,14 +831,21 @@ def transform_bbox(proj4_literals_src: str, proj4_literals_dst: str, bbox: list[
     -------
         Transformed bounding box as [xmin, ymin, xmax, ymax]
     """
+    normalized_bbox = normalize_bbox(bbox)
+    if proj4_literals_src == proj4_literals_dst:
+        return normalized_bbox
+
     source_projection = pyproj.CRS.from_proj4(proj4_literals_src)
     dest_projection = pyproj.CRS.from_proj4(proj4_literals_dst)
-    transformer = pyproj.Transformer.from_crs(source_projection, dest_projection)
+    transformer = pyproj.Transformer.from_crs(
+        source_projection,
+        dest_projection,
+        always_xy=True,
+    )
 
-    point_1 = transformer.transform(bbox[0], bbox[1])
-    point_2 = transformer.transform(bbox[2], bbox[3])
-
-    return [point_1[0], point_1[1], point_2[0], point_2[1]]
+    minx, miny, maxx, maxy = normalized_bbox
+    bounds = transformer.transform_bounds(minx, miny, maxx, maxy)
+    return normalize_bbox(bounds)
 
 
 class TileGeneration:
@@ -1521,7 +1543,10 @@ class TileGeneration:
         tilegrid = FreeTileGrid(
             resolutions=[r * scale for r in grid["resolutions"]],
             scale=scale,
-            max_extent=cast("tuple[int, int, int, int] | tuple[float, float, float, float]", grid["bbox"]),
+            max_extent=cast(
+                "tuple[int, int, int, int] | tuple[float, float, float, float]",
+                normalize_bbox(grid["bbox"]),
+            ),
             tile_size=grid.get("tile_size", configuration.TILE_SIZE_DEFAULT),
         )
 
@@ -1547,8 +1572,8 @@ class TileGeneration:
 
         grid = get_grid_config(config, layer_name, grid_name)
 
-        layer_bbox: list[int | float] | None = layer.get("bbox")
-        # Repoject the layer bbox
+        layer_bbox = normalize_bbox(layer["bbox"]) if "bbox" in layer else None
+        # Reproject the layer bbox
         if (
             layer_bbox
             and "proj4_literal" in layer
@@ -1572,7 +1597,7 @@ class TileGeneration:
                     (layer_bbox[1] + layer_bbox[3]) / 2,
                 ]
             )
-            grid_bbox = grid["bbox"]
+            grid_bbox = normalize_bbox(grid["bbox"])
             diff = [position[0] - grid_bbox[0], position[1] - grid_bbox[1]]
             resolution = grid["resolutions"][self.options.zoom[0]]
             mt_to_m = (
@@ -1601,11 +1626,11 @@ class TileGeneration:
             ):
                 extent = transform_bbox(layer["proj4_literal"], grid["proj4_literal"], self.options.bbox)
             else:
-                extent = self.options.bbox
+                extent = normalize_bbox(self.options.bbox)
         elif layer_bbox is not None:
             extent = layer_bbox
         else:
-            extent = grid["bbox"]
+            extent = normalize_bbox(grid["bbox"])
 
         geoms: dict[str | int, BaseGeometry] = {}
         if extent:
@@ -1625,22 +1650,22 @@ class TileGeneration:
                 metrics_host = host or self.options.host
                 with _GEOMS_GET_SUMMARY.labels(layer_name, metrics_host).time():
                     if "datasource" in geom_source:
-                        geom = self._load_geom_from_datasource(config.file, geom_source)
+                        geom = self._load_geom_from_datasource(
+                            config.file,
+                            geom_source,
+                            layer_proj4_literal=layer.get("proj4_literal"),
+                            grid_proj4_literal=grid.get("proj4_literal"),
+                            layer_srs=layer.get("srs"),
+                            grid_srs=grid.get("srs"),
+                        )
                     else:
-                        geom = self._load_geom_from_postgis(geom_source)
-
-                    # Reproject the geometry if needed
-                    if (
-                        "proj4_literal" in layer
-                        and "proj4_literal" in grid
-                        and layer["proj4_literal"] != grid["proj4_literal"]
-                    ):
-                        # Create transformer from layer to grid projection
-                        source_projection = pyproj.CRS.from_proj4(layer["proj4_literal"])
-                        dest_projection = pyproj.CRS.from_proj4(grid["proj4_literal"])
-                        transformer = pyproj.Transformer.from_crs(source_projection, dest_projection)
-                        # Transform the geometry
-                        geom = shapely.ops.transform(transformer.transform, geom)
+                        geom = self._load_geom_from_postgis(
+                            geom_source,
+                            layer_proj4_literal=layer.get("proj4_literal"),
+                            grid_proj4_literal=grid.get("proj4_literal"),
+                            grid_srs=grid.get("srs"),
+                            layer_name=layer_name,
+                        )
 
                     if extent:
                         geom = geom.intersection(
@@ -1689,25 +1714,119 @@ class TileGeneration:
         return resolved_datasource
 
     @staticmethod
-    def _load_geom_from_postgis(geom_source: configuration.LayerGeometry) -> BaseGeometry:
+    def _load_geom_from_postgis(
+        geom_source: configuration.LayerGeometry,
+        layer_proj4_literal: str | None = None,
+        grid_proj4_literal: str | None = None,
+        grid_srs: str | None = None,
+        layer_name: str | None = None,
+    ) -> BaseGeometry:
         """Load one geometry from a PostGIS source."""
+        source_projection_default = (
+            pyproj.CRS.from_proj4(layer_proj4_literal) if layer_proj4_literal is not None else None
+        )
+        destination_projection = (
+            pyproj.CRS.from_proj4(grid_proj4_literal)
+            if grid_proj4_literal is not None
+            else source_projection_default
+        )
+        destination_srid = TileGeneration._parse_epsg(grid_srs)
+
+        transformers_by_srid: dict[int | None, pyproj.Transformer] = {}
+
         connection = psycopg2.connect(geom_source["connection"])
         try:
             cursor = connection.cursor()
             try:
-                sql = f"SELECT ST_AsBinary(geom) FROM (SELECT {geom_source['sql']}) AS g"  # nosec # noqa: S608
+                sql = f"SELECT ST_AsBinary(geom), ST_SRID(geom) FROM (SELECT {geom_source['sql']}) AS g"  # nosec # noqa: S608
                 _LOGGER.info("Execute SQL: %s.", sql)
                 cursor.execute(sql)
-                geom_list = [loads_wkb(bytes(result[0])) for result in cursor.fetchall()]
+                geom_list = []
+                for geom_wkb, geom_srid in cursor.fetchall():
+                    if geom_wkb is None:
+                        continue
+
+                    source_projection = source_projection_default
+                    srid: int | None = None
+                    if geom_srid is not None and int(geom_srid) > 0:
+                        srid = int(geom_srid)
+                        try:
+                            source_projection = pyproj.CRS.from_epsg(srid)
+                        except pyproj.exceptions.CRSError:
+                            _LOGGER.warning(
+                                "Unsupported geometry SRID '%s' on layer '%s', fallback to layer projection.",
+                                srid,
+                                layer_name or "-",
+                            )
+                            source_projection = source_projection_default
+                            srid = None
+
+                    geom_item = loads_wkb(bytes(geom_wkb))
+                    if TileGeneration._needs_reprojection(
+                        source_projection,
+                        destination_projection,
+                        source_srid=srid,
+                        destination_srid=destination_srid,
+                    ):
+                        transformer = transformers_by_srid.get(srid)
+                        if transformer is None:
+                            assert source_projection is not None
+                            assert destination_projection is not None
+                            transformer = pyproj.Transformer.from_crs(
+                                source_projection,
+                                destination_projection,
+                                always_xy=True,
+                            )
+                            transformers_by_srid[srid] = transformer
+                        geom_item = shapely.ops.transform(transformer.transform, geom_item)
+
+                    geom_list.append(geom_item)
             finally:
                 cursor.close()
         finally:
             connection.close()
-        return unary_union(geom_list)
+        return unary_union(geom_list) if geom_list else GeometryCollection()
+
+    @staticmethod
+    def _needs_reprojection(
+        source_projection: pyproj.CRS | None,
+        destination_projection: pyproj.CRS | None,
+        source_srid: int | None = None,
+        destination_srid: int | None = None,
+    ) -> bool:
+        """Tell if a reprojection is required between source and destination CRS."""
+        if source_projection is None or destination_projection is None:
+            return False
+
+        if source_srid is not None and destination_srid is not None and source_srid == destination_srid:
+            return False
+
+        source_epsg = source_projection.to_epsg()
+        destination_epsg = destination_projection.to_epsg()
+        if source_epsg is not None and destination_epsg is not None and source_epsg == destination_epsg:
+            return False
+
+        return not source_projection.equals(destination_projection)
+
+    @staticmethod
+    def _parse_epsg(srs: str | None) -> int | None:
+        if srs is None:
+            return None
+        if not srs.upper().startswith("EPSG:"):
+            return None
+        try:
+            return int(srs.split(":", 1)[1])
+        except ValueError:
+            return None
 
     @staticmethod
     def _load_geom_from_datasource(
-        config_file: Path, geom_source: configuration.LayerGeometry
+        config_file: Path,
+        geom_source: configuration.LayerGeometry,
+        layer_proj4_literal: str | None = None,
+        grid_proj4_literal: str | None = None,
+        layer_srs: str | None = None,
+        grid_srs: str | None = None,
     ) -> BaseGeometry:
         """Load one geometry from a GDAL datasource."""
         datasource = TileGeneration._resolve_gdal_datasource(config_file, geom_source["datasource"])
@@ -1716,7 +1835,31 @@ class TileGeneration:
         if not geometries:
             return GeometryCollection()
 
-        return unary_union(geometries)
+        geom = unary_union(geometries)
+
+        source_projection = (
+            pyproj.CRS.from_proj4(layer_proj4_literal) if layer_proj4_literal is not None else None
+        )
+        destination_projection = (
+            pyproj.CRS.from_proj4(grid_proj4_literal) if grid_proj4_literal is not None else source_projection
+        )
+
+        if TileGeneration._needs_reprojection(
+            source_projection,
+            destination_projection,
+            source_srid=TileGeneration._parse_epsg(layer_srs),
+            destination_srid=TileGeneration._parse_epsg(grid_srs),
+        ):
+            assert source_projection is not None
+            assert destination_projection is not None
+            transformer = pyproj.Transformer.from_crs(
+                source_projection,
+                destination_projection,
+                always_xy=True,
+            )
+            geom = shapely.ops.transform(transformer.transform, geom)
+
+        return geom
 
     @staticmethod
     def _read_ogr_geometries(datasource: str, sql: str | None) -> list[BaseGeometry]:

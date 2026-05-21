@@ -26,6 +26,8 @@
 - Speed up `generate-tiles --role=master` queue seeding for metatile layers by using per-row metatile scanline intervals instead of full bounding-pyramid scans, reducing candidate metatiles especially on sparse datasets.
 - Add support for `layers.<name>.geoms[].datasource` to load geometry masks from a GDAL datasource (for example a Shapefile), with relative paths resolved from the layer configuration file.
 - Add layer option `geom_filter` (default `true`) to disable the second geometry intersection filter in the generation pipeline when geometry-based seeding is already sufficient.
+- Fix geometry/bbox reprojection edge cases by normalizing bbox axis order before TileMatrixSetLimits and geom filtering, and by honoring PostGIS geometry SRID when present before intersecting with grid extents.
+- Reproject `geoms.datasource` geometries from layer CRS to grid CRS like PostGIS geoms, to avoid empty intersections when layer and grid use different SRS.
 
 Environment variable migration (legacy -> new)
 
