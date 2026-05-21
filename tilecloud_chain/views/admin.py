@@ -483,7 +483,7 @@ async def _run(
         "<br />".join(_parse_stdout(out.getvalue())),
         settings.max_output_length,
     )
-    if error and not parsed_out:
+    if error and not parsed_out.strip():
         detail = f": {html.escape(error_detail)}" if error_detail else ""
         parsed_out = _format_output(
             f"Error while running the command{detail}",
