@@ -4,12 +4,14 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from tilecloud import Tile, TileCoord
 import yaml
 from anyio import Path as AnyioPath
 from fastapi import HTTPException
 from testfixtures import LogCapture
 
 from tilecloud_chain import DatedConfig, TileGeneration, generate, server
+from tilecloud_chain.internal_mapcache import RedisStore
 from tilecloud_chain.tests import CompareCase
 
 _CAPABILITIES = (
@@ -1263,3 +1265,83 @@ class TestServe(CompareCase):
                 regex=True,
             )
             log_capture.check()
+
+    @pytest.mark.asyncio
+    async def test_multigrid_store_cache_isolated_by_grid(self) -> None:
+        server._PYRAMID_SERVER = None
+        server.server.store_cache = {}
+        server._TILEGENERATION = TileGeneration(
+            config_file=AnyioPath("tilegeneration/test-multi-grid.yaml"),
+            configure_logging=False,
+        )
+
+        with Path("tilegeneration/test-multi-grid.yaml").open() as f:
+            config = DatedConfig(
+                config=yaml.safe_load(f),
+                mtime=Path("tilegeneration/test-multi-grid.yaml").stat().st_mtime,
+                file=AnyioPath("tilegeneration/test-multi-grid.yaml"),
+            )
+
+        base_params = {
+            "SERVICE": "WMTS",
+            "VERSION": "1.0.0",
+            "REQUEST": "GetTile",
+            "FORMAT": "image/png",
+            "LAYER": "all",
+            "STYLE": "default",
+            "TILEMATRIX": "0",
+            "TILEROW": "0",
+            "TILECOL": "0",
+            "DATE": "2012",
+        }
+
+        with (
+            patch("tilecloud_chain.IntersectGeometryFilter.filter_tilecoord", return_value=True),
+            patch.object(server._TILEGENERATION, "get_store", new_callable=AsyncMock) as mock_get_store,
+        ):
+            mock_store = AsyncMock()
+            mock_store.get_one.return_value = None
+            mock_get_store.return_value = mock_store
+
+            params = base_params | {"TILEMATRIXSET": "swissgrid_2056"}
+            with pytest.raises(HTTPException) as response:
+                await server.server.serve(params, config, "localhost", None)
+            assert response.value.status_code == 204
+
+            params = base_params | {"TILEMATRIXSET": "swissgrid_21781"}
+            with pytest.raises(HTTPException) as response:
+                await server.server.serve(params, config, "localhost", None)
+            assert response.value.status_code == 204
+
+            assert mock_get_store.await_count == 2
+            assert mock_get_store.await_args_list[0].args[3] == "swissgrid_2056"
+            assert mock_get_store.await_args_list[1].args[3] == "swissgrid_21781"
+
+    def test_mapcache_redis_key_includes_grid(self) -> None:
+        store = MagicMock()
+        store._prefix = "test-prefix"
+        tile_2056 = Tile(
+            TileCoord(0, 1, 2),
+            metadata={
+                "config_file": "tilegeneration/test-multi-grid.yaml",
+                "layer": "all",
+                "grid": "swissgrid_2056",
+                "dimension_DATE": "2012",
+            },
+        )
+        tile_21781 = Tile(
+            TileCoord(0, 1, 2),
+            metadata={
+                "config_file": "tilegeneration/test-multi-grid.yaml",
+                "layer": "all",
+                "grid": "swissgrid_21781",
+                "dimension_DATE": "2012",
+            },
+        )
+
+        key_2056 = RedisStore._get_key(store, tile_2056)
+        key_21781 = RedisStore._get_key(store, tile_21781)
+
+        assert key_2056 != key_21781
+        assert "swissgrid_2056" in key_2056
+        assert "swissgrid_21781" in key_21781

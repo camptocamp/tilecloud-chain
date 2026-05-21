@@ -123,6 +123,7 @@ class RedisStore(AsyncTileStore):
             self._prefix,
             tile.metadata["config_file"],
             tile.metadata["layer"],
+            tile.metadata["grid"],
             tile.tilecoord.z,
             tile.tilecoord.x,
             tile.tilecoord.y,

@@ -231,7 +231,7 @@ class Server:
         """Initialize."""
         self.filter_cache: dict[Path, dict[str, DatedFilter]] = {}
         self.s3_client_cache: dict[str, botocore.client.S3] = {}  # pylint: disable=no-member
-        self.store_cache: dict[Path, dict[str, DatedStore]] = {}
+        self.store_cache: dict[tuple[Path, str, str], DatedStore] = {}
 
     @staticmethod
     def get_expires_hours(config: tilecloud_chain.DatedConfig) -> float:
@@ -310,7 +310,8 @@ class Server:
         grid_name: str,
     ) -> AsyncTileStore | None:
         """Get the store from the config."""
-        dated_store = self.store_cache.get(config.file, {}).get(layer_name)
+        cache_key = (config.file, layer_name, grid_name)
+        dated_store = self.store_cache.get(cache_key)
 
         if dated_store is not None and dated_store.mtime == config.mtime:
             return dated_store.store
@@ -326,7 +327,7 @@ class Server:
         )
         if store is None:
             return None
-        self.store_cache.setdefault(config.file, {})[layer_name] = DatedStore(store, config.mtime)
+        self.store_cache[cache_key] = DatedStore(store, config.mtime)
         return store
 
     @staticmethod
