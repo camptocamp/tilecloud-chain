@@ -208,6 +208,9 @@ If the SQL geometry column carries an SRID, tilecloud-chain uses that SRID for r
 If no SRID is set (or it is invalid), it falls back to the layer projection. In all cases, bbox and geometry
 bounds are normalized to ``[minx, miny, maxx, maxy]`` before computing intersections and WMTS limits.
 
+For ``geoms.datasource``, geometries are interpreted in the layer projection and are reprojected to the grid
+projection when needed.
+
 When the seed step already limits metatiles with geometries (for example with
 ``generate-tiles --role=master``), you can disable the second geometry intersection
 filter by setting ``geom_filter: false`` in the layer configuration.

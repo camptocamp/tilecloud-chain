@@ -1650,7 +1650,14 @@ class TileGeneration:
                 metrics_host = host or self.options.host
                 with _GEOMS_GET_SUMMARY.labels(layer_name, metrics_host).time():
                     if "datasource" in geom_source:
-                        geom = self._load_geom_from_datasource(config.file, geom_source)
+                        geom = self._load_geom_from_datasource(
+                            config.file,
+                            geom_source,
+                            layer_proj4_literal=layer.get("proj4_literal"),
+                            grid_proj4_literal=grid.get("proj4_literal"),
+                            layer_srs=layer.get("srs"),
+                            grid_srs=grid.get("srs"),
+                        )
                     else:
                         geom = self._load_geom_from_postgis(
                             geom_source,
@@ -1723,9 +1730,7 @@ class TileGeneration:
             if grid_proj4_literal is not None
             else source_projection_default
         )
-        destination_srid: int | None = None
-        if grid_srs is not None and grid_srs.startswith("EPSG:"):
-            destination_srid = int(grid_srs.split(":", 1)[1])
+        destination_srid = TileGeneration._parse_epsg(grid_srs)
 
         transformers_by_srid: dict[int | None, pyproj.Transformer] = {}
 
@@ -1804,8 +1809,24 @@ class TileGeneration:
         return not source_projection.equals(destination_projection)
 
     @staticmethod
+    def _parse_epsg(srs: str | None) -> int | None:
+        if srs is None:
+            return None
+        if not srs.upper().startswith("EPSG:"):
+            return None
+        try:
+            return int(srs.split(":", 1)[1])
+        except ValueError:
+            return None
+
+    @staticmethod
     def _load_geom_from_datasource(
-        config_file: Path, geom_source: configuration.LayerGeometry
+        config_file: Path,
+        geom_source: configuration.LayerGeometry,
+        layer_proj4_literal: str | None = None,
+        grid_proj4_literal: str | None = None,
+        layer_srs: str | None = None,
+        grid_srs: str | None = None,
     ) -> BaseGeometry:
         """Load one geometry from a GDAL datasource."""
         datasource = TileGeneration._resolve_gdal_datasource(config_file, geom_source["datasource"])
@@ -1814,7 +1835,29 @@ class TileGeneration:
         if not geometries:
             return GeometryCollection()
 
-        return unary_union(geometries)
+        geom = unary_union(geometries)
+
+        source_projection = pyproj.CRS.from_proj4(layer_proj4_literal) if layer_proj4_literal is not None else None
+        destination_projection = (
+            pyproj.CRS.from_proj4(grid_proj4_literal) if grid_proj4_literal is not None else source_projection
+        )
+
+        if TileGeneration._needs_reprojection(
+            source_projection,
+            destination_projection,
+            source_srid=TileGeneration._parse_epsg(layer_srs),
+            destination_srid=TileGeneration._parse_epsg(grid_srs),
+        ):
+            assert source_projection is not None
+            assert destination_projection is not None
+            transformer = pyproj.Transformer.from_crs(
+                source_projection,
+                destination_projection,
+                always_xy=True,
+            )
+            geom = shapely.ops.transform(transformer.transform, geom)
+
+        return geom
 
     @staticmethod
     def _read_ogr_geometries(datasource: str, sql: str | None) -> list[BaseGeometry]:

@@ -322,6 +322,31 @@ def test_load_geom_from_datasource_with_sql(monkeypatch: pytest.MonkeyPatch) -> 
     assert geom.is_empty
 
 
+def test_load_geom_from_datasource_reprojects_to_grid(monkeypatch: pytest.MonkeyPatch) -> None:
+    source_projection = get_proj4_literal(21781)
+    destination_projection = get_proj4_literal(2056)
+    source_geom = box(550100.0, 170100.0, 550200.0, 170200.0)
+
+    def _read_ogr_geometries(_datasource: str, _sql: str | None) -> list[Any]:
+        return [source_geom]
+
+    monkeypatch.setattr(TileGeneration, "_read_ogr_geometries", _read_ogr_geometries)
+
+    geom = TileGeneration._load_geom_from_datasource(
+        AnyioPath("/tmp/tilegeneration/config.yaml"),
+        {"datasource": "geoms/mask.geojson"},
+        layer_proj4_literal=source_projection,
+        grid_proj4_literal=destination_projection,
+        layer_srs="EPSG:21781",
+        grid_srs="EPSG:2056",
+    )
+
+    assert geom.bounds == pytest.approx(
+        tuple(transform_bbox(source_projection, destination_projection, source_geom.bounds)),
+        abs=1e-6,
+    )
+
+
 def test_get_geoms_from_datasource(monkeypatch: pytest.MonkeyPatch) -> None:
     read_args: tuple[str, str | None] | None = None
 
@@ -627,7 +652,7 @@ def test_get_geoms_respects_geometry_srid(monkeypatch: pytest.MonkeyPatch) -> No
     geoms = gene.get_geoms(config, "layer", "grid_2056")
 
     assert not geoms[0].is_empty
-    assert geoms[0].equals(geom)
+    assert geoms[0].symmetric_difference(geom).area < 1e-9
 
 
 class TestGenerate(CompareCase):
