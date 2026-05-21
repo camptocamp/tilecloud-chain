@@ -121,6 +121,7 @@
   - <a id="definitions/layer_bbox/items"></a>**Items** *(number)*
 - <a id="definitions/layer_min_resolution_seed"></a>**`layer_min_resolution_seed`** *(number)*: The minimum resolutions to pre-generate.
 - <a id="definitions/layer_px_buffer"></a>**`layer_px_buffer`** *(integer)*: The buffer in pixel used to calculate geometry intersection. Default: `0`.
+- <a id="definitions/layer_geom_filter"></a>**`layer_geom_filter`** *(boolean)*: Enable the geometry intersection filter in the processing pipeline. Default: `true`.
 - <a id="definitions/layer_meta"></a>**`layer_meta`** *(boolean)*: Use meta-tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles. Default: `false`.
 - <a id="definitions/layer_meta_size"></a>**`layer_meta_size`** *(integer)*: The meta-tile size in tiles. Default: `5`.
 - <a id="definitions/layer_meta_buffer"></a>**`layer_meta_buffer`** *(integer)*: The meta-tiles buffer in pixels. Default: `128`.
@@ -202,6 +203,7 @@
   - <a id="definitions/layer_wms/properties/pre_hash_post_process"></a>**`pre_hash_post_process`**: Refer to *[#/definitions/layer_pre_hash_post_process](#definitions/layer_pre_hash_post_process)*.
   - <a id="definitions/layer_wms/properties/post_process"></a>**`post_process`**: Refer to *[#/definitions/layer_post_process](#definitions/layer_post_process)*.
   - <a id="definitions/layer_wms/properties/geoms"></a>**`geoms`**: Refer to *[#/definitions/layer_geoms](#definitions/layer_geoms)*.
+  - <a id="definitions/layer_wms/properties/geom_filter"></a>**`geom_filter`**: Refer to *[#/definitions/layer_geom_filter](#definitions/layer_geom_filter)*.
   - <a id="definitions/layer_wms/properties/empty_tile_detection"></a>**`empty_tile_detection`**: Refer to *[#/definitions/layer_empty_tile_detection](#definitions/layer_empty_tile_detection)*.
   - <a id="definitions/layer_wms/properties/empty_metatile_detection"></a>**`empty_metatile_detection`**: Refer to *[#/definitions/layer_empty_metatile_detection](#definitions/layer_empty_metatile_detection)*.
   - <a id="definitions/layer_wms/properties/cost"></a>**`cost`**: Refer to *[#/definitions/layer_cost](#definitions/layer_cost)*.
@@ -239,6 +241,7 @@
   - <a id="definitions/layer_mapnik/properties/pre_hash_post_process"></a>**`pre_hash_post_process`**: Refer to *[#/definitions/layer_pre_hash_post_process](#definitions/layer_pre_hash_post_process)*.
   - <a id="definitions/layer_mapnik/properties/post_process"></a>**`post_process`**: Refer to *[#/definitions/layer_post_process](#definitions/layer_post_process)*.
   - <a id="definitions/layer_mapnik/properties/geoms"></a>**`geoms`**: Refer to *[#/definitions/layer_geoms](#definitions/layer_geoms)*.
+  - <a id="definitions/layer_mapnik/properties/geom_filter"></a>**`geom_filter`**: Refer to *[#/definitions/layer_geom_filter](#definitions/layer_geom_filter)*.
   - <a id="definitions/layer_mapnik/properties/empty_tile_detection"></a>**`empty_tile_detection`**: Refer to *[#/definitions/layer_empty_tile_detection](#definitions/layer_empty_tile_detection)*.
   - <a id="definitions/layer_mapnik/properties/empty_metatile_detection"></a>**`empty_metatile_detection`**: Refer to *[#/definitions/layer_empty_metatile_detection](#definitions/layer_empty_metatile_detection)*.
   - <a id="definitions/layer_mapnik/properties/cost"></a>**`cost`**: Refer to *[#/definitions/layer_cost](#definitions/layer_cost)*.

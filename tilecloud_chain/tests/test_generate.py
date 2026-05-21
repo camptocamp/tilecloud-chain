@@ -16,7 +16,14 @@ from shapely.geometry import box
 from testfixtures import LogCapture
 from tilecloud.store.redis import RedisTileStore
 
-from tilecloud_chain import DatedConfig, SparseMetaTileBoundingPyramid, TileGeneration, controller, generate
+from tilecloud_chain import (
+    DatedConfig,
+    IntersectGeometryFilter,
+    SparseMetaTileBoundingPyramid,
+    TileGeneration,
+    controller,
+    generate,
+)
 from tilecloud_chain import configuration as tcc_configuration
 from tilecloud_chain.settings import settings
 from tilecloud_chain.tests import CompareCase
@@ -462,6 +469,31 @@ async def test_datasource_geom_config_is_valid() -> None:
     )
 
     assert "point_datasource" in config.config.get("layers", {})
+
+
+def test_intersect_geometry_filter_can_be_disabled_per_layer() -> None:
+    gene = Mock()
+    filter_ = IntersectGeometryFilter(gene=gene)
+    config = SimpleNamespace(
+        config={
+            "layers": {
+                "point": {
+                    "meta": True,
+                    "geom_filter": False,
+                },
+            },
+            "grids": {
+                "swissgrid": {
+                    "resolutions": [1],
+                },
+            },
+        },
+        file=AnyioPath("config.yaml"),
+    )
+
+    assert filter_.filter_tilecoord(cast("Any", config), Mock(), "point", "swissgrid") is True
+    gene.get_grid.assert_not_called()
+    gene.get_geoms.assert_not_called()
 
 
 class TestGenerate(CompareCase):

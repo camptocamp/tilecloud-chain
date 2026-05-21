@@ -2370,6 +2370,8 @@ class IntersectGeometryFilter:
             _LOGGER.warning("Layer %s not found in config %s", layer_name, config.file)
             return True
         layer = config.config["layers"][layer_name]
+        if not layer.get("geom_filter", configuration.LAYER_GEOMETRY_FILTER_DEFAULT):
+            return True
         grid = config.config["grids"][grid_name]
         tile_grid = self.gene.get_grid(config, grid_name)
         px_buffer = (

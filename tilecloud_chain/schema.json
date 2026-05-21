@@ -296,6 +296,12 @@
       "type": "integer",
       "default": 0
     },
+    "layer_geom_filter": {
+      "title": "Layer geometry filter",
+      "description": "Enable the geometry intersection filter in the processing pipeline",
+      "type": "boolean",
+      "default": true
+    },
     "layer_meta": {
       "title": "Layer meta",
       "description": "Use meta-tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles",
@@ -684,6 +690,9 @@
         "geoms": {
           "$ref": "#/definitions/layer_geoms"
         },
+        "geom_filter": {
+          "$ref": "#/definitions/layer_geom_filter"
+        },
         "empty_tile_detection": {
           "$ref": "#/definitions/layer_empty_tile_detection"
         },
@@ -815,6 +824,9 @@
         },
         "geoms": {
           "$ref": "#/definitions/layer_geoms"
+        },
+        "geom_filter": {
+          "$ref": "#/definitions/layer_geom_filter"
         },
         "empty_tile_detection": {
           "$ref": "#/definitions/layer_empty_tile_detection"
