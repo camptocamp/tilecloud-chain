@@ -27,6 +27,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import asyncio
+import html
 import io
 import json
 import logging
@@ -469,15 +470,24 @@ async def _run(
 ) -> None:
     display_command = shlex.join(final_command)
     error = False
+    error_detail: str | None = None
     out = io.StringIO()
     try:
         _LOG.debug("Running the command `%s` using the function directly", display_command)
         await main(final_command, out)
-    except Exception:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001
         _LOG.exception("Error while running the command `%s`", display_command)
         error = True
-    return_dict["out"] = _format_output(
+        error_detail = str(exc)
+    parsed_out = _format_output(
         "<br />".join(_parse_stdout(out.getvalue())),
         settings.max_output_length,
     )
+    if error and not parsed_out.strip():
+        detail = f": {html.escape(error_detail)}" if error_detail else ""
+        parsed_out = _format_output(
+            f"Error while running the command{detail}",
+            settings.max_output_length,
+        )
+    return_dict["out"] = parsed_out
     return_dict["error"] = error
