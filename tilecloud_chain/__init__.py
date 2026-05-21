@@ -1449,50 +1449,55 @@ class TileGeneration:
 
         async def meta_get(metatile: Tile) -> Tile:
             assert store is not None
+            log_debug_timings = _LOGGER.isEnabledFor(logging.DEBUG)
 
             async def _async_metatile() -> AsyncIterator[Tile]:
                 yield metatile
 
-            start_split = time.perf_counter()
+            start_split = time.perf_counter() if log_debug_timings else 0.0
             substream = store.get(_async_metatile())
             if getattr(self.options, "role", "") == "hash":
                 tile = await anext(substream)
                 assert tile is not None
-                split_duration = time.perf_counter() - start_split
-                _LOGGER.debug(
-                    "[%s] metatile split fetch in %.6fs",
-                    metatile.tilecoord,
-                    split_duration,
-                )
-                start_pipeline = time.perf_counter()
+                if log_debug_timings:
+                    split_duration = time.perf_counter() - start_split
+                    _LOGGER.debug(
+                        "[%s] metatile split fetch in %.6fs",
+                        metatile.tilecoord,
+                        split_duration,
+                    )
+                start_pipeline = time.perf_counter() if log_debug_timings else 0.0
                 await run(tile)
-                pipeline_duration = time.perf_counter() - start_pipeline
-                _LOGGER.debug(
-                    "[%s] metatile split pipeline in %.6fs",
-                    metatile.tilecoord,
-                    pipeline_duration,
-                )
+                if log_debug_timings:
+                    pipeline_duration = time.perf_counter() - start_pipeline
+                    _LOGGER.debug(
+                        "[%s] metatile split pipeline in %.6fs",
+                        metatile.tilecoord,
+                        pipeline_duration,
+                    )
             else:
                 tasks = []
                 async for tile in substream:
                     assert tile is not None
                     tasks.append(run(tile))
-                split_duration = time.perf_counter() - start_split
-                _LOGGER.debug(
-                    "[%s] metatile split fetch in %.6fs (%d tiles)",
-                    metatile.tilecoord,
-                    split_duration,
-                    len(tasks),
-                )
-                start_pipeline = time.perf_counter()
+                if log_debug_timings:
+                    split_duration = time.perf_counter() - start_split
+                    _LOGGER.debug(
+                        "[%s] metatile split fetch in %.6fs (%d tiles)",
+                        metatile.tilecoord,
+                        split_duration,
+                        len(tasks),
+                    )
+                start_pipeline = time.perf_counter() if log_debug_timings else 0.0
                 await asyncio.gather(*tasks)
-                pipeline_duration = time.perf_counter() - start_pipeline
-                _LOGGER.debug(
-                    "[%s] metatile split pipeline in %.6fs (%d tiles)",
-                    metatile.tilecoord,
-                    pipeline_duration,
-                    len(tasks),
-                )
+                if log_debug_timings:
+                    pipeline_duration = time.perf_counter() - start_pipeline
+                    _LOGGER.debug(
+                        "[%s] metatile split pipeline in %.6fs (%d tiles)",
+                        metatile.tilecoord,
+                        pipeline_duration,
+                        len(tasks),
+                    )
 
                 async with self.error_lock:
                     self.error += run.error
