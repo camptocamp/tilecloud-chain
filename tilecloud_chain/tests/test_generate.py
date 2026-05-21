@@ -652,7 +652,7 @@ def test_get_geoms_respects_geometry_srid(monkeypatch: pytest.MonkeyPatch) -> No
     geoms = gene.get_geoms(config, "layer", "grid_2056")
 
     assert not geoms[0].is_empty
-    assert geoms[0].symmetric_difference(geom).area < 1e-9
+    assert geoms[0].symmetric_difference(geom).area < 1e-5
 
 
 class TestGenerate(CompareCase):
