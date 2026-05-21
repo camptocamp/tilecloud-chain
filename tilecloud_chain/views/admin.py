@@ -27,6 +27,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import asyncio
+import html
 import io
 import json
 import logging
@@ -483,7 +484,7 @@ async def _run(
         settings.max_output_length,
     )
     if error and not parsed_out:
-        detail = f": {error_detail}" if error_detail else ""
+        detail = f": {html.escape(error_detail)}" if error_detail else ""
         parsed_out = _format_output(
             f"Error while running the command{detail}",
             settings.max_output_length,
