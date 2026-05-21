@@ -1073,6 +1073,11 @@ class Info(TypedDict, total=False):
 
 
 
+LAYER_GEOMETRY_FILTER_DEFAULT = True
+r""" Default value of the field path 'layer_geom_filter' """
+
+
+
 LAYER_LEGEND_DEFAULT: dict[str, Any] = {}
 r""" Default value of the field path 'layer_legend' """
 
@@ -1364,6 +1369,17 @@ class LayerGeometry(TypedDict, total=False):
 
     The max resolution where the query is valid
     """
+
+
+
+LayerGeometryFilter = bool
+r"""
+Layer geometry filter.
+
+Enable the geometry intersection filter in the processing pipeline
+
+default: True
+"""
 
 
 
@@ -1737,6 +1753,15 @@ class LayerMapnik(TypedDict, total=False):
     Layer geometries.
 
     The geometries used to determine where we should create the tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-geomsql
+    """
+
+    geom_filter: "LayerGeometryFilter"
+    r"""
+    Layer geometry filter.
+
+    Enable the geometry intersection filter in the processing pipeline
+
+    default: True
     """
 
     empty_tile_detection: "LayerEmptyTileDetection"
@@ -2143,6 +2168,15 @@ class LayerWms(TypedDict, total=False):
     Layer geometries.
 
     The geometries used to determine where we should create the tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#configure-geomsql
+    """
+
+    geom_filter: "LayerGeometryFilter"
+    r"""
+    Layer geometry filter.
+
+    Enable the geometry intersection filter in the processing pipeline
+
+    default: True
     """
 
     empty_tile_detection: "LayerEmptyTileDetection"

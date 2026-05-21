@@ -83,6 +83,9 @@ When generating WMTS capabilities, if a layer ``bbox`` is defined, it is also us
 
 ``px_buffer`` a buffer in px around the object area (geoms or extent).
 
+``geom_filter`` enable (default) or disable the geometry intersection filter in the
+generation pipeline.
+
 WMTS layout
 ^^^^^^^^^^^
 
@@ -200,6 +203,10 @@ Example:
         max_resolution: 20
 
 It's preferable to use simple geometries, too complex geometries can slow down the generation.
+
+When the seed step already limits metatiles with geometries (for example with
+``generate-tiles --role=master``), you can disable the second geometry intersection
+filter by setting ``geom_filter: false`` in the layer configuration.
 
 Legends
 ^^^^^^^
