@@ -14,7 +14,7 @@ async def test_run_returns_exception_message_when_output_is_empty() -> None:
     await admin._run(["generate-tiles", "--grid=unknown_grid"], main, result)
 
     assert result["error"] is True
-    assert result["out"] == "Error while running the command: Invalid grid 'unknown_grid'"
+    assert result["out"] == "Error while running the command: Invalid grid &#x27;unknown_grid&#x27;"
 
 
 @pytest.mark.asyncio
