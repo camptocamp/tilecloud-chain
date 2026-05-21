@@ -4,11 +4,11 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from tilecloud import Tile, TileCoord
 import yaml
 from anyio import Path as AnyioPath
 from fastapi import HTTPException
 from testfixtures import LogCapture
+from tilecloud import Tile, TileCoord
 
 from tilecloud_chain import DatedConfig, TileGeneration, generate, server
 from tilecloud_chain.internal_mapcache import RedisStore
