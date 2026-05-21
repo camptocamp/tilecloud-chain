@@ -28,7 +28,7 @@
 - Add layer option `geom_filter` (default `true`) to disable the second geometry intersection filter in the generation pipeline when geometry-based seeding is already sufficient.
 - Fix geometry/bbox reprojection edge cases by normalizing bbox axis order before TileMatrixSetLimits and geom filtering, and by honoring PostGIS geometry SRID when present before intersecting with grid extents.
 - Reproject `geoms.datasource` geometries from layer CRS to grid CRS like PostGIS geoms, to avoid empty intersections when layer and grid use different SRS.
-- Show a clear admin error message when a generation command fails before producing output (for example an unknown grid), and clarify PostgreSQL job ETA text with explicit units like `2 days 2 hours`.
+- Show a clear admin error message when a generation command fails before producing output (for example, an unknown grid), and clarify PostgreSQL job ETA text with explicit units like `2 days 2 hours`.
 
 Environment variable migration (legacy -> new)
 
