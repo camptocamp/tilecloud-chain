@@ -1453,17 +1453,46 @@ class TileGeneration:
             async def _async_metatile() -> AsyncIterator[Tile]:
                 yield metatile
 
+            start_split = time.perf_counter()
             substream = store.get(_async_metatile())
             if getattr(self.options, "role", "") == "hash":
                 tile = await anext(substream)
                 assert tile is not None
+                split_duration = time.perf_counter() - start_split
+                _LOGGER.debug(
+                    "[%s] metatile split fetch in %.6fs",
+                    metatile.tilecoord,
+                    split_duration,
+                )
+                start_pipeline = time.perf_counter()
                 await run(tile)
+                pipeline_duration = time.perf_counter() - start_pipeline
+                _LOGGER.debug(
+                    "[%s] metatile split pipeline in %.6fs",
+                    metatile.tilecoord,
+                    pipeline_duration,
+                )
             else:
                 tasks = []
                 async for tile in substream:
                     assert tile is not None
                     tasks.append(run(tile))
+                split_duration = time.perf_counter() - start_split
+                _LOGGER.debug(
+                    "[%s] metatile split fetch in %.6fs (%d tiles)",
+                    metatile.tilecoord,
+                    split_duration,
+                    len(tasks),
+                )
+                start_pipeline = time.perf_counter()
                 await asyncio.gather(*tasks)
+                pipeline_duration = time.perf_counter() - start_pipeline
+                _LOGGER.debug(
+                    "[%s] metatile split pipeline in %.6fs (%d tiles)",
+                    metatile.tilecoord,
+                    pipeline_duration,
+                    len(tasks),
+                )
 
                 async with self.error_lock:
                     self.error += run.error
@@ -2336,6 +2365,7 @@ class HashDropper:
     ) -> None:
         self.size = size
         self.sha1code = sha1code
+        self.sha1digest = bytes.fromhex(sha1code)
         self.store = store
         self.queue_store = queue_store
         self.count = count
@@ -2343,7 +2373,9 @@ class HashDropper:
     async def __call__(self, tile: Tile) -> Tile | None:
         """Drop the tile if the size and hash are the same as the specified ones."""
         assert tile.data
-        if len(tile.data) != self.size or sha1(tile.data).hexdigest() != self.sha1code:  # noqa: S324
+        if len(tile.data) != self.size:
+            return tile
+        if sha1(tile.data).digest() != self.sha1digest:  # noqa: S324
             return tile
         if self.store is not None:
             if tile.tilecoord.n != 1:
@@ -2371,6 +2403,7 @@ class _DatedAction:
     """Dated action."""
 
     mtime: float
+    checked_at: float
     action: Callable[[Tile], Awaitable[Tile | None]]
 
 
@@ -2387,6 +2420,7 @@ class MultiAction:
     ) -> None:
         self.get_action = get_action
         self.actions: dict[tuple[Path, str], _DatedAction] = {}
+        self._cache_ttl_seconds = 10.0
 
     async def _get_action(
         self,
@@ -2394,19 +2428,27 @@ class MultiAction:
         layer: str,
     ) -> Callable[[Tile], Awaitable[Tile | None]] | None:
         """Get the action based on the tile's layer name."""
-        if not await config_file.exists():
-            _LOGGER.warning("Config file %s does not exist", config_file)
-            return None
-        config_stat = await config_file.stat()
-        mtime = config_stat.st_mtime
+        now = time.monotonic()
         action = self.actions.get((config_file, layer))
-        if action is not None and action.mtime != mtime:
-            action = None
-        if action is None:
-            action_item = await self.get_action(config_file, layer)
-            if action_item is not None:
-                action = _DatedAction(mtime, action_item)
-                self.actions[(config_file, layer)] = action
+        if action is None or now - action.checked_at >= self._cache_ttl_seconds:
+            if not await config_file.exists():
+                _LOGGER.warning("Config file %s does not exist", config_file)
+                self.actions.pop((config_file, layer), None)
+                return None
+
+            config_stat = await config_file.stat()
+            mtime = config_stat.st_mtime
+
+            if action is None or action.mtime != mtime:
+                action_item = await self.get_action(config_file, layer)
+                if action_item is not None:
+                    action = _DatedAction(mtime, now, action_item)
+                    self.actions[(config_file, layer)] = action
+                else:
+                    self.actions.pop((config_file, layer), None)
+                    return None
+            else:
+                action.checked_at = now
         return action.action if action is not None else None
 
     async def __call__(self, tile: Tile) -> Tile | None:
