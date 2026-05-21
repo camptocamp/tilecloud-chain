@@ -603,6 +603,16 @@ class MissingErrorFileError(Exception):
     """Missing error file exception."""
 
 
+class InvalidHashDropperConfigurationError(ValueError):
+    """Raised when HashDropper configuration is invalid."""
+
+    def __init__(self, sha1code: str) -> None:
+        super().__init__(
+            "Invalid configuration for HashDropper.sha1code: "
+            f"expected a 40-character hexadecimal SHA-1 digest, got {sha1code!r}",
+        )
+
+
 class LoggingInformation(TypedDict):
     """Logging information."""
 
@@ -1416,95 +1426,116 @@ class TileGeneration:
         """Add a metatile splitter to the chain."""
         assert self.functions != self.functions_tiles, "add_metatile_splitter should not be called twice"
         if store is None:
-            gene = self
-
-            async def get_splitter(
-                config_file: Path,
-                layer_name: str,
-                grid_name: str | None,
-            ) -> AsyncTileStore | None:
-                config = await gene.get_config(config_file)
-                if layer_name not in config.config.get("layers", {}):
-                    _LOGGER.warning("Layer %s not found in config %s", layer_name, config_file)
-                    return None
-                layer = config.config["layers"][layer_name]
-                if layer.get("meta"):
-                    return TileStoreWrapper(
-                        MetaTileSplitterTileStore(
-                            layer["mime_type"],
-                            get_grid_config(config, layer_name, grid_name).get(
-                                "tile_size",
-                                configuration.TILE_SIZE_DEFAULT,
-                            ),
-                            layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT),
-                            save_options=layer.get("meta_save_options"),  # type: ignore[arg-type]
-                        ),
-                    )
-                return NoneTileStore()
-
-            store = TimedTileStoreWrapper(MultiTileStore(get_splitter), store_name="splitter")
+            store = TimedTileStoreWrapper(MultiTileStore(self._get_splitter), store_name="splitter")
 
         run = Run(self, self.functions_tiles, out=self.out)
         await run.init()
+        self.imap(self._build_meta_getter(store, run))
+        self.functions = self.functions_tiles
 
+    async def _get_splitter(
+        self,
+        config_file: Path,
+        layer_name: str,
+        grid_name: str | None,
+    ) -> AsyncTileStore | None:
+        config = await self.get_config(config_file)
+        if layer_name not in config.config.get("layers", {}):
+            _LOGGER.warning("Layer %s not found in config %s", layer_name, config_file)
+            return None
+        layer = config.config["layers"][layer_name]
+        if layer.get("meta"):
+            return TileStoreWrapper(
+                MetaTileSplitterTileStore(
+                    layer["mime_type"],
+                    get_grid_config(config, layer_name, grid_name).get(
+                        "tile_size",
+                        configuration.TILE_SIZE_DEFAULT,
+                    ),
+                    layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT),
+                    save_options=layer.get("meta_save_options"),  # type: ignore[arg-type]
+                ),
+            )
+        return NoneTileStore()
+
+    @staticmethod
+    def _log_metatile_timing(
+        enabled: bool,
+        metatile: Tile,
+        phase: str,
+        duration: float,
+        tiles_count: int | None = None,
+    ) -> None:
+        if not enabled:
+            return
+        if tiles_count is None:
+            _LOGGER.debug("[%s] metatile split %s in %.6fs", metatile.tilecoord, phase, duration)
+            return
+        _LOGGER.debug(
+            "[%s] metatile split %s in %.6fs (%d tiles)",
+            metatile.tilecoord,
+            phase,
+            duration,
+            tiles_count,
+        )
+
+    async def _fetch_hash_tile(self, substream: AsyncIterator[Tile]) -> Tile:
+        tile = await anext(substream)
+        assert tile is not None
+        return tile
+
+    async def _process_tiles_metatile(self, substream: AsyncIterator[Tile], run: Run) -> int:
+        tasks = []
+        async for tile in substream:
+            assert tile is not None
+            tasks.append(run(tile))
+        await asyncio.gather(*tasks)
+
+        async with self.error_lock:
+            self.error += run.error
+        return len(tasks)
+
+    async def _process_metatile(self, metatile: Tile, store: AsyncTileStore, run: Run) -> None:
+        log_debug_timings = _LOGGER.isEnabledFor(logging.DEBUG)
+
+        async def _async_metatile() -> AsyncIterator[Tile]:
+            yield metatile
+
+        start_split = time.perf_counter() if log_debug_timings else 0.0
+        substream = store.get(_async_metatile())
+        role = getattr(self.options, "role", "")
+        if role == "hash":
+            tile = await self._fetch_hash_tile(substream)
+            split_duration = time.perf_counter() - start_split if log_debug_timings else 0.0
+            self._log_metatile_timing(log_debug_timings, metatile, "fetch", split_duration)
+
+            start_pipeline = time.perf_counter() if log_debug_timings else 0.0
+            await run(tile)
+            pipeline_duration = time.perf_counter() - start_pipeline if log_debug_timings else 0.0
+            self._log_metatile_timing(log_debug_timings, metatile, "pipeline", pipeline_duration)
+            return
+
+        split_count = await self._process_tiles_metatile(substream, run)
+        split_duration = time.perf_counter() - start_split if log_debug_timings else 0.0
+        self._log_metatile_timing(log_debug_timings, metatile, "fetch", split_duration, split_count)
+
+        start_pipeline = time.perf_counter() if log_debug_timings else 0.0
+        pipeline_duration = time.perf_counter() - start_pipeline if log_debug_timings else 0.0
+        self._log_metatile_timing(
+            log_debug_timings,
+            metatile,
+            "pipeline",
+            pipeline_duration,
+            split_count,
+        )
+
+    def _build_meta_getter(self, store: AsyncTileStore, run: Run) -> Callable[[Tile], Awaitable[Tile]]:
         async def meta_get(metatile: Tile) -> Tile:
-            assert store is not None
-            log_debug_timings = _LOGGER.isEnabledFor(logging.DEBUG)
-
-            async def _async_metatile() -> AsyncIterator[Tile]:
-                yield metatile
-
-            start_split = time.perf_counter() if log_debug_timings else 0.0
-            substream = store.get(_async_metatile())
-            if getattr(self.options, "role", "") == "hash":
-                tile = await anext(substream)
-                assert tile is not None
-                if log_debug_timings:
-                    split_duration = time.perf_counter() - start_split
-                    _LOGGER.debug(
-                        "[%s] metatile split fetch in %.6fs",
-                        metatile.tilecoord,
-                        split_duration,
-                    )
-                start_pipeline = time.perf_counter() if log_debug_timings else 0.0
-                await run(tile)
-                if log_debug_timings:
-                    pipeline_duration = time.perf_counter() - start_pipeline
-                    _LOGGER.debug(
-                        "[%s] metatile split pipeline in %.6fs",
-                        metatile.tilecoord,
-                        pipeline_duration,
-                    )
-            else:
-                tasks = []
-                async for tile in substream:
-                    assert tile is not None
-                    tasks.append(run(tile))
-                if log_debug_timings:
-                    split_duration = time.perf_counter() - start_split
-                    _LOGGER.debug(
-                        "[%s] metatile split fetch in %.6fs (%d tiles)",
-                        metatile.tilecoord,
-                        split_duration,
-                        len(tasks),
-                    )
-                start_pipeline = time.perf_counter() if log_debug_timings else 0.0
-                await asyncio.gather(*tasks)
-                if log_debug_timings:
-                    pipeline_duration = time.perf_counter() - start_pipeline
-                    _LOGGER.debug(
-                        "[%s] metatile split pipeline in %.6fs (%d tiles)",
-                        metatile.tilecoord,
-                        pipeline_duration,
-                        len(tasks),
-                    )
-
-                async with self.error_lock:
-                    self.error += run.error
+            await self._process_metatile(metatile, store, run)
             return metatile
 
-        self.imap(meta_get)
-        self.functions = self.functions_tiles
+        return meta_get
+
 
     async def create_log_tiles_error(self, layer: str) -> anyio.AsyncFile[str] | None:
         """Create the error file for the given layer."""
@@ -2371,10 +2402,7 @@ class HashDropper:
         self.size = size
         self.sha1code = sha1code
         if len(sha1code) != 40 or re.fullmatch(r"[0-9a-fA-F]{40}", sha1code) is None:
-            raise ValueError(
-                "Invalid configuration for HashDropper.sha1code: "
-                f"expected a 40-character hexadecimal SHA-1 digest, got {sha1code!r}",
-            )
+            raise InvalidHashDropperConfigurationError(sha1code)
         self.sha1digest = bytes.fromhex(sha1code)
         self.store = store
         self.queue_store = queue_store
