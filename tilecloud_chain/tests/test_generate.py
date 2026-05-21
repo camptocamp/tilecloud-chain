@@ -16,6 +16,7 @@ from shapely.geometry import box
 from testfixtures import LogCapture
 from tilecloud.store.redis import RedisTileStore
 
+import tilecloud_chain
 from tilecloud_chain import (
     DatedConfig,
     IntersectGeometryFilter,
@@ -23,6 +24,10 @@ from tilecloud_chain import (
     TileGeneration,
     controller,
     generate,
+    get_proj4_literal,
+    get_tile_matrix_limits,
+    normalize_bbox,
+    transform_bbox,
 )
 from tilecloud_chain import configuration as tcc_configuration
 from tilecloud_chain.settings import settings
@@ -494,6 +499,135 @@ def test_intersect_geometry_filter_can_be_disabled_per_layer() -> None:
     assert filter_.filter_tilecoord(cast("Any", config), Mock(), "point", "swissgrid") is True
     gene.get_grid.assert_not_called()
     gene.get_geoms.assert_not_called()
+
+
+def test_normalize_bbox() -> None:
+    assert normalize_bbox([6, 2, 1, 5]) == [1.0, 2.0, 6.0, 5.0]
+
+
+def test_transform_bbox_normalizes_reversed_input() -> None:
+    source = "+proj=longlat +datum=WGS84 +no_defs"
+    destination = "+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +k=1 +units=m +no_defs"
+
+    transformed = transform_bbox(source, destination, [8.0, 47.0, 7.5, 46.5])
+
+    assert transformed[0] < transformed[2]
+    assert transformed[1] < transformed[3]
+
+
+def test_get_tile_matrix_limits_with_reversed_bbox() -> None:
+    config = DatedConfig(
+        cast(
+            "tcc_configuration.Configuration",
+            {
+                "layers": {
+                    "layer": {
+                        "bbox": [560000.0, 180000.0, 550000.0, 170000.0],
+                    },
+                },
+                "grids": {
+                    "grid": {
+                        "bbox": [420000.0, 30000.0, 900000.0, 350000.0],
+                        "resolutions": [100.0],
+                        "tile_size": 256,
+                    },
+                },
+            },
+        ),
+        0,
+        AnyioPath("config.yaml"),
+    )
+
+    limits = get_tile_matrix_limits(config, "layer", "grid")
+
+    assert limits == [
+        {
+            "tile_matrix": "0",
+            "min_tile_row": 6,
+            "max_tile_row": 7,
+            "min_tile_col": 5,
+            "max_tile_col": 5,
+        },
+    ]
+
+
+def test_get_geoms_respects_geometry_srid(monkeypatch: pytest.MonkeyPatch) -> None:
+    class FakeCursor:
+        def __init__(self, rows: list[tuple[bytes, int]]) -> None:
+            self.rows = rows
+
+        def execute(self, _sql: str) -> None:
+            return
+
+        def fetchall(self) -> list[tuple[bytes, int]]:
+            return self.rows
+
+        def close(self) -> None:
+            return
+
+    class FakeConnection:
+        def __init__(self, rows: list[tuple[bytes, int]]) -> None:
+            self.rows = rows
+
+        def cursor(self) -> FakeCursor:
+            return FakeCursor(self.rows)
+
+        def close(self) -> None:
+            return
+
+    layer_projection = get_proj4_literal(21781)
+    grid_projection = get_proj4_literal(2056)
+    transformed_layer_bbox = transform_bbox(layer_projection, grid_projection, [550000, 170000, 560000, 180000])
+    geom = box(
+        transformed_layer_bbox[0] + 500,
+        transformed_layer_bbox[1] + 500,
+        transformed_layer_bbox[0] + 1000,
+        transformed_layer_bbox[1] + 1000,
+    )
+    rows = [(geom.wkb, 2056)]
+
+    monkeypatch.setattr(
+        tilecloud_chain.psycopg2,
+        "connect",
+        lambda _connection: FakeConnection(rows),
+    )
+
+    gene = TileGeneration(options=Namespace(host="localhost"), configure_logging=False)
+    config = DatedConfig(
+        cast(
+            "tcc_configuration.Configuration",
+            {
+                "layers": {
+                    "layer": {
+                        "bbox": [550000.0, 170000.0, 560000.0, 180000.0],
+                        "proj4_literal": layer_projection,
+                        "grids": ["grid_2056"],
+                        "geoms": [
+                            {
+                                "sql": "the_geom AS geom FROM tests.point",
+                                "connection": "postgresql://dummy",
+                            },
+                        ],
+                    },
+                },
+                "grids": {
+                    "grid_2056": {
+                        "bbox": [2420000.0, 1030000.0, 2900000.0, 1350000.0],
+                        "resolutions": [1000.0],
+                        "tile_size": 256,
+                        "proj4_literal": grid_projection,
+                    },
+                },
+            },
+        ),
+        0,
+        AnyioPath("config.yaml"),
+    )
+
+    geoms = gene.get_geoms(config, "layer", "grid_2056")
+
+    assert not geoms[0].is_empty
+    assert geoms[0].bounds == geom.bounds
 
 
 class TestGenerate(CompareCase):
