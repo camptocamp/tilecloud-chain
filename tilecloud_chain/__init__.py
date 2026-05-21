@@ -1837,7 +1837,9 @@ class TileGeneration:
 
         geom = unary_union(geometries)
 
-        source_projection = pyproj.CRS.from_proj4(layer_proj4_literal) if layer_proj4_literal is not None else None
+        source_projection = (
+            pyproj.CRS.from_proj4(layer_proj4_literal) if layer_proj4_literal is not None else None
+        )
         destination_projection = (
             pyproj.CRS.from_proj4(grid_proj4_literal) if grid_proj4_literal is not None else source_projection
         )
