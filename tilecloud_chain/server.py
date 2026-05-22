@@ -737,9 +737,32 @@ class Server:
             headers["Cache-Control"] = "no-cache"
             headers["Pragma"] = "no-cache"
 
+        _LOGGER.debug("Forwarding request to WMS backend: %s", url)
+
         async with aiohttp.ClientSession() as session, session.get(url, headers=headers) as response:
             if response.status == 200:
                 response_headers = dict(response.headers)
+                hop_by_hop_headers = {
+                    "connection",
+                    "keep-alive",
+                    "proxy-authenticate",
+                    "proxy-authorization",
+                    "te",
+                    "trailer",
+                    "transfer-encoding",
+                    "upgrade",
+                }
+                connection_header = response_headers.get("Connection", "")
+                if connection_header:
+                    hop_by_hop_headers.update(
+                        header.strip().lower() for header in connection_header.split(",") if header.strip()
+                    )
+                hop_by_hop_headers.update({"content-length", "content-encoding"})
+                response_headers = {
+                    name: value
+                    for name, value in response_headers.items()
+                    if name.lower() not in hop_by_hop_headers
+                }
                 if no_cache:
                     response_headers["Cache-Control"] = "no-cache, no-store"
                     response_headers["Pragma"] = "no-cache"
