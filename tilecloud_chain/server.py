@@ -752,7 +752,10 @@ class Server:
                     "transfer-encoding",
                     "upgrade",
                 }
-                connection_header = response_headers.get("Connection", "")
+                connection_header = next(
+                    (value for name, value in response_headers.items() if name.lower() == "connection"),
+                    "",
+                )
                 if connection_header:
                     hop_by_hop_headers.update(
                         header.strip().lower() for header in connection_header.split(",") if header.strip()
