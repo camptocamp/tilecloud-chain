@@ -284,6 +284,117 @@
         return [wmtsLayer.InfoFormat];
       };
 
+      const toArray = function (value) {
+        if (!value) {
+          return [];
+        }
+        return Array.isArray(value) ? value : [value];
+      };
+
+      const hasAllowedValue = function (constraint, expectedValue) {
+        const allowedValues = toArray(constraint?.AllowedValues?.Value);
+        return allowedValues.some(function (value) {
+          return String(value).toUpperCase() === expectedValue;
+        });
+      };
+
+      const getKvpEndpoint = function (result) {
+        const operations = toArray(result?.OperationsMetadata?.Operation);
+        const getTileOperation = operations.find(function (operation) {
+          return operation?.name === 'GetTile';
+        });
+        const getMethods = toArray(getTileOperation?.DCP?.HTTP?.Get);
+
+        const method = getMethods.find(function (candidate) {
+          const constraints = toArray(candidate?.Constraint);
+          if (constraints.length === 0) {
+            return false;
+          }
+          const getEncoding = constraints.find(function (constraint) {
+            return constraint?.name === 'GetEncoding';
+          });
+          return hasAllowedValue(getEncoding, 'KVP');
+        });
+
+        return method?.href || method?.Href || null;
+      };
+
+      const getTileSize = function (tileGrid, tileCoordZ) {
+        const tileSize = tileGrid.getTileSize(tileCoordZ);
+        if (Array.isArray(tileSize)) {
+          return tileSize;
+        }
+        return [tileSize, tileSize];
+      };
+
+      const buildWmtsFeatureInfoUrl = function (source, clickCoordinate, resolution, infoFormat, kvpEndpoint) {
+        if (!source || !kvpEndpoint || !resolution || resolution <= 0) {
+          return null;
+        }
+
+        const tileGrid = source.getTileGrid();
+        if (!tileGrid) {
+          return null;
+        }
+
+        const tileCoordZ = tileGrid.getZForResolution(resolution);
+        if (!Number.isFinite(tileCoordZ)) {
+          return null;
+        }
+        const tileCoord = tileGrid.getTileCoordForCoordAndZ(clickCoordinate, tileCoordZ);
+        if (!tileCoord) {
+          return null;
+        }
+
+        const tileExtent = tileGrid.getTileCoordExtent(tileCoord);
+        if (!tileExtent) {
+          return null;
+        }
+
+        const tileSize = getTileSize(tileGrid, tileCoordZ);
+        const matrixIds = tileGrid.getMatrixIds ? tileGrid.getMatrixIds() : null;
+        const tileMatrix = matrixIds ? matrixIds[tileCoordZ] : tileCoordZ;
+        if (tileMatrix === undefined || tileMatrix === null) {
+          return null;
+        }
+
+        const tileCol = tileCoord[1];
+        const tileRow = tileCoord[2];
+        const i = Math.min(
+          tileSize[0] - 1,
+          Math.max(0, Math.floor((clickCoordinate[0] - tileExtent[0]) / resolution))
+        );
+        const j = Math.min(
+          tileSize[1] - 1,
+          Math.max(0, Math.floor((tileExtent[3] - clickCoordinate[1]) / resolution))
+        );
+
+        const params = new URLSearchParams({
+          'SERVICE': 'WMTS',
+          'VERSION': source.getVersion(),
+          'REQUEST': 'GetFeatureInfo',
+          'LAYER': source.getLayer(),
+          'STYLE': source.getStyle(),
+          'TILEMATRIXSET': source.getMatrixSet(),
+          'TILEMATRIX': String(tileMatrix),
+          'TILEROW': String(tileRow),
+          'TILECOL': String(tileCol),
+          'I': String(i),
+          'J': String(j),
+          'INFO_FORMAT': infoFormat,
+          'FORMAT': source.getFormat(),
+        });
+
+        const dimensions = source.getDimensions() || {};
+        Object.entries(dimensions).forEach(function ([name, value]) {
+          if (value !== undefined && value !== null && value !== '') {
+            params.set(name, String(value));
+          }
+        });
+
+        return kvpEndpoint + (kvpEndpoint.includes('?') ? '&' : '?') + params.toString();
+      };
+
       const getLegendUrls = function (legendUrls) {
         if (!legendUrls) {
           return [];
@@ -417,6 +528,7 @@
           let layers = [];
           let tileGridOptions = {};
           let visible = true;
+          const kvpEndpoint = getKvpEndpoint(result);
           for (const wmtsLayer of result.Contents.Layer) {
             const gridDefinitions = getLayerGridDefinitions(result, wmtsLayer);
             if (gridDefinitions.length === 0) {
@@ -459,6 +571,7 @@
                 legendDefinitions: layerLegendDefinitions,
                 gridDefinitions: gridDefinitions,
                 selectedGridId: selectedGridDefinition.id,
+                kvpEndpoint: kvpEndpoint,
               })
             );
             visible = false;
@@ -1033,14 +1146,15 @@
             }
 
             const source = activeBaseLayer.getSource();
-            if (!source || typeof source.getFeatureInfoUrl !== 'function') {
-              featureInfo.setContent('The active layer does not support WMTS GetFeatureInfo.');
-              return;
-            }
+            const kvpEndpoint = activeBaseLayer.get('kvpEndpoint');
 
             const infoFormats = activeBaseLayer.get('infoFormats') || [];
             if (infoFormats.length === 0) {
               featureInfo.setContent('The active layer is not queryable.');
+              return;
+            }
+            if (!source || !kvpEndpoint) {
+              featureInfo.setContent('The active layer does not support WMTS GetFeatureInfo.');
               return;
             }
 
@@ -1053,9 +1167,13 @@
               return;
             }
 
-            const url = source.getFeatureInfoUrl(event.coordinate, resolution, projection, {
-              'INFO_FORMAT': infoFormat,
-            });
+            const url = buildWmtsFeatureInfoUrl(
+              source,
+              event.coordinate,
+              resolution,
+              infoFormat,
+              kvpEndpoint
+            );
             if (!url) {
               featureInfo.setContent('Cannot build the WMTS GetFeatureInfo URL for this layer.');
               return;
