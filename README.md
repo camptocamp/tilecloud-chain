@@ -89,7 +89,8 @@ flowchart TD
     B -->|slave| S1["Read metatiles from queue"]
     B -->|hash via --get-hash| H1["Build tile or metatile selection"]
 
-    L1 --> C["Fetch source tile data"]
+    L1 --> L2["Apply geometry filter"]
+    L2 --> C["Fetch source tile data"]
     M1 --> M2["Apply geometry filter"]
     M2 --> O3["Push metatile jobs to queue (Redis, SQS, PostgreSQL)"]
     S1 --> C
