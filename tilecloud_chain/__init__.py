@@ -1486,22 +1486,16 @@ class TileGeneration:
         assert tile is not None
         return tile
 
-    async def _collect_metatile_tasks(
-        self,
-        substream: AsyncIterator[Tile | None],
-        run: Run,
-    ) -> list[Awaitable[Tile | None]]:
+    async def _process_tiles_metatile(self, substream: AsyncIterator[Tile | None], run: Run) -> int:
         tasks = []
         async for tile in substream:
             assert tile is not None
             tasks.append(run(tile))
-        return tasks
-
-    async def _run_metatile_tasks(self, tasks: list[Awaitable[Tile | None]], run: Run) -> None:
         await asyncio.gather(*tasks)
 
         async with self.error_lock:
             self.error += run.error
+        return len(tasks)
 
     async def _process_metatile(self, metatile: Tile, store: AsyncTileStore, run: Run) -> None:
         log_debug_timings = _LOGGER.isEnabledFor(logging.DEBUG)
@@ -1523,13 +1517,11 @@ class TileGeneration:
             self._log_metatile_timing(log_debug_timings, metatile, "pipeline", pipeline_duration)
             return
 
-        tasks = await self._collect_metatile_tasks(substream, run)
-        split_count = len(tasks)
+        split_count = await self._process_tiles_metatile(substream, run)
         split_duration = time.perf_counter() - start_split if log_debug_timings else 0.0
         self._log_metatile_timing(log_debug_timings, metatile, "fetch", split_duration, split_count)
 
         start_pipeline = time.perf_counter() if log_debug_timings else 0.0
-        await self._run_metatile_tasks(tasks, run)
         pipeline_duration = time.perf_counter() - start_pipeline if log_debug_timings else 0.0
         self._log_metatile_timing(
             log_debug_timings,
