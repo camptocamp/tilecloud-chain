@@ -324,10 +324,12 @@
       };
 
       const getKvpEndpoint = function (result) {
-        const operations = toArray(result?.OperationsMetadata?.Operation);
-        const getTileOperation = operations.find(function (operation) {
-          return operation?.name === 'GetTile';
-        });
+        const operationsMetadata = result?.OperationsMetadata || {};
+        const getTileOperation =
+          operationsMetadata.GetTile ||
+          toArray(operationsMetadata.Operation).find(function (operation) {
+            return operation?.name === 'GetTile';
+          });
         const getMethods = toArray(getTileOperation?.DCP?.HTTP?.Get);
 
         const method = getMethods.find(function (candidate) {

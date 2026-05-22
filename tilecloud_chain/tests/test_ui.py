@@ -82,6 +82,8 @@ def test_openlayers_test_page_uses_wmts_getfeatureinfo_on_click():
     assert "map.on('singleclick', function (event) {" in content
     assert "const getLinkHref = function (link) {" in content
     assert "return link.href || link.Href || link['xlink:href'] || link.xlinkHref || null;" in content
+    assert "const operationsMetadata = result?.OperationsMetadata || {};" in content
+    assert "operationsMetadata.GetTile ||" in content
     assert "String(resourceUrl.resourceType || '').toLowerCase() === 'featureinfo'" in content
     assert "const buildWmtsFeatureInfoUrl = function (source, clickCoordinate, resolution, infoFormat, kvpEndpoint)" in content
     assert "'REQUEST': 'GetFeatureInfo'," in content
