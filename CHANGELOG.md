@@ -153,7 +153,7 @@ geoms:
 ```
 
 - Migrated from `optparse` to `argparse` and refactored arguments.
-- Added Blackbery DB (`bsddb`) support.
+- Added Blackberry DB (`bsddb`) support.
 - Rewrote the tile server to support all caches, `REST` and `KVP` interfaces, `GetFeatureInfo` requests, and Pyramid/`WSGI` usage.
 - Added three proxy/cache bypass strategies:
   - `Cache-Control: no-cache, no-store` and `Pragma: no-cache` (default)
