@@ -90,7 +90,8 @@ flowchart TD
     B -->|hash via --get-hash| H1["Build tile or metatile selection"]
 
     L1 --> C["Fetch source tile data"]
-    M1 --> M2["Apply geom and local process filters"]
+    M1 --> M2["Apply geometry filter"]
+    M2 --> O3["Push metatile jobs to queue (Redis, SQS, PostgreSQL)"]
     S1 --> C
     H1 --> C
 
@@ -105,7 +106,6 @@ flowchart TD
 
     I -->|local| O1["Store tiles to cache (S3, local, etc.)"]
     I -->|slave| O2["Store tiles to cache and delete processed queue items"]
-    I -->|master| O3["Push metatile jobs to queue (Redis, SQS, PostgreSQL)"]
     I -->|hash| O4["Console output only"]
 ```
 
