@@ -1241,6 +1241,84 @@ class TestServe(CompareCase):
             )
 
     @pytest.mark.asyncio
+    async def test_forward_drops_hop_by_hop_and_length_headers(self) -> None:
+        server._PYRAMID_SERVER = None
+        server._TILEGENERATION = TileGeneration(
+            config_file=AnyioPath("tilegeneration/test-serve.yaml"),
+            configure_logging=False,
+        )
+
+        with Path("tilegeneration/test-serve.yaml").open() as f:
+            config = DatedConfig(
+                config=yaml.safe_load(f),
+                mtime=Path("tilegeneration/test-serve.yaml").stat().st_mtime,
+                file=AnyioPath("tilegeneration/test-serve.yaml"),
+            )
+
+        with patch("aiohttp.ClientSession.get") as mock_get:
+            mock_response = AsyncMock()
+            mock_response.status = 200
+            mock_response.headers = {
+                "Content-Type": "text/html",
+                "Content-Length": "1",
+                "Content-Encoding": "gzip",
+                "Transfer-Encoding": "chunked",
+                "Connection": "keep-alive, X-Drop-Me",
+                "Keep-Alive": "timeout=5",
+                "X-Drop-Me": "yes",
+                "X-Remain": "ok",
+            }
+            mock_response.read.return_value = b"abc"
+            mock_get.return_value.__aenter__.return_value = mock_response
+
+            response = await server.server.forward(config, "http://example.test/wms")
+
+        assert response.status_code == 200
+        assert response.body == b"abc"
+        assert response.headers["content-type"] == "text/html"
+        assert response.headers["x-remain"] == "ok"
+        assert response.headers["content-length"] == str(len(response.body))
+        assert "content-encoding" not in response.headers
+        assert "transfer-encoding" not in response.headers
+        assert "connection" not in response.headers
+        assert "keep-alive" not in response.headers
+        assert "x-drop-me" not in response.headers
+
+    @pytest.mark.asyncio
+    async def test_forward_drops_connection_listed_headers_with_lowercase_connection_key(self) -> None:
+        server._PYRAMID_SERVER = None
+        server._TILEGENERATION = TileGeneration(
+            config_file=AnyioPath("tilegeneration/test-serve.yaml"),
+            configure_logging=False,
+        )
+
+        with Path("tilegeneration/test-serve.yaml").open() as f:
+            config = DatedConfig(
+                config=yaml.safe_load(f),
+                mtime=Path("tilegeneration/test-serve.yaml").stat().st_mtime,
+                file=AnyioPath("tilegeneration/test-serve.yaml"),
+            )
+
+        with patch("aiohttp.ClientSession.get") as mock_get:
+            mock_response = AsyncMock()
+            mock_response.status = 200
+            mock_response.headers = {
+                "Content-Type": "text/html",
+                "connection": "X-Case-Drop",
+                "X-Case-Drop": "yes",
+                "X-Remain": "ok",
+            }
+            mock_response.read.return_value = b"abc"
+            mock_get.return_value.__aenter__.return_value = mock_response
+
+            response = await server.server.forward(config, "http://example.test/wms")
+
+        assert response.status_code == 200
+        assert response.body == b"abc"
+        assert response.headers["x-remain"] == "ok"
+        assert "x-case-drop" not in response.headers
+
+    @pytest.mark.asyncio
     async def test_ondemend_wmtscapabilities(self) -> None:
         with LogCapture("tilecloud_chain", level=30) as log_capture:
             server._PYRAMID_SERVER = None
