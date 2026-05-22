@@ -108,7 +108,7 @@ async def test_retry(queue: tuple[int, int, int], SessionMaker: sessionmaker, ti
 
     with SessionMaker() as session:
         job = session.query(Job).filter(Job.id == job_id).one()
-        assert job.status == _STATUS_CREATED
+        assert job.status == _STATUS_STARTED
         assert job.tiles_started_at is None
         assert job.meta_tiles_total == 1
         metatiles = session.query(Queue).filter(Queue.job_id == job_id).all()

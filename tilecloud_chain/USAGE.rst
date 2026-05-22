@@ -451,6 +451,9 @@ See the [configuration reference](https://github.com/camptocamp/tilecloud-chain/
 With that the admin page is enhance with a job concept with enhanced status and they can be
 canceled, and restarted.
 
+When retrying a job in error from the admin page, only the meta tiles currently in error are
+requeued. Successfully generated meta tiles are kept as-is and are not regenerated.
+
 Note that you should have an external process to clean the old jobs in the database.
 
 Amazon services
