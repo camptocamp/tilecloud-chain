@@ -1277,7 +1277,7 @@ class TestServe(CompareCase):
         assert response.body == b"abc"
         assert response.headers["content-type"] == "text/html"
         assert response.headers["x-remain"] == "ok"
-        assert "content-length" not in response.headers
+        assert response.headers["content-length"] == str(len(response.body))
         assert "content-encoding" not in response.headers
         assert "transfer-encoding" not in response.headers
         assert "connection" not in response.headers
