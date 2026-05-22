@@ -595,7 +595,7 @@ class Server:
                     )
                 if "query_layers" in layer:
                     wms_params = {
-                        **cast("dict[str, str]", layer.get("params", {})),
+                        **layer.get("params", {}),
                         "SERVICE": "WMS",
                         "VERSION": layer.get("version", "1.1.1"),
                         "REQUEST": "GetFeatureInfo",
@@ -733,10 +733,7 @@ class Server:
         **kwargs: Any,
     ) -> Response:
         """Forward the request on a fallback WMS server."""
-        if headers is None:
-            headers = {}
-        else:
-            headers = dict(headers)
+        headers = {} if headers is None else dict(headers)
         if no_cache:
             headers["Cache-Control"] = "no-cache"
             headers["Pragma"] = "no-cache"
