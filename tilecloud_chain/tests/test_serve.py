@@ -80,6 +80,9 @@ _CAPABILITIES = (
       <ResourceURL format="image/png" resourceType="tile"
                    template="http://wmts1/tiles/1.0.0/point_hash/default/{DATE}/"""
     r"""{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png" />
+      <ResourceURL format="application/vnd.ogc.gml" resourceType="FeatureInfo"
+                   template="http://wmts1/tiles/1.0.0/point_hash/default/{DATE}/"""
+    r"""{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}/{I}/{J}" />
       <TileMatrixSetLink>
         <TileMatrixSet>swissgrid_5</TileMatrixSet>
       </TileMatrixSetLink>

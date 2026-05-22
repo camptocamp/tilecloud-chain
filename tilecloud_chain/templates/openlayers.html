@@ -275,6 +275,24 @@
       };
 
       const getLayerInfoFormats = function (wmtsLayer) {
+        const resourceUrls = Array.isArray(wmtsLayer.ResourceURL)
+          ? wmtsLayer.ResourceURL
+          : (wmtsLayer.ResourceURL ? [wmtsLayer.ResourceURL] : []);
+        const formatsFromResourceUrls = resourceUrls
+          .filter(function (resourceUrl) {
+            return (
+              resourceUrl &&
+              String(resourceUrl.resourceType || '').toLowerCase() === 'featureinfo' &&
+              resourceUrl.format
+            );
+          })
+          .map(function (resourceUrl) {
+            return resourceUrl.format;
+          });
+        if (formatsFromResourceUrls.length > 0) {
+          return formatsFromResourceUrls;
+        }
+
         if (!wmtsLayer.InfoFormat) {
           return [];
         }
