@@ -82,31 +82,31 @@ The `generate-tiles` command supports four execution modes:
 
 ```mermaid
 flowchart TD
-    A[generate-tiles CLI] --> B{Mode}
+    A["generate-tiles CLI"] --> B{"Mode"}
 
-    B -->|local| L1[Build metatile stream]
-    B -->|master| M1[Build metatile stream]
-    B -->|slave| S1[Read metatiles from queue]
-    B -->|hash via --get-hash| H1[Build tile or metatile selection]
+    B -->|local| L1["Build metatile stream"]
+    B -->|master| M1["Build metatile stream"]
+    B -->|slave| S1["Read metatiles from queue"]
+    B -->|hash via --get-hash| H1["Build tile or metatile selection"]
 
-    L1 --> C[Fetch source tile data]
-    M1 --> M2[Apply geom and local process filters]
+    L1 --> C["Fetch source tile data"]
+    M1 --> M2["Apply geom and local process filters"]
     S1 --> C
     H1 --> C
 
-    C --> D[Split metatiles into tiles]
-    D --> E{Hash handling}
+    C --> D["Split metatiles into tiles"]
+    D --> E{"Hash handling"}
 
-    E -->|hash mode| H2[Print hash values]
-    E -->|normal modes| F[Drop empty tiles/metatiles with configured hashes]
+    E -->|hash mode| H2["Print hash values"]
+    E -->|normal modes| F["Drop empty tiles/metatiles with configured hashes"]
 
-    F --> G[Run post-process chain]
-    G --> I{Mode output}
+    F --> G["Run post-process chain"]
+    G --> I{"Mode output"}
 
-    I -->|local| O1[Store tiles to cache (S3/local/...)]
-    I -->|slave| O2[Store tiles to cache and delete processed queue items]
-    I -->|master| O3[Push metatile jobs to queue (Redis/SQS/PostgreSQL)]
-    I -->|hash| O4[Console output only]
+    I -->|local| O1["Store tiles to cache (S3, local, etc.)"]
+    I -->|slave| O2["Store tiles to cache and delete processed queue items"]
+    I -->|master| O3["Push metatile jobs to queue (Redis, SQS, PostgreSQL)"]
+    I -->|hash| O4["Console output only"]
 ```
 
 ## Documentation
