@@ -302,6 +302,26 @@
         return [wmtsLayer.InfoFormat];
       };
 
+      const getLayerFeatureInfoTemplates = function (wmtsLayer) {
+        const resourceUrls = Array.isArray(wmtsLayer.ResourceURL)
+          ? wmtsLayer.ResourceURL
+          : (wmtsLayer.ResourceURL ? [wmtsLayer.ResourceURL] : []);
+        return resourceUrls
+          .filter(function (resourceUrl) {
+            return (
+              resourceUrl &&
+              String(resourceUrl.resourceType || '').toLowerCase() === 'featureinfo' &&
+              resourceUrl.template
+            );
+          })
+          .map(function (resourceUrl) {
+            return {
+              format: resourceUrl.format || null,
+              template: resourceUrl.template,
+            };
+          });
+      };
+
       const toArray = function (value) {
         if (!value) {
           return [];
@@ -354,9 +374,18 @@
         return [tileSize, tileSize];
       };
 
-      const buildWmtsFeatureInfoUrl = function (source, clickCoordinate, resolution, infoFormat, kvpEndpoint) {
+      const buildWmtsFeatureInfoUrl = function (
+        source,
+        clickCoordinate,
+        resolution,
+        infoFormat,
+        kvpEndpoint,
+        featureInfoTemplate
+      ) {
         if (!source || !kvpEndpoint || !resolution || resolution <= 0) {
-          return null;
+          if (!source || !resolution || resolution <= 0) {
+            return null;
+          }
         }
 
         const tileGrid = source.getTileGrid();
@@ -395,6 +424,31 @@
           tileSize[1] - 1,
           Math.max(0, Math.floor((tileExtent[3] - clickCoordinate[1]) / resolution))
         );
+
+        if (featureInfoTemplate) {
+          const dimensions = source.getDimensions() || {};
+          const values = {
+            TileMatrixSet: source.getMatrixSet(),
+            TileMatrix: String(tileMatrix),
+            TileRow: String(tileRow),
+            TileCol: String(tileCol),
+            I: String(i),
+            J: String(j),
+            i: String(i),
+            j: String(j),
+            style: source.getStyle(),
+            Style: source.getStyle(),
+            layer: source.getLayer(),
+            Layer: source.getLayer(),
+            InfoFormat: infoFormat,
+            INFO_FORMAT: infoFormat,
+            ...dimensions,
+          };
+          return featureInfoTemplate.replace(/\{([^}]+)\}/g, function (_match, key) {
+            const value = values[key];
+            return value === undefined || value === null ? '' : encodeURIComponent(String(value));
+          });
+        }
 
         const params = new URLSearchParams({
           'SERVICE': 'WMTS',
@@ -591,6 +645,7 @@
                 name: wmtsLayer.Identifier,
                 dimensionDefinitions: layerDimensionDefinitions,
                 infoFormats: layerInfoFormats,
+                featureInfoTemplates: getLayerFeatureInfoTemplates(wmtsLayer),
                 legendDefinitions: layerLegendDefinitions,
                 gridDefinitions: gridDefinitions,
                 selectedGridId: selectedGridDefinition.id,
@@ -1170,13 +1225,14 @@
 
             const source = activeBaseLayer.getSource();
             const kvpEndpoint = activeBaseLayer.get('kvpEndpoint');
+            const featureInfoTemplates = activeBaseLayer.get('featureInfoTemplates') || [];
 
             const infoFormats = activeBaseLayer.get('infoFormats') || [];
             if (infoFormats.length === 0) {
               featureInfo.setContent('The active layer is not queryable.');
               return;
             }
-            if (!source || !kvpEndpoint) {
+            if (!source || (featureInfoTemplates.length === 0 && !kvpEndpoint)) {
               featureInfo.setContent('The active layer does not support WMTS GetFeatureInfo.');
               return;
             }
@@ -1190,12 +1246,17 @@
               return;
             }
 
+            const selectedFeatureInfoTemplate =
+              featureInfoTemplates.find(function (entry) {
+                return entry && entry.format === infoFormat;
+              }) || featureInfoTemplates[0];
             const url = buildWmtsFeatureInfoUrl(
               source,
               event.coordinate,
               resolution,
               infoFormat,
-              kvpEndpoint
+              kvpEndpoint,
+              selectedFeatureInfoTemplate ? selectedFeatureInfoTemplate.template : null
             );
             if (!url) {
               featureInfo.setContent('Cannot build the WMTS GetFeatureInfo URL for this layer.');

@@ -85,7 +85,11 @@ def test_openlayers_test_page_uses_wmts_getfeatureinfo_on_click():
     assert "const operationsMetadata = result?.OperationsMetadata || {};" in content
     assert "operationsMetadata.GetTile ||" in content
     assert "String(resourceUrl.resourceType || '').toLowerCase() === 'featureinfo'" in content
-    assert "const buildWmtsFeatureInfoUrl = function (source, clickCoordinate, resolution, infoFormat, kvpEndpoint)" in content
+    assert "const getLayerFeatureInfoTemplates = function (wmtsLayer)" in content
+    assert "featureInfoTemplates: getLayerFeatureInfoTemplates(wmtsLayer)," in content
+    assert "const buildWmtsFeatureInfoUrl = function (" in content
+    assert "featureInfoTemplate" in content
+    assert "if (featureInfoTemplate) {" in content
     assert "'REQUEST': 'GetFeatureInfo'," in content
     assert "'INFO_FORMAT': infoFormat," in content
     assert "fetch(url)" in content
