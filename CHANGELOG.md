@@ -102,11 +102,11 @@ Azure:
 There is also all the `c2cwsgiutils` environment variables that should be migrated to `c2casgiutils`
 See: c2casgiutils [environment variables](https://github.com/camptocamp/c2casgiutils?tab=readme-ov-file#environment-variables) and [correspondences](https://github.com/camptocamp/c2casgiutils/blob/master/C2CWSGIUTILS.md).
 
-### 1.22
+## 1.22
 
 - In the layer, `legend_mime`, `legend_extension` and `legends` became deprecated and are replaced by `legend.mime_type`, `legend.extension` and `legend.items`.
 
-### 1.17
+## 1.17
 
 - The validator/parser changed, duplicate keys now produce an error and `on`/`off` are no longer considered booleans.
 - `--layer=<a_layer>` is no longer used with `--tiles=<path/to/file>` (the layer is read from the tiles file).
@@ -115,27 +115,27 @@ See: c2casgiutils [environment variables](https://github.com/camptocamp/c2casgiu
 - Removed Apache and MapCache.
 - Removed `log_format` in `generation` config and switched to logging configuration from `development.ini`.
 
-### 1.16
+## 1.16
 
 - The config validator became stricter.
 
-### 1.4
+## 1.4
 
 - Added optional `metadata` section to the config file.
 
-### 0.9
+## 0.9
 
 - Corrected slash-related issues.
 - Improved error handling.
 - Added support for one error file per layer.
 
-### 0.8
+## 0.8
 
 - Corrected slash-related issues.
 - Added `pre_hash_post_process` and `post_process`.
 - Added the copy command.
 
-### 0.7
+## 0.7
 
 - Added support for different geoms per layer. Configuration changed from:
 
