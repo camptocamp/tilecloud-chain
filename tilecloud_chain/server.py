@@ -594,39 +594,41 @@ class Server:
                         detail="Not all required parameters are present, required parameters are I, J, and INFO_FORMAT",
                     )
                 if "query_layers" in layer:
+                    wms_params = {
+                        **cast("dict[str, str]", layer.get("params", {})),
+                        "SERVICE": "WMS",
+                        "VERSION": layer.get("version", "1.1.1"),
+                        "REQUEST": "GetFeatureInfo",
+                        "LAYERS": layer.get("layers", ""),
+                        "QUERY_LAYERS": layer.get("query_layers", layer.get("layers", "")),
+                        "STYLES": params["STYLE"],
+                        "FORMAT": params["FORMAT"],
+                        "INFO_FORMAT": params["INFO_FORMAT"],
+                        "WIDTH": grid.get(
+                            "tile_size",
+                            configuration.TILE_SIZE_DEFAULT,
+                        ),
+                        "HEIGHT": grid.get(
+                            "tile_size",
+                            configuration.TILE_SIZE_DEFAULT,
+                        ),
+                        "SRS": grid.get(
+                            "srs",
+                            configuration.SRS_DEFAULT,
+                        ),
+                        "BBOX": _TILEGENERATION.get_grid(config, params["TILEMATRIXSET"]).extent(
+                            tile.tilecoord,
+                        ),
+                        "X": params["I"],
+                        "Y": params["J"],
+                    }
+                    for dimension in layer.get("dimensions", []):
+                        wms_params[dimension["name"]] = metadata[f"dimension_{dimension['name']}"]
+
                     return await self.forward(
                         config,
-                        layer["url"]
-                        + "?"
-                        + urlencode(
-                            {
-                                "SERVICE": "WMS",
-                                "VERSION": layer.get("version", "1.1.1"),
-                                "REQUEST": "GetFeatureInfo",
-                                "LAYERS": layer.get("layers", ""),
-                                "QUERY_LAYERS": layer.get("query_layers", layer.get("layers", "")),
-                                "STYLES": params["STYLE"],
-                                "FORMAT": params["FORMAT"],
-                                "INFO_FORMAT": params["INFO_FORMAT"],
-                                "WIDTH": grid.get(
-                                    "tile_size",
-                                    configuration.TILE_SIZE_DEFAULT,
-                                ),
-                                "HEIGHT": grid.get(
-                                    "tile_size",
-                                    configuration.TILE_SIZE_DEFAULT,
-                                ),
-                                "SRS": grid.get(
-                                    "srs",
-                                    configuration.SRS_DEFAULT,
-                                ),
-                                "BBOX": _TILEGENERATION.get_grid(config, params["TILEMATRIXSET"]).extent(
-                                    tile.tilecoord,
-                                ),
-                                "X": params["I"],
-                                "Y": params["J"],
-                            },
-                        ),
+                        layer["url"] + "?" + urlencode(wms_params),
+                        headers=layer.get("headers", {}),
                         no_cache=True,
                     )
                 raise HTTPException(status_code=400, detail=f"Layer '{params['LAYER']}' not queryable")  # noqa: TRY301
@@ -733,6 +735,8 @@ class Server:
         """Forward the request on a fallback WMS server."""
         if headers is None:
             headers = {}
+        else:
+            headers = dict(headers)
         if no_cache:
             headers["Cache-Control"] = "no-cache"
             headers["Pragma"] = "no-cache"
