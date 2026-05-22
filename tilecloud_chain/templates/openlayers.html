@@ -382,10 +382,11 @@
         kvpEndpoint,
         featureInfoTemplate
       ) {
-        if (!source || !kvpEndpoint || !resolution || resolution <= 0) {
-          if (!source || !resolution || resolution <= 0) {
-            return null;
-          }
+        if (!source || !resolution || resolution <= 0) {
+          return null;
+        }
+        if (!featureInfoTemplate && !kvpEndpoint) {
+          return null;
         }
 
         const tileGrid = source.getTileGrid();

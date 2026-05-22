@@ -89,6 +89,7 @@ def test_openlayers_test_page_uses_wmts_getfeatureinfo_on_click():
     assert "featureInfoTemplates: getLayerFeatureInfoTemplates(wmtsLayer)," in content
     assert "const buildWmtsFeatureInfoUrl = function (" in content
     assert "featureInfoTemplate" in content
+    assert "if (!featureInfoTemplate && !kvpEndpoint) {" in content
     assert "if (featureInfoTemplate) {" in content
     assert "'REQUEST': 'GetFeatureInfo'," in content
     assert "'INFO_FORMAT': infoFormat," in content
