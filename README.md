@@ -71,6 +71,45 @@ make prospector
 make tests
 ```
 
+## Generation Pipeline
+
+The `generate-tiles` command supports four execution modes:
+
+- `local`: generate tiles directly and store them in the target cache.
+- `master`: prepare metatile jobs and push them to the queue store.
+- `slave`: read jobs from the queue store, generate tiles, and store them.
+- `--get-hash`: switch to hash mode to print metatile/tile hashes.
+
+```mermaid
+flowchart TD
+    A["generate-tiles CLI"] --> B{"Mode"}
+
+    B -->|local| L1["Build metatile stream"]
+    B -->|master| M1["Build metatile stream"]
+    B -->|slave| S1["Read metatiles from queue"]
+    B -->|hash via --get-hash| H1["Build tile or metatile selection"]
+
+    L1 --> L2["Apply geometry filter"]
+    L2 --> C["Fetch source tile data"]
+    M1 --> M2["Apply geometry filter"]
+    M2 --> O3["Push metatile jobs to queue (Redis, SQS, PostgreSQL)"]
+    S1 --> C
+    H1 --> C
+
+    C --> D["Split metatiles into tiles"]
+    D --> E{"Hash handling"}
+
+    E -->|hash mode| H2["Print hash values"]
+    E -->|normal modes| F["Drop empty tiles/metatiles with configured hashes"]
+
+    F --> G["Run post-process chain"]
+    G --> I{"Mode output"}
+
+    I -->|local| O1["Store tiles to cache (S3, local, etc.)"]
+    I -->|slave| O2["Store tiles to cache and delete processed queue items"]
+    I -->|hash| O4["Console output only"]
+```
+
 ## Documentation
 
 - [Usage Guide](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst)
