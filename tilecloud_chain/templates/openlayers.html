@@ -298,6 +298,13 @@
         });
       };
 
+      const getLinkHref = function (link) {
+        if (!link) {
+          return null;
+        }
+        return link.href || link.Href || link['xlink:href'] || link.xlinkHref || null;
+      };
+
       const getKvpEndpoint = function (result) {
         const operations = toArray(result?.OperationsMetadata?.Operation);
         const getTileOperation = operations.find(function (operation) {
@@ -316,7 +323,7 @@
           return hasAllowedValue(getEncoding, 'KVP');
         });
 
-        return method?.href || method?.Href || null;
+        return getLinkHref(method);
       };
 
       const getTileSize = function (tileGrid, tileCoordZ) {
@@ -433,11 +440,7 @@
 
         return getLegendUrls(selectedStyle ? selectedStyle.LegendURL : null)
           .map(function (legendUrl) {
-            const href =
-              legendUrl.href ||
-              legendUrl.Href ||
-              legendUrl['xlink:href'] ||
-              null;
+            const href = getLinkHref(legendUrl);
             if (!href) {
               return null;
             }

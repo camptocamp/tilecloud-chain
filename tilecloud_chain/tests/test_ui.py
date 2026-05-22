@@ -80,6 +80,8 @@ def test_openlayers_test_page_uses_wmts_getfeatureinfo_on_click():
     content = (Path(__file__).parent.parent / "templates" / "openlayers.html").read_text()
 
     assert "map.on('singleclick', function (event) {" in content
+    assert "const getLinkHref = function (link) {" in content
+    assert "return link.href || link.Href || link['xlink:href'] || link.xlinkHref || null;" in content
     assert "const buildWmtsFeatureInfoUrl = function (source, clickCoordinate, resolution, infoFormat, kvpEndpoint)" in content
     assert "'REQUEST': 'GetFeatureInfo'," in content
     assert "'INFO_FORMAT': infoFormat," in content
