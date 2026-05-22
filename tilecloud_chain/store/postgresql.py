@@ -457,7 +457,7 @@ class PostgresqlTileStore(AsyncTileStore):
                 update(Job)
                 .where(Job.id == job_id)
                 .values(
-                    status=_STATUS_CREATED,
+                    status=_STATUS_STARTED,
                     tiles_started_at=None,
                     meta_tiles_total=count_result,
                 ),
