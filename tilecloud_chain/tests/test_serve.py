@@ -1081,6 +1081,48 @@ class TestServe(CompareCase):
 """,
         )
 
+        with patch("aiohttp.ClientSession.get") as mock_get:
+            mock_response = AsyncMock()
+            mock_response.status = 200
+            mock_response.read.return_value = b"ok"
+            mock_response.headers = {"Content-Type": "text/plain"}
+            mock_get.return_value.__aenter__.return_value = mock_response
+
+            with Path("tilegeneration/test-serve.yaml").open() as f:
+                patched_config = yaml.safe_load(f)
+            patched_config["layers"]["point_hash"]["params"] = {"CQL_FILTER": "foo=bar"}
+            patched_config["layers"]["point_hash"]["headers"] = {"Authorization": "Bearer token"}
+
+            config_with_params = DatedConfig(
+                config=patched_config,
+                mtime=Path("tilegeneration/test-serve.yaml").stat().st_mtime,
+                file=AnyioPath("tilegeneration/test-serve.yaml"),
+            )
+            params_with_dimensions = {
+                "SERVICE": "WMTS",
+                "VERSION": "1.0.0",
+                "REQUEST": "GetFeatureInfo",
+                "FORMAT": "image/png",
+                "INFO_FORMAT": "application/vnd.ogc.gml",
+                "LAYER": "point_hash",
+                "STYLE": "default",
+                "DATE": "2012",
+                "TILEMATRIXSET": "swissgrid_5",
+                "TILEMATRIX": "1",
+                "TILEROW": "11",
+                "TILECOL": "14",
+                "I": "114",
+                "J": "111",
+            }
+            response = await server.server.serve(params_with_dimensions, config_with_params, "localhost", None)
+
+        assert response.body == b"ok"
+        _, kwargs = mock_get.call_args
+        assert kwargs["headers"]["Authorization"] == "Bearer token"
+        called_url = mock_get.call_args.args[0]
+        assert "CQL_FILTER=foo%3Dbar" in called_url
+        assert "DATE=2012" in called_url
+
         server._PYRAMID_SERVER = None
         server._TILEGENERATION = TileGeneration(
             config_file=AnyioPath("tilegeneration/test-serve.yaml"),
