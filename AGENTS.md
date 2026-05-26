@@ -17,7 +17,7 @@ the commit message should start with a capital letter.
 
 ## Pull requests
 
-The pull request description should not contain a `Testing` section.
+The pull request description should not contain a `Testing` or `Validation` section.
 
 ## Branch names
 

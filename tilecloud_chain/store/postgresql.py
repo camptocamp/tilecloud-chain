@@ -421,10 +421,18 @@ class PostgresqlTileStore(AsyncTileStore):
         """Mark a pending job as started."""
         assert self.SessionMaker is not None
         async with self.SessionMaker() as session:
+            count_result = await session.scalar(
+                select(sqlalchemy.sql.functions.count(Queue.id)).where(Queue.job_id == job_id),
+            )
+            assert count_result is not None
             await session.execute(
                 update(Job)
                 .where(and_(Job.id == job_id, Job.status == _STATUS_PENDING))
-                .values(status=_STATUS_STARTED, started_at=datetime.datetime.now(tz=datetime.UTC)),
+                .values(
+                    status=_STATUS_STARTED,
+                    started_at=datetime.datetime.now(tz=datetime.UTC),
+                    meta_tiles_total=count_result,
+                ),
             )
             await session.commit()
 
