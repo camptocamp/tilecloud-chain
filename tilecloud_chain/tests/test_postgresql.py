@@ -135,6 +135,27 @@ async def test_tiles_started_at_set_on_first_tile(
 
 
 @pytest.mark.asyncio
+async def test_start_job_sets_meta_tiles_total(
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
+) -> None:
+    job_id, _, _ = queue
+    with SessionMaker() as session:
+        job = session.query(Job).filter(Job.id == job_id).one()
+        job.status = _STATUS_PENDING
+        job.meta_tiles_total = 0
+        session.commit()
+
+    await tilestore.start_job(job_id)
+
+    with SessionMaker() as session:
+        job = session.query(Job).filter(Job.id == job_id).one()
+        assert job.status == _STATUS_STARTED
+        assert job.meta_tiles_total == 2
+
+
+@pytest.mark.asyncio
 async def test_get_status_with_eta(
     queue: tuple[int, int, int],
     SessionMaker: sessionmaker,
