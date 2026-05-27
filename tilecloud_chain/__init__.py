@@ -1642,8 +1642,8 @@ class HashLogger:
             assert tile.data
             _LOGGER.exception("%s: %s", str(ex), tile.data)
             raise
-        image = image.convert("RGBA")
-        for px in image.getdata():  # type: ignore[attr-defined]
+        rgba_image = image.convert("RGBA")
+        for px in rgba_image.getdata():  # type: ignore[attr-defined]
             if px[3] == 0:
                 px = (0, 0, 0, 0)
             if ref is None:
