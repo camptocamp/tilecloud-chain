@@ -1,13 +1,16 @@
 import os
 import shutil
+from io import StringIO
 from itertools import product, repeat
+from unittest.mock import patch
 
 import pytest
 from PIL import Image
 from testfixtures import LogCapture
+from tilecloud import Tile, TileCoord
 from tilecloud.store.redis import RedisTileStore
 
-from tilecloud_chain import controller, generate
+from tilecloud_chain import HashLogger, controller, generate
 from tilecloud_chain.tests import CompareCase
 
 
@@ -62,6 +65,23 @@ class TestGenerate(CompareCase):
                         "Error: image is not uniform.",
                     ),
                 )
+
+    def test_hash_logger_ignores_hidden_rgb_on_transparent_pixels(self) -> None:
+        class ImageStub:
+            def convert(self, mode: str) -> "ImageStub":
+                assert mode == "RGBA"
+                return self
+
+            def getdata(self) -> list[tuple[int, int, int, int]]:
+                return [(0, 0, 0, 0), (255, 255, 255, 0)]
+
+        out = StringIO()
+        with patch("tilecloud_chain.Image.open", return_value=ImageStub()):
+            HashLogger("empty_tile_detection", out)(
+                Tile(TileCoord(0, 0, 0), data=b"image", metadata={"layer": "test"})
+            )
+
+        self.assertIn("empty_tile_detection", out.getvalue())
 
     def test_get_bbox(self) -> None:
         for d in ("-d", ""):
