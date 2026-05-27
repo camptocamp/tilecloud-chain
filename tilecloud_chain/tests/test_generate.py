@@ -81,7 +81,7 @@ class TestGenerate(CompareCase):
                 Tile(TileCoord(0, 0, 0), data=b"image", metadata={"layer": "test"})
             )
 
-        self.assertIn("empty_tile_detection", out.getvalue())
+        assert "empty_tile_detection" in out.getvalue()
 
     def test_get_bbox(self) -> None:
         for d in ("-d", ""):
