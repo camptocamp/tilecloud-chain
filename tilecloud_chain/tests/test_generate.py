@@ -3,22 +3,25 @@ import os
 import shutil
 import sys
 from argparse import Namespace
+from io import StringIO
 from itertools import product, repeat
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from anyio import Path as AnyioPath
 from PIL import Image
 from shapely.geometry import box
 from testfixtures import LogCapture
+from tilecloud import Tile, TileCoord
 from tilecloud.store.redis import RedisTileStore
 
 import tilecloud_chain
 from tilecloud_chain import (
     DatedConfig,
+    HashLogger,
     IntersectGeometryFilter,
     SparseMetaTileBoundingPyramid,
     TileGeneration,
@@ -755,6 +758,24 @@ class TestGenerate(CompareCase):
                         "Error: image is not uniform.",
                     ),
                 )
+
+    @pytest.mark.asyncio
+    async def test_hash_logger_ignores_hidden_rgb_on_transparent_pixels(self) -> None:
+        class ImageStub:
+            def convert(self, mode: str) -> "ImageStub":
+                assert mode == "RGBA"
+                return self
+
+            def getdata(self) -> list[tuple[int, int, int, int]]:
+                return [(0, 0, 0, 0), (255, 255, 255, 0)]
+
+        out = StringIO()
+        with patch("tilecloud_chain.Image.open", return_value=ImageStub()):
+            await HashLogger("empty_tile_detection", out)(
+                Tile(TileCoord(0, 0, 0), data=b"image", metadata={"layer": "test"})
+            )
+
+        assert "empty_tile_detection" in out.getvalue()
 
     @pytest.mark.asyncio
     async def test_get_bbox(self) -> None:
