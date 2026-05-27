@@ -72,7 +72,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/libfribidi0: 1.0.8-2ubuntu3.1
   ubuntu_22_04/libfyba0: 4.1.1-7
   ubuntu_22_04/libgcc-s1: 12.3.0-1ubuntu1~22.04.3
-  ubuntu_22_04/libgcrypt20: 1.9.4-3ubuntu3
+  ubuntu_22_04/libgcrypt20: 1.9.4-3ubuntu3.2
   ubuntu_22_04/libgdal30: 3.4.1+dfsg-1build4
   ubuntu_22_04/libgdbm-compat4: 1.23-1
   ubuntu_22_04/libgdbm6: 1.23-1
