@@ -2530,10 +2530,12 @@ class HashLogger:
             assert tile.data
             _LOGGER.error("%s: %s", str(ex), tile.data)  # noqa: TRY400
             raise
-        for px in image.getdata():  # type: ignore[attr-defined]
+        rgba_image = image.convert("RGBA")
+        for px in rgba_image.getdata():  # type: ignore[attr-defined]
+            normalized_px = (0, 0, 0, 0) if px[3] == 0 else px
             if ref is None:
-                ref = px
-            elif px != ref:
+                ref = normalized_px
+            elif normalized_px != ref:
                 print("Error: image is not uniform.", file=self.out)
                 _LOGGER.debug("Error: image is not uniform.")
                 sys.exit(1)
