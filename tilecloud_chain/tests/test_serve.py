@@ -1216,7 +1216,7 @@ class TestServe(CompareCase):
             mock_response.headers = {"Content-Type": "application/xml"}
             mock_get.return_value.__aenter__.return_value = mock_response
 
-            # 1. GetFeatureInfo
+            # GetFeatureInfo
             response = client.get(
                 "/tiles/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14/114/111.xml",
                 params={
@@ -1236,27 +1236,34 @@ class TestServe(CompareCase):
 """,
             )
 
-            # 2. GetTile (204 No Content)
+            # GetTile (204 No Content)
             # Row 12 -> TMS Row 12 (if height 25).
             # We inserted Row 13 (WMTS 11). So WMTS 12 (TMS 12) should be empty.
             response = client.get("/tiles/1.0.0/point_hash/default/2012/swissgrid_5/1/11/12.png")
             assert response.status_code == 204
 
-            # 3. GetTile (200 OK)
+            # GetTile (200 OK)
             # Row 11 -> TMS Row 13.
             response = client.get("/tiles/1.0.0/point_hash/default/2012/swissgrid_5/1/11/14.png")
             assert response.status_code == 200
             assert response.headers["Cache-Control"] == "max-age=28800"
             assert response.headers["Content-Type"] == "image/png"
 
-            # 4. GetTile with wrong dimensions (empty value)
+            # GetTile without dimensions on a layer that requires them
+            response = client.get("/tiles/1.0.0/point_hash/default/swissgrid_5/1/11/14.png")
+            assert response.status_code == 400
+            assert response.json()["detail"] == (
+                "Layer 'point_hash' has dimensions; include them in the URL path."
+            )
+
+            # GetTile with wrong dimensions (empty value)
             response = client.get("/tiles/1.0.0/point_hash/default//swissgrid_5/1/11/14.png")
             assert response.status_code == 400
             assert response.json()["detail"] == (
                 "Wrong dimensions for layer 'point_hash': empty value(s) for dimension(s): DATE"
             )
 
-            # 5. GetTile with wrong dimensions (extra value)
+            # GetTile with wrong dimensions (extra value)
             response = client.get("/tiles/1.0.0/point_hash/default/2012/extra/swissgrid_5/1/11/14.png")
             assert response.status_code == 400
             assert response.json()["detail"] == (
@@ -1264,7 +1271,7 @@ class TestServe(CompareCase):
                 "got 2 value(s) (2012, extra); unexpected value(s): extra"
             )
 
-            # 6. GetTile with wrong dimensions value
+            # GetTile with wrong dimensions value
             response = client.get("/tiles/1.0.0/point_hash/default/20231011/swissgrid_5/1/11/14.png")
             assert response.status_code == 400
             assert response.json()["detail"] == (
@@ -1272,7 +1279,7 @@ class TestServe(CompareCase):
                 "DATE='20231011' not in allowed values (2005, 2010, 2012)"
             )
 
-            # 7. GetCapabilities
+            # GetCapabilities
             response = client.get("/tiles/1.0.0/WMTSCapabilities.xml")
             assert response.status_code == 200
             assert response.headers["Content-Type"] == "application/xml"
@@ -1280,6 +1287,79 @@ class TestServe(CompareCase):
                 response.text,
                 _CAPABILITIES,
                 regex=True,
+            )
+
+    @pytest.mark.asyncio
+    async def test_rest_no_dimension_routes(self) -> None:
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        from tilecloud_chain.server import router
+
+        server._PYRAMID_SERVER = None
+        server.server.store_cache = {}
+        server._TILEGENERATION = TileGeneration(
+            config_file=AnyioPath("tilegeneration/test-nodim.yaml"),
+            configure_logging=False,
+        )
+
+        app = FastAPI()
+        app.include_router(router)
+        client = TestClient(app)
+
+        async def get_one_side_effect(tile):
+            if tile.tilecoord.z == 1 and tile.tilecoord.x == 14 and tile.tilecoord.y == 11:
+                t = MagicMock()
+                t.data = b"dummy_png"
+                t.content_type = "image/png"
+                t.error = None
+                return t
+            return None
+
+        with (
+            patch("aiohttp.ClientSession.get") as mock_get,
+            patch("tilecloud_chain.IntersectGeometryFilter.filter_tilecoord", return_value=True),
+            patch.object(server._TILEGENERATION, "get_store", new_callable=AsyncMock) as mock_get_store,
+        ):
+            mock_store = AsyncMock()
+            mock_store.get_one.side_effect = get_one_side_effect
+            mock_get_store.return_value = mock_store
+
+            mock_response = AsyncMock()
+            mock_response.status = 200
+            mock_response.read.return_value = b"""<?xml version="1.0" encoding="UTF-8"?>
+
+<msGMLOutput
+    xmlns:gml="http://www.opengis.net/gml"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+</msGMLOutput>
+"""
+            mock_response.headers = {"Content-Type": "application/xml"}
+            mock_get.return_value.__aenter__.return_value = mock_response
+
+            response = client.get("/tiles/1.0.0/nodim/default/swissgrid_5/1/11/14.png")
+            assert response.status_code == 200, response.text
+            assert response.headers["Content-Type"] == "image/png"
+            assert response.content == b"dummy_png"
+
+            response = client.get(
+                "/tiles/1.0.0/nodim/default/swissgrid_5/1/11/14/114/111.xml",
+                params={
+                    "Info_Format": "application/vnd.ogc.gml",
+                },
+            )
+            assert response.status_code == 200, response.text
+            self.assert_result_equals(
+                response.text,
+                """<?xml version="1.0" encoding="UTF-8"?>
+
+<msGMLOutput
+    xmlns:gml="http://www.opengis.net/gml"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+</msGMLOutput>
+""",
             )
 
     @pytest.mark.asyncio
