@@ -6,12 +6,13 @@ grids:
     srs: EPSG:21781
 
 caches:
-  s3:
-    type: s3
-    http_url: https://%(host)s/%(bucket)s/%(folder)s/
-    host: s3-eu-west-1.amazonaws.com
-    bucket: tiles
-    folder: tiles
+  local:
+    type: filesystem
+    http_url: http://wmts1/tiles/
+    folder: /tmp/tiles
+
+generation:
+  default_cache: local
 
 defaults:
   layer: &layer
@@ -33,3 +34,7 @@ layers:
   nodim:
     <<: *layer
     layers: default
+    query_layers: default
+
+server:
+  layers: [nodim]
