@@ -832,7 +832,7 @@ async def startup(_main_app: FastAPI) -> None:
     await init_tilegeneration(config_file)
 
 
-def get_host_name(request: Request) -> str:
+async def get_host_name(request: Request) -> str:
     """Get the host name from the request."""
     # Get the Host header
     host = request.headers.get("Host")

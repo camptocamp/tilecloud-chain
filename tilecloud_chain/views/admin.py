@@ -58,7 +58,7 @@ _postgresql_store: tilecloud_chain.store.postgresql.PostgresqlTileStore | None =
 app = FastAPI(title="TileCloud-chain admin API")
 
 
-def _get_tilegeneration() -> TileGeneration:
+async def _get_tilegeneration() -> TileGeneration:
     """Get the tilegeneration instance."""
     if (
         not hasattr(tilecloud_chain.server, "_TILEGENERATION")
@@ -71,14 +71,14 @@ def _get_tilegeneration() -> TileGeneration:
 async def startup(_main_app: FastAPI) -> None:
     """Create and configure the FastAPI admin application."""
 
-    main_config = await _get_tilegeneration().get_main_config()
+    main_config = await (await _get_tilegeneration()).get_main_config()
     queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
     if queue_store == "postgresql":
         global _postgresql_store  # noqa: PLW0603
         _postgresql_store = await tilecloud_chain.store.postgresql.get_postgresql_queue_store(main_config)
 
 
-def _get_postgresql_store() -> tilecloud_chain.store.postgresql.PostgresqlTileStore:
+async def _get_postgresql_store() -> tilecloud_chain.store.postgresql.PostgresqlTileStore:
     """Get the PostgreSQL store."""
     if not _postgresql_store:
         raise HTTPException(status_code=400, detail="PostgreSQL queue store not configured")
@@ -107,7 +107,7 @@ async def _get_access(
     )
 
 
-def _check_access(
+async def _check_access(
     has_access: Annotated[dict[str, Any], Depends(_get_access)],
 ) -> None:
     """Check if the user has access to admin functions."""
