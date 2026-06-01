@@ -96,7 +96,7 @@ repos:
     rev: v2.4.2
     hooks:
       - id: codespell
-        exclude: ^(.*/)?poetry\.lock$
+        exclude: ^(.*/)?(poetry\.lock|package-lock\.json)$
         args:
           - --ignore-words=.github/spell-ignore-words.txt
   - repo: https://github.com/shellcheck-py/shellcheck-py
