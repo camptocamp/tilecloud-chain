@@ -5340,20 +5340,24 @@ files = [
 
 [[package]]
 name = "testfixtures"
-version = "11.0.0"
+version = "12.0.0"
 description = "A collection of helpers and mock objects for unit tests and doc tests."
 optional = false
 python-versions = ">=3.11"
 groups = ["dev"]
 files = [
-    {file = "testfixtures-11.0.0-py3-none-any.whl", hash = "sha256:371385596e87388469f2635decba00619cc416cd034671ecde8a059f6625634e"},
-    {file = "testfixtures-11.0.0.tar.gz", hash = "sha256:06dfeb3792e06c4ea7217e14114391f6c7735c36e0a57e6f4641c6ae5d790ee7"},
+    {file = "testfixtures-12.0.0-py3-none-any.whl", hash = "sha256:db6ae636369cd31f40899344a2dfa9e50da0e0e80b63128f82fbf60e9a118f2b"},
+    {file = "testfixtures-12.0.0.tar.gz", hash = "sha256:95f3a7824e104be2f6673fea59f9260ed6972b28064240e317c771fc13ab4268"},
 ]
 
 [package.extras]
 django = ["django (>=4) ; python_version < \"3.13\"", "django (>=5.1.3) ; python_version >= \"3.13\""]
+loguru = ["loguru (>=0.7.3)"]
 mock-backport = ["mock (>=4.0.3)"]
-sybil = ["sybil (>=6.0.3)"]
+pandas = ["pandas (>=2.3.3)"]
+polars = ["polars (>=1.32)"]
+structlog = ["structlog (>=24.3.0)"]
+sybil = ["sybil (>=10.0.1)"]
 toml = ["tomlkit (>=0.10.0)"]
 twisted = ["twisted (>=22.1)"]
 yaml = ["pyyaml (>=6.0.3)"]
@@ -6311,4 +6315,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.14"
-content-hash = "91263f665a44da25283bca154c67cfe79637d5d51f91bf6a759c40194956ef0a"
+content-hash = "f722d2c32875a9b133c16c079498a3ba159791499c7379ccce4264dfa548ec2e"
