@@ -9,15 +9,15 @@ services:
       - --reload
       - --reload-dir=/app/
       - --reload-include=tilecloud_chain/**/*.py
-      - --reload-dir=/venv/lib/python3.12/site-packages/
+      - --reload-dir=/venv/lib/python3.14/site-packages/
       - --reload-include=tilecloud/**/*.py
       - --reload-include=c2casgiutils/**/*.py
     environment:
       - TILECLOUD_CHAIN__DEVELOPMENT=TRUE
     volumes:
       - ./tilecloud_chain:/app/tilecloud_chain:ro
-      # - ../tilecloud/tilecloud:/usr/local/lib/python3.10/dist-packages/tilecloud:ro
-      - ../c2casgiutils/c2casgiutils:/usr/local/lib/python3.10/dist-packages/c2casgiutils:ro
+      # - ../tilecloud/tilecloud:/usr/local/lib/python3.14/dist-packages/tilecloud:ro
+      - ../c2casgiutils/c2casgiutils:/usr/local/lib/python3.14/dist-packages/c2casgiutils:ro
 
   app_test_user:
     <<: *app
@@ -25,7 +25,7 @@ services:
   app_postgresql:
     volumes:
       - ./tilecloud_chain:/app/tilecloud_chain:ro
-      - ../c2casgiutils/c2casgiutils:/usr/local/lib/python3.10/dist-packages/c2casgiutils:ro
+      - ../c2casgiutils/c2casgiutils:/usr/local/lib/python3.14/dist-packages/c2casgiutils:ro
 
   slave:
     volumes:
@@ -34,4 +34,4 @@ services:
   # test:
   #   volumes:
   #     - ./tilecloud_chain:/app/tilecloud_chain:rw
-  #     - ../tilecloud/tilecloud:/usr/local/lib/python3.10/dist-packages/tilecloud:ro
+  #     - ../tilecloud/tilecloud:/usr/local/lib/python3.14/dist-packages/tilecloud:ro

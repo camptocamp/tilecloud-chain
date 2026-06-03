@@ -12,7 +12,6 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     apt-get update \
     && apt-get upgrade --assume-yes \
     && apt-get install --assume-yes --no-install-recommends \
-        python3-mapnik \
         libdb5.3 \
         fonts-dejavu \
         optipng jpegoptim pngquant \
