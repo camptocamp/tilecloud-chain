@@ -8,5 +8,4 @@
 !docker/run
 !logging.yaml
 !package*.json
-!.nvmrc
 !screenshot.js
