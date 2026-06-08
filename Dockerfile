@@ -80,17 +80,44 @@ FROM base AS tests
 # Print commands and their arguments as they are executed.
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
+# Puppeteer downloaded Chrome crashes with the GDAL image LD_PRELOAD tcmalloc.
+# Disable it in the tests stage where Node/Puppeteer is executed.
+ENV LD_PRELOAD=
+
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
     && apt-get install --assume-yes --no-install-recommends software-properties-common gpg-agent \
     && add-apt-repository ppa:savoury1/pipewire \
-    && add-apt-repository ppa:savoury1/chromium \
-    && apt-get install --assume-yes --no-install-recommends chromium-browser git nodejs npm
+    && apt-get install --assume-yes --no-install-recommends \
+        git nodejs npm \
+        libasound2t64 \
+        libatk-bridge2.0-0 \
+        libatk1.0-0 \
+        libcairo2 \
+        libcups2 \
+        libdrm2 \
+        libgbm1 \
+        libglib2.0-0 \
+        libnspr4 \
+        libnss3 \
+        libpango-1.0-0 \
+        libx11-6 \
+        libx11-xcb1 \
+        libxcb1 \
+        libxcomposite1 \
+        libxdamage1 \
+        libxext6 \
+        libxfixes3 \
+        libxkbcommon0 \
+        libxrandr2 \
+        libxrender1 \
+        libxss1 \
+        libxtst6
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm \
-    npm install --include=dev --ignore-scripts
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    npm install --include=dev --ignore-scripts \
+    && npm rebuild puppeteer
 
 RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/poetry \
