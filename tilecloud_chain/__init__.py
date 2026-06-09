@@ -2531,8 +2531,12 @@ class HashLogger:
             _LOGGER.error("%s: %s", str(ex), tile.data)  # noqa: TRY400
             raise
         rgba_image = image.convert("RGBA")
-        for px in rgba_image.getdata():  # type: ignore[attr-defined]
-            normalized_px = (0, 0, 0, 0) if px[3] == 0 else px
+        pixels = memoryview(rgba_image.tobytes())
+        for index in range(0, len(pixels), 4):
+            alpha = pixels[index + 3]
+            normalized_px = (
+                (0, 0, 0, 0) if alpha == 0 else (pixels[index], pixels[index + 1], pixels[index + 2], alpha)
+            )
             if ref is None:
                 ref = normalized_px
             elif normalized_px != ref:

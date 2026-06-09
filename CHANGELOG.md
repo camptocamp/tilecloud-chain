@@ -32,6 +32,7 @@
 - Reproject `geoms.datasource` geometries from layer CRS to grid CRS like PostGIS geoms, to avoid empty intersections when layer and grid use different SRS.
 - Show a clear admin error message when a generation command fails before producing output (for example, an unknown grid), and clarify PostgreSQL job ETA text with explicit units like `2 days 2 hours`.
 - Fix PostgreSQL admin retry action so it requeues only errored meta tiles instead of restarting full queue seeding for the whole job.
+- Add Python 3.14 support and use the PyPI Mapnik bindings instead of the removed Ubuntu `python3-mapnik` package.
 
 Environment variable migration (legacy -> new)
 

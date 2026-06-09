@@ -1,5 +1,5 @@
 # Base of all section, install the apt packages
-FROM ghcr.io/osgeo/gdal:ubuntu-small-3.12.2 AS base-all
+FROM ghcr.io/osgeo/gdal:ubuntu-small-3.13.1 AS base-all
 LABEL org.opencontainers.image.authors="Camptocamp <info@camptocamp.com>"
 
 # Fail on error on pipe, see: https://github.com/hadolint/hadolint/wiki/DL4006.
@@ -12,7 +12,6 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     apt-get update \
     && apt-get upgrade --assume-yes \
     && apt-get install --assume-yes --no-install-recommends \
-        python3-mapnik \
         libdb5.3 \
         fonts-dejavu \
         optipng jpegoptim pngquant \
@@ -81,25 +80,44 @@ FROM base AS tests
 # Print commands and their arguments as they are executed.
 SHELL ["/bin/bash", "-o", "pipefail", "-cux"]
 
+# Puppeteer downloaded Chrome crashes with the GDAL image LD_PRELOAD tcmalloc.
+# Disable it in the tests stage where Node/Puppeteer is executed.
+ENV LD_PRELOAD=
+
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     apt-get update \
     && apt-get install --assume-yes --no-install-recommends software-properties-common gpg-agent \
     && add-apt-repository ppa:savoury1/pipewire \
-    && add-apt-repository ppa:savoury1/chromium \
-    && apt-get install --assume-yes --no-install-recommends chromium-browser git curl gnupg
-COPY .nvmrc /tmp
-RUN --mount=type=cache,target=/var/lib/apt/lists \
-    --mount=type=cache,target=/var/cache,sharing=locked \
-    NODE_MAJOR="$(cat /tmp/.nvmrc)" \
-    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" > /etc/apt/sources.list.d/nodesource.list \
-    && curl --silent https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor --output=/etc/apt/keyrings/nodesource.gpg \
-    && apt-get update \
-    && apt-get install --assume-yes --no-install-recommends "nodejs=${NODE_MAJOR}.*"
+    && apt-get install --assume-yes --no-install-recommends \
+        git nodejs npm \
+        libasound2t64 \
+        libatk-bridge2.0-0 \
+        libatk1.0-0 \
+        libcairo2 \
+        libcups2 \
+        libdrm2 \
+        libgbm1 \
+        libglib2.0-0 \
+        libnspr4 \
+        libnss3 \
+        libpango-1.0-0 \
+        libx11-6 \
+        libx11-xcb1 \
+        libxcb1 \
+        libxcomposite1 \
+        libxdamage1 \
+        libxext6 \
+        libxfixes3 \
+        libxkbcommon0 \
+        libxrandr2 \
+        libxrender1 \
+        libxss1 \
+        libxtst6
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm \
-    npm install --include=dev --ignore-scripts
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    npm install --include=dev --ignore-scripts \
+    && npm rebuild puppeteer
 
 RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/poetry \

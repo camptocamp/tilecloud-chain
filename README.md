@@ -33,7 +33,7 @@ Note: The following features are maintained for backward compatibility:
 
 - Berkeley DB integration
 - SQLite (MBTiles) support
-- Mapnik rendering (Python 3 update pending)
+- Mapnik rendering
 
 ## Visual Preview
 

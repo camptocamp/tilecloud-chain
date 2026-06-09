@@ -19,7 +19,7 @@ checks: prospector ## Run the checks
 
 .PHONY: prospector
 prospector: ## Run Prospector
-	docker run --rm --volume=${PWD}:/app camptocamp/tilecloud-chain-tests prospector --output-format=pylint --die-on-tool-error
+	docker run --rm --volume=${PWD}:/app camptocamp/tilecloud-chain-tests prospector --output-format=pylint --die-on-tool-error --direct-tool-stdout
 
 .PHONY: tests
 tests: build ## Run the unit tests
