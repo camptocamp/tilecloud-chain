@@ -92,7 +92,7 @@ class MapnikTileStore(AsyncTileStore):
             # Render image with default Agg renderer
             image = mapnik.Image(size, size)  # pylint: disable=no-member
             mapnik.render(self.mapnik, image)  # pylint: disable=no-member
-            tile.data = image.tostring(self.output_format)
+            tile.data = image.to_string(self.output_format)
 
         return tile
 
