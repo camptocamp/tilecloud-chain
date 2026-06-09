@@ -766,8 +766,8 @@ class TestGenerate(CompareCase):
                 assert mode == "RGBA"
                 return self
 
-            def getdata(self) -> list[tuple[int, int, int, int]]:
-                return [(0, 0, 0, 0), (255, 255, 255, 0)]
+            def tobytes(self) -> bytes:
+                return bytes((0, 0, 0, 0, 255, 255, 255, 0))
 
         out = StringIO()
         with patch("tilecloud_chain.Image.open", return_value=ImageStub()):
