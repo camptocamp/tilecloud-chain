@@ -341,6 +341,8 @@ class Run:
                     if self.gene.queue_store is not None:
                         if hasattr(tile, "metatile"):
                             metatile: Tile = tile.metatile
+                            if not metatile.error:
+                                metatile.error = tile.error
                             metatile.elapsed_togenerate -= 1  # type: ignore[attr-defined]
                             if metatile.elapsed_togenerate == 0:  # type: ignore[attr-defined]
                                 await self.gene.queue_store.delete_one(metatile)
