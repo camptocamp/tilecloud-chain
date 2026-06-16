@@ -14,8 +14,4 @@ ignore:
     - '*':
         reason: not compatible with used Poetry version
         created: 2026-06-16T00:00:00.000Z
-  SNYK-PYTHON-BLACK-15518063:
-    - '*':
-        reason: Fix not compatible with used Python version
-        created: 2026-03-16T14:09:23.429Z
 patch: {}
