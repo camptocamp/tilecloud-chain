@@ -284,6 +284,7 @@ async def test_run_delete_metatile_on_error() -> None:
     await run(child_tile)
 
     assert queue_store.deleted == [metatile]
+    assert metatile.error == "boom"
 
 
 @pytest.mark.asyncio

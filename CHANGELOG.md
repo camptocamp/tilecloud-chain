@@ -33,6 +33,7 @@
 - Show a clear admin error message when a generation command fails before producing output (for example, an unknown grid), and clarify PostgreSQL job ETA text with explicit units like `2 days 2 hours`.
 - Fix PostgreSQL admin retry action so it requeues only errored meta tiles instead of restarting full queue seeding for the whole job.
 - Add Python 3.14 support and use the PyPI Mapnik bindings instead of the removed Ubuntu `python3-mapnik` package.
+- Mark PostgreSQL metatile queue entries as `error` (instead of deleting them) when a child tile fails during write/store, so generation failures are visible in job status.
 
 Environment variable migration (legacy -> new)
 
