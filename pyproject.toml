@@ -79,7 +79,7 @@ sentry-sdk = "2.8.0"
 webob = "1.8.10"
 azure-core = "1.38.0"
 pyjwt = "2.13.0"
-ujson = "5.12.1"
+ujson = "5.13.0"
 mako = "1.3.12"
 
 [tool.poetry.dev-dependencies]
