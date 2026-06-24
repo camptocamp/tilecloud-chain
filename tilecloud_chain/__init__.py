@@ -82,7 +82,7 @@ _GEOMS_GET_SUMMARY = Summary("tilecloud_chain_geoms_get", "Geoms filter get", ["
 
 _HOST_CONTEXT: contextvars.ContextVar[str | None] = contextvars.ContextVar("host")
 _LAYER_CONTEXT: contextvars.ContextVar[str | None] = contextvars.ContextVar("layer")
-_META_TILE_COORD_CONTEXT: contextvars.ContextVar[str] = contextvars.ContextVar("meta_tilecoord")
+_META_TILE_COORD_CONTEXT: contextvars.ContextVar[str | None] = contextvars.ContextVar("meta_tilecoord")
 
 _ALLOWED_COMMANDS = settings.allowed_process_commands
 
@@ -620,7 +620,7 @@ class LoggingInformation(TypedDict):
 
     host: str | None
     layer: str | None
-    meta_tilecoord: str
+    meta_tilecoord: str | None
 
 
 class JsonLogHandler(c2cwsgiutils.pyramid_logging.JsonLogHandler):
@@ -636,9 +636,9 @@ class TileFilter(logging.Filter):
 
     def filter(self, record: Any) -> bool:
         """Add the request information to the log record."""
-        record.tcc_host = _HOST_CONTEXT.get()
-        record.tcc_layer = _LAYER_CONTEXT.get()
-        record.tcc_meta_tilecoord = _META_TILE_COORD_CONTEXT.get()
+        record.tcc_host = _HOST_CONTEXT.get(None)
+        record.tcc_layer = _LAYER_CONTEXT.get(None)
+        record.tcc_meta_tilecoord = _META_TILE_COORD_CONTEXT.get(None)
 
         return True
 
