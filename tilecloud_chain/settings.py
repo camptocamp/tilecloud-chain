@@ -19,6 +19,15 @@ def _to_path(value: str | Path) -> Path:
 AnyioPath = Annotated[Path, BeforeValidator(_to_path)]
 
 
+def _to_optional_path(value: str | Path | None) -> Path | None:
+    if value is None or value == "":
+        return None
+    return _to_path(value)
+
+
+OptionalAnyioPath = Annotated[Path | None, BeforeValidator(_to_optional_path)]
+
+
 def _to_str_list(value: str | None | list[str]) -> list[str]:
     if isinstance(value, list):
         return value
@@ -127,8 +136,8 @@ class Settings(BaseSettings):
     slave: bool = False
     objgraph_limit: int = 10
     objgraph_gene: bool = False
-    config_file: AnyioPath = Path("/etc/tilegeneration/config.yaml")
-    main_config_file: AnyioPath | None = None
+    config_file: OptionalAnyioPath = Path("/etc/tilegeneration/config.yaml")
+    main_config_file: OptionalAnyioPath = None
     hosts_file: AnyioPath = Path("/etc/tilegeneration/hosts.yaml")
     hosts_limit: AnyioPath = Path("/etc/tilegeneration/hosts_limit.yaml")
     ignore_config_error: bool = False
