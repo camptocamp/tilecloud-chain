@@ -164,6 +164,14 @@ app.add_middleware(
                 },
             },
         },
+        "tiles": {
+            "path_match": rf"^{route_prefix_escaped}\d+(?:\.\d+)+/.*$",
+            "headers": {
+                "Access-Control-Allow-Methods": "GET",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Credentials": None,
+            },
+        },
     },
 )
 
