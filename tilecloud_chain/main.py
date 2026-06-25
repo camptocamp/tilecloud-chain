@@ -173,6 +173,24 @@ app.add_middleware(
                 "Cross-Origin-Resource-Policy": "cross-origin",
             },
         },
+        "kvp": {
+            "path_match": r"^$",
+            "headers": {
+                "Access-Control-Allow-Methods": "GET",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Credentials": None,
+                "Cross-Origin-Resource-Policy": "cross-origin",
+            },
+        },
+        "static": {
+            "path_match": rf"^{route_prefix_escaped}static/.*$",
+            "headers": {
+                "Access-Control-Allow-Methods": "GET",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Credentials": None,
+                "Cross-Origin-Resource-Policy": "cross-origin",
+            },
+        },
     },
 )
 
@@ -207,7 +225,9 @@ async def redirect_c2c(request: Request) -> RedirectResponse:
 
 # Add Routers
 # Mount the most specific routes first to ensure correct routing precedence.
-app.mount(f"{route_prefix}static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
+app.mount(
+    f"{route_prefix}tcc_static", StaticFiles(directory=Path(__file__).parent / "static"), name="tcc_static"
+)
 app.include_router(server.router, tags=["wmts"])  # WMTS routes
 app.mount(f"{route_prefix}c2c", c2casgiutils.app)  # C2C utility routes
 app.mount(f"{route_prefix}admin", admin.app)  # Admin routes

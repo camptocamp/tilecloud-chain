@@ -296,7 +296,7 @@ Size per tile: [0-9]{3} o
       <ows:Identifier>all</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/all/default/legend-5.png" width="64" height="20" />
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/static/1.0.0/all/default/legend-5.png" width="64" height="20" />
       </Style>
       <Format>image/png</Format>
       <Dimension>
@@ -320,7 +320,7 @@ Size per tile: [0-9]{3} o
       <ows:Identifier>one</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/one/default/legend-5.png" width="64" height="20" />
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/static/1.0.0/one/default/legend-5.png" width="64" height="20" />
       </Style>
       <Format>image/png</Format>
       <Dimension>

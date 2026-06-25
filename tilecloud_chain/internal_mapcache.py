@@ -317,8 +317,6 @@ async def fetch(
             + datetime.timedelta(hours=server.get_expires_hours(config))
         ).isoformat(),
         "Cache-Control": f"max-age={3600 * server.get_expires_hours(config)}",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET",
         "Tile-Backend": backend,
     }
     if fetched_tile.content_encoding:

@@ -368,7 +368,7 @@ class Server:
                 return self.error(config, 404, key_name + " not found")
             raise
 
-    async def _get(
+    async def get(
         self,
         path: str,
         headers: dict[str, str],
@@ -475,13 +475,11 @@ class Server:
                         + datetime.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat(),
                     "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET",
                 }
                 cache = self.get_cache(config)
                 if "wmtscapabilities_file" in cache:
                     wmtscapabilities_file = cache["wmtscapabilities_file"]
-                    return await self._get(wmtscapabilities_file, headers, config=config)
+                    return await self.get(wmtscapabilities_file, headers, config=config)
 
                 cache_name: str = self.get_cache_name(config)
                 if config is None:
@@ -504,7 +502,7 @@ class Server:
 
                 base_urls = [ending_slash(url) for url in base_urls]
 
-                await _fill_legend(cache, f"{base_urls[0]}{settings.route_prefix[1:]}", config=config)
+                await _fill_legend(cache, f"{base_urls[0]}{settings.route_prefix[1:]}static/", config=config)
 
                 return _TEMPLATES.TemplateResponse(
                     "wmts_get_capabilities.jinja",
@@ -707,8 +705,6 @@ class Server:
                         + datetime.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat(),
                     "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET",
                     "Tile-Backend": "Cache",
                 },
             )
@@ -776,8 +772,6 @@ class Server:
                         + datetime.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat()
                     response_headers["Cache-Control"] = f"max-age={3600 * self.get_expires_hours(config)}"
-                    response_headers["Access-Control-Allow-Origin"] = "*"
-                    response_headers["Access-Control-Allow-Methods"] = "GET"
                 content = await response.read()
                 return Response(content=content, headers=response_headers)
             safe_reason = (
@@ -803,10 +797,7 @@ class Server:
         message: Exception | str | None = "",
     ) -> Response:
         """Build the FastAPI error response."""
-        headers = {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET",
-        }
+        headers: dict[str, str] = {}
         if code < 300:
             headers.update(
                 {
@@ -1202,6 +1193,40 @@ async def wmts_kvp(
         )
 
     return await server.serve(params, config, host, fastapi_request)
+
+
+@router.get(
+    f"{route_prefix}static/{{path:path}}",
+    summary="Get static files from the cache.",
+)
+async def get_static(
+    path: str,
+    config: Annotated[tilecloud_chain.DatedConfig, fastapi.Depends(get_host_config)],
+) -> Response:
+    """Get static files from the cache."""
+    if not config.config:
+        raise HTTPException(
+            status_code=404,
+            detail="No configuration file found for the host or the configuration has an error, see logs for details",
+        )
+    # Defensive checks: FastAPI `{path:path}` may contain traversal segments.
+    if "\\" in path or any(part in {"", ".", ".."} for part in path.split("/")):
+        return server.error(config, 400, "Invalid path")
+
+    allowed_extensions = {e.lower() for e in server.get_static_allow_extension(config)}
+    filename = path.rsplit("/", maxsplit=1)[-1]
+    ext = filename.rsplit(".", maxsplit=1)[-1].lower() if "." in filename else ""
+    if not ext or ext not in allowed_extensions:
+        return server.error(config, 403, "Extension not allowed")
+
+    headers: dict[str, str] = {
+        "Expires": (
+            datetime.datetime.now(tz=datetime.UTC)
+            + datetime.timedelta(hours=server.get_expires_hours(config))
+        ).isoformat(),
+        "Cache-Control": f"max-age={3600 * server.get_expires_hours(config)}",
+    }
+    return await server.get(path, headers, config=config)
 
 
 def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:
