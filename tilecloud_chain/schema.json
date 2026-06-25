@@ -1179,6 +1179,16 @@
           "description": "No longer used, replaced by `TILECLOUD_CHAIN__ROUTE_PREFIX` environment variable",
           "type": "string"
         },
+        "admin_path": {
+          "title": "Admin path",
+          "description": "No longer used",
+          "type": "string"
+        },
+        "static_path": {
+          "title": "Static path",
+          "description": "No longer used",
+          "type": "string"
+        },
         "expires": {
           "title": "Expires",
           "description": "The browser cache expiration in hours",
