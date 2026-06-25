@@ -13,7 +13,7 @@ caches:
     type: filesystem
     folder: /var/sig/tiles
     # for GetCapabilities
-    http_url: https://%(host)s/tiles/
+    http_url: https://%(host)s/
     hosts:
       - wmts0.example.com
       - wmts1.example.com

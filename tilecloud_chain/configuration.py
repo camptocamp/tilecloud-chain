@@ -2936,7 +2936,7 @@ class Server(TypedDict, total=False):
     r"""
     WMTS path.
 
-    No more used, replaced by `TILECLOUD_CHAIN__WMTS_PATH` environment variable
+    No longer used, replaced by `TILECLOUD_CHAIN__ROUTE_PREFIX` environment variable
     """
 
     expires: int

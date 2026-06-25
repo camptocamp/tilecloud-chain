@@ -1242,11 +1242,11 @@ class TestController(CompareCase):
 caches:
   local:
     folder: /tmp/tiles
-    http_url: http://wmts1/tiles/
+    http_url: http://wmts1/
     type: filesystem
   mbtiles:
     folder: /tmp/tiles/mbtiles
-    http_url: http://wmts1/tiles/
+    http_url: http://wmts1/
     type: mbtiles
   multi_host:
     folder: /tmp/tiles
@@ -1254,14 +1254,14 @@ caches:
     - wmts1
     - wmts2
     - wmts3
-    http_url: http://%(host)s/tiles/
+    http_url: http://%(host)s/
     type: filesystem
   multi_url:
     folder: /tmp/tiles
     http_urls:
-    - http://wmts1/tiles/
-    - http://wmts2/tiles/
-    - http://wmts3/tiles/
+    - http://wmts1/
+    - http://wmts2/
+    - http://wmts3/
     type: filesystem
   s3:
     bucket: tiles

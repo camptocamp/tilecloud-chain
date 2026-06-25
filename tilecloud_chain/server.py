@@ -165,7 +165,7 @@ def _add_dimensions_to_params(
         params[dimension["name"].upper()] = provided_dimension_values[index]
 
 
-async def init_tilegeneration(config_file: Path | None) -> None:
+async def _init_tile_generation(config_file: Path | None) -> None:
     """Initialize the tile generation."""
     global _TILEGENERATION  # noqa: PLW0603
     if _TILEGENERATION is None:
@@ -504,7 +504,7 @@ class Server:
 
                 base_urls = [ending_slash(url) for url in base_urls]
 
-                await _fill_legend(cache, base_urls[0], config=config)
+                await _fill_legend(cache, f"{base_urls[0]}{settings.route_prefix[1:]}", config=config)
 
                 return _TEMPLATES.TemplateResponse(
                     "wmts_get_capabilities.jinja",
@@ -515,7 +515,7 @@ class Server:
                         "layer_legends": _TILEGENERATION.layer_legends,
                         "grids": config.config["grids"],
                         "base_urls": base_urls,
-                        "base_url_postfix": settings.wmts_path,
+                        "base_url_postfix": settings.route_prefix[1:],
                         "get_tile_matrix_identifier": get_tile_matrix_identifier,
                         "server": server_config is not None,
                         "has_metadata": "metadata" in config.config,
@@ -823,13 +823,13 @@ class Server:
 server = Server()
 router = fastapi.APIRouter()
 
-route_prefix = f"{settings.route_prefix}{settings.wmts_path}"
+route_prefix = settings.route_prefix
 
 
 async def startup(_main_app: FastAPI) -> None:
     """Initialize the FastAPI app."""
     config_file = settings.config_file
-    await init_tilegeneration(config_file)
+    await _init_tile_generation(config_file)
 
 
 async def get_host_name(request: Request) -> str:

@@ -50,15 +50,6 @@ def _to_route_prefix(route_prefix: str) -> str:
 RoutePrefix = Annotated[str, BeforeValidator(_to_route_prefix)]
 
 
-def _to_wmts_path(wmts_path: str) -> str:
-    if wmts_path and not wmts_path.endswith("/"):
-        wmts_path = f"{wmts_path}/"
-    return wmts_path
-
-
-WMTSPath = Annotated[str, BeforeValidator(_to_wmts_path)]
-
-
 class AzureSettings(BaseModel):
     """Azure storage settings."""
 
@@ -146,7 +137,6 @@ class Settings(BaseSettings):
     frontend: str | None = None
     development: bool = False
     route_prefix: RoutePrefix = "/tiles/"
-    wmts_path: WMTSPath = ""
 
     azure: AzureSettings = AzureSettings()
     logging: LoggingSettings = LoggingSettings()
