@@ -27,4 +27,7 @@ class TestConfig(CompareCase):
                 cmd=".build/venv/bin/generate-controller -c tilegeneration/test-int-grid.yaml --dump-config",
                 main_func=controller.async_main,
             )
-            log_capture.check()
+            log_capture.check(
+                ("tilecloud_chain", "DEBUG", "Get config for file tilegeneration/test-int-grid.yaml"),
+                ("tilecloud_chain", "DEBUG", "Get config for file tilegeneration/test-int-grid.yaml"),
+            )
