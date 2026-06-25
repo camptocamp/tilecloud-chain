@@ -35,6 +35,7 @@ class TestError(CompareCase):
                 get_error=True,
             )
             log_capture.check(
+                ("tilecloud_chain", "DEBUG", "Get config for file tilegeneration/wrong_resolutions.yaml"),
                 ("tilecloud_chain", "ERROR", "The resolution 0.1 * resolution_scale 5 is not an integer."),
             )
 
@@ -47,6 +48,7 @@ class TestError(CompareCase):
                 get_error=True,
             )
             log_capture.check(
+                ("tilecloud_chain", "DEBUG", "Get config for file tilegeneration/wrong_mapnik_grid_meta.yaml"),
                 (
                     "tilecloud_chain",
                     "ERROR",
@@ -64,6 +66,7 @@ class TestError(CompareCase):
                 get_error=True,
             )
             log_capture.check(
+                ("tilecloud_chain", "DEBUG", "Get config for file tilegeneration/wrong_type.yaml"),
                 (
                     "tilecloud_chain",
                     "ERROR",
@@ -148,6 +151,7 @@ class TestError(CompareCase):
                 get_error=True,
             )
             log_capture.check(
+                ("tilecloud_chain", "DEBUG", "Get config for file tilegeneration/wrong_srs_auth.yaml"),
                 (
                     "tilecloud_chain",
                     "ERROR",
@@ -165,6 +169,7 @@ class TestError(CompareCase):
                 get_error=True,
             )
             log_capture.check(
+                ("tilecloud_chain", "DEBUG", "Get config for file tilegeneration/wrong_srs_id.yaml"),
                 (
                     "tilecloud_chain",
                     "ERROR",
@@ -182,6 +187,7 @@ class TestError(CompareCase):
                 get_error=True,
             )
             log_capture.check(
+                ("tilecloud_chain", "DEBUG", "Get config for file tilegeneration/wrong_srs.yaml"),
                 (
                     "tilecloud_chain",
                     "ERROR",
@@ -199,6 +205,7 @@ class TestError(CompareCase):
                 get_error=True,
             )
             log_capture.check(
+                ("tilecloud_chain", "DEBUG", "Get config for file tilegeneration/wrong_map.yaml"),
                 (
                     "tilecloud_chain",
                     "ERROR",
@@ -225,6 +232,7 @@ class TestError(CompareCase):
                 get_error=True,
             )
             log_capture.check(
+                ("tilecloud_chain", "DEBUG", "Get config for file tilegeneration/wrong_sequence.yaml"),
                 (
                     "tilecloud_chain",
                     "ERROR",

@@ -1049,6 +1049,8 @@ class TileGeneration:
         config_file = await self.get_host_config_file(host)
         if not config_file:
             _LOGGER.error("No config file for host %s", host)
+        else:
+            _LOGGER.debug("For the host %s, use config file: %s", host, config_file)
         return (
             await self.get_config(config_file)
             if config_file
@@ -1071,6 +1073,12 @@ class TileGeneration:
             if ignore_error:
                 return DatedConfig(cast("configuration.Configuration", {}), 0, Path())
             sys.exit(1)
+        if not await config_file.is_file():
+            _LOGGER.error("Config file %s is not a file", config_file)
+            if ignore_error:
+                return DatedConfig(cast("configuration.Configuration", {}), 0, Path())
+            sys.exit(1)
+        _LOGGER.debug("Get config for file %s", config_file)
 
         config: DatedConfig | None = self.configs.get(config_file)
         if config is not None:
