@@ -170,6 +170,7 @@ app.add_middleware(
                 "Access-Control-Allow-Methods": "GET",
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Credentials": None,
+                "Cross-Origin-Resource-Policy": "cross-origin",
             },
         },
     },
