@@ -2939,6 +2939,20 @@ class Server(TypedDict, total=False):
     No longer used, replaced by `TILECLOUD_CHAIN__ROUTE_PREFIX` environment variable
     """
 
+    admin_path: str
+    r"""
+    Admin path.
+
+    No longer used
+    """
+
+    static_path: str
+    r"""
+    Static path.
+
+    No longer used
+    """
+
     expires: int
     r"""
     Expires.
