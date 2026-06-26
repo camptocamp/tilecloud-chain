@@ -265,9 +265,7 @@ class Server:
                 session = aiobotocore.session.AioSession()
                 client = await session.create_client(
                     "s3",
-                    endpoint_url=(f"https://{cache_s3.get('host')}/")
-                    if cache_s3.get("host")
-                    else None,
+                    endpoint_url=(f"https://{cache_s3.get('host')}/") if cache_s3.get("host") else None,
                 ).__aenter__()
                 self.s3_client_cache[host_key] = client
             except KeyError as e:
