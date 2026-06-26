@@ -39,7 +39,9 @@ from io import BytesIO
 from typing import Annotated, Any, Literal, NamedTuple, cast
 from urllib.parse import urlencode
 
+import anyio
 import aiohttp
+import botocore.config
 import botocore.exceptions
 import fastapi
 import html_sanitizer
@@ -230,7 +232,7 @@ class Server:
     def __init__(self) -> None:
         """Initialize."""
         self.filter_cache: dict[Path, dict[str, DatedFilter]] = {}
-        self.s3_client_cache: dict[str, botocore.client.S3] = {}  # pylint: disable=no-member
+        self.s3_client_cache: dict[str, "botocore.client.S3"] = {}  # noqa: UP037  # pylint: disable=no-member
         self.store_cache: dict[tuple[Path, str, str], DatedStore] = {}
 
     @staticmethod
@@ -254,21 +256,24 @@ class Server:
             config.config["generation"].get("default_cache", configuration.DEFAULT_CACHE_DEFAULT),
         )
 
-    def get_s3_client(self, config: tilecloud_chain.DatedConfig) -> "botocore.client.S3":
+    async def get_s3_client(self, config: tilecloud_chain.DatedConfig) -> "botocore.client.S3":
         """Get the AWS S3 client."""
         cache_s3 = cast("tilecloud_chain.configuration.CacheS3", self.get_cache(config))
         if cache_s3.get("host", "aws") in self.s3_client_cache:
             return self.s3_client_cache[cache_s3.get("host", "aws")]
         for n in range(10):
             try:
-                client = tilecloud.store.s3.get_client(cache_s3.get("host"))
+                client = await anyio.to_thread.run_sync(
+                    tilecloud.store.s3.get_client,
+                    cache_s3.get("host"),
+                )
                 self.s3_client_cache[cache_s3.get("host", "aws")] = client
             except KeyError as e:
                 _LOGGER.warning("Error while getting the S3 client: %s", e, exc_info=True)
                 error = e
             else:
                 return client
-            time.sleep(n * 10)
+            await anyio.sleep(n * 10)
         raise error
 
     def get_cache(self, config: tilecloud_chain.DatedConfig) -> tilecloud_chain.configuration.Cache:
@@ -346,7 +351,7 @@ class Server:
             return max_zoom_seed
         return 999999
 
-    def _s3_read(
+    async def _s3_read(
         self,
         key_name: str,
         headers: dict[str, str],
@@ -356,13 +361,19 @@ class Server:
         try:
             cache_s3 = cast("tilecloud_chain.configuration.CacheS3", cache)
             bucket = cache_s3
-            response = self.get_s3_client(config).get_object(Bucket=bucket, Key=key_name)
+            client = await self.get_s3_client(config)
+            response = await anyio.to_thread.run_sync(
+                client.get_object,
+                Bucket=bucket,
+                Key=key_name,
+            )
             body = response["Body"]
             try:
                 headers["Content-Type"] = response.get("ContentType")
-                return Response(content=body.read(), headers=headers)
+                data = await anyio.to_thread.run_sync(body.read)
+                return Response(content=data, headers=headers)
             finally:
-                body.close()
+                await anyio.to_thread.run_sync(body.close)
         except botocore.exceptions.ClientError as ex:
             if ex.response["Error"]["Code"] == "NoSuchKey":
                 return self.error(config, 404, key_name + " not found")
@@ -384,11 +395,11 @@ class Server:
             key_name = Path(cache_s3["folder"]) / path
             try:
                 with _GET_TILE.labels(storage="s3").time():
-                    return self._s3_read(str(key_name), headers, config, **kwargs)
+                    return await self._s3_read(str(key_name), headers, config, **kwargs)
             except Exception:  # noqa: BLE001
                 del self.s3_client_cache[cache_s3.get("host", "aws")]
                 with _GET_TILE.labels(storage="s3").time():
-                    return self._s3_read(str(key_name), headers, config, **kwargs)
+                    return await self._s3_read(str(key_name), headers, config, **kwargs)
         if cache["type"] == "azure":
             cache_azure = cast("tilecloud_chain.configuration.CacheAzure", cache)
             key_name = Path(cache_azure["folder"]) / path
@@ -1247,12 +1258,19 @@ def _get_base_urls(cache: tilecloud_chain.configuration.Cache) -> list[str]:
 async def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes | None:
     if cache["type"] == "s3":
         cache_s3 = cast("tilecloud_chain.configuration.CacheS3", cache)
-        client = tilecloud.store.s3.get_client(cache_s3.get("host"))
+        client = await anyio.to_thread.run_sync(
+            tilecloud.store.s3.get_client,
+            cache_s3.get("host"),
+        )
         key_name = Path(cache["folder"]) / path
         bucket = cache_s3["bucket"]
         try:
-            response = client.get_object(Bucket=bucket, Key=str(key_name))
-            return cast("bytes", response["Body"].read())
+            response = await anyio.to_thread.run_sync(
+                client.get_object,
+                Bucket=bucket,
+                Key=str(key_name),
+            )
+            return cast("bytes", await anyio.to_thread.run_sync(response["Body"].read))
         except botocore.exceptions.ClientError as ex:
             if ex.response["Error"]["Code"] == "NoSuchKey":
                 return None

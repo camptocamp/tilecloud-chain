@@ -11,6 +11,7 @@ from math import exp, log
 from typing import IO, cast
 from urllib.parse import urlencode
 
+import anyio
 import PIL.ImageFile
 import requests
 import ruamel.yaml
@@ -127,6 +128,24 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         sys.exit(1)
 
 
+def _s3_send(
+    data: bytes | str,
+    key_name: str,
+    mime_type: str,
+    cache_s3: tilecloud_chain.configuration.CacheS3,
+) -> None:
+    """Send data to S3 (synchronous, called via anyio.to_thread.run_sync)."""
+    client = tilecloud.store.s3.get_client(cache_s3.get("host"))
+    client.put_object(
+        ACL="public-read",
+        Body=data,
+        Key=key_name,
+        Bucket=cache_s3["bucket"],
+        ContentEncoding="utf-8",
+        ContentType=mime_type,
+    )
+
+
 async def _send(
     data: bytes | str,
     path: str,
@@ -135,16 +154,13 @@ async def _send(
 ) -> None:
     if cache["type"] == "s3":
         cache_s3 = cast("tilecloud_chain.configuration.CacheS3", cache)
-        client = tilecloud.store.s3.get_client(cache_s3.get("host"))
         key_name = Path(cache["folder"]) / path
-        bucket = cache_s3["bucket"]
-        client.put_object(
-            ACL="public-read",
-            Body=data,
-            Key=str(key_name),
-            Bucket=bucket,
-            ContentEncoding="utf-8",
-            ContentType=mime_type,
+        await anyio.to_thread.run_sync(
+            _s3_send,
+            data,
+            str(key_name),
+            mime_type,
+            cache_s3,
         )
     if cache["type"] == "azure":
         cache_azure = cast("tilecloud_chain.configuration.CacheAzure", cache)
