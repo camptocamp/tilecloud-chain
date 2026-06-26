@@ -39,7 +39,11 @@ Note: The following features are maintained for backward compatibility:
 
 The admin interface with PostgreSQL queue integration:
 
-![TileCloud Chain Admin Interface](./admin-screenshot.png)
+![TileCloud-chain admin interface](./admin-screenshot.png)
+
+The test page:
+
+![TileCloud-chain test interface](./test-screenshot.png)
 
 ## Getting Started
 
