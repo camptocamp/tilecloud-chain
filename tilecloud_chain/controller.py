@@ -11,10 +11,10 @@ from math import exp, log
 from typing import IO, cast
 from urllib.parse import urlencode
 
+import aiobotocore.session
 import PIL.ImageFile
 import requests
 import ruamel.yaml
-import tilecloud.store.s3
 import yaml
 from anyio import Path
 from azure.storage.blob import ContentSettings
@@ -135,17 +135,20 @@ async def _send(
 ) -> None:
     if cache["type"] == "s3":
         cache_s3 = cast("tilecloud_chain.configuration.CacheS3", cache)
-        client = tilecloud.store.s3.get_client(cache_s3.get("host"))
-        key_name = Path(cache["folder"]) / path
-        bucket = cache_s3["bucket"]
-        client.put_object(
-            ACL="public-read",
-            Body=data,
-            Key=str(key_name),
-            Bucket=bucket,
-            ContentEncoding="utf-8",
-            ContentType=mime_type,
-        )
+        session = aiobotocore.session.AioSession()
+        async with session.create_client(
+            "s3",
+            endpoint_url=(f"https://{cache_s3.get('host')}/") if cache_s3.get("host") else None,
+        ) as client:
+            key_name = Path(cache["folder"]) / path
+            await client.put_object(
+                ACL="public-read",
+                Body=data,
+                Key=str(key_name),
+                Bucket=cache_s3["bucket"],
+                ContentEncoding="utf-8",
+                ContentType=mime_type,
+            )
     if cache["type"] == "azure":
         cache_azure = cast("tilecloud_chain.configuration.CacheAzure", cache)
         key_name = Path(cache["folder"]) / path

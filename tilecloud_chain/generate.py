@@ -13,7 +13,7 @@ from collections.abc import Awaitable, Callable
 from getpass import getuser
 from typing import IO, cast
 
-import boto3
+import aiobotocore.session
 import objgraph
 import prometheus_client
 import tilecloud.filter.error
@@ -487,10 +487,6 @@ class Generate:
             and config is not None
             and "sns" in config.config
         ):
-            if "region" in config.config["sns"]:
-                sns_client = boto3.client("sns", region_name=config.config["sns"].get("region", "eu-west-1"))
-            else:
-                sns_client = boto3.client("sns")
             sns_message = [message[0]]
             sns_message += [
                 f"Layer: {layer_name if layer_name is not None else '(All layers)'}",
@@ -499,12 +495,18 @@ class Generate:
                 f"Command: {' '.join([quote(arg) for arg in sys.argv])}",
             ]
             sns_message += message[1:]
-            sns_client.publish(
-                TopicArn=config.config["sns"]["topic"],
-                Message="\n".join(sns_message),
-                Subject=f"Tile generation ({layer_name if layer_name is not None else 'All layers'} - "
-                f"{self._options.role})",
-            )
+            session = aiobotocore.session.AioSession()
+            region = config.config["sns"].get("region")
+            async with session.create_client(
+                "sns",
+                **({"region_name": region} if region else {}),
+            ) as sns_client:
+                await sns_client.publish(
+                    TopicArn=config.config["sns"]["topic"],
+                    Message="\n".join(sns_message),
+                    Subject=f"Tile generation ({layer_name if layer_name is not None else 'All layers'} - "
+                    f"{self._options.role})",
+                )
 
 
 class TilestoreGetter:
