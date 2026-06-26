@@ -13,8 +13,7 @@ from collections.abc import Awaitable, Callable
 from getpass import getuser
 from typing import IO, cast
 
-import anyio
-import boto3
+import aiobotocore.session
 import objgraph
 import prometheus_client
 import tilecloud.filter.error
@@ -496,32 +495,18 @@ class Generate:
                 f"Command: {' '.join([quote(arg) for arg in sys.argv])}",
             ]
             sns_message += message[1:]
-            await anyio.to_thread.run_sync(
-                _sns_publish,
-                config.config["sns"]["topic"],
-                "\n".join(sns_message),
-                f"Tile generation ({layer_name if layer_name is not None else 'All layers'} - "
-                f"{self._options.role})",
-                config.config["sns"].get("region"),
-            )
-
-
-def _sns_publish(
-    topic: str,
-    message: str,
-    subject: str,
-    region: str | None,
-) -> None:
-    """Publish a message to SNS (synchronous, called via anyio.to_thread.run_sync)."""
-    kwargs: dict[str, str] = {}
-    if region:
-        kwargs["region_name"] = region
-    sns_client = boto3.client("sns", **kwargs)
-    sns_client.publish(
-        TopicArn=topic,
-        Message=message,
-        Subject=subject,
-    )
+            session = aiobotocore.session.AioSession()
+            region = config.config["sns"].get("region")
+            async with session.create_client(
+                "sns",
+                **({"region_name": region} if region else {}),
+            ) as sns_client:
+                await sns_client.publish(
+                    TopicArn=config.config["sns"]["topic"],
+                    Message="\n".join(sns_message),
+                    Subject=f"Tile generation ({layer_name if layer_name is not None else 'All layers'} - "
+                    f"{self._options.role})",
+                )
 
 
 class TilestoreGetter:
