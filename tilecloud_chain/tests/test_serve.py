@@ -1549,3 +1549,39 @@ class TestServe(CompareCase):
         assert key_2056 != key_21781
         assert "swissgrid_2056" in key_2056
         assert "swissgrid_21781" in key_21781
+
+    @pytest.mark.asyncio
+    async def test_get_static(self) -> None:
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+
+        from tilecloud_chain.server import router
+
+        server._PYRAMID_SERVER = None
+        server.server.store_cache = {}
+        server._TILEGENERATION = TileGeneration(
+            config_file=AnyioPath("tilegeneration/test-serve.yaml"),
+            configure_logging=False,
+        )
+
+        app = FastAPI()
+        app.include_router(router)
+        client = TestClient(app)
+
+        png_content = b"\x89PNG\r\n\x1a\n" + b"\x00" * 20
+        tiles_dir = Path("/tmp/tiles/mbtiles")
+        tiles_dir.mkdir(parents=True, exist_ok=True)
+        (tiles_dir / "test-legend.png").write_bytes(png_content)
+
+        response = client.get("/tiles/static/test-legend.png")
+        assert response.status_code == 200
+        assert response.content == png_content
+
+        response = client.get("/tiles/static/test-legend.txt")
+        assert response.status_code == 403
+
+        response = client.get("/tiles/static/%2e%2e%2ftest-legend.png")
+        assert response.status_code == 400
+
+        response = client.get("/tiles/static/nonexistent.png")
+        assert response.status_code == 404

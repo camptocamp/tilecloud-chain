@@ -1976,9 +1976,9 @@ sqs:
       <ows:Identifier>all</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/all/default/legend-5.png" """
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/static/1.0.0/all/default/legend-5.png" """
             """width="[0-9]*" height="[0-9]*" maxScaleDenominator="56469.24393[0-9]*" />
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/all/default/legend-50.png" """
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/static/1.0.0/all/default/legend-50.png" """
             """width="[0-9]*" height="[0-9]*" minScaleDenominator="56469.24393[0-9]*" />
       </Style>
       <Format>image/png</Format>
@@ -2039,9 +2039,9 @@ sqs:
       <ows:Identifier>line</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend-5.png" """
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/static/1.0.0/line/default/legend-5.png" """
             r"""width="[0-9]*" height="[0-9]*" maxScaleDenominator="56469.24393[0-9]*" />
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/line/default/legend-50.png" """
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/static/1.0.0/line/default/legend-50.png" """
             r"""width="[0-9]*" height="[0-9]*" minScaleDenominator="56469.24393[0-9]*" />
       </Style>
       <Format>image/png</Format>
@@ -2065,7 +2065,7 @@ sqs:
       <ows:Identifier>point</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/point/default/legend-5.png" """
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/static/1.0.0/point/default/legend-5.png" """
             """width="[0-9]*" height="[0-9]*" />
       </Style>
       <Format>image/png</Format>
@@ -2089,7 +2089,7 @@ sqs:
       <ows:Identifier>polygon</ows:Identifier>
       <Style isDefault="true">
         <ows:Identifier>default</ows:Identifier>
-        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/1.0.0/polygon/default/legend-5.png" """
+        <LegendURL format="image/png" xlink:href="http://wmts1/tiles/static/1.0.0/polygon/default/legend-5.png" """
             """width="[0-9]*" height="[0-9]*" />
       </Style>
       <Format>image/png</Format>
