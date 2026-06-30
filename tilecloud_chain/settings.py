@@ -40,14 +40,27 @@ StrList = Annotated[list[str], BeforeValidator(_to_str_list)]
 
 
 def _to_route_prefix(route_prefix: str) -> str:
-    if route_prefix and not route_prefix.startswith("/"):
+    if not route_prefix:
+        return "/"
+    if not route_prefix.startswith("/"):
         route_prefix = f"/{route_prefix}"
-    if route_prefix and not route_prefix.endswith("/"):
+    if not route_prefix.endswith("/"):
         route_prefix = f"{route_prefix}/"
     return route_prefix
 
 
 RoutePrefix = Annotated[str, BeforeValidator(_to_route_prefix)]
+
+
+def _to_wmts_path(wmts_path: str) -> str:
+    if not wmts_path:
+        return ""
+    if not wmts_path.endswith("/"):
+        wmts_path = f"{wmts_path}/"
+    return wmts_path.lstrip("/")
+
+
+WmtsPath = Annotated[str, BeforeValidator(_to_wmts_path)]
 
 
 class AzureSettings(BaseModel):
@@ -137,6 +150,7 @@ class Settings(BaseSettings):
     frontend: str | None = None
     development: bool = False
     route_prefix: RoutePrefix = "/tiles/"
+    wmts_path: WmtsPath = ""
 
     azure: AzureSettings = AzureSettings()
     logging: LoggingSettings = LoggingSettings()

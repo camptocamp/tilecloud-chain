@@ -501,6 +501,8 @@ class Server:
                     )
                 server_config = (await _TILEGENERATION.get_main_config()).config.get("server")
 
+                wmts_path = settings.wmts_path or settings.route_prefix[1:]
+
                 base_urls = _get_base_urls(cache)
 
                 def ending_slash(url: str) -> str:
@@ -509,7 +511,7 @@ class Server:
 
                 base_urls = [ending_slash(url) for url in base_urls]
 
-                await _fill_legend(cache, f"{base_urls[0]}{settings.route_prefix[1:]}static/", config=config)
+                await _fill_legend(cache, f"{base_urls[0]}{wmts_path}static/", config=config)
 
                 return _TEMPLATES.TemplateResponse(
                     "wmts_get_capabilities.jinja",
@@ -520,7 +522,7 @@ class Server:
                         "layer_legends": _TILEGENERATION.layer_legends,
                         "grids": config.config["grids"],
                         "base_urls": base_urls,
-                        "base_url_postfix": settings.route_prefix[1:],
+                        "base_url_postfix": wmts_path,
                         "get_tile_matrix_identifier": get_tile_matrix_identifier,
                         "server": server_config is not None,
                         "has_metadata": "metadata" in config.config,

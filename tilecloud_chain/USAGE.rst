@@ -876,6 +876,9 @@ Server:
 - ``TILECLOUD_CHAIN__ROUTE_PREFIX``: Base URL path for tile access
   (default: ``/tiles/``)
 
+- ``TILECLOUD_CHAIN__WMTS_PATH``: Path used in WMTS capabilities URLs, overrides the route prefix
+  (default: the value of ``TILECLOUD_CHAIN__ROUTE_PREFIX`` without a leading ``/``)
+
 Worker:
 
 - ``TILECLOUD_CHAIN__NB_TASKS``: Number of concurrent tasks to run in parallel
