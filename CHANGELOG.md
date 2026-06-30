@@ -3,6 +3,7 @@
 ## 2.0.0
 
 - Persist admin test map state in the URL on `/admin/test` with map position (`x`, `y`, `z`) and selected layer (`layer`).
+- Add `TILECLOUD_CHAIN__WMTS_PATH` environment variable to configure the path used in WMTS capabilities URLs, defaulting to the route prefix without a leading slash.
 - Add a Pydantic-based settings hierarchy for environment variables.
 - Update server, queue, admin, and generation code to read configuration from `tilecloud_chain.settings`.
 - Document the new nested environment variable scheme in `tilecloud_chain/USAGE.rst`.
