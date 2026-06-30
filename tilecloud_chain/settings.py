@@ -52,7 +52,9 @@ def _to_route_prefix(route_prefix: str) -> str:
 RoutePrefix = Annotated[str, BeforeValidator(_to_route_prefix)]
 
 
-def _to_wmts_path(wmts_path: str) -> str:
+def _to_wmts_path(wmts_path: str | None) -> str | None:
+    if wmts_path is None:
+        return None
     if not wmts_path:
         return ""
     if not wmts_path.endswith("/"):
@@ -60,7 +62,7 @@ def _to_wmts_path(wmts_path: str) -> str:
     return wmts_path.lstrip("/")
 
 
-WmtsPath = Annotated[str, BeforeValidator(_to_wmts_path)]
+WmtsPath = Annotated[str | None, BeforeValidator(_to_wmts_path)]
 
 
 class AzureSettings(BaseModel):
@@ -150,7 +152,7 @@ class Settings(BaseSettings):
     frontend: str | None = None
     development: bool = False
     route_prefix: RoutePrefix = "/tiles/"
-    wmts_path: WmtsPath = ""
+    wmts_path: WmtsPath = None
 
     azure: AzureSettings = AzureSettings()
     logging: LoggingSettings = LoggingSettings()

@@ -501,7 +501,7 @@ class Server:
                     )
                 server_config = (await _TILEGENERATION.get_main_config()).config.get("server")
 
-                wmts_path = settings.wmts_path or settings.route_prefix[1:]
+                wmts_path = settings.route_prefix[1:] if settings.wmts_path is None else settings.wmts_path
 
                 base_urls = _get_base_urls(cache)
 
