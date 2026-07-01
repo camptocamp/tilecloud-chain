@@ -50,7 +50,7 @@ pydantic-settings = "2.14.2"
 mapnik = "4.2.2"
 
 [tool.poetry.group.dev.dependencies]
-prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.18.0" }
+prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.19.0" }
 prospector-profile-duplicated = "1.12.0"
 prospector-profile-utils = "1.27.0"
 c2cwsgiutils = { version = "6.1.9", extras = ["test_images"] }
