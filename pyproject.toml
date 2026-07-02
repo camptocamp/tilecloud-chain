@@ -1,3 +1,49 @@
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Environment :: Web Environment',
+    'Framework :: Pyramid',
+    'Intended Audience :: Other Audience',
+    'License :: OSI Approved :: BSD License',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Topic :: Scientific/Engineering :: GIS',
+    'Typing :: Typed',
+]
+dynamic = ["dependencies", "version"]
+name = "tilecloud-chain"
+description = "Tools to generate tiles from WMS or Mapnik, to S3, Berkeley DB, MBTiles, or local filesystem in WMTS layout using Amazon cloud services."
+readme = "README.md"
+keywords = ["gis", "tilecloud", "chain"]
+license = "BSD-2-Clause"
+authors = [{name = "Camptocamp",email = "info@camptocamp.com"}]
+packages = [{ include = "tilecloud_chain" }]
+include = ["tilecloud_chain/py.typed", "tilecloud_chain/*.rst", "tilecloud_chain/*.md"]
+requires-python = ">=3.10"
+dependencies = ["c2cwsgiutils[broadcast,debug,oauth2,standard]", "pyramid-mako", "python-dateutil", "tilecloud[aws,azure,redis,wsgi]", "Jinja2", "PyYAML", "Shapely", "jsonschema", "pyramid", "jsonschema-validator-new", "azure-storage-blob", "waitress", "certifi", "Paste", "psutil", "pyproj", "psycopg[binary]", "aiohttp", "sqlalchemy[asyncio]", "pytest-asyncio", "aiofiles", "asyncpg", "nest-asyncio"]
+
+[project.urls]
+repository = "https://github.com/camptocamp/tilecloud-chain"
+"Bug Tracker" = "https://github.com/camptocamp/tilecloud-chain/issues"
+
+[project.scripts]
+generate-tiles = "tilecloud_chain.generate:main"
+generate-controller = "tilecloud_chain.controller:main"
+generate-cost = "tilecloud_chain.cost:main"
+generate-copy = "tilecloud_chain.copy_:main"
+generate-process = "tilecloud_chain.copy_:process"
+import-expiretiles = "tilecloud_chain.expiretiles:main"
+
 [tool.ruff]
 line-length = 110
 target-version = "py310"
@@ -77,48 +123,3 @@ format-jinja = """
 
 [tool.poetry-plugin-tweak-dependencies-version]
 default = "present"
-
-[project]
-classifiers = [
-    'Development Status :: 5 - Production/Stable',
-    'Environment :: Web Environment',
-    'Framework :: Pyramid',
-    'Intended Audience :: Other Audience',
-    'License :: OSI Approved :: BSD License',
-    'Operating System :: OS Independent',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
-    'Programming Language :: Python :: 3.12',
-    'Programming Language :: Python :: 3.13',
-    'Topic :: Scientific/Engineering :: GIS',
-    'Typing :: Typed',
-]
-dynamic = ["dependencies", "version"]
-name = "tilecloud-chain"
-description = "Tools to generate tiles from WMS or Mapnik, to S3, Berkeley DB, MBTiles, or local filesystem in WMTS layout using Amazon cloud services."
-readme = "README.md"
-keywords = ["gis", "tilecloud", "chain"]
-license = "BSD-2-Clause"
-authors = [{name = "Camptocamp",email = "info@camptocamp.com"}]
-packages = [{ include = "tilecloud_chain" }]
-include = ["tilecloud_chain/py.typed", "tilecloud_chain/*.rst", "tilecloud_chain/*.md"]
-requires-python = ">=3.10"
-dependencies = ["c2cwsgiutils[broadcast,debug,oauth2,standard]", "pyramid-mako", "python-dateutil", "tilecloud[aws,azure,redis,wsgi]", "Jinja2", "PyYAML", "Shapely", "jsonschema", "pyramid", "jsonschema-validator-new", "azure-storage-blob", "waitress", "certifi", "Paste", "psutil", "pyproj", "psycopg[binary]", "aiohttp", "sqlalchemy[asyncio]", "pytest-asyncio", "aiofiles", "asyncpg", "nest-asyncio"]
-
-[project.urls]
-repository = "https://github.com/camptocamp/tilecloud-chain"
-"Bug Tracker" = "https://github.com/camptocamp/tilecloud-chain/issues"
-
-[project.scripts]
-generate-tiles = "tilecloud_chain.generate:main"
-generate-controller = "tilecloud_chain.controller:main"
-generate-cost = "tilecloud_chain.cost:main"
-generate-copy = "tilecloud_chain.copy_:main"
-generate-process = "tilecloud_chain.copy_:process"
-import-expiretiles = "tilecloud_chain.expiretiles:main"
-
-[build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
-build-backend = "poetry.core.masonry.api"
