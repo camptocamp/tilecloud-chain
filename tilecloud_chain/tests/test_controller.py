@@ -142,7 +142,6 @@ class TestController(CompareCase):
       </ows:DCP>
     </ows:Operation>
   </ows:OperationsMetadata>
-  <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
 
     <Layer>
@@ -622,7 +621,6 @@ class TestController(CompareCase):
       </ows:DCP>
     </ows:Operation>
   </ows:OperationsMetadata>
-  <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
 
     <Layer>
@@ -1135,7 +1133,6 @@ class TestController(CompareCase):
       </ows:DCP>
     </ows:Operation>
   </ows:OperationsMetadata>
-  <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
 
     <Layer>
@@ -1968,7 +1965,6 @@ sqs:
       </ows:DCP>
     </ows:Operation>
   </ows:OperationsMetadata>
-  <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
 
     <Layer>
@@ -2215,7 +2211,6 @@ sqs:
       </ows:DCP>
     </ows:Operation>
   </ows:OperationsMetadata>
-  <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
 
     <Layer>
@@ -2450,7 +2445,6 @@ sqs:
       </ows:DCP>
     </ows:Operation>
   </ows:OperationsMetadata>
-  <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
 
     <Layer>
