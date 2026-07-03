@@ -16,7 +16,15 @@ import sys
 import tempfile
 import time
 from argparse import ArgumentParser, Namespace
-from collections.abc import AsyncIterator, Awaitable, Callable, Iterable, Iterator
+from collections.abc import (
+    AsyncGenerator,
+    AsyncIterator,
+    Awaitable,
+    Callable,
+    Iterable,
+    Iterator,
+)
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from fractions import Fraction
 from hashlib import sha1
@@ -643,26 +651,36 @@ class TileFilter(logging.Filter):
         return True
 
 
-def get_azure_container_client(container: str) -> ContainerClient:
-    """Get the Azure blog storage client."""
+@asynccontextmanager
+async def get_azure_container_client(container: str) -> AsyncGenerator[ContainerClient, None]:
+    """Get the Azure blob storage client as an async context manager.
+
+    The context manager ensures the client session is properly closed.
+    """
     if settings.azure.storage_connection_string:
-        return BlobServiceClient.from_connection_string(
+        async with BlobServiceClient.from_connection_string(
             settings.azure.storage_connection_string,
-        ).get_container_client(container=container)
-    if settings.azure.storage_blob_container_url:
-        container_client = ContainerClient.from_container_url(settings.azure.storage_blob_container_url)
-        if settings.azure.storage_blob_validate_container_name:
-            assert container == container_client.container_name, (
-                f"Container name mismatch: {container} != {container_client.container_name}"
-            )
-        return container_client
-    if not settings.azure.storage_account_url:
-        message = "TILECLOUD_CHAIN__AZURE__STORAGE_ACCOUNT_URL is not configured"
-        raise ValueError(message)
-    return BlobServiceClient(
-        account_url=settings.azure.storage_account_url,
-        credential=DefaultAzureCredential(),  # type: ignore[arg-type]
-    ).get_container_client(container=container)
+        ) as blob_service_client:
+            yield blob_service_client.get_container_client(container=container)
+    elif settings.azure.storage_blob_container_url:
+        async with ContainerClient.from_container_url(
+            settings.azure.storage_blob_container_url
+        ) as container_client:
+            yield container_client
+    else:
+        if not settings.azure.storage_account_url:
+            message = "TILECLOUD_CHAIN__AZURE__STORAGE_ACCOUNT_URL is not configured"
+            raise ValueError(message)
+        async with BlobServiceClient(
+            account_url=settings.azure.storage_account_url,
+            credential=DefaultAzureCredential(),  # type: ignore[arg-type]
+        ) as blob_service_client:
+            container_client = blob_service_client.get_container_client(container=container)
+            if settings.azure.storage_blob_validate_container_name:
+                assert container == container_client.container_name, (
+                    f"Container name mismatch: {container} != {container_client.container_name}"
+                )
+            yield container_client
 
 
 def get_grid_name(
@@ -1331,7 +1349,7 @@ class TileGeneration:
             cache_tilestore = AzureStorageBlobTileStore(
                 tilelayout=layout,
                 cache_control=cache_azure.get("cache_control"),
-                container_client=get_azure_container_client(cache_azure["container"]),
+                container=cache_azure["container"],
             )
         elif cache["type"] == "mbtiles":
             metadata = {}

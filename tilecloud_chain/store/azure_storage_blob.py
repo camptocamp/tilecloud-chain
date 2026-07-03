@@ -24,12 +24,14 @@ class AzureStorageBlobTileStore(AsyncTileStore):
         container_client: ContainerClient | None = None,
     ) -> None:
         """Initialize."""
+        self._blob_service_client: BlobServiceClient | None = None
         if container_client is None:
             if settings.azure.storage_connection_string:
                 assert container is not None
-                self.container_client = BlobServiceClient.from_connection_string(
+                self._blob_service_client = BlobServiceClient.from_connection_string(
                     settings.azure.storage_connection_string,
-                ).get_container_client(container=container)
+                )
+                self.container_client = self._blob_service_client.get_container_client(container=container)
             elif settings.azure.storage_blob_container_url:
                 self.container_client = ContainerClient.from_container_url(
                     settings.azure.storage_blob_container_url,
@@ -41,16 +43,23 @@ class AzureStorageBlobTileStore(AsyncTileStore):
                 if not settings.azure.storage_account_url:
                     message = "TILECLOUD_CHAIN__AZURE__STORAGE_ACCOUNT_URL is not configured"
                     raise ValueError(message)
-                self.container_client = BlobServiceClient(
+                self._blob_service_client = BlobServiceClient(
                     account_url=settings.azure.storage_account_url,
                     credential=DefaultAzureCredential(),  # type: ignore[arg-type]
-                ).get_container_client(container=container)
+                )
+                self.container_client = self._blob_service_client.get_container_client(container=container)
         else:
             self.container_client = container_client
 
         self.tilelayout = tilelayout
         self.dry_run = dry_run
         self.cache_control = cache_control
+
+    async def close(self) -> None:
+        """Close the Azure container client session."""
+        await self.container_client.close()
+        if self._blob_service_client is not None:
+            await self._blob_service_client.close()
 
     async def __contains__(self, tile: Tile) -> bool:
         """Return true if this store contains ``tile``."""

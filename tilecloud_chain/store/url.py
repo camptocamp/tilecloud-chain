@@ -45,6 +45,10 @@ class URLTileStore(AsyncTileStore):
         if headers is not None:
             self._session.headers.update(headers)
 
+    async def close(self) -> None:
+        """Close the aiohttp session."""
+        await self._session.close()
+
     async def _get_hosts_limit(self) -> host_limit.HostLimit:
         """Initialize the store."""
         host_limit_path = settings.hosts_limit

@@ -2,6 +2,8 @@
 
 ## 2.0.0
 
+- Fix unclosed aiohttp connector and client session warnings by properly closing Azure blob storage clients and aiohttp sessions in `URLTileStore` and `AzureStorageBlobTileStore`.
+
 - Persist admin test map state in the URL on `/admin/test` with map position (`x`, `y`, `z`) and selected layer (`layer`).
 - Add `TILECLOUD_CHAIN__WMTS_PATH` environment variable to configure the path used in WMTS capabilities URLs, defaulting to the route prefix without a leading slash.
 - Add a Pydantic-based settings hierarchy for environment variables.
