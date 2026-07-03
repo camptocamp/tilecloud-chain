@@ -1,12 +1,12 @@
 """Internal Mapcache."""
 
+import asyncio
 import contextlib
 import datetime
 import json
 import logging
 import struct
 import sys
-import threading
 from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 _MAX_GENERATION_TIME = settings.max_generation_time
 _LOG = logging.getLogger(__name__)
-_lock = threading.Lock()
+_lock = asyncio.Lock()
 _GENERATOR = None
 
 _GET_TILE = Summary("tilecloud_chain_get_generated_tile", "Time to get the generated tiles", ["storage"])
@@ -243,18 +243,17 @@ class Generator:
 
 
 async def _get_generator(tilegeneration: tilecloud_chain.TileGeneration) -> Generator:
-    if _GENERATOR is None:
-        return await _init_generator(tilegeneration)
-    return _GENERATOR
-
-
-async def _init_generator(tilegeneration: tilecloud_chain.TileGeneration) -> Generator:
-    with _lock:
-        global _GENERATOR  # noqa: PLW0603
+    global _GENERATOR  # noqa: PLW0603
+    async with _lock:
         if _GENERATOR is None:
-            _GENERATOR = Generator(tilegeneration)
-            await _GENERATOR.init()
-        return _GENERATOR
+            generator = Generator(tilegeneration)
+            try:
+                await generator.init()
+            except Exception:
+                _GENERATOR = None
+                raise
+            _GENERATOR = generator
+    return _GENERATOR
 
 
 async def fetch(
