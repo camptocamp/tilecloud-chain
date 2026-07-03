@@ -59,7 +59,6 @@ _CAPABILITIES = (
       </ows:DCP>
     </ows:Operation>
   </ows:OperationsMetadata>
-  <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
 
     <Layer>
@@ -317,7 +316,6 @@ class TestServe(CompareCase):
         </ows:DCP>
       </ows:Operation>
     </ows:OperationsMetadata>
-    <!-- <ServiceMetadataURL xlink:href="" /> -->
     <Contents>
 
       <Layer>

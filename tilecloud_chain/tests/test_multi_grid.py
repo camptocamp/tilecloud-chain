@@ -289,7 +289,6 @@ Size per tile: [0-9]{3} o
       </ows:DCP>
     </ows:Operation>
   </ows:OperationsMetadata>
-  <!-- <ServiceMetadataURL xlink:href="" /> -->
   <Contents>
     <Layer>
       <ows:Title>all</ows:Title>
