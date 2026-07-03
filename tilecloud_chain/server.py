@@ -844,6 +844,7 @@ async def get_host_name(request: Request) -> str:
     forwarded = request.headers.get("Forwarded")
 
     # Determine the host name
+    host_name: str | None = None
     if forwarded:
         # Parse the Forwarded header to get the host
         # The Forwarded header can have multiple pieces of information
@@ -851,7 +852,7 @@ async def get_host_name(request: Request) -> str:
         forwarded_parts = forwarded.split(";")
         for part in forwarded_parts:
             if part.strip().startswith("host="):
-                host_name: str | None = part.strip().split("=")[1]
+                host_name = part.strip().split("=")[1]
                 break
     elif x_forwarded_host:
         host_name = x_forwarded_host.split(",")[0]  # In case of multiple values
