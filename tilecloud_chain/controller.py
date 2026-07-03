@@ -152,17 +152,17 @@ async def _send(
     if cache["type"] == "azure":
         cache_azure = cast("tilecloud_chain.configuration.CacheAzure", cache)
         key_name = Path(cache["folder"]) / path
-        container = get_azure_container_client(cache_azure["container"])
-        blob = container.get_blob_client(str(key_name))
-        await blob.upload_blob(
-            data,
-            overwrite=True,
-            content_settings=ContentSettings(
-                content_type=mime_type,
-                content_encoding="utf-8",
-                cache_control=cache_azure["cache_control"],
-            ),
-        )
+        async with get_azure_container_client(cache_azure["container"]) as container:
+            blob = container.get_blob_client(str(key_name))
+            await blob.upload_blob(
+                data,
+                overwrite=True,
+                content_settings=ContentSettings(
+                    content_type=mime_type,
+                    content_encoding="utf-8",
+                    cache_control=cache_azure["cache_control"],
+                ),
+            )
     else:
         if isinstance(data, str):
             data = data.encode("utf-8")

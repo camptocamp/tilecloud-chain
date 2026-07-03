@@ -400,29 +400,30 @@ class Server:
             cache_azure = cast("tilecloud_chain.configuration.CacheAzure", cache)
             key_name = Path(cache_azure["folder"]) / path
             try:
-                with _GET_TILE.labels(storage="azure").time():
-                    blob = get_azure_container_client(container=cache_azure["container"]).get_blob_client(
-                        blob=str(key_name),
+                async with get_azure_container_client(container=cache_azure["container"]) as container_client:
+                    with _GET_TILE.labels(storage="azure").time():
+                        blob = container_client.get_blob_client(
+                            blob=str(key_name),
+                        )
+                    properties = await blob.get_blob_properties()
+                    data = await (await blob.download_blob()).readall()
+                    headers = {
+                        **headers,
+                        **(
+                            {"Content-Type": properties.content_settings.content_type}
+                            if properties.content_settings.content_type
+                            else {}
+                        ),
+                        **(
+                            {"Content-Encoding": properties.content_settings.content_encoding}
+                            if properties.content_settings.content_encoding
+                            else {}
+                        ),
+                    }
+                    return Response(
+                        content=data,
+                        headers=headers,
                     )
-                properties = await blob.get_blob_properties()
-                data = await (await blob.download_blob()).readall()
-                headers = {
-                    **headers,
-                    **(
-                        {"Content-Type": properties.content_settings.content_type}
-                        if properties.content_settings.content_type
-                        else {}
-                    ),
-                    **(
-                        {"Content-Encoding": properties.content_settings.content_encoding}
-                        if properties.content_settings.content_encoding
-                        else {}
-                    ),
-                }
-                return Response(
-                    content=data,
-                    headers=headers,
-                )
             except ResourceNotFoundError:
                 return self.error(config, 404, f"{path} not found", **kwargs)
         else:
@@ -1275,10 +1276,11 @@ async def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes |
         cache_azure = cast("tilecloud_chain.configuration.CacheAzure", cache)
         key_name = Path(cache["folder"]) / path
         try:
-            blob = get_azure_container_client(container=cache_azure["container"]).get_blob_client(
-                blob=str(key_name),
-            )
-            return await (await blob.download_blob()).readall()
+            async with get_azure_container_client(container=cache_azure["container"]) as container_client:
+                blob = container_client.get_blob_client(
+                    blob=str(key_name),
+                )
+                return await (await blob.download_blob()).readall()
         except ResourceNotFoundError:
             return None
     else:
