@@ -23,7 +23,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/gdal-data: 3.4.1+dfsg-1build4
   ubuntu_22_04/gpgv: 2.2.27-3ubuntu2.5
   ubuntu_22_04/grep: 3.7-1build1
-  ubuntu_22_04/gzip: 1.10-4ubuntu4.1
+  ubuntu_22_04/gzip: 1.10-4ubuntu4.2
   ubuntu_22_04/hostname: 3.23ubuntu2
   ubuntu_22_04/init-system-helpers: '1.62'
   ubuntu_22_04/iputils-ping: 3:20211215-1ubuntu0.1
@@ -150,9 +150,9 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/libproj22: 8.2.1-1
   ubuntu_22_04/libpsl5: 0.21.0-1.2build2
   ubuntu_22_04/libpython3-stdlib: 3.10.6-1~22.04.1
-  ubuntu_22_04/libpython3.10: 3.10.12-1~22.04.15
-  ubuntu_22_04/libpython3.10-minimal: 3.10.12-1~22.04.15
-  ubuntu_22_04/libpython3.10-stdlib: 3.10.12-1~22.04.15
+  ubuntu_22_04/libpython3.10: 3.10.12-1~22.04.16
+  ubuntu_22_04/libpython3.10-minimal: 3.10.12-1~22.04.16
+  ubuntu_22_04/libpython3.10-stdlib: 3.10.12-1~22.04.16
   ubuntu_22_04/libqhull-r8.0: 2020.2-4
   ubuntu_22_04/libquadmath0: 12.3.0-1ubuntu1~22.04.3
   ubuntu_22_04/libraqm0: 0.7.0-4ubuntu1
@@ -239,13 +239,13 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/python3-pkg-resources: 59.6.0-1.2ubuntu0.22.04.3
   ubuntu_22_04/python3-setuptools: 59.6.0-1.2ubuntu0.22.04.3
   ubuntu_22_04/python3-wheel: 0.37.1-2ubuntu0.22.04.1
-  ubuntu_22_04/python3.10: 3.10.12-1~22.04.15
-  ubuntu_22_04/python3.10-minimal: 3.10.12-1~22.04.15
+  ubuntu_22_04/python3.10: 3.10.12-1~22.04.16
+  ubuntu_22_04/python3.10-minimal: 3.10.12-1~22.04.16
   ubuntu_22_04/readline-common: 8.1.2-1
   ubuntu_22_04/sed: 4.8-1ubuntu2.1
   ubuntu_22_04/sensible-utils: 0.0.17
   ubuntu_22_04/sysvinit-utils: 3.01-1ubuntu1
-  ubuntu_22_04/tar: 1.34+dfsg-1ubuntu0.1.22.04.3
+  ubuntu_22_04/tar: 1.34+dfsg-1ubuntu0.1.22.04.4
   ubuntu_22_04/ubuntu-keyring: 2021.03.26
   ubuntu_22_04/ucf: '3.0043'
   ubuntu_22_04/unixodbc-common: 2.3.9-5ubuntu0.1
