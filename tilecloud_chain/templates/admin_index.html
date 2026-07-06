@@ -73,6 +73,22 @@
     </div>
     <h1 class="bd-title">Tile generation</h1>
     <hr />
+    {% if structure_errors %}
+    <div class="alert alert-danger" role="alert">
+      <h4 class="alert-heading">Configuration file structure errors</h4>
+      {% for error in structure_errors %}
+      <p class="mb-1">{{ error }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if deprecation_warnings %}
+    <div class="alert alert-warning" role="alert">
+      <h4 class="alert-heading">Use of deprecated attributes</h4>
+      {% for warning in deprecation_warnings %}
+      <p class="mb-1">{{ warning }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
     <span></span>
     {% if has_access %}
     <!---->
