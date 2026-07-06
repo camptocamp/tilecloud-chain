@@ -840,30 +840,7 @@ async def startup(_main_app: FastAPI) -> None:
 
 async def get_host_name(request: Request) -> str:
     """Get the host name from the request."""
-    # Get the Host header
-    host = request.headers.get("Host")
-
-    # Get the X-Forwarded-Host header
-    x_forwarded_host = request.headers.get("X-Forwarded-Host")
-
-    # Get the Forwarded header
-    forwarded = request.headers.get("Forwarded")
-
-    # Determine the host name
-    host_name: str | None = None
-    if forwarded:
-        # Parse the Forwarded header to get the host
-        # The Forwarded header can have multiple pieces of information
-        # Example: Forwarded: host=example.com;proto=https
-        forwarded_parts = forwarded.split(";")
-        for part in forwarded_parts:
-            if part.strip().startswith("host="):
-                host_name = part.strip().split("=")[1]
-                break
-    elif x_forwarded_host:
-        host_name = x_forwarded_host.split(",")[0]  # In case of multiple values
-    else:
-        host_name = host
+    host_name = request.headers.get("Host") or request.url.hostname
 
     if not host_name:
         raise HTTPException(status_code=400, detail="Host name not found in request headers")
