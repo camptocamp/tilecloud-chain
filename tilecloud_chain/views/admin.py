@@ -32,11 +32,13 @@ import io
 import json
 import logging
 import os
+import pkgutil
 import shlex
 import urllib.parse
 from collections.abc import Awaitable, Callable
-from typing import IO, Annotated, Any
+from typing import IO, Annotated, Any, cast
 
+import jsonschema_validator
 import pyproj
 from c2casgiutils import auth
 from c2casgiutils import config as c2c_config
@@ -150,6 +152,38 @@ class JobResponse(BaseModel):
     error: str = ""
 
 
+async def _validate_config_file(
+    config: tilecloud_chain.DatedConfig,
+) -> tuple[list[str], list[str]]:
+    """Validate the config and return structure errors and deprecation warnings."""
+    structure_errors: list[str] = []
+    deprecation_warnings: list[str] = []
+
+    if not config.file:
+        return structure_errors, deprecation_warnings
+
+    schema_data = pkgutil.get_data("tilecloud_chain", "schema.json")
+    assert schema_data
+    errors, _ = jsonschema_validator.validate(
+        str(config.file),
+        cast("dict[str, Any]", config.config),
+        json.loads(schema_data),
+    )
+    structure_errors = errors or []
+
+    layers = config.config.get("layers", {})
+    for layer_name, layer in layers.items():
+        if isinstance(layer, dict):
+            if "grid" in layer:
+                deprecation_warnings.append(
+                    f"Layer '{layer_name}' uses 'grid' (deprecated), use 'grids' instead."
+                )
+            if layer.get("type") == "mapnik" and "wms_url" in layer:
+                deprecation_warnings.append(f"Layer '{layer_name}' uses 'wms_url' (deprecated).")
+
+    return structure_errors, deprecation_warnings
+
+
 @app.get("/", response_class=HTMLResponse)
 async def admin_index(
     request: Request,
@@ -166,6 +200,11 @@ async def admin_index(
     main_server_config = main_config.config.get("server", {})
     jobs_status = None
     queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
+
+    structure_errors: list[str] = []
+    deprecation_warnings: list[str] = []
+    if config.file and has_access:
+        structure_errors, deprecation_warnings = await _validate_config_file(config)
 
     if queue_store == "postgresql" and has_access and _postgresql_store and config.file:
         jobs_status = await _postgresql_store.get_status(config.file)
@@ -192,6 +231,8 @@ async def admin_index(
         "footer": main_server_config.get("admin_footer") if has_access else None,
         "footer_classes": main_server_config.get("admin_footer_classes", ""),
         "urlencode": urllib.parse.urlencode,
+        "structure_errors": structure_errors,
+        "deprecation_warnings": deprecation_warnings,
     }
     return _templates.TemplateResponse("admin_index.html", context)
 
