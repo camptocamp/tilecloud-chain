@@ -2,7 +2,6 @@
 Automatically generated file from a JSON schema.
 """
 
-
 from typing import TypedDict
 
 
@@ -10,9 +9,8 @@ DEFAULT_CONCURRENT_LIMIT_DEFAULT = 1
 r""" Default value of the field path 'Default values concurrent' """
 
 
-
 class DefaultValues(TypedDict, total=False):
-    r""" Default values. """
+    r"""Default values."""
 
     concurrent: int
     r"""
@@ -24,9 +22,8 @@ class DefaultValues(TypedDict, total=False):
     """
 
 
-
 class Host(TypedDict, total=False):
-    r""" Host. """
+    r"""Host."""
 
     concurrent: int
     r"""
@@ -34,7 +31,6 @@ class Host(TypedDict, total=False):
 
     Limit of concurrent request on the host
     """
-
 
 
 class HostLimit(TypedDict, total=False):
@@ -49,4 +45,3 @@ class HostLimit(TypedDict, total=False):
 
     hosts: dict[str, "Host"]
     r""" Hosts. """
-

@@ -332,6 +332,8 @@ class Server:
         )
         if store is None:
             return None
+        if dated_store is not None:
+            await dated_store.store.close()
         self.store_cache[cache_key] = DatedStore(store, config.mtime)
         return store
 
