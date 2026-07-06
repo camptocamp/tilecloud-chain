@@ -34,15 +34,16 @@ class MultiTileStore(AsyncTileStore):
     async def _get_store(self, config_file: Path, layer: str, grid_name: str) -> AsyncTileStore | None:
         stat_info = await config_file.stat()
         mtime = stat_info.st_mtime
-        store = self.stores.get((config_file, layer, grid_name))
-        if store is not None and store.mtime != mtime:
-            store = None
-        if store is None:
+        dated_store = self.stores.get((config_file, layer, grid_name))
+        if dated_store is not None and dated_store.mtime != mtime:
+            await dated_store.store.close()
+            dated_store = None
+        if dated_store is None:
             tile_store = await self.get_store(config_file, layer, grid_name)
             if tile_store is not None:
-                store = _DatedStore(mtime, tile_store)
-                self.stores[(config_file, layer, grid_name)] = store
-        return store.store if store is not None else None
+                dated_store = _DatedStore(mtime, tile_store)
+                self.stores[(config_file, layer, grid_name)] = dated_store
+        return dated_store.store if dated_store is not None else None
 
     async def _get_store_tile(self, tile: Tile) -> AsyncTileStore | None:
         """Return the store corresponding to the tile."""

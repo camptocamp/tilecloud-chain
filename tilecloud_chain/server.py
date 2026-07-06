@@ -331,7 +331,12 @@ class Server:
             read_only=True,
         )
         if store is None:
+            if dated_store is not None:
+                await dated_store.store.close()
+                del self.store_cache[cache_key]
             return None
+        if dated_store is not None:
+            await dated_store.store.close()
         self.store_cache[cache_key] = DatedStore(store, config.mtime)
         return store
 
