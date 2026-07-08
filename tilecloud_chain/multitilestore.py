@@ -128,6 +128,13 @@ class MultiTileStore(AsyncTileStore):
         keys = {f"{config_file}:{layer}:{grid}" for config_file, layer, grid in self.stores}
         return f"{self.__class__.__name__}({', '.join(stores)} - {', '.join(keys)})"
 
+    async def close(self) -> None:
+        """Close all cached tile stores."""
+        for dated_store in self.stores.values():
+            if dated_store is not None:
+                await dated_store.store.close()
+        self.stores.clear()
+
     @staticmethod
     def _get_layer(tile: Tile | None) -> tuple[str, str]:
         assert tile is not None
