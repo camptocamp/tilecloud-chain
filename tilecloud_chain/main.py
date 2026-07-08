@@ -84,6 +84,9 @@ async def _lifespan(main_app: FastAPI) -> AsyncGenerator[None, None]:
 
     yield
 
+    _LOGGER.info("Shutting down the application")
+    await server.close()
+
 
 # Core Application Instance
 app = FastAPI(title="TileCloud-chain WMTS API", lifespan=_lifespan)
