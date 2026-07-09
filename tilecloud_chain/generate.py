@@ -82,6 +82,7 @@ class Generate:
         self._count_tiles_stored: CountSize | None = None
         self._queue_tilestore: AsyncTileStore | None = None
         self._cache_tilestore: AsyncTileStore | None = None
+        self._database_loggers: list[DatabaseLoggerCommon] = []
         self._options = options
         self._gene = gene
         self.out = out
@@ -126,6 +127,8 @@ class Generate:
 
         await self.generate_consume()
         await self.generate_resume(layer_name)
+        for database_logger in self._database_loggers:
+            await database_logger.close()
 
     async def _generate_init(self) -> None:
         if self._options.role != "server":
@@ -144,12 +147,12 @@ class Generate:
 
         main_config = await self._gene.get_main_config()
         if self._options.role in ("local", "master") and "logging" in main_config.config:
-            self._gene.imap(
-                DatabaseLoggerInit(
-                    main_config.config["logging"],
-                    self._options is not None and self._options.daemon,
-                ),
+            database_logger = DatabaseLoggerInit(
+                main_config.config["logging"],
+                self._options is not None and self._options.daemon,
             )
+            self._database_loggers.append(database_logger)
+            self._gene.imap(database_logger)
 
         if self._options.local_process_number is not None:
             await self.add_local_process_filter()
@@ -287,12 +290,12 @@ class Generate:
 
         main_config = await self._gene.get_main_config()
         if self._options.role in ("local", "slave") and "logging" in main_config.config:
-            self._gene.imap(
-                DatabaseLogger(
-                    main_config.config["logging"],
-                    self._options is not None and self._options.daemon,
-                ),
+            database_logger = DatabaseLogger(
+                main_config.config["logging"],
+                self._options is not None and self._options.daemon,
             )
+            self._database_loggers.append(database_logger)
+            self._gene.imap(database_logger)
             self._gene.init(
                 (self._queue_tilestore if "error_file" in main_config.config["generation"] else None),
                 self._options.daemon,
@@ -365,12 +368,12 @@ class Generate:
             self._gene.imap(delete_from_store)
 
         if self._options.role in ("local", "slave") and "logging" in main_config.config:
-            self._gene.imap(
-                DatabaseLogger(
-                    main_config.config["logging"],
-                    self._options is not None and self._options.daemon,
-                ),
+            database_logger = DatabaseLogger(
+                main_config.config["logging"],
+                self._options is not None and self._options.daemon,
             )
+            self._database_loggers.append(database_logger)
+            self._gene.imap(database_logger)
         self._gene.init(self._queue_tilestore, daemon=self._options.daemon)
 
     async def generate_consume(self) -> None:

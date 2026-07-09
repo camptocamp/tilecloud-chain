@@ -234,10 +234,13 @@ class Server:
         self.store_cache: dict[tuple[Path, str, str], DatedStore] = {}
 
     async def close(self) -> None:
-        """Close all cached tile stores."""
+        """Close all cached tile stores and S3 clients."""
         for dated_store in self.store_cache.values():
             await dated_store.store.close()
         self.store_cache.clear()
+        for s3_client in self.s3_client_cache.values():
+            await s3_client.close()
+        self.s3_client_cache.clear()
 
     @staticmethod
     def get_expires_hours(config: tilecloud_chain.DatedConfig) -> float:
@@ -847,6 +850,8 @@ async def startup(_main_app: FastAPI) -> None:
 async def close() -> None:
     """Close the server resources."""
     await server.close()
+    if _TILEGENERATION is not None:
+        await _TILEGENERATION.close()
 
 
 async def get_host_name(request: Request) -> str:

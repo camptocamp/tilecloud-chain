@@ -86,6 +86,7 @@ async def _lifespan(main_app: FastAPI) -> AsyncGenerator[None, None]:
 
     _LOGGER.info("Shutting down the application")
     await server.close()
+    await admin.close()
 
 
 # Core Application Instance

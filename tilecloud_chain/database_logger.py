@@ -94,6 +94,12 @@ class DatabaseLoggerCommon:
         self.schema = schema
         self.table = table
 
+    async def close(self) -> None:
+        """Close the database connection."""
+        if self.connection is not None:
+            await self.connection.close()
+            self.connection = None
+
 
 class DatabaseLoggerInit(DatabaseLoggerCommon):
     """Log the generated tiles in a database."""
