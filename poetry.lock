@@ -40,18 +40,6 @@ files = [
 caio = ">=0.9.0,<0.10.0"
 
 [[package]]
-name = "aiofiles"
-version = "25.1.0"
-description = "File support for asyncio."
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "aiofiles-25.1.0-py3-none-any.whl", hash = "sha256:abe311e527c862958650f9438e859c1fa7568a141b22abcd015e120e86a85695"},
-    {file = "aiofiles-25.1.0.tar.gz", hash = "sha256:a8d728f0a29de45dc521f18f07297428d56992a742f0cd2701ba86e44d23d5b2"},
-]
-
-[[package]]
 name = "aiohappyeyeballs"
 version = "2.6.1"
 description = "Happy Eyeballs for asyncio"
@@ -587,21 +575,21 @@ virtualenv = ["virtualenv (>=20.17) ; python_version >= \"3.10\" and python_vers
 
 [[package]]
 name = "c2casgiutils"
-version = "0.11.0"
+version = "0.12.0"
 description = "Common utilities for Camptocamp ASGI applications"
 optional = false
-python-versions = ">=3.10"
+python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "c2casgiutils-0.11.0-py3-none-any.whl", hash = "sha256:ec614f4e221bd08f5ab102a2ee837bbbcab4665889c9fe789bc67d508442ba91"},
-    {file = "c2casgiutils-0.11.0.tar.gz", hash = "sha256:f2540072317c0fc8dbeeb931347c3823521ac8be448798e8d96a09bbeea69ae0"},
+    {file = "c2casgiutils-0.12.0-py3-none-any.whl", hash = "sha256:fc004f0198d79f5c80482450282bbd407e53e0fc967fe6fcd447c263d5cc22f6"},
+    {file = "c2casgiutils-0.12.0.tar.gz", hash = "sha256:3c49774ddad9e72bc25d0cb8ffa7a060465ddd7c31ad7e020ab4713d6f33b892"},
 ]
 
 [package.dependencies]
 aiofile = "*"
-aiofiles = "*"
 aiohttp = "*"
 alembic = {version = "*", optional = true, markers = "extra == \"all\""}
+anyio = "*"
 fastapi = {version = "*", extras = ["standard"], optional = true, markers = "extra == \"all\""}
 prometheus-client = "*"
 prometheus-fastapi-instrumentator = "*"
@@ -6503,4 +6491,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.15"
-content-hash = "07c3a243af1685792c2d057ce27d958d3687b02690a7c00ea4e060fe490e9a96"
+content-hash = "0013cd160e4aab77cbebd36beed338344487fbabc16aeb6f2f73e00fd42e640b"
