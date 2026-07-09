@@ -43,7 +43,7 @@ import sqlalchemy.sql.functions
 from anyio import Path
 from prometheus_client import Counter, Gauge, Summary
 from sqlalchemy import JSON, DateTime, Integer, Unicode, and_, delete, select, text, update
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from tilecloud import Tile, TileCoord
 
@@ -201,126 +201,129 @@ async def _start_job(
     allowed_arguments: list[str],
 ) -> None:
     engine = create_async_engine(sqlalchemy_url)
-    SessionMaker = async_sessionmaker(engine)  # noqa
+    try:
+        SessionMaker = async_sessionmaker(engine)  # noqa
 
-    async with SessionMaker() as session:
-        result = await session.execute(select(Job).where(Job.id == job_id))
-        job = result.scalar()
-    assert job is not None
-
-    command = shlex.split(job.command)
-    command0 = command[0].replace("_", "-")
-
-    if command0 not in allowed_commands:
         async with SessionMaker() as session:
             result = await session.execute(select(Job).where(Job.id == job_id))
             job = result.scalar()
-            assert job is not None
-            job.status = _STATUS_ERROR
-            job.message = (
-                f"The given command '{command0}' is not allowed, allowed command are: "
-                f"{', '.join(allowed_commands)}"
-            )
-            await session.commit()
-        return
+        assert job is not None
 
-    add_role = False
-    arguments = {c.split("=")[0]: c.split("=")[1:] for c in command[1:]}
-    if command0 == "generate-tiles":
-        add_role = "--get-hash" not in arguments and "--get-bbox" not in arguments
+        command = shlex.split(job.command)
+        command0 = command[0].replace("_", "-")
 
-    for arg in arguments:
-        if arg.startswith("-") and arg not in allowed_arguments:
+        if command0 not in allowed_commands:
             async with SessionMaker() as session:
                 result = await session.execute(select(Job).where(Job.id == job_id))
                 job = result.scalar()
                 assert job is not None
                 job.status = _STATUS_ERROR
-                job.message = f"The argument {arg} is not allowed, allowed arguments are: {', '.join(allowed_arguments)}"
+                job.message = (
+                    f"The given command '{command0}' is not allowed, allowed command are: "
+                    f"{', '.join(allowed_commands)}"
+                )
                 await session.commit()
             return
 
-    final_command = [
-        command0,
-        f"--config={job.config_filename}",
-    ]
-    if add_role:
-        final_command += ["--role=master", "--quiet", f"--job-id={job.id}"]
-    final_command += command[1:]
+        add_role = False
+        arguments = {c.split("=")[0]: c.split("=")[1:] for c in command[1:]}
+        if command0 == "generate-tiles":
+            add_role = "--get-hash" not in arguments and "--get-bbox" not in arguments
 
-    display_command = shlex.join(final_command)
-    env: dict[str, str] = {**os.environ, "FRONTEND": "noninteractive"}
+        for arg in arguments:
+            if arg.startswith("-") and arg not in allowed_arguments:
+                async with SessionMaker() as session:
+                    result = await session.execute(select(Job).where(Job.id == job_id))
+                    job = result.scalar()
+                    assert job is not None
+                    job.status = _STATUS_ERROR
+                    job.message = f"The argument {arg} is not allowed, allowed arguments are: {', '.join(allowed_arguments)}"
+                    await session.commit()
+                return
 
-    main = None
-    if final_command[0] in ["generate-tiles", "generate_tiles"]:
-        main = generate.async_main
-    elif final_command[0] in ["generate-controller", "generate_controller"]:
-        main = controller.async_main
-    if main is not None:
-        # Delete potentially already existing queue entries
-        async with SessionMaker() as session:
-            await session.execute(delete(Queue).where(Queue.job_id == job_id))
-            await session.commit()
+        final_command = [
+            command0,
+            f"--config={job.config_filename}",
+        ]
+        if add_role:
+            final_command += ["--role=master", "--quiet", f"--job-id={job.id}"]
+        final_command += command[1:]
 
         display_command = shlex.join(final_command)
-        error = False
-        out = io.StringIO()
-        try:
-            _LOGGER.info("Running the command `%s` using the function directly", display_command)
-            await main(final_command, out)
-            _LOGGER.info("Successfully ran the command `%s` using the function directly", display_command)
-        except SystemExit as exception:
-            if exception.code is not None and exception.code != 0:
+        env: dict[str, str] = {**os.environ, "FRONTEND": "noninteractive"}
+
+        main = None
+        if final_command[0] in ["generate-tiles", "generate_tiles"]:
+            main = generate.async_main
+        elif final_command[0] in ["generate-controller", "generate_controller"]:
+            main = controller.async_main
+        if main is not None:
+            # Delete potentially already existing queue entries
+            async with SessionMaker() as session:
+                await session.execute(delete(Queue).where(Queue.job_id == job_id))
+                await session.commit()
+
+            display_command = shlex.join(final_command)
+            error = False
+            out = io.StringIO()
+            try:
+                _LOGGER.info("Running the command `%s` using the function directly", display_command)
+                await main(final_command, out)
+                _LOGGER.info("Successfully ran the command `%s` using the function directly", display_command)
+            except SystemExit as exception:
+                if exception.code is not None and exception.code != 0:
+                    _LOGGER.exception("Error while running the command `%s`", display_command)
+                    error = True
+            except Exception:  # pylint: disable=broad-exception-caught
                 _LOGGER.exception("Error while running the command `%s`", display_command)
                 error = True
-        except Exception:  # pylint: disable=broad-exception-caught
-            _LOGGER.exception("Error while running the command `%s`", display_command)
-            error = True
+
+            async with SessionMaker() as session:
+                result = await session.execute(select(Job).where(Job.id == job_id).with_for_update(of=Job))
+                job = result.scalar()
+                if job is not None:
+                    count_result = await session.scalar(
+                        select(sqlalchemy.sql.functions.count(Queue.id)).where(Queue.job_id == job_id),
+                    )
+                    assert count_result is not None
+                    job.meta_tiles_total = count_result
+                    job.status = _STATUS_ERROR if error else _STATUS_STARTED
+                    job.message = out.getvalue()[: settings.max_output_length]
+                    if error:
+                        job.tiles_started_at = None
+                await session.commit()
+            return
+
+        _LOGGER.info("Run the command `%s`", display_command)
+
+        completed_process = await asyncio.create_subprocess_exec(
+            *final_command,
+            env=env,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await completed_process.communicate()
 
         async with SessionMaker() as session:
             result = await session.execute(select(Job).where(Job.id == job_id).with_for_update(of=Job))
             job = result.scalar()
-            if job is not None:
-                count_result = await session.scalar(
-                    select(sqlalchemy.sql.functions.count(Queue.id)).where(Queue.job_id == job_id),
-                )
-                assert count_result is not None
-                job.meta_tiles_total = count_result
-                job.status = _STATUS_ERROR if error else _STATUS_STARTED
-                job.message = out.getvalue()[: settings.max_output_length]
-                if error:
-                    job.tiles_started_at = None
+            assert job is not None
+            job.status = _STATUS_DONE if completed_process.returncode == 0 else _STATUS_ERROR
+            job.message = stdout.decode()
+            if stderr:
+                job.message += "\nError:\n" + stderr.decode()
             await session.commit()
-        return
 
-    _LOGGER.info("Run the command `%s`", display_command)
-
-    completed_process = await asyncio.create_subprocess_exec(
-        *final_command,
-        env=env,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await completed_process.communicate()
-
-    async with SessionMaker() as session:
-        result = await session.execute(select(Job).where(Job.id == job_id).with_for_update(of=Job))
-        job = result.scalar()
-        assert job is not None
-        job.status = _STATUS_DONE if completed_process.returncode == 0 else _STATUS_ERROR
-        job.message = stdout.decode()
-        if stderr:
-            job.message += "\nError:\n" + stderr.decode()
-        await session.commit()
-
-    if completed_process.returncode != 0:
-        _LOGGER.warning(
-            "The command `%s` exited with an error code: %s\nstdout:\n%s\nstderr:\n%s",
-            display_command,
-            completed_process.returncode,
-            stdout.decode(),
-            stderr.decode(),
-        )
+        if completed_process.returncode != 0:
+            _LOGGER.warning(
+                "The command `%s` exited with an error code: %s\nstdout:\n%s\nstderr:\n%s",
+                display_command,
+                completed_process.returncode,
+                stdout.decode(),
+                stderr.decode(),
+            )
+    finally:
+        await engine.dispose()
 
 
 class PostgresqlTileStore(AsyncTileStore):
@@ -346,6 +349,7 @@ class PostgresqlTileStore(AsyncTileStore):
         self._insert_lock = asyncio.Lock()
         self._flush_lock = asyncio.Lock()
         self.SessionMaker: async_sessionmaker[AsyncSession] | None = None  # pylint: disable=invalid-name
+        self._engine: AsyncEngine | None = None
 
     async def _flush_put_buffer(self, session: AsyncSession | None = None) -> None:
         async with self._flush_lock:
@@ -376,9 +380,9 @@ class PostgresqlTileStore(AsyncTileStore):
 
     async def init(self) -> None:
         """Initialize the store."""
-        engine = create_async_engine(self.sqlalchemy_url)
+        self._engine = create_async_engine(self.sqlalchemy_url)
 
-        async with engine.connect() as connection:
+        async with self._engine.connect() as connection:
             await connection.execute(sqlalchemy.schema.CreateSchema(_schema, if_not_exists=True))
             await connection.run_sync(Base.metadata.create_all)
             await connection.execute(
@@ -394,7 +398,7 @@ class PostgresqlTileStore(AsyncTileStore):
             )
             await connection.commit()
 
-        self.SessionMaker = async_sessionmaker(engine)  # pylint: disable=invalid-name
+        self.SessionMaker = async_sessionmaker(self._engine)  # pylint: disable=invalid-name
 
     async def create_job(
         self,
@@ -799,8 +803,10 @@ class PostgresqlTileStore(AsyncTileStore):
         return tile
 
     async def close(self) -> None:
-        """Flush pending queue inserts."""
+        """Flush pending queue inserts and close the engine."""
         await self._flush_put_buffer()
+        if self._engine is not None:
+            await self._engine.dispose()
 
     async def delete_one(self, tile: Tile) -> Tile:
         """Delete the meta tile from the queue."""

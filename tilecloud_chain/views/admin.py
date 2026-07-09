@@ -80,6 +80,14 @@ async def startup(_main_app: FastAPI) -> None:
         _postgresql_store = await tilecloud_chain.store.postgresql.get_postgresql_queue_store(main_config)
 
 
+async def close() -> None:
+    """Close the admin resources."""
+    global _postgresql_store  # noqa: PLW0603
+    if _postgresql_store is not None:
+        await _postgresql_store.close()
+        _postgresql_store = None
+
+
 async def _get_postgresql_store() -> tilecloud_chain.store.postgresql.PostgresqlTileStore:
     """Get the PostgreSQL store."""
     if not _postgresql_store:
