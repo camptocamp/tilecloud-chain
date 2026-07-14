@@ -92,9 +92,9 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libhdf4-0-alt: 4.2.16-4build1
   ubuntu_24_04/libhdf5-103-1t64: 1.10.10+repack-3.1ubuntu4
   ubuntu_24_04/libhdf5-hl-100t64: 1.10.10+repack-3.1ubuntu4
-  ubuntu_24_04/libheif-plugin-aomdec: 1.17.6-1ubuntu4.4
-  ubuntu_24_04/libheif-plugin-libde265: 1.17.6-1ubuntu4.4
-  ubuntu_24_04/libheif1: 1.17.6-1ubuntu4.4
+  ubuntu_24_04/libheif-plugin-aomdec: 1.17.6-1ubuntu4.6
+  ubuntu_24_04/libheif-plugin-libde265: 1.17.6-1ubuntu4.6
+  ubuntu_24_04/libheif1: 1.17.6-1ubuntu4.6
   ubuntu_24_04/libhogweed6t64: 3.9.1-2.2build1.1
   ubuntu_24_04/libicu74: 74.2-1ubuntu3.1
   ubuntu_24_04/libidn2-0: 2.3.7-2build1.1
