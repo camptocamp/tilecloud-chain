@@ -132,7 +132,10 @@ class MultiTileStore(AsyncTileStore):
         """Close all cached tile stores."""
         for dated_store in self.stores.values():
             if dated_store is not None:
-                await dated_store.store.close()
+                try:
+                    await dated_store.store.close()
+                except Exception:  # noqa: BLE001
+                    logger.warning("Error while closing tile store", exc_info=True)
         self.stores.clear()
 
     @staticmethod

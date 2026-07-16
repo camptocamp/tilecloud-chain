@@ -235,11 +235,17 @@ class Server:
 
     async def close(self) -> None:
         """Close all cached tile stores and S3 clients."""
-        for dated_store in self.store_cache.values():
-            await dated_store.store.close()
+        for dated_store in list(self.store_cache.values()):
+            try:
+                await dated_store.store.close()
+            except Exception:  # noqa: BLE001
+                _LOGGER.warning("Error while closing tile store", exc_info=True)
         self.store_cache.clear()
         for s3_client in self.s3_client_cache.values():
-            await s3_client.close()
+            try:
+                await s3_client.close()
+            except Exception:  # noqa: BLE001
+                _LOGGER.warning("Error while closing S3 client", exc_info=True)
         self.s3_client_cache.clear()
 
     @staticmethod
