@@ -575,14 +575,14 @@ virtualenv = ["virtualenv (>=20.17) ; python_version >= \"3.10\" and python_vers
 
 [[package]]
 name = "c2casgiutils"
-version = "0.12.0"
+version = "0.13.0"
 description = "Common utilities for Camptocamp ASGI applications"
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "c2casgiutils-0.12.0-py3-none-any.whl", hash = "sha256:fc004f0198d79f5c80482450282bbd407e53e0fc967fe6fcd447c263d5cc22f6"},
-    {file = "c2casgiutils-0.12.0.tar.gz", hash = "sha256:3c49774ddad9e72bc25d0cb8ffa7a060465ddd7c31ad7e020ab4713d6f33b892"},
+    {file = "c2casgiutils-0.13.0-py3-none-any.whl", hash = "sha256:ade3f06fe6a4aa37bf836b84110c828a6101ea46c6979efefb54f4a4246401b7"},
+    {file = "c2casgiutils-0.13.0.tar.gz", hash = "sha256:2f308a48881aca3d6672156f5b15eecd933aa1f6371600518df899bc3344c909"},
 ]
 
 [package.dependencies]
@@ -6491,4 +6491,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.15"
-content-hash = "0013cd160e4aab77cbebd36beed338344487fbabc16aeb6f2f73e00fd42e640b"
+content-hash = "e5283acc41d211cccf5d410e0a0a2fc3487f507bb32388c23966d1469747a6f0"
