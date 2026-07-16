@@ -1,6 +1,7 @@
 import logging
 from collections.abc import AsyncIterator
 
+import aiohttp
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import ContentSettings
 from azure.storage.blob.aio import BlobServiceClient, ContainerClient
@@ -55,11 +56,18 @@ class AzureStorageBlobTileStore(AsyncTileStore):
         self.dry_run = dry_run
         self.cache_control = cache_control
 
+    async def _close_client(self, client: ContainerClient | BlobServiceClient) -> None:
+        """Close an Azure client, catching and logging SSL shutdown errors."""
+        try:
+            await client.close()
+        except (TimeoutError, aiohttp.ClientConnectionError):
+            _LOGGER.warning("Ignored error during Azure client close", exc_info=True)
+
     async def close(self) -> None:
         """Close the Azure container client session."""
-        await self.container_client.close()
+        await self._close_client(self.container_client)
         if self._blob_service_client is not None:
-            await self._blob_service_client.close()
+            await self._close_client(self._blob_service_client)
 
     async def __contains__(self, tile: Tile) -> bool:
         """Return true if this store contains ``tile``."""
