@@ -37,7 +37,7 @@ from copy import copy
 from dataclasses import dataclass
 from io import BytesIO
 from typing import Annotated, Any, Literal, NamedTuple, cast
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 import aiobotocore.session
 import aiohttp
@@ -1295,6 +1295,16 @@ async def _get(path: str, cache: tilecloud_chain.configuration.Cache) -> bytes |
         return await p.read_bytes()
 
 
+def _get_legend_href(base_url: str, path: str) -> str:
+    parsed = urlparse(path)
+    if parsed.scheme or parsed.netloc:
+        path = parsed.path.lstrip("/")
+        base_path = urlparse(base_url).path.lstrip("/")
+        if path.startswith(base_path):
+            path = path.removeprefix(base_path)
+    return base_url + path
+
+
 async def _get_layer_legend(
     layer_name: str,
     layer: configuration.Layer,
@@ -1350,7 +1360,7 @@ async def _get_layer_legend(
         return [
             configuration.LayerLegendItem(
                 mime_type=legend_mime,
-                href=base_url + legend_metadata["path"],
+                href=_get_legend_href(base_url, legend_metadata["path"]),
                 min_resolution=legend_metadata.get("min_resolution"),
                 max_resolution=legend_metadata.get("max_resolution"),
                 width=legend_metadata["width"],
