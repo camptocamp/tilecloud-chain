@@ -547,20 +547,10 @@
             if (!gridId) {
               return null;
             }
-            const options = (function () {
-              try {
-                return ol.source.WMTS.optionsFromCapabilities(result, {
-                  layer: wmtsLayer.Identifier,
-                  matrixSet: gridId,
-                });
-              } catch (error) {
-                console.error(
-                  'Error in optionsFromCapabilities for layer "%s" matrixSet "%s":',
-                  wmtsLayer.Identifier, gridId, error
-                );
-                return null;
-              }
-            })();
+            const options = ol.source.WMTS.optionsFromCapabilities(result, {
+              layer: wmtsLayer.Identifier,
+              matrixSet: gridId,
+            });
             if (!options || !options.tileGrid) {
               return null;
             }
@@ -585,19 +575,9 @@
           return definitions;
         }
 
-        const fallbackOptions = (function () {
-            try {
-              return ol.source.WMTS.optionsFromCapabilities(result, {
-                layer: wmtsLayer.Identifier,
-              });
-            } catch (error) {
-              console.error(
-                'Error in fallback optionsFromCapabilities for layer "%s":',
-                wmtsLayer.Identifier, error
-              );
-              return null;
-            }
-          })();
+        const fallbackOptions = ol.source.WMTS.optionsFromCapabilities(result, {
+          layer: wmtsLayer.Identifier,
+        });
         if (!fallbackOptions || !fallbackOptions.tileGrid) {
           return [];
         }
@@ -630,11 +610,6 @@
           for (const wmtsLayer of result.Contents.Layer) {
             const gridDefinitions = getLayerGridDefinitions(result, wmtsLayer);
             if (gridDefinitions.length === 0) {
-              console.warn(
-                'Skipping layer "%s" (%s): no grid definitions found',
-                wmtsLayer.Identifier,
-                wmtsLayer.Title || wmtsLayer.Identifier
-              );
               continue;
             }
             const selectedGridId =
