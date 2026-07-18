@@ -616,12 +616,19 @@
 
       const requestedDimensions = getUrlDimensions();
 
-      fetch('{{ url_for("wmts_capabilities", version="1.0.0") }}')
+      fetch('{{ url_for("wmts_capabilities", version="1.0.0") }}', {cache: 'no-cache'})
         .then(function (response) {
           return response.text();
         })
         .then(function (text) {
           const result = parser.read(text);
+
+          console.log('Parsed WMTS capabilities layers:',
+            result?.Contents?.Layer?.map(function (l) {
+              return l.Identifier;
+            })
+          );
+          console.log('Full parsed result:', result);
 
           let layers = [];
           let tileGridOptions = {};
