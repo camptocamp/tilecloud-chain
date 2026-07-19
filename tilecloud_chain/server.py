@@ -644,8 +644,13 @@ class Server:
                             "srs",
                             configuration.SRS_DEFAULT,
                         ),
-                        "BBOX": _TILEGENERATION.get_grid(config, params["TILEMATRIXSET"]).extent(
-                            tile.tilecoord,
+                        "BBOX": ",".join(
+                            [
+                                str(v)
+                                for v in _TILEGENERATION.get_grid(config, params["TILEMATRIXSET"]).extent(
+                                    tile.tilecoord,
+                                )
+                            ]
                         ),
                         "X": params["I"],
                         "Y": params["J"],
