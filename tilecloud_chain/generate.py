@@ -189,11 +189,10 @@ class Generate:
         assert self._gene.config_file is not None
         config = await self._gene.get_config(self._gene.config_file)
         if layer_name not in config.config.get("layers", {}):
-            _LOGGER.warning(
-                "Layer '%s' not found in the configuration file '%s'",
-                layer_name,
-                self._gene.config_file,
-            )
+            msg = f"Layer '{layer_name}' not found in the configuration file '{self._gene.config_file}'"
+            _LOGGER.warning(msg)
+            if self.out:
+                self.out.write(msg + "\n")
             sys.exit(1)
         layer = config.config["layers"][layer_name]
 
@@ -205,10 +204,10 @@ class Generate:
                 print(f"Tile bounds: [{','.join([str(b) for b in bounds])}]", file=self.out)
                 sys.exit()
             except ValueError:
-                _LOGGER.exception(
-                    "Tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n",
-                    self._options.get_bbox,
-                )
+                msg = f"Tile '{self._options.get_bbox}' is not in the format 'z/x/y' or z/x/y:+n/+n"
+                _LOGGER.exception(msg)
+                if self.out:
+                    self.out.write(msg + "\n")
                 sys.exit(1)
 
         if self._options.tile:
@@ -217,10 +216,10 @@ class Generate:
                 grid_name = tilecloud_chain.get_grid_name(config, layer_name, self._options.grid)
                 self._gene.set_tilecoords(config, {grid_name: [tilecoord]}, layer_name)
             except ValueError:
-                _LOGGER.exception(
-                    "Tile '%s' is not in the format 'z/x/y' or z/x/y:+n/+n",
-                    self._options.tile,
-                )
+                msg = f"Tile '{self._options.tile}' is not in the format 'z/x/y' or z/x/y:+n/+n"
+                _LOGGER.exception(msg)
+                if self.out:
+                    self.out.write(msg + "\n")
                 sys.exit(1)
             return
 
@@ -235,11 +234,10 @@ class Generate:
 
         elif self._options.role == "hash":
             if layer_name not in config.config.get("layers", {}):
-                _LOGGER.warning(
-                    "Layer '%s' not found in the configuration file '%s'",
-                    layer_name,
-                    self._gene.config_file,
-                )
+                msg = f"Layer '{layer_name}' not found in the configuration file '{self._gene.config_file}'"
+                _LOGGER.warning(msg)
+                if self.out:
+                    self.out.write(msg + "\n")
                 sys.exit(1)
             layer = config.config["layers"][layer_name]
             try:
@@ -420,11 +418,12 @@ class Generate:
             if layer_name is not None:
                 assert config is not None
                 if layer_name not in config.config.get("layers", {}):
-                    _LOGGER.warning(
-                        "Layer '%s' not found in the configuration file '%s'",
-                        layer_name,
-                        self._gene.config_file,
+                    msg = (
+                        f"Layer '{layer_name}' not found in the configuration file '{self._gene.config_file}'"
                     )
+                    _LOGGER.warning(msg)
+                    if self.out:
+                        self.out.write(msg + "\n")
                     sys.exit(1)
                 layer = config.config["layers"][layer_name]
                 all_dimensions = self._gene.get_all_dimensions(layer)
@@ -767,7 +766,10 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         options = parser.parse_args(args[1:] if args else sys.argv[1:])
 
         if options.job_id is not None and options.job_title is not None:
-            _LOGGER.error("The --job-id and --job-title options are mutually exclusive")
+            msg = "The --job-id and --job-title options are mutually exclusive"
+            _LOGGER.error(msg)
+            if out:
+                out.write(msg + "\n")
             sys.exit(1)
 
         if options.detach:
@@ -811,19 +813,31 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
                 )
 
         if options.tiles is not None and options.tile is not None:
-            _LOGGER.error("The --tile and --tiles options are mutually exclusive")
+            msg = "The --tile and --tiles options are mutually exclusive"
+            _LOGGER.error(msg)
+            if out:
+                out.write(msg + "\n")
             sys.exit(1)
 
         if options.tiles is not None and options.role not in ["local", "master"]:
-            _LOGGER.error("The --tiles option work only with role local or master")
+            msg = "The --tiles option work only with role local or master"
+            _LOGGER.error(msg)
+            if out:
+                out.write(msg + "\n")
             sys.exit(1)
 
         if options.tile is not None and options.role not in ["local", "master"]:
-            _LOGGER.error("The --tile option work only with role local or master")
+            msg = "The --tile option work only with role local or master"
+            _LOGGER.error(msg)
+            if out:
+                out.write(msg + "\n")
             sys.exit(1)
 
         if options.tile is not None and options.layer is None:
-            _LOGGER.error("With --tile option you need to specify a layer")
+            msg = "With --tile option you need to specify a layer"
+            _LOGGER.error(msg)
+            if out:
+                out.write(msg + "\n")
             sys.exit(1)
 
         auto_created_postgresql_job = await _ensure_postgresql_job_id(options, gene, args)
@@ -836,10 +850,16 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
             elif options.layer:
                 await generate.gene(options.layer)
             elif options.get_bbox:
-                _LOGGER.error("With --get-bbox option you need to specify a layer")
+                msg = "With --get-bbox option you need to specify a layer"
+                _LOGGER.error(msg)
+                if out:
+                    out.write(msg + "\n")
                 sys.exit(1)
             elif options.get_hash:
-                _LOGGER.error("With --get-hash option you need to specify a layer")
+                msg = "With --get-hash option you need to specify a layer"
+                _LOGGER.error(msg)
+                if out:
+                    out.write(msg + "\n")
                 sys.exit(1)
             elif options.config:
                 for layer in config.config["generation"].get(
