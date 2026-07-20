@@ -779,6 +779,9 @@ mode we don't catch exceptions, and we don't log time messages.
 
 ``--test=<n>`` or ``-t <n>``: used to generate only ``<n>`` tiles, useful for test.
 
+``--grid=<name>`` or ``-g <name>``: the grid to use, if not specified, the default grid for the layer
+in the config file is used.
+
 
 Mutualized
 ----------
