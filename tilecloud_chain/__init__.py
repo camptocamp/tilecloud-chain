@@ -393,6 +393,9 @@ class DatedConfig:
         self.mtime = mtime
         self.file = file
 
+    def __bool__(self) -> bool:
+        return bool(self.config)
+
 
 class DatedGeoms:
     """Geoms with timestamps to be able to invalidate it on configuration change."""
@@ -1052,7 +1055,7 @@ class TileGeneration:
         assert host
         hosts = await self.get_hosts()
         if host not in hosts:
-            _LOGGER.error("Missing host '%s' in global config", host)
+            _LOGGER.warning("No configuration found for host '%s' in global hosts config", host)
             return None
         default_config_file = settings.config_file or Path("tilegeneration/config.yaml")
         config_file = hosts.get(
@@ -1066,7 +1069,7 @@ class TileGeneration:
         """Get the configuration for the given host."""
         config_file = await self.get_host_config_file(host)
         if not config_file:
-            _LOGGER.error("No config file for host %s", host)
+            _LOGGER.warning("No configuration file found for host '%s'", host)
         else:
             _LOGGER.debug("For the host %s, use config file: %s", host, config_file)
         return (
