@@ -1363,7 +1363,7 @@
 
                     html += '<table class="feature-info-table">';
                     Object.entries(props).forEach(function ([key, value]) {
-                      if (key === 'geometry' || key === 'layer' || key === 'layerName' || key === 'boundedBy') {
+                      if (typeof value === 'object' && value !== null) {
                         return;
                       }
                       var displayValue = value !== null && value !== undefined ? String(value) : '';
