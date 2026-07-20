@@ -1002,6 +1002,34 @@
             ]),
           });
 
+          const highlightSource = new ol.source.Vector();
+
+          const highlightLayer = new ol.layer.Vector({
+            source: highlightSource,
+            style: new ol.style.Style({
+              fill: new ol.style.Fill({ color: 'rgba(255, 255, 0, 0.2)' }),
+              stroke: new ol.style.Stroke({ color: '#ff0', width: 2 }),
+              image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({ color: 'rgba(255, 255, 0, 0.3)' }),
+                stroke: new ol.style.Stroke({ color: '#ff0', width: 2 }),
+              }),
+            }),
+            zIndex: Infinity,
+          });
+          map.addLayer(highlightLayer);
+
+          const gmlFormat = new ol.format.WMSGetFeatureInfo();
+
+          const escapeHtml = function (unsafe) {
+            return String(unsafe)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#039;');
+          };
+
           const setActiveLayerByName = function (layerName) {
             map.getLayers().getArray().forEach(function (layer) {
               if (layer.get('type') === 'base') {
@@ -1169,35 +1197,7 @@
                       const nextSource = new ol.source.WMTS({
                         ...(gridDefinition ? gridDefinition.wmtsOptions : {}),
                         dimensions: nextDimensions,
-          });
-
-          const gmlFormat = new ol.format.WMSGetFeatureInfo();
-
-          const highlightSource = new ol.source.Vector();
-
-          const highlightLayer = new ol.layer.Vector({
-            source: highlightSource,
-            style: new ol.style.Style({
-              fill: new ol.style.Fill({ color: 'rgba(255, 255, 0, 0.2)' }),
-              stroke: new ol.style.Stroke({ color: '#ff0', width: 2 }),
-              image: new ol.style.Circle({
-                radius: 6,
-                fill: new ol.style.Fill({ color: 'rgba(255, 255, 0, 0.3)' }),
-                stroke: new ol.style.Stroke({ color: '#ff0', width: 2 }),
-              }),
-            }),
-            zIndex: Infinity,
-          });
-          map.addLayer(highlightLayer);
-
-          const escapeHtml = function (unsafe) {
-            return String(unsafe)
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/"/g, '&quot;')
-              .replace(/'/g, '&#039;');
-          };
+});
                       layer.setSource(nextSource);
                       updateDebugLayer();
                       render();
