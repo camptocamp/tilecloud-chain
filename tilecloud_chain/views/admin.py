@@ -431,6 +431,8 @@ async def admin_test(
     """Test the admin view."""
     host = request.headers.get("host", "localhost")
     config = await gene.get_host_config(host)
+    if not config:
+        raise HTTPException(status_code=404, detail=f"No configuration found for host '{host}'")
     srs = config.config["openlayers"].get("srs", configuration.SRS_DEFAULT)
     proj4js_def = config.config["openlayers"].get("proj4js_def")
     if proj4js_def is None:
