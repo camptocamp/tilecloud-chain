@@ -438,6 +438,15 @@ async def admin_test(
     if proj4js_def is None:
         proj4js_def = pyproj.CRS.from_string(srs).to_proj4()
 
+    srs_definitions: list[dict[str, str]] = [{"srs": srs, "proj4js_def": proj4js_def}]
+    seen_srs = {srs}
+    for grid in config.config.get("grids", {}).values():
+        grid_srs = grid.get("srs")
+        if grid_srs and grid_srs not in seen_srs:
+            seen_srs.add(grid_srs)
+            grid_proj4js_def = pyproj.CRS.from_string(grid_srs).to_proj4()
+            srs_definitions.append({"srs": grid_srs, "proj4js_def": grid_proj4js_def})
+
     try:
         nonce = request.state.nonce
     except AttributeError as exc:
@@ -446,8 +455,8 @@ async def admin_test(
     context = {
         "request": request,
         "nonce": nonce,
-        "proj4js_def": proj4js_def,
         "srs": srs,
+        "srs_definitions": srs_definitions,
         "center_x": config.config["openlayers"].get("center_x", configuration.CENTER_X_DEFAULT),
         "center_y": config.config["openlayers"].get("center_y", configuration.CENTER_Y_DEFAULT),
         "zoom": config.config["openlayers"].get("zoom", configuration.MAP_INITIAL_ZOOM_DEFAULT),

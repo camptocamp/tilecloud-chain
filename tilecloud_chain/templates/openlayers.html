@@ -206,7 +206,9 @@
     ></script>
 
     <script nonce="{{ nonce }}">
-      proj4.defs("{{ srs }}",`{{ proj4js_def }}`);
+      {% for definition in srs_definitions %}
+      proj4.defs("{{ definition.srs }}",`{{ definition.proj4js_def }}`);
+      {% endfor %}
       ol.proj.proj4.register(proj4);
       var parser = new ol.format.WMTSCapabilities();
       const urlParams = new URLSearchParams(window.location.search);
