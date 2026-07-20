@@ -95,7 +95,9 @@ def test_openlayers_test_page_uses_wmts_getfeatureinfo_on_click():
     assert "'INFO_FORMAT': infoFormat," in content
     assert "fetch(url)" in content
     assert "Feature info" in content
-    assert "Request URL: " in content
+    assert "gmlFormat.readFeatures(result.body)" in content
+    assert "highlightSource" in content
+    assert "featureInfo.setFeatures(features)" in content
 
 
 def test_openlayers_test_page_displays_zoom_dependent_legend_when_available():

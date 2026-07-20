@@ -71,15 +71,73 @@
         display: none;
       }
 
+      .feature-info-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5em;
+      }
+
       .feature-info-panel-title {
-        margin: 0 0 0.5em;
+        margin: 0;
         font-weight: 600;
+      }
+
+      .feature-info-panel-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.3em;
+      }
+
+      .feature-info-nav-button {
+        background: none;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 0.25em;
+        cursor: pointer;
+        padding: 0.05em 0.35em;
+        font-size: 0.8em;
+        line-height: 1.2;
+      }
+
+      .feature-info-nav-button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+
+      .feature-info-counter {
+        font-size: 0.8em;
+        min-width: 2.5em;
+        text-align: center;
       }
 
       .feature-info-panel-content {
         margin: 0;
-        white-space: pre-wrap;
-        word-break: break-word;
+        font-size: 0.95em;
+      }
+
+      .feature-info-layer-name {
+        font-weight: 600;
+        margin-bottom: 0.4em;
+      }
+
+      .feature-info-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .feature-info-table th,
+      .feature-info-table td {
+        padding: 0.15em 0.35em;
+        text-align: left;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        vertical-align: top;
+      }
+
+      .feature-info-table th {
+        background: rgba(0, 0, 0, 0.04);
+        font-weight: 600;
+        width: 30%;
+        white-space: nowrap;
       }
 
       .layer-panel-title {
@@ -186,6 +244,20 @@
           background-color: rgba(42, 42, 42, 0.95);
           color: #f2f2f2;
           border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-info-nav-button {
+          border-color: rgba(255, 255, 255, 0.3);
+          color: #f2f2f2;
+        }
+
+        .feature-info-table th,
+        .feature-info-table td {
+          border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .feature-info-table th {
+          background: rgba(255, 255, 255, 0.08);
         }
       }
     </style>
@@ -1097,7 +1169,35 @@
                       const nextSource = new ol.source.WMTS({
                         ...(gridDefinition ? gridDefinition.wmtsOptions : {}),
                         dimensions: nextDimensions,
-                      });
+          });
+
+          const gmlFormat = new ol.format.WMSGetFeatureInfo();
+
+          const highlightSource = new ol.source.Vector();
+
+          const highlightLayer = new ol.layer.Vector({
+            source: highlightSource,
+            style: new ol.style.Style({
+              fill: new ol.style.Fill({ color: 'rgba(255, 255, 0, 0.2)' }),
+              stroke: new ol.style.Stroke({ color: '#ff0', width: 2 }),
+              image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({ color: 'rgba(255, 255, 0, 0.3)' }),
+                stroke: new ol.style.Stroke({ color: '#ff0', width: 2 }),
+              }),
+            }),
+            zIndex: Infinity,
+          });
+          map.addLayer(highlightLayer);
+
+          const escapeHtml = function (unsafe) {
+            return String(unsafe)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#039;');
+          };
                       layer.setSource(nextSource);
                       updateDebugLayer();
                       render();
@@ -1197,20 +1297,114 @@
             const element = document.createElement('div');
             element.className = 'feature-info-panel ol-unselectable ol-control';
 
+            const header = document.createElement('div');
+            header.className = 'feature-info-panel-header';
+
             const title = document.createElement('h3');
             title.className = 'feature-info-panel-title';
             title.textContent = 'Feature info';
-            element.appendChild(title);
+            header.appendChild(title);
 
-            const content = document.createElement('pre');
+            const nav = document.createElement('div');
+            nav.className = 'feature-info-panel-nav';
+            nav.style.display = 'none';
+
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'feature-info-nav-button';
+            prevBtn.textContent = '\u25C0';
+            prevBtn.title = 'Previous feature';
+
+            const counter = document.createElement('span');
+            counter.className = 'feature-info-counter';
+
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'feature-info-nav-button';
+            nextBtn.textContent = '\u25B6';
+            nextBtn.title = 'Next feature';
+
+            nav.appendChild(prevBtn);
+            nav.appendChild(counter);
+            nav.appendChild(nextBtn);
+            header.appendChild(nav);
+            element.appendChild(header);
+
+            const content = document.createElement('div');
             content.className = 'feature-info-panel-content';
             content.textContent = 'Click on the map to run WMTS GetFeatureInfo.';
             element.appendChild(content);
 
+            let features = [];
+            let currentIndex = 0;
+
+            const showFeature = function () {
+              if (features.length === 0) {
+                content.textContent = 'No features found at this location.';
+                nav.style.display = 'none';
+                return;
+              }
+              nav.style.display = 'flex';
+              counter.textContent = (currentIndex + 1) + '/' + features.length;
+              prevBtn.disabled = currentIndex === 0;
+              nextBtn.disabled = currentIndex === features.length - 1;
+
+              const feature = features[currentIndex];
+              const props = feature.getProperties();
+
+              let html = '';
+              const layerName = feature.get('layer') || '';
+              const layerDisplayName = feature.get('layerName') || '';
+
+              const layerLabel = layerDisplayName
+                ? layerName + ' \u2014 ' + layerDisplayName
+                : layerName;
+              if (layerLabel) {
+                html += '<div class="feature-info-layer-name">' + escapeHtml(layerLabel) + '</div>';
+              }
+
+              html += '<table class="feature-info-table">';
+              Object.entries(props).forEach(function ([key, value]) {
+                if (key === 'geometry' || key === 'layer' || key === 'layerName' || key === 'boundedBy') {
+                  return;
+                }
+                var displayValue = value !== null && value !== undefined ? String(value) : '';
+                if (displayValue !== '') {
+                  html += '<tr><th>' + escapeHtml(key) + '</th><td>' + escapeHtml(displayValue) + '</td></tr>';
+                }
+              });
+              html += '</table>';
+
+              content.innerHTML = html;
+
+              highlightSource.clear();
+              highlightSource.addFeature(feature);
+            };
+
+            prevBtn.addEventListener('click', function () {
+              if (currentIndex > 0) {
+                currentIndex--;
+                showFeature();
+              }
+            });
+
+            nextBtn.addEventListener('click', function () {
+              if (currentIndex < features.length - 1) {
+                currentIndex++;
+                showFeature();
+              }
+            });
+
             return {
               control: new ol.control.Control({ element: element }),
-              setContent: function (nextContent) {
-                content.textContent = nextContent;
+              setFeatures: function (nextFeatures) {
+                features = nextFeatures;
+                currentIndex = 0;
+                showFeature();
+              },
+              setContent: function (text) {
+                features = [];
+                highlightSource.clear();
+                content.textContent = text;
+                nav.style.display = 'none';
                 element.style.display = 'block';
               },
             };
@@ -1266,6 +1460,7 @@
               return;
             }
 
+            highlightSource.clear();
             featureInfo.setContent('Loading WMTS GetFeatureInfo...');
             fetch(url)
               .then(function (response) {
@@ -1273,27 +1468,30 @@
                   return {
                     ok: response.ok,
                     status: response.status,
-                    contentType: response.headers.get('Content-Type') || '',
                     body: text,
                   };
                 });
               })
               .then(function (result) {
-                const statusLine = 'Status: ' + result.status + (result.ok ? '' : ' (error)');
-                const formatLine = 'InfoFormat: ' + infoFormat;
-                const contentTypeLine = 'Content-Type: ' + (result.contentType || 'unknown');
-                const requestLine = 'Request URL: ' + url;
-                featureInfo.setContent(
-                  statusLine +
-                  '\n' +
-                  formatLine +
-                  '\n' +
-                  contentTypeLine +
-                  '\n' +
-                  requestLine +
-                  '\n\n' +
-                  result.body
-                );
+                if (!result.ok) {
+                  featureInfo.setContent('GetFeatureInfo request failed with HTTP ' + result.status + '.');
+                  return;
+                }
+
+                var features = [];
+                try {
+                  features = gmlFormat.readFeatures(result.body);
+                } catch (_e) {
+                  featureInfo.setContent('Failed to parse the feature info response.');
+                  return;
+                }
+
+                if (!features || features.length === 0) {
+                  featureInfo.setContent('No features found at this location.');
+                  return;
+                }
+
+                featureInfo.setFeatures(features);
               })
               .catch(function (error) {
                 featureInfo.setContent('GetFeatureInfo request failed: ' + error);
