@@ -212,7 +212,7 @@ class Generator:
             if try_ > 0:
                 _LOG.info("Retry tile %s %s", tile.tilecoord, tile.formated_metadata)
                 return await self.compute_tile(tile, try_ - 1)
-            _LOG.error("Tile %s %s in error: %s", tile.tilecoord, tile.formated_metadata, tile.error)
+            _LOG.warning("Tile %s %s in error: %s", tile.tilecoord, tile.formated_metadata, tile.error)
             return False
         success = True
         for tile_ in tile.metadata["tiles"].values():  # type: ignore[attr-defined]
@@ -220,13 +220,13 @@ class Generator:
                 if try_ > 0:
                     _LOG.info("Retry tile %s %s", tile_.tilecoord, tile_.formated_metadata)
                     return await self.compute_tile(tile, try_ - 1)
-                _LOG.error("Tile %s %s in error: %s", tile_.tilecoord, tile_.formated_metadata, tile_.error)
+                _LOG.warning("Tile %s %s in error: %s", tile_.tilecoord, tile_.formated_metadata, tile_.error)
                 success = False
             elif tile_.data is None:
                 if try_ > 0:
                     _LOG.info("Retry tile %s %s", tile_.tilecoord, tile_.formated_metadata)
                     return await self.compute_tile(tile, try_ - 1)
-                _LOG.error("Tile %s %s in error: no data", tile_.tilecoord, tile_.formated_metadata)
+                _LOG.warning("Tile %s %s in error: no data", tile_.tilecoord, tile_.formated_metadata)
                 success = False
             else:
                 _LOG.debug("Tile %s %s generated", tile_.tilecoord, tile_.formated_metadata)
