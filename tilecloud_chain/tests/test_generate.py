@@ -590,6 +590,7 @@ def test_get_tile_matrix_limits_with_px_buffer() -> None:
                     "layer": {
                         "bbox": [560000.0, 180000.0, 550000.0, 170000.0],
                         "px_buffer": 100,
+                        "force_tile_matrix_set_limits": True,
                     },
                 },
                 "grids": {
@@ -616,6 +617,35 @@ def test_get_tile_matrix_limits_with_px_buffer() -> None:
             "max_tile_col": 5,
         },
     ]
+
+
+def test_get_tile_matrix_limits_with_px_buffer_no_force() -> None:
+    config = DatedConfig(
+        cast(
+            "tcc_configuration.Configuration",
+            {
+                "layers": {
+                    "layer": {
+                        "bbox": [560000.0, 180000.0, 550000.0, 170000.0],
+                        "px_buffer": 100,
+                    },
+                },
+                "grids": {
+                    "grid": {
+                        "bbox": [420000.0, 30000.0, 900000.0, 350000.0],
+                        "resolutions": [100.0],
+                        "tile_size": 256,
+                    },
+                },
+            },
+        ),
+        0,
+        AnyioPath("config.yaml"),
+    )
+
+    limits = get_tile_matrix_limits(config, "layer", "grid")
+
+    assert limits == []
 
 
 def test_get_geoms_respects_geometry_srid(monkeypatch: pytest.MonkeyPatch) -> None:
