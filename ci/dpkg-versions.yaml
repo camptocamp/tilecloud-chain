@@ -59,7 +59,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libcurl3t64-gnutls: 8.5.0-2ubuntu10.11
   ubuntu_24_04/libcurl4t64: 8.5.0-2ubuntu10.11
   ubuntu_24_04/libdb5.3t64: 5.3.28+dfsg2-7
-  ubuntu_24_04/libde265-0: 1.0.15-1build3
+  ubuntu_24_04/libde265-0: 1.0.15-1ubuntu0.1
   ubuntu_24_04/libdebconfclient0: 0.271ubuntu3
   ubuntu_24_04/libdeflate0: 1.19-1build1.1
   ubuntu_24_04/libexpat1: 2.6.1-2ubuntu0.4
