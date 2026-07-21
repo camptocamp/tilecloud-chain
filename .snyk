@@ -4,16 +4,20 @@ version: v1.25.1
 ignore:
   SNYK-PYTHON-DULWICH-17266106:
     - '*':
-        reason: not compatible with used Poetry version
+        reason: not compatible with used Python version
         created: 2026-06-10T12:10:12.000Z
   SNYK-PYTHON-DULWICH-17054926:
     - '*':
-        reason: not compatible with used Poetry version
+        reason: not compatible with used Python version
         created: 2026-06-01T10:20:00.000Z
   SNYK-PYTHON-DULWICH-17054927:
     - '*':
-        reason: not compatible with used Poetry version
+        reason: not compatible with used Python version
         created: 2026-06-01T10:20:00.000Z
+  SNYK-PYTHON-DULWICH-18016337:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-07-20T00:00:00.000Z
   SNYK-PYTHON-POETRY-15873752:
     - '*':
         reason: Plugin not compatible with new Poetry version
