@@ -369,7 +369,7 @@ async def admin_create_job(
         await postgresql_store.create_job(name, command, config_filename)
         return JobResponse(success=True)
     except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
-        _LOG.exception("Error while creating the job")
+        _LOG.warning("Error while creating the job", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))  # noqa: B904 # pylint: disable=raise-missing-from
 
 
@@ -394,7 +394,7 @@ async def admin_cancel_job(
         await postgresql_store.cancel(job_id, config_filename)
         return JobResponse(success=True)
     except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
-        _LOG.exception("Exception while cancelling the job")
+        _LOG.warning("Exception while cancelling the job", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))  # noqa: B904 # pylint: disable=raise-missing-from
 
 
@@ -419,7 +419,7 @@ async def admin_retry_job(
         await postgresql_store.retry(job_id, config_filename)
         return JobResponse(success=True)
     except tilecloud_chain.store.postgresql.PostgresqlTileStoreError as e:
-        _LOG.exception("Exception while retrying the job")
+        _LOG.warning("Exception while retrying the job", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))  # noqa: B904 # pylint: disable=raise-missing-from
 
 
