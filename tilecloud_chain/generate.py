@@ -25,6 +25,7 @@ from tilecloud.layout.wms import WMSTileLayout
 
 import tilecloud_chain
 from tilecloud_chain import (
+    WMS_RESERVED_PARAMS,
     Count,
     CountSize,
     HashDropper,
@@ -533,31 +534,40 @@ class TilestoreGetter:
         grid = tilecloud_chain.get_grid_config(config, layer_name, grid_name)
         if layer["type"] == "wms":
             params = layer.get("params", {}).copy()
+            reserved = params.keys() & WMS_RESERVED_PARAMS
+            if reserved:
+                _LOGGER.warning(
+                    "Reserved WMS parameters ignored in layer '%s' params: %s",
+                    layer_name,
+                    ", ".join(sorted(reserved)),
+                )
+                for key in reserved:
+                    del params[key]
             if "STYLES" not in params:
                 params["STYLES"] = ",".join(layer["wmts_style"] for _ in layer.get("layers", "").split(","))
             if layer.get("generate_salt", False):
                 params["SALT"] = str(random.randint(0, 999999))  # nosec # noqa: S311
 
+            srs = get_grid_config(config, layer_name, grid_name).get(
+                "srs",
+                configuration.SRS_DEFAULT,
+            )
             # Get the metatile image from the WMS server
-            url_tile_store = URLTileStore(
-                tile_layouts=(
-                    WMSTileLayout(
-                        url=layer["url"],
-                        layers=layer.get("layers", ""),
-                        srs=get_grid_config(config, layer_name, grid_name).get(
-                            "srs",
-                            configuration.SRS_DEFAULT,
-                        ),
-                        format_pattern=layer["mime_type"],
-                        border=(
-                            layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT)
-                            if layer["meta"]
-                            else 0
-                        ),
-                        tilegrid=self.gene._gene.get_grid(config, grid_name),  # noqa: SLF001
-                        params=params,
-                    ),
+            tile_layout = WMSTileLayout(
+                url=layer["url"],
+                layers=layer.get("layers", ""),
+                srs=srs,
+                format_pattern=layer["mime_type"],
+                border=(
+                    layer.get("meta_buffer", configuration.LAYER_META_BUFFER_DEFAULT) if layer["meta"] else 0
                 ),
+                tilegrid=self.gene._gene.get_grid(config, grid_name),  # noqa: SLF001
+                params=params,
+            )
+            if params.get("VERSION", "").startswith("1.3"):
+                tile_layout.params["CRS"] = tile_layout.params.pop("SRS")
+            url_tile_store = URLTileStore(
+                tile_layouts=(tile_layout,),
                 headers=layer["headers"],
             )
             return TimedTileStoreWrapper(url_tile_store, "wms")

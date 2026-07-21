@@ -49,7 +49,7 @@ from pydantic import BaseModel
 
 import tilecloud_chain.server
 import tilecloud_chain.store.postgresql
-from tilecloud_chain import TileGeneration, configuration, controller, generate, server
+from tilecloud_chain import WMS_RESERVED_PARAMS, TileGeneration, configuration, controller, generate, server
 from tilecloud_chain.controller import get_status
 from tilecloud_chain.settings import settings
 
@@ -188,6 +188,15 @@ async def _validate_config_file(
                 )
             if layer.get("type") == "mapnik" and "wms_url" in layer:
                 deprecation_warnings.append(f"Layer '{layer_name}' uses 'wms_url' (deprecated).")
+            if layer.get("type") == "wms":
+                layer_wms = cast("tilecloud_chain.configuration.LayerWms", layer)
+                layer_params = layer_wms.get("params", {})
+                deprecation_warnings.extend(
+                    f"Layer '{layer_name}' has a reserved WMS parameter '{param}' in 'params'; "
+                    "this parameter is managed by the system and will be ignored."
+                    for param in layer_params
+                    if param.upper() in WMS_RESERVED_PARAMS
+                )
 
     return structure_errors, deprecation_warnings
 
