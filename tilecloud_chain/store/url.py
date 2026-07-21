@@ -47,7 +47,10 @@ class URLTileStore(AsyncTileStore):
 
     async def close(self) -> None:
         """Close the aiohttp session."""
-        await self._session.close()
+        try:
+            await self._session.close()
+        except (TimeoutError, aiohttp.ClientConnectionError):
+            _LOGGER.warning("Ignored error during aiohttp session close", exc_info=True)
 
     async def _get_hosts_limit(self) -> host_limit.HostLimit:
         """Initialize the store."""
