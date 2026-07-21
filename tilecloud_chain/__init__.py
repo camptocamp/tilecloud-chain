@@ -94,6 +94,19 @@ _META_TILE_COORD_CONTEXT: contextvars.ContextVar[str | None] = contextvars.Conte
 
 _ALLOWED_COMMANDS = settings.allowed_process_commands
 
+WMS_RESERVED_PARAMS: set[str] = {
+    "LAYERS",
+    "FORMAT",
+    "TRANSPARENT",
+    "SERVICE",
+    "REQUEST",
+    "SRS",
+    "CRS",
+    "BBOX",
+    "WIDTH",
+    "HEIGHT",
+}
+
 
 def formatted_metadata(tile: Tile) -> str:
     """Get human readable string of the metadata."""

@@ -16,10 +16,12 @@ from PIL import Image
 from shapely.geometry import box
 from testfixtures import LogCapture
 from tilecloud import Tile, TileCoord
+from tilecloud.layout.wms import WMSTileLayout
 from tilecloud.store.redis import RedisTileStore
 
 import tilecloud_chain
 from tilecloud_chain import (
+    WMS_RESERVED_PARAMS,
     DatedConfig,
     HashLogger,
     IntersectGeometryFilter,
@@ -2001,3 +2003,59 @@ Tiles in error:
                 ) as file:
                     image = Image.open(file, formats=["WEBP"])
                     assert image.format == "WEBP"
+
+
+def test_wms_reserved_params_are_defined() -> None:
+    assert "LAYERS" in WMS_RESERVED_PARAMS
+    assert "FORMAT" in WMS_RESERVED_PARAMS
+    assert "SRS" in WMS_RESERVED_PARAMS
+    assert "CRS" in WMS_RESERVED_PARAMS
+    assert "BBOX" in WMS_RESERVED_PARAMS
+    assert "WIDTH" in WMS_RESERVED_PARAMS
+    assert "HEIGHT" in WMS_RESERVED_PARAMS
+    assert "SERVICE" in WMS_RESERVED_PARAMS
+    assert "REQUEST" in WMS_RESERVED_PARAMS
+    assert "TRANSPARENT" in WMS_RESERVED_PARAMS
+    assert "VERSION" not in WMS_RESERVED_PARAMS
+    assert "STYLES" not in WMS_RESERVED_PARAMS
+
+
+def test_wms_tile_layout_uses_crs_for_version_1_3_0() -> None:
+    from tilecloud import TileGrid
+
+    tilegrid = TileGrid(tile_size=256)
+    params = {"VERSION": "1.3.0"}
+
+    tile_layout = WMSTileLayout(
+        url="http://wms.example.com/wms",
+        layers="test",
+        srs="EPSG:2056",
+        format_pattern="image/png",
+        tilegrid=tilegrid,
+        params=params,
+    )
+
+    if params.get("VERSION", "").startswith("1.3"):
+        tile_layout.params["CRS"] = tile_layout.params.pop("SRS")
+
+    assert "SRS" not in tile_layout.params
+    assert tile_layout.params["CRS"] == "EPSG:2056"
+
+
+def test_wms_tile_layout_keeps_srs_for_version_1_1_1() -> None:
+    from tilecloud import TileGrid
+
+    tilegrid = TileGrid(tile_size=256)
+    params = {}
+
+    tile_layout = WMSTileLayout(
+        url="http://wms.example.com/wms",
+        layers="test",
+        srs="EPSG:21781",
+        format_pattern="image/png",
+        tilegrid=tilegrid,
+        params=params,
+    )
+
+    assert tile_layout.params["SRS"] == "EPSG:21781"
+    assert "CRS" not in tile_layout.params
