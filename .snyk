@@ -14,6 +14,10 @@ ignore:
     - '*':
         reason: not compatible with used Python version
         created: 2026-06-01T10:20:00.000Z
+  SNYK-PYTHON-DULWICH-18016337:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-07-20T00:00:00.000Z
   SNYK-PYTHON-POETRY-15873752:
     - '*':
         reason: Plugin not compatible with new Poetry version
