@@ -296,6 +296,12 @@
       "type": "integer",
       "default": 0
     },
+    "layer_force_tile_matrix_set_limits": {
+      "title": "Force tile matrix set limits",
+      "description": "When true, include TileMatrixSetLimits in WMTS capabilities even when px_buffer is set. Default: false.",
+      "type": "boolean",
+      "default": false
+    },
     "layer_geom_filter": {
       "title": "Layer geometry filter",
       "description": "Enable the geometry intersection filter in the processing pipeline",
@@ -640,6 +646,9 @@
         "px_buffer": {
           "$ref": "#/definitions/layer_px_buffer"
         },
+        "force_tile_matrix_set_limits": {
+          "$ref": "#/definitions/layer_force_tile_matrix_set_limits"
+        },
         "meta": {
           "$ref": "#/definitions/layer_meta"
         },
@@ -776,6 +785,9 @@
         },
         "px_buffer": {
           "$ref": "#/definitions/layer_px_buffer"
+        },
+        "force_tile_matrix_set_limits": {
+          "$ref": "#/definitions/layer_force_tile_matrix_set_limits"
         },
         "meta": {
           "$ref": "#/definitions/layer_meta"

@@ -784,6 +784,13 @@ def get_tile_matrix_limits(
     if "bbox" not in layer:
         return []
 
+    px_buffer = float(layer.get("px_buffer", configuration.LAYER_PIXEL_BUFFER_DEFAULT))
+    force_limits = layer.get(
+        "force_tile_matrix_set_limits", configuration.FORCE_TILE_MATRIX_SET_LIMITS_DEFAULT
+    )
+    if px_buffer != 0 and not force_limits:
+        return []
+
     grid = config.config["grids"][grid_name]
     layer_bbox = normalize_bbox(layer["bbox"])
     if (

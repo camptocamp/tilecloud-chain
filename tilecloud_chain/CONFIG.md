@@ -121,6 +121,7 @@
   - <a id="definitions/layer_bbox/items"></a>**Items** *(number)*
 - <a id="definitions/layer_min_resolution_seed"></a>**`layer_min_resolution_seed`** *(number)*: The minimum resolutions to pre-generate.
 - <a id="definitions/layer_px_buffer"></a>**`layer_px_buffer`** *(integer)*: The buffer in pixel used to calculate geometry intersection. Default: `0`.
+- <a id="definitions/layer_force_tile_matrix_set_limits"></a>**`layer_force_tile_matrix_set_limits`** *(boolean)*: When true, include TileMatrixSetLimits in WMTS capabilities even when px_buffer is set. Default: false. Default: `false`.
 - <a id="definitions/layer_geom_filter"></a>**`layer_geom_filter`** *(boolean)*: Enable the geometry intersection filter in the processing pipeline. Default: `true`.
 - <a id="definitions/layer_meta"></a>**`layer_meta`** *(boolean)*: Use meta-tiles, see https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/USAGE.rst#meta-tiles. Default: `false`.
 - <a id="definitions/layer_meta_size"></a>**`layer_meta_size`** *(integer)*: The meta-tile size in tiles. Default: `5`.
@@ -187,6 +188,7 @@
   - <a id="definitions/layer_wms/properties/bbox"></a>**`bbox`**: Refer to *[#/definitions/layer_bbox](#definitions/layer_bbox)*.
   - <a id="definitions/layer_wms/properties/min_resolution_seed"></a>**`min_resolution_seed`**: Refer to *[#/definitions/layer_min_resolution_seed](#definitions/layer_min_resolution_seed)*.
   - <a id="definitions/layer_wms/properties/px_buffer"></a>**`px_buffer`**: Refer to *[#/definitions/layer_px_buffer](#definitions/layer_px_buffer)*.
+  - <a id="definitions/layer_wms/properties/force_tile_matrix_set_limits"></a>**`force_tile_matrix_set_limits`**: Refer to *[#/definitions/layer_force_tile_matrix_set_limits](#definitions/layer_force_tile_matrix_set_limits)*.
   - <a id="definitions/layer_wms/properties/meta"></a>**`meta`**: Refer to *[#/definitions/layer_meta](#definitions/layer_meta)*.
   - <a id="definitions/layer_wms/properties/meta_size"></a>**`meta_size`**: Refer to *[#/definitions/layer_meta_size](#definitions/layer_meta_size)*. Default: `5`.
   - <a id="definitions/layer_wms/properties/meta_buffer"></a>**`meta_buffer`**: Refer to *[#/definitions/layer_meta_buffer](#definitions/layer_meta_buffer)*. Default: `128`.
@@ -226,6 +228,7 @@
   - <a id="definitions/layer_mapnik/properties/bbox"></a>**`bbox`**: Refer to *[#/definitions/layer_bbox](#definitions/layer_bbox)*.
   - <a id="definitions/layer_mapnik/properties/min_resolution_seed"></a>**`min_resolution_seed`**: Refer to *[#/definitions/layer_min_resolution_seed](#definitions/layer_min_resolution_seed)*.
   - <a id="definitions/layer_mapnik/properties/px_buffer"></a>**`px_buffer`**: Refer to *[#/definitions/layer_px_buffer](#definitions/layer_px_buffer)*.
+  - <a id="definitions/layer_mapnik/properties/force_tile_matrix_set_limits"></a>**`force_tile_matrix_set_limits`**: Refer to *[#/definitions/layer_force_tile_matrix_set_limits](#definitions/layer_force_tile_matrix_set_limits)*.
   - <a id="definitions/layer_mapnik/properties/meta"></a>**`meta`**: Refer to *[#/definitions/layer_meta](#definitions/layer_meta)*.
   - <a id="definitions/layer_mapnik/properties/meta_size"></a>**`meta_size`**: Refer to *[#/definitions/layer_meta_size](#definitions/layer_meta_size)*. Default: `1`.
   - <a id="definitions/layer_mapnik/properties/meta_buffer"></a>**`meta_buffer`**: Refer to *[#/definitions/layer_meta_buffer](#definitions/layer_meta_buffer)*. Default: `0`.

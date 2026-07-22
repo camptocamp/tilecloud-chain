@@ -865,6 +865,22 @@ r""" Default value of the field path 'Server expires' """
 
 
 
+FORCE_TILE_MATRIX_SET_LIMITS_DEFAULT = False
+r""" Default value of the field path 'layer_force_tile_matrix_set_limits' """
+
+
+
+ForceTileMatrixSetLimits = bool
+r"""
+Force tile matrix set limits.
+
+When true, include TileMatrixSetLimits in WMTS capabilities even when px_buffer is set. Default: false.
+
+default: False
+"""
+
+
+
 GENERATE_SALT_DEFAULT = False
 r""" Default value of the field path 'Layer WMS generate_salt' """
 
@@ -1625,6 +1641,15 @@ class LayerMapnik(TypedDict, total=False):
     default: 0
     """
 
+    force_tile_matrix_set_limits: "ForceTileMatrixSetLimits"
+    r"""
+    Force tile matrix set limits.
+
+    When true, include TileMatrixSetLimits in WMTS capabilities even when px_buffer is set. Default: false.
+
+    default: False
+    """
+
     meta: "LayerMeta"
     r"""
     Layer meta.
@@ -2029,6 +2054,15 @@ class LayerWms(TypedDict, total=False):
     The buffer in pixel used to calculate geometry intersection
 
     default: 0
+    """
+
+    force_tile_matrix_set_limits: "ForceTileMatrixSetLimits"
+    r"""
+    Force tile matrix set limits.
+
+    When true, include TileMatrixSetLimits in WMTS capabilities even when px_buffer is set. Default: false.
+
+    default: False
     """
 
     meta: "LayerMeta"

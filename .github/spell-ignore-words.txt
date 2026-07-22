@@ -15,3 +15,5 @@ geoms
 bbox
 mask.geojson
 te
+TileMatrixSetLimits
+px

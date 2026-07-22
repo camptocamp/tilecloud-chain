@@ -83,6 +83,13 @@ When generating WMTS capabilities, if a layer ``bbox`` is defined, it is also us
 
 ``px_buffer`` a buffer in px around the object area (geoms or extent).
 
+When ``px_buffer`` is set to a non-zero value, the ``TileMatrixSetLimits`` are not
+included in the WMTS capabilities by default, because the expanded tile range
+can cause issues with OpenLayers tile grid extent calculation.
+
+To force the inclusion of ``TileMatrixSetLimits`` even when ``px_buffer`` is set,
+use ``force_tile_matrix_set_limits: true`` on the layer.
+
 ``geom_filter`` enable (default) or disable the geometry intersection filter in the
 generation pipeline.
 
