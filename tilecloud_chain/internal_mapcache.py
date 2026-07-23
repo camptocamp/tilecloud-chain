@@ -11,6 +11,7 @@ from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
 import redis.asyncio as aioredis
+import sentry_sdk
 import yaml
 from fastapi import Response
 from prometheus_client import Summary
@@ -286,6 +287,8 @@ async def fetch(
                 backend = "wms-generate"
                 success = await generator.compute_tile(meta_tile)
                 if not success:
+                    if isinstance(meta_tile.error, BaseException):
+                        sentry_sdk.capture_exception(meta_tile.error)
                     return server.error(config, 500, "Error while generate the tile, see logs for details")
 
                 if meta_tile.error:
@@ -295,6 +298,8 @@ async def fetch(
                         meta_tile.formated_metadata,
                         meta_tile.error,
                     )
+                    if isinstance(meta_tile.error, BaseException):
+                        sentry_sdk.capture_exception(meta_tile.error)
                     return server.error(config, 502, "Error while generate the tile, see logs for details")
 
                 # Don't fetch the just generated tile
