@@ -223,8 +223,14 @@ async def admin_index(
     if config.file and has_access:
         structure_errors, deprecation_warnings = await _validate_config_file(config)
 
+    errors: list[str] = []
     if queue_store == "postgresql" and has_access and _postgresql_store and config.file:
         jobs_status = await _postgresql_store.get_status(config.file)
+        if jobs_status:
+            all_errors: list[str] = []
+            for _, _, job_errors, _ in jobs_status:
+                all_errors.extend(job_errors)
+            errors = all_errors[:5]
 
     try:
         nonce = request.state.nonce
@@ -250,6 +256,7 @@ async def admin_index(
         "urlencode": urllib.parse.urlencode,
         "structure_errors": structure_errors,
         "deprecation_warnings": deprecation_warnings,
+        "errors": errors,
     }
     return _templates.TemplateResponse("admin_index.html", context)
 
