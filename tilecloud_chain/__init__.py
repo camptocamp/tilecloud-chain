@@ -35,6 +35,7 @@ from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, TextIO, TypedDic
 
 import anyio
 import boto3
+import c2casgiutils
 import c2cwsgiutils.pyramid_logging
 import c2cwsgiutils.setup_process
 import jsonschema_validator
@@ -1031,6 +1032,11 @@ class TileGeneration:
     ) -> None:
         """Initialize the tile generation."""
         assert "generation" in (await self.get_main_config()).config, (await self.get_main_config()).config
+
+        # Initialize Redis broadcast to receive dynamic log level changes
+        # from the c2casgiutils web UI (e.g., /c2c/logging/level endpoint)
+        await c2casgiutils.broadcast.startup()
+        await c2casgiutils.tools.logging_.startup()
 
         error = False
         if self.options is not None and self.options.zoom is not None:
