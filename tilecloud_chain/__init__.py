@@ -59,7 +59,6 @@ from tilecloud.filter.error import LogErrors
 from tilecloud.filter.logger import Logger
 from tilecloud.grid.free import FreeTileGrid
 from tilecloud.layout.wmts import WMTSTileLayout
-from tilecloud.store.filesystem import FilesystemTileStore
 from tilecloud.store.mbtiles import MBTilesTileStore
 from tilecloud.store.metatile import MetaTileSplitterTileStore
 from tilecloud.store.redis import RedisTileStore
@@ -77,6 +76,7 @@ from tilecloud_chain.store import (
     TileStoreWrapper,
 )
 from tilecloud_chain.store.azure_storage_blob import AzureStorageBlobTileStore
+from tilecloud_chain.store.filesystem import FilesystemTileStore
 from tilecloud_chain.timedtilestore import TimedTileStoreWrapper
 
 if TYPE_CHECKING:
@@ -1426,11 +1426,9 @@ class TileGeneration:
             )
         elif cache["type"] == "filesystem":
             # on filesystem
-            cache_tilestore = TileStoreWrapper(
-                FilesystemTileStore(
-                    layout,
-                    content_type=layer["mime_type"],
-                ),
+            cache_tilestore = FilesystemTileStore(
+                layout,
+                content_type=layer["mime_type"],
             )
         else:
             sys.exit("unknown cache type: " + cache["type"])
