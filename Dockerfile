@@ -71,6 +71,7 @@ RUN --mount=type=cache,target=/root/.cache \
 CMD ["uvicorn", "tilecloud_chain.main:app", "--host=0.0.0.0", "--port=8080", "--log-config=/app/logging.yaml"]
 
 EXPOSE 8080
+ENV C2C__TOOLS__LOGGING__APPLICATION_MODULE=tilecloud_chain
 
 # Do the lint, used by the tests
 FROM base AS tests
@@ -127,7 +128,6 @@ COPY . ./
 RUN --mount=type=cache,target=/root/.cache \
     POETRY_DYNAMIC_VERSIONING_BYPASS=0.0.0 python3 -m pip install --disable-pip-version-check --no-deps --editable=. \
     && python3 -m pip freeze > /requirements.txt
-
 
 # Set runner as final
 FROM runner
