@@ -990,6 +990,7 @@ class TileGeneration:
             logging.config.dictConfig(
                 {
                     "version": 1,
+                    "disable_existing_loggers": False,  # Don't disable loggers created before this dictConfig call (e.g. worker loggers)
                     "root": {
                         "level": settings.logging.other_log_level,
                         "handlers": [settings.logging.log_type],
