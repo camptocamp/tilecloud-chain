@@ -837,6 +837,9 @@ Tile generation:
 - ``TILECLOUD_CHAIN__HOSTS_LIMIT``: File that contains the maximum request per host
   (default: ``/etc/tilegeneration/hosts_limit.yaml``)
 
+- ``TILECLOUD_CHAIN__HOST_CONCURRENT``: Default limit of concurrent requests on the same host
+  (default: ``1``)
+
 - ``TILECLOUD_CHAIN__IGNORE_CONFIG_ERROR``: Ignore configuration errors if set to ``true``
   (default: ``false``)
 

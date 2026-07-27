@@ -146,6 +146,7 @@ class Settings(BaseSettings):
     main_config_file: OptionalAnyioPath = None
     hosts_file: AnyioPath = Path("/etc/tilegeneration/hosts.yaml")
     hosts_limit: AnyioPath = Path("/etc/tilegeneration/hosts_limit.yaml")
+    host_concurrent: int = 1
     ignore_config_error: bool = False
     max_generation_time: int = 60
     allowed_process_commands: StrList = ["optipng", "jpegoptim", "pngquant"]
