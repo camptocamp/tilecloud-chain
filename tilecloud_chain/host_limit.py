@@ -6,11 +6,6 @@ Automatically generated file from a JSON schema.
 from typing import TypedDict
 
 
-DEFAULT_CONCURRENT_LIMIT_DEFAULT = 1
-r""" Default value of the field path 'Default values concurrent' """
-
-
-
 class DefaultValues(TypedDict, total=False):
     r""" Default values. """
 
@@ -18,9 +13,7 @@ class DefaultValues(TypedDict, total=False):
     r"""
     Default concurrent limit.
 
-    Default limit of concurrent request on the same host (can be set with the `TILECLOUD_CHAIN_HOST_CONCURRENT` environment variable.
-
-    default: 1
+    Default limit of concurrent request on the same host (can be set with the `TILECLOUD_CHAIN__HOST_CONCURRENT` environment variable)
     """
 
 

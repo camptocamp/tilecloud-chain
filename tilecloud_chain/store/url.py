@@ -106,7 +106,7 @@ class URLTileStore(AsyncTileStore):
                     .get("default", {})
                     .get(
                         "concurrent",
-                        host_limit.DEFAULT_CONCURRENT_LIMIT_DEFAULT,
+                        settings.host_concurrent,
                     ),
                 )
             )

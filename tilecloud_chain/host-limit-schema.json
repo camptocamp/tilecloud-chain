@@ -14,8 +14,7 @@
         "concurrent": {
           "type": "integer",
           "title": "Default concurrent limit",
-          "description": "Default limit of concurrent request on the same host (can be set with the `TILECLOUD_CHAIN_HOST_CONCURRENT` environment variable.",
-          "default": 1
+          "description": "Default limit of concurrent request on the same host (can be set with the `TILECLOUD_CHAIN__HOST_CONCURRENT` environment variable)"
         }
       }
     },
