@@ -639,7 +639,8 @@ class PostgresqlTileStore(AsyncTileStore):
                 result = await session.execute(
                     select(Job)
                     .with_for_update(of=Job, skip_locked=True)
-                    .where(Job.status == _STATUS_CREATED),
+                    .where(Job.status == _STATUS_CREATED)
+                    .order_by(Job.created_at),
                 )
                 job = result.scalar()
                 if job is not None:
@@ -662,7 +663,8 @@ class PostgresqlTileStore(AsyncTileStore):
                 result = await session.execute(
                     select(Job)
                     .with_for_update(of=Job, skip_locked=True)
-                    .where(Job.status == _STATUS_STARTED),
+                    .where(Job.status == _STATUS_STARTED)
+                    .order_by(Job.created_at),
                 )
                 for job in result.scalars():
                     nb_messages = await session.scalar(
