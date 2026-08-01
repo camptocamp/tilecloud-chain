@@ -226,26 +226,18 @@
               {% if 'generate' in s %}
               <!---->
               {% set comma = true %}
-              <span class="text-success-emphasis">{{ s['generate'] }} meta tiles to generate</span>
-              {% endif %}
-              <!---->
-              {% if 'pending' in s %}
-              <!---->
-              {% if comma %}
-              <!---->
-              ,
+              <span class="text-success-emphasis">{{ s['generate'] }} meta tiles to generate</span>{%
+                endif %}{%
+                if 'pending' in s %}{%
+                if comma %},
               <!---->
               {% endif %}
               <!---->
               {% set comma = true %}
-              <span class="text-primary-emphasis">{{ s['pending'] }} meta tiles being generated</span>
-              {% endif %}
-              <!---->
-              {% if 'error' in s %}
-              <!---->
-              {% if comma %}
-              <!---->
-              ,
+              <span class="text-primary-emphasis">{{ s['pending'] }} meta tiles being generated</span>{%
+                endif %}{%
+                if 'error' in s %}{%
+                  if comma %},
               <!---->
               {% endif %}
               <span class="text-danger-emphasis">{{ s['error'] }} meta tiles in error</span>
