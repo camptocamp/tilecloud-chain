@@ -412,7 +412,7 @@ class Server:
             try:
                 with _GET_TILE.labels(storage="s3").time():
                     return await self._s3_read(str(key_name), headers, config, **kwargs)
-            except Exception:  # noqa: BLE001
+            except Exception:
                 del self.s3_client_cache[cache_s3.get("host", "aws")]
                 with _GET_TILE.labels(storage="s3").time():
                     return await self._s3_read(str(key_name), headers, config, **kwargs)
