@@ -28,7 +28,7 @@ def _to_optional_path(value: str | Path | None) -> Path | None:
 OptionalAnyioPath = Annotated[Path | None, BeforeValidator(_to_optional_path)]
 
 
-def _to_str_list(value: str | None | list[str]) -> list[str]:
+def _to_str_list(value: str | list[str] | None) -> list[str]:
     if isinstance(value, list):
         return value
     if value is None:
