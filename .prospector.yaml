@@ -22,4 +22,6 @@ ruff:
     target-version: py311
   disable:
     - CPY001 # Missing copyright notice added in ruff v0.16.0
+    - ISC004 # Implicit string concatenation in collection added in ruff v0.16.0
     - PLC0415 # `import` should be at the top-level of a file (present in pre-commit but not in checks)
+    - RUF036 # None not at end of union added in ruff v0.16.0
