@@ -24,7 +24,7 @@ class FilesystemTileStore(AsyncTileStore):
         """Delete one tile."""
         try:
             filename = self.tilelayout.filename(tile.tilecoord, tile.metadata)
-        except Exception as exception:  # noqa: BLE001
+        except Exception as exception:
             _LOGGER.warning("Error while deleting tile %s", tile, exc_info=True)
             tile.error = exception
             return tile
@@ -37,7 +37,7 @@ class FilesystemTileStore(AsyncTileStore):
         """Get one tile."""
         try:
             filename = self.tilelayout.filename(tile.tilecoord, tile.metadata)
-        except Exception as exception:  # noqa: BLE001
+        except Exception as exception:
             _LOGGER.warning("Error while getting tile %s", tile, exc_info=True)
             tile.error = exception
             return tile
@@ -68,7 +68,7 @@ class FilesystemTileStore(AsyncTileStore):
         assert isinstance(tile.data, bytes)
         try:
             filename = self.tilelayout.filename(tile.tilecoord, tile.metadata)
-        except Exception as exception:  # noqa: BLE001
+        except Exception as exception:
             _LOGGER.warning("Error while putting tile %s", tile, exc_info=True)
             tile.error = exception
             return tile
@@ -81,7 +81,7 @@ class FilesystemTileStore(AsyncTileStore):
     async def __contains__(self, tile: Tile) -> bool:
         try:
             filename = self.tilelayout.filename(tile.tilecoord, tile.metadata)
-        except Exception as exception:  # noqa: BLE001
+        except Exception as exception:
             _LOGGER.warning("Error while putting tile %s", tile, exc_info=True)
             tile.error = exception
             return False
