@@ -24,7 +24,7 @@ version = "0.0.0"
 # Minimal version should also be set in the jsonschema-gentypes.yaml file
 python = ">=3.11,<3.15"
 c2casgiutils = { version = "0.13.4", extras = ["all"] }
-fastapi = {extras = ["standard"], version = "0.136.3"}
+fastapi = {extras = ["standard"], version = "0.140.0"}
 python-dateutil = "2.9.0.post0"
 tilecloud = { version = "1.13.5", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.6"
@@ -37,10 +37,10 @@ certifi = "2026.7.22"
 Paste = "3.10.1"
 psutil = "7.2.2"
 pyproj = "3.7.2"
-aiohttp = "3.14.1"
-aiobotocore = "3.7.0"
+aiohttp = "3.14.3"
+aiobotocore = "3.8.0"
 sqlalchemy = { version = "2.0.51", extras = ["asyncio"] }
-anyio = "4.14.1"
+anyio = "4.14.2"
 asyncpg = "0.31.0"
 html-sanitizer = "2.6.0"
 pydantic-settings = "2.14.2"
@@ -53,13 +53,13 @@ prospector-profile-utils = "1.27.0"
 c2cwsgiutils = { version = "6.1.9", extras = ["test_images"] }
 scikit-image = { version = "0.26.0" }
 pytest = "9.1.1"
-testfixtures = "12.2.0"
-coverage = "7.14.3"
+testfixtures = "12.3.0"
+coverage = "7.15.2"
 types-redis = "4.6.0.20241004"
-types-requests = "2.33.0.20260518"
+types-requests = "2.33.0.20260712"
 pytest-asyncio = "1.4.0"
 pytest-check = "2.8.0"
-types-pyyaml = "6.0.12.20260518"
+types-pyyaml = "6.0.12.20260724"
 
 [tool.poetry-dynamic-versioning]
 enable = true
@@ -123,5 +123,5 @@ generate-process = "tilecloud_chain.copy_:process"
 import-expiretiles = "tilecloud_chain.expiretiles:main"
 
 [build-system]
-requires = ["poetry-core==2.4.0", "poetry-dynamic-versioning==1.10.0"]
+requires = ["poetry-core==2.4.1", "poetry-dynamic-versioning==1.10.0"]
 build-backend = "poetry.core.masonry.api"
