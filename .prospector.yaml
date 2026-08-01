@@ -21,4 +21,5 @@ ruff:
   options:
     target-version: py311
   disable:
+    - CPY001 # Missing copyright notice added in ruff v0.16.0
     - PLC0415 # `import` should be at the top-level of a file (present in pre-commit but not in checks)
