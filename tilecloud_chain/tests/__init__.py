@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 import logging
 import os
 import re

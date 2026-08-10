@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 """Calculate the cost of the generation."""
 
 import asyncio

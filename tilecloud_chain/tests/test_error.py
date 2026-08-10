@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 import os
 from pathlib import Path
 from types import SimpleNamespace
@@ -137,8 +138,8 @@ class TestError(CompareCase):
                 (
                     "tilecloud_chain",
                     "WARNING",
-                    "zoom 4 corresponds to resolution 5 "
-                    "is smaller than the 'min_resolution_seed' 10 of layer point, ignored.",
+                    ("zoom 4 corresponds to resolution 5 "
+                     "is smaller than the 'min_resolution_seed' 10 of layer point, ignored."),
                 ),
             )
 

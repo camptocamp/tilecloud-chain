@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 """MapnikTileStore with drop action if the generated tile is empty."""
 
 import logging

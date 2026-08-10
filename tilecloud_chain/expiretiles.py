@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 """Import the osm2pgsql expire-tiles file to Postgres."""
 
 import asyncio

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 """Generate the contextual file like the legends."""
 
 import asyncio

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 """Async filesystem tile store."""
 
 import errno

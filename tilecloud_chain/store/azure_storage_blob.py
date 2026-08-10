@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 import logging
 from collections.abc import AsyncIterator
 

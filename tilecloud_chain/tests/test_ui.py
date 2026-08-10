@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 import subprocess
 from pathlib import Path
 

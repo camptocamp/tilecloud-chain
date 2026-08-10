@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 from typing import IO, Any
 from unittest.mock import Mock
 

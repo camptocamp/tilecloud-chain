@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 """Security policy for the application."""
 
 import c2cwsgiutils.auth

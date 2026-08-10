@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 from collections.abc import AsyncIterator, Callable
 from typing import Any
 

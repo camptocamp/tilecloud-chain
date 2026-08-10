@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 """Tests for the URL tile store."""
 
 import logging

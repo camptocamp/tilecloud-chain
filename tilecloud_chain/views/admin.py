@@ -544,7 +544,7 @@ async def _run(
     try:
         _LOG.debug("Running the command `%s` using the function directly", display_command)
         await main(final_command, out)
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         _LOG.exception("Error while running the command `%s`", display_command)
         error = True
         error_detail = str(exc)
