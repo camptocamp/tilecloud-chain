@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 """Generate the contextual file like the legends."""
 
 import asyncio
@@ -192,7 +193,7 @@ def _get_legend_image(
     )
     try:
         response = session.get(url)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         if out is not None:
             print(
                 "\n".join(
@@ -257,7 +258,7 @@ def _get_legend_image(
         return None
     try:
         return Image.open(BytesIO(response.content))
-    except Exception:  # noqa: BLE001
+    except Exception:
         if out is not None:
             print(
                 "\n".join(

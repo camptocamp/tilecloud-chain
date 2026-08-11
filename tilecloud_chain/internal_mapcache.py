@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 """Internal Mapcache."""
 
 import asyncio
@@ -174,7 +175,7 @@ class Generator:
             time: bool
             daemon: bool
             local_process_number: int | None
-            tiles: None | list[Any] | dict[str, Any] | str
+            tiles: list[Any] | dict[str, Any] | str | None
 
         options = Options(
             log_level == "verbose",

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 """Copy the tiles from a cache to an other."""
 
 import asyncio

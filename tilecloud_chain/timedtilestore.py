@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 """A wrapper around a TileStore that adds timer metrics."""
 
 import time

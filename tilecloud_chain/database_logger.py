@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 """Log the generated tiles in a database."""
 
 import asyncio

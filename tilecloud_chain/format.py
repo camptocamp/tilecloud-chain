@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 """Format functions."""
 
 from datetime import timedelta

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 by Camptocamp
 import asyncio
 import json
 import logging
@@ -86,7 +87,7 @@ class URLTileStore(AsyncTileStore):
         tilelayout = self._tile_layouts[hash(tile.tilecoord) % len(self._tile_layouts)]
         try:
             url = tilelayout.filename(tile.tilecoord, tile.metadata)
-        except Exception as exception:  # pylint: disable=broad-except # noqa: BLE001
+        except Exception as exception:  # pylint: disable=broad-except
             _LOGGER.warning("Error while getting tile %s", tile, exc_info=True)
             tile.error = exception
             return tile
