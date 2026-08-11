@@ -134,7 +134,7 @@ class MultiTileStore(AsyncTileStore):
             if dated_store is not None:
                 try:
                     await dated_store.store.close()
-                except Exception:  # noqa: BLE001
+                except Exception:
                     logger.warning("Error while closing tile store", exc_info=True)
         self.stores.clear()
 

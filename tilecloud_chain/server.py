@@ -238,13 +238,13 @@ class Server:
         for dated_store in list(self.store_cache.values()):
             try:
                 await dated_store.store.close()
-            except Exception:  # noqa: BLE001
+            except Exception:
                 _LOGGER.warning("Error while closing tile store", exc_info=True)
         self.store_cache.clear()
         for s3_client in self.s3_client_cache.values():
             try:
                 await s3_client.close()
-            except Exception:  # noqa: BLE001
+            except Exception:
                 _LOGGER.warning("Error while closing S3 client", exc_info=True)
         self.s3_client_cache.clear()
 
