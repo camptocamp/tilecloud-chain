@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# Copyright (c) 2026 by Camptocamp
 
 import os
 import stat
