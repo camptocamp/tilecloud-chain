@@ -45,6 +45,7 @@ asyncpg = "0.31.0"
 html-sanitizer = "2.6.0"
 pydantic-settings = "2.14.2"
 mapnik = "4.3.0"
+prometheus-fastapi-instrumentator = "8.1.0"
 
 [tool.poetry.group.dev.dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma", "with_ruff"], version = "1.19.1" }
