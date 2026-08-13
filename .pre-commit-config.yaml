@@ -151,6 +151,7 @@ repos:
         additional_dependencies:
           - prospector-profile-utils==1.27.0 # pypi
           - ruff==0.16.1 # pypi
+          - pylint[spelling]==4.0.5 # pypi
   - repo: https://github.com/sbrunner/jsonschema-validator
     rev: 1.0.0
     hooks:
