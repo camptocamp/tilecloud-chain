@@ -251,7 +251,7 @@ async def admin_index(
         "structure_errors": structure_errors,
         "deprecation_warnings": deprecation_warnings,
     }
-    return _templates.TemplateResponse("admin_index.html", context)
+    return _templates.TemplateResponse(request, "admin_index.html", context)
 
 
 @app.post("/run")
@@ -470,7 +470,7 @@ async def admin_test(
         "center_y": config.config["openlayers"].get("center_y", configuration.CENTER_Y_DEFAULT),
         "zoom": config.config["openlayers"].get("zoom", configuration.MAP_INITIAL_ZOOM_DEFAULT),
     }
-    return _templates.TemplateResponse("openlayers.html", context)
+    return _templates.TemplateResponse(request, "openlayers.html", context)
 
 
 def _parse_stdout(stdout: str) -> list[str]:

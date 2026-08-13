@@ -535,9 +535,9 @@ class Server:
                 await _fill_legend(cache, f"{base_urls[0]}{wmts_path}static/", config=config)
 
                 return _TEMPLATES.TemplateResponse(
+                    request,
                     "wmts_get_capabilities.jinja",
                     {
-                        "request": request,
                         "config": config,
                         "layers": config.config.get("layers", {}),
                         "layer_legends": _TILEGENERATION.layer_legends,

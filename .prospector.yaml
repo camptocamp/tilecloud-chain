@@ -15,11 +15,11 @@ pylint:
 
 mypy:
   options:
-    python-version: '3.11'
+    python-version: '3.12'
 
 ruff:
   options:
-    target-version: py311
+    target-version: py312
   disable:
     - BLE001 # No blind except (already suppressed with # noqa in the code)
     - PLC0415 # `import` should be at the top-level of a file (present in pre-commit but not in checks)
