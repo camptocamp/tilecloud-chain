@@ -729,14 +729,7 @@ class PostgresqlTileStore(AsyncTileStore):
 
             if self.jobs:
                 config_filename = None
-                try:
-                    config_filename = next(iter(self.jobs))
-                except StopIteration:
-                    pass
-
-                if config_filename is None:
-                    continue
-                job_id = self.jobs.pop(config_filename)
+                job_id = None
                 try:
                     if settings.postgresql.objgraph_postgresql:
                         for generation in range(3):
@@ -753,13 +746,15 @@ class PostgresqlTileStore(AsyncTileStore):
                     async with self.SessionMaker() as session:
                         result = await session.execute(
                             select(Queue)
+                            .join(Job, Queue.job_id == Job.id)
                             .with_for_update(of=Queue, skip_locked=True)
-                            .order_by(Queue.id.asc())
-                            .where(and_(Queue.status == _STATUS_CREATED, Queue.job_id == job_id)),
+                            .order_by(Job.created_at.asc(), Queue.id.asc())
+                            .where(and_(Queue.status == _STATUS_CREATED, Job.status == _STATUS_STARTED)),
                         )
                         sqlalchemy_tile = result.scalar()
                         if sqlalchemy_tile is None:
                             continue
+                        job_id = sqlalchemy_tile.job_id
                         sqlalchemy_tile.status = _STATUS_PENDING
                         now = datetime.datetime.now(tz=datetime.UTC)
                         sqlalchemy_tile.started_at = now
@@ -779,10 +774,14 @@ class PostgresqlTileStore(AsyncTileStore):
                             postgresql_id=sqlalchemy_tile.id,
                         )
                         await session.commit()
+                    config_filename = next(
+                        (k for k, v in self.jobs.items() if v == job_id),
+                        None,
+                    )
                     yield meta_tile
                 except Exception:  # pylint: disable=broad-except
                     _LOGGER.exception("Error while reading from Postgres")
-                    _READ_ERROR_COUNTER.labels(job_id, config_filename).inc()
+                    _READ_ERROR_COUNTER.labels(job_id or -1, config_filename or "unknown").inc()
                     await asyncio.sleep(1)
 
     async def put_one(self, tile: Tile) -> Tile:
