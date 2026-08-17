@@ -89,6 +89,14 @@
       {% endfor %}
     </div>
     {% endif %}
+    {% if read_only %}
+    <div class="alert alert-info" role="alert">
+      <p class="mb-1">
+        You have read-only access: you can see the status and the jobs, but you cannot start, cancel or
+        retry a generation.
+      </p>
+    </div>
+    {% endif %}
     <span></span>
     {% if has_access %}
     <!---->
@@ -96,6 +104,7 @@
     <h2>Status</h2>
     <p>{{ '<br />'.join(status) | safe }}</p>
     {% endif %}
+    {% if not read_only %}
     <h2>Launch generation</h2>
     <div class="dropdown">
       <button
@@ -157,6 +166,7 @@
       {% endif %}
     </form>
     {% endif %}
+    {% endif %}
     <!---->
     {% if jobs_status is none %}
     <span id="result"></span>
@@ -200,13 +210,13 @@
             <pre>{{ job.message.strip() | safe | escape }}</pre>
             {% endif %}
             <!---->
-            {% if job.status == 'started' %}
+            {% if not read_only and job.status == 'started' %}
             <p>
               <button type="button" class="btn btn-outline-primary cancel" data-job-id="{{ job.id }}">
                 Cancel the tiles generation
               </button>
             </p>
-            {% elif job.status == 'error' and errors %}
+            {% elif not read_only and job.status == 'error' and errors %}
             <p>
               <button type="button" class="btn btn-outline-primary retry" data-job-id="{{ job.id }}">
                 Retry to generate the tiles in error

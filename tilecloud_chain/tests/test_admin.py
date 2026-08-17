@@ -1,8 +1,10 @@
 # Copyright (c) 2026 by Camptocamp
+from types import SimpleNamespace
 from typing import IO, Any
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
+from c2casgiutils.config import GitHubAccessType
 
 from tilecloud_chain import DatedConfig
 from tilecloud_chain.views import admin
@@ -124,3 +126,85 @@ async def test_validate_config_file_skips_non_wms_layers(monkeypatch: pytest.Mon
 
     assert structure_errors == []
     assert deprecation_warnings == []
+
+
+def _patch_access(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    username: str | None = None,
+    admin_access: bool = False,
+    check_results: list[bool] | None = None,
+) -> AsyncMock:
+    monkeypatch.setattr(
+        admin.c2c_config,
+        "settings",
+        SimpleNamespace(auth=SimpleNamespace(test=SimpleNamespace(username=username))),
+    )
+    monkeypatch.setattr(admin.auth, "check_admin_access", AsyncMock(return_value=admin_access))
+    check_mock = AsyncMock(side_effect=check_results or [])
+    monkeypatch.setattr(admin.auth, "check_access_config", check_mock)
+    return check_mock
+
+
+@pytest.mark.asyncio
+async def test_access_level_test_user(monkeypatch: pytest.MonkeyPatch) -> None:
+    check = _patch_access(monkeypatch, username="tester")
+    config = DatedConfig(config={}, mtime=0.0, file=Mock())
+
+    assert await admin._get_access_level(config, Mock()) is admin.AccessLevel.READ_WRITE
+    check.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_access_level_admin(monkeypatch: pytest.MonkeyPatch) -> None:
+    check = _patch_access(monkeypatch, admin_access=True)
+    config = DatedConfig(config={}, mtime=0.0, file=Mock())
+
+    assert await admin._get_access_level(config, Mock()) is admin.AccessLevel.READ_WRITE
+    check.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_access_level_read_write(monkeypatch: pytest.MonkeyPatch) -> None:
+    check = _patch_access(monkeypatch, check_results=[True])
+    config = DatedConfig(
+        config={"authentication": {"github_repository": "org/repo", "github_access_type": "push"}},
+        mtime=0.0,
+        file=Mock(),
+    )
+
+    assert await admin._get_access_level(config, Mock()) is admin.AccessLevel.READ_WRITE
+    assert check.await_count == 1
+    auth_config = check.await_args_list[0].args[1]
+    assert auth_config.github_repository == "org/repo"
+    assert auth_config.github_access_type_read_write is GitHubAccessType.PUSH
+    assert auth_config.github_access_type_read_only is None
+
+
+@pytest.mark.asyncio
+async def test_access_level_read_only_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    check = _patch_access(monkeypatch, check_results=[False, True])
+    config = DatedConfig(
+        config={"authentication": {"github_repository": "org/repo", "github_access_type": "push"}},
+        mtime=0.0,
+        file=Mock(),
+    )
+
+    assert await admin._get_access_level(config, Mock()) is admin.AccessLevel.READ_ONLY
+    assert check.await_count == 2
+    read_only_config = check.await_args_list[1].args[1]
+    assert read_only_config.github_access_type_read_only is GitHubAccessType.PULL
+    assert read_only_config.github_access_type_read_write is None
+
+
+@pytest.mark.asyncio
+async def test_access_level_no_access(monkeypatch: pytest.MonkeyPatch) -> None:
+    check = _patch_access(monkeypatch, check_results=[False, False])
+    config = DatedConfig(
+        config={"authentication": {"github_repository": "org/repo", "github_access_type": "push"}},
+        mtime=0.0,
+        file=Mock(),
+    )
+
+    assert await admin._get_access_level(config, Mock()) is admin.AccessLevel.NO_ACCESS
+    assert check.await_count == 2

@@ -34,7 +34,7 @@
 - <a id="properties/logging"></a>**`logging`**: Refer to *[#/definitions/logging](#definitions/logging)*.
 - <a id="properties/authentication"></a>**`authentication`** *(object)*: The authentication configuration. Cannot contain additional properties.
   - <a id="properties/authentication/properties/github_repository"></a>**`github_repository`** *(string)*: The GitHub repository name, on witch one we will check the access rights.
-  - <a id="properties/authentication/properties/github_access_type"></a>**`github_access_type`** *(string)*: The kind of rights the user should have on the repository. Must be one of: "push", "pull", or "admin". Default: `"pull"`.
+  - <a id="properties/authentication/properties/github_access_type"></a>**`github_access_type`** *(string)*: The kind of rights the user should have on the repository to have read-write access to the admin interface. Must be one of: "push", "pull", or "admin". Default: `"pull"`.
 ## Definitions
 
 - <a id="definitions/headers"></a>**`headers`** *(object)*: The headers that we send to the WMS backend. Can contain additional properties.

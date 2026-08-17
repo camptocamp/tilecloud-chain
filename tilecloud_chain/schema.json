@@ -1707,7 +1707,7 @@
         },
         "github_access_type": {
           "title": "GitHub access",
-          "description": "The kind of rights the user should have on the repository",
+          "description": "The kind of rights the user should have on the repository to have read-write access to the admin interface.",
           "type": "string",
           "default": "pull",
           "enum": ["push", "pull", "admin"]

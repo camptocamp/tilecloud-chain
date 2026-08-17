@@ -36,6 +36,7 @@ import pkgutil
 import shlex
 import urllib.parse
 from collections.abc import Awaitable, Callable
+from enum import StrEnum
 from typing import IO, Annotated, Any, cast
 
 import jsonschema_validator
@@ -95,35 +96,59 @@ async def _get_postgresql_store() -> tilecloud_chain.store.postgresql.Postgresql
     return _postgresql_store
 
 
-async def _get_access(
+class AccessLevel(StrEnum):
+    """Level of access of a user to the admin interface."""
+
+    NO_ACCESS = "no_access"
+    READ_ONLY = "read_only"
+    READ_WRITE = "read_write"
+
+
+async def _get_access_level(
     config: Annotated[tilecloud_chain.DatedConfig, Depends(server.get_host_config)],
     auth_info: Annotated[auth.AuthInfo, Depends(auth.get_auth)],
-) -> bool:
-    """Check if the user has access to admin functions."""
+) -> AccessLevel:
+    """Get the level of access of the user to the admin interface."""
 
     if c2c_config.settings.auth.test.username:
-        return True
+        return AccessLevel.READ_WRITE
 
     if await auth.check_admin_access(auth_info):
-        return True
+        return AccessLevel.READ_WRITE
 
     auth_config = config.config.get("authentication", {})
-    return await auth.check_access_config(
+    github_repository = auth_config.get("github_repository", "")
+    github_access_type = c2c_config.GitHubAccessType(auth_config.get("github_access_type", "pull"))
+
+    if await auth.check_access_config(
         auth_info,
         auth.AuthConfig(
-            github_repository=auth_config.get("github_repository", ""),
-            github_access_type=auth_config.get("github_access_type", ""),
+            github_repository=github_repository,
+            github_access_type_read_write=github_access_type,
         ),
-    )
+    ):
+        return AccessLevel.READ_WRITE
+
+    # A "pull" access grants read-only access.
+    if await auth.check_access_config(
+        auth_info,
+        auth.AuthConfig(
+            github_repository=github_repository,
+            github_access_type_read_only=c2c_config.GitHubAccessType.PULL,
+        ),
+    ):
+        return AccessLevel.READ_ONLY
+
+    return AccessLevel.NO_ACCESS
 
 
-async def _check_access(
-    has_access: Annotated[dict[str, Any], Depends(_get_access)],
+async def _check_read_write_access(
+    access_level: Annotated[AccessLevel, Depends(_get_access_level)],
 ) -> None:
-    """Check if the user has access to admin functions."""
+    """Check that the user has read-write access to admin functions."""
 
-    if not has_access:
-        raise HTTPException(status_code=403, detail="Access forbidden")
+    if access_level is not AccessLevel.READ_WRITE:
+        raise HTTPException(status_code=403, detail="Write access forbidden")
 
 
 # Pydantic models for request/response
@@ -207,7 +232,7 @@ async def admin_index(
     config: Annotated[tilecloud_chain.DatedConfig, Depends(server.get_host_config)],
     gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
     auth_info: Annotated[auth.AuthInfo, Depends(auth.get_auth)],
-    has_access: Annotated[bool, Depends(_get_access)],
+    access_level: Annotated[AccessLevel, Depends(_get_access_level)],
     auth_type: Annotated[auth.AuthenticationType, Depends(auth.auth_type)],
     secret: Annotated[str | None, Query(..., description="Secret key for authentication")] = None,
 ) -> HTMLResponse:
@@ -217,6 +242,9 @@ async def admin_index(
     main_server_config = main_config.config.get("server", {})
     jobs_status = None
     queue_store = main_config.config.get("queue_store", configuration.QUEUE_STORE_DEFAULT)
+
+    has_access = access_level is not AccessLevel.NO_ACCESS
+    read_only = access_level is AccessLevel.READ_ONLY
 
     structure_errors: list[str] = []
     deprecation_warnings: list[str] = []
@@ -236,6 +264,7 @@ async def admin_index(
         "request": request,
         "nonce": nonce,
         "has_access": has_access,
+        "read_only": read_only,
         "auth_info": auth_info,
         "auth_type": auth_type,
         "secret": secret,
@@ -259,7 +288,7 @@ async def admin_run(
     request: Request,
     command: Annotated[str, Form(...)],
     gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
-    _: Annotated[None, Depends(_check_access)],
+    _: Annotated[None, Depends(_check_read_write_access)],
 ) -> CommandResponse:
     """Run the command given by the user."""
     commands = shlex.split(command)
@@ -366,7 +395,7 @@ async def admin_create_job(
         tilecloud_chain.store.postgresql.PostgresqlTileStore,
         Depends(_get_postgresql_store),
     ],
-    _: Annotated[None, Depends(_check_access)],
+    _: Annotated[None, Depends(_check_read_write_access)],
 ) -> JobResponse:
     """Create a job."""
     try:
@@ -391,7 +420,7 @@ async def admin_cancel_job(
         tilecloud_chain.store.postgresql.PostgresqlTileStore,
         Depends(_get_postgresql_store),
     ],
-    _: Annotated[None, Depends(_check_access)],
+    _: Annotated[None, Depends(_check_read_write_access)],
 ) -> JobResponse:
     """Cancel a job."""
     try:
@@ -416,7 +445,7 @@ async def admin_retry_job(
         tilecloud_chain.store.postgresql.PostgresqlTileStore,
         Depends(_get_postgresql_store),
     ],
-    _: Annotated[None, Depends(_check_access)],
+    _: Annotated[None, Depends(_check_read_write_access)],
 ) -> JobResponse:
     """Retry a job."""
     try:
