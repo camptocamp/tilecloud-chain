@@ -753,6 +753,7 @@ class PostgresqlTileStore(AsyncTileStore):
                         )
                         sqlalchemy_tile = result.scalar()
                         if sqlalchemy_tile is None:
+                            await self._maintenance()
                             continue
                         job_id = sqlalchemy_tile.job_id
                         sqlalchemy_tile.status = _STATUS_PENDING

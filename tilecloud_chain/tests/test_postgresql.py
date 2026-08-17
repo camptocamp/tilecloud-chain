@@ -412,3 +412,46 @@ async def test_list_picks_next_job_when_first_job_has_only_pending_metatiles(
         session.query(Queue).filter(Queue.job_id.in_([job1_id, job2_id])).delete()
         session.query(Job).filter(Job.id.in_([job1_id, job2_id])).delete()
         session.commit()
+
+
+@pytest.mark.asyncio
+async def test_list_triggers_maintenance_when_no_tiles_available(
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
+):
+    """Test that list() triggers _maintenance() when no tiles are available, even if self.jobs is not empty.
+
+    This reproduces the scenario where workers have consumed all tiles from the queue
+    but the job remains in STARTED state because _maintenance() was never called
+    (since self.jobs was not empty).
+    """
+    import asyncio
+
+    job_id, _, _ = queue
+
+    tilestore.jobs["config.yaml"] = job_id
+
+    tile_1 = await anext(tilestore.list())
+    tile_2 = await anext(tilestore.list())
+
+    await tilestore.delete_one(tile_1)
+    await tilestore.delete_one(tile_2)
+
+    with SessionMaker() as session:
+        metatiles = session.query(Queue).filter(Queue.job_id == job_id).all()
+        assert len(metatiles) == 0
+
+    with SessionMaker() as session:
+        job = session.query(Job).filter(Job.id == job_id).one()
+        assert job.status == _STATUS_STARTED
+
+    list_iter = tilestore.list()
+    try:
+        await asyncio.wait_for(list_iter.__anext__(), timeout=2.0)
+    except asyncio.TimeoutError:
+        pass
+
+    with SessionMaker() as session:
+        job = session.query(Job).filter(Job.id == job_id).one()
+        assert job.status == _STATUS_DONE
