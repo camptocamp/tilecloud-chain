@@ -4,9 +4,6 @@ on:
   schedule:
     - cron: 30 2 * * *
 
-permissions:
-  contents: read
-
 jobs:
   rebuild:
     name: Rebuild

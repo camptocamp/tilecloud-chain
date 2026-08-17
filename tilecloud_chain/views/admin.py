@@ -42,6 +42,7 @@ import jsonschema_validator
 import pyproj
 from c2casgiutils import auth
 from c2casgiutils import config as c2c_config
+from c2casgiutils.config import GitHubAccessType
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -108,11 +109,12 @@ async def _get_access(
         return True
 
     auth_config = config.config.get("authentication", {})
+    github_access_type = auth_config.get("github_access_type", "pull")
     return await auth.check_access_config(
         auth_info,
         auth.AuthConfig(
             github_repository=auth_config.get("github_repository", ""),
-            github_access_type=auth_config.get("github_access_type", ""),
+            github_access_type_admin=GitHubAccessType(github_access_type),
         ),
     )
 
