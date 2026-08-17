@@ -38,7 +38,6 @@
 - Fix PostgreSQL admin retry action so it requeues only errored meta tiles instead of restarting full queue seeding for the whole job.
 - Add Python 3.14 support and use the PyPI Mapnik bindings instead of the removed Ubuntu `python3-mapnik` package.
 - Mark PostgreSQL metatile queue entries as `error` (instead of deleting them) when a child tile fails during write/store, so generation failures are visible in job status.
-- Allow PostgreSQL queue workers to pick meta-tiles from any started job when the current job has only pending meta-tiles, so workers are not blocked waiting for other workers to finish.
 
 Environment variable migration (legacy -> new)
 
