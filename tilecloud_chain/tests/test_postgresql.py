@@ -449,7 +449,7 @@ async def test_list_triggers_maintenance_when_no_tiles_available(
     list_iter = tilestore.list()
     try:
         await asyncio.wait_for(list_iter.__anext__(), timeout=2.0)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         pass
 
     with SessionMaker() as session:
