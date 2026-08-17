@@ -363,3 +363,52 @@ async def test_controller_status_postgresql(SessionMaker: sessionmaker) -> None:
                 session.query(Job).filter(Job.id == job_id).delete()
                 session.commit()
         await gene.close()
+
+
+@pytest.mark.asyncio
+async def test_list_picks_next_job_when_first_job_has_only_pending_metatiles(
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
+):
+    """When a job has only pending meta-tiles, list() should pick from the next job."""
+    with SessionMaker() as session:
+        for job in session.query(Job).filter(Job.name.in_(["test-job-1", "test-job-2"])).all():
+            session.delete(job)
+        session.commit()
+
+    await tilestore.create_job("test-job-1", "generate-tiles", Path("config.yaml"))
+    await tilestore.create_job("test-job-2", "generate-tiles", Path("config.yaml"))
+
+    with SessionMaker() as session:
+        job1 = session.query(Job).filter(Job.name == "test-job-1").one()
+        job2 = session.query(Job).filter(Job.name == "test-job-2").one()
+        job1.status = _STATUS_STARTED
+        job2.status = _STATUS_STARTED
+        job1_id = job1.id
+        job2_id = job2.id
+        session.commit()
+
+    await tilestore.put_one(
+        Tile(TileCoord(0, 0, 0), metadata={"job_id": job1_id}),
+    )
+    await tilestore.put_one(
+        Tile(TileCoord(1, 0, 0), metadata={"job_id": job2_id}),
+    )
+    await tilestore.close()
+
+    with SessionMaker() as session:
+        session.query(Queue).filter(Queue.job_id == job1_id).update(
+            {Queue.status: _STATUS_PENDING},
+        )
+        session.commit()
+
+    await tilestore._maintenance()
+
+    tile = await anext(tilestore.list())
+    assert tile.tilecoord.z == 1
+    assert tile.metadata["job_id"] == job2_id
+
+    with SessionMaker() as session:
+        session.query(Queue).filter(Queue.job_id.in_([job1_id, job2_id])).delete()
+        session.query(Job).filter(Job.id.in_([job1_id, job2_id])).delete()
+        session.commit()
