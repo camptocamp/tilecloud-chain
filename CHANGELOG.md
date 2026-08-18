@@ -2,6 +2,7 @@
 
 ## 2.0.0
 
+- Add a read-only mode to the admin interface: the configured `authentication.github_access_type` grants read-write access, while users with only a `pull` access on the configured `authentication.github_repository` can see the status and jobs but cannot start, cancel or retry generations.
 - Surface generation errors in the admin interface by writing error messages to the job output before exiting, so they are captured in `job.message` and displayed in the admin UI.
 - Fix unclosed aiohttp connector and client session warnings by properly closing Azure blob storage clients and aiohttp sessions in `URLTileStore` and `AzureStorageBlobTileStore`.
 - Close stale tile store instances in `Server.get_store()` and `MultiTileStore._get_store()` when the cached store is invalidated by a configuration file change.

@@ -127,7 +127,7 @@ class Authentication(TypedDict, total=False):
     r"""
     GitHub access.
 
-    The kind of rights the user should have on the repository
+    The kind of rights the user should have on the repository to have read-write access to the admin interface.
 
     default: pull
     """
@@ -957,7 +957,7 @@ GithubAccess = Literal['push'] | Literal['pull'] | Literal['admin']
 r"""
 GitHub access.
 
-The kind of rights the user should have on the repository
+The kind of rights the user should have on the repository to have read-write access to the admin interface.
 
 default: pull
 """

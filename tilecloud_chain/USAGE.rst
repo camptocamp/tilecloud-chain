@@ -938,6 +938,13 @@ Admin and test pages
 On the URL `<base URL>/admin/` you can see the status of the generation, a tool to generate the tiles, and a link
 to a test page.
 
+The access to the admin page is controlled by the ``authentication`` configuration section:
+
+- The users with a ``github_access_type`` access on the configured ``github_repository`` have the read-write
+  access: they can also launch a generation, and cancel or retry a job.
+- The users with only a ``pull`` access on the repository have a read-only access: they can see the status and
+  the jobs, but cannot launch a generation, nor cancel or retry a job.
+
 Beware, the test page assumes we have configured only one grid.
 
 The test page stores its current state in the URL query string, so you can share or reload the same view:
