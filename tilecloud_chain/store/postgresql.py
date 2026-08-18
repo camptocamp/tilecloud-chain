@@ -640,7 +640,8 @@ class PostgresqlTileStore(AsyncTileStore):
                     select(Job)
                     .with_for_update(of=Job, skip_locked=True)
                     .where(Job.status == _STATUS_CREATED)
-                    .order_by(Job.created_at),
+                    .order_by(Job.created_at)
+                    .limit(1),
                 )
                 job = result.scalar()
                 if job is not None:
@@ -749,7 +750,8 @@ class PostgresqlTileStore(AsyncTileStore):
                             .join(Job, Queue.job_id == Job.id)
                             .with_for_update(of=Queue, skip_locked=True)
                             .order_by(Job.created_at.asc(), Queue.id.asc())
-                            .where(and_(Queue.status == _STATUS_CREATED, Job.status == _STATUS_STARTED)),
+                            .where(and_(Queue.status == _STATUS_CREATED, Job.status == _STATUS_STARTED))
+                            .limit(1),
                         )
                         sqlalchemy_tile = result.scalar()
                         if sqlalchemy_tile is None:
