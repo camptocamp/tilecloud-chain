@@ -382,21 +382,44 @@ class PostgresqlTileStore(AsyncTileStore):
         """Initialize the store."""
         self._engine = create_async_engine(self.sqlalchemy_url)
 
-        async with self._engine.connect() as connection:
-            await connection.execute(sqlalchemy.schema.CreateSchema(_schema, if_not_exists=True))
-            await connection.run_sync(Base.metadata.create_all)
-            await connection.execute(
-                text(
-                    f'ALTER TABLE "{_schema}"."job" ADD COLUMN IF NOT EXISTS tiles_started_at TIMESTAMPTZ',
-                ),
+        async def _do_init() -> None:
+            assert self._engine is not None
+            async with self._engine.connect() as connection:
+                await connection.execute(sqlalchemy.schema.CreateSchema(_schema, if_not_exists=True))
+                await connection.run_sync(Base.metadata.create_all)
+
+                result = await connection.execute(
+                    text(
+                        "SELECT column_name FROM information_schema.columns "
+                        "WHERE table_schema = :schema AND table_name = 'job' "
+                        "AND column_name IN ('tiles_started_at', 'meta_tiles_total')",
+                    ).bindparams(schema=_schema),
+                )
+                existing_columns = {row[0] for row in result}
+
+                if "tiles_started_at" not in existing_columns:
+                    await connection.execute(
+                        text(
+                            f'ALTER TABLE "{_schema}"."job" ADD COLUMN tiles_started_at TIMESTAMPTZ',
+                        ),
+                    )
+                if "meta_tiles_total" not in existing_columns:
+                    await connection.execute(
+                        text(
+                            f'ALTER TABLE "{_schema}"."job" '
+                            "ADD COLUMN meta_tiles_total INTEGER NOT NULL DEFAULT 0",
+                        ),
+                    )
+                await connection.commit()
+
+        try:
+            await asyncio.wait_for(_do_init(), timeout=settings.postgresql.init_timeout)
+        except TimeoutError:
+            _LOGGER.warning(
+                "Database initialization timed out after %d seconds",
+                settings.postgresql.init_timeout,
             )
-            await connection.execute(
-                text(
-                    f'ALTER TABLE "{_schema}"."job" '
-                    "ADD COLUMN IF NOT EXISTS meta_tiles_total INTEGER NOT NULL DEFAULT 0",
-                ),
-            )
-            await connection.commit()
+            raise
 
         self.SessionMaker = async_sessionmaker(self._engine)  # pylint: disable=invalid-name
 

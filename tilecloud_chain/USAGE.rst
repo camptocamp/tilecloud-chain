@@ -930,6 +930,9 @@ PostgreSQL:
 - ``TILECLOUD_CHAIN__POSTGRESQL__OBJGRAPH_LIMIT``: Number of entries to include in PostgreSQL objgraph reports
   (default: ``10``)
 
+- ``TILECLOUD_CHAIN__POSTGRESQL__INIT_TIMEOUT``: Timeout in seconds for PostgreSQL database initialization
+  (default: ``30``)
+
 See also: ``settings.py` <https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/settings.py>`_.
 
 Admin and test pages
