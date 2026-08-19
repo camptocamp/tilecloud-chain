@@ -123,6 +123,7 @@ class PostgresqlSettings(BaseModel):
     queue_insert_batch_size: int = 100
     objgraph_postgresql: bool = False
     objgraph_limit: int = 10
+    init_timeout: int = 30
 
 
 class SecuritySettings(BaseModel):
