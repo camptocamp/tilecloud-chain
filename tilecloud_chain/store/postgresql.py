@@ -207,7 +207,10 @@ async def _start_job(
         async with SessionMaker() as session:
             result = await session.execute(select(Job).where(Job.id == job_id))
             job = result.scalar()
-        assert job is not None
+
+        if job is None:
+            _LOGGER.error("Job %d not found", job_id)
+            return
 
         command = shlex.split(job.command)
         command0 = command[0].replace("_", "-")
@@ -216,7 +219,9 @@ async def _start_job(
             async with SessionMaker() as session:
                 result = await session.execute(select(Job).where(Job.id == job_id))
                 job = result.scalar()
-                assert job is not None
+                if job is None:
+                    _LOGGER.error("Job %d not found", job_id)
+                    return
                 job.status = _STATUS_ERROR
                 job.message = (
                     f"The given command '{command0}' is not allowed, allowed command are: "
@@ -235,7 +240,9 @@ async def _start_job(
                 async with SessionMaker() as session:
                     result = await session.execute(select(Job).where(Job.id == job_id))
                     job = result.scalar()
-                    assert job is not None
+                    if job is None:
+                        _LOGGER.error("Job %d not found", job_id)
+                        return
                     job.status = _STATUS_ERROR
                     job.message = f"The argument {arg} is not allowed, allowed arguments are: {', '.join(allowed_arguments)}"
                     await session.commit()
@@ -339,8 +346,6 @@ class PostgresqlTileStore(AsyncTileStore):
         self.sqlalchemy_url = sqlalchemy_url
 
         # Used to mix the generation for each the projects
-        self.jobs: dict[str, int] = {}
-
         self.allowed_commands = allowed_commands
         self.allowed_arguments = allowed_arguments
         self.max_pending_minutes = max_pending_minutes
@@ -638,6 +643,9 @@ class PostgresqlTileStore(AsyncTileStore):
         - Create the job list to be process
         """
         assert self.SessionMaker is not None
+
+        _LOGGER.debug("Start maintenance")
+
         await self._flush_put_buffer()
         with _MAINTENANCE_SUMMARY.time():
             # Restart the too long pending jobs (queue generation)
@@ -656,41 +664,52 @@ class PostgresqlTileStore(AsyncTileStore):
                 )
                 await session.commit()
 
-            # Create the job queue
-            job_id = -1
+            # Create the job queue (one per config file)
             async with self.SessionMaker() as session:
                 result = await session.execute(
-                    select(Job)
-                    .with_for_update(of=Job, skip_locked=True)
-                    .where(Job.status == _STATUS_CREATED)
-                    .order_by(Job.created_at)
-                    .limit(1),
+                    select(Job.config_filename.distinct()).where(Job.status == _STATUS_STARTED)
                 )
-                job = result.scalar()
-                if job is not None:
-                    job_id = job.id
-                    job.status = _STATUS_PENDING
-                    job.started_at = datetime.datetime.now(tz=datetime.UTC)
-                    job.tiles_started_at = None
-                    job.meta_tiles_total = 0
-                    await session.commit()
-            if job_id != -1:
-                await _start_job(
-                    job_id,
-                    self.sqlalchemy_url,
-                    self.allowed_commands,
-                    self.allowed_arguments,
+                config_filenames = set(result.scalars())
+                result = await session.execute(
+                    select(Job.config_filename.distinct()).where(Job.status == _STATUS_CREATED)
                 )
+                config_filenames_new = set(result.scalars())
+                config_filenames_gen = config_filenames_new - config_filenames
+            for config_filename in config_filenames_gen:
+                job_id = -1
+                async with self.SessionMaker() as session:
+                    result_job = await session.execute(
+                        select(Job)
+                        .with_for_update(of=Job, skip_locked=True)
+                        .where(and_(Job.status == _STATUS_CREATED, Job.config_filename == config_filename))
+                        .order_by(Job.created_at)
+                        .limit(1),
+                    )
+                    job = result_job.scalar()
+                    if job is not None:
+                        job_id = job.id
+                        job.status = _STATUS_PENDING
+                        job.started_at = datetime.datetime.now(tz=datetime.UTC)
+                        job.tiles_started_at = None
+                        job.meta_tiles_total = 0
+                        await session.commit()
+                if job_id != -1:
+                    await _start_job(
+                        job_id,
+                        self.sqlalchemy_url,
+                        self.allowed_commands,
+                        self.allowed_arguments,
+                    )
 
             # Update the job status (error or done) on finish
             async with self.SessionMaker() as session:
-                result = await session.execute(
+                result_job = await session.execute(
                     select(Job)
                     .with_for_update(of=Job, skip_locked=True)
                     .where(Job.status == _STATUS_STARTED)
                     .order_by(Job.created_at),
                 )
-                for job in result.scalars():
+                for job in result_job.scalars():
                     nb_messages = await session.scalar(
                         select(sqlalchemy.sql.functions.count(Queue.id)).where(
                             and_(Queue.status == _STATUS_CREATED, Queue.job_id == job.id),
@@ -720,40 +739,47 @@ class PostgresqlTileStore(AsyncTileStore):
                             job.status = _STATUS_DONE
                 await session.commit()
             async with self.SessionMaker() as session:
-                result = await session.execute(select(Job).where(Job.status == _STATUS_STARTED))
-                for job in result.scalars():
-                    # Restart the too long pending metatiles
-                    result = await session.execute(
-                        update(Queue)
-                        .where(
-                            and_(
-                                Queue.status == _STATUS_PENDING,
-                                Queue.started_at
-                                < datetime.datetime.now(tz=datetime.UTC)
-                                - datetime.timedelta(minutes=self.max_pending_minutes),
-                            ),
-                        )
-                        .values(status=_STATUS_CREATED),
+                # Restart the too long pending meta tiles
+                result = await session.execute(
+                    update(Queue)
+                    .where(
+                        and_(
+                            Queue.status == _STATUS_PENDING,
+                            Queue.started_at
+                            < datetime.datetime.now(tz=datetime.UTC)
+                            - datetime.timedelta(minutes=self.max_pending_minutes),
+                        ),
                     )
-                    # Add the job as to be processed
-                    if job.config_filename not in self.jobs:
-                        self.jobs[job.config_filename] = job.id
+                    .values(status=_STATUS_CREATED),
+                )
                 await session.commit()
-
-        if not self.jobs:
-            await asyncio.sleep(10)
 
     async def list(self) -> AsyncIterator[Tile]:
         """List the meta tiles in the queue."""
         assert self.SessionMaker is not None
+        # Used to balance the generation between the config files
+        config_filenames: set[str] = set()
+        nb_iter = 0
         while True:
             await self._flush_put_buffer()
-            if not self.jobs:
+
+            if nb_iter >= 1000 or not config_filenames:
+                nb_iter = 0
+
                 await self._maintenance()
 
-            if self.jobs:
-                config_filename = None
-                job_id = None
+                async with self.SessionMaker() as session:
+                    result = await session.execute(
+                        select(Job.config_filename.distinct()).where(Job.status == _STATUS_STARTED)
+                    )
+                    config_filenames = set(result.scalars())
+
+                if not config_filenames:
+                    await asyncio.sleep(10)
+            else:
+                nb_iter += 1
+
+            for config_filename in set(config_filenames):
                 try:
                     if settings.postgresql.objgraph_postgresql:
                         for generation in range(3):
@@ -768,16 +794,23 @@ class PostgresqlTileStore(AsyncTileStore):
                             _LOGGER.debug("Objgraph growth in postgresql:\n%s", "\n".join(values))
 
                     async with self.SessionMaker() as session:
-                        result = await session.execute(
+                        result_queue = await session.execute(
                             select(Queue)
                             .join(Job, Queue.job_id == Job.id)
                             .with_for_update(of=Queue, skip_locked=True)
                             .order_by(Job.created_at.asc(), Queue.id.asc())
-                            .where(and_(Queue.status == _STATUS_CREATED, Job.status == _STATUS_STARTED))
+                            .where(
+                                and_(
+                                    Queue.status == _STATUS_CREATED,
+                                    Job.status == _STATUS_STARTED,
+                                    Job.config_filename == config_filename,
+                                )
+                            )
                             .limit(1),
                         )
-                        sqlalchemy_tile = result.scalar()
+                        sqlalchemy_tile = result_queue.scalar()
                         if sqlalchemy_tile is None:
+                            config_filenames.remove(config_filename)
                             continue
                         job_id = sqlalchemy_tile.job_id
                         sqlalchemy_tile.status = _STATUS_PENDING
@@ -799,10 +832,6 @@ class PostgresqlTileStore(AsyncTileStore):
                             postgresql_id=sqlalchemy_tile.id,
                         )
                         await session.commit()
-                    config_filename = next(
-                        (k for k, v in self.jobs.items() if v == job_id),
-                        None,
-                    )
                     yield meta_tile
                 except Exception:  # pylint: disable=broad-except
                     _LOGGER.exception("Error while reading from Postgres")
