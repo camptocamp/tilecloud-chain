@@ -12,3 +12,4 @@
 | 1.21    | 23/06/2026      |
 | 1.22    | Best effort     |
 | 1.23    | Unsupported     |
+| 2.0     | To be defined   |
