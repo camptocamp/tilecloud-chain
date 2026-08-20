@@ -99,7 +99,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/libpcre2-8-0: 10.46-1build1
   ubuntu_26_04/libperl5.40: 5.40.1-7ubuntu0.1
   ubuntu_26_04/libpng16-16t64: 1.6.57-1
-  ubuntu_26_04/libpq5: 18.4-0ubuntu0.26.04.1
+  ubuntu_26_04/libpq5: 18.6-0ubuntu0.26.04.1
   ubuntu_26_04/libproc2-0: 2:4.0.4-9ubuntu1
   ubuntu_26_04/libproj25: 9.7.1-1
   ubuntu_26_04/libpsl5t64: 0.21.2-1.1build2
@@ -157,7 +157,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/perl-modules-5.40: 5.40.1-7ubuntu0.1
   ubuntu_26_04/pngquant: 2.18.0-1build3
   ubuntu_26_04/postgresql-client: 18+290ubuntu1
-  ubuntu_26_04/postgresql-client-18: 18.4-0ubuntu0.26.04.1
+  ubuntu_26_04/postgresql-client-18: 18.6-0ubuntu0.26.04.1
   ubuntu_26_04/postgresql-client-common: 290ubuntu1
   ubuntu_26_04/procps: 2:4.0.4-9ubuntu1
   ubuntu_26_04/proj-data: 9.7.1-1
