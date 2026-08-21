@@ -271,7 +271,7 @@ async def admin_index(
         "current_url": str(request.url),
         "commands": server_config.get("predefined_commands", []),
         "status": await get_status(gene) if queue_store != "postgresql" else None,
-        "admin_path": f"{settings.route_prefix}admin",
+        "admin_path": f"{c2c_config.settings.route_prefix}admin",
         "AuthenticationType": auth.AuthenticationType,
         "jobs_status": jobs_status,
         "footer": main_server_config.get("admin_footer") if has_access else None,
