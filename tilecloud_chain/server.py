@@ -47,6 +47,7 @@ import html_sanitizer
 import yaml
 from anyio import Path
 from azure.core.exceptions import ResourceNotFoundError
+from c2casgiutils.config import settings as c2c_settings
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import Response
 from fastapi.templating import Jinja2Templates
@@ -64,7 +65,6 @@ from tilecloud_chain import (
     internal_mapcache,
 )
 from tilecloud_chain.controller import validate_generate_wmts_capabilities
-from c2casgiutils.config import settings as c2c_settings
 from tilecloud_chain.settings import settings
 from tilecloud_chain.store import AsyncTileStore
 
