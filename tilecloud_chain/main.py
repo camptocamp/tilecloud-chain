@@ -110,7 +110,7 @@ app.add_middleware(
     allow_headers=settings.security.cors_headers,
 )
 
-route_prefix = settings.route_prefix
+route_prefix = c2c_settings.route_prefix
 route_prefix_escaped = re.escape(route_prefix[1:])
 
 _LOGGER.info("Using route prefix: '%s'", route_prefix)

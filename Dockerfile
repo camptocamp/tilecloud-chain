@@ -20,6 +20,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     && python3 -m venv --system-site-packages /venv
 
 ENV PATH=/venv/bin:$PATH
+ENV C2C__ROUTE_PREFIX=/tiles/
 
 # Used to convert the locked packages by poetry to pip requirements format
 # We don't directly use `poetry install` because it force to use a virtual environment.

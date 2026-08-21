@@ -64,6 +64,7 @@ from tilecloud_chain import (
     internal_mapcache,
 )
 from tilecloud_chain.controller import validate_generate_wmts_capabilities
+from c2casgiutils.config import settings as c2c_settings
 from tilecloud_chain.settings import settings
 from tilecloud_chain.store import AsyncTileStore
 
@@ -522,7 +523,9 @@ class Server:
                     )
                 server_config = (await _TILEGENERATION.get_main_config()).config.get("server")
 
-                wmts_path = settings.route_prefix[1:] if settings.wmts_path is None else settings.wmts_path
+                wmts_path = (
+                    c2c_settings.route_prefix[1:] if settings.wmts_path is None else settings.wmts_path
+                )
 
                 base_urls = _get_base_urls(cache)
 
@@ -849,7 +852,7 @@ class Server:
 server = Server()
 router = fastapi.APIRouter()
 
-route_prefix = settings.route_prefix
+route_prefix = c2c_settings.route_prefix
 
 
 async def startup(_main_app: FastAPI) -> None:
