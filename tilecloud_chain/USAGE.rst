@@ -933,7 +933,7 @@ PostgreSQL:
 - ``TILECLOUD_CHAIN__POSTGRESQL__INIT_TIMEOUT``: Timeout in seconds for PostgreSQL database initialization
   (default: ``30``)
 
-See also: ``settings.py` <https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/settings.py>`_.
+See also: :file:`settings.py <https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/settings.py>`_.
 
 Admin and test pages
 --------------------
