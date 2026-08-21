@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1
+
+- Replace `TILECLOUD_CHAIN__ROUTE_PREFIX` with `C2C__ROUTE_PREFIX` (from c2casgiutils) for the route prefix environment variable. The default remains `/tiles/` when using the Docker image.
+
 ## 2.0.0
 
 - Add a read-only mode to the admin interface: the configured `authentication.github_access_type` grants read-write access, while users with only a `pull` access on the configured `authentication.github_repository` can see the status and jobs but cannot start, cancel or retry generations.

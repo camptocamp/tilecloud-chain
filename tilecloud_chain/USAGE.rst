@@ -886,11 +886,11 @@ Server:
 - ``TILECLOUD_CHAIN__DEVELOPMENT``: Enable development features if set to ``true``
   (default: ``false``)
 
-- ``TILECLOUD_CHAIN__ROUTE_PREFIX``: Base URL path for tile access
-  (default: ``/tiles/``)
+- ``C2C__ROUTE_PREFIX``: Base URL path for tile access
+  (default: ``/tiles/``, provided by c2casgiutils)
 
 - ``TILECLOUD_CHAIN__WMTS_PATH``: Path used in WMTS capabilities URLs, overrides the route prefix
-  (default: the value of ``TILECLOUD_CHAIN__ROUTE_PREFIX`` without a leading ``/``)
+  (default: the value of ``C2C__ROUTE_PREFIX`` without a leading ``/``)
 
 Worker:
 

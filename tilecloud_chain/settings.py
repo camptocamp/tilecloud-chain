@@ -40,19 +40,6 @@ def _to_str_list(value: str | list[str] | None) -> list[str]:
 StrList = Annotated[list[str], BeforeValidator(_to_str_list)]
 
 
-def _to_route_prefix(route_prefix: str) -> str:
-    if not route_prefix:
-        return "/"
-    if not route_prefix.startswith("/"):
-        route_prefix = f"/{route_prefix}"
-    if not route_prefix.endswith("/"):
-        route_prefix = f"{route_prefix}/"
-    return route_prefix
-
-
-RoutePrefix = Annotated[str, BeforeValidator(_to_route_prefix)]
-
-
 def _to_wmts_path(wmts_path: str | None) -> str | None:
     if wmts_path is None:
         return None
@@ -154,7 +141,6 @@ class Settings(BaseSettings):
     allowed_process_commands: StrList = ["optipng", "jpegoptim", "pngquant"]
     frontend: str | None = None
     development: bool = False
-    route_prefix: RoutePrefix = "/tiles/"
     wmts_path: WmtsPath = None
 
     azure: AzureSettings = AzureSettings()
