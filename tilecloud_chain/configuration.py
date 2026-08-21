@@ -2970,7 +2970,7 @@ class Server(TypedDict, total=False):
     r"""
     WMTS path.
 
-    No longer used, replaced by `TILECLOUD_CHAIN__ROUTE_PREFIX` or `TILECLOUD_CHAIN__WMTS_PATH` environment variable
+    No longer used, replaced by `C2C__ROUTE_PREFIX` or `TILECLOUD_CHAIN__WMTS_PATH` environment variable
     """
 
     admin_path: str
