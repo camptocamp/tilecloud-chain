@@ -51,6 +51,18 @@ jobs:
         env:
           GITHUB_EVENT: ${{ toJson(github) }}
 
+      - name: Settings documentation
+        run: make settings-doc
+      - run: git diff --exit-code --color
+      - run: git diff --patch > /tmp/settings-doc.patch; git reset --hard || true
+        if: failure()
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: Update settings documentation.patch
+          path: /tmp/settings-doc.patch
+          retention-days: 1
+        if: failure()
+
       - name: Build
         run: make build
 

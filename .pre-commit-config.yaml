@@ -53,6 +53,10 @@ repos:
       - id: prettier
         additional_dependencies:
           - prettier@2.8.4
+        exclude: |-
+          (?x)^(
+            tilecloud_chain/SETTINGS\.md
+          )$
   - repo: https://github.com/camptocamp/jsonschema-gentypes
     rev: 2.13.0
     hooks:

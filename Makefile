@@ -43,6 +43,16 @@ tests: build ## Run the unit tests
 
 PYTEST_ARGS ?= --last-failed --full-trace
 
+.PHONY: settings-doc
+settings-doc: ## Generate settings documentation
+	poetry install --no-root
+	PYTHONPATH=. poetry run settings-doc generate \
+		--class=tilecloud_chain.settings.Settings \
+		--output-format=markdown \
+		--update=tilecloud_chain/SETTINGS.md \
+		--between "<!-- generated env. vars. start -->" "<!-- generated env. vars. end -->" \
+		--heading-offset=1
+
 .PHONY: tests-fast
 tests-fast:
 	docker compose up -d
