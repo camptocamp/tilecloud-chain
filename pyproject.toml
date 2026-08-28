@@ -126,5 +126,5 @@ generate-process = "tilecloud_chain.copy_:process"
 import-expiretiles = "tilecloud_chain.expiretiles:main"
 
 [build-system]
-requires = ["poetry-core==2.4.1", "poetry-dynamic-versioning==1.10.0"]
+requires = ["poetry-core==2.4.0", "poetry-dynamic-versioning[plugin]==1.10.0"]
 build-backend = "poetry.core.masonry.api"
