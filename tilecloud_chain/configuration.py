@@ -242,7 +242,7 @@ class CacheAzureTyped(TypedDict, total=False):
 
     The root folder of the cache
 
-    default:
+    default: 
     """
 
     container: Required[str]
@@ -306,7 +306,7 @@ class CacheBsddbTyped(TypedDict, total=False):
 
     The root folder of the cache
 
-    default:
+    default: 
     """
 
 
@@ -354,7 +354,7 @@ class CacheFilesystemTyped(TypedDict, total=False):
 
     The root folder of the cache
 
-    default:
+    default: 
     """
 
 
@@ -364,7 +364,7 @@ Cache folder.
 
 The root folder of the cache
 
-default:
+default: 
 """
 
 
@@ -432,7 +432,7 @@ class CacheMbtilesTyped(TypedDict, total=False):
 
     The root folder of the cache
 
-    default:
+    default: 
     """
 
 
@@ -524,7 +524,7 @@ class CacheS3Typed(TypedDict, total=False):
 
     The root folder of the cache
 
-    default:
+    default: 
     """
 
 
@@ -2107,7 +2107,7 @@ class Postgresql(TypedDict, total=False):
 
     The SQLAlchemy URL (like: `postgresql+psycopg2://username:password@host:5432/database`) (main configuration), can also be set in the `TILECLOUD_CHAIN_SQLALCHEMY_URL` environment variable
 
-    pattern:
+    pattern: 
     """
 
     max_pending_minutes: int
