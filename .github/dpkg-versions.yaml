@@ -3,7 +3,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/base-passwd: 3.6.8
   ubuntu_26_04/bash: 5.3-2ubuntu1
   ubuntu_26_04/bash-completion: 1:2.16.0-8build1
-  ubuntu_26_04/bsdutils: 1:2.41.3-3ubuntu2
+  ubuntu_26_04/bsdutils: 1:2.41.3-3ubuntu2.2
   ubuntu_26_04/ca-certificates: 20260601~26.04.1
   ubuntu_26_04/coreutils: 9.5-1ubuntu2+0.0.0~ubuntu25
   ubuntu_26_04/coreutils-from-uutils: 0.0.0~ubuntu25
@@ -19,7 +19,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/fonts-dejavu-extra: 2.37-8build1
   ubuntu_26_04/fonts-dejavu-mono: 2.37-8build1
   ubuntu_26_04/gcc-16-base: 16-20260322-1ubuntu1
-  ubuntu_26_04/gnu-coreutils: 9.7-3ubuntu2
+  ubuntu_26_04/gnu-coreutils: 9.7-3ubuntu2.1
   ubuntu_26_04/gpgv: 2.4.8-4ubuntu3
   ubuntu_26_04/grep: 3.12-1
   ubuntu_26_04/gzip: 1.14-1~exp2ubuntu1.1
@@ -33,7 +33,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/libaudit-common: 1:4.1.2-1build1
   ubuntu_26_04/libaudit1: 1:4.1.2-1build1
   ubuntu_26_04/libblas3: 3.12.1-7ubuntu1
-  ubuntu_26_04/libblkid1: 2.41.3-3ubuntu2
+  ubuntu_26_04/libblkid1: 2.41.3-3ubuntu2.2
   ubuntu_26_04/libbrotli1: 1.2.0-3build1
   ubuntu_26_04/libbsd0: 0.12.2-2build2
   ubuntu_26_04/libbz2-1.0: 1.0.8-6ubuntu0.1
@@ -84,8 +84,8 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/liblz4-1: 1.10.0-8
   ubuntu_26_04/liblzma5: 5.8.3-1
   ubuntu_26_04/libmd0: 1.1.0-2build4
-  ubuntu_26_04/libminizip1t64: 1:1.3.dfsg+really1.3.1-1ubuntu3
-  ubuntu_26_04/libmount1: 2.41.3-3ubuntu2
+  ubuntu_26_04/libminizip1t64: 1:1.3.dfsg+really1.3.1-1ubuntu3.1
+  ubuntu_26_04/libmount1: 2.41.3-3ubuntu2.2
   ubuntu_26_04/libmuparser2v5: 2.3.4-2
   ubuntu_26_04/libncursesw6: 6.6+20251231-1
   ubuntu_26_04/libnettle8t64: 3.10.2-1
@@ -118,12 +118,12 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/libsemanage2: 3.9-1build1
   ubuntu_26_04/libsepol2: 3.9-2
   ubuntu_26_04/libsharpyuv0: 1.5.0-0.1build1
-  ubuntu_26_04/libsmartcols1: 2.41.3-3ubuntu2
+  ubuntu_26_04/libsmartcols1: 2.41.3-3ubuntu2.2
   ubuntu_26_04/libspatialite8t64: 5.1.0-3ubuntu2
   ubuntu_26_04/libsqlite3-0: 3.46.1-9ubuntu0.2
   ubuntu_26_04/libss2: 1.47.2-3ubuntu4
   ubuntu_26_04/libssh2-1t64: 1.11.1-1ubuntu0.26.04.3
-  ubuntu_26_04/libssl3t64: 3.5.5-1ubuntu3.4
+  ubuntu_26_04/libssl3t64: 3.5.5-1ubuntu3.5
   ubuntu_26_04/libstdc++6: 16-20260322-1ubuntu1
   ubuntu_26_04/libsystemd0: 259.5-0ubuntu3.4
   ubuntu_26_04/libtasn1-6: 4.21.0-2
@@ -132,24 +132,24 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/libtinfo6: 6.6+20251231-1
   ubuntu_26_04/libudev1: 259.5-0ubuntu3.4
   ubuntu_26_04/libunistring5: 1.3-2build1
-  ubuntu_26_04/libuuid1: 2.41.3-3ubuntu2
+  ubuntu_26_04/libuuid1: 2.41.3-3ubuntu2.2
   ubuntu_26_04/libwebp7: 1.5.0-0.1build1
   ubuntu_26_04/libxerces-c3.2t64: 3.2.4+debian-1.3build2
   ubuntu_26_04/libxml2-16: 2.15.2+dfsg-0.1ubuntu0.1
   ubuntu_26_04/libxxhash0: 0.8.3-2build1
   ubuntu_26_04/libzstd1: 1.5.7+dfsg-3
-  ubuntu_26_04/login: 1:4.16.0-2+really2.41.3-3ubuntu2
+  ubuntu_26_04/login: 1:4.16.0-2+really2.41.3-3ubuntu2.2
   ubuntu_26_04/login.defs: 1:4.17.4-2ubuntu3
   ubuntu_26_04/logsave: 1.47.2-3ubuntu4
   ubuntu_26_04/mawk: 1.3.4.20260129-1
   ubuntu_26_04/media-types: 14.0.0build1
-  ubuntu_26_04/mount: 2.41.3-3ubuntu2
+  ubuntu_26_04/mount: 2.41.3-3ubuntu2.2
   ubuntu_26_04/ncurses-base: 6.6+20251231-1
   ubuntu_26_04/ncurses-bin: 6.6+20251231-1
   ubuntu_26_04/net-tools: 2.10-2ubuntu1
   ubuntu_26_04/netbase: 6.5build1
-  ubuntu_26_04/openssl: 3.5.5-1ubuntu3.4
-  ubuntu_26_04/openssl-provider-legacy: 3.5.5-1ubuntu3.4
+  ubuntu_26_04/openssl: 3.5.5-1ubuntu3.5
+  ubuntu_26_04/openssl-provider-legacy: 3.5.5-1ubuntu3.5
   ubuntu_26_04/optipng: 7.9.1+ds-2build1
   ubuntu_26_04/passwd: 1:4.17.4-2ubuntu3
   ubuntu_26_04/perl: 5.40.1-7ubuntu0.1
@@ -184,4 +184,4 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/tzdata: 2026c-0ubuntu0.26.04.1
   ubuntu_26_04/ubuntu-keyring: 2023.11.28.1build1
   ubuntu_26_04/unzip: 6.0-29ubuntu1
-  ubuntu_26_04/util-linux: 2.41.3-3ubuntu2
+  ubuntu_26_04/util-linux: 2.41.3-3ubuntu2.2
