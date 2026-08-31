@@ -10,7 +10,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/dash: 0.5.12-12ubuntu3
   ubuntu_26_04/debconf: 1.5.92
   ubuntu_26_04/debianutils: 5.23.2build1
-  ubuntu_26_04/diffutils: 1:3.12-1
+  ubuntu_26_04/diffutils: 1:3.12-1ubuntu0.1
   ubuntu_26_04/dpkg: 1.23.7ubuntu1
   ubuntu_26_04/e2fsprogs: 1.47.2-3ubuntu4
   ubuntu_26_04/findutils: 4.10.0-3build2
@@ -29,14 +29,14 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/jpegoptim: 1.4.7-1build1
   ubuntu_26_04/libacl1: 2.3.2-2
   ubuntu_26_04/libapt-pkg7.0: 3.2.0
-  ubuntu_26_04/libattr1: 1:2.5.2-4
+  ubuntu_26_04/libattr1: 1:2.5.2-4ubuntu0.1
   ubuntu_26_04/libaudit-common: 1:4.1.2-1build1
   ubuntu_26_04/libaudit1: 1:4.1.2-1build1
   ubuntu_26_04/libblas3: 3.12.1-7ubuntu1
   ubuntu_26_04/libblkid1: 2.41.3-3ubuntu2
   ubuntu_26_04/libbrotli1: 1.2.0-3build1
   ubuntu_26_04/libbsd0: 0.12.2-2build2
-  ubuntu_26_04/libbz2-1.0: 1.0.8-6build2
+  ubuntu_26_04/libbz2-1.0: 1.0.8-6ubuntu0.1
   ubuntu_26_04/libc-bin: 2.43-2ubuntu2.3
   ubuntu_26_04/libc-gconv-modules-extra: 2.43-2ubuntu2.3
   ubuntu_26_04/libc6: 2.43-2ubuntu2.3
