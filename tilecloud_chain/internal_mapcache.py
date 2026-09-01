@@ -64,9 +64,13 @@ class RedisStore(AsyncTileStore):
             for key, value in [e.split("=", 1) for e in redis_options.split(",") if "=" in e]
         }
 
-        socket_timeout = settings.redis.socket_timeout or cast("str", config.get("socket_timeout"))
+        socket_timeout = settings.redis.socket_timeout or config.get("socket_timeout")
         if socket_timeout is not None:
-            connection_kwargs["socket_timeout"] = int(socket_timeout)
+            connection_kwargs["socket_timeout"] = (
+                socket_timeout.total_seconds()
+                if isinstance(socket_timeout, datetime.timedelta)
+                else int(socket_timeout)
+            )
         db = settings.redis.db or cast("str", config.get("db"))
         if db is not None:
             connection_kwargs["db"] = int(db)
@@ -136,7 +140,7 @@ class RedisStore(AsyncTileStore):
     async def lock(self, tile: Tile) -> AsyncIterator[None]:
         """Lock a tile."""
         key = self._get_key(tile) + "_l"
-        async with self._master.lock(key, timeout=_MAX_GENERATION_TIME):
+        async with self._master.lock(key, timeout=_MAX_GENERATION_TIME.total_seconds()):
             yield
 
     async def __contains__(self, tile: Tile) -> bool:
