@@ -26,7 +26,7 @@ python = ">=3.12,<3.15"
 c2casgiutils = { version = "0.14.0", extras = ["all"] }
 fastapi = {extras = ["standard"], version = "0.141.1"}
 python-dateutil = "2.9.0.post0"
-tilecloud = { version = "1.13.5", extras = ["azure", "aws", "redis", "wsgi"] }
+tilecloud = { version = "1.14.0", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.6"
 PyYAML = "6.0.3"
 Shapely = "2.1.2"
@@ -60,7 +60,7 @@ types-redis = "4.6.0.20241004"
 types-requests = "2.33.0.20260712"
 pytest-asyncio = "1.4.0"
 pytest-check = "2.9.1"
-types-pyyaml = "6.0.12.20260724"
+types-pyyaml = "6.0.12.20260815"
 ruff = "0.16.4"
 pylint = "4.0.7"
 settings-doc = "4.3.2"
@@ -126,5 +126,5 @@ generate-process = "tilecloud_chain.copy_:process"
 import-expiretiles = "tilecloud_chain.expiretiles:main"
 
 [build-system]
-requires = ["poetry-core==2.4.0", "poetry-dynamic-versioning[plugin]==1.10.0"]
+requires = ["poetry-core==2.4.1", "poetry-dynamic-versioning[plugin]==1.10.0"]
 build-backend = "poetry.core.masonry.api"
