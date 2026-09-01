@@ -3,9 +3,11 @@
 
 from __future__ import annotations
 
+import datetime
 from typing import Annotated, Literal
 
 from anyio import Path
+from c2casgiutils.config import Duration, parse_duration
 from pydantic import BaseModel, ConfigDict
 from pydantic.functional_validators import BeforeValidator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -53,6 +55,15 @@ def _to_wmts_path(wmts_path: str | None) -> str | None:
 WmtsPath = Annotated[str | None, BeforeValidator(_to_wmts_path)]
 
 
+def _to_optional_duration(value: str | datetime.timedelta | None) -> datetime.timedelta | None:
+    if value is None or value == "":
+        return None
+    return parse_duration(value)
+
+
+OptionalDuration = Annotated[datetime.timedelta | None, BeforeValidator(_to_optional_duration)]
+
+
 class AzureSettings(BaseModel):
     """Azure storage settings."""
 
@@ -91,12 +102,12 @@ class RedisSettings(BaseModel):
 
     url: str | None = None
     db: str | None = None
-    socket_timeout: str | None = None
+    socket_timeout: OptionalDuration = None
     sentinels: str | None = None
     service_name: str | None = None
     options: str | None = None
     queue: str | None = None
-    timeout: str | None = None
+    timeout: OptionalDuration = None
     sentinel_service_name: str | None = None
 
 
@@ -110,7 +121,7 @@ class PostgresqlSettings(BaseModel):
     queue_insert_batch_size: int = 100
     objgraph_postgresql: bool = False
     objgraph_limit: int = 10
-    init_timeout: int = 30
+    init_timeout: Duration = datetime.timedelta(seconds=30)
 
 
 class SecuritySettings(BaseModel):
@@ -137,7 +148,7 @@ class Settings(BaseSettings):
     hosts_limit: AnyioPath = Path("/etc/tilegeneration/hosts_limit.yaml")
     host_concurrent: int = 1
     ignore_config_error: bool = False
-    max_generation_time: int = 60
+    max_generation_time: Duration = datetime.timedelta(seconds=60)
     allowed_process_commands: StrList = ["optipng", "jpegoptim", "pngquant"]
     frontend: str | None = None
     development: bool = False

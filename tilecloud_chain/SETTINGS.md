@@ -47,7 +47,7 @@
 
 ## `TILECLOUD_CHAIN__MAX_GENERATION_TIME`
 
-*Optional*, default value: `60`
+*Optional*, default value: `0:01:00`
 
 ## `TILECLOUD_CHAIN__ALLOWED_PROCESS_COMMANDS`
 
@@ -167,7 +167,7 @@
 
 ## `TILECLOUD_CHAIN__POSTGRESQL__INIT_TIMEOUT`
 
-*Optional*, default value: `30`
+*Optional*, default value: `0:00:30`
 
 ## `TILECLOUD_CHAIN__REDIS__URL`
 

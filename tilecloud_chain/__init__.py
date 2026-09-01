@@ -2915,7 +2915,11 @@ async def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWr
         tilestore_kwargs: dict[str, Any] = {
             "name": settings.redis.queue or conf.get("queue", configuration.REDIS_QUEUE_DEFAULT),
             "stop_if_empty": not daemon,
-            "timeout": settings.redis.timeout or conf.get("timeout", configuration.TIMEOUT_DEFAULT),
+            "timeout": (
+                settings.redis.timeout.total_seconds()
+                if settings.redis.timeout is not None
+                else conf.get("timeout", configuration.TIMEOUT_DEFAULT)
+            ),
             "pending_timeout": conf.get("pending_timeout", configuration.PENDING_TIMEOUT_DEFAULT),
             "max_retries": conf.get("max_retries", configuration.MAX_RETRIES_DEFAULT),
             "max_errors_age": conf.get("max_errors_age", configuration.MAX_ERRORS_AGE_DEFAULT),
@@ -2925,7 +2929,11 @@ async def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWr
         }
         socket_timeout = settings.redis.socket_timeout or conf.get("socket_timeout")
         if socket_timeout is not None:
-            tilestore_kwargs["connection_kwargs"]["socket_timeout"] = socket_timeout
+            tilestore_kwargs["connection_kwargs"]["socket_timeout"] = (
+                socket_timeout.total_seconds()
+                if isinstance(socket_timeout, datetime.timedelta)
+                else int(socket_timeout)
+            )
         db = settings.redis.db or conf.get("db")
         if db is not None:
             tilestore_kwargs["connection_kwargs"]["db"] = db

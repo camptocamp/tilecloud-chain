@@ -418,11 +418,11 @@ class PostgresqlTileStore(AsyncTileStore):
                 await connection.commit()
 
         try:
-            await asyncio.wait_for(_do_init(), timeout=settings.postgresql.init_timeout)
+            await asyncio.wait_for(_do_init(), timeout=settings.postgresql.init_timeout.total_seconds())
         except TimeoutError:
             _LOGGER.warning(
                 "Database initialization timed out after %d seconds",
-                settings.postgresql.init_timeout,
+                int(settings.postgresql.init_timeout.total_seconds()),
             )
             raise
 

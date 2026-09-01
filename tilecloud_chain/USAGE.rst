@@ -843,7 +843,8 @@ Tile generation:
 - ``TILECLOUD_CHAIN__IGNORE_CONFIG_ERROR``: Ignore configuration errors if set to ``true``
   (default: ``false``)
 
-- ``TILECLOUD_CHAIN__MAX_GENERATION_TIME``: Maximum tile generation time in seconds before timeout
+- ``TILECLOUD_CHAIN__MAX_GENERATION_TIME``: Maximum tile generation time before timeout, accepts ISO 8601
+  durations (e.g.: ``PT1M``), short format (e.g.: ``60s``, ``1m``) or seconds (e.g.: ``60``)
   (default: ``60``)
 
 - ``TILECLOUD_CHAIN__ALLOWED_PROCESS_COMMANDS``: Comma-separated list of allowed process commands
@@ -930,8 +931,19 @@ PostgreSQL:
 - ``TILECLOUD_CHAIN__POSTGRESQL__OBJGRAPH_LIMIT``: Number of entries to include in PostgreSQL objgraph reports
   (default: ``10``)
 
-- ``TILECLOUD_CHAIN__POSTGRESQL__INIT_TIMEOUT``: Timeout in seconds for PostgreSQL database initialization
+- ``TILECLOUD_CHAIN__POSTGRESQL__INIT_TIMEOUT``: Timeout for PostgreSQL database initialization, accepts
+  ISO 8601 durations (e.g.: ``PT30S``), short format (e.g.: ``30s``, ``1m``) or seconds (e.g.: ``30``)
   (default: ``30``)
+
+Redis:
+
+- ``TILECLOUD_CHAIN__REDIS__TIMEOUT``: Timeout used when waiting for messages from the Redis queue, accepts
+  ISO 8601 durations (e.g.: ``PT5S``), short format (e.g.: ``5s``, ``1m``) or seconds (e.g.: ``5``)
+  (default: ``None``, the ``redis.timeout`` of the main configuration is used, ``5`` by default)
+
+- ``TILECLOUD_CHAIN__REDIS__SOCKET_TIMEOUT``: Redis socket timeout, accepts ISO 8601 durations (e.g.: ``PT30S``),
+  short format (e.g.: ``30s``, ``1m``) or seconds (e.g.: ``30``)
+  (default: ``None``, the ``redis.socket_timeout`` of the main configuration is used)
 
 See also: `settings\.py <https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/settings.py>`_.
 
