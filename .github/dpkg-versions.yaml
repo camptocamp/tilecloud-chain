@@ -20,7 +20,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/fonts-dejavu-mono: 2.37-8build1
   ubuntu_26_04/gcc-16-base: 16-20260322-1ubuntu1
   ubuntu_26_04/gnu-coreutils: 9.7-3ubuntu2.1
-  ubuntu_26_04/gpgv: 2.4.8-4ubuntu3
+  ubuntu_26_04/gpgv: 2.4.8-4ubuntu3.1
   ubuntu_26_04/grep: 3.12-1
   ubuntu_26_04/gzip: 1.14-1~exp2ubuntu1.1
   ubuntu_26_04/hostname: 3.25build1
@@ -122,7 +122,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/libspatialite8t64: 5.1.0-3ubuntu2
   ubuntu_26_04/libsqlite3-0: 3.46.1-9ubuntu0.2
   ubuntu_26_04/libss2: 1.47.2-3ubuntu4
-  ubuntu_26_04/libssh2-1t64: 1.11.1-1ubuntu0.26.04.3
+  ubuntu_26_04/libssh2-1t64: 1.11.1-1ubuntu0.26.04.4
   ubuntu_26_04/libssl3t64: 3.5.5-1ubuntu3.5
   ubuntu_26_04/libstdc++6: 16-20260322-1ubuntu1
   ubuntu_26_04/libsystemd0: 259.5-0ubuntu3.4
