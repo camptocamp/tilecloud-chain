@@ -245,7 +245,7 @@ class CacheAzureTyped(TypedDict, total=False):
 
     The root folder of the cache
 
-    default:
+    default: 
     """
 
     container: Required[str]
@@ -311,7 +311,7 @@ class CacheBsddbTyped(TypedDict, total=False):
 
     The root folder of the cache
 
-    default:
+    default: 
     """
 
 
@@ -361,7 +361,7 @@ class CacheFilesystemTyped(TypedDict, total=False):
 
     The root folder of the cache
 
-    default:
+    default: 
     """
 
 
@@ -372,7 +372,7 @@ Cache folder.
 
 The root folder of the cache
 
-default:
+default: 
 """
 
 
@@ -445,7 +445,7 @@ class CacheMbtilesTyped(TypedDict, total=False):
 
     The root folder of the cache
 
-    default:
+    default: 
     """
 
 
@@ -539,7 +539,7 @@ class CacheS3Typed(TypedDict, total=False):
 
     The root folder of the cache
 
-    default:
+    default: 
     """
 
 
@@ -3115,3 +3115,4 @@ _SentinelsItem = Tuple["SentinelHost", "SentinelPort"]
 
 _ValuesItem = str
 """ pattern: ^[a-zA-Z0-9_\-\+~\.]+$ """
+
