@@ -893,6 +893,12 @@ Server:
 - ``TILECLOUD_CHAIN__WMTS_PATH``: Path used in WMTS capabilities URLs, overrides the route prefix
   (default: the value of ``C2C__ROUTE_PREFIX`` without a leading ``/``)
 
+Security:
+
+- ``TILECLOUD_CHAIN__SECURITY__ADMIN_TEST_IMG_SRC``: Comma-separated list of additional URLs allowed in
+  the ``img-src`` directive of the Content-Security-Policy of the ``/admin/test`` page, in addition to
+  ``'self'`` (default: empty)
+
 Worker:
 
 - ``TILECLOUD_CHAIN__NB_TASKS``: Number of concurrent tasks to run in parallel
@@ -971,3 +977,8 @@ The test page stores its current state in the URL query string, so you can share
 
 In the test page, clicking on the map sends a WMTS GetFeatureInfo request on the active layer (if queryable)
 and displays the response in a "Feature info" panel.
+
+The test page is served with a Content-Security-Policy that only allows images from the application itself.
+If the page must load images from external servers (for example images referenced by GetFeatureInfo HTML
+responses), add their URLs, comma separated, to the ``TILECLOUD_CHAIN__SECURITY__ADMIN_TEST_IMG_SRC``
+environment variable; they are added to the ``img-src`` directive of the test page CSP.
