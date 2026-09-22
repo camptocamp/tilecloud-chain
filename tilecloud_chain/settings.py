@@ -8,7 +8,7 @@ from typing import Annotated, Literal
 from anyio import Path
 from pydantic import BaseModel, ConfigDict
 from pydantic.functional_validators import BeforeValidator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 def _to_path(value: str | Path) -> Path:
@@ -37,7 +37,9 @@ def _to_str_list(value: str | list[str] | None) -> list[str]:
     return [v.strip() for v in value.split(",") if v.strip()]
 
 
-StrList = Annotated[list[str], BeforeValidator(_to_str_list)]
+# NoDecode is required to get the raw environment variable value, otherwise pydantic-settings
+# parses list fields as JSON before calling the validator and comma-separated values fail.
+StrList = Annotated[list[str], NoDecode, BeforeValidator(_to_str_list)]
 
 
 def _to_wmts_path(wmts_path: str | None) -> str | None:
@@ -121,6 +123,7 @@ class SecuritySettings(BaseModel):
     cors_methods: StrList = ["*"]
     cors_headers: StrList = ["*"]
     cors_credentials: bool = True
+    admin_test_img_src: StrList = []
 
 
 class Settings(BaseSettings):
