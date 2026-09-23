@@ -1,3 +1,8 @@
+exclude: |-
+  (?x)^(
+    |tilecloud_chain/CONFIG\.md
+  )$
+
 default_language_version:
   python: '3.10'
 
@@ -47,7 +52,6 @@ repos:
       - id: jsonschema2md
         files: tilecloud_chain/schema\.json
         args:
-          - --pre-commit
           - tilecloud_chain/schema.json
           - tilecloud_chain/CONFIG.md
   - repo: https://github.com/sbrunner/hooks
@@ -71,10 +75,6 @@ repos:
     rev: v0.9.0.6
     hooks:
       - id: shellcheck
-  - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 3.0.0
-    hooks:
-      - id: git-check
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.28.6
     hooks:
