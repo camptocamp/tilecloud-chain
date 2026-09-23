@@ -4,6 +4,8 @@
 
 - Use the c2casgiutils `Duration` type for the `TILECLOUD_CHAIN__MAX_GENERATION_TIME`, `TILECLOUD_CHAIN__POSTGRESQL__INIT_TIMEOUT`, `TILECLOUD_CHAIN__REDIS__TIMEOUT` and `TILECLOUD_CHAIN__REDIS__SOCKET_TIMEOUT` environment variables. Values now also accept ISO 8601 durations (e.g. `PT1M`) and the short format (e.g. `1m`, `2m30`); plain numbers remain interpreted as seconds.
 - Replace `TILECLOUD_CHAIN__ROUTE_PREFIX` with `C2C__ROUTE_PREFIX` (from c2casgiutils) for the route prefix environment variable. The default remains `/tiles/` when using the Docker image.
+- Add `TILECLOUD_CHAIN__SECURITY__ADMIN_TEST_IMG_SRC` environment variable to configure a comma-separated list of additional URLs allowed by the `img-src` Content-Security-Policy directive of the `/admin/test` page.
+- Fix the list settings environment variables (`TILECLOUD_CHAIN__ALLOWED_PROCESS_COMMANDS`, `TILECLOUD_CHAIN__SECURITY__TRUSTED_HOSTS`, `TILECLOUD_CHAIN__SECURITY__CORS_*`): the values are now comma-separated lists as documented, they were previously parsed as JSON and comma-separated values failed.
 
 ## 2.0.0
 

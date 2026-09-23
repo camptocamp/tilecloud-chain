@@ -228,4 +228,8 @@
 ## `TILECLOUD_CHAIN__SECURITY__CORS_CREDENTIALS`
 
 *Optional*, default value: `True`
+
+## `TILECLOUD_CHAIN__SECURITY__ADMIN_TEST_IMG_SRC`
+
+*Optional*, default value: `[]`
 <!-- generated env. vars. end -->

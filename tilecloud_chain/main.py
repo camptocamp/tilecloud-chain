@@ -165,6 +165,10 @@ app.add_middleware(
                         "https://cdn.jsdelivr.net/npm/ol@10.10.0/",
                         "https://unpkg.com/ol-layerswitcher@4.1.2/",
                     ],
+                    "img-src": [
+                        "'self'",
+                        *settings.security.admin_test_img_src,
+                    ],
                 },
             },
         },
