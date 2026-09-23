@@ -2,6 +2,8 @@ exclude: |-
   (?x)^(
     tilecloud_chain/configuration\.py
     |tilecloud_chain/host_limit\.py
+    |tilecloud_chain/CONFIG\.md
+    |tilecloud_chain/HOST_LIMIT\.md
   )$
 
 default_language_version:
@@ -73,13 +75,11 @@ repos:
       - id: jsonschema2md
         files: tilecloud_chain/schema\.json
         args:
-          - --pre-commit
           - tilecloud_chain/schema.json
           - tilecloud_chain/CONFIG.md
       - id: jsonschema2md
         files: tilecloud_chain/host-limit-schema\.json
         args:
-          - --pre-commit
           - tilecloud_chain/host-limit-schema.json
           - tilecloud_chain/HOST_LIMIT.md
   - repo: https://github.com/sbrunner/hooks
