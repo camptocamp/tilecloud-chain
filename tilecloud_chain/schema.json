@@ -1496,7 +1496,7 @@
       "additionalProperties": false,
       "properties": {
         "queue": {
-          "title": "Queue",
+          "title": "SQS queue",
           "description": "The queue name",
           "type": "string",
           "default": "tilecloud"
