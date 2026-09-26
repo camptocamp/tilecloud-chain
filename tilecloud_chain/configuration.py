@@ -3,7 +3,7 @@ Automatically generated file from a JSON schema.
 """
 
 
-from typing import Any, Dict, Union, List, TypedDict, Tuple, Literal
+from typing import TypedDict, Tuple, Union, Any, List, Dict, Literal
 from typing_extensions import Required
 
 
