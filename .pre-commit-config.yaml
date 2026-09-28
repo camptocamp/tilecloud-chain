@@ -1,5 +1,6 @@
 exclude: |-
   (?x)^(
+    tilecloud_chain/configuration\.py
     |tilecloud_chain/CONFIG\.md
   )$
 
@@ -38,7 +39,7 @@ repos:
         additional_dependencies:
           - prettier@2.8.4
   - repo: https://github.com/camptocamp/jsonschema-gentypes
-    rev: 2.5.0
+    rev: 2.8.0
     hooks:
       - id: jsonschema-gentypes
         files: |-
