@@ -1,7 +1,9 @@
 # Copyright (c) 2026 by Camptocamp
+import asyncio
 import json
 import os
 import shutil
+import signal
 import sys
 from argparse import Namespace
 from io import StringIO
@@ -73,6 +75,46 @@ async def test_master_initializes_tilegeneration_with_queue_store(monkeypatch: p
     await generate_._generate_init()  # noqa: SLF001
 
     gene.init.assert_called_once_with(queue_store, daemon=False)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("stop_signal", [signal.SIGTERM, signal.SIGINT])
+async def test_cli_main_stops_gracefully_on_signal(stop_signal: signal.Signals) -> None:
+    started = asyncio.Event()
+
+    async def fake_async_main(args: list[str] | None = None, out: Any = None) -> None:
+        del args, out
+        started.set()
+        await asyncio.sleep(3600)
+
+    with patch.object(generate, "async_main", fake_async_main):
+        task = asyncio.create_task(generate._cli_main(["generate-tiles"], None))  # noqa: SLF001
+        await asyncio.wait_for(started.wait(), timeout=5)
+        os.kill(os.getpid(), stop_signal)
+        await asyncio.wait_for(task, timeout=5)
+
+    assert not task.cancelled()
+    assert task.exception() is None
+
+
+@pytest.mark.asyncio
+async def test_async_main_propagates_cancelled_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    reached = asyncio.Event()
+
+    async def blocking_ainit() -> None:
+        reached.set()
+        await asyncio.Event().wait()
+
+    gene = Mock()
+    gene.ainit = blocking_ainit
+    monkeypatch.setattr(generate, "TileGeneration", Mock(return_value=gene))
+
+    task = asyncio.create_task(generate.async_main(["generate-tiles", "--role=slave"]))
+    await asyncio.wait_for(reached.wait(), timeout=5)
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    assert task.cancelled()
 
 
 @pytest.mark.asyncio
