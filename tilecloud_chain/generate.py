@@ -710,7 +710,11 @@ def _normalize_job_command_arguments(arguments: list[str]) -> list[str]:
 
 def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
     """Run the tiles generation."""
-    asyncio.run(_cli_main(args, out))
+    try:
+        asyncio.run(_cli_main(args, out))
+    except asyncio.CancelledError:
+        # The generation was stopped by SIGTERM/SIGINT, this is a clean exit.
+        _LOGGER.info("Stopped")
 
 
 async def _cli_main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
@@ -736,10 +740,7 @@ async def _cli_main(args: list[str] | None = None, out: IO[str] | None = None) -
         # On some platforms (e.g. Windows) the event loop does not support signal handlers.
         pass
 
-    try:
-        await async_main(args, out)
-    except asyncio.CancelledError:
-        _LOGGER.info("Stopped")
+    await async_main(args, out)
 
 
 async def async_main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
