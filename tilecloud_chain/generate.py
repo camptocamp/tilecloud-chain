@@ -7,6 +7,7 @@ import gc
 import logging
 import os
 import random
+import signal
 import socket
 import sys
 from argparse import ArgumentParser, Namespace
@@ -709,7 +710,36 @@ def _normalize_job_command_arguments(arguments: list[str]) -> list[str]:
 
 def main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
     """Run the tiles generation."""
-    asyncio.run(async_main(args, out))
+    asyncio.run(_cli_main(args, out))
+
+
+async def _cli_main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
+    """
+    Run the tiles generation from the CLI.
+
+    Install signal handlers to stop gracefully on SIGTERM/SIGINT, this is required
+    when the process runs as PID 1 in a container because the kernel ignores the
+    signals with default disposition for PID 1.
+    """
+    loop = asyncio.get_running_loop()
+    task = asyncio.current_task()
+
+    def _stop() -> None:
+        _LOGGER.warning("Stop signal received, stopping")
+        if task is not None:
+            task.cancel()
+
+    try:
+        loop.add_signal_handler(signal.SIGTERM, _stop)
+        loop.add_signal_handler(signal.SIGINT, _stop)
+    except NotImplementedError:
+        # On some platforms (e.g. Windows) the event loop does not support signal handlers.
+        pass
+
+    try:
+        await async_main(args, out)
+    except asyncio.CancelledError:
+        _LOGGER.info("Stopped")
 
 
 async def async_main(args: list[str] | None = None, out: IO[str] | None = None) -> None:
@@ -887,6 +917,8 @@ async def async_main(args: list[str] | None = None, out: IO[str] | None = None) 
         finally:
             await gene.close()
     except SystemExit:
+        raise
+    except asyncio.CancelledError:
         raise
     except:  # pylint: disable=bare-except
         _LOGGER.exception("Exit with exception")
