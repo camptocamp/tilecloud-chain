@@ -92,9 +92,9 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libhdf4-0-alt: 4.2.16-4build1
   ubuntu_24_04/libhdf5-103-1t64: 1.10.10+repack-3.1ubuntu4
   ubuntu_24_04/libhdf5-hl-100t64: 1.10.10+repack-3.1ubuntu4
-  ubuntu_24_04/libheif-plugin-aomdec: 1.17.6-1ubuntu4.8
-  ubuntu_24_04/libheif-plugin-libde265: 1.17.6-1ubuntu4.8
-  ubuntu_24_04/libheif1: 1.17.6-1ubuntu4.8
+  ubuntu_24_04/libheif-plugin-aomdec: 1.17.6-1ubuntu4.9
+  ubuntu_24_04/libheif-plugin-libde265: 1.17.6-1ubuntu4.9
+  ubuntu_24_04/libheif1: 1.17.6-1ubuntu4.9
   ubuntu_24_04/libhogweed6t64: 3.9.1-2.2build1.1
   ubuntu_24_04/libicu74: 74.2-1ubuntu3.1
   ubuntu_24_04/libidn2-0: 2.3.7-2build1.1
@@ -170,7 +170,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libsqlite3-0: 3.45.1-1ubuntu2.8
   ubuntu_24_04/libss2: 1.47.0-2.4~exp1ubuntu4.1
   ubuntu_24_04/libssh-4: 0.10.6-2ubuntu0.5
-  ubuntu_24_04/libssl3t64: 3.0.13-0ubuntu3.15
+  ubuntu_24_04/libssl3t64: 3.0.13-0ubuntu3.16
   ubuntu_24_04/libstdc++6: 14.2.0-4ubuntu2~24.04.1
   ubuntu_24_04/libsuperlu6: 6.0.1+dfsg1-1build1
   ubuntu_24_04/libsystemd0: 255.4-1ubuntu8.17
@@ -211,7 +211,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/ncurses-bin: 6.4+20240113-1ubuntu2.2
   ubuntu_24_04/net-tools: 2.10-0.1ubuntu4.4
   ubuntu_24_04/netbase: '6.4'
-  ubuntu_24_04/openssl: 3.0.13-0ubuntu3.15
+  ubuntu_24_04/openssl: 3.0.13-0ubuntu3.16
   ubuntu_24_04/optipng: 0.7.8+ds-1build2
   ubuntu_24_04/passwd: 1:4.13+dfsg1-4ubuntu3.2
   ubuntu_24_04/perl: 5.38.2-3.2ubuntu0.6
