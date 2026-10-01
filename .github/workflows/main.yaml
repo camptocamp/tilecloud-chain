@@ -37,7 +37,8 @@ jobs:
       - name: Checks
         run: c2cciutils-checks
 
-      - run: sudo npm install --global json-schema-spell-checker
+      # Pinned to 2.2.0 because 2.3.0 fails with false positives due to unpinned transitive dependencies drift
+      - run: sudo npm install --global json-schema-spell-checker@2.2.0
       - run: json-schema-spell-checker --fields=description,title --spelling=.spelling --ignore-numbers tilecloud_chain/schema.json
 
       - name: Build
