@@ -1,0 +1,20 @@
+Backport of #3934 to master
+
+Error on cherry-picking: ced01d7165965b76748b134a200d4227ab1b2c0d, 7861ac957e22e6c3f118554b504182e845d85aa6
+
+To continue do:
+```bash
+git fetch && \
+  git checkout ghci/backport/3934-to-master && \
+  git reset --hard HEAD^ && \
+  git cherry-pick ced01d7165965b76748b134a200d4227ab1b2c0d 7861ac957e22e6c3f118554b504182e845d85aa6
+```
+Resolve the conflict, then:
+```bash
+git add <file> && \
+  git cherry-pick --continue
+```
+When all the conflicts are resolved, push the branch:
+```bash
+git push origin HEAD:refs/heads/ghci/backport/3934-to-master --force-with-lease
+```
