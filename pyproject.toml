@@ -32,19 +32,19 @@ PyYAML = "6.0.3"
 Shapely = "2.1.2"
 jsonschema = "4.26.0"
 jsonschema-validator-new = "0.3.2"
-azure-storage-blob = "12.30.0"
+azure-storage-blob = "12.30.3"
 certifi = "2026.7.22"
 Paste = "3.10.1"
 psutil = "7.2.2"
-pyproj = "3.7.2"
+pyproj = "3.8.0"
 aiohttp = "3.14.3"
-aiobotocore = "3.9.0"
-sqlalchemy = { version = "2.0.52", extras = ["asyncio"] }
-anyio = "4.14.2"
+aiobotocore = "3.9.1"
+sqlalchemy = { version = "2.1.0", extras = ["asyncio"] }
+anyio = "4.15.1"
 asyncpg = "0.31.0"
 html-sanitizer = "2.6.0"
 pydantic-settings = "2.15.0"
-mapnik = "4.3.0"
+mapnik = "4.3.2"
 prometheus-fastapi-instrumentator = "8.1.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -55,12 +55,12 @@ c2cwsgiutils = { version = "6.1.10", extras = ["test_images"] }
 scikit-image = { version = "0.26.0" }
 pytest = "9.1.1"
 testfixtures = "12.3.0"
-coverage = "7.15.4"
+coverage = "7.16.1"
 types-redis = "4.6.0.20241004"
-types-requests = "2.33.0.20260712"
+types-requests = "2.33.0.20260906"
 pytest-asyncio = "1.4.0"
 pytest-check = "2.9.1"
-types-pyyaml = "6.0.12.20260815"
+types-pyyaml = "6.0.12.20260906"
 ruff = "0.16.9"
 pylint = "4.0.9"
 settings-doc = "4.3.2"
@@ -126,5 +126,5 @@ generate-process = "tilecloud_chain.copy_:process"
 import-expiretiles = "tilecloud_chain.expiretiles:main"
 
 [build-system]
-requires = ["poetry-core==2.4.0", "poetry-dynamic-versioning[plugin]==1.10.0"]
+requires = ["poetry-core==2.5.0", "poetry-dynamic-versioning[plugin]==1.10.0"]
 build-backend = "poetry.core.masonry.api"
