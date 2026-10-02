@@ -76,6 +76,27 @@ class TestDurationSettings:
         assert RedisSettings(timeout=value).timeout == expected
 
 
+def test_redis_db_int() -> None:
+    """Test that the redis db is parsed as an int."""
+    assert RedisSettings(db=3).db == 3
+    assert RedisSettings(db="3").db == 3
+    assert RedisSettings().db is None
+
+
+def test_redis_db_invalid() -> None:
+    """Test that an invalid redis db is rejected."""
+    with pytest.raises(ValidationError):
+        RedisSettings(db="not-a-number")
+
+
+def test_redis_db_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that the redis db is parsed from the environment variable as an int."""
+    monkeypatch.setenv("TILECLOUD_CHAIN__REDIS__DB", "2")
+    settings = Settings()
+    assert settings.redis.db == 2
+    assert isinstance(settings.redis.db, int)
+
+
 def test_admin_test_img_src_default() -> None:
     """Test the default value of admin_test_img_src."""
     assert SecuritySettings().admin_test_img_src == []

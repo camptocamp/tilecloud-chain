@@ -2934,7 +2934,7 @@ async def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWr
                 if isinstance(socket_timeout, datetime.timedelta)
                 else int(socket_timeout)
             )
-        db = settings.redis.db or conf.get("db")
+        db = settings.redis.db if settings.redis.db is not None else conf.get("db")
         if db is not None:
             tilestore_kwargs["connection_kwargs"]["db"] = db
         url = settings.redis.url or conf.get("url")

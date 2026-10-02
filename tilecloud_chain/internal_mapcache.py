@@ -71,9 +71,9 @@ class RedisStore(AsyncTileStore):
                 if isinstance(socket_timeout, datetime.timedelta)
                 else int(socket_timeout)
             )
-        db = settings.redis.db or cast("str", config.get("db"))
+        db = settings.redis.db if settings.redis.db is not None else config.get("db")
         if db is not None:
-            connection_kwargs["db"] = int(db)
+            connection_kwargs["db"] = db
         url = settings.redis.url or cast("str", config.get("url"))
         if url is not None:
             self._master = aioredis.Redis.from_url(url, **connection_kwargs)
