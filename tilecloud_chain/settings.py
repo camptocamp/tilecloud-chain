@@ -103,7 +103,7 @@ class RedisSettings(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     url: str | None = None
-    db: str | None = None
+    db: int | None = None
     socket_timeout: OptionalDuration = None
     sentinels: str | None = None
     service_name: str | None = None
