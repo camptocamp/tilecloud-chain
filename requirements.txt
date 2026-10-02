@@ -12,4 +12,4 @@ cryptography>=46.0.7 # not directly required, pinned by Snyk to avoid a vulnerab
 requests>=2.32.4 # not directly required, pinned by Snyk to avoid a vulnerability
 urllib3>=2.8.0 # not directly required, pinned by Snyk to avoid a vulnerability
 filelock>=3.20.3 # not directly required, pinned by Snyk to avoid a vulnerability
-virtualenv>=20.36.1 # not directly required, pinned by Snyk to avoid a vulnerability
+virtualenv>=21.7.13 # not directly required, pinned by Snyk to avoid a vulnerability
