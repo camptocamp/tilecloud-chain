@@ -355,6 +355,7 @@ class PostgresqlTileStore(AsyncTileStore):
         self._flush_lock = asyncio.Lock()
         self.SessionMaker: async_sessionmaker[AsyncSession] | None = None  # pylint: disable=invalid-name
         self._engine: AsyncEngine | None = None
+        self._last_maintenance: datetime.datetime | None = None
 
     async def _flush_put_buffer(self, session: AsyncSession | None = None) -> None:
         async with self._flush_lock:
@@ -641,8 +642,17 @@ class PostgresqlTileStore(AsyncTileStore):
         - Update the job status (error or done) on finish
         - manage the too long pending tile generation
         - Create the job list to be process
+
+        Run at most once per `settings.postgresql.maintenance_interval` seconds.
         """
         assert self.SessionMaker is not None
+
+        now = datetime.datetime.now(tz=datetime.UTC)
+        if self._last_maintenance is not None and now - self._last_maintenance < datetime.timedelta(
+            seconds=settings.postgresql.maintenance_interval,
+        ):
+            return
+        self._last_maintenance = now
 
         _LOGGER.debug("Start maintenance")
 
@@ -779,7 +789,9 @@ class PostgresqlTileStore(AsyncTileStore):
             else:
                 nb_iter += 1
 
-            for config_filename in set(config_filenames):
+            current_config_filenames = set(config_filenames)
+            has_tile = False
+            for config_filename in current_config_filenames:
                 try:
                     if settings.postgresql.objgraph_postgresql:
                         for generation in range(3):
@@ -832,11 +844,15 @@ class PostgresqlTileStore(AsyncTileStore):
                             postgresql_id=sqlalchemy_tile.id,
                         )
                         await session.commit()
+                    has_tile = True
                     yield meta_tile
                 except Exception:  # pylint: disable=broad-except
                     _LOGGER.exception("Error while reading from Postgres")
                     _READ_ERROR_COUNTER.labels(job_id or -1, config_filename or "unknown").inc()
                     await asyncio.sleep(1)
+            # Wait a little when there is nothing to consume, to don't loop actively on the database
+            if current_config_filenames and not has_tile:
+                await asyncio.sleep(1)
 
     async def put_one(self, tile: Tile) -> Tile:
         """Put the meta tile in the queue."""

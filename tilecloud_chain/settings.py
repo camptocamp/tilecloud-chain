@@ -113,6 +113,7 @@ class PostgresqlSettings(BaseModel):
     objgraph_postgresql: bool = False
     objgraph_limit: int = 10
     init_timeout: int = 30
+    maintenance_interval: int = 60
 
 
 class SecuritySettings(BaseModel):
