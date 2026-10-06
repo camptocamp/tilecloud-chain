@@ -1,4 +1,5 @@
-c2cciutils[checks,publish]==1.7.5
+c2cciutils[checks]==1.7.5
+tag-publish==1.2.6
 poetry-dynamic-versioning==1.4.1
 poetry-plugin-export==1.8.0
 poetry-plugin-tweak-dependencies-version==1.5.7
