@@ -84,8 +84,8 @@ class AzureStorageBlobTileStore(AsyncTileStore):
             key_name = self.tilelayout.filename(tile.tilecoord, tile.metadata)
             if not self.dry_run:
                 blob = self.container_client.get_blob_client(blob=key_name)
-                if blob.exists():
-                    blob.delete_blob()
+                if await blob.exists():
+                    await blob.delete_blob()
         except Exception as exc:  # pylint: disable=broad-except
             _LOGGER.warning("Failed to delete tile %s", tile.tilecoord, exc_info=exc)
             tile.error = exc
