@@ -3,10 +3,3 @@
 checks:
   codespell: false
   required_workflows: false
-publish:
-  docker:
-    images:
-      - name: camptocamp/tilecloud-chain
-  pypi:
-    versions:
-      - version_tag
