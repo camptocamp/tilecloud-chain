@@ -99,6 +99,8 @@ async def test_retry(queue: tuple[int, int, int], SessionMaker: sessionmaker, ti
         assert len(metatiles) == 1
         assert metatiles[0].error == "test error"
 
+    # The maintenance was already run by list(), force a new run
+    tilestore._last_maintenance = None
     await tilestore._maintenance()
 
     with SessionMaker() as session:
@@ -243,6 +245,8 @@ async def test_maintenance_status_done(
         metatiles = session.query(Queue).filter(Queue.job_id == job_id).all()
         assert len(metatiles) == 0
 
+    # The maintenance was already run by list(), force a new run
+    tilestore._last_maintenance = None
     await tilestore._maintenance()
 
     with SessionMaker() as session:
@@ -412,3 +416,48 @@ async def test_list_picks_next_job_when_first_job_has_only_pending_metatiles(
         session.query(Queue).filter(Queue.job_id.in_([job1_id, job2_id])).delete()
         session.query(Job).filter(Job.id.in_([job1_id, job2_id])).delete()
         session.commit()
+
+
+@pytest.mark.asyncio
+async def test_maintenance_rate_limit(
+    queue: tuple[int, int, int],
+    SessionMaker: sessionmaker,
+    tilestore: PostgresqlTileStore,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """The maintenance is run at most once per maintenance_interval."""
+    _job_id, metatile_0_id, metatile_1_id = queue
+    metatile_ids = (metatile_0_id, metatile_1_id)
+
+    def set_pending_expired() -> None:
+        with SessionMaker() as session:
+            for metatile_id in metatile_ids:
+                metatile = session.query(Queue).filter(Queue.id == metatile_id).one()
+                metatile.status = _STATUS_PENDING
+                metatile.started_at = datetime.now(tz=UTC) - timedelta(hours=1)
+            session.commit()
+
+    def get_statuses() -> list[str]:
+        with SessionMaker() as session:
+            return [session.query(Queue).filter(Queue.id == metatile_id).one().status for metatile_id in metatile_ids]
+
+    set_pending_expired()
+
+    # First maintenance run: the expired pending meta tiles are reset to created
+    await tilestore._maintenance()
+    assert get_statuses() == [_STATUS_CREATED, _STATUS_CREATED]
+    first_run = tilestore._last_maintenance
+    assert first_run is not None
+
+    # Second call inside the interval: skipped, the expired pending meta tiles are kept as-is
+    set_pending_expired()
+    await tilestore._maintenance()
+    assert tilestore._last_maintenance == first_run
+    assert get_statuses() == [_STATUS_PENDING, _STATUS_PENDING]
+
+    # With a zero interval the maintenance is run again
+    monkeypatch.setattr(settings.postgresql, "maintenance_interval", 0)
+    await tilestore._maintenance()
+    assert tilestore._last_maintenance is not None
+    assert tilestore._last_maintenance > first_run
+    assert get_statuses() == [_STATUS_CREATED, _STATUS_CREATED]

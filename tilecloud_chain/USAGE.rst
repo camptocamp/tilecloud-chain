@@ -453,6 +453,10 @@ Queue inserts are batched to improve performance when generating very large pyra
 batch size is ``100`` rows and can be changed with
 ``TILECLOUD_CHAIN__POSTGRESQL__QUEUE_INSERT_BATCH_SIZE``.
 
+The queue maintenance (job queue creation, job status updates, restart of too long pending jobs and
+meta tiles) is run by the consumers at most once per minute by default, the interval in seconds can
+be changed with ``TILECLOUD_CHAIN__POSTGRESQL__MAINTENANCE_INTERVAL``.
+
 See the [configuration reference](https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/CONFIG.md#definitions/postgresql) for the other configuration possibilities.
 
 With that the admin page is enhance with a job concept with enhanced status and they can be
@@ -938,6 +942,9 @@ PostgreSQL:
 
 - ``TILECLOUD_CHAIN__POSTGRESQL__INIT_TIMEOUT``: Timeout in seconds for PostgreSQL database initialization
   (default: ``30``)
+
+- ``TILECLOUD_CHAIN__POSTGRESQL__MAINTENANCE_INTERVAL``: Minimum interval in seconds between two
+  PostgreSQL queue maintenance runs (default: ``60``)
 
 See also: `settings\.py <https://github.com/camptocamp/tilecloud-chain/blob/master/tilecloud_chain/settings.py>`_.
 

@@ -7,6 +7,7 @@
 - Add `TILECLOUD_CHAIN__SECURITY__ADMIN_TEST_IMG_SRC` environment variable to configure a comma-separated list of additional URLs allowed by the `img-src` Content-Security-Policy directive of the `/admin/test` page.
 - Fix the list settings environment variables (`TILECLOUD_CHAIN__ALLOWED_PROCESS_COMMANDS`, `TILECLOUD_CHAIN__SECURITY__TRUSTED_HOSTS`, `TILECLOUD_CHAIN__SECURITY__CORS_*`): the values are now comma-separated lists as documented, they were previously parsed as JSON and comma-separated values failed.
 - Fix the tile deletion on an Azure Blob Storage cache: `exists()` and `delete_blob()` were not awaited, then the tiles were never deleted and `RuntimeWarning: coroutine ... was never awaited` warnings were logged.
+- Run the PostgreSQL queue maintenance at most once per minute (configurable with the new `TILECLOUD_CHAIN__POSTGRESQL__MAINTENANCE_INTERVAL` environment variable, in seconds): when a job was started but no meta-tile was consumable, the maintenance was re-run continuously (about once per second), flooding the logs with the `Start maintenance` message and hammering the database. The queue consumer now also waits one second when it finds no meta-tile to consume.
 
 ## 2.0.1
 
