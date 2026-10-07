@@ -81,6 +81,7 @@ azure-core = "1.38.0"
 pyjwt = "2.15.0"
 ujson = "5.13.0"
 mako = "1.4.2"
+oauthlib = "4.0.0"
 
 [tool.poetry.dev-dependencies]
 prospector = { extras = ["with_mypy", "with_bandit", "with_pyroma"], version = "1.10.3" }
