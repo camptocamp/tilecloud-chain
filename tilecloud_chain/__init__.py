@@ -330,6 +330,14 @@ class Run:
                 )
                 if tile is None:
                     _LOGGER.debug("[%s] Drop", tilecoord)
+                    if self.out is not None and getattr(self.gene.options, "role", None) == "hash":
+                        print(
+                            f"Error: the tile {tilecoord} has been dropped (no data returned by the source), "
+                            "impossible to compute the hash.",
+                            file=self.out,
+                        )
+                        async with self.error_lock:
+                            self.error += 1
                     return None
                 if tile.error:
                     if tile.content_type and (

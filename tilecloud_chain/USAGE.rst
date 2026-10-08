@@ -167,6 +167,10 @@ To easily generate this configuration we can use the following command:
 Where ``<z/x/y>`` should refer to an empty tile/metatile. Generally it's a good idea to use z as the maximum
 zoom, x and y as 0.
 
+The source server should return a uniform empty image for the given tile/metatile. If it returns no data at
+all (HTTP ``204`` or ``404``), the tile is dropped, no hash can be computed and an error message is printed
+instead.
+
 Configure geom/sql
 ^^^^^^^^^^^^^^^^^^
 
