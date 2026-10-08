@@ -149,6 +149,7 @@ class MapnikDropActionTileStore(MapnikTileStore):
                     await self.queue_store.delete_one(metatile)
             elif self.queue_store is not None:
                 await self.queue_store.delete_one(tile)
+            tile.queue_acked = True  # type: ignore[attr-defined]
 
             for count in self.count:
                 await count(None)
