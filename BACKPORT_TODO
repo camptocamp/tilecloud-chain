@@ -1,0 +1,20 @@
+Backport of #3996 to master
+
+Error on cherry-picking: 779bef870325fbc1eb206dcc31c706bfda8e776a
+
+To continue do:
+```bash
+git fetch && \
+  git checkout ghci/backport/3996-to-master && \
+  git reset --hard HEAD^ && \
+  git cherry-pick 779bef870325fbc1eb206dcc31c706bfda8e776a
+```
+Resolve the conflict, then:
+```bash
+git add <file> && \
+  git cherry-pick --continue
+```
+When all the conflicts are resolved, push the branch:
+```bash
+git push origin HEAD:refs/heads/ghci/backport/3996-to-master --force-with-lease
+```
