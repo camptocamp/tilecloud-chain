@@ -118,7 +118,7 @@ class URLTileStore(AsyncTileStore):
             _LOGGER.info("GET %s", url)
             try:
                 async with self._session.get(url) as response:
-                    if response.status in (404, 204):
+                    if response.status == 204:
                         _LOGGER.debug("Got empty tile from %s: %s", url, response.status)
                         return None
                     tile.content_encoding = response.headers.get("Content-Encoding")
@@ -139,7 +139,9 @@ class URLTileStore(AsyncTileStore):
                             tile.error = f"URL: {url}\nThe Content-Type header is missing"
 
                     else:
-                        tile.error = f"URL: {url}\n{response.status}: {response.reason}\n{response.text}"
+                        tile.error = (
+                            f"URL: {url}\n{response.status}: {response.reason}\n{await response.text()}"
+                        )
             except aiohttp.ClientError as exception:
                 _LOGGER.warning("Error while getting tile %s", tile, exc_info=True)
                 tile.error = exception

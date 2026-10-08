@@ -299,6 +299,26 @@ class Run:
             else None
         )
 
+    async def _ack_dropped_tile(self, tile: Tile) -> None:
+        """
+        Acknowledge the queue entry of a tile dropped before it was stored.
+
+        A dropped tile never reaches the store/delete stage, so without this its queue
+        entry would stay pending forever (and be retried endlessly by the maintenance).
+        Tiles that already acknowledged the queue themselves (e.g. HashDropper or the
+        Mapnik drop store) are flagged with ``queue_acked`` to avoid a double release.
+        """
+        if self.gene.queue_store is None or hasattr(tile, "queue_acked"):
+            return
+        if hasattr(tile, "metatile"):
+            metatile: Tile = tile.metatile
+            metatile.elapsed_togenerate -= 1  # type: ignore[attr-defined]
+            if metatile.elapsed_togenerate == 0:  # type: ignore[attr-defined]
+                await self.gene.queue_store.delete_one(metatile)
+        else:
+            await self.gene.queue_store.delete_one(tile)
+        tile.queue_acked = True  # type: ignore[attr-defined]
+
     async def __call__(self, tile: Tile | None) -> Tile | None:
         """Run the tile generation."""
         if tile is None:
@@ -313,6 +333,7 @@ class Run:
             try:
                 _LOGGER.debug("[%s] Run: %s", tilecoord, func)
                 n = datetime.datetime.now(tz=datetime.UTC)
+                func_input_tile = tile
                 if self.safe:
                     try:
                         tile = await func(tile)
@@ -330,6 +351,7 @@ class Run:
                 )
                 if tile is None:
                     _LOGGER.debug("[%s] Drop", tilecoord)
+                    await self._ack_dropped_tile(func_input_tile)
                     if self.out is not None and getattr(self.gene.options, "role", None) == "hash":
                         print(
                             f"Error: the tile {tilecoord} has been dropped (no data returned by the source), "
@@ -2544,6 +2566,7 @@ class HashDropper:
                 await self.queue_store.delete_one(metatile)
         elif self.queue_store is not None:
             await self.queue_store.delete_one(tile)
+        tile.queue_acked = True  # type: ignore[attr-defined]
 
         if self.count:
             await self.count()
