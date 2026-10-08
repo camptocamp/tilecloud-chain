@@ -1,12 +1,14 @@
 # Copyright (c) 2026 by Camptocamp
+from io import StringIO
 from types import SimpleNamespace
-from typing import IO, Any
+from typing import IO, Any, cast
 from unittest.mock import AsyncMock, Mock
 
 import pytest
 from c2casgiutils.config import GitHubAccessType
+from tilecloud import Tile, TileCoord
 
-from tilecloud_chain import DatedConfig
+from tilecloud_chain import DatedConfig, Run, TileGeneration
 from tilecloud_chain.views import admin
 
 
@@ -61,6 +63,89 @@ async def test_run_truncates_fallback_exception_message(monkeypatch: pytest.Monk
     assert result["error"] is True
     assert result["out"].endswith("\n...")
     assert len(result["out"]) <= 41
+
+
+@pytest.mark.asyncio
+async def test_run_keeps_command_output_on_system_exit() -> None:
+    async def main(_args: list[str], out: IO[str]) -> None:
+        out.write("Error: image is not uniform.")
+        raise SystemExit(1)
+
+    result: dict[str, Any] = {}
+    await admin._run(["generate-tiles"], main, result)
+
+    assert result["error"] is True
+    assert result["out"] == "Error: image is not uniform."
+
+
+@pytest.mark.asyncio
+async def test_run_system_exit_zero_is_not_an_error() -> None:
+    async def main(_args: list[str], out: IO[str]) -> None:
+        out.write("Tile bounds: [1,2,3,4]")
+        raise SystemExit
+
+    result: dict[str, Any] = {}
+    await admin._run(["generate-tiles"], main, result)
+
+    assert result["error"] is False
+    assert result["out"] == "Tile bounds: [1,2,3,4]"
+
+
+@pytest.mark.asyncio
+async def test_run_system_exit_without_output_uses_fallback() -> None:
+    async def main(_args: list[str], _out: IO[str]) -> None:
+        raise SystemExit(1)
+
+    result: dict[str, Any] = {}
+    await admin._run(["generate-tiles"], main, result)
+
+    assert result["error"] is True
+    assert result["out"] == "Error while running the command: exit code 1"
+
+
+class _DummyGeneration:
+    def __init__(self, role: str) -> None:
+        self.queue_store = None
+        self.options = SimpleNamespace(debug=False, role=role)
+        self.maxconsecutive_errors = False
+
+    async def get_main_config(self) -> Any:
+        return SimpleNamespace(config={"generation": {}})
+
+
+@pytest.mark.asyncio
+async def test_run_reports_dropped_tile_in_hash_mode() -> None:
+    async def drop(tile: Tile) -> Tile | None:
+        return None
+
+    out = StringIO()
+    run = Run(cast("TileGeneration", _DummyGeneration("hash")), [drop], out=out)
+    run.max_consecutive_errors = None
+
+    tile = Tile(TileCoord(10, 0, 0), metadata={"layer": "ortho_mex", "host": "localhost"})
+    assert await run(tile) is None
+
+    assert run.error == 1
+    assert (
+        "Error: the tile 10/0/0 has been dropped (no data returned by the source), "
+        "impossible to compute the hash." in out.getvalue()
+    )
+
+
+@pytest.mark.asyncio
+async def test_run_dropped_tile_is_silent_outside_hash_mode() -> None:
+    async def drop(tile: Tile) -> Tile | None:
+        return None
+
+    out = StringIO()
+    run = Run(cast("TileGeneration", _DummyGeneration("local")), [drop], out=out)
+    run.max_consecutive_errors = None
+
+    tile = Tile(TileCoord(10, 0, 0), metadata={"layer": "ortho_mex", "host": "localhost"})
+    assert await run(tile) is None
+
+    assert run.error == 0
+    assert out.getvalue() == ""
 
 
 @pytest.mark.asyncio

@@ -573,6 +573,11 @@ async def _run(
     try:
         _LOG.debug("Running the command `%s` using the function directly", display_command)
         await main(final_command, out)
+    except SystemExit as exc:
+        if exc.code is not None and exc.code != 0:
+            _LOG.error("The command `%s` exited with the code %s", display_command, exc.code)
+            error = True
+            error_detail = f"exit code {exc.code}"
     except Exception as exc:
         _LOG.exception("Error while running the command `%s`", display_command)
         error = True

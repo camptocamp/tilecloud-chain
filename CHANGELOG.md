@@ -7,6 +7,9 @@
 - Add `TILECLOUD_CHAIN__SECURITY__ADMIN_TEST_IMG_SRC` environment variable to configure a comma-separated list of additional URLs allowed by the `img-src` Content-Security-Policy directive of the `/admin/test` page.
 - Fix the list settings environment variables (`TILECLOUD_CHAIN__ALLOWED_PROCESS_COMMANDS`, `TILECLOUD_CHAIN__SECURITY__TRUSTED_HOSTS`, `TILECLOUD_CHAIN__SECURITY__CORS_*`): the values are now comma-separated lists as documented, they were previously parsed as JSON and comma-separated values failed.
 - Fix the tile deletion on an Azure Blob Storage cache: `exists()` and `delete_blob()` were not awaited, then the tiles were never deleted and `RuntimeWarning: coroutine ... was never awaited` warnings were logged.
+- Run the PostgreSQL queue maintenance at most once per minute (configurable with the new `TILECLOUD_CHAIN__POSTGRESQL__MAINTENANCE_INTERVAL` environment variable, in seconds): when a job was started but no meta-tile was consumable, the maintenance was re-run continuously (about once per second), flooding the logs with the `Start maintenance` message and hammering the database. The queue consumer now also waits one second when it finds no meta-tile to consume.
+- Fix the admin interface losing the output of failed commands run from the command form: `SystemExit` (raised by all the `generate-tiles` error paths through `sys.exit(1)`) was not caught, resulting in an internal server error with no displayed message. The captured output (e.g. `Error: image is not uniform.`) is now returned and displayed, like it already was for the PostgreSQL jobs.
+- Report an explicit error in `generate-tiles --get-hash` when the tile is dropped because the source returned no data (HTTP `204`/`404`): the command previously ended successfully with an empty output, and the admin interface displayed a `done` job without any message or hash. The tile must return a uniform empty image for the hash to be computed.
 
 ## 2.0.1
 
