@@ -50,6 +50,7 @@ from c2cwsgiutils import sentry
 from PIL import Image
 from prometheus_client import Counter, Summary
 from ruamel.yaml import YAML
+from ruamel.yaml.error import YAMLError
 from shapely.geometry import GeometryCollection, box, shape
 from shapely.geometry.base import BaseGeometry
 from shapely.geometry.polygon import Polygon
@@ -403,10 +404,12 @@ class DatedConfig:
         config: configuration.Configuration,
         mtime: float,
         file: Path,
+        errors: list[str] | None = None,
     ) -> None:
         self.config = config
         self.mtime = mtime
         self.file = file
+        self.errors: list[str] = [] if errors is None else errors
 
     def __bool__(self) -> bool:
         return bool(self.config)
@@ -1120,12 +1123,22 @@ class TileGeneration:
         if not await config_file.exists():
             _LOGGER.error("Missing config file %s", config_file)
             if ignore_error:
-                return DatedConfig(cast("configuration.Configuration", {}), 0, Path())
+                return DatedConfig(
+                    cast("configuration.Configuration", {}),
+                    0,
+                    Path(),
+                    errors=[f"Missing config file {config_file}"],
+                )
             sys.exit(1)
         if not await config_file.is_file():
             _LOGGER.error("Config file %s is not a file", config_file)
             if ignore_error:
-                return DatedConfig(cast("configuration.Configuration", {}), 0, Path())
+                return DatedConfig(
+                    cast("configuration.Configuration", {}),
+                    0,
+                    Path(),
+                    errors=[f"Config file {config_file} is not a file"],
+                )
             sys.exit(1)
         _LOGGER.debug("Get config for file %s", config_file)
 
@@ -1138,7 +1151,12 @@ class TileGeneration:
         config, success = await self._get_config(config_file, ignore_error, base_config)
         if not success or config is None:
             if ignore_error:
-                config = DatedConfig(cast("configuration.Configuration", {}), 0, Path())
+                config = DatedConfig(
+                    cast("configuration.Configuration", {}),
+                    0,
+                    Path(),
+                    errors=[] if config is None else config.errors,
+                )
             else:
                 sys.exit(1)
         self.configs[config_file] = config
@@ -1202,12 +1220,45 @@ class TileGeneration:
 
         async with await config_file.open(encoding="utf-8") as f:
             content = await f.read()
-            config: dict[str, Any] = {}
-            config.update({} if base_config is None else base_config)
-            ruamel = YAML()
-            config.update(ruamel.load(content))
-
         config_stat = await config_file.stat()
+        config: dict[str, Any] = {}
+        config.update({} if base_config is None else base_config)
+        ruamel = YAML()
+        parse_error: str | None = None
+        loaded_config: Any = None
+        try:
+            loaded_config = ruamel.load(content)
+        except YAMLError as error:
+            # Catch the YAML parse errors to be able to display them to the user,
+            # like the schema validation errors, instead of crashing the request.
+            parse_error = str(error)
+        if parse_error is not None:
+            _LOGGER.error("Unable to parse the config file %s:\n%s", config_file, parse_error)
+            return (
+                DatedConfig(
+                    cast("configuration.Configuration", {}),
+                    config_stat.st_mtime,
+                    config_file,
+                    errors=[f"-- {config_file} Unable to parse the YAML file: {parse_error}"],
+                ),
+                False,
+            )
+        if loaded_config is None:
+            loaded_config = {}
+        if not isinstance(loaded_config, dict):
+            message = f"-- {config_file} The config file must be a YAML mapping"
+            _LOGGER.error(message)
+            return (
+                DatedConfig(
+                    cast("configuration.Configuration", {}),
+                    config_stat.st_mtime,
+                    config_file,
+                    errors=[message],
+                ),
+                False,
+            )
+        config.update(loaded_config)
+
         dated_config = DatedConfig(
             cast("configuration.Configuration", config),
             config_stat.st_mtime,
@@ -1241,22 +1292,21 @@ class TileGeneration:
 
         if errors:
             _LOGGER.error("The config file is invalid:\n%s", "\n".join(errors))
+            config.errors = list(errors)
             if not (ignore_error or settings.ignore_config_error):
                 sys.exit(1)
+            # The structure is not reliable, skip the normalization to avoid crashes on it.
+            return False
 
-        error = False
         grids = config.config.get("grids", {})
         for grid in grids.values():
             if "resolution_scale" in grid:
                 scale = grid.get("resolution_scale", 1)
                 for resolution in grid["resolutions"]:
                     if resolution * scale % 1 != 0.0:
-                        _LOGGER.error(
-                            "The resolution %s * resolution_scale %s is not an integer.",
-                            resolution,
-                            scale,
-                        )
-                        error = True
+                        message = f"The resolution {resolution} * resolution_scale {scale} is not an integer."
+                        _LOGGER.error(message)
+                        errors.append(message)
             else:
                 grid["resolution_scale"] = self._resolution_scale(grid["resolutions"])
 
@@ -1275,16 +1325,15 @@ class TileGeneration:
                     "Pragma": "no-cache",
                 }
             if layer["type"] == "mapnik" and layer.get("output_format", "png") == "grid" and layer["meta"]:
-                _LOGGER.error(
-                    "The layer '%s' is of type Mapnik/Grid, that can't support matatiles.",
-                    lname,
-                )
-                error = True
+                message = f"The layer '{lname}' is of type Mapnik/Grid, that can't support matatiles."
+                _LOGGER.error(message)
+                errors.append(message)
 
-        if error and not (ignore_error or settings.ignore_config_error):
+        config.errors = list(errors)
+        if errors and not (ignore_error or settings.ignore_config_error):
             sys.exit(1)
 
-        return not (error or errors)
+        return not errors
 
     def init(self, queue_store: AsyncTileStore | None = None, daemon: bool = False) -> None:
         """Initialize the tile generation."""
