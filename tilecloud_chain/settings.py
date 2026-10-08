@@ -124,6 +124,7 @@ class PostgresqlSettings(BaseModel):
     objgraph_postgresql: bool = False
     objgraph_limit: int = 10
     init_timeout: Duration = datetime.timedelta(seconds=30)
+    maintenance_interval: int = 60
 
 
 class SecuritySettings(BaseModel):
