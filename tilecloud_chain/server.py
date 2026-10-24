@@ -474,6 +474,14 @@ class Server:
         """Async serve method for FastAPI."""
 
         if not config or not config.config:
+            if config is not None and config.errors:
+                raise HTTPException(
+                    status_code=500,
+                    detail=(
+                        f"The configuration of host '{host}' is invalid, "
+                        "see the logs or the admin page for details"
+                    ),
+                )
             raise HTTPException(
                 status_code=404,
                 detail="No configuration file found for the host or the configuration has an error, see logs for details",
@@ -888,6 +896,14 @@ async def get_host_config(
 
     config = await _TILEGENERATION.get_host_config(host)
     if not config:
+        if config.errors:
+            raise HTTPException(
+                status_code=500,
+                detail=(
+                    f"The configuration of host '{host}' is invalid, "
+                    "see the logs or the admin page for details"
+                ),
+            )
         raise HTTPException(status_code=404, detail=f"No configuration found for host '{host}'")
 
     return config
@@ -1228,6 +1244,11 @@ async def get_static(
 ) -> Response:
     """Get static files from the cache."""
     if not config.config:
+        if config.errors:
+            raise HTTPException(
+                status_code=500,
+                detail="The configuration of the host is invalid, see the logs or the admin page for details",
+            )
         raise HTTPException(
             status_code=404,
             detail="No configuration file found for the host or the configuration has an error, see logs for details",
