@@ -43,7 +43,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/libboost-filesystem1.74.0: 1.74.0-14ubuntu3
   ubuntu_22_04/libboost-program-options1.74.0: 1.74.0-14ubuntu3
   ubuntu_22_04/libboost-regex1.74.0: 1.74.0-14ubuntu3
-  ubuntu_22_04/libbrotli1: 1.0.9-2build6
+  ubuntu_22_04/libbrotli1: 1.0.9-2ubuntu0.1
   ubuntu_22_04/libbsd0: 0.11.5-1
   ubuntu_22_04/libbz2-1.0: 1.0.8-5ubuntu0.1
   ubuntu_22_04/libc-bin: 2.35-0ubuntu3.15
