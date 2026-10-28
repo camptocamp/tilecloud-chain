@@ -18,6 +18,26 @@ ignore:
     - '*':
         reason: not compatible with used Python version
         created: 2026-07-20T00:00:00.000Z
+  SNYK-PYTHON-PILLOW-21277795:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-10-28T17:14:16.000Z
+  SNYK-PYTHON-PILLOW-21277796:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-10-28T17:14:16.000Z
+  SNYK-PYTHON-PILLOW-21277799:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-10-28T17:14:16.000Z
+  SNYK-PYTHON-PILLOW-21277801:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-10-28T17:14:16.000Z
+  SNYK-PYTHON-PILLOW-21430999:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-10-28T17:14:16.000Z
   SNYK-PYTHON-POETRY-15873752:
     - '*':
         reason: Plugin not compatible with new Poetry version
