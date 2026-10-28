@@ -55,6 +55,16 @@
       matchBaseBranches: ['1.17'],
       enabled: false,
     },
+    /**
+     * Disable psycopg2 updates above 2.9.10 on version 1.17, the Docker image runs on Python 3.8 and
+     * psycopg2 2.9.11+ requires Python >= 3.9 (2.9.13 requires Python >= 3.10), which `poetry export`
+     * cannot resolve for that Python range.
+     */
+    {
+      matchDepNames: ['psycopg2'],
+      matchBaseBranches: ['1.17'],
+      allowedVersions: '<2.9.11',
+    },
     /** Ungroup Gdal */
     {
       matchDepNames: ['ghcr.io/osgeo/gdal'],
