@@ -6,7 +6,7 @@ headers: |
 pre_commit:
   enabled: false
 
-python_version: '3.10'
+python_version: '3.11'
 
 generate:
   - source: tilecloud_chain/schema.json

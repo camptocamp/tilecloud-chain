@@ -3,8 +3,7 @@ Automatically generated file from a JSON schema.
 """
 
 
-from typing import Any, Dict, List, Literal, Tuple, TypedDict, Union
-from typing_extensions import Required
+from typing import Any, Dict, List, Literal, Required, Tuple, TypedDict, Union
 
 
 ADMIN_PATH_DEFAULT = 'admin'
