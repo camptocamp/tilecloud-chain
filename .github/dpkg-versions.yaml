@@ -44,7 +44,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_24_04/libblosc1: 1.21.5+ds-1build1
   ubuntu_24_04/libboost-filesystem1.83.0: 1.83.0-2.1ubuntu3.1
   ubuntu_24_04/libboost-program-options1.83.0: 1.83.0-2.1ubuntu3.1
-  ubuntu_24_04/libbrotli1: 1.1.0-2build2
+  ubuntu_24_04/libbrotli1: 1.1.0-2ubuntu0.1
   ubuntu_24_04/libbsd0: 0.12.1-1build1.1
   ubuntu_24_04/libbz2-1.0: 1.0.8-5.1ubuntu0.1
   ubuntu_24_04/libc-bin: 2.39-0ubuntu8.9
