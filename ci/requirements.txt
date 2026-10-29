@@ -6,7 +6,3 @@ poetry-plugin-tweak-dependencies-version==1.5.7
 pre-commit==4.6.2
 poetry-plugin-drop-python-upper-constraint==0.1.0
 importlib-metadata<8.5.1
-dulwich>=1.2.9 # not directly required, pinned by Snyk to avoid a vulnerability
-filelock>=4.2.1 # not directly required, pinned by Snyk to avoid a vulnerability
-poetry>=2.3.4 # not directly required, pinned by Snyk to avoid a vulnerability
-virtualenv>=21.14.7 # not directly required, pinned by Snyk to avoid a vulnerability

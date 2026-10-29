@@ -1,0 +1,113 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.1
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  SNYK-PYTHON-DULWICH-17054926:
+    - '*':
+        reason: not upgradable, poetry requires dulwich<0.23.0 and the fix is only available in dulwich>=1.1.0
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-DULWICH-17054927:
+    - '*':
+        reason: not upgradable, poetry requires dulwich<0.23.0 and the fix is only available in dulwich>=1.1.0
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-DULWICH-17266106:
+    - '*':
+        reason: not upgradable, poetry requires dulwich<0.23.0 and the fix is only available in dulwich>=1.1.0
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-DULWICH-18016337:
+    - '*':
+        reason: not upgradable, poetry requires dulwich<0.23.0 and the fix is only available in dulwich>=1.1.0
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-DULWICH-20416729:
+    - '*':
+        reason: not upgradable, poetry requires dulwich<0.23.0 and the fix is only available in dulwich>=1.1.0
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-DULWICH-20416732:
+    - '*':
+        reason: not upgradable, poetry requires dulwich<0.23.0 and the fix is only available in dulwich>=1.1.0
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-FILELOCK-21280750:
+    - '*':
+        reason: not upgradable, virtualenv requires filelock<4.0.0 and the fix is only available in filelock>=4.0.9
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-FILELOCK-21280753:
+    - '*':
+        reason: not upgradable, virtualenv requires filelock<4.0.0 and the fix is only available in filelock>=4.0.9
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-FILELOCK-21280754:
+    - '*':
+        reason: not upgradable, virtualenv requires filelock<4.0.0 and the fix is only available in filelock>=4.0.9
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-FILELOCK-21280755:
+    - '*':
+        reason: not upgradable, virtualenv requires filelock<4.0.0 and the fix is only available in filelock>=4.0.9
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-FILELOCK-21280756:
+    - '*':
+        reason: not upgradable, virtualenv requires filelock<4.0.0 and the fix is only available in filelock>=4.0.9
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-FILELOCK-21280759:
+    - '*':
+        reason: not upgradable, virtualenv requires filelock<4.0.0 and the fix is only available in filelock>=4.0.9
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-FILELOCK-21280760:
+    - '*':
+        reason: not upgradable, virtualenv requires filelock<4.0.0 and the fix is only available in filelock>=4.0.9
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-FILELOCK-21280761:
+    - '*':
+        reason: not upgradable, virtualenv requires filelock<4.0.0 and the fix is only available in filelock>=4.0.9
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-FILELOCK-21689161:
+    - '*':
+        reason: not upgradable, virtualenv requires filelock<4.0.0 and the fix is only available in filelock>=4.0.9
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-FILELOCK-21689162:
+    - '*':
+        reason: not upgradable, virtualenv requires filelock<4.0.0 and the fix is only available in filelock>=4.0.9
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-POETRY-15873752:
+    - '*':
+        reason: Plugin not compatible with new Poetry version
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-POETRY-16122096:
+    - '*':
+        reason: Plugin not compatible with new Poetry version
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-VIRTUALENV-20335491:
+    - '*':
+        reason: not upgradable, poetry requires virtualenv<21.0.0 and the fix is only available in virtualenv>=21.7.11
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-VIRTUALENV-20335492:
+    - '*':
+        reason: not upgradable, poetry requires virtualenv<21.0.0 and the fix is only available in virtualenv>=21.7.11
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-VIRTUALENV-20335493:
+    - '*':
+        reason: not upgradable, poetry requires virtualenv<21.0.0 and the fix is only available in virtualenv>=21.7.11
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-VIRTUALENV-20335500:
+    - '*':
+        reason: not upgradable, poetry requires virtualenv<21.0.0 and the fix is only available in virtualenv>=21.7.11
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-VIRTUALENV-21282339:
+    - '*':
+        reason: not upgradable, poetry requires virtualenv<21.0.0 and the fix is only available in virtualenv>=21.7.11
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-VIRTUALENV-21282342:
+    - '*':
+        reason: not upgradable, poetry requires virtualenv<21.0.0 and the fix is only available in virtualenv>=21.7.11
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-VIRTUALENV-21282424:
+    - '*':
+        reason: not upgradable, poetry requires virtualenv<21.0.0 and the fix is only available in virtualenv>=21.7.11
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-VIRTUALENV-21282484:
+    - '*':
+        reason: not upgradable, poetry requires virtualenv<21.0.0 and the fix is only available in virtualenv>=21.7.11
+        created: 2026-10-29T00:00:00.000Z
+  SNYK-PYTHON-VIRTUALENV-21282509:
+    - '*':
+        reason: not upgradable, poetry requires virtualenv<21.0.0 and the fix is only available in virtualenv>=21.7.11
+        created: 2026-10-29T00:00:00.000Z
+patch: {}
