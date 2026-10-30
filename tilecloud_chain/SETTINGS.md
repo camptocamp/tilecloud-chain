@@ -169,6 +169,10 @@
 
 *Optional*, default value: `0:00:30`
 
+## `TILECLOUD_CHAIN__POSTGRESQL__MAINTENANCE_INTERVAL`
+
+*Optional*, default value: `60`
+
 ## `TILECLOUD_CHAIN__REDIS__URL`
 
 *Optional*, default value: `None`
