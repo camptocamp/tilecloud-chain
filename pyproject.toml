@@ -42,7 +42,7 @@ aiobotocore = "3.10.0"
 sqlalchemy = { version = "2.1.6", extras = ["asyncio"] }
 anyio = "4.15.1"
 asyncpg = "0.32.0"
-html-sanitizer = "2.6.0"
+html-sanitizer = "2.7.0"
 pydantic-settings = "2.16.1"
 mapnik = "4.3.2"
 prometheus-fastapi-instrumentator = "8.1.0"
