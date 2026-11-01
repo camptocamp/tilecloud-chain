@@ -2096,14 +2096,14 @@ files = [
 
 [[package]]
 name = "html-sanitizer"
-version = "2.6.0"
+version = "2.7.0"
 description = "HTML sanitizer"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "html_sanitizer-2.6.0-py3-none-any.whl", hash = "sha256:44c8ef924358a092f13d7c63f6385b05994e5a328b0f11d1db421d88980b7c3f"},
-    {file = "html_sanitizer-2.6.0.tar.gz", hash = "sha256:e20bbc92df161d16c04aace70b2f69f482bd1e60d40aaa8b3209a2aeb94cd524"},
+    {file = "html_sanitizer-2.7.0-py3-none-any.whl", hash = "sha256:d5ab846157bae7e3b723e49726695bda7f97f2882aa4a40d4a0bd401f37d84a3"},
+    {file = "html_sanitizer-2.7.0.tar.gz", hash = "sha256:ac53fe6d5297b66c736cb24102b77406fc9c58098ce70fdcb23bdbae5ae06ccb"},
 ]
 
 [package.dependencies]
@@ -7537,4 +7537,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.15"
-content-hash = "b1bec220474c93551ad7c84858734da9eb40aaadf7df7f7e0ddcecdd03a3dac9"
+content-hash = "4cc65e5c5613a8704cbd4a34f63fd2828edf7775eeb5561acb4e89634dcb21ed"
