@@ -25,7 +25,7 @@ version = "0.0.0"
 python = ">=3.12,<3.15"
 c2casgiutils = { version = "0.14.0", extras = ["all"] }
 fastapi = {extras = ["standard"], version = "0.162.0"}
-python-dateutil = "2.9.0.post0"
+python-dateutil = "3.0.0"
 tilecloud = { version = "1.14.0", extras = ["azure", "aws", "redis", "wsgi"] }
 Jinja2 = "3.1.6"
 PyYAML = "6.0.3"
