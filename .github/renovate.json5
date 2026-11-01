@@ -55,6 +55,15 @@
       matchBaseBranches: ['1.17'],
       enabled: false,
     },
+    /**
+     * Disable pre-commit updates above 4.6.2 on version 1.21, the CI runs on ubuntu-22.04 with
+     * Python 3.10 and pre-commit 4.7.0+ requires Python >= 3.11, which pip cannot install.
+     */
+    {
+      matchDepNames: ['pre-commit'],
+      matchBaseBranches: ['1.21'],
+      allowedVersions: '<4.7.0',
+    },
     /** Ungroup Gdal */
     {
       matchDepNames: ['ghcr.io/osgeo/gdal'],
