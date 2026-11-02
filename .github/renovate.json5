@@ -72,5 +72,14 @@
       matchBaseBranches: ['1.17'],
       enabled: false,
     },
+    /**
+     * Disable pillow update on stabilization branches whose declared Python version is lower than 3.11.
+     * The releases fixing the CVEs require Python >= 3.11 while those branches still allow Python 3.10.
+     */
+    {
+      matchDepNames: ['pillow'],
+      matchBaseBranches: ['1.17', '1.21', '1.22'],
+      enabled: false,
+    },
   ],
 }
