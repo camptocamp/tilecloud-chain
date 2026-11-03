@@ -1,5 +1,5 @@
 # Base of all section, install the apt packages
-FROM osgeo/gdal:ubuntu-small-3.4.3 as base-all
+FROM osgeo/gdal:ubuntu-small-3.6.2 as base-all
 LABEL maintainer "info@camptocamp.org"
 
 # Fail on error on pipe, see: https://github.com/hadolint/hadolint/wiki/DL4006.
@@ -47,15 +47,14 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/poetry \
-  DEV_PACKAGES="python3.8-dev build-essential libgeos-dev libmapnik-dev libpq-dev \
-  build-essential python3-dev" && \
+  DEV_PACKAGES="build-essential libgeos-dev libmapnik-dev libpq-dev python3-dev" && \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
   ${DEV_PACKAGES} && \
   python3 -m pip install --disable-pip-version-check --no-cache-dir --no-deps \
   --requirement=/poetry/requirements.txt && \
-  python3 -m compileall /usr/local/lib/python3.8 /usr/lib/python3.8 && \
-  strip /usr/local/lib/python3.8/dist-packages/shapely/*/*.so && \
+  python3 -m compileall /usr/local/lib/python3.10 /usr/lib/python3.10 && \
+  strip /usr/local/lib/python3.10/dist-packages/shapely/*/*.so && \
   apt-get remove --purge --autoremove --yes ${DEV_PACKAGES} binutils
 
 # From c2cwsgiutils
