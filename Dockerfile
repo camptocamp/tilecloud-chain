@@ -1,5 +1,5 @@
 # Base of all section, install the apt packages
-FROM osgeo/gdal:ubuntu-small-3.6.3 as base-all
+FROM osgeo/gdal:ubuntu-small-3.4.3 as base-all
 LABEL maintainer "info@camptocamp.org"
 
 # Fail on error on pipe, see: https://github.com/hadolint/hadolint/wiki/DL4006.
@@ -13,6 +13,9 @@ ENV SETUPTOOLS_USE_DISTUTILS=stdlib
 RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
   apt-get update && \
+  apt-get install --assume-yes --no-install-recommends software-properties-common && \
+  add-apt-repository --yes ppa:deadsnakes/ppa && \
+  apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
   libmapnik3.0 mapnik-utils \
   libdb5.3 \
@@ -20,7 +23,7 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
   node-carto \
   optipng jpegoptim \
   postgresql-client-12 net-tools iputils-ping \
-  python3-pip python3-wheel
+  python3.10 python3.10-dev python3.10-venv python3.10-distutils python3-pip python3-wheel
 
 
 # Used to convert the locked packages by poetry to pip requirements format
@@ -30,7 +33,7 @@ FROM base-all as poetry
 WORKDIR /tmp
 COPY requirements.txt ./
 RUN --mount=type=cache,target=/root/.cache \
-    python3 -m pip install --disable-pip-version-check --requirement=requirements.txt && \
+    python3.10 -m pip install --disable-pip-version-check --requirement=requirements.txt && \
     rm requirements.txt
 
 # Do the conversion
@@ -46,13 +49,13 @@ RUN --mount=type=cache,target=/var/lib/apt/lists \
     --mount=type=cache,target=/var/cache,sharing=locked \
     --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/poetry \
-  DEV_PACKAGES="build-essential libgeos-dev libmapnik-dev libpq-dev python3-dev" && \
+  DEV_PACKAGES="build-essential libgeos-dev libmapnik-dev libpq-dev python3.10-dev" && \
   apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --no-install-recommends \
   ${DEV_PACKAGES} && \
-  python3 -m pip install --disable-pip-version-check --no-cache-dir --no-deps \
+  python3.10 -m pip install --disable-pip-version-check --no-cache-dir --no-deps \
   --requirement=/poetry/requirements.txt && \
-  python3 -m compileall /usr/local/lib/python3.10 /usr/lib/python3.10 && \
+  python3.10 -m compileall /usr/local/lib/python3.10 /usr/lib/python3.10 && \
   strip /usr/local/lib/python3.10/dist-packages/shapely/*/*.so && \
   apt-get remove --purge --autoremove --yes ${DEV_PACKAGES} binutils
 
@@ -114,9 +117,9 @@ FROM base as runner
 COPY . /app/
 
 RUN \
-  python3 -m pip install --disable-pip-version-check --no-deps --no-cache-dir --editable=. && \
+  python3.10 -m pip install --disable-pip-version-check --no-deps --no-cache-dir --editable=. && \
   mv docker/run /usr/bin/ && \
-  python3 -m compileall -q /app/tilecloud_chain
+  python3.10 -m compileall -q /app/tilecloud_chain
 
 
 # Do the lint, used by the tests
@@ -124,11 +127,11 @@ FROM base as tests
 
 RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,from=poetry,source=/tmp,target=/poetry \
-    python3 -m pip install --disable-pip-version-check --no-deps --requirement=/poetry/requirements-dev.txt
+    python3.10 -m pip install --disable-pip-version-check --no-deps --requirement=/poetry/requirements-dev.txt
 
 COPY . /app/
 RUN prospector --output-format=pylint
-RUN python3 -m pip install --disable-pip-version-check --no-deps --no-cache-dir --editable=.
+RUN python3.10 -m pip install --disable-pip-version-check --no-deps --no-cache-dir --editable=.
 
 ENV TILEGENERATION_MAIN_CONFIGFILE=
 
