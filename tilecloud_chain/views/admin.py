@@ -104,8 +104,16 @@ class AccessLevel(StrEnum):
     READ_WRITE = "read_write"
 
 
+async def _get_host_config(
+    host: Annotated[str, Depends(server.get_host_name)],
+    gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
+) -> tilecloud_chain.DatedConfig:
+    """Get the host configuration without raising, to be able to display the configuration errors."""
+    return await gene.get_host_config(host)
+
+
 async def _get_access_level(
-    config: Annotated[tilecloud_chain.DatedConfig, Depends(server.get_host_config)],
+    config: Annotated[tilecloud_chain.DatedConfig, Depends(_get_host_config)],
     auth_info: Annotated[auth.AuthInfo, Depends(auth.get_auth)],
 ) -> AccessLevel:
     """Get the level of access of the user to the admin interface."""
@@ -229,7 +237,7 @@ async def _validate_config_file(
 @app.get("/", response_class=HTMLResponse)
 async def admin_index(
     request: Request,
-    config: Annotated[tilecloud_chain.DatedConfig, Depends(server.get_host_config)],
+    config: Annotated[tilecloud_chain.DatedConfig, Depends(_get_host_config)],
     gene: Annotated[TileGeneration, Depends(_get_tilegeneration)],
     auth_info: Annotated[auth.AuthInfo, Depends(auth.get_auth)],
     access_level: Annotated[AccessLevel, Depends(_get_access_level)],
@@ -248,8 +256,11 @@ async def admin_index(
 
     structure_errors: list[str] = []
     deprecation_warnings: list[str] = []
-    if config.file and has_access:
-        structure_errors, deprecation_warnings = await _validate_config_file(config)
+    if has_access:
+        if config.errors:
+            structure_errors = config.errors
+        elif config.file:
+            structure_errors, deprecation_warnings = await _validate_config_file(config)
 
     if queue_store == "postgresql" and has_access and _postgresql_store and config.file:
         jobs_status = await _postgresql_store.get_status(config.file)
@@ -470,6 +481,11 @@ async def admin_test(
     host = request.headers.get("host", "localhost")
     config = await gene.get_host_config(host)
     if not config:
+        if config.errors:
+            raise HTTPException(
+                status_code=500,
+                detail=f"The configuration of host '{host}' is invalid:\n" + "\n".join(config.errors),
+            )
         raise HTTPException(status_code=404, detail=f"No configuration found for host '{host}'")
     srs = config.config["openlayers"].get("srs", configuration.SRS_DEFAULT)
     proj4js_def = config.config["openlayers"].get("proj4js_def")

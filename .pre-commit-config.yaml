@@ -19,6 +19,10 @@ repos:
       - id: debug-statements
       - id: check-toml
       - id: check-yaml
+        exclude: |-
+          (?x)^(
+            tilecloud_chain/tests/tilegeneration/wrong_yaml_syntax\.yaml
+          )$
       - id: check-json
       - id: end-of-file-fixer
       - id: trailing-whitespace
@@ -72,6 +76,7 @@ repos:
         exclude: |-
           (?x)^(
             tilecloud_chain/SETTINGS\.md
+            |tilecloud_chain/tests/tilegeneration/wrong_yaml_syntax\.yaml
           )$
   - repo: https://github.com/camptocamp/jsonschema-gentypes
     rev: 2.13.0
