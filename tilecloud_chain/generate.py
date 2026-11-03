@@ -2,7 +2,7 @@
 """Generate the tiles, generate the queue, ..."""
 
 import asyncio
-import datetime
+import datetime as dt
 import gc
 import logging
 import os
@@ -392,9 +392,9 @@ class Generate:
                     self.n += 1
                     assert options.time
                     if self.n == options.time:
-                        self.t1 = datetime.datetime.now(tz=datetime.UTC)
+                        self.t1 = dt.datetime.now(tz=dt.UTC)
                     elif self.n == 2 * options.time:
-                        t2 = datetime.datetime.now(tz=datetime.UTC)
+                        t2 = dt.datetime.now(tz=dt.UTC)
                         assert self.t1
                         duration = (t2 - self.t1) / options.time
                         time = (

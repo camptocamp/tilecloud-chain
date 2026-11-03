@@ -27,7 +27,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import asyncio
-import datetime
+import datetime as dt
 import html
 import logging
 import math
@@ -500,8 +500,7 @@ class Server:
                 headers = {
                     "Content-Type": "application/xml",
                     "Expires": (
-                        datetime.datetime.now(tz=datetime.UTC)
-                        + datetime.timedelta(hours=self.get_expires_hours(config))
+                        dt.datetime.now(tz=dt.UTC) + dt.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat(),
                     "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
                 }
@@ -739,8 +738,7 @@ class Server:
                 headers={
                     "Content-Type": tile2.content_type,
                     "Expires": (
-                        datetime.datetime.now(tz=datetime.UTC)
-                        + datetime.timedelta(hours=self.get_expires_hours(config))
+                        dt.datetime.now(tz=dt.UTC) + dt.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat(),
                     "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
                     "Tile-Backend": "Cache",
@@ -806,8 +804,7 @@ class Server:
                     response_headers["Pragma"] = "no-cache"
                 else:
                     response_headers["Expires"] = (
-                        datetime.datetime.now(tz=datetime.UTC)
-                        + datetime.timedelta(hours=self.get_expires_hours(config))
+                        dt.datetime.now(tz=dt.UTC) + dt.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat()
                     response_headers["Cache-Control"] = f"max-age={3600 * self.get_expires_hours(config)}"
                 content = await response.read()
@@ -840,8 +837,7 @@ class Server:
             headers.update(
                 {
                     "Expires": (
-                        datetime.datetime.now(tz=datetime.UTC)
-                        + datetime.timedelta(hours=self.get_expires_hours(config))
+                        dt.datetime.now(tz=dt.UTC) + dt.timedelta(hours=self.get_expires_hours(config))
                     ).isoformat(),
                     "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
                 },
@@ -1244,8 +1240,7 @@ async def get_static(
 
     headers: dict[str, str] = {
         "Expires": (
-            datetime.datetime.now(tz=datetime.UTC)
-            + datetime.timedelta(hours=server.get_expires_hours(config))
+            dt.datetime.now(tz=dt.UTC) + dt.timedelta(hours=server.get_expires_hours(config))
         ).isoformat(),
         "Cache-Control": f"max-age={3600 * server.get_expires_hours(config)}",
     }

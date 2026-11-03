@@ -3,7 +3,7 @@
 
 import asyncio
 import contextvars
-import datetime
+import datetime as dt
 import json
 import logging
 import logging.config
@@ -331,7 +331,7 @@ class Run:
         for func in self.functions:
             try:
                 _LOGGER.debug("[%s] Run: %s", tilecoord, func)
-                n = datetime.datetime.now(tz=datetime.UTC)
+                n = dt.datetime.now(tz=dt.UTC)
                 func_input_tile = tile
                 if self.safe:
                     try:
@@ -346,7 +346,7 @@ class Run:
                     "[%s] %s in %s",
                     tilecoord,
                     func.time_message if getattr(func, "time_message", None) is not None else func,  # type: ignore[attr-defined]
-                    str(datetime.datetime.now(tz=datetime.UTC) - n),
+                    str(dt.datetime.now(tz=dt.UTC) - n),
                 )
                 if tile is None:
                     _LOGGER.debug("[%s] Drop", tilecoord)
@@ -939,7 +939,7 @@ class TileGeneration:
     """Base class of all the tile generation."""
 
     tilestream: AsyncIterator[Tile] | None = None
-    duration = datetime.timedelta()
+    duration = dt.timedelta()
     error = 0
     queue_store: AsyncTileStore | None = None
     daemon = False
@@ -1629,7 +1629,7 @@ class TileGeneration:
         """Create the error file for the given layer."""
         main_config = await self.get_main_config()
         if "error_file" in main_config.config.get("generation", {}):
-            now = datetime.datetime.now(tz=datetime.UTC)
+            now = dt.datetime.now(tz=dt.UTC)
             time_ = now.strftime("%d-%m-%Y %H:%M:%S")
             error_file_path = Path(
                 main_config.config["generation"]["error_file"].format(layer=layer, datetime=now),
@@ -1671,7 +1671,7 @@ class TileGeneration:
         if "error_file" in config.config["generation"]:
             assert tile is not None
 
-            time_ = datetime.datetime.now(tz=datetime.UTC).strftime("%d-%m-%Y %H:%M:%S")
+            time_ = dt.datetime.now(tz=dt.UTC).strftime("%d-%m-%Y %H:%M:%S")
             if await self.get_log_tiles_error_file(tile.metadata["layer"]) is None:
                 message = "Missing error file"
                 raise MissingErrorFileError(message)
@@ -2375,7 +2375,7 @@ class TileGeneration:
 
         test = self.options.test if test is None else test
 
-        start = datetime.datetime.now(tz=datetime.UTC)
+        start = dt.datetime.now(tz=dt.UTC)
 
         run = Run(self, self.functions_metatiles, out=self.out)
         await run.init()
@@ -2422,7 +2422,7 @@ class TileGeneration:
                 await run(await anext(self.tilestream))
 
         self.error += run.error
-        self.duration = datetime.datetime.now(tz=datetime.UTC) - start
+        self.duration = dt.datetime.now(tz=dt.UTC) - start
         for ca in self._close_actions:
             ca()
 
@@ -2962,7 +2962,7 @@ async def get_queue_store(config: DatedConfig, daemon: bool) -> TimedTileStoreWr
         if socket_timeout is not None:
             tilestore_kwargs["connection_kwargs"]["socket_timeout"] = (
                 socket_timeout.total_seconds()
-                if isinstance(socket_timeout, datetime.timedelta)
+                if isinstance(socket_timeout, dt.timedelta)
                 else int(socket_timeout)
             )
         db = settings.redis.db if settings.redis.db is not None else conf.get("db")

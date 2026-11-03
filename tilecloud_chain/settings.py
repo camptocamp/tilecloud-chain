@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-import datetime
+import datetime as dt
 from typing import Annotated, Literal
 
 from anyio import Path
@@ -57,13 +57,13 @@ def _to_wmts_path(wmts_path: str | None) -> str | None:
 WmtsPath = Annotated[str | None, BeforeValidator(_to_wmts_path)]
 
 
-def _to_optional_duration(value: str | datetime.timedelta | None) -> datetime.timedelta | None:
+def _to_optional_duration(value: str | dt.timedelta | None) -> dt.timedelta | None:
     if value is None or value == "":
         return None
     return parse_duration(value)
 
 
-OptionalDuration = Annotated[datetime.timedelta | None, BeforeValidator(_to_optional_duration)]
+OptionalDuration = Annotated[dt.timedelta | None, BeforeValidator(_to_optional_duration)]
 
 
 class AzureSettings(BaseModel):
@@ -123,7 +123,7 @@ class PostgresqlSettings(BaseModel):
     queue_insert_batch_size: int = 100
     objgraph_postgresql: bool = False
     objgraph_limit: int = 10
-    init_timeout: Duration = datetime.timedelta(seconds=30)
+    init_timeout: Duration = dt.timedelta(seconds=30)
     maintenance_interval: int = 60
 
 
@@ -152,7 +152,7 @@ class Settings(BaseSettings):
     hosts_limit: AnyioPath = Path("/etc/tilegeneration/hosts_limit.yaml")
     host_concurrent: int = 1
     ignore_config_error: bool = False
-    max_generation_time: Duration = datetime.timedelta(seconds=60)
+    max_generation_time: Duration = dt.timedelta(seconds=60)
     allowed_process_commands: StrList = ["optipng", "jpegoptim", "pngquant"]
     frontend: str | None = None
     development: bool = False
