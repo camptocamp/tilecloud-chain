@@ -64,6 +64,14 @@
       matchBaseBranches: ['1.21'],
       allowedVersions: '<4.7.0',
     },
+    /**
+     * Disable python-dateutil updates above 2.x, aiobotocore pins python-dateutil <3.0.0
+     * and no aiobotocore release supports python-dateutil 3 yet, so poetry cannot lock.
+     */
+    {
+      matchDepNames: ['python-dateutil'],
+      allowedVersions: '<3.0.0',
+    },
     /** Ungroup Gdal */
     {
       matchDepNames: ['ghcr.io/osgeo/gdal'],
