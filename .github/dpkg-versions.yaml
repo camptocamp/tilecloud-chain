@@ -1,11 +1,11 @@
 camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/adduser: 3.118ubuntu5
-  ubuntu_22_04/apt: 2.4.14
+  ubuntu_22_04/apt: 2.4.15ubuntu0.1
   ubuntu_22_04/base-passwd: 3.5.52build1
   ubuntu_22_04/bash: 5.1-6ubuntu1.1
   ubuntu_22_04/bsdutils: 1:2.37.2-4ubuntu3.6
   ubuntu_22_04/bzip2: 1.0.8-5ubuntu0.1
-  ubuntu_22_04/ca-certificates: 20260816ubuntu0.22.04.1
+  ubuntu_22_04/ca-certificates: 20260816ubuntu0.22.04.2
   ubuntu_22_04/coreutils: 8.32-4.1ubuntu1.4
   ubuntu_22_04/curl: 7.81.0-1ubuntu1.30
   ubuntu_22_04/dash: 0.5.11+git20210903+057cd650a4ed-3build1
@@ -31,7 +31,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/libacl1: 2.3.1-1
   ubuntu_22_04/libaec0: 1.0.6-1
   ubuntu_22_04/libaom3: 3.3.0-1ubuntu0.1
-  ubuntu_22_04/libapt-pkg6.0: 2.4.14
+  ubuntu_22_04/libapt-pkg6.0: 2.4.15ubuntu0.1
   ubuntu_22_04/libarmadillo10: 1:10.8.2+dfsg-1
   ubuntu_22_04/libarpack2: 3.8.0-1
   ubuntu_22_04/libattr1: 1:2.5.1-1ubuntu0.1
@@ -234,7 +234,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_22_04/python3-lib2to3: 3.10.8-1~22.04
   ubuntu_22_04/python3-minimal: 3.10.6-1~22.04.1
   ubuntu_22_04/python3-numpy: 1:1.21.5-1ubuntu22.04.1
-  ubuntu_22_04/python3-pil: 9.0.1-1ubuntu0.5
+  ubuntu_22_04/python3-pil: 9.0.1-1ubuntu0.6
   ubuntu_22_04/python3-pip: 22.0.2+dfsg-1ubuntu0.7
   ubuntu_22_04/python3-pkg-resources: 59.6.0-1.2ubuntu0.22.04.3
   ubuntu_22_04/python3-setuptools: 59.6.0-1.2ubuntu0.22.04.3
