@@ -27,7 +27,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import asyncio
-import datetime
+import datetime as dt
 import gc
 import io
 import logging
@@ -152,14 +152,14 @@ class Job(Base):
     config_filename: Mapped[str] = mapped_column(Unicode, nullable=False)
     status: Mapped[str] = mapped_column(Unicode, nullable=False, default=_STATUS_CREATED, index=True)
     message: Mapped[str | None] = mapped_column(Unicode)
-    created_at: Mapped[datetime.datetime] = mapped_column(
+    created_at: Mapped[dt.datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         server_default=sqlalchemy.sql.functions.now(),
         index=True,
     )
-    started_at: Mapped[datetime.datetime | None] = mapped_column(DateTime(timezone=True), index=True)
-    tiles_started_at: Mapped[datetime.datetime | None] = mapped_column(DateTime(timezone=True))
+    started_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    tiles_started_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))
     meta_tiles_total: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     def __repr__(self) -> str:
@@ -178,7 +178,7 @@ class Queue(Base):
     zoom: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     status: Mapped[str] = mapped_column(Unicode, nullable=False, default=_STATUS_CREATED, index=True)
     error: Mapped[str | None] = mapped_column(Unicode)
-    started_at: Mapped[datetime.datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    started_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True), index=True)
     # Like this:
     # {
     #     "x": 0,
@@ -355,7 +355,7 @@ class PostgresqlTileStore(AsyncTileStore):
         self._flush_lock = asyncio.Lock()
         self.SessionMaker: async_sessionmaker[AsyncSession] | None = None  # pylint: disable=invalid-name
         self._engine: AsyncEngine | None = None
-        self._last_maintenance: datetime.datetime | None = None
+        self._last_maintenance: dt.datetime | None = None
 
     async def _flush_put_buffer(self, session: AsyncSession | None = None) -> None:
         async with self._flush_lock:
@@ -463,7 +463,7 @@ class PostgresqlTileStore(AsyncTileStore):
                 .where(and_(Job.id == job_id, Job.status == _STATUS_PENDING))
                 .values(
                     status=_STATUS_STARTED,
-                    started_at=datetime.datetime.now(tz=datetime.UTC),
+                    started_at=dt.datetime.now(tz=dt.UTC),
                     meta_tiles_total=count_result,
                 ),
             )
@@ -544,7 +544,7 @@ class PostgresqlTileStore(AsyncTileStore):
         assert self.SessionMaker is not None
         result: list[tuple[Job, list[dict[str, int]], list[str], str | None]] = []
         async with self.SessionMaker() as session:
-            now = datetime.datetime.now(tz=datetime.UTC)
+            now = dt.datetime.now(tz=dt.UTC)
             jobs_result = await session.execute(
                 select(Job)
                 .where(Job.config_filename == config_filename.as_posix())
@@ -647,8 +647,8 @@ class PostgresqlTileStore(AsyncTileStore):
         """
         assert self.SessionMaker is not None
 
-        now = datetime.datetime.now(tz=datetime.UTC)
-        if self._last_maintenance is not None and now - self._last_maintenance < datetime.timedelta(
+        now = dt.datetime.now(tz=dt.UTC)
+        if self._last_maintenance is not None and now - self._last_maintenance < dt.timedelta(
             seconds=settings.postgresql.maintenance_interval,
         ):
             return
@@ -666,8 +666,7 @@ class PostgresqlTileStore(AsyncTileStore):
                         and_(
                             Job.status == _STATUS_PENDING,
                             Job.started_at
-                            < datetime.datetime.now(tz=datetime.UTC)
-                            - datetime.timedelta(minutes=self.max_pending_minutes),
+                            < dt.datetime.now(tz=dt.UTC) - dt.timedelta(minutes=self.max_pending_minutes),
                         ),
                     )
                     .values(status=_STATUS_CREATED),
@@ -699,7 +698,7 @@ class PostgresqlTileStore(AsyncTileStore):
                     if job is not None:
                         job_id = job.id
                         job.status = _STATUS_PENDING
-                        job.started_at = datetime.datetime.now(tz=datetime.UTC)
+                        job.started_at = dt.datetime.now(tz=dt.UTC)
                         job.tiles_started_at = None
                         job.meta_tiles_total = 0
                         await session.commit()
@@ -756,8 +755,7 @@ class PostgresqlTileStore(AsyncTileStore):
                         and_(
                             Queue.status == _STATUS_PENDING,
                             Queue.started_at
-                            < datetime.datetime.now(tz=datetime.UTC)
-                            - datetime.timedelta(minutes=self.max_pending_minutes),
+                            < dt.datetime.now(tz=dt.UTC) - dt.timedelta(minutes=self.max_pending_minutes),
                         ),
                     )
                     .values(status=_STATUS_CREATED),
@@ -826,7 +824,7 @@ class PostgresqlTileStore(AsyncTileStore):
                             continue
                         job_id = sqlalchemy_tile.job_id
                         sqlalchemy_tile.status = _STATUS_PENDING
-                        now = datetime.datetime.now(tz=datetime.UTC)
+                        now = dt.datetime.now(tz=dt.UTC)
                         sqlalchemy_tile.started_at = now
                         await session.execute(
                             update(Job)

@@ -3,7 +3,7 @@
 
 import asyncio
 import contextlib
-import datetime
+import datetime as dt
 import json
 import logging
 import struct
@@ -68,7 +68,7 @@ class RedisStore(AsyncTileStore):
         if socket_timeout is not None:
             connection_kwargs["socket_timeout"] = (
                 socket_timeout.total_seconds()
-                if isinstance(socket_timeout, datetime.timedelta)
+                if isinstance(socket_timeout, dt.timedelta)
                 else int(socket_timeout)
             )
         db = settings.redis.db if settings.redis.db is not None else config.get("db")
@@ -322,8 +322,7 @@ async def fetch(
 
     response_headers = {
         "Expires": (
-            datetime.datetime.now(tz=datetime.UTC)
-            + datetime.timedelta(hours=server.get_expires_hours(config))
+            dt.datetime.now(tz=dt.UTC) + dt.timedelta(hours=server.get_expires_hours(config))
         ).isoformat(),
         "Cache-Control": f"max-age={3600 * server.get_expires_hours(config)}",
         "Tile-Backend": backend,
