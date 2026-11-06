@@ -1,10 +1,10 @@
 camptocamp/tilecloud-chain:latest:
-  ubuntu_26_04/apt: 3.2.0
+  ubuntu_26_04/apt: 3.2.1ubuntu0.1
   ubuntu_26_04/base-passwd: 3.6.8
   ubuntu_26_04/bash: 5.3-2ubuntu1
   ubuntu_26_04/bash-completion: 1:2.16.0-8build1
   ubuntu_26_04/bsdutils: 1:2.41.3-3ubuntu2.2
-  ubuntu_26_04/ca-certificates: 20260816ubuntu0.26.04.1
+  ubuntu_26_04/ca-certificates: 20260816ubuntu0.26.04.2
   ubuntu_26_04/coreutils: 9.5-1ubuntu2+0.0.0~ubuntu25
   ubuntu_26_04/coreutils-from-uutils: 0.0.0~ubuntu25
   ubuntu_26_04/dash: 0.5.12-12ubuntu3
@@ -28,7 +28,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/iputils-ping: 3:20250605-1ubuntu1
   ubuntu_26_04/jpegoptim: 1.4.7-1build1
   ubuntu_26_04/libacl1: 2.3.2-2
-  ubuntu_26_04/libapt-pkg7.0: 3.2.0
+  ubuntu_26_04/libapt-pkg7.0: 3.2.1ubuntu0.1
   ubuntu_26_04/libattr1: 1:2.5.2-4ubuntu0.1
   ubuntu_26_04/libaudit-common: 1:4.1.2-1build1
   ubuntu_26_04/libaudit1: 1:4.1.2-1build1
