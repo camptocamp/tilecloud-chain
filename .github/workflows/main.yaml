@@ -105,14 +105,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Provides the pip, python3 and poetry that tag-publish calls to build the wheel.
+      # Provides the pip, python3 and poetry that tag-publish calls to build the wheel; the build Python
+      # must satisfy the project constraint (>=3.10,<3.12) because poetry 1.x refuses to build the project
+      # from a newer Python.
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: '3.13'
-      # markdown-table (a c2cciutils<1.7 dependency) has no wheel in the required version range, and
-      # dulwich<0.22 (a poetry<2 dependency) has no wheel for Python 3.13, so their sdists are the
-      # only exceptions to the wheels-only policy.
-      - run: python3 -m pip install '--only-binary=:all:' --no-binary=markdown-table --no-binary=dulwich --requirement=ci/requirements.txt
+          python-version: '3.11'
+      # markdown-table (a c2cciutils<1.7 dependency) has no wheel in the required version range, so its
+      # sdist is the only exception to the wheels-only policy.
+      - run: python3 -m pip install '--only-binary=:all:' --no-binary=markdown-table --requirement=ci/requirements.txt
 
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
