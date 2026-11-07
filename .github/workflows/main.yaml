@@ -128,7 +128,10 @@ jobs:
       - run: docker load --input=/tmp/images.docker
 
       - name: Publish
-        run: uv run --locked --isolated --no-build --project=.github/publish tag-publish
+        # Unset VIRTUAL_ENV so that the poetry 1.x build started by tag-publish uses its own
+        # Python 3.11 environment instead of the uv 3.13 environment, which the project (>=3.10,<3.12)
+        # does not allow.
+        run: uv run --locked --isolated --no-build --project=.github/publish env --unset=VIRTUAL_ENV tag-publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
