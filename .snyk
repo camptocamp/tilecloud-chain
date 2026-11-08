@@ -38,6 +38,18 @@ ignore:
     - '*':
         reason: not compatible with used Python version
         created: 2026-10-28T17:14:16.000Z
+  SNYK-PYTHON-VIRTUALENV-21282484:
+    - '*':
+        reason: not compatible with used Poetry version
+        created: 2026-11-08T20:21:28.000Z
+  SNYK-PYTHON-VIRTUALENV-21282509:
+    - '*':
+        reason: not compatible with used Poetry version
+        created: 2026-11-08T20:21:28.000Z
+  SNYK-PYTHON-DULWICH-22220108:
+    - '*':
+        reason: not compatible with used Poetry version
+        created: 2026-11-08T20:21:28.000Z
   SNYK-PYTHON-POETRY-15873752:
     - '*':
         reason: Plugin not compatible with new Poetry version
