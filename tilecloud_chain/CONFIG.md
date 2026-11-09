@@ -23,7 +23,7 @@
 - <a id="properties/postgresql"></a>**`postgresql`**: Refer to *[#/definitions/postgresql](#definitions/postgresql)*.
 - <a id="properties/openlayers"></a>**`openlayers`** *(object)*: Configuration used to generate the OpenLayers example page. Cannot contain additional properties.
   - <a id="properties/openlayers/properties/srs"></a>**`srs`** *(string)*: The projection code. Must match pattern: `^EPSG:[0-9]+$` ([Test](https://regexr.com/?expression=%5EEPSG%3A%5B0-9%5D%2B%24)). Default: `"EPSG:2056"`.
-  - <a id="properties/openlayers/properties/proj4js_def"></a>**`proj4js_def`** *(string)*: The `proj4js` definition, by default it will be build with pyproj.
+  - <a id="properties/openlayers/properties/proj4js_def"></a>**`proj4js_def`** *(string)*: The `proj4js` definition, by default, for the known SRS (`EPSG:2056`, `EPSG:21781`, `EPSG:3857`), the `proj4` literal including the datum shift parameters is used, and for the other SRS it will be build with pyproj.
   - <a id="properties/openlayers/properties/center_x"></a>**`center_x`** *(number)*: The center easting. Default: `2600000`.
   - <a id="properties/openlayers/properties/center_y"></a>**`center_y`** *(number)*: The center northing. Default: `1200000`.
   - <a id="properties/openlayers/properties/zoom"></a>**`zoom`** *(number)*: The initial zoom. Default: `3`.
