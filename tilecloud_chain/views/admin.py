@@ -33,6 +33,7 @@ import json
 import logging
 import os
 import pkgutil
+import re
 import shlex
 import urllib.parse
 from collections.abc import Awaitable, Callable
@@ -50,7 +51,15 @@ from pydantic import BaseModel
 
 import tilecloud_chain.server
 import tilecloud_chain.store.postgresql
-from tilecloud_chain import WMS_RESERVED_PARAMS, TileGeneration, configuration, controller, generate, server
+from tilecloud_chain import (
+    WMS_RESERVED_PARAMS,
+    TileGeneration,
+    configuration,
+    controller,
+    generate,
+    get_proj4_literal,
+    server,
+)
 from tilecloud_chain.controller import get_status
 from tilecloud_chain.settings import settings
 
@@ -472,6 +481,23 @@ async def admin_retry_job(
         raise HTTPException(status_code=400, detail=str(e))  # noqa: B904 # pylint: disable=raise-missing-from
 
 
+def _get_proj4js_def(srs: str) -> str:
+    """
+    Get a proj4js definition for the given SRS.
+
+    `pyproj.CRS.to_proj4()` drops the datum shift parameters (`+towgs84`) of some CRS like
+    `EPSG:2056` and `EPSG:21781`, then the transformations done by proj4js in the browser are
+    shifted by about 100 meters compared to the server side ones. Use the same proj4 literals as
+    the generation pipeline for the known SRS, and fallback to pyproj for the other ones.
+    """
+    match = re.match(r"^EPSG:(\d+)$", srs.strip(), re.IGNORECASE)
+    if match is not None:
+        proj4_literal = get_proj4_literal(int(match.group(1)))
+        if not proj4_literal.startswith("+init="):
+            return proj4_literal
+    return pyproj.CRS.from_string(srs).to_proj4()
+
+
 @app.get("/test", response_class=HTMLResponse)
 async def admin_test(
     request: Request,
@@ -490,7 +516,7 @@ async def admin_test(
     srs = config.config["openlayers"].get("srs", configuration.SRS_DEFAULT)
     proj4js_def = config.config["openlayers"].get("proj4js_def")
     if proj4js_def is None:
-        proj4js_def = pyproj.CRS.from_string(srs).to_proj4()
+        proj4js_def = _get_proj4js_def(srs)
 
     srs_definitions: list[dict[str, str]] = [{"srs": srs, "proj4js_def": proj4js_def}]
     seen_srs = {srs}
@@ -498,7 +524,7 @@ async def admin_test(
         grid_srs = grid.get("srs")
         if grid_srs and grid_srs not in seen_srs:
             seen_srs.add(grid_srs)
-            grid_proj4js_def = pyproj.CRS.from_string(grid_srs).to_proj4()
+            grid_proj4js_def = _get_proj4js_def(grid_srs)
             srs_definitions.append({"srs": grid_srs, "proj4js_def": grid_proj4js_def})
 
     try:
