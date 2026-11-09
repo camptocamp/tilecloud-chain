@@ -38,6 +38,7 @@ classifiers = [
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
     'Topic :: Scientific/Engineering :: GIS',
     'Typing :: Typed',
 ]
@@ -59,7 +60,7 @@ main = "tilecloud_chain.server:main"
 
 [tool.poetry.dependencies]
 # Minimal version should also be set in the jsonschema-gentypes.yaml file
-python = ">=3.10,<3.13"
+python = ">=3.10,<3.14"
 c2cwsgiutils = { version = "6.1.10", extras = ["standard", "broadcast", "oauth2", "debug"] }
 pyramid-mako = "1.1.0"
 python-dateutil = "2.9.0.post0"
