@@ -14,7 +14,9 @@ from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import AsyncMock, Mock, patch
 
+import pyproj
 import pytest
+import shapely.ops
 from anyio import Path as AnyioPath
 from PIL import Image
 from shapely.geometry import box
@@ -720,30 +722,30 @@ def test_get_tile_matrix_limits_with_px_buffer_no_force() -> None:
     assert limits == []
 
 
-def test_get_geoms_respects_geometry_srid(monkeypatch: pytest.MonkeyPatch) -> None:
-    class FakeCursor:
-        def __init__(self, rows: list[tuple[bytes, int]]) -> None:
-            self.rows = rows
+def _patch_postgis_geom_rows(monkeypatch: pytest.MonkeyPatch, rows: list[tuple[bytes, int]]) -> None:
+    """Patch psycopg2.connect so the geom loading reads the given (WKB, SRID) rows."""
 
+    class FakeCursor:
         def execute(self, _sql: str) -> None:
             return
 
         def fetchall(self) -> list[tuple[bytes, int]]:
-            return self.rows
+            return rows
 
         def close(self) -> None:
             return
 
     class FakeConnection:
-        def __init__(self, rows: list[tuple[bytes, int]]) -> None:
-            self.rows = rows
-
         def cursor(self) -> FakeCursor:
-            return FakeCursor(self.rows)
+            return FakeCursor()
 
         def close(self) -> None:
             return
 
+    monkeypatch.setattr(tilecloud_chain.psycopg2, "connect", lambda _connection: FakeConnection())
+
+
+def test_get_geoms_respects_geometry_srid(monkeypatch: pytest.MonkeyPatch) -> None:
     layer_projection = get_proj4_literal(21781)
     grid_projection = get_proj4_literal(2056)
     transformed_layer_bbox = transform_bbox(layer_projection, grid_projection, [550000, 170000, 560000, 180000])
@@ -753,13 +755,8 @@ def test_get_geoms_respects_geometry_srid(monkeypatch: pytest.MonkeyPatch) -> No
         transformed_layer_bbox[0] + 1000,
         transformed_layer_bbox[1] + 1000,
     )
-    rows = [(geom.wkb, 2056)]
 
-    monkeypatch.setattr(
-        tilecloud_chain.psycopg2,
-        "connect",
-        lambda _connection: FakeConnection(rows),
-    )
+    _patch_postgis_geom_rows(monkeypatch, [(geom.wkb, 2056)])
 
     gene = TileGeneration(options=Namespace(host="localhost"), configure_logging=False)
     config = DatedConfig(
@@ -2161,3 +2158,44 @@ def test_wms_tile_layout_keeps_srs_for_version_1_1_1() -> None:
 
     assert tile_layout.params["SRS"] == "EPSG:21781"
     assert "CRS" not in tile_layout.params
+
+
+def test_load_geom_from_postgis_reprojection_preserves_datum(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The reprojection of the PostGIS geometries must match the official EPSG transformation."""
+    geom = box(2562467.040191172, 1205255.9456064287, 2562639.040191506, 1205415.9456067453)
+    reference = pyproj.Transformer.from_crs("EPSG:2056", "EPSG:3857", always_xy=True)
+    expected = shapely.ops.transform(reference.transform, geom)
+    geom_source = cast(
+        "tcc_configuration.LayerGeometry",
+        {"connection": "postgresql://dummy", "sql": "geom FROM tests.zone"},
+    )
+
+    # With the geometry SRID the source CRS is built from the EPSG code, without it the source
+    # is built from the layer proj4 literal, both must give the official transformation result.
+    for geom_srid, tolerance in ((2056, 0.01), (0, 2.0)):
+        _patch_postgis_geom_rows(monkeypatch, [(geom.wkb, geom_srid)])
+        result = TileGeneration._load_geom_from_postgis(
+            geom_source,
+            layer_proj4_literal=get_proj4_literal(2056),
+            grid_proj4_literal=get_proj4_literal(3857),
+            grid_srs="EPSG:3857",
+        )
+        for got, want in zip(result.bounds, expected.bounds, strict=True):
+            assert abs(got - want) < tolerance
+
+
+def test_get_grid_destination_projection() -> None:
+    fallback = pyproj.CRS.from_epsg(2056)
+    assert TileGeneration._get_grid_destination_projection("EPSG:3857", None, fallback) is fallback
+
+    standard = TileGeneration._get_grid_destination_projection("EPSG:3857", get_proj4_literal(3857), None)
+    assert standard is not None
+    assert standard.is_exact_same(pyproj.CRS.from_epsg(3857))
+
+    custom_literal = (
+        "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 "
+        "+x_0=0.0 +y_0=0.0 +k=1.0 +units=m +no_defs"
+    )
+    custom = TileGeneration._get_grid_destination_projection("EPSG:3857", custom_literal, None)
+    assert custom is not None
+    assert not custom.is_exact_same(pyproj.CRS.from_epsg(3857))

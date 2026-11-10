@@ -1916,6 +1916,28 @@ class TileGeneration:
         return resolved_datasource
 
     @staticmethod
+    def _get_grid_destination_projection(
+        grid_srs: str | None,
+        grid_proj4_literal: str | None,
+        fallback: pyproj.CRS | None,
+    ) -> pyproj.CRS | None:
+        """
+        Build the destination CRS used to reproject the geometries to the grid.
+
+        A CRS built from the proj4 literal of a Web Mercator grid (`+nadgrids=@null`) has no
+        usable datum, then PROJ silently skips the datum shift of a source CRS built from its
+        EPSG code (e.g. EPSG:2056), and the reprojected geometries are shifted by around 100
+        meters. Build the destination from the grid SRS EPSG code when the proj4 literal is the
+        standard one of that code.
+        """
+        if grid_proj4_literal is None:
+            return fallback
+        grid_epsg = TileGeneration._parse_epsg(grid_srs)
+        if grid_epsg is not None and grid_proj4_literal == get_proj4_literal(grid_epsg):
+            return pyproj.CRS.from_epsg(grid_epsg)
+        return pyproj.CRS.from_proj4(grid_proj4_literal)
+
+    @staticmethod
     def _load_geom_from_postgis(
         geom_source: configuration.LayerGeometry,
         layer_proj4_literal: str | None = None,
@@ -1927,10 +1949,10 @@ class TileGeneration:
         source_projection_default = (
             pyproj.CRS.from_proj4(layer_proj4_literal) if layer_proj4_literal is not None else None
         )
-        destination_projection = (
-            pyproj.CRS.from_proj4(grid_proj4_literal)
-            if grid_proj4_literal is not None
-            else source_projection_default
+        destination_projection = TileGeneration._get_grid_destination_projection(
+            grid_srs,
+            grid_proj4_literal,
+            source_projection_default,
         )
         destination_srid = TileGeneration._parse_epsg(grid_srs)
 
@@ -2042,8 +2064,10 @@ class TileGeneration:
         source_projection = (
             pyproj.CRS.from_proj4(layer_proj4_literal) if layer_proj4_literal is not None else None
         )
-        destination_projection = (
-            pyproj.CRS.from_proj4(grid_proj4_literal) if grid_proj4_literal is not None else source_projection
+        destination_projection = TileGeneration._get_grid_destination_projection(
+            grid_srs,
+            grid_proj4_literal,
+            source_projection,
         )
 
         if TileGeneration._needs_reprojection(
