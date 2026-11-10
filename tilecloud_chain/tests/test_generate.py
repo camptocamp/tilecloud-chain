@@ -722,30 +722,30 @@ def test_get_tile_matrix_limits_with_px_buffer_no_force() -> None:
     assert limits == []
 
 
-def test_get_geoms_respects_geometry_srid(monkeypatch: pytest.MonkeyPatch) -> None:
-    class FakeCursor:
-        def __init__(self, rows: list[tuple[bytes, int]]) -> None:
-            self.rows = rows
+def _patch_postgis_geom_rows(monkeypatch: pytest.MonkeyPatch, rows: list[tuple[bytes, int]]) -> None:
+    """Patch psycopg2.connect so the geom loading reads the given (WKB, SRID) rows."""
 
+    class FakeCursor:
         def execute(self, _sql: str) -> None:
             return
 
         def fetchall(self) -> list[tuple[bytes, int]]:
-            return self.rows
+            return rows
 
         def close(self) -> None:
             return
 
     class FakeConnection:
-        def __init__(self, rows: list[tuple[bytes, int]]) -> None:
-            self.rows = rows
-
         def cursor(self) -> FakeCursor:
-            return FakeCursor(self.rows)
+            return FakeCursor()
 
         def close(self) -> None:
             return
 
+    monkeypatch.setattr(tilecloud_chain.psycopg2, "connect", lambda _connection: FakeConnection())
+
+
+def test_get_geoms_respects_geometry_srid(monkeypatch: pytest.MonkeyPatch) -> None:
     layer_projection = get_proj4_literal(21781)
     grid_projection = get_proj4_literal(2056)
     transformed_layer_bbox = transform_bbox(layer_projection, grid_projection, [550000, 170000, 560000, 180000])
@@ -755,13 +755,8 @@ def test_get_geoms_respects_geometry_srid(monkeypatch: pytest.MonkeyPatch) -> No
         transformed_layer_bbox[0] + 1000,
         transformed_layer_bbox[1] + 1000,
     )
-    rows = [(geom.wkb, 2056)]
 
-    monkeypatch.setattr(
-        tilecloud_chain.psycopg2,
-        "connect",
-        lambda _connection: FakeConnection(rows),
-    )
+    _patch_postgis_geom_rows(monkeypatch, [(geom.wkb, 2056)])
 
     gene = TileGeneration(options=Namespace(host="localhost"), configure_logging=False)
     config = DatedConfig(
@@ -2167,30 +2162,6 @@ def test_wms_tile_layout_keeps_srs_for_version_1_1_1() -> None:
 
 def test_load_geom_from_postgis_reprojection_preserves_datum(monkeypatch: pytest.MonkeyPatch) -> None:
     """The reprojection of the PostGIS geometries must match the official EPSG transformation."""
-
-    class FakeCursor:
-        def __init__(self, rows: list[tuple[bytes, int]]) -> None:
-            self.rows = rows
-
-        def execute(self, _sql: str) -> None:
-            return
-
-        def fetchall(self) -> list[tuple[bytes, int]]:
-            return self.rows
-
-        def close(self) -> None:
-            return
-
-    class FakeConnection:
-        def __init__(self, rows: list[tuple[bytes, int]]) -> None:
-            self.rows = rows
-
-        def cursor(self) -> FakeCursor:
-            return FakeCursor(self.rows)
-
-        def close(self) -> None:
-            return
-
     geom = box(2562467.040191172, 1205255.9456064287, 2562639.040191506, 1205415.9456067453)
     reference = pyproj.Transformer.from_crs("EPSG:2056", "EPSG:3857", always_xy=True)
     expected = shapely.ops.transform(reference.transform, geom)
@@ -2202,12 +2173,7 @@ def test_load_geom_from_postgis_reprojection_preserves_datum(monkeypatch: pytest
     # With the geometry SRID the source CRS is built from the EPSG code, without it the source
     # is built from the layer proj4 literal, both must give the official transformation result.
     for geom_srid, tolerance in ((2056, 0.01), (0, 2.0)):
-        rows = [(geom.wkb, geom_srid)]
-        monkeypatch.setattr(
-            tilecloud_chain.psycopg2,
-            "connect",
-            lambda _connection, rows=rows: FakeConnection(rows),
-        )
+        _patch_postgis_geom_rows(monkeypatch, [(geom.wkb, geom_srid)])
         result = TileGeneration._load_geom_from_postgis(
             geom_source,
             layer_proj4_literal=get_proj4_literal(2056),
