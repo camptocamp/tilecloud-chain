@@ -1118,6 +1118,17 @@ lint = ["pre-commit (==3.7.0)"]
 test = ["pytest (>=7.4)", "pytest-cov (>=4.1)"]
 
 [[package]]
+name = "legacy-cgi"
+version = "2.6.4"
+description = "Fork of the standard library cgi and cgitb modules removed in Python 3.13"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "legacy_cgi-2.6.4-py3-none-any.whl", hash = "sha256:7e235ce58bf1e25d1fc9b2d299015e4e2cd37305eccafec1e6bac3fc04b878cd"},
+    {file = "legacy_cgi-2.6.4.tar.gz", hash = "sha256:abb9dfc7835772f7c9317977c63253fd22a7484b5c9bbcdca60a29dcce97c577"},
+]
+
+[[package]]
 name = "mako"
 version = "1.4.3"
 description = "A super-fast templating language that borrows the best ideas from the existing templating languages."
@@ -3447,6 +3458,9 @@ files = [
     {file = "webob-1.8.11.tar.gz", hash = "sha256:aa8c27231070b135c025e567a9cd7eda03f4df71352ffaac740cb6a75f0f81a5"},
 ]
 
+[package.dependencies]
+legacy-cgi = {version = ">=2.6", markers = "python_version >= \"3.13\""}
+
 [package.extras]
 docs = ["Sphinx (>=1.7.5)", "pylons-sphinx-themes", "setuptools"]
 testing = ["coverage", "pytest (>=3.1.0)", "pytest-cov", "pytest-xdist"]
@@ -3565,5 +3579,5 @@ test = ["zope.testing"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.10,<3.13"
-content-hash = "e12568c9496a199adb8ebc7dbb6a5c370c63339a055eb91606fffc111914db8f"
+python-versions = ">=3.10,<3.14"
+content-hash = "180519e849d25f3196c3b45f32d2f0c27ba9c4cb2352b2b7f70aea6994d10621"

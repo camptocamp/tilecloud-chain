@@ -67,15 +67,21 @@ repos:
           - tilecloud_chain/schema.json
           - tilecloud_chain/CONFIG.md
   - repo: https://github.com/sbrunner/hooks
-    rev: 1.1.2
+    rev: 1.9.0
     hooks:
       - id: copyright
+      - id: uv-lock
+        additional_dependencies:
+          - uv==0.13.4 # pypi
+        files: ^\.github/publish/pyproject\.toml$
       - id: poetry-check
         additional_dependencies:
           - poetry==1.8.5 # pypi
+        exclude: ^\.github/publish/pyproject\.toml$
       - id: poetry-lock
         additional_dependencies:
           - poetry==1.8.5 # pypi
+        exclude: ^\.github/publish/pyproject\.toml$
   - repo: https://github.com/codespell-project/codespell
     rev: v2.3.0
     hooks:
