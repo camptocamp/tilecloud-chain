@@ -66,5 +66,7 @@ class TestAzureStorageBlobTileStore:
 
         tile = await store.delete_one(Tile(TileCoord(0, 0, 0)))
 
-        assert tile.error is error
+        assert isinstance(tile.error, str)
+        assert tile.error.startswith("RuntimeError: Azure is down\n")
+        assert "blob: 0/0/0.png" in tile.error
         blob_client.delete_blob.assert_awaited_once()

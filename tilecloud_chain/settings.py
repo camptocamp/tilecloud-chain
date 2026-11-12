@@ -116,6 +116,16 @@ class PostgresqlSettings(BaseModel):
     maintenance_interval: int = 60
 
 
+class HttpSettings(BaseModel):
+    """HTTP client settings used to get the tiles from the sources."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    timeout: float = 300.0
+    connect_timeout: float | None = None
+    close_grace_period: float = 30.0
+
+
 class SecuritySettings(BaseModel):
     """Security settings."""
 
@@ -148,6 +158,7 @@ class Settings(BaseSettings):
     wmts_path: WmtsPath = None
 
     azure: AzureSettings = AzureSettings()
+    http: HttpSettings = HttpSettings()
     logging: LoggingSettings = LoggingSettings()
     postgresql: PostgresqlSettings = PostgresqlSettings()
     redis: RedisSettings = RedisSettings()

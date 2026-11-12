@@ -9,6 +9,7 @@ from testfixtures import LogCapture
 from tilecloud import Tile, TileCoord
 
 from tilecloud_chain import Run, controller, generate
+from tilecloud_chain.error import ErrorContext, TileGenerationError, format_error
 from tilecloud_chain.tests import CompareCase
 
 if TYPE_CHECKING:
@@ -49,14 +50,17 @@ class TestError(CompareCase):
                 get_error=True,
             )
             log_capture.check(
-                ("tilecloud_chain", "DEBUG", "Get config for file tilegeneration/wrong_mapnik_grid_meta.yaml"),
+                (
+                    "tilecloud_chain",
+                    "DEBUG",
+                    "Get config for file tilegeneration/wrong_mapnik_grid_meta.yaml",
+                ),
                 (
                     "tilecloud_chain",
                     "ERROR",
                     "The layer 'b' is of type Mapnik/Grid, that can't support matatiles.",
                 ),
             )
-
 
     @pytest.mark.asyncio
     async def test_type(self) -> None:
@@ -138,8 +142,10 @@ class TestError(CompareCase):
                 (
                     "tilecloud_chain",
                     "WARNING",
-                    ("zoom 4 corresponds to resolution 5 "
-                     "is smaller than the 'min_resolution_seed' 10 of layer point, ignored."),
+                    (
+                        "zoom 4 corresponds to resolution 5 "
+                        "is smaller than the 'min_resolution_seed' 10 of layer point, ignored."
+                    ),
                 ),
             )
 
@@ -329,3 +335,118 @@ async def test_run_delete_tile_on_error_without_metatile() -> None:
     await run(tile)
 
     assert queue_store.deleted == [tile]
+
+
+def test_format_error_empty_message() -> None:
+    """The type of an exception without message is displayed."""
+    assert format_error(TimeoutError()) == "TimeoutError: <no message>"
+
+
+def test_format_error_exception() -> None:
+    """The type of the exception is added to its message."""
+    assert format_error(RuntimeError("Session is closed")) == "RuntimeError: Session is closed"
+
+
+def test_format_error_string() -> None:
+    """A string error is displayed as is."""
+    assert format_error("WMS server error: boom") == "WMS server error: boom"
+
+
+def test_format_error_cause() -> None:
+    """The cause of the error is displayed."""
+    error = ConnectionError("Cannot connect")
+    wrapper = OSError("Failed")
+    wrapper.__cause__ = error
+    assert format_error(wrapper) == "OSError: Failed\nCaused by: ConnectionError: Cannot connect"
+
+
+def test_format_error_note() -> None:
+    """The notes added to the exception are displayed."""
+    error = ValueError("bad value")
+    error.add_note("the first note")
+    assert format_error(error) == "ValueError: bad value\nNote: the first note"
+
+
+def test_format_error_context() -> None:
+    """The context of the error is displayed."""
+    message = format_error(
+        TimeoutError(),
+        ErrorContext(
+            url="http://example.com/tile.png",
+            duration=1.5,
+            step="get tile",
+            layer="point",
+            host="mapserver",
+            hint="the server did not answer",
+        ),
+    )
+    assert message == (
+        "TimeoutError: <no message>\n"
+        "URL: http://example.com/tile.png (after 1.500 s)\n"
+        "Step: get tile\n"
+        "Layer: point\n"
+        "Host: mapserver\n"
+        "Hint: the server did not answer"
+    )
+
+
+def test_format_error_duration_without_url() -> None:
+    """The elapsed time is displayed alone when there is no URL."""
+    assert format_error(ValueError("bad"), ErrorContext(duration=2.0)) == (
+        "ValueError: bad\nElapsed: 2.000 s"
+    )
+
+
+def test_format_error_truncated() -> None:
+    """A very long error is truncated."""
+    message = format_error("a" * 5000)
+    assert len(message) == 2015
+    assert message.endswith("... (truncated)")
+
+
+def test_format_error_already_formatted() -> None:
+    """An error already formatted is not formatted twice."""
+    error = TileGenerationError("RuntimeError: Session is closed\nURL: http://example.com")
+    assert format_error(error) == "RuntimeError: Session is closed\nURL: http://example.com"
+
+
+@pytest.mark.asyncio
+async def test_run_error_with_the_step_context() -> None:
+    """An exception raised by a step of the generation is reported with its context."""
+
+    class QueueStore:
+        def __init__(self) -> None:
+            self.deleted: list[Tile] = []
+
+        async def delete_one(self, tile: Tile) -> Tile:
+            self.deleted.append(tile)
+            return tile
+
+    queue_store = QueueStore()
+
+    class DummyGeneration:
+        def __init__(self, queue_store: QueueStore) -> None:
+            self.queue_store = queue_store
+            self.options = SimpleNamespace(debug=False)
+            self.maxconsecutive_errors = False
+
+        async def get_main_config(self):
+            return SimpleNamespace(config={"generation": {}})
+
+    async def failing(tile: Tile) -> Tile:
+        raise TimeoutError  # an exception with an empty message, like an aiohttp timeout
+
+    failing.time_message = "Get the tiles"  # type: ignore[attr-defined]
+
+    run = Run(cast("TileGeneration", DummyGeneration(queue_store)), [failing])
+    run.max_consecutive_errors = None
+
+    tile = Tile(TileCoord(2, 2, 1), metadata={"layer": "osm-wmts", "host": "localhost"})
+    result = await run(tile)
+
+    assert result is tile
+    assert isinstance(tile.error, TileGenerationError)
+    assert tile.error.__cause__ is not None
+    assert str(tile.error) == (
+        "TimeoutError: <no message>\nStep: Get the tiles\nLayer: osm-wmts\nHost: localhost"
+    )

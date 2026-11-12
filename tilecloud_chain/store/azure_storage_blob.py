@@ -8,10 +8,23 @@ from azure.storage.blob import ContentSettings
 from azure.storage.blob.aio import BlobServiceClient, ContainerClient
 from tilecloud import Tile, TileLayout
 
+from tilecloud_chain.error import ErrorContext, format_error
 from tilecloud_chain.settings import settings
 from tilecloud_chain.store import AsyncTileStore
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _tile_error(exception: BaseException, tile: Tile, key_name: str) -> str:
+    """Format an error of the Azure tile store with the context of the tile."""
+    return format_error(
+        exception,
+        ErrorContext(
+            layer=tile.metadata.get("layer"),
+            host=tile.metadata.get("host"),
+            hint=f"blob: {key_name}",
+        ),
+    )
 
 
 class AzureStorageBlobTileStore(AsyncTileStore):
@@ -80,15 +93,15 @@ class AzureStorageBlobTileStore(AsyncTileStore):
 
     async def delete_one(self, tile: Tile) -> Tile:
         """Delete a tile from the store."""
+        key_name = self.tilelayout.filename(tile.tilecoord, tile.metadata)
         try:
-            key_name = self.tilelayout.filename(tile.tilecoord, tile.metadata)
             if not self.dry_run:
                 blob = self.container_client.get_blob_client(blob=key_name)
                 if await blob.exists():
                     await blob.delete_blob()
         except Exception as exc:  # pylint: disable=broad-except
             _LOGGER.warning("Failed to delete tile %s", tile.tilecoord, exc_info=exc)
-            tile.error = exc
+            tile.error = _tile_error(exc, tile, key_name)
         return tile
 
     async def get_one(self, tile: Tile) -> Tile | None:
@@ -107,7 +120,7 @@ class AzureStorageBlobTileStore(AsyncTileStore):
             tile.content_type = properties.content_settings.content_type
         except Exception as exc:  # pylint: disable=broad-except
             _LOGGER.warning("Failed to get tile %s", tile.tilecoord, exc_info=exc)
-            tile.error = exc
+            tile.error = _tile_error(exc, tile, key_name)
         return tile
 
     async def get(self, tiles: AsyncIterator[Tile]) -> AsyncIterator[Tile | None]:
@@ -146,6 +159,6 @@ class AzureStorageBlobTileStore(AsyncTileStore):
                 )
             except Exception as exc:  # pylint: disable=broad-except
                 _LOGGER.warning("Failed to put tile %s", tile.tilecoord, exc_info=exc)
-                tile.error = exc
+                tile.error = _tile_error(exc, tile, key_name)
 
         return tile

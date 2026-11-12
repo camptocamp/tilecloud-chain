@@ -406,6 +406,10 @@ The tiles file looks like:
 The first line is just a comment, the second, is for an error on a tile, and the third is for an error on a
 meta tile.
 
+The error message contains the type of the error, the URL of the request when it comes from an HTTP
+source, the elapsed time and the cause of the error, all on a single line (the new lines are replaced
+by spaces).
+
 Proxy/cache issue
 ~~~~~~~~~~~~~~~~~
 
@@ -856,6 +860,18 @@ Tile generation:
 
 - ``TILECLOUD_CHAIN__ALLOWED_PROCESS_COMMANDS``: Comma-separated list of allowed process commands
   (default: ``optipng,jpegoptim,pngquant``)
+
+HTTP:
+
+- ``TILECLOUD_CHAIN__HTTP__TIMEOUT``: Total timeout of the requests done to get the tiles from the
+  sources, in seconds (default: ``300``)
+
+- ``TILECLOUD_CHAIN__HTTP__CONNECT_TIMEOUT``: Timeout of the connection to the sources, in seconds
+  (default: the value of ``TILECLOUD_CHAIN__HTTP__TIMEOUT``)
+
+- ``TILECLOUD_CHAIN__HTTP__CLOSE_GRACE_PERIOD``: Maximum time, in seconds, the closing of a tile
+  store waits for the requests it still has in flight, to not fail the tiles which are being
+  generated (default: ``30``)
 
 Logging:
 

@@ -81,6 +81,18 @@
 
 *Optional*, default value: `None`
 
+## `TILECLOUD_CHAIN__HTTP__TIMEOUT`
+
+*Optional*, default value: `300.0`
+
+## `TILECLOUD_CHAIN__HTTP__CONNECT_TIMEOUT`
+
+*Optional*, default value: `None`
+
+## `TILECLOUD_CHAIN__HTTP__CLOSE_GRACE_PERIOD`
+
+*Optional*, default value: `30.0`
+
 ## `TILECLOUD_CHAIN__LOGGING__CI`
 
 *Optional*, default value: `False`
