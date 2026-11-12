@@ -65,6 +65,8 @@ from tilecloud_chain import (
     internal_mapcache,
 )
 from tilecloud_chain.controller import validate_generate_wmts_capabilities
+from tilecloud_chain.error import format_error
+from tilecloud_chain.multitilestore import close_store, close_store_later, pending_closes
 from tilecloud_chain.settings import settings
 from tilecloud_chain.store import AsyncTileStore
 
@@ -235,19 +237,28 @@ class Server:
         self.store_cache: dict[tuple[Path, str, str], DatedStore] = {}
 
     async def close(self) -> None:
-        """Close all cached tile stores and S3 clients."""
-        for dated_store in list(self.store_cache.values()):
-            try:
-                await dated_store.store.close()
-            except Exception:
-                _LOGGER.warning("Error while closing tile store", exc_info=True)
+        """Close all cached tile stores and S3 clients, in parallel."""
+        stores = [dated_store.store for dated_store in self.store_cache.values()]
+        s3_clients = list(self.s3_client_cache.values())
         self.store_cache.clear()
-        for s3_client in self.s3_client_cache.values():
+        self.s3_client_cache.clear()
+
+        async def close_s3_client(s3_client: Any) -> None:
             try:
                 await s3_client.close()
             except Exception:
+                # an error while closing a client must not prevent closing the other ones
                 _LOGGER.warning("Error while closing S3 client", exc_info=True)
-        self.s3_client_cache.clear()
+
+        async with asyncio.TaskGroup() as task_group:
+            # each store waits for the requests it still has in flight
+            for store in stores:
+                task_group.create_task(close_store(store))
+            for s3_client in s3_clients:
+                task_group.create_task(close_s3_client(s3_client))
+        # finish to close the stores which were replaced by a new configuration
+        if pending_closes:
+            await asyncio.gather(*list(pending_closes))
 
     @staticmethod
     def get_expires_hours(config: tilecloud_chain.DatedConfig) -> float:
@@ -348,11 +359,11 @@ class Server:
         )
         if store is None:
             if dated_store is not None:
-                await dated_store.store.close()
+                close_store_later(dated_store.store)
                 del self.store_cache[cache_key]
             return None
         if dated_store is not None:
-            await dated_store.store.close()
+            close_store_later(dated_store.store)
         self.store_cache[cache_key] = DatedStore(store, config.mtime)
         return store
 
@@ -854,7 +865,11 @@ class Server:
                     "Cache-Control": f"max-age={3600 * self.get_expires_hours(config)}",
                 },
             )
-        raise HTTPException(status_code=code, detail=str(message) if message else "", headers=headers)
+        raise HTTPException(
+            status_code=code,
+            detail=format_error(message) if message else "",
+            headers=headers,
+        )
 
 
 server = Server()

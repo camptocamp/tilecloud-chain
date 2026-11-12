@@ -20,6 +20,7 @@ from tilecloud import Tile, TileCoord
 
 import tilecloud_chain.configuration
 from tilecloud_chain import Run, configuration
+from tilecloud_chain.error import format_error
 from tilecloud_chain.generate import Generate
 from tilecloud_chain.settings import settings
 from tilecloud_chain.store import AsyncTileStore
@@ -214,7 +215,12 @@ class Generator:
             if try_ > 0:
                 _LOG.info("Retry tile %s %s", tile.tilecoord, tile.formated_metadata)
                 return await self.compute_tile(tile, try_ - 1)
-            _LOG.warning("Tile %s %s in error: %s", tile.tilecoord, tile.formated_metadata, tile.error)
+            _LOG.warning(
+                "Tile %s %s in error:\n%s",
+                tile.tilecoord,
+                tile.formated_metadata,
+                format_error(tile.error),
+            )
             return False
         success = True
         for tile_ in tile.metadata["tiles"].values():  # type: ignore[attr-defined]
@@ -222,7 +228,12 @@ class Generator:
                 if try_ > 0:
                     _LOG.info("Retry tile %s %s", tile_.tilecoord, tile_.formated_metadata)
                     return await self.compute_tile(tile, try_ - 1)
-                _LOG.warning("Tile %s %s in error: %s", tile_.tilecoord, tile_.formated_metadata, tile_.error)
+                _LOG.warning(
+                    "Tile %s %s in error:\n%s",
+                    tile_.tilecoord,
+                    tile_.formated_metadata,
+                    format_error(tile_.error),
+                )
                 success = False
             elif tile_.data is None:
                 if try_ > 0:
@@ -288,16 +299,22 @@ async def fetch(
                 backend = "wms-generate"
                 success = await generator.compute_tile(meta_tile)
                 if not success:
+                    _LOG.warning(
+                        "Tile %s %s error after the retries:\n%s",
+                        meta_tile.tilecoord,
+                        meta_tile.formated_metadata,
+                        format_error(meta_tile.error) if meta_tile.error else "no data",
+                    )
                     if isinstance(meta_tile.error, BaseException):
                         sentry_sdk.capture_exception(meta_tile.error)
                     return server.error(config, 500, "Error while generate the tile, see logs for details")
 
                 if meta_tile.error:
                     _LOG.error(
-                        "Tile %s %s in error: %s",
+                        "Tile %s %s in error:\n%s",
                         meta_tile.tilecoord,
                         meta_tile.formated_metadata,
-                        meta_tile.error,
+                        format_error(meta_tile.error),
                     )
                     if isinstance(meta_tile.error, BaseException):
                         sentry_sdk.capture_exception(meta_tile.error)

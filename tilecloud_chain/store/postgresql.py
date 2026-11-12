@@ -48,6 +48,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from tilecloud import Tile, TileCoord
 
 from tilecloud_chain import DatedConfig, configuration, controller, generate
+from tilecloud_chain.error import format_error
 from tilecloud_chain.settings import settings
 from tilecloud_chain.store import AsyncTileStore
 
@@ -884,11 +885,13 @@ class PostgresqlTileStore(AsyncTileStore):
         assert self.SessionMaker is not None
         async with self.SessionMaker() as session:
             if tile.error:
+                formatted_error = format_error(tile.error)
                 if isinstance(tile.error, Exception):
                     _LOGGER.warning(
-                        "Error while processing the tile %s %s",
+                        "Error while processing the tile %s %s:\n%s",
                         tile.tilecoord,
                         tile.formated_metadata,
+                        formatted_error,
                         exc_info=tile.error,
                     )
 
@@ -907,7 +910,7 @@ class PostgresqlTileStore(AsyncTileStore):
                 sqlalchemy_tile = result.scalar()
                 if sqlalchemy_tile is not None:
                     sqlalchemy_tile.status = _STATUS_ERROR
-                    sqlalchemy_tile.error = str(tile.error)
+                    sqlalchemy_tile.error = formatted_error
                     await session.commit()
             else:
                 if not hasattr(tile, "postgresql_id"):

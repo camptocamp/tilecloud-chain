@@ -68,6 +68,7 @@ from tilecloud.store.s3 import S3TileStore
 from tilecloud.store.sqs import SQSTileStore, _maybe_stop
 
 from tilecloud_chain import configuration
+from tilecloud_chain.error import ErrorContext, TileGenerationError, format_error
 from tilecloud_chain.filter.error import MaximumConsecutiveErrors, TooManyError
 from tilecloud_chain.multitilestore import MultiTileStore
 from tilecloud_chain.settings import settings
@@ -319,6 +320,80 @@ class Run:
             await self.gene.queue_store.delete_one(tile)
         tile.queue_acked = True  # type: ignore[attr-defined]
 
+    async def _report_error(self, tile: Tile) -> Tile:
+        """
+        Report the error on the given tile.
+
+        Log it, write it in the error file and release its entry in the queue.
+        """
+        assert tile.error
+        formatted_error = format_error(tile.error)
+        if tile.content_type and (
+            tile.content_type in ["application/xml", "text/xml"]
+            or tile.content_type.startswith("application/vnd.ogc.se_xml;")
+            or tile.content_type.startswith("text/html;")
+        ):
+            formatted_error = f"WMS server error: {self._re_rm_xml_tag.sub('', formatted_error)}"
+            # keep the cleaned message in the tile, it's also what will be stored in the queue
+            tile.error = formatted_error
+        if self.out:
+            print(
+                f"Error with tile {tile.tilecoord} {tile.formated_metadata}:\n{formatted_error}",
+                file=self.out,
+            )
+        _LOGGER.warning(
+            "Error with tile %s %s:\n%s",
+            tile.tilecoord,
+            tile.formated_metadata,
+            formatted_error,
+        )
+        _ERROR_COUNTER.labels(
+            tile.metadata.get("layer", "none"),
+            tile.metadata.get("host", "none"),
+        ).inc()
+
+        main_config = await self.gene.get_main_config()
+        if "error_file" in main_config.config["generation"]:
+            await self.gene.log_tiles_error(tile=tile, message=formatted_error)
+
+        if self.max_consecutive_errors is not None:
+            self.max_consecutive_errors(tile)
+
+        if self.gene.queue_store is not None:
+            if hasattr(tile, "metatile"):
+                metatile: Tile = tile.metatile
+                if not metatile.error:
+                    metatile.error = tile.error
+                metatile.elapsed_togenerate -= 1  # type: ignore[attr-defined]
+                if metatile.elapsed_togenerate == 0:  # type: ignore[attr-defined]
+                    await self.gene.queue_store.delete_one(metatile)
+            else:
+                await self.gene.queue_store.delete_one(tile)
+        async with self.error_lock:
+            self.error += 1
+        return tile
+
+    def _step_name(self, func: object) -> str:
+        """Get the name used to describe the given function in the messages."""
+        time_message = getattr(func, "time_message", None)
+        return str(time_message) if time_message is not None else str(func)
+
+    def _wrap_error(self, error: Exception, func: object, tile: Tile) -> TileGenerationError:
+        """Wrap an exception raised by a step of the generation, with the context of the tile."""
+        wrapped = TileGenerationError(
+            format_error(
+                error,
+                ErrorContext(
+                    step=self._step_name(func),
+                    layer=tile.metadata.get("layer", "none"),
+                    host=tile.metadata.get("host", "none"),
+                ),
+            )
+        )
+        # keep the original exception as cause, to have its traceback in the logs and in Sentry
+        wrapped.__cause__ = error
+        return wrapped
+
     async def __call__(self, tile: Tile | None) -> Tile | None:
         """Run the tile generation."""
         if tile is None:
@@ -340,13 +415,13 @@ class Run:
                     except Exception as e:  # pylint: disable=broad-exception-caught
                         _LOGGER.exception("[%s] Fail to process function %s", tilecoord, func)
                         assert tile is not None
-                        tile.error = e
+                        tile.error = self._wrap_error(e, func, tile)
                 else:
                     tile = await func(tile)
                 _LOGGER.debug(
                     "[%s] %s in %s",
                     tilecoord,
-                    func.time_message if getattr(func, "time_message", None) is not None else func,  # type: ignore[attr-defined]
+                    self._step_name(func),
                     str(datetime.datetime.now(tz=datetime.UTC) - n),
                 )
                 if tile is None:
@@ -362,49 +437,7 @@ class Run:
                             self.error += 1
                     return None
                 if tile.error:
-                    if tile.content_type and (
-                        tile.content_type in ["application/xml", "text/xml"]
-                        or tile.content_type.startswith("application/vnd.ogc.se_xml;")
-                        or tile.content_type.startswith("text/html;")
-                    ):
-                        assert isinstance(tile.error, str)
-                        tile.error = f"WMS server error: {self._re_rm_xml_tag.sub('', tile.error)}"
-                    if self.out:
-                        print(
-                            f"Error with tile {tile.tilecoord} {tile.formated_metadata}:\n{tile.error}",
-                            file=self.out,
-                        )
-                    _LOGGER.warning(
-                        "Error with tile %s %s:\n%s",
-                        tile.tilecoord,
-                        tile.formated_metadata,
-                        tile.error,
-                    )
-                    _ERROR_COUNTER.labels(
-                        tile.metadata.get("layer", "none"),
-                        tile.metadata.get("host", "none"),
-                    ).inc()
-
-                    main_config = await self.gene.get_main_config()
-                    if "error_file" in main_config.config["generation"]:
-                        await self.gene.log_tiles_error(tile=tile, message=repr(tile.error))
-
-                    if self.max_consecutive_errors is not None:
-                        self.max_consecutive_errors(tile)
-
-                    if self.gene.queue_store is not None:
-                        if hasattr(tile, "metatile"):
-                            metatile: Tile = tile.metatile
-                            if not metatile.error:
-                                metatile.error = tile.error
-                            metatile.elapsed_togenerate -= 1  # type: ignore[attr-defined]
-                            if metatile.elapsed_togenerate == 0:  # type: ignore[attr-defined]
-                                await self.gene.queue_store.delete_one(metatile)
-                        else:
-                            await self.gene.queue_store.delete_one(tile)
-                    async with self.error_lock:
-                        self.error += 1
-                    return tile
+                    return await self._report_error(tile)
             except Exception:
                 _LOGGER.debug("Run error", exc_info=True)
                 raise
