@@ -176,7 +176,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/python3.14-minimal: 3.14.4-1ubuntu0.2
   ubuntu_26_04/python3.14-venv: 3.14.4-1ubuntu0.2
   ubuntu_26_04/readline-common: 8.3-4
-  ubuntu_26_04/rust-coreutils: 0.8.0-0ubuntu3
+  ubuntu_26_04/rust-coreutils: 0.10.0-1ubuntu2~26.04.1
   ubuntu_26_04/sed: 4.9-2ubuntu1
   ubuntu_26_04/sensible-utils: 0.0.26build1
   ubuntu_26_04/sysvinit-utils: 3.15-5ubuntu1
