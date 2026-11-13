@@ -38,6 +38,130 @@ ignore:
     - '*':
         reason: not compatible with used Python version
         created: 2026-10-28T17:14:16.000Z
+  SNYK-PYTHON-PILLOW-21277713:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277726:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277727:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277734:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277776:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277777:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277778:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277779:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277780:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277782:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277783:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277784:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277785:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277786:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277793:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277797:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21277802:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21279300:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21369600:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21430900:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21430916:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21430917:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21430990:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21430991:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21430998:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21431000:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21431005:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21431018:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21431022:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21431493:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
+  SNYK-PYTHON-PILLOW-21460715:
+    - '*':
+        reason: not compatible with used Python version
+        created: 2026-11-13T20:45:57.000Z
   SNYK-PYTHON-VIRTUALENV-21282484:
     - '*':
         reason: not compatible with used Poetry version
