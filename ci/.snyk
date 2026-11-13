@@ -58,4 +58,8 @@ ignore:
     - '*':
         reason: not compatible with used Poetry version
         created: 2026-11-12T19:18:49.000Z
+  SNYK-PYTHON-VIRTUALENV-20335491:
+    - '*':
+        reason: not compatible with used Poetry version
+        created: 2026-11-13T20:45:57.000Z
 patch: {}
