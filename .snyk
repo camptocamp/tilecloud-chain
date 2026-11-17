@@ -78,4 +78,8 @@ ignore:
     - '*':
         reason: Plugin not compatible with new Poetry version
         created: 2026-04-23T07:35:20.423Z
+  SNYK-PYTHON-VIRTUALENV-20335491:
+    - '*':
+        reason: not compatible with used Poetry version
+        created: 2026-11-16T07:28:48.000Z
 patch: {}
