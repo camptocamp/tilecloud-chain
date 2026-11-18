@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from typing import IO, Any, cast
 from unittest.mock import AsyncMock, Mock
 
+import pyproj
 import pytest
 from c2casgiutils.config import GitHubAccessType
 from tilecloud import Tile, TileCoord
@@ -293,3 +294,40 @@ async def test_access_level_no_access(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert await admin._get_access_level(config, Mock()) is admin.AccessLevel.NO_ACCESS
     assert check.await_count == 2
+
+
+def test_get_proj4js_def_preserves_datum_shift() -> None:
+    """The known SRS must keep the datum shift parameters lost by pyproj.CRS.to_proj4()."""
+    def_2056 = admin._get_proj4js_def("EPSG:2056")
+    assert "+proj=somerc" in def_2056
+    assert "+x_0=2600000" in def_2056
+    assert "+towgs84=674.374,15.056,405.346,0,0,0,0" in def_2056
+
+    def_21781 = admin._get_proj4js_def("EPSG:21781")
+    assert "+proj=somerc" in def_21781
+    assert "+x_0=600000" in def_21781
+    assert "+towgs84=674.374,15.056,405.346,0,0,0,0" in def_21781
+
+    def_3857 = admin._get_proj4js_def("EPSG:3857")
+    assert "+proj=merc" in def_3857
+    assert "+nadgrids=@null" in def_3857
+
+
+def test_get_proj4js_def_fallbacks_to_pyproj_for_other_srs() -> None:
+    def_4326 = admin._get_proj4js_def("EPSG:4326")
+    assert "+proj=longlat" in def_4326
+
+
+def test_get_proj4js_def_transform_matches_official_pipeline() -> None:
+    """The transformations done in the browser with the emitted definition must match the server side ones."""
+    transformer_def = pyproj.Transformer.from_crs(
+        pyproj.CRS.from_proj4(admin._get_proj4js_def("EPSG:2056")),
+        "EPSG:3857",
+        always_xy=True,
+    )
+    transformer_ref = pyproj.Transformer.from_crs("EPSG:2056", "EPSG:3857", always_xy=True)
+    for point in ((2600000.0, 1200000.0), (2562540.0, 1205340.0), (2500000.0, 1150000.0)):
+        x_def, y_def = transformer_def.transform(*point)
+        x_ref, y_ref = transformer_ref.transform(*point)
+        assert abs(x_def - x_ref) < 1.0
+        assert abs(y_def - y_ref) < 1.0

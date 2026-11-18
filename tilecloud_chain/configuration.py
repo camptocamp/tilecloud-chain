@@ -2466,7 +2466,7 @@ class Openlayers(TypedDict, total=False):
     r"""
     Proj4js definition.
 
-    The `proj4js` definition, by default it will be build with pyproj
+    The `proj4js` definition, by default, for the known SRS (`EPSG:2056`, `EPSG:21781`, `EPSG:3857`), the `proj4` literal including the datum shift parameters is used, and for the other SRS it will be build with pyproj
     """
 
     center_x: int | float
