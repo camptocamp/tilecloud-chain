@@ -3,6 +3,8 @@
 
 from tilecloud import Tile
 
+from tilecloud_chain.error import format_error
+
 
 class MaximumConsecutiveErrors:
     """
@@ -73,6 +75,9 @@ class TooManyError(RuntimeError):
 
     def __init__(self, tile: Tile) -> None:
         self.last_tile = tile
+        # this exception is only raised on a tile in error, then it has an error message
+        error = tile.error if tile.error is not None else "<no error>"
         super().__init__(
-            f"Too many errors, last tile in error {tile.tilecoord} {tile.formated_metadata}\n{tile.error}",
+            f"Too many errors, last tile in error {tile.tilecoord} {tile.formated_metadata}\n"
+            f"{format_error(error)}",
         )

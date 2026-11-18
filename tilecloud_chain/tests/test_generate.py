@@ -1848,6 +1848,13 @@ Size per tile: 4[0-9][0-9] o
         error_list_path = Path("error.list")
         if error_list_path.exists():
             error_list_path.unlink()
+        error_pattern = (
+            r"# \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] "
+            r"WMS server error: \s+msWMSLoadGetMapParams\(\): "
+            r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
+            r"A layer might be disabled for this request\. Check wms/ows_enable_request settings\. \s+"
+            r"URL: http:[^ ]+ \(after [0-9]+\.[0-9]+ s\) Layer: point_error Host: localhost"
+        )
         await self.assert_main_except_equals(
             cmd=".build/venv/bin/generate-tiles -q -c tilegeneration/test-nosns.yaml -l point_error",
             main_func=generate.async_main,
@@ -1861,26 +1868,11 @@ Size per tile: 4[0-9][0-9] o
                             (r"# \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] "
                              r"Start the layer 'point_error' generation"),
                             (r"0/0/0:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 "
-                             r"grid=swissgrid_5 host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
-                             r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: URL: http:[^ ]+?(?:\\n|\s)+"
-                             r"msWMSLoadGetMapParams\(\): "
-                             r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
-                             r"A layer might be disabled for this request\. Check wms/ows_enable_request "
-                             r"settings\.(?:\\n|\s)*'"),
+                             r"grid=swissgrid_5 host=localhost layer=point_error " + error_pattern),
                             (r"0/0/8:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 "
-                             r"grid=swissgrid_5 host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
-                             r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: URL: http:[^ ]+?(?:\\n|\s)+"
-                             r"msWMSLoadGetMapParams\(\): "
-                             r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
-                             r"A layer might be disabled for this request\. Check wms/ows_enable_request "
-                             r"settings\.(?:\\n|\s)*'"),
+                             r"grid=swissgrid_5 host=localhost layer=point_error " + error_pattern),
                             (r"0/8/0:\+8/\+8 config_file=tilegeneration/test-nosns.yaml dimension_DATE=2012 "
-                             r"grid=swissgrid_5 host=localhost layer=point_error # \[[0-9][0-9]-[0-9][0-9]-20[0-9][0-9] "
-                             r"[0-9][0-9]:[0-9][0-9]:[0-9][0-9]\] 'WMS server error: URL: http:[^ ]+?(?:\\n|\s)+"
-                             r"msWMSLoadGetMapParams\(\): "
-                             r"WMS server error\. Invalid layer\(s\) given in the LAYERS parameter\. "
-                             r"A layer might be disabled for this request\. Check wms/ows_enable_request "
-                             r"settings\.(?:\\n|\s)*'"),
+                             r"grid=swissgrid_5 host=localhost layer=point_error " + error_pattern),
                             "",
                         ],
                     ),
