@@ -49,7 +49,7 @@ camptocamp/tilecloud-chain:latest:
   ubuntu_26_04/libdb5.3t64: 5.3.28+dfsg2-10ubuntu1
   ubuntu_26_04/libdebconfclient0: 0.280ubuntu1
   ubuntu_26_04/libdeflate0: 1.23-2ubuntu1
-  ubuntu_26_04/libexpat1: 2.7.4-1ubuntu0.2
+  ubuntu_26_04/libexpat1: 2.7.4-1ubuntu0.3
   ubuntu_26_04/libext2fs2t64: 1.47.2-3ubuntu4
   ubuntu_26_04/libffi8: 3.5.2-4
   ubuntu_26_04/libfreexl1: 2.0.0-1build3
